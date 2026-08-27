@@ -25,7 +25,8 @@ const previousNativeFeedback = isRecord(previous.nativeFeedback) ? previous.nati
 const historical = historicalPath ? readJson(historicalPath, {}) : {};
 const nativeSummary = nativeSummaryPath ? readJson(nativeSummaryPath, {}) : {};
 const portfolio = portfolioPath ? readJson(portfolioPath, {}) : {};
-const skills = overrides.runtime_repair?.learned_skills ?? {};
+const currentSkills = overrides.runtime_repair?.learned_skills ?? {};
+const learnedSkills = mergeLearnedSkills(previous.learnedSkills, currentSkills);
 const plans = repair.brain?.plans ?? {};
 const maxMemory = Number(policy.learningLab?.memoryMaxEntries || 1000);
 const repeatedThreshold = Number(policy.learningLab?.maxRepeatedFailedProfile || 2);
@@ -37,7 +38,7 @@ for (const row of Object.values(plans)) {
   counts.set(failureClass, (counts.get(failureClass) ?? 0) + 1);
 }
 const trustedByFailure = new Map();
-for (const skill of Object.values(skills)) {
+for (const skill of Object.values(learnedSkills)) {
   if (!skill || skill.autoApply !== true) continue;
   const key = String(skill.failureClass ?? skill.failure_class ?? 'unknown_failure');
   trustedByFailure.set(key, (trustedByFailure.get(key) ?? 0) + 1);
@@ -184,7 +185,8 @@ const payload = {
   productionWritesAllowed: false,
   sandboxExecutedProviders: true,
   proposals: dedupeProposals(proposals),
-  learnedSkillCount: Object.keys(skills).length,
+  learnedSkills,
+  learnedSkillCount: Object.keys(learnedSkills).length,
   unresolvedFailureCounts: Object.fromEntries(counts),
   diagnosticsAvailable: Boolean(Object.keys(diagnostics).length),
   experimentMemory,
@@ -213,6 +215,63 @@ const payload = {
 fs.writeFileSync(path.join(outputDir, 'latest.json'), JSON.stringify(payload, null, 2) + '\n');
 fs.writeFileSync(path.join(outputDir, 'latest.md'), renderMarkdown(payload));
 console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length} reader_failures=${payload.nativeFeedback.nativeReaderFailures}`);
+
+function mergeLearnedSkills(previousSkills, currentSkills) {
+  const out = {};
+  for (const source of [previousSkills, currentSkills]) {
+    if (!isRecord(source)) continue;
+    for (const [key, raw] of Object.entries(source)) {
+      const skill = sanitizeLearnedSkill(raw);
+      if (!skill) continue;
+      const id = String(key || skill.id).slice(0, 192);
+      const existing = out[id];
+      if (!existing) {
+        out[id] = skill;
+        continue;
+      }
+      const maturityRank = { experimental: 0, candidate: 1, trusted: 2 };
+      const maturity = (maturityRank[skill.maturity] ?? 0) > (maturityRank[existing.maturity] ?? 0)
+        ? skill.maturity : existing.maturity;
+      out[id] = {
+        ...existing,
+        ...skill,
+        providers: [...new Set([...(existing.providers || []), ...(skill.providers || [])])].slice(0, 96),
+        successCount: Math.max(nonNegative(existing.successCount), nonNegative(skill.successCount)),
+        failureCount: Math.max(nonNegative(existing.failureCount), nonNegative(skill.failureCount)),
+        confidence: Math.max(Number(existing.confidence || 0), Number(skill.confidence || 0)),
+        maturity,
+        autoApply: maturity === 'trusted' && (existing.autoApply === true || skill.autoApply === true),
+      };
+    }
+  }
+  return Object.fromEntries(Object.entries(out).slice(0, 400));
+}
+
+function sanitizeLearnedSkill(raw) {
+  if (!isRecord(raw) || raw.validated !== true) return null;
+  const id = sanitizeReason(raw.id || '').slice(0, 160);
+  const failureClass = sanitizeReason(raw.failureClass || raw.failure_class || '').slice(0, 96);
+  const profile = sanitizeReason(raw.profile || '').slice(0, 96);
+  if (!id || !failureClass || !profile) return null;
+  const maturity = ['experimental', 'candidate', 'trusted'].includes(String(raw.maturity))
+    ? String(raw.maturity) : 'experimental';
+  const confidence = Math.max(0, Math.min(1, Number(raw.confidence || 0)));
+  return {
+    id,
+    failureClass,
+    profile,
+    actions: (Array.isArray(raw.actions) ? raw.actions : []).map((v) => sanitizeReason(v).slice(0, 240)).filter(Boolean).slice(0, 12),
+    capabilities: [...new Set((Array.isArray(raw.capabilities) ? raw.capabilities : []).map((v) => sanitizeReason(v).slice(0, 64)).filter(Boolean))].slice(0, 24),
+    providers: [...new Set((Array.isArray(raw.providers) ? raw.providers : []).map((v) => String(v || '').trim().toLowerCase().slice(0, 128)).filter(Boolean))].slice(0, 96),
+    successCount: nonNegative(raw.successCount),
+    failureCount: nonNegative(raw.failureCount),
+    validated: true,
+    confidence,
+    maturity,
+    autoApply: maturity === 'trusted' && raw.autoApply === true,
+    lastValidatedMode: sanitizeReason(raw.lastValidatedMode || '').slice(0, 32),
+  };
+}
 
 function mergeExperimentMemory(previousMemory, report, planMap, limit) {
   const map = new Map();
