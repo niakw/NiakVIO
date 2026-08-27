@@ -27,7 +27,7 @@ presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_s
 assert presentation.REVISION == "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8"
 
 
-def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None):
+def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
     assert "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8" in patched
@@ -53,7 +53,8 @@ def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None)
             timeout=15,
         )
         assert result.returncode == 0, result.stdout + result.stderr
-        return json.loads(result.stdout.strip())
+        output = result.stdout.strip()
+        return output if raw else json.loads(output)
 
 
 tmdb = r"""async function(url){
@@ -82,6 +83,22 @@ assert lines[3].startswith("🎞️ WEB-DL"), lines
 assert "HEVC 10bit" in lines[3] and "HLS" in lines[3] and "💾 8.4 GB" in lines[3]
 assert "2160p" not in row["description"] and "4K" not in row["description"]
 assert "Unknown" not in row["description"]
+
+# JVM QuickJS bridge safety: final stream-array JSON must cross JNI as ASCII-only
+# (supplementary emoji are represented as JSON \uXXXX surrogate escapes), while
+# normal JSON decoding restores the original presentation exactly.
+raw_stream_json = run(
+    source,
+    "purstream",
+    "p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v)))",
+    tmdb,
+    raw=True,
+)
+assert raw_stream_json.isascii(), raw_stream_json
+assert "\\ud83c\\udfac" in raw_stream_json.lower(), raw_stream_json
+roundtrip = json.loads(raw_stream_json)[0]
+assert roundtrip["description"].splitlines()[0] == "🎬 Interstellar • 2014", roundtrip
+assert "🇫🇷 MULTI (VF/VO)" in roundtrip["description"], roundtrip
 
 # NuvioTV's official local-plugin model discards provider description and maps
 # LocalScraperResult.size -> Stream.description. On TV only, tunnel the complete
