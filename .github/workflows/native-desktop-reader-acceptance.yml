@@ -190,7 +190,7 @@ jobs:
           path: |
             health-output/nuvio-client-upstream-status.json
             health-output/nuvio-desktop-lab-head.json
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: error
 
   desktop-reader:
@@ -409,5 +409,5 @@ jobs:
             desktop-canary-${{ matrix.os_name }}-*.log
             desktop-fixtures-${{ matrix.os_name }}.txt
             native-evidence/desktop/**
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: warn

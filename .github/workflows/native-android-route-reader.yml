@@ -175,7 +175,7 @@ jobs:
           path: |
             health-output/nuvio-client-upstream-status.json
             health-output/nuvio-android-lab-heads.json
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: error
 
   tv-route-reader:
@@ -290,7 +290,7 @@ jobs:
             tv-native-frontend-*.log
             tv-route-*-brain.json
             native-evidence/tv/**
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: warn
 
   mobile-route-reader:
@@ -384,7 +384,7 @@ jobs:
             mobile-native-frontend-*.log
             mobile-route-*-brain.json
             native-evidence/mobile/**
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: warn
 
   brain-reader-repair-sandbox:
@@ -577,5 +577,5 @@ jobs:
             tv-native-corpus-*.log
             tv-reader-repair-after.json
             tv-reader-repair-comparison-*.json
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: warn

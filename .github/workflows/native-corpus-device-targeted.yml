@@ -266,7 +266,7 @@ jobs:
         with:
           name: native-corpus-${{ matrix.device }}-${{ matrix.fixture }}-${{ github.run_id }}
           path: ${{ matrix.device }}-native-corpus-*.log
-          retention-days: 7
+          retention-days: 1
           if-no-files-found: warn
 
   cross-runtime-gate:
