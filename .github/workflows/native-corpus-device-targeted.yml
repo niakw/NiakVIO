@@ -140,9 +140,11 @@ jobs:
               ;;
           esac
 
-      - name: Set up Gradle cache
+      - name: Set up Gradle runtime
         if: matrix.device != 'desktop'
         uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+        with:
+          cache-disabled: true
 
       - name: Enable Linux KVM when available
         if: matrix.device != 'desktop'

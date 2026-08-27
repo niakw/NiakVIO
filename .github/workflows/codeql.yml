@@ -42,6 +42,10 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
+          # Keep the repository Actions cache budget for native/device workflows.
+          # These caches only improve analysis speed; they are not required for correctness.
+          trap-caching: false
+          dependency-caching: false
 
       - name: Analyze locally without conflicting with Default Setup
         uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
