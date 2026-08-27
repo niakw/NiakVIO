@@ -14,6 +14,8 @@ GLOBAL_PRESENTATION = ROOT / "scripts/provider_patches/global_stream_presentatio
 GLOBAL_FACTS = ROOT / "scripts/provider_patches/global_stream_facts_v1.py"
 READER_REPAIR = ROOT / "scripts/build_native_reader_brain_repair.py"
 RUN_SANDBOX = ROOT / "scripts/run_brain_learning_sandbox.py"
+QUICK_REPAIR = ROOT / "scripts/run_adaptive_quick_repair.py"
+LEARNING_LAB = ROOT / "engine_v2/scripts/learning-lab.mjs"
 OVERRIDES = ROOT / "provider-overrides.json"
 CATALOG = ROOT / "provider_catalog.json"
 MANIFEST = ROOT / "manifest.json"
@@ -65,6 +67,8 @@ def main() -> int:
     presentation_source = GLOBAL_PRESENTATION.read_text(encoding="utf-8")
     facts_source = GLOBAL_FACTS.read_text(encoding="utf-8")
     sandbox_source = RUN_SANDBOX.read_text(encoding="utf-8")
+    quick_source = QUICK_REPAIR.read_text(encoding="utf-8")
+    learning_source = LEARNING_LAB.read_text(encoding="utf-8")
     overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
     catalog = json.loads(CATALOG.read_text(encoding="utf-8"))
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -81,6 +85,18 @@ def main() -> int:
     # Scheduled Brain uses the same Quick Brain implementation as normal repair,
     # not a second reduced skill engine.
     assert "import run_adaptive_quick_repair as quick" in sandbox_source
+    # Learning is deliberately broader than routine Quick repair: it restores
+    # cross-day positive skills, rotates bounded exploration across providers and
+    # marks the planner as learning mode. Routine workflows remain conservative.
+    assert "NUVIO_BRAIN_PLANNER_MODE" in quick_source
+    assert 'return "learning" if mode == "learning" else "quick"' in quick_source
+    assert "_sibling_aware_matching_profiles" in sandbox_source
+    assert "explorationShare" in sandbox_source
+    assert "learningExplorationApplied" in sandbox_source
+    assert "_restore_positive_skills" in sandbox_source
+    assert 'state.get("learnedSkills")' in sandbox_source
+    assert "mergeLearnedSkills(previous.learnedSkills, currentSkills)" in learning_source
+    assert "learnedSkills," in learning_source
     assert "apply_overrides(canonical_id(upstream_id), data)" in discovery
     assert "GLOBAL_STREAM_PRESENTATION" in apply_source
     assert '"scope": "global_stream_presentation"' in apply_source
