@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Enforce NiakVIO's main-only code-change policy.
+"""Enforce NiakVIO's main-only human code-change policy.
 
-The persistent ``brain-learning/proposals`` ref is sanitized learning memory, not
-a code-review branch. Brain repair proposals remain artifacts only: no workflow
-may create ``brain-repair/proposals`` or a temporary repair PR. The repository
-hygiene workflow is the sole exception allowed to mention the forbidden ref,
-because it only deletes it.
+Human/manual maintenance stays on main. The only code-review branch a workflow
+may create is brain-repair/proposal, and only the scheduled Brain Learning job
+may create it after materializing validated sandbox evidence. The persistent
+brain-learning/proposals ref remains sanitized memory, not a code branch.
 """
 from __future__ import annotations
 
@@ -14,36 +13,50 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 BRAIN_WORKFLOW = ROOT / ".github/workflows/brain-learning-lab.yml"
-FORBIDDEN_BRANCH = "brain-repair/proposals"
-JOB_MARKER = "\n  publish-repair-proposal:\n"
 HYGIENE_WORKFLOW = ROOT / ".github/workflows/repository-hygiene.yml"
+BRAIN_PROPOSAL_BRANCH = "brain-repair/proposal"
+LEGACY_FORBIDDEN_BRANCH = "brain-repair/proposals"
+JOB_MARKER = "\n  publish-repair-proposal:\n"
 
 
 def normalize(*, apply: bool) -> list[str]:
-    changed: list[str] = []
-    text = BRAIN_WORKFLOW.read_text(encoding="utf-8")
-    if JOB_MARKER in text:
-        changed.append("brain-learning-lab:publish-repair-proposal")
-        if apply:
-            text = text.split(JOB_MARKER, 1)[0].rstrip() + "\n"
-            BRAIN_WORKFLOW.write_text(text, encoding="utf-8")
-    return changed
+    return []
 
 
 def assert_policy() -> None:
     workflow = BRAIN_WORKFLOW.read_text(encoding="utf-8")
-    if JOB_MARKER in workflow:
-        raise ValueError("Brain repair proposal job still exists")
+    if JOB_MARKER not in workflow:
+        raise ValueError("scheduled Brain repair proposal job is missing")
+    required = (
+        "if: github.event_name == 'schedule'",
+        "pull-requests: write",
+        "contents: write",
+        f"BRANCH: {BRAIN_PROPOSAL_BRANCH}",
+        "gh pr create",
+        "requiresHumanMerge",
+    )
+    for marker in required:
+        if marker not in workflow:
+            raise ValueError(f"Brain repair PR contract missing: {marker}")
+    if "git push origin HEAD:main" in workflow:
+        raise ValueError("Brain workflow may not publish learned code directly to main")
+    if LEGACY_FORBIDDEN_BRANCH in workflow:
+        raise ValueError("legacy Brain repair branch name resurrected")
+
     for pattern in ("*.yml", "*.yaml"):
         for path in sorted((ROOT / ".github/workflows").glob(pattern)):
             text = path.read_text(encoding="utf-8")
-            if FORBIDDEN_BRANCH not in text:
+            if LEGACY_FORBIDDEN_BRANCH in text:
+                raise ValueError(f"legacy Brain repair branch referenced by {path.relative_to(ROOT)}")
+            if BRAIN_PROPOSAL_BRANCH not in text:
+                continue
+            if path.resolve() == BRAIN_WORKFLOW.resolve():
                 continue
             if path.resolve() == HYGIENE_WORKFLOW.resolve():
-                if f"git push origin --delete \"$branch\"" not in text:
-                    raise ValueError("repository hygiene mentions forbidden branch without a deletion-only implementation")
                 continue
-            raise ValueError(f"temporary Brain repair branch can still be created by {path.relative_to(ROOT)}")
+            raise ValueError(
+                f"only scheduled Brain Learning may create the repair PR branch: {path.relative_to(ROOT)}"
+            )
 
 
 def main() -> int:
@@ -55,16 +68,12 @@ def main() -> int:
         raise SystemExit("choose --apply or --check")
 
     changed = normalize(apply=args.apply)
-    if args.apply:
-        assert_policy()
-    elif args.check:
-        if changed:
-            raise SystemExit("main-only workflow normalization required: " + ", ".join(changed))
-        assert_policy()
+    assert_policy()
 
     print(
         "FIELD_MAIN_ONLY_POLICY "
-        f"temporary_repair_branches=0 temporary_repair_prs=0 changed={len(changed)} "
+        f"manual_code_branches=0 brain_repair_pr_branch={BRAIN_PROPOSAL_BRANCH} "
+        f"scheduled_only=true changed={len(changed)} "
         "persistent_learning_ref=brain-learning/proposals"
     )
     return 0
