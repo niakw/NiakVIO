@@ -200,6 +200,7 @@ for required in (
 ):
     assert required in reapply, required
 assert reapply.index("purified, purification = purify_bytes(patched)") < reapply.index("digest = hashlib.sha256(patched).hexdigest()")
+assert 'purification["applied"] and purified != original' in reapply
 
 # Native-reader Brain candidates must be purified before they are copied into the
 # official Nuvio TV acceptance source; manifest/report SHA references are rewritten.

@@ -419,7 +419,13 @@ def main() -> int:
         # transform. These exact validated bytes are content-addressed and later
         # proved by Deep and native Labs.
         purified, purification = purify_bytes(patched)
-        if purification["applied"]:
+        # Provenance describes net published-byte changes, not transient
+        # intermediate normalization. A provider may already be the canonical
+        # purified fixed point even when an earlier hardening pass temporarily
+        # rewrites formatting before purification restores the exact original
+        # bytes. Recording that transient pass would mutate PROVENANCE.json on
+        # every verification run and break publication idempotence.
+        if purification["applied"] and purified != original:
             records = list(records) + [{
                 "type": "provider_purification",
                 "phase": "final-post-transform",
