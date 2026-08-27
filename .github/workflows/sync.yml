@@ -60,8 +60,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: nuvio-provider-publish-${{ github.event.pull_request.number || 'main' }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: nuvio-provider-publish-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   stage-and-test:
