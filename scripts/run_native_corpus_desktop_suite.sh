@@ -85,6 +85,7 @@ for fixture in "${FIXTURES[@]}"; do
     python3 "$PROVIDER_LOADING" desktop --manifest "$TARGET_MANIFEST" --manifest-url "$MANIFEST_URL" --source "$TEST_SOURCE" --platform "$HOST_OS" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
   fi
   python3 "$RUNTIME_DIAGNOSTICS" --source "$TEST_SOURCE" || { SOFT_FAILURES=$((SOFT_FAILURES+1)); continue; }
+
   EXPECTED_MINUTES="$(python3 - "$fixture" "$NIAKVIO/.github/triggers/nuvio-client-lab.json" <<'PY'
 import json, sys
 slug, path = sys.argv[1], sys.argv[2]

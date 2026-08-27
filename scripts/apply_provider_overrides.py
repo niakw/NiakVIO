@@ -22,6 +22,7 @@ from override_text_utils import replace_literal
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
+GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
@@ -1133,6 +1134,22 @@ def apply_overrides(
                     "phase": phase,
                     "scope": "global_media_enrichment",
                 })
+
+        # Runtime media safety is a Core-wide responsibility. Apply the dedicated
+        # current implementation after provider/catalogue/media recovery and before
+        # the final HLS/audio ordering hook. Provider-specific legacy entries may
+        # still invoke the same module earlier; its stable marker makes that harmless,
+        # while the public HLS adapter below repositions the single wrapper around
+        # the final recovered rows.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_RUNTIME_MEDIA_SAFETY, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_RUNTIME_MEDIA_SAFETY,
+                "phase": phase,
+                "scope": "global_runtime_media_safety",
+            })
 
         _apply_playback_stage(post_media_hooks)
         staged_hooks = {str(value) for value in pre_media_hooks + post_media_hooks if str(value).strip()}

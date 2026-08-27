@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
-"""Preserve HLS master audio and append the global runtime media safety guard.
+"""Preserve HLS master audio without owning the global runtime media-safety layer.
 
-The audio rewrite keeps HLS masters with external audio renditions intact.  The
-runtime guard rejects only conclusively dead/non-media rows, keeps the existing
-NetMirror duration identity check and MovieBox strict playback gate, and now
-uses the real NuvioTV bridge fingerprint instead of treating every native
-QuickJS client as TV.  It also normalizes final playback context so libmpv and
-Media3 receive the same browser user-agent used by the provider fetch bridges,
-while TV-only display compatibility fills NuvioTV's ``size``/description slot
-without polluting Desktop/Mobile metadata.
+This historical module used to both preserve external HLS audio and replace the
+shared ``NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1`` wrapper.  That made a later
+playback hook silently overwrite the dedicated, newer
+``runtime_capability_media_safety_v4.py`` implementation during provider
+reconstruction.  Media safety now has one owner; this module only performs the
+HLS/audio rewrite.  The public adapter remains responsible for deterministic
+wrapper ordering.
 """
 from __future__ import annotations
 
@@ -302,55 +301,28 @@ def _move_hls_integrity_to_tail(text: str) -> str:
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
-    provider_id = str(context.get("provider_id") or "").strip().casefold()
-    cfg = dict(options or {})
+    """Apply only the HLS master/audio preservation transform.
 
+    Runtime media safety is intentionally *not* created, stripped or replaced here.
+    The dedicated runtime-capability safety patch owns that marker and implementation.
+    Keeping the existing wrapper byte-for-byte prevents a later HLS hook from
+    downgrading the generated provider to the historical safety revision.
+    """
+    del options, kwargs
     output = text
+    changed = 0
+
+    def replacement(match: re.Match[str]) -> str:
+        nonlocal changed
+        changed += 1
+        variable = match.group("var")
+        return (
+            f"if(!/#EXT-X-STREAM-INF/i.test({variable})||"
+            f"/#EXT-X-MEDIA:[^\\r\\n]*TYPE=AUDIO/i.test({variable}))return"
+        )
+
     if AUDIO_MARKER not in output:
-        changed = 0
-
-        def replacement(match: re.Match[str]) -> str:
-            nonlocal changed
-            changed += 1
-            variable = match.group("var")
-            return (
-                f"if(!/#EXT-X-STREAM-INF/i.test({variable})||"
-                f"/#EXT-X-MEDIA:[^\\r\\n]*TYPE=AUDIO/i.test({variable}))return"
-            )
-
         output = GUARD.sub(replacement, output)
         if changed:
             output = output.rstrip() + f"\n/* {AUDIO_MARKER} */\n"
-
-    cfg = {
-        "providerId": provider_id,
-        "timeoutMs": 6500,
-        "tmdbTimeoutMs": 4500,
-        "maxRows": 4,
-        "minDurationRatio": 0.55,
-        "maxDurationRatio": 1.8,
-        "durationIdentity": provider_id == "netmirror",
-        "strictPlayback": provider_id == "moviebox",
-        "failClosedUnknown": bool(cfg.get("fail_closed_unknown", False)),
-        "defaultUserAgent": str(cfg.get("default_user_agent") or ""),
-        "tmdbKey": "1865f43a0549ca50d341dd9ab8b29f49",
-        "implementationRevision": "scoped-playback-context-v4",
-    }
-    payload = json.dumps(cfg, separators=(",", ":"))
-    marker = f"{SAFETY_MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-    marker_comment = f"/* {marker} */"
-    current = output.find(marker_comment)
-    if current >= 0:
-        later_media = output.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:", current + 1)
-        if later_media < 0:
-            return _move_hls_integrity_to_tail(output)
-
-    output = _strip_existing_safety_wrapper(output)
-    wrapper = (
-        SAFETY_WRAPPER.replace("SAFETY_MARKER_PLACEHOLDER", marker)
-        .replace("TV_PREDICATE_PLACEHOLDER", TV_PREDICATE)
-        .replace("CONFIG_PLACEHOLDER", payload)
-    )
-    output = output.rstrip() + "\n" + wrapper.lstrip()
     return _move_hls_integrity_to_tail(output)

@@ -60,6 +60,7 @@ on:
       - "scripts/native_evidence_completeness.cjs"
       - "scripts/gate_native_stream_extraction.cjs"
       - "tests/native_stream_extraction_gate_test.py"
+      - "tests/native_desktop_runtime_diagnostics_order_test.py"
   push:
     branches: [main]
     paths:
@@ -118,6 +119,7 @@ on:
       - "scripts/native_evidence_completeness.cjs"
       - "scripts/gate_native_stream_extraction.cjs"
       - "tests/native_stream_extraction_gate_test.py"
+      - "tests/native_desktop_runtime_diagnostics_order_test.py"
   workflow_dispatch:
 
 permissions:
@@ -149,6 +151,8 @@ jobs:
         run: python3 scripts/render_platform_runtime_contracts.py --check
       - name: Validate extraction gate semantics
         run: python3 tests/native_stream_extraction_gate_test.py
+      - name: Validate Desktop runtime diagnostics ordering
+        run: python3 tests/native_desktop_runtime_diagnostics_order_test.py
       - name: Validate client drift and Desktop fixed-point topology
         run: python3 tests/nuvio_client_upstream_drift_guard_test.py
 

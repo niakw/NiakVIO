@@ -17,17 +17,25 @@ def load_apply(rel):
     return mod.apply
 
 hls_apply = load_apply("scripts/provider_patches/hls_master_audio_preserver_v1.py")
+safety_apply = load_apply("scripts/provider_patches/runtime_capability_media_safety_v4.py")
 media_apply = load_apply("scripts/provider_patches/global_media_enrichment_v1.py")
 hls_runtime_apply = load_apply("scripts/provider_patches/hls_runtime_integrity_v1.py")
 base = 'globalThis.getStreams=async function(){return [{url:"https://media.invalid/master.m3u8",type:"hls"}]};\n'
-ordinary = hls_apply(base, options={}, context={"provider_id":"ordinary"})
-assert "c.strictPlayback||c.failClosedUnknown" in ordinary
-assert "c.strictPlayback||tv" not in ordinary
-assert "c.defaultUserAgent&&" in ordinary
-assert '"defaultUserAgent":""' in ordinary
-assert '"failClosedUnknown":false' in ordinary
-assert '"strictPlayback":true' in hls_apply(base, options={}, context={"provider_id":"moviebox"})
-assert '"defaultUserAgent":"UA-STREAMZO"' in hls_apply(base, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
+
+def safety_then_hls(source, provider_id, options=None):
+    opts = dict(options or {})
+    output = safety_apply(source, options=opts, context={"provider_id":provider_id})
+    return hls_apply(output, options=opts, context={"provider_id":provider_id})
+
+ordinary = safety_then_hls(base, "ordinary")
+assert '"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"' in ordinary
+assert "c.strictPlayback||tv" in ordinary
+assert "c.strictPlayback||c.failClosedUnknown" not in ordinary
+assert '"defaultUserAgent"' not in ordinary
+assert '"failClosedUnknown"' not in ordinary
+assert '"strictPlayback":true' in safety_then_hls(base, "moviebox")
+streamzo_safety = safety_then_hls(base, "streamzo", {"default_user_agent":"UA-STREAMZO"})
+assert '"defaultUserAgent"' not in streamzo_safety
 enriched = media_apply(base, options={})
 assert '"defaultUserAgent":""' in enriched
 assert 'c.defaultUserAgent&&!keyOf(out,"User-Agent")' in enriched
@@ -37,7 +45,7 @@ assert '"defaultUserAgent":"UA-STREAMZO"' in media_apply(base, options={"default
 # patches are reapplied in a different transaction. Otherwise a deterministic
 # rematerialization can silently change runtime behavior without changing the
 # provider implementation itself.
-safety_first = hls_apply(
+safety_first = safety_apply(
     base,
     options={"default_user_agent":"UA-STREAMZO"},
     context={"provider_id":"streamzo"},
@@ -56,6 +64,7 @@ assert '"defaultUserAgent":"UA-STREAMZO-2"' in changed_context
 # context and after the shared safety layer has normalized them. Reapplication
 # in any patch order must converge to this one byte-stable representation.
 canonical = media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
+canonical = safety_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 canonical = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
 # hls_apply is the final ordering normalizer when all three layers exist.
@@ -66,6 +75,7 @@ hls_pos = canonical.index("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
 assert media_pos < safety_pos < hls_pos, (media_pos, safety_pos, hls_pos)
 canonical_again = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
 canonical_again = media_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"})
+canonical_again = safety_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 canonical_again = hls_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 assert canonical_again == canonical
 
@@ -77,6 +87,7 @@ assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_close
 
 runtime = ordinary + (
     "\nglobalThis.__NUVIO_TV_RUNTIME__=true;\n"
+    'globalThis.__native_fetch=function(){return "{}"};\n'
     'globalThis.fetch=async function(){throw new Error("bridge cannot reprobe")};\n'
     '(async()=>{var rows=await globalThis.getStreams({tmdbId:"1",mediaType:"movie"});console.log("COUNT="+rows.length)})().catch(e=>{console.error(e);process.exit(2)});\n'
 )

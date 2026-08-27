@@ -307,9 +307,9 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--nuvio--518694393102bd92.js",
-      "sha256": "518694393102bd92f08e0f52877ef1344b5c3cae0bd4ba190c1e61004ecda059",
-      "patched_sha256": "518694393102bd92f08e0f52877ef1344b5c3cae0bd4ba190c1e61004ecda059",
+      "published_filename": "providers/4khdhub--nuvio--4efd8276edad3398.js",
+      "sha256": "4efd8276edad339847d298afe5b261c68520c81631ea22c30fba8c6cb984d7d8",
+      "patched_sha256": "4efd8276edad339847d298afe5b261c68520c81631ea22c30fba8c6cb984d7d8",
       "upstream_sha256": "c9940593c2ca77c694994781c462d21f1c07189aace946879ade166cb03da306",
       "local_patches": [
         {
@@ -530,6 +530,30 @@
           "output_sha256": "518694393102bd92f08e0f52877ef1344b5c3cae0bd4ba190c1e61004ecda059",
           "bytes_before": 114253,
           "bytes_after": 109336
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "ea7388441ec927c99208c7b1ef5216084e982e5baa023667ed37b9567c350a95",
+          "output_sha256": "4efd8276edad339847d298afe5b261c68520c81631ea22c30fba8c6cb984d7d8",
+          "bytes_before": 114210,
+          "bytes_after": 110511
         }
       ],
       "source": "published-baseline",
@@ -1113,9 +1137,9 @@
     },
     "allmovieland": {
       "id": "allmovieland",
-      "published_filename": "providers/allmovieland--published-baseline--f1b1d6e4076ce2c6.js",
-      "sha256": "f1b1d6e4076ce2c62a7f3a2b4d60a92ac869645fefbc54b1382429d9d4f1f9e0",
-      "patched_sha256": "f1b1d6e4076ce2c62a7f3a2b4d60a92ac869645fefbc54b1382429d9d4f1f9e0",
+      "published_filename": "providers/allmovieland--published-baseline--dd69ef6ede802942.js",
+      "sha256": "dd69ef6ede802942de526df7dfdc82e7c264e38aca1351b2edd5bb9d35406c1c",
+      "patched_sha256": "dd69ef6ede802942de526df7dfdc82e7c264e38aca1351b2edd5bb9d35406c1c",
       "upstream_sha256": "2217246fc678c9944a374bf227414e640ffa9e6a46775fd0fc62eea6e98eaf81",
       "local_patches": [
         {
@@ -1306,6 +1330,30 @@
           "output_sha256": "f1b1d6e4076ce2c62a7f3a2b4d60a92ac869645fefbc54b1382429d9d4f1f9e0",
           "bytes_before": 105857,
           "bytes_after": 101352
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "e64796b4a8e02d70137aba31d3112a1a19392910fba500e11d9ad45bac933a7a",
+          "output_sha256": "dd69ef6ede802942de526df7dfdc82e7c264e38aca1351b2edd5bb9d35406c1c",
+          "bytes_before": 105813,
+          "bytes_after": 102527
         }
       ],
       "source": "published-baseline",
@@ -1527,9 +1575,9 @@
     },
     "allwish": {
       "id": "allwish",
-      "published_filename": "providers/allwish--nuvio--4707a9fa847b02f4.js",
-      "sha256": "4707a9fa847b02f40b5e0d4430601ea8147d5d0d16b9fbb121009958b85fa00f",
-      "patched_sha256": "4707a9fa847b02f40b5e0d4430601ea8147d5d0d16b9fbb121009958b85fa00f",
+      "published_filename": "providers/allwish--nuvio--dd80ecdd13bc9c0f.js",
+      "sha256": "dd80ecdd13bc9c0f43405d51f31c73ceda29993b59efcb2a3fcf8ea1f4ee50c5",
+      "patched_sha256": "dd80ecdd13bc9c0f43405d51f31c73ceda29993b59efcb2a3fcf8ea1f4ee50c5",
       "upstream_sha256": "ac90de9f5b97f5eae63ef70c3faa641f1adc67d2711eec96331a4b09502972af",
       "local_patches": [
         {
@@ -1650,6 +1698,30 @@
           "output_sha256": "4707a9fa847b02f40b5e0d4430601ea8147d5d0d16b9fbb121009958b85fa00f",
           "bytes_before": 103164,
           "bytes_after": 98746
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "3729df7cdd4b0a261dc95cd53e360b42422eefe462010d8dc35357472155ea4e",
+          "output_sha256": "dd80ecdd13bc9c0f43405d51f31c73ceda29993b59efcb2a3fcf8ea1f4ee50c5",
+          "bytes_before": 103120,
+          "bytes_after": 99921
         }
       ],
       "source": "published-baseline",
@@ -1881,9 +1953,9 @@
     },
     "anidb": {
       "id": "anidb",
-      "published_filename": "providers/anidb--published-baseline--839ee4f70c09f51d.js",
-      "sha256": "839ee4f70c09f51df4f6df895fe713162d6eb90579b2ded170d0799fd3636093",
-      "patched_sha256": "839ee4f70c09f51df4f6df895fe713162d6eb90579b2ded170d0799fd3636093",
+      "published_filename": "providers/anidb--published-baseline--7d30eadae7b68fd3.js",
+      "sha256": "7d30eadae7b68fd391d9f0eb6fc8ffeddb96c77f9204e03de9dc8f78f2d010b1",
+      "patched_sha256": "7d30eadae7b68fd391d9f0eb6fc8ffeddb96c77f9204e03de9dc8f78f2d010b1",
       "upstream_sha256": "60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209",
       "local_patches": [
         {
@@ -2050,6 +2122,30 @@
           "output_sha256": "839ee4f70c09f51df4f6df895fe713162d6eb90579b2ded170d0799fd3636093",
           "bytes_before": 89880,
           "bytes_after": 85462
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "88bf36d25568f5545c177fc94498bd01c946826f7fff15a4aaa18758db380514",
+          "output_sha256": "7d30eadae7b68fd391d9f0eb6fc8ffeddb96c77f9204e03de9dc8f78f2d010b1",
+          "bytes_before": 89836,
+          "bytes_after": 86637
         }
       ],
       "source": "published-baseline",
@@ -2270,9 +2366,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio--36381e217bf71a9b.js",
-      "sha256": "36381e217bf71a9bedd294420af9c30f4493c6ca3ff9c145522def89aeb19588",
-      "patched_sha256": "36381e217bf71a9bedd294420af9c30f4493c6ca3ff9c145522def89aeb19588",
+      "published_filename": "providers/anikototv--nuvio--08d395095a632a46.js",
+      "sha256": "08d395095a632a469600808283c2160f5da12e3e684a50815e8388068c4cf443",
+      "patched_sha256": "08d395095a632a469600808283c2160f5da12e3e684a50815e8388068c4cf443",
       "upstream_sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
       "local_patches": [
         {
@@ -2400,6 +2496,30 @@
           "output_sha256": "36381e217bf71a9bedd294420af9c30f4493c6ca3ff9c145522def89aeb19588",
           "bytes_before": 107028,
           "bytes_after": 102198
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "0f31b4cbdabb49837293eb1663b9f11b3cbd5bd7869ad282437fc52890ecedea",
+          "output_sha256": "08d395095a632a469600808283c2160f5da12e3e684a50815e8388068c4cf443",
+          "bytes_before": 106985,
+          "bytes_after": 103373
         }
       ],
       "source": "aio",
@@ -2640,9 +2760,9 @@
     },
     "anime-sama": {
       "id": "anime-sama",
-      "published_filename": "providers/anime-sama--nuvio--f51c717d7028ec42.js",
-      "sha256": "f51c717d7028ec42af1fb195acc7da1961e03c520ccf9134629cecb8feab023a",
-      "patched_sha256": "f51c717d7028ec42af1fb195acc7da1961e03c520ccf9134629cecb8feab023a",
+      "published_filename": "providers/anime-sama--nuvio--10e285fc12662f4d.js",
+      "sha256": "10e285fc12662f4df2242c4c85f3f66ed00212e62304cb57a497735cc3f17726",
+      "patched_sha256": "10e285fc12662f4df2242c4c85f3f66ed00212e62304cb57a497735cc3f17726",
       "upstream_sha256": "1534014f7ac87d40a6f9d8c5100aece2be196d10558cc203d3cc5734ce66990c",
       "local_patches": [
         {
@@ -2782,6 +2902,33 @@
           "output_sha256": "f51c717d7028ec42af1fb195acc7da1961e03c520ccf9134629cecb8feab023a",
           "bytes_before": 346964,
           "bytes_after": 342048
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "dd07636cec2bbf86373c3162c65dde1cc4989bd0f56c7bfc006591a4b4c040be",
+          "output_sha256": "10e285fc12662f4df2242c4c85f3f66ed00212e62304cb57a497735cc3f17726",
+          "bytes_before": 346921,
+          "bytes_after": 343223
         }
       ],
       "source": "published-baseline",
@@ -3032,9 +3179,9 @@
     },
     "anime-ultime": {
       "id": "anime-ultime",
-      "published_filename": "providers/anime-ultime--nuvio--ed87015d6fb53184.js",
-      "sha256": "ed87015d6fb531840e43bf70b32804abfee8a90acb491234ae37f1c7e5421327",
-      "patched_sha256": "ed87015d6fb531840e43bf70b32804abfee8a90acb491234ae37f1c7e5421327",
+      "published_filename": "providers/anime-ultime--nuvio--bcfadc4b5a25574a.js",
+      "sha256": "bcfadc4b5a25574a318b0dd714b7b230e450fe37139b4baf756d6f618ba2b1e1",
+      "patched_sha256": "bcfadc4b5a25574a318b0dd714b7b230e450fe37139b4baf756d6f618ba2b1e1",
       "upstream_sha256": "d1ff8e6c7dddda0f657b4e7e337997f6a59469b35c9fac6b3369941e42d68946",
       "local_patches": [
         {
@@ -3168,6 +3315,33 @@
           "output_sha256": "ed87015d6fb531840e43bf70b32804abfee8a90acb491234ae37f1c7e5421327",
           "bytes_before": 351273,
           "bytes_after": 346443
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "0ad8f715633cae4615476c9886f1136511644449a17c7a91d1f026c097cdccba",
+          "output_sha256": "bcfadc4b5a25574a318b0dd714b7b230e450fe37139b4baf756d6f618ba2b1e1",
+          "bytes_before": 351230,
+          "bytes_after": 347618
         }
       ],
       "source": "published-baseline",
@@ -3407,9 +3581,9 @@
     },
     "animekai": {
       "id": "animekai",
-      "published_filename": "providers/animekai--nuvio--8a40d1f438cddc09.js",
-      "sha256": "8a40d1f438cddc09138c8d92308932f0cd5e9f0e6ce5c10963ab1d6f97c78dda",
-      "patched_sha256": "8a40d1f438cddc09138c8d92308932f0cd5e9f0e6ce5c10963ab1d6f97c78dda",
+      "published_filename": "providers/animekai--nuvio--a240cb19bce3a1ec.js",
+      "sha256": "a240cb19bce3a1ecdd15bf747e51b977142a51459b08fa0f0fa49477ab79d137",
+      "patched_sha256": "a240cb19bce3a1ecdd15bf747e51b977142a51459b08fa0f0fa49477ab79d137",
       "upstream_sha256": "e9e27bb0a8c6808affc9ba9d37731777c4e58a523241174d9216df6217137317",
       "local_patches": [
         {
@@ -3530,6 +3704,30 @@
           "output_sha256": "8a40d1f438cddc09138c8d92308932f0cd5e9f0e6ce5c10963ab1d6f97c78dda",
           "bytes_before": 107447,
           "bytes_after": 103029
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "0bd610f8e51c54d82cde3749e510aa66d718608fe1583538c8ed6ef9ab7217b8",
+          "output_sha256": "a240cb19bce3a1ecdd15bf747e51b977142a51459b08fa0f0fa49477ab79d137",
+          "bytes_before": 107403,
+          "bytes_after": 104204
         }
       ],
       "source": "published-baseline",
@@ -3769,9 +3967,9 @@
     },
     "animepahe": {
       "id": "animepahe",
-      "published_filename": "providers/animepahe--published-baseline--e52f6ecd4d420357.js",
-      "sha256": "e52f6ecd4d420357227f1818d8d74793be122933d999662b5a545b9be8076717",
-      "patched_sha256": "e52f6ecd4d420357227f1818d8d74793be122933d999662b5a545b9be8076717",
+      "published_filename": "providers/animepahe--published-baseline--df3518a3d1e928f0.js",
+      "sha256": "df3518a3d1e928f0e1f8cda48cce804e9bf005a116dd95727e5df3d1061b5512",
+      "patched_sha256": "df3518a3d1e928f0e1f8cda48cce804e9bf005a116dd95727e5df3d1061b5512",
       "upstream_sha256": "9e132e5efb0371493041ba7e321e2fc714f8a3177c7549e30b85e98528a263b9",
       "local_patches": [
         {
@@ -3914,6 +4112,30 @@
           "output_sha256": "e52f6ecd4d420357227f1818d8d74793be122933d999662b5a545b9be8076717",
           "bytes_before": 95822,
           "bytes_after": 91404
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "53000d5c1c5a38f32bbbb449cb53122362292f7b1678bfd5bea23949bd67b7de",
+          "output_sha256": "df3518a3d1e928f0e1f8cda48cce804e9bf005a116dd95727e5df3d1061b5512",
+          "bytes_before": 95778,
+          "bytes_after": 92579
         }
       ],
       "source": "published-baseline",
@@ -4143,9 +4365,9 @@
     },
     "animesalt": {
       "id": "animesalt",
-      "published_filename": "providers/animesalt--published-baseline--9604d1180caaa6e0.js",
-      "sha256": "9604d1180caaa6e0e9f27587d0c8677deea328d5c91a562a4b93afbd953b3dd5",
-      "patched_sha256": "9604d1180caaa6e0e9f27587d0c8677deea328d5c91a562a4b93afbd953b3dd5",
+      "published_filename": "providers/animesalt--published-baseline--412e95313f655028.js",
+      "sha256": "412e95313f655028b00e13f392dc9031ddbbc870314bbfce0fd4d187a8310ea0",
+      "patched_sha256": "412e95313f655028b00e13f392dc9031ddbbc870314bbfce0fd4d187a8310ea0",
       "upstream_sha256": "e221da6762e9c2033ca367d50ebc415a91a6ba4ecf716118d048956ec7df6c2d",
       "local_patches": [
         {
@@ -4347,6 +4569,30 @@
           "output_sha256": "9604d1180caaa6e0e9f27587d0c8677deea328d5c91a562a4b93afbd953b3dd5",
           "bytes_before": 99926,
           "bytes_after": 95421
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "09fadbfc95cecf36af960db290a66c87bc7012d59a8c2f35c7c11bc12f34bf16",
+          "output_sha256": "412e95313f655028b00e13f392dc9031ddbbc870314bbfce0fd4d187a8310ea0",
+          "bytes_before": 99882,
+          "bytes_after": 96596
         }
       ],
       "source": "published-baseline",
@@ -4567,9 +4813,9 @@
     },
     "animesama-co": {
       "id": "animesama-co",
-      "published_filename": "providers/animesama-co--nuvio--c4f98c1b3a632c22.js",
-      "sha256": "c4f98c1b3a632c223988a18f8acad7cccd7c7d23f2fe47572b083749943233c4",
-      "patched_sha256": "c4f98c1b3a632c223988a18f8acad7cccd7c7d23f2fe47572b083749943233c4",
+      "published_filename": "providers/animesama-co--nuvio--21c48b781f50cc44.js",
+      "sha256": "21c48b781f50cc44b074b266f4a9d9817904db6e0750a8722ebe20a0bfa514ef",
+      "patched_sha256": "21c48b781f50cc44b074b266f4a9d9817904db6e0750a8722ebe20a0bfa514ef",
       "upstream_sha256": "2d8b1f7879a5d297daaa4e1ada1c7706af453aaec4b4fea7edb6f9caf5e3994d",
       "local_patches": [
         {
@@ -4755,6 +5001,33 @@
           "output_sha256": "c4f98c1b3a632c223988a18f8acad7cccd7c7d23f2fe47572b083749943233c4",
           "bytes_before": 366970,
           "bytes_after": 362465
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "b21a6cdcbfc1be2d59e3988305d510f0df48b9466bf8dcf475f06d24815e5b37",
+          "output_sha256": "21c48b781f50cc44b074b266f4a9d9817904db6e0750a8722ebe20a0bfa514ef",
+          "bytes_before": 366926,
+          "bytes_after": 363640
         }
       ],
       "source": "published-baseline",
@@ -5017,9 +5290,9 @@
     },
     "animesultra": {
       "id": "animesultra",
-      "published_filename": "providers/animesultra--published-baseline--a17384072a472eb5.js",
-      "sha256": "a17384072a472eb5f968277fe53c094171b7c19f401ab1399fa15d9f6ccf701d",
-      "patched_sha256": "a17384072a472eb5f968277fe53c094171b7c19f401ab1399fa15d9f6ccf701d",
+      "published_filename": "providers/animesultra--published-baseline--afc39c0d373675e5.js",
+      "sha256": "afc39c0d373675e5ad35112572795f08c8a6801a6fe40b9845b91605b7a325e8",
+      "patched_sha256": "afc39c0d373675e5ad35112572795f08c8a6801a6fe40b9845b91605b7a325e8",
       "upstream_sha256": "7704e3a452b175545251a1d24b1882406335dcc3efe49890847334ef58c645bc",
       "local_patches": [
         {
@@ -5183,6 +5456,33 @@
           "output_sha256": "a17384072a472eb5f968277fe53c094171b7c19f401ab1399fa15d9f6ccf701d",
           "bytes_before": 351696,
           "bytes_after": 346866
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "c071c8710645957b40cfcf7d7d012d2b832476aa879c3fa6ef0e93a77a4ad0b9",
+          "output_sha256": "afc39c0d373675e5ad35112572795f08c8a6801a6fe40b9845b91605b7a325e8",
+          "bytes_before": 351653,
+          "bytes_after": 348041
         }
       ],
       "source": "published-baseline",
@@ -5405,9 +5705,9 @@
     },
     "animetsu": {
       "id": "animetsu",
-      "published_filename": "providers/animetsu--published-baseline--c504cfbb91f5d608.js",
-      "sha256": "c504cfbb91f5d608580540c2a81a8644cdab61ebbbb1128aee584ca81aa5798e",
-      "patched_sha256": "c504cfbb91f5d608580540c2a81a8644cdab61ebbbb1128aee584ca81aa5798e",
+      "published_filename": "providers/animetsu--published-baseline--a1feac6991df10db.js",
+      "sha256": "a1feac6991df10db7c5302e66696ec9b98d37e8744e1ac0a482bfd38de7b876d",
+      "patched_sha256": "a1feac6991df10db7c5302e66696ec9b98d37e8744e1ac0a482bfd38de7b876d",
       "upstream_sha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
       "local_patches": [
         {
@@ -5550,6 +5850,30 @@
           "output_sha256": "c504cfbb91f5d608580540c2a81a8644cdab61ebbbb1128aee584ca81aa5798e",
           "bytes_before": 85588,
           "bytes_after": 81170
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "eddd0f7e34a01ea8cdc9e5b82f6c94000ec2b363e28f159cac18d1cc6b21879a",
+          "output_sha256": "a1feac6991df10db7c5302e66696ec9b98d37e8744e1ac0a482bfd38de7b876d",
+          "bytes_before": 85544,
+          "bytes_after": 82345
         }
       ],
       "source": "published-baseline",
@@ -5769,9 +6093,9 @@
     },
     "animevostfr": {
       "id": "animevostfr",
-      "published_filename": "providers/animevostfr--published-baseline--c03bd847bb9f335e.js",
-      "sha256": "c03bd847bb9f335eca9c468d82b4c327c409ebb4ffbd9c16b95d4bb770ff9044",
-      "patched_sha256": "c03bd847bb9f335eca9c468d82b4c327c409ebb4ffbd9c16b95d4bb770ff9044",
+      "published_filename": "providers/animevostfr--published-baseline--493f59d8056b0179.js",
+      "sha256": "493f59d8056b017929be4396d04c54858dc71bda00cf09ff2cd609bc826f51f3",
+      "patched_sha256": "493f59d8056b017929be4396d04c54858dc71bda00cf09ff2cd609bc826f51f3",
       "upstream_sha256": "73c8d338a28059e8dcab49f6e82a4085d4ead0a74625ca8585c69b51583a4d71",
       "local_patches": [
         {
@@ -5931,6 +6255,33 @@
           "output_sha256": "c03bd847bb9f335eca9c468d82b4c327c409ebb4ffbd9c16b95d4bb770ff9044",
           "bytes_before": 366257,
           "bytes_after": 361341
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "358258525908523cf49b8cc6aeccbbb3b5dbece0e258d89de70973e0f81636fb",
+          "output_sha256": "493f59d8056b017929be4396d04c54858dc71bda00cf09ff2cd609bc826f51f3",
+          "bytes_before": 366214,
+          "bytes_after": 362516
         }
       ],
       "source": "published-baseline",
@@ -6180,9 +6531,9 @@
     },
     "animeworld": {
       "id": "animeworld",
-      "published_filename": "providers/animeworld--nuvio--922e8afc26a07f86.js",
-      "sha256": "922e8afc26a07f8664fa233bf6169bf66917480e1979eb560c36ab2d2ddc0275",
-      "patched_sha256": "922e8afc26a07f8664fa233bf6169bf66917480e1979eb560c36ab2d2ddc0275",
+      "published_filename": "providers/animeworld--nuvio--f603390928695c82.js",
+      "sha256": "f603390928695c82a937a65175e93ba8c99d4e5cdced18bbbb3eee8229cdac75",
+      "patched_sha256": "f603390928695c82a937a65175e93ba8c99d4e5cdced18bbbb3eee8229cdac75",
       "upstream_sha256": "3485cf86203b430f90147a9b2f8630e5882ffccccef08406b839d27839fda35f",
       "local_patches": [
         {
@@ -6303,6 +6654,30 @@
           "output_sha256": "922e8afc26a07f8664fa233bf6169bf66917480e1979eb560c36ab2d2ddc0275",
           "bytes_before": 82677,
           "bytes_after": 78259
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "61e9ca2ae492e7377aef33eb728005a6481507bbf890c315b492268e4c76fe65",
+          "output_sha256": "f603390928695c82a937a65175e93ba8c99d4e5cdced18bbbb3eee8229cdac75",
+          "bytes_before": 82633,
+          "bytes_after": 79434
         }
       ],
       "source": "published-baseline",
@@ -6542,9 +6917,9 @@
     },
     "animezey": {
       "id": "animezey",
-      "published_filename": "providers/animezey--nuvio--54c9797519e2db63.js",
-      "sha256": "54c9797519e2db6309c4183829ee2dba48b4d0aeb4e9a3430a5a1cf0886dbdef",
-      "patched_sha256": "54c9797519e2db6309c4183829ee2dba48b4d0aeb4e9a3430a5a1cf0886dbdef",
+      "published_filename": "providers/animezey--nuvio--cfc033924dbb54fd.js",
+      "sha256": "cfc033924dbb54fd979c345ea4b3d1040b98a5e5ffbcc59516699a680710f6f3",
+      "patched_sha256": "cfc033924dbb54fd979c345ea4b3d1040b98a5e5ffbcc59516699a680710f6f3",
       "upstream_sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
       "local_patches": [
         {
@@ -6675,6 +7050,30 @@
           "output_sha256": "54c9797519e2db6309c4183829ee2dba48b4d0aeb4e9a3430a5a1cf0886dbdef",
           "bytes_before": 114450,
           "bytes_after": 110032
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "c51ba914d4fbdc08148409b1fb4edac96fc591983d5c675024bb9aa2545c1127",
+          "output_sha256": "cfc033924dbb54fd979c345ea4b3d1040b98a5e5ffbcc59516699a680710f6f3",
+          "bytes_before": 114406,
+          "bytes_after": 111207
         }
       ],
       "source": "aio",
@@ -6915,9 +7314,9 @@
     },
     "animoflix": {
       "id": "animoflix",
-      "published_filename": "providers/animoflix--nuvio--e0f2ea039296e8d3.js",
-      "sha256": "e0f2ea039296e8d3ea7028d88bbaa997922b80f97617b190de6c193dcaa94fbf",
-      "patched_sha256": "e0f2ea039296e8d3ea7028d88bbaa997922b80f97617b190de6c193dcaa94fbf",
+      "published_filename": "providers/animoflix--nuvio--b79f0cca0fcbffce.js",
+      "sha256": "b79f0cca0fcbffce2901667772d119110ad12e0834d436d31b642c7e6c3a8741",
+      "patched_sha256": "b79f0cca0fcbffce2901667772d119110ad12e0834d436d31b642c7e6c3a8741",
       "upstream_sha256": "e28375272adfd4188c0389ce25c47214dfcbc9c0f5aa1d8cddebe03f71ac6d78",
       "local_patches": [
         {
@@ -7051,6 +7450,33 @@
           "output_sha256": "e0f2ea039296e8d3ea7028d88bbaa997922b80f97617b190de6c193dcaa94fbf",
           "bytes_before": 356653,
           "bytes_after": 351823
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "8c360737840e73159212c200462074803518622813cd08287657f14e8978e1db",
+          "output_sha256": "b79f0cca0fcbffce2901667772d119110ad12e0834d436d31b642c7e6c3a8741",
+          "bytes_before": 356610,
+          "bytes_after": 352998
         }
       ],
       "source": "published-baseline",
@@ -7289,9 +7715,9 @@
     },
     "anizone": {
       "id": "anizone",
-      "published_filename": "providers/anizone--published-baseline--0727e2d106a73444.js",
-      "sha256": "0727e2d106a73444bb4bb4a0edff9cbfabb794c3f9cd3d0b52b56f4935fd7520",
-      "patched_sha256": "0727e2d106a73444bb4bb4a0edff9cbfabb794c3f9cd3d0b52b56f4935fd7520",
+      "published_filename": "providers/anizone--published-baseline--01b3b1aa22e4243b.js",
+      "sha256": "01b3b1aa22e4243b96af8c007acf2f1a1c7ab64cdf3ba2db434036ecc883c6a9",
+      "patched_sha256": "01b3b1aa22e4243b96af8c007acf2f1a1c7ab64cdf3ba2db434036ecc883c6a9",
       "upstream_sha256": "0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b",
       "local_patches": [
         {
@@ -7458,6 +7884,30 @@
           "output_sha256": "0727e2d106a73444bb4bb4a0edff9cbfabb794c3f9cd3d0b52b56f4935fd7520",
           "bytes_before": 83183,
           "bytes_after": 78765
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "e220ce382025ba65b26b2156bcb3a82224a3bcae5faa136e20d87b273777ea5e",
+          "output_sha256": "01b3b1aa22e4243b96af8c007acf2f1a1c7ab64cdf3ba2db434036ecc883c6a9",
+          "bytes_before": 83139,
+          "bytes_after": 79940
         }
       ],
       "source": "published-baseline",
@@ -7680,9 +8130,9 @@
     },
     "castle": {
       "id": "castle",
-      "published_filename": "providers/castle--nuvio--3d9e63c503d89dee.js",
-      "sha256": "3d9e63c503d89dee9f3d94e2fded7faf75663383f6920c7cbb0abc32cae39338",
-      "patched_sha256": "3d9e63c503d89dee9f3d94e2fded7faf75663383f6920c7cbb0abc32cae39338",
+      "published_filename": "providers/castle--nuvio--defbe2701a5eb904.js",
+      "sha256": "defbe2701a5eb90453566eb1b04802715214a4dc9d762e3143560c094b619312",
+      "patched_sha256": "defbe2701a5eb90453566eb1b04802715214a4dc9d762e3143560c094b619312",
       "upstream_sha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
       "local_patches": [
         {
@@ -7809,6 +8259,30 @@
           "output_sha256": "3d9e63c503d89dee9f3d94e2fded7faf75663383f6920c7cbb0abc32cae39338",
           "bytes_before": 98002,
           "bytes_after": 93584
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "353b4f773e8c77e884456205a27d182a74d4ef491aacd2a286e0e79804e9adc7",
+          "output_sha256": "defbe2701a5eb90453566eb1b04802715214a4dc9d762e3143560c094b619312",
+          "bytes_before": 97958,
+          "bytes_after": 94759
         }
       ],
       "source": "aio",
@@ -8057,9 +8531,9 @@
     },
     "cineby": {
       "id": "cineby",
-      "published_filename": "providers/cineby--nuvio--6f1db8c45f8fc4f4.js",
-      "sha256": "6f1db8c45f8fc4f4e50c2fa4ce0027f6be8ecc077ea04393b7872fd7b1a86db0",
-      "patched_sha256": "6f1db8c45f8fc4f4e50c2fa4ce0027f6be8ecc077ea04393b7872fd7b1a86db0",
+      "published_filename": "providers/cineby--nuvio--2321a28c130c02c4.js",
+      "sha256": "2321a28c130c02c4305c390e35e82d8314a4098fa565c71b12fc33c80226f5bf",
+      "patched_sha256": "2321a28c130c02c4305c390e35e82d8314a4098fa565c71b12fc33c80226f5bf",
       "upstream_sha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
       "local_patches": [
         {
@@ -8191,6 +8665,30 @@
           "output_sha256": "6f1db8c45f8fc4f4e50c2fa4ce0027f6be8ecc077ea04393b7872fd7b1a86db0",
           "bytes_before": 94577,
           "bytes_after": 90154
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "01b40ec79cf604a6d2563a1feccfd4567cca37f228d2bafdd6c384e635682593",
+          "output_sha256": "2321a28c130c02c4305c390e35e82d8314a4098fa565c71b12fc33c80226f5bf",
+          "bytes_before": 94533,
+          "bytes_after": 91329
         }
       ],
       "source": "aio",
@@ -8718,9 +9216,9 @@
     },
     "cinemacity": {
       "id": "cinemacity",
-      "published_filename": "providers/cinemacity--published-baseline--2fc6b060a1629743.js",
-      "sha256": "2fc6b060a1629743fff0fef69e2d833ec24802f85aeb7b1607dceaa6301b9ead",
-      "patched_sha256": "2fc6b060a1629743fff0fef69e2d833ec24802f85aeb7b1607dceaa6301b9ead",
+      "published_filename": "providers/cinemacity--published-baseline--f6f2d3eab20a2706.js",
+      "sha256": "f6f2d3eab20a27062fdaa997bb1e00cc5a91daec09aa01c1c7a0f07611f94d6b",
+      "patched_sha256": "f6f2d3eab20a27062fdaa997bb1e00cc5a91daec09aa01c1c7a0f07611f94d6b",
       "upstream_sha256": "e97516075e2f0d47042ab2cfef717d615a79ff6a4f44ff4667c75b027fc1a0fc",
       "local_patches": [
         {
@@ -8881,6 +9379,30 @@
           "output_sha256": "2fc6b060a1629743fff0fef69e2d833ec24802f85aeb7b1607dceaa6301b9ead",
           "bytes_before": 107165,
           "bytes_after": 102747
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "f284c0a99d313887d33a1d0d5abaa48b5847fa4684f7b7fdb1e2f7412a196f2e",
+          "output_sha256": "f6f2d3eab20a27062fdaa997bb1e00cc5a91daec09aa01c1c7a0f07611f94d6b",
+          "bytes_before": 107121,
+          "bytes_after": 103922
         }
       ],
       "source": "published-baseline",
@@ -9101,9 +9623,9 @@
     },
     "cinemm": {
       "id": "cinemm",
-      "published_filename": "providers/cinemm--published-baseline--1410d028aebfc8db.js",
-      "sha256": "1410d028aebfc8db47040fe69359a1eef03080aaff2aa9c6883ca6c219a65a8e",
-      "patched_sha256": "1410d028aebfc8db47040fe69359a1eef03080aaff2aa9c6883ca6c219a65a8e",
+      "published_filename": "providers/cinemm--published-baseline--2f65a622682ef1b6.js",
+      "sha256": "2f65a622682ef1b6f96e17547cf48fd9ca760ee8839bf29a705fef30e14d80ed",
+      "patched_sha256": "2f65a622682ef1b6f96e17547cf48fd9ca760ee8839bf29a705fef30e14d80ed",
       "upstream_sha256": "a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441",
       "local_patches": [
         {
@@ -9272,6 +9794,30 @@
           "output_sha256": "1410d028aebfc8db47040fe69359a1eef03080aaff2aa9c6883ca6c219a65a8e",
           "bytes_before": 111417,
           "bytes_after": 106587
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "3d9c521bbb5a5fb2af651121754089a21fe5c843314faee354c085828751944f",
+          "output_sha256": "2f65a622682ef1b6f96e17547cf48fd9ca760ee8839bf29a705fef30e14d80ed",
+          "bytes_before": 111374,
+          "bytes_after": 107762
         }
       ],
       "source": "published-baseline",
@@ -9489,9 +10035,9 @@
     },
     "cinevibe": {
       "id": "cinevibe",
-      "published_filename": "providers/cinevibe--nuvio--262ef5a54aa8f75d.js",
-      "sha256": "262ef5a54aa8f75df970355bdf6d1db317b3be674d4df120d1d0eaac22ebf28a",
-      "patched_sha256": "262ef5a54aa8f75df970355bdf6d1db317b3be674d4df120d1d0eaac22ebf28a",
+      "published_filename": "providers/cinevibe--nuvio--92582631f5f3b45b.js",
+      "sha256": "92582631f5f3b45b1b217a277dc6a1531dd7efac9307b2cb5cc9ab4fa1fb33c3",
+      "patched_sha256": "92582631f5f3b45b1b217a277dc6a1531dd7efac9307b2cb5cc9ab4fa1fb33c3",
       "upstream_sha256": "94d415b19785b5cc6c19af942cb4289bd1ddf32c7c65e10ebf7fdddaa95e5c2d",
       "local_patches": [
         {
@@ -9630,6 +10176,30 @@
           "output_sha256": "262ef5a54aa8f75df970355bdf6d1db317b3be674d4df120d1d0eaac22ebf28a",
           "bytes_before": 71879,
           "bytes_after": 67461
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1471ff65197885592667aba0ed3c4938a4532f8f5ac74ed94c5b6a32f2136fc3",
+          "output_sha256": "92582631f5f3b45b1b217a277dc6a1531dd7efac9307b2cb5cc9ab4fa1fb33c3",
+          "bytes_before": 71835,
+          "bytes_after": 68636
         }
       ],
       "source": "published-baseline",
@@ -9864,9 +10434,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--ece44d6ce7da1f23.js",
-      "sha256": "ece44d6ce7da1f23315819d6147f822c7083308848c4af8bf709f0a8ea325351",
-      "patched_sha256": "ece44d6ce7da1f23315819d6147f822c7083308848c4af8bf709f0a8ea325351",
+      "published_filename": "providers/coflix--nuvio--d6d16a8e29693c08.js",
+      "sha256": "d6d16a8e29693c0879a12a2d71de07e280ba0aac4925bcc9ebc86407c9eaaa62",
+      "patched_sha256": "d6d16a8e29693c0879a12a2d71de07e280ba0aac4925bcc9ebc86407c9eaaa62",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -10122,6 +10692,59 @@
           "output_sha256": "ece44d6ce7da1f23315819d6147f822c7083308848c4af8bf709f0a8ea325351",
           "bytes_before": 433521,
           "bytes_after": 429016
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "ff6574b0871a1258db9ed293803f9f8c3625e27e02a07ccc86c199ded40f15a2",
+          "output_sha256": "d6d16a8e29693c0879a12a2d71de07e280ba0aac4925bcc9ebc86407c9eaaa62",
+          "bytes_before": 436887,
+          "bytes_after": 433045
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "c8222ac7b96d00052d80c16474945c8a0a9c96447862e0b55f51f8c0d307e371",
+          "output_sha256": "d6d16a8e29693c0879a12a2d71de07e280ba0aac4925bcc9ebc86407c9eaaa62",
+          "bytes_before": 436331,
+          "bytes_after": 433045
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -10402,9 +11025,9 @@
     },
     "ctgmovies": {
       "id": "ctgmovies",
-      "published_filename": "providers/ctgmovies--nuvio--2eae02dc62a5b40a.js",
-      "sha256": "2eae02dc62a5b40a12c98398fb22de2088221e1fa1d42076de401b6378d1f849",
-      "patched_sha256": "2eae02dc62a5b40a12c98398fb22de2088221e1fa1d42076de401b6378d1f849",
+      "published_filename": "providers/ctgmovies--nuvio--4d2e519a5def63d3.js",
+      "sha256": "4d2e519a5def63d315ded6fef6cf54df564d79f5f7d4febd9f0393929bb680aa",
+      "patched_sha256": "4d2e519a5def63d315ded6fef6cf54df564d79f5f7d4febd9f0393929bb680aa",
       "upstream_sha256": "ac92f41c27a6e92272bf9cf98605c17c9644b529694746252b24fc43afbaf599",
       "local_patches": [
         {
@@ -10543,6 +11166,30 @@
           "output_sha256": "2eae02dc62a5b40a12c98398fb22de2088221e1fa1d42076de401b6378d1f849",
           "bytes_before": 87984,
           "bytes_after": 83566
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "ed4c7997e009f26956a2a19b2d38936c8eff6bf8fd4abedb601ad1ae9d50ab82",
+          "output_sha256": "4d2e519a5def63d315ded6fef6cf54df564d79f5f7d4febd9f0393929bb680aa",
+          "bytes_before": 87940,
+          "bytes_after": 84741
         }
       ],
       "source": "published-baseline",
@@ -10780,9 +11427,9 @@
     },
     "desiflix": {
       "id": "desiflix",
-      "published_filename": "providers/desiflix--nuvio--6d9860403ab17f02.js",
-      "sha256": "6d9860403ab17f02d74dfee3803440fba2d0f0bb2fd74c0601496f53b720a589",
-      "patched_sha256": "6d9860403ab17f02d74dfee3803440fba2d0f0bb2fd74c0601496f53b720a589",
+      "published_filename": "providers/desiflix--nuvio--6b9f90ca348aa353.js",
+      "sha256": "6b9f90ca348aa353f9c37d08e89e380b3d0d0419249979557f96d55a88131083",
+      "patched_sha256": "6b9f90ca348aa353f9c37d08e89e380b3d0d0419249979557f96d55a88131083",
       "upstream_sha256": "89d80b0ac5aac7e946680f35f3fa7ba4859e2a9e9ab42ef8a811b51518e63cac",
       "local_patches": [
         {
@@ -10949,6 +11596,30 @@
           "output_sha256": "6d9860403ab17f02d74dfee3803440fba2d0f0bb2fd74c0601496f53b720a589",
           "bytes_before": 98637,
           "bytes_after": 94219
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "73bbd2af2d7036111bc5e19e263f125d0888147ccaf74f21729fba696b7a1205",
+          "output_sha256": "6b9f90ca348aa353f9c37d08e89e380b3d0d0419249979557f96d55a88131083",
+          "bytes_before": 98593,
+          "bytes_after": 95394
         }
       ],
       "source": "aio",
@@ -11216,9 +11887,9 @@
     },
     "dooflix": {
       "id": "dooflix",
-      "published_filename": "providers/dooflix--published-baseline--9d8e05e0215af116.js",
-      "sha256": "9d8e05e0215af1166af16088927e4c11b3fb1e4d837bdca571e42c128096bc1d",
-      "patched_sha256": "9d8e05e0215af1166af16088927e4c11b3fb1e4d837bdca571e42c128096bc1d",
+      "published_filename": "providers/dooflix--published-baseline--5967fbdee215718c.js",
+      "sha256": "5967fbdee215718c1497be66f7d780096ab0cc1ba9d930bedd453c4b24ab9a4d",
+      "patched_sha256": "5967fbdee215718c1497be66f7d780096ab0cc1ba9d930bedd453c4b24ab9a4d",
       "upstream_sha256": "4f1fe2d96901c1b2abb7d7f93dbac551d4129bb0ceff5017d7439a5ffb7695e8",
       "local_patches": [
         {
@@ -11367,6 +12038,30 @@
           "output_sha256": "9d8e05e0215af1166af16088927e4c11b3fb1e4d837bdca571e42c128096bc1d",
           "bytes_before": 81725,
           "bytes_after": 77307
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "f1365289f83fe10d66a56e74ee4a3b91c8627ce9440d763fb5d6b26cd85a9bbb",
+          "output_sha256": "5967fbdee215718c1497be66f7d780096ab0cc1ba9d930bedd453c4b24ab9a4d",
+          "bytes_before": 81681,
+          "bytes_after": 78482
         }
       ],
       "source": "published-baseline",
@@ -11590,9 +12285,9 @@
     },
     "dulourd": {
       "id": "dulourd",
-      "published_filename": "providers/dulourd--published-baseline--6beeebefd3973543.js",
-      "sha256": "6beeebefd39735439a2ce0290d5e054ce96bb1ae89eaefb3638596ccd55977e1",
-      "patched_sha256": "6beeebefd39735439a2ce0290d5e054ce96bb1ae89eaefb3638596ccd55977e1",
+      "published_filename": "providers/dulourd--published-baseline--fcae5579c3e28eb7.js",
+      "sha256": "fcae5579c3e28eb747b5371db4855d2b4baf35baeb1dbd6073ed567446793e86",
+      "patched_sha256": "fcae5579c3e28eb747b5371db4855d2b4baf35baeb1dbd6073ed567446793e86",
       "upstream_sha256": "e62064b45a10a505612be560f20cbd39ad34be7fa69c4fcafe51d9714f72aa05",
       "local_patches": [
         {
@@ -11782,6 +12477,33 @@
           "output_sha256": "6beeebefd39735439a2ce0290d5e054ce96bb1ae89eaefb3638596ccd55977e1",
           "bytes_before": 350229,
           "bytes_after": 345811
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "e2d62d22f0b2dc8e393238ce155f6dad06fe8006adaf9a8f41e7fe5bc30b2144",
+          "output_sha256": "fcae5579c3e28eb747b5371db4855d2b4baf35baeb1dbd6073ed567446793e86",
+          "bytes_before": 350185,
+          "bytes_after": 346986
         }
       ],
       "source": "published-baseline",
@@ -12310,9 +13032,9 @@
     },
     "einthusan": {
       "id": "einthusan",
-      "published_filename": "providers/einthusan--nuvio--745d2c36c74d054d.js",
-      "sha256": "745d2c36c74d054dde8ac1d7350ca306b9c40e4ece0376b09961e9f42515c3dd",
-      "patched_sha256": "745d2c36c74d054dde8ac1d7350ca306b9c40e4ece0376b09961e9f42515c3dd",
+      "published_filename": "providers/einthusan--nuvio--b11d0f9f94ae4c5a.js",
+      "sha256": "b11d0f9f94ae4c5a4a24036367628e7745797c35845299891a4fba9ea7fdb178",
+      "patched_sha256": "b11d0f9f94ae4c5a4a24036367628e7745797c35845299891a4fba9ea7fdb178",
       "upstream_sha256": "9cda64843f899a9c782d953bfad8cfd6355905f77591b1c1b21387c4b74937ed",
       "local_patches": [
         {
@@ -12451,6 +13173,30 @@
           "output_sha256": "745d2c36c74d054dde8ac1d7350ca306b9c40e4ece0376b09961e9f42515c3dd",
           "bytes_before": 84951,
           "bytes_after": 80533
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1200e9c136afa08c247f1333ae17b968ce28c1e942b6b47bf047d5f743313bea",
+          "output_sha256": "b11d0f9f94ae4c5a4a24036367628e7745797c35845299891a4fba9ea7fdb178",
+          "bytes_before": 84907,
+          "bytes_after": 81708
         }
       ],
       "source": "published-baseline",
@@ -12690,9 +13436,9 @@
     },
     "fibwatch": {
       "id": "fibwatch",
-      "published_filename": "providers/fibwatch--nuvio--5c2355611d8ab716.js",
-      "sha256": "5c2355611d8ab716f176853bb9f2ba80ccbd2438484c03d6179436d50a5c09af",
-      "patched_sha256": "5c2355611d8ab716f176853bb9f2ba80ccbd2438484c03d6179436d50a5c09af",
+      "published_filename": "providers/fibwatch--nuvio--632a8e227e225e02.js",
+      "sha256": "632a8e227e225e02e6c8e0e093a5b1e28110dda0ce1644456f37c8b568603411",
+      "patched_sha256": "632a8e227e225e02e6c8e0e093a5b1e28110dda0ce1644456f37c8b568603411",
       "upstream_sha256": "3fbd34a1173227f92645f245877e4c267115d9908ab14a965931fa5a46bb1347",
       "local_patches": [
         {
@@ -12813,6 +13559,30 @@
           "output_sha256": "5c2355611d8ab716f176853bb9f2ba80ccbd2438484c03d6179436d50a5c09af",
           "bytes_before": 89097,
           "bytes_after": 84679
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "49ee7f16f3a651345597d4e7bdcf9ed13e669266648b2e989fcbb243fbd7b3d9",
+          "output_sha256": "632a8e227e225e02e6c8e0e093a5b1e28110dda0ce1644456f37c8b568603411",
+          "bytes_before": 89053,
+          "bytes_after": 85854
         }
       ],
       "source": "published-baseline",
@@ -13046,9 +13816,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--8b16e9d36952bcb7.js",
-      "sha256": "8b16e9d36952bcb751dffd0e6329e077e4f9180023b7cbbbf62f58a6875a5fb7",
-      "patched_sha256": "8b16e9d36952bcb751dffd0e6329e077e4f9180023b7cbbbf62f58a6875a5fb7",
+      "published_filename": "providers/flemmix--nuvio--dedb61d806c7c1d6.js",
+      "sha256": "dedb61d806c7c1d6d1b92912e1851c81bcf9991d9f1ecc277373cfc1019a15e4",
+      "patched_sha256": "dedb61d806c7c1d6d1b92912e1851c81bcf9991d9f1ecc277373cfc1019a15e4",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -13274,6 +14044,59 @@
           "output_sha256": "8b16e9d36952bcb751dffd0e6329e077e4f9180023b7cbbbf62f58a6875a5fb7",
           "bytes_before": 407453,
           "bytes_after": 402948
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "652ef59304c0164cd41f785bcc18f82298871e1c75641d20501a14a42f826f14",
+          "output_sha256": "dedb61d806c7c1d6d1b92912e1851c81bcf9991d9f1ecc277373cfc1019a15e4",
+          "bytes_before": 410819,
+          "bytes_after": 406977
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "b283a598abe1b702e82357841552258bf74e0595acefec25b7c86614b5cf4476",
+          "output_sha256": "dedb61d806c7c1d6d1b92912e1851c81bcf9991d9f1ecc277373cfc1019a15e4",
+          "bytes_before": 410263,
+          "bytes_after": 406977
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -13508,9 +14331,9 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--nuvio--88e6193aa7bc7cea.js",
-      "sha256": "88e6193aa7bc7cea06f2f94b8758efc1fed996407f65cbb0a3a6b897ef321df5",
-      "patched_sha256": "88e6193aa7bc7cea06f2f94b8758efc1fed996407f65cbb0a3a6b897ef321df5",
+      "published_filename": "providers/french-manga--nuvio--cbb3b26d43fea959.js",
+      "sha256": "cbb3b26d43fea959b800b58fe74512af5330637fd4199651b812649de085281c",
+      "patched_sha256": "cbb3b26d43fea959b800b58fe74512af5330637fd4199651b812649de085281c",
       "upstream_sha256": "704ee4a3c3ed17133b33222137916cb0e75e96c72f14fa305651d2157f0d16a9",
       "local_patches": [
         {
@@ -13649,6 +14472,33 @@
           "output_sha256": "88e6193aa7bc7cea06f2f94b8758efc1fed996407f65cbb0a3a6b897ef321df5",
           "bytes_before": 406804,
           "bytes_after": 402299
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "e3f1f1ba0f77776ed0b84130a0f2a96d5c2451e262e2de90a3c10c3f2331c24f",
+          "output_sha256": "cbb3b26d43fea959b800b58fe74512af5330637fd4199651b812649de085281c",
+          "bytes_before": 406760,
+          "bytes_after": 403474
         }
       ],
       "source": "published-baseline",
@@ -14260,9 +15110,9 @@
     },
     "goatapi": {
       "id": "goatapi",
-      "published_filename": "providers/goatapi--nuvio--b39c5a36b2a46223.js",
-      "sha256": "b39c5a36b2a462232b6deb699e122083c0c18ef0cb9e1cc862350544f24d307a",
-      "patched_sha256": "b39c5a36b2a462232b6deb699e122083c0c18ef0cb9e1cc862350544f24d307a",
+      "published_filename": "providers/goatapi--nuvio--3c9ce058cdda134a.js",
+      "sha256": "3c9ce058cdda134acca839069d9663d152ff919cb69e57f5390cda55a552c7cc",
+      "patched_sha256": "3c9ce058cdda134acca839069d9663d152ff919cb69e57f5390cda55a552c7cc",
       "upstream_sha256": "62c60c07d77f525cecb82373f1e075b874e4553cb91141429d873a5545bac55f",
       "local_patches": [
         {
@@ -14383,6 +15233,30 @@
           "output_sha256": "b39c5a36b2a462232b6deb699e122083c0c18ef0cb9e1cc862350544f24d307a",
           "bytes_before": 90851,
           "bytes_after": 86433
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "2cc74004b31b28f0af2b735f1cb5b630ed58f5813753b9c54e79dd0c80dacda9",
+          "output_sha256": "3c9ce058cdda134acca839069d9663d152ff919cb69e57f5390cda55a552c7cc",
+          "bytes_before": 90807,
+          "bytes_after": 87608
         }
       ],
       "source": "published-baseline",
@@ -14616,9 +15490,9 @@
     },
     "goated": {
       "id": "goated",
-      "published_filename": "providers/goated--nuvio--03b7020f4792baa4.js",
-      "sha256": "03b7020f4792baa4d2f555cd4913929038f24d980fb5b0064f6ae0d094d6901d",
-      "patched_sha256": "03b7020f4792baa4d2f555cd4913929038f24d980fb5b0064f6ae0d094d6901d",
+      "published_filename": "providers/goated--nuvio--79fac7b289a13bd4.js",
+      "sha256": "79fac7b289a13bd4f4e9bbc1ad29f9165e5fe5298881df957ee010cafcdae891",
+      "patched_sha256": "79fac7b289a13bd4f4e9bbc1ad29f9165e5fe5298881df957ee010cafcdae891",
       "upstream_sha256": "90b365f09b3494cb04b91684fd8ee512a09e5d663aa0828513b29bbf921a3b8b",
       "local_patches": [
         {
@@ -14744,6 +15618,30 @@
           "output_sha256": "03b7020f4792baa4d2f555cd4913929038f24d980fb5b0064f6ae0d094d6901d",
           "bytes_before": 105131,
           "bytes_after": 100710
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "72e91fe652ac75af642f04baf34b8233034b36b67609fd17429fb9441f3ebf9f",
+          "output_sha256": "79fac7b289a13bd4f4e9bbc1ad29f9165e5fe5298881df957ee010cafcdae891",
+          "bytes_before": 105087,
+          "bytes_after": 101885
         }
       ],
       "source": "published-baseline",
@@ -14983,9 +15881,9 @@
     },
     "gramcinema": {
       "id": "gramcinema",
-      "published_filename": "providers/gramcinema--nuvio--e3a3a448feca8d61.js",
-      "sha256": "e3a3a448feca8d618cf5a6eec66efa2a4fec4bfe1d14d603a4405d78d6d23691",
-      "patched_sha256": "e3a3a448feca8d618cf5a6eec66efa2a4fec4bfe1d14d603a4405d78d6d23691",
+      "published_filename": "providers/gramcinema--nuvio--642142ca6920dcae.js",
+      "sha256": "642142ca6920dcae83d649ac3101bb122e6e605075dd57f187693926a98155da",
+      "patched_sha256": "642142ca6920dcae83d649ac3101bb122e6e605075dd57f187693926a98155da",
       "upstream_sha256": "bef899cb14e5a528a828860864993c98e1201812aa66dd3a07736e5363b6d703",
       "local_patches": [
         {
@@ -15106,6 +16004,30 @@
           "output_sha256": "e3a3a448feca8d618cf5a6eec66efa2a4fec4bfe1d14d603a4405d78d6d23691",
           "bytes_before": 91929,
           "bytes_after": 87511
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "d09f84c0b31ffb11a4255be45c54da88e7ed7e2d621950944237e758b2ce0cc3",
+          "output_sha256": "642142ca6920dcae83d649ac3101bb122e6e605075dd57f187693926a98155da",
+          "bytes_before": 91885,
+          "bytes_after": 88686
         }
       ],
       "source": "published-baseline",
@@ -15341,9 +16263,9 @@
     },
     "hdghartv": {
       "id": "hdghartv",
-      "published_filename": "providers/hdghartv--nuvio--742068e4ff858fa3.js",
-      "sha256": "742068e4ff858fa3829cda9c975ddc282790277b9f2db236191f9f009ba7cc22",
-      "patched_sha256": "742068e4ff858fa3829cda9c975ddc282790277b9f2db236191f9f009ba7cc22",
+      "published_filename": "providers/hdghartv--nuvio--5f9d19b2aa183a11.js",
+      "sha256": "5f9d19b2aa183a11e02d6ae67584534639eac010573e3462cebbbd15372b1157",
+      "patched_sha256": "5f9d19b2aa183a11e02d6ae67584534639eac010573e3462cebbbd15372b1157",
       "upstream_sha256": "a0a7ce92b1f31dc6bdf944253ca202f889c36b41f94f152d9c7aa2c6db34da7b",
       "local_patches": [
         {
@@ -15464,6 +16386,30 @@
           "output_sha256": "742068e4ff858fa3829cda9c975ddc282790277b9f2db236191f9f009ba7cc22",
           "bytes_before": 98481,
           "bytes_after": 94063
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "0180f487651f847bdf84f9900fc3d0a05474fba0f659f8e03b42ccda9d61fed7",
+          "output_sha256": "5f9d19b2aa183a11e02d6ae67584534639eac010573e3462cebbbd15372b1157",
+          "bytes_before": 98437,
+          "bytes_after": 95238
         }
       ],
       "source": "published-baseline",
@@ -15700,9 +16646,9 @@
     },
     "hdhub4u": {
       "id": "hdhub4u",
-      "published_filename": "providers/hdhub4u--published-baseline--9bd83916489b5c09.js",
-      "sha256": "9bd83916489b5c09388938f21e4b8c9828b66b9fb015e3021898651f2b25d457",
-      "patched_sha256": "9bd83916489b5c09388938f21e4b8c9828b66b9fb015e3021898651f2b25d457",
+      "published_filename": "providers/hdhub4u--published-baseline--d847c868b2152b8c.js",
+      "sha256": "d847c868b2152b8c4a6a0b25b93b09d024d3f33b98e2096e4804c3e9763e9e51",
+      "patched_sha256": "d847c868b2152b8c4a6a0b25b93b09d024d3f33b98e2096e4804c3e9763e9e51",
       "upstream_sha256": "f6e1007a3cd2764bb6fba94531bf634cb91019e62b08c8308217f151fb0a68ce",
       "local_patches": [
         {
@@ -15881,6 +16827,30 @@
           "output_sha256": "9bd83916489b5c09388938f21e4b8c9828b66b9fb015e3021898651f2b25d457",
           "bytes_before": 132611,
           "bytes_after": 128106
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "de01897c6a96a13290eea362d3118b502e3e9b2bab1eb628db8452ea83b518cf",
+          "output_sha256": "d847c868b2152b8c4a6a0b25b93b09d024d3f33b98e2096e4804c3e9763e9e51",
+          "bytes_before": 132567,
+          "bytes_after": 129281
         }
       ],
       "source": "published-baseline",
@@ -16105,9 +17075,9 @@
     },
     "hianime": {
       "id": "hianime",
-      "published_filename": "providers/hianime--nuvio--5a8de360b9b0f346.js",
-      "sha256": "5a8de360b9b0f34613bb3c31f528280c40450f33c53dc5725d7c897296264883",
-      "patched_sha256": "5a8de360b9b0f34613bb3c31f528280c40450f33c53dc5725d7c897296264883",
+      "published_filename": "providers/hianime--nuvio--383d76e06c8b0d02.js",
+      "sha256": "383d76e06c8b0d02c52fb717e14e1af1ae54ef2770ad878d7ebad961f9036d6f",
+      "patched_sha256": "383d76e06c8b0d02c52fb717e14e1af1ae54ef2770ad878d7ebad961f9036d6f",
       "upstream_sha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
       "local_patches": [
         {
@@ -16269,6 +17239,30 @@
           "output_sha256": "5a8de360b9b0f34613bb3c31f528280c40450f33c53dc5725d7c897296264883",
           "bytes_before": 91555,
           "bytes_after": 87137
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "7a2cdadda340e645edc5531ac94451d47e798ce56f7b6acc52b64b0c4cd1ae17",
+          "output_sha256": "383d76e06c8b0d02c52fb717e14e1af1ae54ef2770ad878d7ebad961f9036d6f",
+          "bytes_before": 91511,
+          "bytes_after": 88312
         }
       ],
       "source": "aio",
@@ -16536,9 +17530,9 @@
     },
     "hindmoviez": {
       "id": "hindmoviez",
-      "published_filename": "providers/hindmoviez--nuvio--62fced0cd28a89d8.js",
-      "sha256": "62fced0cd28a89d8828ecfdf14aece1105988529a70c5a203e23c5044afd6ad2",
-      "patched_sha256": "62fced0cd28a89d8828ecfdf14aece1105988529a70c5a203e23c5044afd6ad2",
+      "published_filename": "providers/hindmoviez--nuvio--a2fad478d23b3c67.js",
+      "sha256": "a2fad478d23b3c679d20ae1bb3ce71a48f82a930f7af672983d53aee2554ecbf",
+      "patched_sha256": "a2fad478d23b3c679d20ae1bb3ce71a48f82a930f7af672983d53aee2554ecbf",
       "upstream_sha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
       "local_patches": [
         {
@@ -16664,6 +17658,48 @@
           "output_sha256": "62fced0cd28a89d8828ecfdf14aece1105988529a70c5a203e23c5044afd6ad2",
           "bytes_before": 100870,
           "bytes_after": 96452
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "e7b80a51326770a29f5c0ac2d2b7bdc14685e00f702b4e1e0358841384481026",
+          "output_sha256": "a2fad478d23b3c679d20ae1bb3ce71a48f82a930f7af672983d53aee2554ecbf",
+          "bytes_before": 104236,
+          "bytes_after": 100481
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "397ae58692eb4c40ebd52adc70259b4ea4e9e2defec114b3040de334692c4917",
+          "output_sha256": "a2fad478d23b3c679d20ae1bb3ce71a48f82a930f7af672983d53aee2554ecbf",
+          "bytes_before": 103680,
+          "bytes_after": 100481
         }
       ],
       "source": "aio",
@@ -16910,9 +17946,9 @@
     },
     "kisskh": {
       "id": "kisskh",
-      "published_filename": "providers/kisskh--nuvio--86ae328000d40a27.js",
-      "sha256": "86ae328000d40a272a09fff562d83f1f94358441372d6acbab52b177b3912360",
-      "patched_sha256": "86ae328000d40a272a09fff562d83f1f94358441372d6acbab52b177b3912360",
+      "published_filename": "providers/kisskh--nuvio--41252044a6013e0a.js",
+      "sha256": "41252044a6013e0a456b934f8bab08c6a10d6b81fd7f6dae1aca062f0acedbb4",
+      "patched_sha256": "41252044a6013e0a456b934f8bab08c6a10d6b81fd7f6dae1aca062f0acedbb4",
       "upstream_sha256": "87a7819756de47545d3f0675699f44cb515fa88e6b54653889d741d57f5049c2",
       "local_patches": [
         {
@@ -17051,6 +18087,30 @@
           "output_sha256": "86ae328000d40a272a09fff562d83f1f94358441372d6acbab52b177b3912360",
           "bytes_before": 85857,
           "bytes_after": 81439
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "49c230d7f9637954f24520824d2b0016c6b8ea086b8266903ad9ab1c5891693e",
+          "output_sha256": "41252044a6013e0a456b934f8bab08c6a10d6b81fd7f6dae1aca062f0acedbb4",
+          "bytes_before": 85813,
+          "bytes_after": 82614
         }
       ],
       "source": "published-baseline",
@@ -17288,9 +18348,9 @@
     },
     "kurage": {
       "id": "kurage",
-      "published_filename": "providers/kurage--nuvio--99a465c2cc6aaff4.js",
-      "sha256": "99a465c2cc6aaff4923b3c59a923f4e5670199c75044d4815b744e06d796bd45",
-      "patched_sha256": "99a465c2cc6aaff4923b3c59a923f4e5670199c75044d4815b744e06d796bd45",
+      "published_filename": "providers/kurage--nuvio--b5240f665eb9c297.js",
+      "sha256": "b5240f665eb9c297a2839e60a336b636f330908769d7d1d2d15bcc325b0cb295",
+      "patched_sha256": "b5240f665eb9c297a2839e60a336b636f330908769d7d1d2d15bcc325b0cb295",
       "upstream_sha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
       "local_patches": [
         {
@@ -17458,6 +18518,30 @@
           "output_sha256": "99a465c2cc6aaff4923b3c59a923f4e5670199c75044d4815b744e06d796bd45",
           "bytes_before": 103166,
           "bytes_after": 98748
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "6b5fa55e55f99a96946664c582817d6c06d3054892af4165befd6aafa3753310",
+          "output_sha256": "b5240f665eb9c297a2839e60a336b636f330908769d7d1d2d15bcc325b0cb295",
+          "bytes_before": 103122,
+          "bytes_after": 99923
         }
       ],
       "source": "aio",
@@ -17702,9 +18786,9 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--nuvio--c8ba941c48457ecf.js",
-      "sha256": "c8ba941c48457ecf3f5ff0a291de9162573c36b66d5065ca5151c749e89426d0",
-      "patched_sha256": "c8ba941c48457ecf3f5ff0a291de9162573c36b66d5065ca5151c749e89426d0",
+      "published_filename": "providers/mallumv--nuvio--b4938cac084eca0e.js",
+      "sha256": "b4938cac084eca0e840a951e6aeaa3d99d58253343405de234b713bb07dfdd09",
+      "patched_sha256": "b4938cac084eca0e840a951e6aeaa3d99d58253343405de234b713bb07dfdd09",
       "upstream_sha256": "d24f0f13c3076da5526a0445e122fdeaa8e03314d4d1fff6c8cafca867637d81",
       "local_patches": [
         {
@@ -17826,6 +18910,30 @@
           "output_sha256": "c8ba941c48457ecf3f5ff0a291de9162573c36b66d5065ca5151c749e89426d0",
           "bytes_before": 120057,
           "bytes_after": 115227
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "b33bfdb870b82f8c64d44827c880b0495f95c352f448741aca1343826d3f655a",
+          "output_sha256": "b4938cac084eca0e840a951e6aeaa3d99d58253343405de234b713bb07dfdd09",
+          "bytes_before": 120014,
+          "bytes_after": 116402
         }
       ],
       "source": "published-baseline",
@@ -18066,9 +19174,9 @@
     },
     "moonflix": {
       "id": "moonflix",
-      "published_filename": "providers/moonflix--nuvio--61e6162b89f4a4b1.js",
-      "sha256": "61e6162b89f4a4b18f7dd586a73013e61d4dc7f380cf7690546248c637bced95",
-      "patched_sha256": "61e6162b89f4a4b18f7dd586a73013e61d4dc7f380cf7690546248c637bced95",
+      "published_filename": "providers/moonflix--nuvio--7275e908baab0f7e.js",
+      "sha256": "7275e908baab0f7e7d84ac27b6b74afaae686f6ab8d2fcb7ad6f2aec96ab913d",
+      "patched_sha256": "7275e908baab0f7e7d84ac27b6b74afaae686f6ab8d2fcb7ad6f2aec96ab913d",
       "upstream_sha256": "0f23f8933a15be90c305877b512a9e16a7009daeb3b001347730009903bcae53",
       "local_patches": [
         {
@@ -18202,6 +19310,30 @@
           "output_sha256": "61e6162b89f4a4b18f7dd586a73013e61d4dc7f380cf7690546248c637bced95",
           "bytes_before": 76319,
           "bytes_after": 71902
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "25685b1e1091c3600800d051a093f03d6bd329f4a51668e7f238f01c6e5f2468",
+          "output_sha256": "7275e908baab0f7e7d84ac27b6b74afaae686f6ab8d2fcb7ad6f2aec96ab913d",
+          "bytes_before": 76276,
+          "bytes_after": 73077
         }
       ],
       "source": "published-baseline",
@@ -18441,9 +19573,9 @@
     },
     "movieblast": {
       "id": "movieblast",
-      "published_filename": "providers/movieblast--nuvio--2af446495c990eb5.js",
-      "sha256": "2af446495c990eb50c760ff9380df86fb7b82cb7333f51ffbe893637d96cc0f6",
-      "patched_sha256": "2af446495c990eb50c760ff9380df86fb7b82cb7333f51ffbe893637d96cc0f6",
+      "published_filename": "providers/movieblast--nuvio--a80224d023d3832e.js",
+      "sha256": "a80224d023d3832e2c77caf10d30df18321b80a923aefbe7d029fa13e31e6372",
+      "patched_sha256": "a80224d023d3832e2c77caf10d30df18321b80a923aefbe7d029fa13e31e6372",
       "upstream_sha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
       "local_patches": [
         {
@@ -18570,6 +19702,30 @@
           "output_sha256": "2af446495c990eb50c760ff9380df86fb7b82cb7333f51ffbe893637d96cc0f6",
           "bytes_before": 88593,
           "bytes_after": 84175
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "ed1569691b7ea505fd370c96452a315663a9edcab13cca3c450033643752b0fa",
+          "output_sha256": "a80224d023d3832e2c77caf10d30df18321b80a923aefbe7d029fa13e31e6372",
+          "bytes_before": 88549,
+          "bytes_after": 85350
         }
       ],
       "source": "aio",
@@ -19151,9 +20307,9 @@
     },
     "movies4u": {
       "id": "movies4u",
-      "published_filename": "providers/movies4u--nuvio--519371e85ac4d4f4.js",
-      "sha256": "519371e85ac4d4f41d0af264915c51455d86eeff71a378289175ad850f9cb089",
-      "patched_sha256": "519371e85ac4d4f41d0af264915c51455d86eeff71a378289175ad850f9cb089",
+      "published_filename": "providers/movies4u--nuvio--2ff8acf3bc0419fe.js",
+      "sha256": "2ff8acf3bc0419fe004b0beb63316232b99668648cc72cda22fc836db6e91427",
+      "patched_sha256": "2ff8acf3bc0419fe004b0beb63316232b99668648cc72cda22fc836db6e91427",
       "upstream_sha256": "d57854d4a39a0c4c36af6ba3ab2bda4c00aa4bd5037e395e786f6a2b79f15ecd",
       "local_patches": [
         {
@@ -19392,6 +20548,30 @@
           "output_sha256": "519371e85ac4d4f41d0af264915c51455d86eeff71a378289175ad850f9cb089",
           "bytes_before": 129539,
           "bytes_after": 125034
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "e89399db0a217813bc8321b3550a3a97bad6e2c3c1d99519c9d787c93482811a",
+          "output_sha256": "2ff8acf3bc0419fe004b0beb63316232b99668648cc72cda22fc836db6e91427",
+          "bytes_before": 129495,
+          "bytes_after": 126209
         }
       ],
       "source": "published-baseline",
@@ -19644,9 +20824,9 @@
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--f7e14f2c6e75aded.js",
-      "sha256": "f7e14f2c6e75aded7649628d89c3f3866ee346984807fd7373e91d13350b96e3",
-      "patched_sha256": "f7e14f2c6e75aded7649628d89c3f3866ee346984807fd7373e91d13350b96e3",
+      "published_filename": "providers/moviesdrive--nuvio--21b20e15d431d64b.js",
+      "sha256": "21b20e15d431d64b3058f0698a01d7c32b5671f54ad580b2210bdfd2f4bc0bd5",
+      "patched_sha256": "21b20e15d431d64b3058f0698a01d7c32b5671f54ad580b2210bdfd2f4bc0bd5",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -19903,6 +21083,30 @@
           "output_sha256": "f7e14f2c6e75aded7649628d89c3f3866ee346984807fd7373e91d13350b96e3",
           "bytes_before": 115844,
           "bytes_after": 111426
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "606a65908fdb804edecc219fb63ed2c4472f1c7b304bf07d50cb0fe01de3f987",
+          "output_sha256": "21b20e15d431d64b3058f0698a01d7c32b5671f54ad580b2210bdfd2f4bc0bd5",
+          "bytes_before": 115800,
+          "bytes_after": 112601
         }
       ],
       "source": "published-baseline",
@@ -20124,9 +21328,9 @@
     },
     "movieshunt": {
       "id": "movieshunt",
-      "published_filename": "providers/movieshunt--nuvio--61ebef43bd8daad4.js",
-      "sha256": "61ebef43bd8daad46f41c691510094c4d10a935e04eaeaa965872e8dbc3e5d02",
-      "patched_sha256": "61ebef43bd8daad46f41c691510094c4d10a935e04eaeaa965872e8dbc3e5d02",
+      "published_filename": "providers/movieshunt--nuvio--3aa3c567b2a014d9.js",
+      "sha256": "3aa3c567b2a014d97db75bf98235b647dd860953e804c6ec7bd94848fffc6f31",
+      "patched_sha256": "3aa3c567b2a014d97db75bf98235b647dd860953e804c6ec7bd94848fffc6f31",
       "upstream_sha256": "6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e",
       "local_patches": [
         {
@@ -20270,6 +21474,30 @@
           "output_sha256": "61ebef43bd8daad46f41c691510094c4d10a935e04eaeaa965872e8dbc3e5d02",
           "bytes_before": 97990,
           "bytes_after": 93572
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "fbd40e35cb778a5e4037a09e34761f29d80ae98b43f2c0dac27567d9fd878eba",
+          "output_sha256": "3aa3c567b2a014d97db75bf98235b647dd860953e804c6ec7bd94848fffc6f31",
+          "bytes_before": 97946,
+          "bytes_after": 94747
         }
       ],
       "source": "aio",
@@ -20511,9 +21739,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--0e04a7a8ff2dd759.js",
-      "sha256": "0e04a7a8ff2dd7598890797dea64162afe2aaca5362f25b2bcc0a2cfb60d859f",
-      "patched_sha256": "0e04a7a8ff2dd7598890797dea64162afe2aaca5362f25b2bcc0a2cfb60d859f",
+      "published_filename": "providers/moviesmod--published-baseline--edad1a7b333e5109.js",
+      "sha256": "edad1a7b333e51099d09f6033a3b320dc7bd4e40117a4cbbced1e88054feb4d1",
+      "patched_sha256": "edad1a7b333e51099d09f6033a3b320dc7bd4e40117a4cbbced1e88054feb4d1",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -20704,6 +21932,30 @@
           "output_sha256": "0e04a7a8ff2dd7598890797dea64162afe2aaca5362f25b2bcc0a2cfb60d859f",
           "bytes_before": 128869,
           "bytes_after": 124451
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "0b76b202de4be1551ac1e54f33d6f3909d05bea720fce09f89cc68d002f0d518",
+          "output_sha256": "edad1a7b333e51099d09f6033a3b320dc7bd4e40117a4cbbced1e88054feb4d1",
+          "bytes_before": 128825,
+          "bytes_after": 125626
         }
       ],
       "source": "published-baseline",
@@ -20927,9 +22179,9 @@
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--nuvio--834f37d5ce0ea69c.js",
-      "sha256": "834f37d5ce0ea69cda08299100ae92d1b0ac7faffbb0727a55d9fb912759f6b4",
-      "patched_sha256": "834f37d5ce0ea69cda08299100ae92d1b0ac7faffbb0727a55d9fb912759f6b4",
+      "published_filename": "providers/movix--nuvio--62312914481b1eb9.js",
+      "sha256": "62312914481b1eb933abf530e53e81e822aa2a2b02a239a595b724bacf84706c",
+      "patched_sha256": "62312914481b1eb933abf530e53e81e822aa2a2b02a239a595b724bacf84706c",
       "upstream_sha256": "b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -21143,6 +22395,59 @@
           "output_sha256": "834f37d5ce0ea69cda08299100ae92d1b0ac7faffbb0727a55d9fb912759f6b4",
           "bytes_before": 397623,
           "bytes_after": 393118
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "9d7484da08a97dcfe76b564aeff5b0825d6648ddf30ff5dd9d51769c7340dc7b",
+          "output_sha256": "62312914481b1eb933abf530e53e81e822aa2a2b02a239a595b724bacf84706c",
+          "bytes_before": 400989,
+          "bytes_after": 397147
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "77bdbf6bed80b6d58b06b1d4a38d61f4d4154f0074f8a343e217a9912a313678",
+          "output_sha256": "62312914481b1eb933abf530e53e81e822aa2a2b02a239a595b724bacf84706c",
+          "bytes_before": 400433,
+          "bytes_after": 397147
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -21380,9 +22685,9 @@
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
-      "published_filename": "providers/mugiwarastream--nuvio--e7fa65a51d07c168.js",
-      "sha256": "e7fa65a51d07c16821fc1ddbf0b5a90e72539ceb76c20d448d81e2da2dddff61",
-      "patched_sha256": "e7fa65a51d07c16821fc1ddbf0b5a90e72539ceb76c20d448d81e2da2dddff61",
+      "published_filename": "providers/mugiwarastream--nuvio--7d28f3c2b7bc3578.js",
+      "sha256": "7d28f3c2b7bc35789dde40d5395a693ffef4fde0fa4101410f771bcf2292697c",
+      "patched_sha256": "7d28f3c2b7bc35789dde40d5395a693ffef4fde0fa4101410f771bcf2292697c",
       "upstream_sha256": "4b18fcabe65da565f3ccedb6609b3a1e8792a5d85b7068a6f1d733d9f7a71014",
       "local_patches": [
         {
@@ -21521,6 +22826,33 @@
           "output_sha256": "e7fa65a51d07c16821fc1ddbf0b5a90e72539ceb76c20d448d81e2da2dddff61",
           "bytes_before": 362526,
           "bytes_after": 358021
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "b3baa7cdcd21b5c8cbd537b3634869ef439dad08a1150ec59841e5806195b32d",
+          "output_sha256": "7d28f3c2b7bc35789dde40d5395a693ffef4fde0fa4101410f771bcf2292697c",
+          "bytes_before": 362482,
+          "bytes_after": 359196
         }
       ],
       "source": "published-baseline",
@@ -21769,9 +23101,9 @@
     },
     "mycima": {
       "id": "mycima",
-      "published_filename": "providers/mycima--nuvio--dd57e91ea71cabe5.js",
-      "sha256": "dd57e91ea71cabe56152ae861dc786a75f078cc7514ff2a72fb68e3cdf9318d2",
-      "patched_sha256": "dd57e91ea71cabe56152ae861dc786a75f078cc7514ff2a72fb68e3cdf9318d2",
+      "published_filename": "providers/mycima--nuvio--4496d4bfccad8f0b.js",
+      "sha256": "4496d4bfccad8f0b5565797ac7fe2d8778d6421d142ff295fa39c8d89cd8a981",
+      "patched_sha256": "4496d4bfccad8f0b5565797ac7fe2d8778d6421d142ff295fa39c8d89cd8a981",
       "upstream_sha256": "9d15ea128d78ab9f51a7f45cf0dc4b29bc248ae8286efe537fe848f6dfec6a71",
       "local_patches": [
         {
@@ -21896,6 +23228,31 @@
           "output_sha256": "dd57e91ea71cabe56152ae861dc786a75f078cc7514ff2a72fb68e3cdf9318d2",
           "bytes_before": 96937,
           "bytes_after": 92519
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "function_source_introspection"
+          ],
+          "source_sha256": "dd65bc0f39854aed4d55cfbecfe5f3144345a9ab9e12c1ce8c4835b89aa1c26b",
+          "output_sha256": "4496d4bfccad8f0b5565797ac7fe2d8778d6421d142ff295fa39c8d89cd8a981",
+          "bytes_before": 96893,
+          "bytes_after": 93694
         }
       ],
       "source": "published-baseline",
@@ -22128,9 +23485,9 @@
     },
     "nakios": {
       "id": "nakios",
-      "published_filename": "providers/nakios--nuvio--7b8188f41b257bc0.js",
-      "sha256": "7b8188f41b257bc0391256b186a6a7e114c861d1d829b62fece72ab13b34599c",
-      "patched_sha256": "7b8188f41b257bc0391256b186a6a7e114c861d1d829b62fece72ab13b34599c",
+      "published_filename": "providers/nakios--nuvio--a3a2de68e774faf8.js",
+      "sha256": "a3a2de68e774faf8c13cd95d702c36b754156f217e77b2f7a6040ffe59fa0f7e",
+      "patched_sha256": "a3a2de68e774faf8c13cd95d702c36b754156f217e77b2f7a6040ffe59fa0f7e",
       "upstream_sha256": "eeef3c79803b4c7ed06d23e8d6122ccb9798029101a9e42dd3a6a2ad4cd45cc3",
       "local_patches": [
         {
@@ -22252,6 +23609,30 @@
           "output_sha256": "7b8188f41b257bc0391256b186a6a7e114c861d1d829b62fece72ab13b34599c",
           "bytes_before": 92330,
           "bytes_after": 87500
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "bce0b32a4bc43afcd1e11f6a3b4ba59973ea205cee8f1dd7e4d45525ac8a9774",
+          "output_sha256": "a3a2de68e774faf8c13cd95d702c36b754156f217e77b2f7a6040ffe59fa0f7e",
+          "bytes_before": 92287,
+          "bytes_after": 88675
         }
       ],
       "source": "published-baseline",
@@ -22828,9 +24209,9 @@
     },
     "onlykdrama": {
       "id": "onlykdrama",
-      "published_filename": "providers/onlykdrama--nuvio--f4a26273c04bb293.js",
-      "sha256": "f4a26273c04bb293194f6a5f7b3f8b8d28a345d2e27fbbcf4af3103b9f7a1cd5",
-      "patched_sha256": "f4a26273c04bb293194f6a5f7b3f8b8d28a345d2e27fbbcf4af3103b9f7a1cd5",
+      "published_filename": "providers/onlykdrama--nuvio--f3d71d8a16ff0dc2.js",
+      "sha256": "f3d71d8a16ff0dc29244c86610747aac5efb33b3522fbbc32d35103bf5ee9073",
+      "patched_sha256": "f3d71d8a16ff0dc29244c86610747aac5efb33b3522fbbc32d35103bf5ee9073",
       "upstream_sha256": "ab026578ec82b5580046ac0d18032d647f92936059c29990d67c01d90e6d42a0",
       "local_patches": [
         {
@@ -22951,6 +24332,30 @@
           "output_sha256": "f4a26273c04bb293194f6a5f7b3f8b8d28a345d2e27fbbcf4af3103b9f7a1cd5",
           "bytes_before": 94750,
           "bytes_after": 90332
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "3dd0c1b4ee56d0c93d9e3099fe46d24d3d99486393fc74cf7c402043f33fbad0",
+          "output_sha256": "f3d71d8a16ff0dc29244c86610747aac5efb33b3522fbbc32d35103bf5ee9073",
+          "bytes_before": 94706,
+          "bytes_after": 91507
         }
       ],
       "source": "published-baseline",
@@ -23188,9 +24593,9 @@
     },
     "papadustream": {
       "id": "papadustream",
-      "published_filename": "providers/papadustream--published-baseline--7f015f116b3654cd.js",
-      "sha256": "7f015f116b3654cdace5a754cb3f69afaac59d6aef592c95ce1c2f9033f657cb",
-      "patched_sha256": "7f015f116b3654cdace5a754cb3f69afaac59d6aef592c95ce1c2f9033f657cb",
+      "published_filename": "providers/papadustream--published-baseline--2d48289559aafe27.js",
+      "sha256": "2d48289559aafe2794668931f1b3c864528d7384f056b6a2f209fda82ee3efd4",
+      "patched_sha256": "2d48289559aafe2794668931f1b3c864528d7384f056b6a2f209fda82ee3efd4",
       "upstream_sha256": "19fc281914eeaf7c943ba9a05ad9fa5288307a62e2d30f5599aa2e76c18db8fa",
       "local_patches": [
         {
@@ -23375,6 +24780,32 @@
           "output_sha256": "7f015f116b3654cdace5a754cb3f69afaac59d6aef592c95ce1c2f9033f657cb",
           "bytes_before": 336168,
           "bytes_after": 331663
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "cf9979840bd14340efad9e0328eeb17ed18f4e96f223788bd41ad28484140a79",
+          "output_sha256": "2d48289559aafe2794668931f1b3c864528d7384f056b6a2f209fda82ee3efd4",
+          "bytes_before": 336124,
+          "bytes_after": 332838
         }
       ],
       "source": "published-baseline",
@@ -23668,9 +25099,9 @@
     },
     "peachify": {
       "id": "peachify",
-      "published_filename": "providers/peachify--nuvio--ed53fac122688f43.js",
-      "sha256": "ed53fac122688f43b6b7b106d24396bd90102ec8257a07cd2aff6ceeec124100",
-      "patched_sha256": "ed53fac122688f43b6b7b106d24396bd90102ec8257a07cd2aff6ceeec124100",
+      "published_filename": "providers/peachify--nuvio--323499c6ffa0e436.js",
+      "sha256": "323499c6ffa0e436cdf8dd4609e3eec17290bcde9443835462a80fc4ef0c4b61",
+      "patched_sha256": "323499c6ffa0e436cdf8dd4609e3eec17290bcde9443835462a80fc4ef0c4b61",
       "upstream_sha256": "2a80a0c70fb029363f27802cd942a5b401149bcbd074532fbd332cfe78a2b055",
       "local_patches": [
         {
@@ -23791,6 +25222,30 @@
           "output_sha256": "ed53fac122688f43b6b7b106d24396bd90102ec8257a07cd2aff6ceeec124100",
           "bytes_before": 768807,
           "bytes_after": 764389
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1475f3e082b3ed86cf7ad91917d081aea35abee28ed8805444f3f8d7105b34e7",
+          "output_sha256": "323499c6ffa0e436cdf8dd4609e3eec17290bcde9443835462a80fc4ef0c4b61",
+          "bytes_before": 768763,
+          "bytes_after": 765564
         }
       ],
       "source": "published-baseline",
@@ -24031,9 +25486,9 @@
     },
     "persianstremio": {
       "id": "persianstremio",
-      "published_filename": "providers/persianstremio--nuvio--74c2694e183ecb35.js",
-      "sha256": "74c2694e183ecb353f74b756cf64f6ac2fdf7b88f3ed4185e87ddbabaf1366d9",
-      "patched_sha256": "74c2694e183ecb353f74b756cf64f6ac2fdf7b88f3ed4185e87ddbabaf1366d9",
+      "published_filename": "providers/persianstremio--nuvio--7e31b6eedae47728.js",
+      "sha256": "7e31b6eedae47728de89e9333291fb59105147b60c57b98ad8f6d6a94a035c28",
+      "patched_sha256": "7e31b6eedae47728de89e9333291fb59105147b60c57b98ad8f6d6a94a035c28",
       "upstream_sha256": "38a85bff06cee2790181a37d449fa09a0a39852a9bfed1ae0b2694ceb9a3f9d0",
       "local_patches": [
         {
@@ -24190,6 +25645,30 @@
           "output_sha256": "74c2694e183ecb353f74b756cf64f6ac2fdf7b88f3ed4185e87ddbabaf1366d9",
           "bytes_before": 75981,
           "bytes_after": 71563
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "f45694fd8882fb7a44923f8d4b082255e578c214adb342f3a161721521fa0aa8",
+          "output_sha256": "7e31b6eedae47728de89e9333291fb59105147b60c57b98ad8f6d6a94a035c28",
+          "bytes_before": 75937,
+          "bytes_after": 72738
         }
       ],
       "source": "published-baseline",
@@ -24450,9 +25929,9 @@
     },
     "playimdb": {
       "id": "playimdb",
-      "published_filename": "providers/playimdb--nuvio--3bcb26800c064db5.js",
-      "sha256": "3bcb26800c064db53ab7caa9f401f90063dc9e47057a711336729e00b9c1cac3",
-      "patched_sha256": "3bcb26800c064db53ab7caa9f401f90063dc9e47057a711336729e00b9c1cac3",
+      "published_filename": "providers/playimdb--nuvio--4b88cfbf96960a88.js",
+      "sha256": "4b88cfbf96960a889b1aa31b87ad10d241040cac2367209654f23a6527dbee69",
+      "patched_sha256": "4b88cfbf96960a889b1aa31b87ad10d241040cac2367209654f23a6527dbee69",
       "upstream_sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
       "local_patches": [
         {
@@ -24591,6 +26070,30 @@
           "output_sha256": "3bcb26800c064db53ab7caa9f401f90063dc9e47057a711336729e00b9c1cac3",
           "bytes_before": 75390,
           "bytes_after": 70972
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "fdf6d12b4ab1b568142ffcd773dd0ad2a184e70287e0d24d97baaba7514d6808",
+          "output_sha256": "4b88cfbf96960a889b1aa31b87ad10d241040cac2367209654f23a6527dbee69",
+          "bytes_before": 75346,
+          "bytes_after": 72147
         }
       ],
       "source": "aio",
@@ -24837,9 +26340,9 @@
     },
     "purstream": {
       "id": "purstream",
-      "published_filename": "providers/purstream--nuvio--d093568a1c5ec942.js",
-      "sha256": "d093568a1c5ec9426e4cce4179748f9c49a7f9d4769ebdea3abd47f5486bb8b0",
-      "patched_sha256": "d093568a1c5ec9426e4cce4179748f9c49a7f9d4769ebdea3abd47f5486bb8b0",
+      "published_filename": "providers/purstream--nuvio--04678dffa0c674e9.js",
+      "sha256": "04678dffa0c674e908bda7eccc300347c7371b81adc0f5dc4f4d9c3facb0be74",
+      "patched_sha256": "04678dffa0c674e908bda7eccc300347c7371b81adc0f5dc4f4d9c3facb0be74",
       "upstream_sha256": "a28c9c80256074a4fbfe94fd7f80b0379f3dc56153281294a3b2d3922d9a72fa",
       "local_patches": [
         {
@@ -24992,6 +26495,30 @@
           "output_sha256": "d093568a1c5ec9426e4cce4179748f9c49a7f9d4769ebdea3abd47f5486bb8b0",
           "bytes_before": 89443,
           "bytes_after": 85025
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "944b971a5951ca7e070b469a116c556fa1f81ec4d9b2757cb7fadfa526207bf4",
+          "output_sha256": "04678dffa0c674e908bda7eccc300347c7371b81adc0f5dc4f4d9c3facb0be74",
+          "bytes_before": 89399,
+          "bytes_after": 86200
         }
       ],
       "source": "published-baseline",
@@ -25555,9 +27082,9 @@
     },
     "showbox": {
       "id": "showbox",
-      "published_filename": "providers/showbox--nuvio--c823a2376710d6b0.js",
-      "sha256": "c823a2376710d6b0ec5ec8b2fa3c99ca7b20ada297af6a5986d70526a7059168",
-      "patched_sha256": "c823a2376710d6b0ec5ec8b2fa3c99ca7b20ada297af6a5986d70526a7059168",
+      "published_filename": "providers/showbox--nuvio--c450d3154b1b69b9.js",
+      "sha256": "c450d3154b1b69b96d0c2f7deb86d2701ef946c7f99146f6021c83c4e0e20e14",
+      "patched_sha256": "c450d3154b1b69b96d0c2f7deb86d2701ef946c7f99146f6021c83c4e0e20e14",
       "upstream_sha256": "40cc30aa37186a3b6ef5d34da0239a40a40c9c66df8a39126acbd864a2f6e836",
       "local_patches": [
         {
@@ -25678,6 +27205,30 @@
           "output_sha256": "c823a2376710d6b0ec5ec8b2fa3c99ca7b20ada297af6a5986d70526a7059168",
           "bytes_before": 101776,
           "bytes_after": 97358
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "96096e28460ff414a3b6ba063af19e112aa9c4b510ef257e52e4b61e08df0a6f",
+          "output_sha256": "c450d3154b1b69b96d0c2f7deb86d2701ef946c7f99146f6021c83c4e0e20e14",
+          "bytes_before": 101732,
+          "bytes_after": 98533
         }
       ],
       "source": "published-baseline",
@@ -25911,9 +27462,9 @@
     },
     "streamflix": {
       "id": "streamflix",
-      "published_filename": "providers/streamflix--published-baseline--361db8f875e2ac6d.js",
-      "sha256": "361db8f875e2ac6d3f96b4724af05f1246efa1e32f31286cb22cd8e70cd3cf1c",
-      "patched_sha256": "361db8f875e2ac6d3f96b4724af05f1246efa1e32f31286cb22cd8e70cd3cf1c",
+      "published_filename": "providers/streamflix--published-baseline--206df34defb83ca0.js",
+      "sha256": "206df34defb83ca01faf3d0c199439688aa6f303911c6b3bf0f3988db03c8258",
+      "patched_sha256": "206df34defb83ca01faf3d0c199439688aa6f303911c6b3bf0f3988db03c8258",
       "upstream_sha256": "cb4e7645b900f2e2a26fe1a3f5a4464bd3135e0297fcce16f6d2cdcfa2ccab00",
       "local_patches": [
         {
@@ -26052,6 +27603,30 @@
           "output_sha256": "361db8f875e2ac6d3f96b4724af05f1246efa1e32f31286cb22cd8e70cd3cf1c",
           "bytes_before": 84842,
           "bytes_after": 80425
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "4ba8c69f0ddb50166c3bf270d864d7c413463e08668381724710bd3ba1482913",
+          "output_sha256": "206df34defb83ca01faf3d0c199439688aa6f303911c6b3bf0f3988db03c8258",
+          "bytes_before": 84799,
+          "bytes_after": 81600
         }
       ],
       "source": "published-baseline",
@@ -26301,9 +27876,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--b3066441edb2a74e.js",
-      "sha256": "b3066441edb2a74e5ea33006a4871e0f9bc5b046711eda77d5ec878553e52000",
-      "patched_sha256": "b3066441edb2a74e5ea33006a4871e0f9bc5b046711eda77d5ec878553e52000",
+      "published_filename": "providers/streamzo--nuvio--0e0695a6398a6732.js",
+      "sha256": "0e0695a6398a6732b2ec39a15c94ec6fd8070cc120527fd7bc9dece9bddd8685",
+      "patched_sha256": "0e0695a6398a6732b2ec39a15c94ec6fd8070cc120527fd7bc9dece9bddd8685",
       "upstream_sha256": "2dbca5c2f8ff75d3ba4e9c0afd99a794e100b83ff66f9fe08d8c773d6c1c3689",
       "local_patches": [
         {
@@ -26442,6 +28017,59 @@
           "output_sha256": "b3066441edb2a74e5ea33006a4871e0f9bc5b046711eda77d5ec878553e52000",
           "bytes_before": 431545,
           "bytes_after": 427035
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "bd1a49d39eb7cdded37c1ee9e7778d76395d94d6188a22a9334f678680aae5fd",
+          "output_sha256": "0e0695a6398a6732b2ec39a15c94ec6fd8070cc120527fd7bc9dece9bddd8685",
+          "bytes_before": 434851,
+          "bytes_after": 431004
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "d0e46d41d92bb6858ebfaabd56f010fc85b0b9916067423e913c85c85196e930",
+          "output_sha256": "0e0695a6398a6732b2ec39a15c94ec6fd8070cc120527fd7bc9dece9bddd8685",
+          "bytes_before": 434295,
+          "bytes_after": 431004
         }
       ],
       "source": "published-baseline",
@@ -26993,9 +28621,9 @@
     },
     "uhdmovies": {
       "id": "uhdmovies",
-      "published_filename": "providers/uhdmovies--nuvio--ff15e40bb0a577ff.js",
-      "sha256": "ff15e40bb0a577ffa3483e61e5ebcd6efd90e392f218793fcb61980eeceebd2d",
-      "patched_sha256": "ff15e40bb0a577ffa3483e61e5ebcd6efd90e392f218793fcb61980eeceebd2d",
+      "published_filename": "providers/uhdmovies--nuvio--faafa6b844017040.js",
+      "sha256": "faafa6b844017040c52745648f2098fb009ef6d5895371c526930da68a327a88",
+      "patched_sha256": "faafa6b844017040c52745648f2098fb009ef6d5895371c526930da68a327a88",
       "upstream_sha256": "739ddfc148e800ea1e35f74bf8ab2f6fcfdb422459d1aa669fba6057f06f17b7",
       "local_patches": [
         {
@@ -27127,6 +28755,30 @@
           "output_sha256": "ff15e40bb0a577ffa3483e61e5ebcd6efd90e392f218793fcb61980eeceebd2d",
           "bytes_before": 111448,
           "bytes_after": 106942
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "3fa9eea4b432a8460b64d1260f51676effda731dfb0ca52721c4b8c60120cf62",
+          "output_sha256": "faafa6b844017040c52745648f2098fb009ef6d5895371c526930da68a327a88",
+          "bytes_before": 111404,
+          "bytes_after": 108117
         }
       ],
       "source": "published-baseline",
@@ -27372,9 +29024,9 @@
     },
     "vegamovies": {
       "id": "vegamovies",
-      "published_filename": "providers/vegamovies--nuvio--00a6c39c68c38d87.js",
-      "sha256": "00a6c39c68c38d877bb0e751b8904e4675323a09cf7476adc62665a72ec47dc8",
-      "patched_sha256": "00a6c39c68c38d877bb0e751b8904e4675323a09cf7476adc62665a72ec47dc8",
+      "published_filename": "providers/vegamovies--nuvio--d84dd00f48573c85.js",
+      "sha256": "d84dd00f48573c85b97fc5b3bda407ccdbd219468679dd0009c1f5e2a78699da",
+      "patched_sha256": "d84dd00f48573c85b97fc5b3bda407ccdbd219468679dd0009c1f5e2a78699da",
       "upstream_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
       "local_patches": [
         {
@@ -27547,6 +29199,30 @@
           "output_sha256": "00a6c39c68c38d877bb0e751b8904e4675323a09cf7476adc62665a72ec47dc8",
           "bytes_before": 141070,
           "bytes_after": 136154
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1731e985686c2dfb90ce4c6267aa1051792598103b8368321c417346421e08cd",
+          "output_sha256": "d84dd00f48573c85b97fc5b3bda407ccdbd219468679dd0009c1f5e2a78699da",
+          "bytes_before": 141027,
+          "bytes_after": 137329
         }
       ],
       "source": "aio",
@@ -27811,9 +29487,9 @@
     },
     "videasy": {
       "id": "videasy",
-      "published_filename": "providers/videasy--nuvio--6dfd725b8cd4ade5.js",
-      "sha256": "6dfd725b8cd4ade5f4a2298ad2d442913a2b7eb1a17871f0b2e40d88071b735c",
-      "patched_sha256": "6dfd725b8cd4ade5f4a2298ad2d442913a2b7eb1a17871f0b2e40d88071b735c",
+      "published_filename": "providers/videasy--nuvio--f9cb91b9df10ed43.js",
+      "sha256": "f9cb91b9df10ed43c451cb45d458e9c26d5fbff817d5b587793653bea12791d8",
+      "patched_sha256": "f9cb91b9df10ed43c451cb45d458e9c26d5fbff817d5b587793653bea12791d8",
       "upstream_sha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
       "local_patches": [
         {
@@ -27945,6 +29621,30 @@
           "output_sha256": "6dfd725b8cd4ade5f4a2298ad2d442913a2b7eb1a17871f0b2e40d88071b735c",
           "bytes_before": 98946,
           "bytes_after": 94528
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1aa5b33a1a96c96d8bfd10c905fd06a3e0c1e48d0975d56ca05723a448f04fca",
+          "output_sha256": "f9cb91b9df10ed43c451cb45d458e9c26d5fbff817d5b587793653bea12791d8",
+          "bytes_before": 98902,
+          "bytes_after": 95703
         }
       ],
       "source": "aio",
@@ -28199,9 +29899,9 @@
     },
     "vidfast": {
       "id": "vidfast",
-      "published_filename": "providers/vidfast--nuvio--ed038cebdacdcae6.js",
-      "sha256": "ed038cebdacdcae689d7cf9b5d7183d434843c4ce6786840f642028883530034",
-      "patched_sha256": "ed038cebdacdcae689d7cf9b5d7183d434843c4ce6786840f642028883530034",
+      "published_filename": "providers/vidfast--nuvio--3b6bb9c6bb0550a7.js",
+      "sha256": "3b6bb9c6bb0550a7601e3719c4ca5fac14c3de9a36a19422a8aac8c8a6f3c833",
+      "patched_sha256": "3b6bb9c6bb0550a7601e3719c4ca5fac14c3de9a36a19422a8aac8c8a6f3c833",
       "upstream_sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
       "local_patches": [
         {
@@ -28344,6 +30044,30 @@
           "output_sha256": "ed038cebdacdcae689d7cf9b5d7183d434843c4ce6786840f642028883530034",
           "bytes_before": 77570,
           "bytes_after": 73152
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "02612bc8415f4c133e87f6d8aee9df3986b5232a9676cfeedea3c02538d3691b",
+          "output_sha256": "3b6bb9c6bb0550a7601e3719c4ca5fac14c3de9a36a19422a8aac8c8a6f3c833",
+          "bytes_before": 77526,
+          "bytes_after": 74327
         }
       ],
       "source": "aio",
@@ -28578,9 +30302,9 @@
     },
     "vidlink": {
       "id": "vidlink",
-      "published_filename": "providers/vidlink--published-baseline--a33920d849b5d76e.js",
-      "sha256": "a33920d849b5d76e0f512cc805ff9e699010accbd50905fe85bc2f7cfb4c1caa",
-      "patched_sha256": "a33920d849b5d76e0f512cc805ff9e699010accbd50905fe85bc2f7cfb4c1caa",
+      "published_filename": "providers/vidlink--published-baseline--9888346d4f502171.js",
+      "sha256": "9888346d4f5021712f4bd58a0a9f7fd58352314ca0843a5c11db95d4b4cdaab4",
+      "patched_sha256": "9888346d4f5021712f4bd58a0a9f7fd58352314ca0843a5c11db95d4b4cdaab4",
       "upstream_sha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
       "local_patches": [
         {
@@ -28747,6 +30471,30 @@
           "output_sha256": "a33920d849b5d76e0f512cc805ff9e699010accbd50905fe85bc2f7cfb4c1caa",
           "bytes_before": 89511,
           "bytes_after": 85093
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "16914f8d831014c79c4bb5c12cf9b15cce41db07769f0f491e1108e8d602ca47",
+          "output_sha256": "9888346d4f5021712f4bd58a0a9f7fd58352314ca0843a5c11db95d4b4cdaab4",
+          "bytes_before": 89467,
+          "bytes_after": 86268
         }
       ],
       "source": "published-baseline",
@@ -28969,9 +30717,9 @@
     },
     "vidlove": {
       "id": "vidlove",
-      "published_filename": "providers/vidlove--nuvio--7c5d57be6cb4e2ce.js",
-      "sha256": "7c5d57be6cb4e2ce82ff8b7e5ce5da9ed745f6b47777496be006d845b79321a9",
-      "patched_sha256": "7c5d57be6cb4e2ce82ff8b7e5ce5da9ed745f6b47777496be006d845b79321a9",
+      "published_filename": "providers/vidlove--nuvio--f0abcd1a8ab6c822.js",
+      "sha256": "f0abcd1a8ab6c8224d3e9a49312a6e1bb3a8da6f30d057d0bee7ef8f5c9c30da",
+      "patched_sha256": "f0abcd1a8ab6c8224d3e9a49312a6e1bb3a8da6f30d057d0bee7ef8f5c9c30da",
       "upstream_sha256": "b83caf048087c2091e28db721216baa9ddb953ccbf857135e85f39dc1e8402da",
       "local_patches": [
         {
@@ -29092,6 +30840,30 @@
           "output_sha256": "7c5d57be6cb4e2ce82ff8b7e5ce5da9ed745f6b47777496be006d845b79321a9",
           "bytes_before": 87611,
           "bytes_after": 83193
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "59df7b11e45bc5c90cef16e6176186f189574c89a6b68068f6a443bbdbfafaf4",
+          "output_sha256": "f0abcd1a8ab6c8224d3e9a49312a6e1bb3a8da6f30d057d0bee7ef8f5c9c30da",
+          "bytes_before": 87567,
+          "bytes_after": 84368
         }
       ],
       "source": "published-baseline",
@@ -29329,9 +31101,9 @@
     },
     "vidnest": {
       "id": "vidnest",
-      "published_filename": "providers/vidnest--nuvio--6441f96c8ec16b46.js",
-      "sha256": "6441f96c8ec16b464f849d3944b7905f821ae5ded7e66fc171c7f9e1fecba4e8",
-      "patched_sha256": "6441f96c8ec16b464f849d3944b7905f821ae5ded7e66fc171c7f9e1fecba4e8",
+      "published_filename": "providers/vidnest--nuvio--0768383ec686d0e2.js",
+      "sha256": "0768383ec686d0e20d4dee8972dfd31f3f9011c9246089ae24f7d91501d1b319",
+      "patched_sha256": "0768383ec686d0e20d4dee8972dfd31f3f9011c9246089ae24f7d91501d1b319",
       "upstream_sha256": "98ba2ea8496998708776cb491110361051bdbc6275a8f3f38d6121fcd0b8d6c4",
       "local_patches": [
         {
@@ -29470,6 +31242,30 @@
           "output_sha256": "6441f96c8ec16b464f849d3944b7905f821ae5ded7e66fc171c7f9e1fecba4e8",
           "bytes_before": 78025,
           "bytes_after": 73607
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "0ff9c5fb0c16f7f389cd91adb6db7ff8cd2c3d9ab1473fc70ff683ee068eaef3",
+          "output_sha256": "0768383ec686d0e20d4dee8972dfd31f3f9011c9246089ae24f7d91501d1b319",
+          "bytes_before": 77981,
+          "bytes_after": 74782
         }
       ],
       "source": "published-baseline",
@@ -29706,9 +31502,9 @@
     },
     "vidnest-anime": {
       "id": "vidnest-anime",
-      "published_filename": "providers/vidnest-anime--nuvio--36f5c5863d16345c.js",
-      "sha256": "36f5c5863d16345c38593923ed2b5200beea0198955b3eda91f4578f4f286a9a",
-      "patched_sha256": "36f5c5863d16345c38593923ed2b5200beea0198955b3eda91f4578f4f286a9a",
+      "published_filename": "providers/vidnest-anime--nuvio--b1a5968e83c92b21.js",
+      "sha256": "b1a5968e83c92b21ce38d724baccbd4ae8a548bba089ddee63eb52e6e02ed4d8",
+      "patched_sha256": "b1a5968e83c92b21ce38d724baccbd4ae8a548bba089ddee63eb52e6e02ed4d8",
       "upstream_sha256": "21c00c7ea7b8c39f368e5305014b487ccb43d9a53df14f9b68184eb8d0167134",
       "local_patches": [
         {
@@ -29829,6 +31625,30 @@
           "output_sha256": "36f5c5863d16345c38593923ed2b5200beea0198955b3eda91f4578f4f286a9a",
           "bytes_before": 87056,
           "bytes_after": 82638
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "d2cfd80bbed272e61393b3b307cc751bd3e4094ab87a95d6231c50f6f5466f92",
+          "output_sha256": "b1a5968e83c92b21ce38d724baccbd4ae8a548bba089ddee63eb52e6e02ed4d8",
+          "bytes_before": 87012,
+          "bytes_after": 83813
         }
       ],
       "source": "published-baseline",
@@ -30066,9 +31886,9 @@
     },
     "vidrock": {
       "id": "vidrock",
-      "published_filename": "providers/vidrock--nuvio--ba764368e3ae45d7.js",
-      "sha256": "ba764368e3ae45d7d1e2feb76802701256fc4768ea8381c9eba3700852ba5e5b",
-      "patched_sha256": "ba764368e3ae45d7d1e2feb76802701256fc4768ea8381c9eba3700852ba5e5b",
+      "published_filename": "providers/vidrock--nuvio--e4f457c7daea80f5.js",
+      "sha256": "e4f457c7daea80f5da40f16c3f747a10a0b23a4d7d44a93c5a04eea784b5f4a9",
+      "patched_sha256": "e4f457c7daea80f5da40f16c3f747a10a0b23a4d7d44a93c5a04eea784b5f4a9",
       "upstream_sha256": "cc31f1a86b46e5856f960d5ca0e643698ab737422d9afe3e849cbe48fbb4a381",
       "local_patches": [
         {
@@ -30189,6 +32009,30 @@
           "output_sha256": "ba764368e3ae45d7d1e2feb76802701256fc4768ea8381c9eba3700852ba5e5b",
           "bytes_before": 92703,
           "bytes_after": 88285
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "628c35a1a655af1d5e874a19fd5cac49e1facd7c53faa3f01118319c02070bac",
+          "output_sha256": "e4f457c7daea80f5da40f16c3f747a10a0b23a4d7d44a93c5a04eea784b5f4a9",
+          "bytes_before": 92659,
+          "bytes_after": 89460
         }
       ],
       "source": "published-baseline",
@@ -31124,9 +32968,9 @@
     },
     "voiranime": {
       "id": "voiranime",
-      "published_filename": "providers/voiranime--nuvio--7223dcc2e1ef61df.js",
-      "sha256": "7223dcc2e1ef61dfec94754593155aa613981d30a8bf0c264394d083aa837207",
-      "patched_sha256": "7223dcc2e1ef61dfec94754593155aa613981d30a8bf0c264394d083aa837207",
+      "published_filename": "providers/voiranime--nuvio--1aaecd3076ce5d80.js",
+      "sha256": "1aaecd3076ce5d8085914062648c427a82c9707ad2091b00d86535dae808288f",
+      "patched_sha256": "1aaecd3076ce5d8085914062648c427a82c9707ad2091b00d86535dae808288f",
       "upstream_sha256": "3d53c7be817311ccd07a10e04eb00ea3fea86100c1e11ae04c010e154b9e10c7",
       "local_patches": [
         {
@@ -31265,6 +33109,33 @@
           "output_sha256": "7223dcc2e1ef61dfec94754593155aa613981d30a8bf0c264394d083aa837207",
           "bytes_before": 366374,
           "bytes_after": 361869
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "7020fffa76df8c1e1f713886eadf6c0b20ed70529205ad647219eeab1edaafac",
+          "output_sha256": "1aaecd3076ce5d8085914062648c427a82c9707ad2091b00d86535dae808288f",
+          "bytes_before": 366330,
+          "bytes_after": 363044
         }
       ],
       "source": "published-baseline",
@@ -31511,9 +33382,9 @@
     },
     "voiranime-homes": {
       "id": "voiranime-homes",
-      "published_filename": "providers/voiranime-homes--nuvio--6dafead577f1e4f8.js",
-      "sha256": "6dafead577f1e4f81f74a114b6ca0dcfa9ea510b2716907c46b7d92c9f542f84",
-      "patched_sha256": "6dafead577f1e4f81f74a114b6ca0dcfa9ea510b2716907c46b7d92c9f542f84",
+      "published_filename": "providers/voiranime-homes--nuvio--3bf64d238ad99eba.js",
+      "sha256": "3bf64d238ad99ebabb4630ebae42c4b4aa52326535bd5a222d3dd8309dcde28f",
+      "patched_sha256": "3bf64d238ad99ebabb4630ebae42c4b4aa52326535bd5a222d3dd8309dcde28f",
       "upstream_sha256": "25807f04525cee912024232ccdc7b460ae7a3f125b846d2b9299e6841c563863",
       "local_patches": [
         {
@@ -31646,6 +33517,33 @@
           "output_sha256": "6dafead577f1e4f81f74a114b6ca0dcfa9ea510b2716907c46b7d92c9f542f84",
           "bytes_before": 356768,
           "bytes_after": 352350
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "d2f0030e02349051054a707e3c6da93728861000d0d8d7e4301ffd9350793e78",
+          "output_sha256": "3bf64d238ad99ebabb4630ebae42c4b4aa52326535bd5a222d3dd8309dcde28f",
+          "bytes_before": 356724,
+          "bytes_after": 353525
         }
       ],
       "source": "published-baseline",
@@ -31888,9 +33786,9 @@
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
-      "published_filename": "providers/voiranime-rip--nuvio--c763bbdebf865a45.js",
-      "sha256": "c763bbdebf865a45c7352c76f69c7f0db1778d50fbefe8e8c734bfa475a8912b",
-      "patched_sha256": "c763bbdebf865a45c7352c76f69c7f0db1778d50fbefe8e8c734bfa475a8912b",
+      "published_filename": "providers/voiranime-rip--nuvio--bfdd8bc581e9191d.js",
+      "sha256": "bfdd8bc581e9191dbf3b59f84e9b7ddab5be772495820a1d68fd9f274bf6e218",
+      "patched_sha256": "bfdd8bc581e9191dbf3b59f84e9b7ddab5be772495820a1d68fd9f274bf6e218",
       "upstream_sha256": "6e74fe6279a3033f7de1b07a3cc86c3c0741b465c14595f09ffded4569098452",
       "local_patches": [
         {
@@ -32076,6 +33974,33 @@
           "output_sha256": "c763bbdebf865a45c7352c76f69c7f0db1778d50fbefe8e8c734bfa475a8912b",
           "bytes_before": 370265,
           "bytes_after": 365760
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "db9db6c7447f3a598fb629c1cdbb1edfa848e9f8d5d6a99b3371919a82124173",
+          "output_sha256": "bfdd8bc581e9191dbf3b59f84e9b7ddab5be772495820a1d68fd9f274bf6e218",
+          "bytes_before": 370221,
+          "bytes_after": 366935
         }
       ],
       "source": "published-baseline",
@@ -32336,9 +34261,9 @@
     },
     "vostfree": {
       "id": "vostfree",
-      "published_filename": "providers/vostfree--published-baseline--f1a4a4104c99246f.js",
-      "sha256": "f1a4a4104c99246f2a445b870057ab9ea2425940e92962426a230f4ce28f1525",
-      "patched_sha256": "f1a4a4104c99246f2a445b870057ab9ea2425940e92962426a230f4ce28f1525",
+      "published_filename": "providers/vostfree--published-baseline--1286c275654dac3a.js",
+      "sha256": "1286c275654dac3ad8581977a9b12dfcd77a967d4dfb8ca11317dc34f7d88e38",
+      "patched_sha256": "1286c275654dac3ad8581977a9b12dfcd77a967d4dfb8ca11317dc34f7d88e38",
       "upstream_sha256": "8e9b00d7aff4dd9a06f259b4a61d2a6a5b0cfd82d7210e70b6b14e71f0e911b7",
       "local_patches": [
         {
@@ -32502,6 +34427,33 @@
           "output_sha256": "f1a4a4104c99246f2a445b870057ab9ea2425940e92962426a230f4ce28f1525",
           "bytes_before": 348893,
           "bytes_after": 344063
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "2f88a7d8b906a6a8fe90eb055eda8d077b207836cdd9aebe0ecd174262f1e490",
+          "output_sha256": "1286c275654dac3ad8581977a9b12dfcd77a967d4dfb8ca11317dc34f7d88e38",
+          "bytes_before": 348850,
+          "bytes_after": 345238
         }
       ],
       "source": "published-baseline",
@@ -32724,9 +34676,9 @@
     },
     "waveanime": {
       "id": "waveanime",
-      "published_filename": "providers/waveanime--nuvio--6f36ce2f2e29088e.js",
-      "sha256": "6f36ce2f2e29088ed570c56b3d8358b0511e86bc0b27b11a822517eda9f228b8",
-      "patched_sha256": "6f36ce2f2e29088ed570c56b3d8358b0511e86bc0b27b11a822517eda9f228b8",
+      "published_filename": "providers/waveanime--nuvio--9cecd83337b76b03.js",
+      "sha256": "9cecd83337b76b036e9c83a919fbd6ee9eafd37ddf270f8b5d2b1cb99b9f3f99",
+      "patched_sha256": "9cecd83337b76b036e9c83a919fbd6ee9eafd37ddf270f8b5d2b1cb99b9f3f99",
       "upstream_sha256": "73791b692bd0e1d975b4ad61a91f7fcc03044c843fb2d66a8e8c2f024a19a92e",
       "local_patches": [
         {
@@ -32856,6 +34808,32 @@
           "output_sha256": "6f36ce2f2e29088ed570c56b3d8358b0511e86bc0b27b11a822517eda9f228b8",
           "bytes_before": 328033,
           "bytes_after": 323203
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "f458a00e26cf522c74af54dcb25ee2ece372ac750d6cd006c126b7169a6d548d",
+          "output_sha256": "9cecd83337b76b036e9c83a919fbd6ee9eafd37ddf270f8b5d2b1cb99b9f3f99",
+          "bytes_before": 327990,
+          "bytes_after": 324378
         }
       ],
       "source": "published-baseline",
@@ -33091,9 +35069,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--nuvio--51c298b33a8ab7fc.js",
-      "sha256": "51c298b33a8ab7fc02c2e5a83f28fbf9f006f67adc703dba512047f9595a293d",
-      "patched_sha256": "51c298b33a8ab7fc02c2e5a83f28fbf9f006f67adc703dba512047f9595a293d",
+      "published_filename": "providers/wookafr--nuvio--06c24d8c26c50df0.js",
+      "sha256": "06c24d8c26c50df086ba6f568690a95d3e7c7aa746f09548ec749e2a7a043e02",
+      "patched_sha256": "06c24d8c26c50df086ba6f568690a95d3e7c7aa746f09548ec749e2a7a043e02",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
@@ -33303,6 +35281,59 @@
           "output_sha256": "51c298b33a8ab7fc02c2e5a83f28fbf9f006f67adc703dba512047f9595a293d",
           "bytes_before": 393562,
           "bytes_after": 389057
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/desktop_runtime_compat_v1.py",
+          "phase": "discovery"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "d8aecda1a44dbe4956877bc5a4f1dc79b107decbaabf24294e4fc830077b1d3d",
+          "output_sha256": "06c24d8c26c50df086ba6f568690a95d3e7c7aa746f09548ec749e2a7a043e02",
+          "bytes_before": 396928,
+          "bytes_after": 393086
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "db8744cf0eb48bbb40d79e0e4e376b86f6094022ac2dadc64336542a8c7502fc",
+          "output_sha256": "06c24d8c26c50df086ba6f568690a95d3e7c7aa746f09548ec749e2a7a043e02",
+          "bytes_before": 396372,
+          "bytes_after": 393086
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -33539,9 +35570,9 @@
     },
     "xpass": {
       "id": "xpass",
-      "published_filename": "providers/xpass--nuvio--fc27a287c5bd03b8.js",
-      "sha256": "fc27a287c5bd03b86ca9737a28aac8c5d71d32443ac145b9ac896615e4715b92",
-      "patched_sha256": "fc27a287c5bd03b86ca9737a28aac8c5d71d32443ac145b9ac896615e4715b92",
+      "published_filename": "providers/xpass--nuvio--9512936500d8e5e0.js",
+      "sha256": "9512936500d8e5e0b8b7d6b305cc17c59e238c6dc49171655985019a551c1b51",
+      "patched_sha256": "9512936500d8e5e0b8b7d6b305cc17c59e238c6dc49171655985019a551c1b51",
       "upstream_sha256": "32d5c763509158e66fecb786c6ab7f94a8690a139e605ff9e698e95d74929f11",
       "local_patches": [
         {
@@ -33662,6 +35693,30 @@
           "output_sha256": "fc27a287c5bd03b86ca9737a28aac8c5d71d32443ac145b9ac896615e4715b92",
           "bytes_before": 83381,
           "bytes_after": 78963
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "3bdd8d34b568b28f3b5e30f6127bd31c1bf3aa1db10d8d6d55a421450b8c694a",
+          "output_sha256": "9512936500d8e5e0b8b7d6b305cc17c59e238c6dc49171655985019a551c1b51",
+          "bytes_before": 83337,
+          "bytes_after": 80138
         }
       ],
       "source": "published-baseline",
@@ -33900,9 +35955,9 @@
     },
     "yflix": {
       "id": "yflix",
-      "published_filename": "providers/yflix--published-baseline--5e9528954194854b.js",
-      "sha256": "5e9528954194854ba7d9d7b98995876299fe246437eb518a5747a47ab58d790c",
-      "patched_sha256": "5e9528954194854ba7d9d7b98995876299fe246437eb518a5747a47ab58d790c",
+      "published_filename": "providers/yflix--published-baseline--5bc4a93d15c1f685.js",
+      "sha256": "5bc4a93d15c1f6857974c030060a952c692091ff913858c101af77800147cf0a",
+      "patched_sha256": "5bc4a93d15c1f6857974c030060a952c692091ff913858c101af77800147cf0a",
       "upstream_sha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
       "local_patches": [
         {
@@ -34051,6 +36106,30 @@
           "output_sha256": "5e9528954194854ba7d9d7b98995876299fe246437eb518a5747a47ab58d790c",
           "bytes_before": 83586,
           "bytes_after": 79168
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "37af56d7ba8f16d7edb1114c8efa08d9963e35d328af9ace2dcba76d9cf705cd",
+          "output_sha256": "5bc4a93d15c1f6857974c030060a952c692091ff913858c101af77800147cf0a",
+          "bytes_before": 83542,
+          "bytes_after": 80343
         }
       ],
       "source": "published-baseline",
@@ -34271,9 +36350,9 @@
     },
     "zinkmovies": {
       "id": "zinkmovies",
-      "published_filename": "providers/zinkmovies--published-baseline--70d7c85f662cda51.js",
-      "sha256": "70d7c85f662cda51f52267648429a5c645f0205b438dd8b185452eda51ac9fde",
-      "patched_sha256": "70d7c85f662cda51f52267648429a5c645f0205b438dd8b185452eda51ac9fde",
+      "published_filename": "providers/zinkmovies--published-baseline--cc518330c33be858.js",
+      "sha256": "cc518330c33be85817d6bb7fcff4c0b9b0d7757bf2be6451d2d92c7ca7578b45",
+      "patched_sha256": "cc518330c33be85817d6bb7fcff4c0b9b0d7757bf2be6451d2d92c7ca7578b45",
       "upstream_sha256": "5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce",
       "local_patches": [
         {
@@ -34439,6 +36518,30 @@
           "output_sha256": "70d7c85f662cda51f52267648429a5c645f0205b438dd8b185452eda51ac9fde",
           "bytes_before": 90739,
           "bytes_after": 86320
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "defc9746235d498a33a0dfa67351ae8aeed8a16e64a9f87851fa612f852fac6a",
+          "output_sha256": "cc518330c33be85817d6bb7fcff4c0b9b0d7757bf2be6451d2d92c7ca7578b45",
+          "bytes_before": 90695,
+          "bytes_after": 87495
         }
       ],
       "source": "published-baseline",
