@@ -42,6 +42,7 @@ PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 OVERRIDES = ROOT / "provider-overrides.json"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
+ADAPTIVE_MARKER_V5 = "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
 ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
@@ -129,8 +130,12 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
         and record.get("profile") == "adaptive_runtime_recovery"
         and record.get("phase") == "runtime"
         and isinstance(record.get("options"), dict)
+        and int(record.get("revision") or 0) < 5
     ]
     if not accepted:
+        return data, []
+
+    if ADAPTIVE_MARKER_V5.encode("utf-8") in data:
         return data, []
 
     marker_present = ADAPTIVE_MARKER.encode("utf-8") in data
