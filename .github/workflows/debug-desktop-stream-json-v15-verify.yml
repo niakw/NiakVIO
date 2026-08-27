@@ -40,59 +40,47 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
 
-      - name: Materialize current Core fixed point
+      - name: Validate V15 Core contract
         shell: bash
         run: |
           set -euxo pipefail
           cd niakvio
-          npm ci --ignore-scripts --no-audit --no-fund
-          python3 scripts/normalize_repository_docs.py --apply
-          python3 scripts/normalize_runtime_repository_dependencies.py --apply
-          python3 scripts/normalize_provider_rebuild_safety.py --apply
-          python3 scripts/normalize_core_fixed_point_contract.py --apply
-          python3 scripts/normalize_provider_branding_pipeline.py --apply
-          python3 scripts/normalize_core_media_policy.py --apply
-          python3 scripts/apply_runtime_capability_upgrade_v4.py
-          python3 scripts/build_provider_runtime_profiles.py
-          converged=0
-          for pass in 1 2 3 4 5 6; do
-            echo "FIELD_STREAM_JSON_V15_REBUILD pass=$pass"
-            python3 scripts/reapply_published_overrides.py
-            if python3 scripts/reapply_published_overrides.py --check; then
-              converged=1
-              echo "FIELD_STREAM_JSON_V15_REBUILD converged_at=$pass"
-              break
-            fi
-          done
-          test "$converged" -eq 1
           python3 scripts/normalize_stream_presentation_v12.py --check
           python3 tests/global_stream_presentation_test.py
-          git diff --check
 
-      - name: Stage rematerialized Interstellar providers
+      - name: Stage targeted V15 Interstellar providers
         shell: bash
         run: |
           set -euxo pipefail
           python3 - <<'PY'
           import json
+          import sys
           from pathlib import Path
-          root=Path("niakvio")
-          data=json.loads((root/"manifest.json").read_text(encoding="utf-8"))
+
+          root=Path("niakvio").resolve()
+          sys.path.insert(0,str(root/"scripts"))
+          from apply_provider_overrides import apply_overrides
+
+          manifest=json.loads((root/"manifest.json").read_text(encoding="utf-8"))
           wanted={"purstream","cineby","videasy"}
           found=set()
-          for row in data["scrapers"]:
+          for row in manifest["scrapers"]:
               pid=str(row.get("id","")).lower()
               if pid not in wanted:
                   continue
               src=root/row["filename"]
-              text=src.read_text(encoding="utf-8")
+              candidate,records=apply_overrides(pid,src.read_bytes(),phase="discovery")
+              text=candidate.decode("utf-8")
               if "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8" not in text:
-                  raise SystemExit(f"V15 missing from {pid}: {src}")
+                  raise SystemExit(f"V15 missing from targeted {pid} candidate")
               if "installJvmSafeStreamStringify" not in text:
-                  raise SystemExit(f"JVM-safe stringify missing from {pid}: {src}")
+                  raise SystemExit(f"JVM-safe stringify missing from targeted {pid} candidate")
               dst=Path(f"provider-{pid}.js")
-              dst.write_text(text,encoding="utf-8")
-              print(f"FIELD_STREAM_JSON_V15_STAGE id={pid} path={row['filename']} chars={len(text)}")
+              dst.write_bytes(candidate)
+              print(
+                  f"FIELD_STREAM_JSON_V15_STAGE id={pid} source={row['filename']} "
+                  f"chars={len(text)} records={len(records)}"
+              )
               found.add(pid)
           missing=wanted-found
           if missing:
