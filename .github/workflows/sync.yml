@@ -289,6 +289,10 @@ jobs:
             python scripts/promote_candidates.py
           fi
 
+      - name: Reapply durable overrides after candidate promotion
+        run: |
+          python scripts/reapply_published_overrides.py
+
       - name: Finalize upstream last-known-good snapshots
         run: |
           test -f checked-artifact/staging/upstream-lkg-pending.json
