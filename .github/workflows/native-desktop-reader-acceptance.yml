@@ -150,6 +150,21 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Validate consolidated Desktop contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/render_platform_runtime_contracts.py --check
+          python3 tests/native_stream_extraction_gate_test.py
+          python3 tests/native_desktop_runtime_diagnostics_order_test.py
+          python3 tests/nuvio_client_upstream_drift_guard_test.py
       - name: Inspect current official Nuvio client drift
         shell: bash
         run: |
