@@ -47,6 +47,10 @@ def assert_contract() -> None:
         'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")',
         'out.description=lines.join("\\n")',
         'function tvDescriptionTunnel(){',
+        'function streamPayload(v){',
+        'function asciiJson(v){',
+        'function installJvmSafeStreamStringify(){',
+        'streamPayload(value)?asciiJson(raw):raw',
         'if(tvDescriptionTunnel()&&out.description)out.size=out.description',
     ):
         if token not in text:
