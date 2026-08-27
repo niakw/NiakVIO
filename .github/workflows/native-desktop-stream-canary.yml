@@ -304,8 +304,6 @@ jobs:
           set -u
           PROVIDERS=(cineby VIDEASY PURSTREAM)
           LOGS=()
-          export NIAKVIO_DESKTOP_PRE_BRAIN_COMMIT=af650c2d93137df85557a486406baa42b73bf589
-          export NIAKVIO_DESKTOP_POST_BRAIN_COMMIT=775d35d586e2e0bafe0bb54b0ecd30527b99f51c
           for provider in "${PROVIDERS[@]}"; do
             echo "===== DESKTOP CANARY: interstellar / $provider / ${{ matrix.os_name }} ====="
             NIAKVIO_TARGET_PROVIDER="$provider" \
