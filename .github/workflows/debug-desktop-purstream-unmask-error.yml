@@ -62,6 +62,35 @@ jobs:
           git -C nuvio-desktop checkout 182c0587c991c3fd0138155ef66fa23cc09d5f0b
           touch nuvio-desktop/local.properties
 
+      - name: Expose PluginRuntime swallowed JS error in disposable checkout
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt")
+          s=p.read_text()
+          old='''                        } catch (e) {
+                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");
+                            __capture_result(JSON.stringify([]));
+                        }'''
+          new='''                        } catch (e) {
+                            var msg = e && e.message ? String(e.message) : String(e);
+                            var stack = e && e.stack ? String(e.stack) : "";
+                            console.error("getStreams error:", msg, stack);
+                            __capture_result(JSON.stringify([{
+                                url: "https://example.invalid/niakvio-debug.mp4",
+                                name: "FIELD_PURSTREAM_JS_ERROR:" + msg,
+                                title: "FIELD_PURSTREAM_JS_ERROR:" + msg,
+                                description: stack
+                            }]));
+                        }'''
+          if s.count(old)!=1:
+              raise SystemExit("PluginRuntime catch anchor count="+str(s.count(old)))
+          p.write_text(s.replace(old,new,1))
+          PY
+          git -C nuvio-desktop diff --check
+
       - name: Install focused failure test
         shell: bash
         run: |
@@ -88,7 +117,7 @@ jobs:
                           episode = null,
                           scraperId = "PURSTREAM",
                       )
-                      println("FIELD_PURSTREAM_UNMASK_RESULT count=" + rows.size)
+                      println("FIELD_PURSTREAM_UNMASK_RESULT count=" + rows.size + " firstName=" + (rows.firstOrNull()?.name ?: "") + " firstTitle=" + (rows.firstOrNull()?.title ?: ""))
                   } catch (t: Throwable) {
                       println("FIELD_PURSTREAM_UNMASK_ERROR type=" + (t::class.qualifiedName ?: t::class.simpleName ?: "Throwable") + " message=" + (t.message ?: "").replace("\n"," "))
                       t.printStackTrace()
