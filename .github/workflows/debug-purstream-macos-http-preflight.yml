@@ -1,0 +1,53 @@
+name: Debug Purstream macOS HTTP preflight
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - ".github/workflows/debug-purstream-macos-http-preflight.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: macos-15
+    timeout-minutes: 8
+    steps:
+      - name: Checkout debug branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Probe Purstream dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          ua='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          key="$(python3 - <<'PY'
+          import json,re
+          data=json.load(open("manifest.json",encoding="utf-8"))
+          row=next(r for r in data["scrapers"] if str(r.get("id","")).lower()=="purstream")
+          text=open(row["filename"],encoding="utf-8").read()
+          m=re.search(r'TMDB_KEY=["\x27]([a-f0-9]{32})["\x27]',text)
+          if not m: raise SystemExit("TMDB key literal not found")
+          print(m.group(1))
+          PY
+          )"
+          probe() {
+            label="$1"
+            url="$2"
+            referer="${3:-}"
+            body="$RUNNER_TEMP/$label.body"
+            headers=(-H "User-Agent: $ua")
+            if [[ -n "$referer" ]]; then headers+=(-H "Referer: $referer"); fi
+            code="$(curl -L --silent --show-error --max-time 20 -o "$body" -w '%{http_code}' "${headers[@]}" "$url" || true)"
+            size="$(wc -c < "$body" 2>/dev/null | tr -d ' ' || echo 0)"
+            prefix="$(head -c 320 "$body" 2>/dev/null | tr '\r\n\t' '   ' || true)"
+            echo "FIELD_PURSTREAM_HTTP_PREFLIGHT label=$label status=$code bytes=$size body64=$(printf '%s' "$prefix" | base64 | tr -d '\n')"
+          }
+          probe tmdb_en "https://api.themoviedb.org/3/movie/157336?api_key=$key&language=en-US"
+          probe tmdb_fr "https://api.themoviedb.org/3/movie/157336?language=fr-FR&api_key=$key"
+          probe purstream_root "https://api.purstream.id/api/v1" "https://purstream.id/"
+          probe purstream_search "https://api.purstream.id/api/v1/search-bar/search/Interstellar" "https://purstream.id/"
