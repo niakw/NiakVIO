@@ -39,12 +39,12 @@ Dernier audit du contrat : **2026-08-26**.
 
 | Device | Dépôt / branche | Révision auditée | État | Transport runtime |
 | --- | --- | --- | --- | --- |
-| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `4e838e470055d61facab285d283d7ec8f00c0347` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
-| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `4e838e470055d61facab285d283d7ec8f00c0347` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
-| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `a4fe0bf1a98ff9a8ca50e1a9dccde7ca842bd817` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `a4fe0bf1a98ff9a8ca50e1a9dccde7ca842bd817` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `a4fe0bf1a98ff9a8ca50e1a9dccde7ca842bd817` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `0d8f99e2b92be5e2dedbbd0eaf9ccd00c78d020a` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `582ae863800414aff5f4a17a533ab19713a99ce4` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
+| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `582ae863800414aff5f4a17a533ab19713a99ce4` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
+| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `ba44afb080d878ba123c978e791be8115e324fe9` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
