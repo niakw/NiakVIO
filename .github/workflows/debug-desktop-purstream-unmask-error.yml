@@ -44,7 +44,7 @@ jobs:
           ]
           changed=0
           for pat in pats:
-            src,n=re.subn(pat,'["catch"](function(error){throw error})',src,count=1)
+            src,n=re.subn(pat,'["catch"](function(error){var msg=error&&error.message?String(error.message):String(error);return[{url:"https://example.invalid/niakvio-debug.mp4",name:"FIELD_PURSTREAM_JS_ERROR:"+msg,title:"FIELD_PURSTREAM_JS_ERROR:"+msg,description:error&&error.stack?String(error.stack):""}]})',src,count=1)
             if n:
               changed+=n
               break
@@ -61,34 +61,6 @@ jobs:
           git clone --filter=blob:none https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
           git -C nuvio-desktop checkout 182c0587c991c3fd0138155ef66fa23cc09d5f0b
           touch nuvio-desktop/local.properties
-
-      - name: Expose PluginRuntime swallowed JS error in disposable checkout
-        shell: bash
-        run: |
-          set -euxo pipefail
-          python3 - <<'PY'
-          import re
-          from pathlib import Path
-          p=Path("nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt")
-          s=p.read_text()
-          pattern=r'''\}\s*catch \(e\) \{\s*console\.error\("getStreams error:", e && e\.message \? e\.message : e, e && e\.stack \? e\.stack : ""\);\s*__capture_result\(JSON\.stringify\(\[\]\)\);\s*\}'''
-          replacement='''} catch (e) {
-                            var msg = e && e.message ? String(e.message) : String(e);
-                            var stack = e && e.stack ? String(e.stack) : "";
-                            console.error("getStreams error:", msg, stack);
-                            __capture_result(JSON.stringify([{
-                                url: "https://example.invalid/niakvio-debug.mp4",
-                                name: "FIELD_PURSTREAM_JS_ERROR:" + msg,
-                                title: "FIELD_PURSTREAM_JS_ERROR:" + msg,
-                                description: stack
-                            }]));
-                        }'''
-          s2,n=re.subn(pattern,replacement,s,count=1,flags=re.S)
-          if n!=1:
-              raise SystemExit("PluginRuntime catch structural patch count="+str(n))
-          p.write_text(s2)
-          PY
-          git -C nuvio-desktop diff --check
 
       - name: Install focused failure test
         shell: bash
