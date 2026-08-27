@@ -256,6 +256,15 @@ def synchronize_global_version(version: str, manifest_path: pathlib.Path) -> Non
         repository["version"] = version
     dump(sources_path, sources)
 
+    catalog_path = ROOT / "provider_catalog.json"
+    if catalog_path.exists():
+        catalog = load(catalog_path)
+        manifest_meta = catalog.setdefault("manifestMeta", {})
+        for key in ("general", "vf"):
+            row = manifest_meta.setdefault(key, {})
+            row["version"] = version
+        dump(catalog_path, catalog)
+
     for path in (manifest_path, ROOT / "vf" / "manifest.json"):
         payload = load(path)
         payload["version"] = version
