@@ -40,6 +40,13 @@ jobs:
           row=next(r for r in data["scrapers"] if str(r.get("id","")).lower()=="purstream")
           text=(root/row["filename"]).read_text(encoding="utf-8")
           markers=[
+              ("desktop_compat", "/* NUVIO_DESKTOP_RUNTIME_COMPAT_V1:"),
+              ("tv_identity", "/* NUVIO_PURSTREAM_TV_IDENTITY_V3:"),
+              ("core_start", "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"),
+              ("hls_audio", "/* NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1"),
+              ("media_safety", "/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1"),
+              ("hls_integrity", "/* NUVIO_HLS_RUNTIME_INTEGRITY_V1"),
+              ("security_hook", "/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"),
               ("runtime", "/* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */"),
               ("facts", "/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
               ("identity", "/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
@@ -56,12 +63,23 @@ jobs:
           if ordered != sorted(ordered):
               raise SystemExit(f"unexpected tail order: {positions}")
           out=Path.cwd()
-          (out/"purstream-tail-00-base.js").write_text(text[:positions["runtime"]].rstrip()+"\n", encoding="utf-8")
-          (out/"purstream-tail-10-runtime.js").write_text(text[:positions["facts"]].rstrip()+"\n", encoding="utf-8")
-          (out/"purstream-tail-20-facts.js").write_text(text[:positions["identity"]].rstrip()+"\n", encoding="utf-8")
-          (out/"purstream-tail-30-identity.js").write_text(text[:positions["presentation"]].rstrip()+"\n", encoding="utf-8")
-          (out/"purstream-tail-40-presentation.js").write_text(text[:positions["branding"]].rstrip()+"\n", encoding="utf-8")
-          (out/"purstream-tail-50-full.js").write_text(text, encoding="utf-8")
+          variants=[
+              ("provider", "desktop_compat"),
+              ("desktop_compat", "tv_identity"),
+              ("tv_identity", "core_start"),
+              ("core_start", "hls_audio"),
+              ("hls_audio", "media_safety"),
+              ("media_safety", "hls_integrity"),
+              ("hls_integrity", "security_hook"),
+              ("security_hook", "runtime"),
+              ("runtime", "facts"),
+              ("facts", "identity"),
+              ("identity", "presentation"),
+              ("presentation", "branding"),
+          ]
+          for idx,(label,next_label) in enumerate(variants):
+              (out/f"purstream-tail-{idx:02d}-{label}.js").write_text(text[:positions[next_label]].rstrip()+"\n", encoding="utf-8")
+          (out/f"purstream-tail-{len(variants):02d}-full.js").write_text(text, encoding="utf-8")
           print("FIELD_DESKTOP_PURSTREAM_TAIL_STAGE path="+row["filename"]+" positions="+json.dumps(positions,sort_keys=True))
           PY
 
@@ -91,12 +109,19 @@ jobs:
               fun bisectTail() = runBlocking {
                   val workspace = File(System.getenv("GITHUB_WORKSPACE"))
                   val variants = listOf(
-                      "base" to "purstream-tail-00-base.js",
-                      "runtime" to "purstream-tail-10-runtime.js",
-                      "facts" to "purstream-tail-20-facts.js",
-                      "identity" to "purstream-tail-30-identity.js",
-                      "presentation" to "purstream-tail-40-presentation.js",
-                      "full" to "purstream-tail-50-full.js",
+                      "provider" to "purstream-tail-00-provider.js",
+                      "desktop_compat" to "purstream-tail-01-desktop_compat.js",
+                      "tv_identity" to "purstream-tail-02-tv_identity.js",
+                      "core_start" to "purstream-tail-03-core_start.js",
+                      "hls_audio" to "purstream-tail-04-hls_audio.js",
+                      "media_safety" to "purstream-tail-05-media_safety.js",
+                      "hls_integrity" to "purstream-tail-06-hls_integrity.js",
+                      "security_hook" to "purstream-tail-07-security_hook.js",
+                      "runtime" to "purstream-tail-08-runtime.js",
+                      "facts" to "purstream-tail-09-facts.js",
+                      "identity" to "purstream-tail-10-identity.js",
+                      "presentation" to "purstream-tail-11-presentation.js",
+                      "full" to "purstream-tail-12-full.js",
                   )
                   val output = mutableListOf<String>()
                   for ((label, file) in variants) {
@@ -135,7 +160,7 @@ jobs:
           rows={}
           for line in Path("purstream-tail-bisect.txt").read_text().splitlines():
               k,v=line.split("=",1); rows[k]=int(v)
-          order=["base","runtime","facts","identity","presentation","full"]
+          order=["provider","desktop_compat","tv_identity","core_start","hls_audio","media_safety","hls_integrity","security_hook","runtime","facts","identity","presentation","full"]
           cause="none"
           previous=None
           for label in order:
@@ -146,6 +171,8 @@ jobs:
               previous=(label,value)
           print("FIELD_DESKTOP_PURSTREAM_TAIL_SUMMARY " + " ".join(f"{k}={rows[k]}" for k in order))
           print("FIELD_DESKTOP_PURSTREAM_TAIL_CAUSE layer="+cause)
-          if cause=="none":
+          positives=[label for label in order if rows[label] > 0]
+          print("FIELD_DESKTOP_PURSTREAM_TAIL_POSITIVES labels="+(",".join(positives) if positives else "none"))
+          if cause=="none" and not positives:
               raise SystemExit(1)
           PY
