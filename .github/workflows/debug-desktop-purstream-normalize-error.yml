@@ -50,7 +50,11 @@ jobs:
               var meta={enName:"Interstellar",year:"2014",duration:"169 min"};
               var rows=[{url:"https://free.finepulfe.xyz/movies/157336-unr8i/master.m3u8",name:"pulse | 1080p | MULTI"}];
               var out=normalizeMovieSources(rows,meta);
-              return Promise.resolve(out);
+              return Promise.resolve([{
+                url:"https://example.invalid/niakvio-debug-ok.mp4",
+                name:"FIELD_PURSTREAM_NORMALIZE_OK_LEN:"+String(out&&out.length||0),
+                title:"FIELD_PURSTREAM_NORMALIZE_OK_LEN:"+String(out&&out.length||0)
+              }]);
             } catch (e) {
               var msg=e&&e.message?String(e.message):String(e);
               var stack=e&&e.stack?String(e.stack):"";
