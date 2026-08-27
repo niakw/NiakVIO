@@ -310,9 +310,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     """
     del options, kwargs
     output = text
-    if AUDIO_MARKER in output:
-        return output
-
     changed = 0
 
     def replacement(match: re.Match[str]) -> str:
@@ -324,7 +321,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
             f"/#EXT-X-MEDIA:[^\\r\\n]*TYPE=AUDIO/i.test({variable}))return"
         )
 
-    output = GUARD.sub(replacement, output)
-    if changed:
-        output = output.rstrip() + f"\n/* {AUDIO_MARKER} */\n"
-    return output
+    if AUDIO_MARKER not in output:
+        output = GUARD.sub(replacement, output)
+        if changed:
+            output = output.rstrip() + f"\n/* {AUDIO_MARKER} */\n"
+    return _move_hls_integrity_to_tail(output)
