@@ -120,7 +120,7 @@ def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
 
 
 def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any] | None) -> tuple[bytes, list[dict[str, Any]]]:
-    if ADAPTIVE_MARKER.encode("utf-8") not in data or not isinstance(provenance_row, dict):
+    if not isinstance(provenance_row, dict):
         return data, []
     accepted = [
         record for record in (provenance_row.get("local_patches") or [])
@@ -132,6 +132,16 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
     ]
     if not accepted:
         return data, []
+
+    marker_present = ADAPTIVE_MARKER.encode("utf-8") in data
+    preserved_ci_uncertain = (
+        str(provenance_row.get("activation_mode") or "") == "preserved_current_ci_uncertain"
+        and str(provenance_row.get("preserved_reason") or "")
+        == "ci_uncertain_kept_last_published_artifact"
+    )
+    if not marker_present and preserved_ci_uncertain:
+        return data, []
+
     options = dict(accepted[-1]["options"])
     spec = importlib.util.spec_from_file_location("nuvio_reapply_adaptive_runtime", ADAPTIVE_SCRIPT)
     if spec is None or spec.loader is None:
