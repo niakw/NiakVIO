@@ -104,6 +104,10 @@ concurrency:
 
 env:
   NIAKVIO_REPRESENTATIVE_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+  # This workflow owns one explicit prebuild after all fixture/client hardening.
+  # Disable prepare_native_reader_acceptance.py's implicit --initial prebuild so
+  # every Android path compiles exactly once before QEMU.
+  NIAKVIO_SKIP_ANDROID_PREBUILD: "1"
 
 jobs:
   resolve:

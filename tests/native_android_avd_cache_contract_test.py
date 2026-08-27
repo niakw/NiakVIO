@@ -58,6 +58,7 @@ assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE: \"1\"" not in workflow
 # package task to happen inside the emulator window previously exhausted the
 # Gradle daemon heap during NuvioTV :app:packageFullDebug.
 assert workflow.count("prebuild_native_android_reader_suite.sh") >= 3
+assert 'NIAKVIO_SKIP_ANDROID_PREBUILD: "1"' in workflow
 assert workflow.index("Prebuild TV reader before QEMU") < workflow.index("Execute representative routes in one TV boot")
 assert workflow.index("Prebuild Mobile reader before QEMU") < workflow.index("Execute representative routes in one Mobile boot")
 assert workflow.index("Prebuild TV candidate retest before QEMU") < workflow.index("Re-read mutated providers plus deterministic sentinels after Brain mutation")
