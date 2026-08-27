@@ -4,7 +4,7 @@
   <h1>NiakVIO</h1>
   <p><a href="README.md">English</a> · <strong>Français</strong></p>
   <p><strong>Le moteur communautaire qui agrège, teste, répare et maintient les providers Nuvio.</strong></p>
-  <p>VO · VF · VOSTFR &nbsp;•&nbsp; Mobile · Desktop · TV</p>
+  <p>VO · VF &nbsp;•&nbsp; Mobile · Desktop · TV</p>
 
 [![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
 [![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
@@ -18,7 +18,7 @@
 
 ### Manifest général — recommandé ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
 
-Tous les providers publiés : VF, VOSTFR, VO et autres langues.
+Tous les providers publiés : VF, VO et autres langues explicitement déclarées par les providers ou les flux.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
@@ -26,7 +26,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 
 ### Manifest francophone ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
 
-Projection centrée sur les providers proposant du français ou du sous-titrage français.
+Projection centrée sur les providers proposant du français lorsque cette langue est explicitement déclarée par le provider ou le flux.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
@@ -102,7 +102,7 @@ NiakVIO ajoute une couche de maintenance entre les repositories providers et Nuv
 - **réparation automatique bornée** lorsque la meilleure variante connue ne fonctionne plus ;
 - **contrôle réel du média**, pas seulement de l'URL retournée ;
 - **vérification de l'œuvre, de la saison et de l'épisode** pour éviter les faux positifs ;
-- **attention particulière au français** sans inventer VF/VOSTFR à partir d'un simple nom de domaine ;
+- **attention particulière au français** sans inventer VF à partir d'un simple nom de domaine ;
 - **preuves séparées Mobile, Desktop et TV** ;
 - **dernier état sain conservé** lorsqu'une nouvelle observation est seulement inconclusive ;
 - **publication atomique et fail-closed** pour empêcher une génération partielle de remplacer silencieusement un état sain.
@@ -168,7 +168,7 @@ Les preuves peuvent combiner titre, alias, année, type, saison, épisode, metad
 
 ### Langues
 
-VF/VOSTFR n'est jamais déduite d'un seul indice. Selon les informations disponibles, NiakVIO combine metadata provider, domaine, catalogue, player, pistes audio, sous-titres et observations de lecture.
+La langue d'un flux n'est jamais déduite d'un seul indice. NiakVIO conserve en priorité les indications explicitement fournies par le provider ou le flux et peut les croiser avec les métadonnées disponibles. **Les sous-titres ne sont ni inférés ni garantis par NiakVIO** : seule une indication explicitement exposée par un provider ou dans la description/métadonnée d'un flux peut être affichée.
 
 ---
 

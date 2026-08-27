@@ -4,7 +4,7 @@
   <h1>NiakVIO</h1>
   <p><strong>English</strong> · <a href="README.fr.md">Français</a></p>
   <p><strong>A community engine that aggregates, tests, repairs and maintains Nuvio providers.</strong></p>
-  <p>VO · VF · VOSTFR &nbsp;•&nbsp; Mobile · Desktop · TV</p>
+  <p>VO · VF &nbsp;•&nbsp; Mobile · Desktop · TV</p>
 </div>
 
 ---

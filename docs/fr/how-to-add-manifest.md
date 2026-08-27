@@ -16,7 +16,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 
 ### Manifest francophone
 
-À utiliser si vous souhaitez uniquement la sélection orientée français / sous-titres français.
+À utiliser si vous souhaitez uniquement la sélection orientée français, sur la base d'informations de langue explicitement déclarées par les providers ou les flux.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
@@ -28,13 +28,13 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 
 Chemin actuel dans l'interface Nuvio :
 
-1. Ouvrez **Settings**.
-2. Ouvrez **Content & Discovery**.
+1. Ouvrez **Paramètres**.
+2. Ouvrez **Contenu et découverte**.
 3. Ouvrez **Plugins**.
-4. Dans **ADD REPOSITORY**, collez l'URL du manifest NiakVIO dans **Plugin manifest URL**.
-5. Sélectionnez **Install Plugin Repository**.
-6. Vérifiez que **Enable plugin providers globally** est activé.
-7. Vérifiez que NiakVIO apparaît dans **INSTALLED REPOSITORIES** et que ses providers sont listés.
+4. Dans **AJOUTER UN DÉPÔT**, collez l'URL du manifest NiakVIO dans **URL du manifeste du plugin**.
+5. Sélectionnez **Installer le dépôt de plugin**.
+6. Vérifiez que **Activer les fournisseurs de plugins** est activé.
+7. Vérifiez que NiakVIO apparaît dans **DÉPÔTS INSTALLÉS** et que ses providers sont listés.
 
 Si Nuvio affiche **TMDB API key missing**, configurez TMDB dans les réglages Nuvio. Certains providers utilisent les métadonnées TMDB pour assurer le bon matching film / série / épisode.
 
@@ -42,16 +42,16 @@ Si Nuvio affiche **TMDB API key missing**, configurez TMDB dans les réglages Nu
 
 Chemin actuel dans NuvioTV :
 
-1. Ouvrez **Settings**.
-2. Ouvrez **Content Discovery**.
+1. Ouvrez **Paramètres**.
+2. Ouvrez **Contenu et découverte**.
 3. Ouvrez **Plugins**.
-4. Sélectionnez **Add repository**.
+4. Sélectionnez **Ajouter un dépôt**.
 5. Collez l'URL du manifest NiakVIO.
-6. Sélectionnez **Add**.
-7. Vérifiez que **Enable plugin providers globally** est activé.
+6. Sélectionnez **Ajouter**.
+7. Vérifiez que **Activer les fournisseurs de plugins globalement** est activé.
 8. Vérifiez que le repository NiakVIO et ses providers apparaissent dans la liste.
 
-NuvioTV propose également **Manage from phone** : ouvrez cette option, scannez le QR code, puis ajoutez ou supprimez le repository depuis votre téléphone. Confirmez ensuite la modification sur la TV si NuvioTV le demande.
+NuvioTV propose également **Gérer depuis le téléphone** : ouvrez cette option, scannez le QR code, puis ajoutez ou supprimez le repository depuis votre téléphone. Confirmez ensuite la modification sur la TV si NuvioTV le demande.
 
 ## Vérifier que NiakVIO est actif
 

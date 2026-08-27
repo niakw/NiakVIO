@@ -16,7 +16,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 
 ### French-focused manifest
 
-Use this if you only want providers focused on French / French-subtitled content.
+Use this if you only want the French-focused provider selection, based on language information explicitly declared by providers or streams.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
