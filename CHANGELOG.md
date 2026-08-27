@@ -1,3 +1,14 @@
+## 5.21.0 — Audit technique, clients natifs et durcissement de la publication
+
+- Intègre les corrections issues du croisement SonarQube / DeepSource / CodeScene sans réécriture aveugle des providers générés, snapshots LKG ou faux positifs de scanner.
+- Corrige les contrats Brain/runtime confirmés, durcit les permissions GitHub Actions et impose les installations npm basées sur le lockfile.
+- Empêche la persistance de JWT, cookies et credentials tiers dans les diagnostics committés tout en conservant les requêtes runtime réelles inchangées.
+- Aligne le suivi officiel NuvioMobile / NuvioDesktop / NuvioTV sur leurs HEADs audités courants et maintient ces dépôts en référence read-only.
+- Étend la vitrine README pour exposer explicitement la couverture TV, Mobile, Desktop macOS et Desktop Windows, même lorsqu'une plateforme n'a encore aucune preuve positive conservée.
+- Synchronise désormais la version de release dans package.json, package-lock.json, sources.json, manifest.json, vf/manifest.json et provider_catalog.json.
+- Préserve le versioning individuel des providers : un scraper ne change de version que lorsque son payload client-visible change réellement.
+- Conserve les invariants ARCHI 2 : provider_catalog.json canonique, sync.yml orchestrateur unique, Quick/Deep séparés, LKG fail-closed, identité média prioritaire et preuves natives indépendantes par client.
+
 ## 5.20.50 — Quarantaine des durées contradictoires observées
 
 - Met VIXSRC en quarantaine cache-safe après un HLS Interstellar annoncé à 169 min mais mesuré à 4 765,75 s (~79 min, ratio 0,470).
