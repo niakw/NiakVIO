@@ -27,7 +27,7 @@ presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_s
 assert presentation.REVISION == "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8"
 
 
-def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, raw: bool = False):
+def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
     assert "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8" in patched
@@ -54,7 +54,7 @@ def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None,
         )
         assert result.returncode == 0, result.stdout + result.stderr
         output = result.stdout.strip()
-        return output if raw else json.loads(output)
+        return output if return_raw else json.loads(output)
 
 
 tmdb = r"""async function(url){
@@ -92,7 +92,7 @@ raw_stream_json = run(
     "purstream",
     "p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v)))",
     tmdb,
-    raw=True,
+    return_raw=True,
 )
 assert raw_stream_json.isascii(), raw_stream_json
 assert "\\ud83c\\udfac" in raw_stream_json.lower(), raw_stream_json
