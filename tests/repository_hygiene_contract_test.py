@@ -104,11 +104,19 @@ assert "vm.createContext" not in validator
 assert "getStreamsContracts" not in validator
 
 brain = (ROOT / ".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
-assert "publish-repair-proposal:" not in brain
+assert "publish-repair-proposal:" in brain
+assert "brain-repair/proposal" in brain
 assert "brain-repair/proposals" not in brain
+assert "if: github.event_name == 'schedule'" in brain
+assert "pull-requests: write" in brain
+assert "gh pr create" in brain
 assert 'BRANCH="brain-learning/proposals"' in brain
 assert "--baseline-health brain-learning-input/baseline-health.json" in brain
 assert "tests/native_reader_ownership_policy_test.py" in brain
+
+main_only = (ROOT / "scripts/enforce_main_only_repository_policy.py").read_text(encoding="utf-8")
+assert 'BRAIN_PROPOSAL_BRANCH = "brain-repair/proposal"' in main_only
+assert "scheduled_only=true" in main_only
 
 hygiene = (ROOT / ".github/workflows/repository-hygiene.yml").read_text(encoding="utf-8")
 assert "brain-learning/proposals" in hygiene
