@@ -211,6 +211,17 @@ jobs:
           FIRST_FIXTURE="${{ matrix.fixtures }}"
           FIRST_FIXTURE="${FIRST_FIXTURE%% *}"
           python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$FIRST_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
+      - name: Prebuild TV reader before QEMU
+        shell: bash
+        env:
+          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+        run: |
+          set -euo pipefail
+          FIRST_FIXTURE="${{ matrix.fixtures }}"
+          export NIAKVIO_PRIMARY_FIXTURE="${FIRST_FIXTURE%% *}"
+          bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Prime Android adb server
@@ -309,6 +320,14 @@ jobs:
           touch nuvio-mobile/local.properties
           python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+      - name: Prebuild Mobile reader before QEMU
+        shell: bash
+        env:
+          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+        run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh mobile
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Prime Android adb server
@@ -463,6 +482,15 @@ jobs:
           python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest native-reader-repair/retest-manifest.json --provider all --streams all --initial
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         if: steps.repair.outputs.proposals != '0'
+      - name: Prebuild TV candidate retest before QEMU
+        if: steps.repair.outputs.proposals != '0'
+        shell: bash
+        env:
+          NIAKVIO_TARGET_MANIFEST: native-reader-repair/retest-manifest.json
+          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+        run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
       - name: Enable KVM for candidate retest
         if: steps.repair.outputs.proposals != '0'
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
