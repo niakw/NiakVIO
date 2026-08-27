@@ -184,12 +184,26 @@ jobs:
               time.sleep(2)
 
           remaining = duplicate_active_runs()
-          remaining_actionable = [row for row in remaining if row[0] not in platform_orphans]
           remaining_orphans = [row for row in remaining if row[0] in platform_orphans]
+          remaining_pending_cancel = [
+              row
+              for row in remaining
+              if row[0] in requested
+              and row[1] == "queued"
+              and row[0] not in failures
+              and row[0] not in platform_orphans
+          ]
+          pending_ids = {row[0] for row in remaining_pending_cancel}
+          remaining_actionable = [
+              row
+              for row in remaining
+              if row[0] not in platform_orphans and row[0] not in pending_ids
+          ]
 
           print(
               f"FIELD_STALE_MAIN_DONE current={main_head()} requested={len(requested)} "
               f"remaining_actionable={len(remaining_actionable)} "
+              f"pending_cancel={len(remaining_pending_cancel)} "
               f"github_orphans={len(remaining_orphans)} failures={len(failures)}"
           )
           for run_id, status, run_head, name, key, newest_id in remaining_orphans:
@@ -197,6 +211,12 @@ jobs:
                   f"::warning title=GitHub Actions orphaned queued run::run={run_id} "
                   f"head={run_head[:12]} workflow={name} key={key} newest={newest_id}; "
                   "cancel and force-cancel both return 409"
+              )
+          for run_id, status, run_head, name, key, newest_id in remaining_pending_cancel:
+              print(
+                  f"::warning title=GitHub Actions cancellation propagation pending::run={run_id} "
+                  f"head={run_head[:12]} workflow={name} key={key} newest={newest_id}; "
+                  "cancel request was accepted but GitHub still reports queued"
               )
           if remaining_actionable:
               for run_id, status, run_head, name, key, newest_id in remaining_actionable[:50]:
