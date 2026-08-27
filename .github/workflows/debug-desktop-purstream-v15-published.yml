@@ -1,0 +1,113 @@
+name: Debug Desktop Purstream V15 published
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - ".github/workflows/debug-desktop-purstream-v15-published.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: debug-desktop-purstream-v15-published
+  cancel-in-progress: true
+
+jobs:
+  verify-published:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - name: Checkout NiakVIO debug branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Stage exact published Purstream
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          row=next(r for r in data["scrapers"] if str(r.get("id","")).lower()=="purstream")
+          src=Path(row["filename"])
+          text=src.read_text(encoding="utf-8")
+          assert row["version"]=="3.0.37", row
+          assert "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8" in text
+          assert "installJvmSafeStreamStringify" in text
+          assert "field-safety-v5-native-identity-collisions-all-rows" in text
+          assert "scoped-playback-context-v4" not in text
+          Path("provider-purstream-published.js").write_text(text,encoding="utf-8")
+          print(f"FIELD_PURSTREAM_V15_PUBLISHED_STAGE version={row['version']} path={row['filename']} chars={len(text)}")
+          PY
+
+      - name: Checkout official NuvioDesktop reproducer runtime
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout 182c0587c991c3fd0138155ef66fa23cc09d5f0b
+          touch nuvio-desktop/local.properties
+
+      - name: Install published Purstream runtime test
+        shell: bash
+        run: |
+          set -euxo pipefail
+          target="nuvio-desktop/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioPurstreamV15PublishedTest.kt"
+          cat > "$target" <<'KOTLIN'
+          package com.nuvio.app.features.plugins
+
+          import com.nuvio.app.features.plugins.runtime.PluginRuntime
+          import java.io.File
+          import kotlinx.coroutines.runBlocking
+          import kotlinx.coroutines.withTimeoutOrNull
+          import kotlin.test.Test
+          import kotlin.test.assertTrue
+
+          class NiakvioPurstreamV15PublishedTest {
+              @Test
+              fun interstellarPublished() = runBlocking {
+                  val workspace=File(System.getenv("GITHUB_WORKSPACE"))
+                  val started=System.currentTimeMillis()
+                  val rows=withTimeoutOrNull(90_000L) {
+                      PluginRuntime.executePlugin(
+                          code=File(workspace,"provider-purstream-published.js").readText(),
+                          tmdbId="157336",
+                          mediaType="movie",
+                          season=null,
+                          episode=null,
+                          scraperId="PURSTREAM",
+                      )
+                  }
+                  val count=rows?.size ?: -1
+                  val first=rows?.firstOrNull()
+                  println(
+                      "FIELD_PURSTREAM_V15_PUBLISHED_DESKTOP status="+
+                      (if(rows==null)"timeout" else "completed")+
+                      " count="+count+
+                      " duration_ms="+(System.currentTimeMillis()-started)+
+                      " firstUrl="+(first?.url?:"")+
+                      " firstTitle="+(first?.title?:"")+
+                      " firstName="+(first?.name?:"")
+                  )
+                  assertTrue(rows != null, "Purstream Interstellar timed out on published V15 bundle")
+                  assertTrue(count > 0, "Purstream Interstellar must return >0 streams on Desktop from published V15 bundle")
+              }
+          }
+          KOTLIN
+
+      - name: Execute exact published bundle on official Desktop runtime
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop             :composeApp:desktopTest             --tests 'com.nuvio.app.features.plugins.NiakvioPurstreamV15PublishedTest'             --no-build-cache --no-configuration-cache --console=plain
