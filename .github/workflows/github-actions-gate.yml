@@ -24,7 +24,7 @@ on:
       - "scripts/normalize_runtime_repository_dependencies.py"
       - "tests/evidence_sanitization_test.py"
       - "tests/native_reader_payload_schema_test.py"
-      - "tests/native_desktop_runtime_diagnostics_test.py"
+      - "tests/native_desktop_runtime_diagnostics_order_test.py"
       - "tests/native_android_avd_cache_contract_test.py"
       - "scripts/tv_hls_duration_identity.py"
       - "scripts/rank_provider_portfolio.cjs"
@@ -108,7 +108,7 @@ jobs:
           python3 tests/generic_recovery_hardening_test.py
           python3 tests/native_reader_payload_schema_test.py
           python3 tests/evidence_sanitization_test.py
-          python3 tests/native_desktop_runtime_diagnostics_test.py
+          python3 tests/native_desktop_runtime_diagnostics_order_test.py
           python3 tests/native_android_avd_cache_contract_test.py
           python3 tests/ci_preservation_policy_test.py
           python3 tests/native_corpus_device_lab_test.py
