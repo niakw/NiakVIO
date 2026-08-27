@@ -45,7 +45,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --exit-code 51c25116cab9ce7c923ee3f1ba35694644269c4a -- \
-            manifest.json vf/manifest.json provider_catalog.json providers/ \
+            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json provider_catalog.json providers/ \
             PROVENANCE.json provider-overrides.json provider-domain-history.json \
             upstream-lkg.json upstream-lkg/ health-report.json health-history.json \
             dns-preflight-report.json provider-hub-report.json diagnostics-report.json \
@@ -72,6 +72,7 @@ jobs:
             exit 1
           fi
 
+      # no-anime-projection-verification-v1
       - name: Refresh release hashes for current main
         shell: bash
         run: |
