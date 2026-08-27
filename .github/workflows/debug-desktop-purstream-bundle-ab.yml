@@ -110,16 +110,20 @@ jobs:
           from pathlib import Path
           p=Path("nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/host/HostFunctions.kt")
           s=p.read_text()
-          old='''        runtime.function("__capture_result") { args ->
-            onResult(args.getOrNull(0)?.toString() ?: "[]")
-            null
-        }'''
-          new='''        runtime.function("__capture_result") { args ->
-            val raw = args.getOrNull(0)?.toString() ?: "[]"
-            println("FIELD_DESKTOP_CAPTURE_RAW bytes=" + raw.length + " raw=" + raw.take(4000))
-            onResult(raw)
-            null
-        }'''
+          old = "\\n".join([
+              '        runtime.function("__capture_result") { args ->',
+              '            onResult(args.getOrNull(0)?.toString() ?: "[]")',
+              '            null',
+              '        }',
+          ])
+          new = "\\n".join([
+              '        runtime.function("__capture_result") { args ->',
+              '            val raw = args.getOrNull(0)?.toString() ?: "[]"',
+              '            println("FIELD_DESKTOP_CAPTURE_RAW bytes=" + raw.length + " raw=" + raw.take(4000))',
+              '            onResult(raw)',
+              '            null',
+              '        }',
+          ])
           if s.count(old) != 1:
               raise SystemExit("HostFunctions capture anchor count="+str(s.count(old)))
           p.write_text(s.replace(old,new,1))
