@@ -1,0 +1,154 @@
+name: Debug Desktop Purstream normalize field bisect
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - ".github/workflows/debug-desktop-purstream-normalize-field-bisect.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  normalize-field-bisect:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - name: Checkout NiakVIO debug branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Stage normalized-field variants
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root=Path("niakvio")
+          manifest=json.loads((root/"manifest.json").read_text(encoding="utf-8"))
+          row=next(r for r in manifest["scrapers"] if str(r.get("id","")).lower()=="purstream")
+          text=(root/row["filename"]).read_text(encoding="utf-8")
+          desktop=text.find("/* NUVIO_DESKTOP_RUNTIME_COMPAT_V1:")
+          if desktop<0:
+              raise SystemExit("Purstream desktop marker missing")
+          floor=text[:desktop].rstrip()+"\n"
+          setup=r'''
+          var __rows=normalizeMovieSources(
+            [{url:"https://free.finepulfe.xyz/movies/157336-unr8i/master.m3u8",name:"pulse | 1080p | MULTI"}],
+            {enName:"Interstellar",year:"2014",duration:"169 min"}
+          );
+          var __r=__rows[0]||{};
+          '''
+
+          variants={
+            "00_probe": r'''return [{url:"https://example.invalid/debug.mp4",name:"LEN:"+String(__rows.length)+" URL:"+String(__r.url||"")}];''',
+            "10_url": r'''return [{url:__r.url}];''',
+            "20_name": r'''return [{url:__r.url,name:__r.name}];''',
+            "30_title": r'''return [{url:__r.url,name:__r.name,title:__r.title}];''',
+            "31_title_ascii": r'''return [{url:__r.url,name:__r.name,title:String(__r.title||"").replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g,"")}];''',
+            "32_title_literal_emoji": r'''return [{url:__r.url,name:__r.name,title:"TEST 🎬"}];''',
+            "40_size": r'''return [{url:__r.url,name:__r.name,title:"ASCII",size:__r.size}];''',
+            "50_description": r'''return [{url:__r.url,name:__r.name,title:"ASCII",description:__r.description}];''',
+            "60_format": r'''return [{url:__r.url,name:__r.name,title:"ASCII",format:__r.format,quality:__r.quality,language:__r.language}];''',
+            "70_headers": r'''return [{url:__r.url,name:__r.name,title:"ASCII",headers:__r.headers}];''',
+            "80_full_no_text": r'''return [{url:__r.url,name:__r.name,quality:__r.quality,language:__r.language,format:__r.format,headers:__r.headers}];''',
+            "90_full": r'''return __rows;''',
+          }
+
+          for key,ret in variants.items():
+              body=f'''
+          module.exports.getStreams=function(){{
+            {setup}
+            {ret}
+          }};
+          globalThis.getStreams=module.exports.getStreams;
+          '''
+              Path(f"purstream-normalize-{key}.js").write_text(floor+"\n"+body+"\n",encoding="utf-8")
+          print("FIELD_PURSTREAM_NORMALIZE_STAGE path="+row["filename"]+" variants="+str(len(variants)))
+          PY
+
+      - name: Checkout official NuvioDesktop runtime
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout 182c0587c991c3fd0138155ef66fa23cc09d5f0b
+          touch nuvio-desktop/local.properties
+
+      - name: Install normalized-field bisect test
+        shell: bash
+        run: |
+          set -euxo pipefail
+          target="nuvio-desktop/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioPurstreamNormalizeFieldBisectTest.kt"
+          cat > "$target" <<'KOTLIN'
+          package com.nuvio.app.features.plugins
+
+          import com.nuvio.app.features.plugins.runtime.PluginRuntime
+          import java.io.File
+          import kotlinx.coroutines.runBlocking
+          import kotlinx.coroutines.withTimeoutOrNull
+          import kotlin.test.Test
+
+          class NiakvioPurstreamNormalizeFieldBisectTest {
+              @Test
+              fun fields() = runBlocking {
+                  val workspace=File(System.getenv("GITHUB_WORKSPACE"))
+                  val variants=listOf(
+                      "probe" to "purstream-normalize-00_probe.js",
+                      "url" to "purstream-normalize-10_url.js",
+                      "name" to "purstream-normalize-20_name.js",
+                      "title" to "purstream-normalize-30_title.js",
+                      "title_ascii" to "purstream-normalize-31_title_ascii.js",
+                      "title_literal_emoji" to "purstream-normalize-32_title_literal_emoji.js",
+                      "size" to "purstream-normalize-40_size.js",
+                      "description" to "purstream-normalize-50_description.js",
+                      "format" to "purstream-normalize-60_format.js",
+                      "headers" to "purstream-normalize-70_headers.js",
+                      "full_no_text" to "purstream-normalize-80_full_no_text.js",
+                      "full" to "purstream-normalize-90_full.js",
+                  )
+                  val report=File(workspace,"purstream-normalize-field-bisect.txt")
+                  report.writeText("")
+                  for((label,file) in variants){
+                      val started=System.currentTimeMillis()
+                      val rows=withTimeoutOrNull(15_000L) {
+                          PluginRuntime.executePlugin(
+                              code=File(workspace,file).readText(),
+                              tmdbId="157336",
+                              mediaType="movie",
+                              season=null,
+                              episode=null,
+                              scraperId="PURSTREAM",
+                          )
+                      }
+                      val first=rows?.firstOrNull()
+                      val line="FIELD_PURSTREAM_NORMALIZE_BISECT label="+label+
+                          " status="+(if(rows==null)"timeout" else "completed")+
+                          " count="+(rows?.size ?: -1)+
+                          " duration_ms="+(System.currentTimeMillis()-started)+
+                          " firstName="+(first?.name?:"")
+                      println(line)
+                      report.appendText(line+"\n")
+                  }
+              }
+          }
+          KOTLIN
+
+      - name: Execute normalized-field bisect
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop             :composeApp:desktopTest             --tests 'com.nuvio.app.features.plugins.NiakvioPurstreamNormalizeFieldBisectTest'             --no-build-cache --no-configuration-cache --console=plain
+          cat "$GITHUB_WORKSPACE/purstream-normalize-field-bisect.txt"
