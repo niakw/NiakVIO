@@ -8,22 +8,31 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PATCH = ROOT / "scripts" / "provider_patches" / "hls_master_audio_preserver_v1.py"
+HLS_PATCH = ROOT / "scripts" / "provider_patches" / "hls_master_audio_preserver_v1.py"
+SAFETY_PATCH = ROOT / "scripts" / "provider_patches" / "runtime_capability_media_safety_v4.py"
 
-spec = importlib.util.spec_from_file_location("runtime_media_safety_patch", PATCH)
-assert spec is not None and spec.loader is not None
-module = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(module)
+def load_module(path: Path, name: str):
+    spec = importlib.util.spec_from_file_location(name, path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+hls_module = load_module(HLS_PATCH, "hls_master_audio_preserver")
+safety_module = load_module(SAFETY_PATCH, "runtime_capability_media_safety")
 
 BASE = "module.exports={getStreams:async()=>[{name:'x',url:'https://media.example/master.m3u8',type:'hls'}]};\n"
 
 
 def patched(provider_id: str, source: str = BASE) -> str:
-    return module.apply(source, context={"provider_id": provider_id})
+    safety = safety_module.apply(source, context={"provider_id": provider_id})
+    return hls_module.apply(safety, context={"provider_id": provider_id})
 
 
 future = patched("future-provider")
-assert "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1" in future
+assert future.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
+assert '"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"' in future
+assert '"implementationRevision":"scoped-playback-context-v4"' not in future
 assert '"durationIdentity":false' in future
 assert '"strictPlayback":false' in future
 
