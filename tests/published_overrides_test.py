@@ -157,6 +157,43 @@ with tempfile.TemporaryDirectory() as tmp:
     assert result.returncode == 1, unknown_output
     assert 'unknown profile unknown_runtime_strategy' in unknown_output, unknown_output
 
+# Revisioned adaptive runtime profiles must validate against their own
+# immutable marker. V5 is not a V4 alias and must never be downgraded.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    (root/'providers').mkdir()
+    (root/'provider-overrides.json').write_text(json.dumps({
+        'domain_replacements': {},
+        'provider_patches': {},
+        'patch_profiles': {}
+    }))
+    provider = root/'providers/demo--nuvio--v5.js'
+    provider.write_text('/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5:test */\nmodule.exports={};\n')
+    (root/'manifest.next.json').write_text(json.dumps({'scrapers':[
+        {'id':'demo','filename':'providers/demo--nuvio--v5.js'}
+    ]}))
+    provenance = {'providers': {'demo': {'local_patches': [{
+        'type':'patch_profile',
+        'profile':'adaptive_runtime_recovery',
+        'phase':'runtime',
+        'revision':5,
+        'options':{'base_url':'https://demo.example'}
+    }]}}}
+    (root/'PROVENANCE.json').write_text(json.dumps(provenance))
+    script=(ROOT/'scripts/validate_published_overrides.py').read_text().replace(
+        'ROOT = Path(__file__).resolve().parents[1]', f'ROOT = Path({str(root)!r})')
+    test_script=root/'validate.py'; test_script.write_text(script)
+    (root/'override_text_utils.py').write_text((ROOT/'scripts/override_text_utils.py').read_text())
+
+    result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
+    assert result.returncode == 0, result.stderr + result.stdout
+
+    provider.write_text('module.exports={};\n')
+    result=subprocess.run([sys.executable,str(test_script)],capture_output=True,text=True)
+    output=result.stderr + result.stdout
+    assert result.returncode == 1, output
+    assert 'NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5' in output, output
+
 # A runtime repair rejected by the deep loop must not poison a preserved
 # previously-published artifact. The preservation path is explicit in
 # provenance, and the absence of the immutable runtime marker proves that the
