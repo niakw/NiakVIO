@@ -2,7 +2,7 @@
   "schema_version": 65,
   "repository": {
     "name": "Nuvio Curated Providers",
-    "manifest_version": "5.20.79",
+    "manifest_version": "5.21.0",
     "description": "Combined Nuvio manifest generated from every non-P2P entry declared by Gowaru, All-in-One-Nuvio and Yoru. Official address hubs, public Telegram announcements, curated candidates, consecutive search confirmation and persistent last-known-good history maintain provider routes. Each upstream keeps two content-addressed snapshots; current published bundles remain the final functional fallback. Curation merges descriptions, catalogue types, languages, formats and quality signals across the three upstream manifests. Enabled providers follow the explicit priority list, then French-language and quality ranking. P2P remains excluded."
   },
   "upstreams": {
@@ -157,26 +157,29 @@
     "no_provider_specific_activation_exception": true,
     "manifest_version_bumps_when_payload_changes": true
   },
-  "manifest_version": "5.20.79",
+  "manifest_version": "5.21.0",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
     "clients": {
       "nuvio-mobile": {
-        "contract_ref": "0d6e30e4566e6f9f2051d5f80a1e3f1e0fcb1f18",
-        "accepted_ref": "bbac53b2767937c9dfede44cb86906ea921605fb",
-        "accepted_at": "2026-08-17T17:23:26.346598+00:00",
-        "acceptance": "manual-history-divergence-reviewed-unrelated-only",
-        "changed_file_count": 5,
+        "contract_ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
+        "accepted_ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
+        "accepted_at": "2026-08-27T00:00:00+00:00",
+        "acceptance": "manual-contract-safe-advance",
+        "changed_file_count": 8,
         "observed_sensitive_changed_files": [],
         "unrelated_changed_files": [
-          "composeApp/src/commonMain/composeResources/values-hu/strings.xml",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryDisplaySettings.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/library/LibraryModels.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/simkl/SimklLibraryProjection.kt",
-          "iosApp/Configuration/Version.xcconfig"
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/MainAppContent.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/HeroTrailerSelector.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsModels.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/simkl/SimklMutationReceipt.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watching/domain/WatchingPolicies.kt",
+          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataServiceTest.kt",
+          "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/trailer/InAppYouTubeExtractor.kt"
         ],
-        "manual_review_note": "History divergence reviewed against 75e7429e974fd6736b31ef39278bb2af5699a372. Net tree diff changes library/SIMKL categorization, Hungarian localization and iOS version only; no configured plugin, stream or player runtime contract path changed."
+        "manual_review_note": "Nine-commit delta from 582ae8638004 reviewed on 2026-08-27. No configured provider/stream/player contract path changed; only UI/details/trailer/SIMKL/TMDB/watching-policy files moved, so the official Mobile head is accepted without provider mutation."
       },
       "nuvio-desktop": {
         "contract_ref": "463cd0b72a8f08e2529efcbacfff2e7da8d4453a",

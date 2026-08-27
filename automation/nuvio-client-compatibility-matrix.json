@@ -68,7 +68,7 @@
         "version_code": 109
       },
       "current_audited": {
-        "ref": "582ae863800414aff5f4a17a533ab19713a99ce4",
+        "ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
         "version_name": "0.4.11",
         "version_code": 115
       },
@@ -95,7 +95,7 @@
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
         "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
         "surface_note": "Mobile and Desktop currently share several runtime bridge subtrees, but their PluginRuntime/JsBindings/network sources are independently versioned and must be diffed separately.",
-        "audited_change": "Repository refresh cadence/cache logic changed while PluginRuntime positional getStreams and PluginRuntimeResult projection remain unchanged through the audited cmp-rewrite HEAD. No provider/stream contract path changed in the two commits up to 582ae863800414aff5f4a17a533ab19713a99ce4."
+        "audited_change": "Nine commits from 582ae8638004 to 1b84ee475cea were reviewed on 2026-08-27. They touch MainAppContent, details/trailer UI, SIMKL receipt, TMDB metadata and watching policies only; no configured provider/stream/player contract path changed. QuickJS positional getStreams, PluginRuntimeResult projection and transport contracts remain unchanged."
       },
       "brain_capabilities": [
         "invocation",

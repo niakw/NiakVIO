@@ -39,8 +39,8 @@ Dernier audit du contrat : **2026-08-26**.
 
 | Device | Dépôt / branche | Révision auditée | État | Transport runtime |
 | --- | --- | --- | --- | --- |
-| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `582ae863800414aff5f4a17a533ab19713a99ce4` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
-| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `582ae863800414aff5f4a17a533ab19713a99ce4` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
+| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `1b84ee475ceaa120089e38eb9fc60f4e82d66955` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
+| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `1b84ee475ceaa120089e38eb9fc60f4e82d66955` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
 | macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
 | Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |

@@ -202,6 +202,17 @@ Les profils Nuvio, snapshots AVD, caches providers et caches Gradle sont conserv
 
 **12 providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **4 cas de lecture distincts** et **1 plateforme native** déjà représentée. L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.
 
+### 📡 Couverture des lecteurs officiels
+
+Cette vue distingue **support du lecteur** et **preuve positive conservée** : les quatre familles sont suivies en permanence, même lorsqu'aucune preuve saine n'a encore été retenue pour l'une d'elles.
+
+| Lecteur officiel | Preuves positives conservées | Providers avec preuve | Dernière preuve | État |
+|---|---:|---:|---:|---|
+| 📺 **TV** | **33** | **15** | `2026-08-23` | ✅ Couvert par une preuve native |
+| 📱 **Mobile** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
+| 🖥️ **Desktop macOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
+| 🪟 **Desktop Windows** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
+
 ### ✅ Lectures natives confirmées
 
 | Provider | Cas réellement lus | Lecteurs officiels confirmés | Preuves | Dernière validation |

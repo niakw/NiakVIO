@@ -45,6 +45,7 @@ ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
 ADAPTIVE_MARKER_V5 = "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
+ADAPTIVE_SCRIPT_V5 = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v5.py"
 ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
 ADAPTIVE_DOMAIN_END = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */"
 ADAPTIVE_DOMAIN_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_domain_recovery.py"
@@ -130,15 +131,22 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
         and record.get("profile") == "adaptive_runtime_recovery"
         and record.get("phase") == "runtime"
         and isinstance(record.get("options"), dict)
-        and int(record.get("revision") or 0) < 5
     ]
     if not accepted:
         return data, []
 
+    current = accepted[-1]
+    revision = int(current.get("revision") or 0)
+    # A published V5 bundle must never be downgraded through the historical V4
+    # migrator just because older provenance has no explicit revision field.
     if ADAPTIVE_MARKER_V5.encode("utf-8") in data:
         return data, []
 
-    marker_present = ADAPTIVE_MARKER.encode("utf-8") in data
+    marker_present = (
+        ADAPTIVE_MARKER_V5.encode("utf-8") in data
+        if revision >= 5
+        else ADAPTIVE_MARKER.encode("utf-8") in data
+    )
     preserved_ci_uncertain = (
         str(provenance_row.get("activation_mode") or "") == "preserved_current_ci_uncertain"
         and str(provenance_row.get("preserved_reason") or "")
@@ -147,10 +155,12 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
     if not marker_present and preserved_ci_uncertain:
         return data, []
 
-    options = dict(accepted[-1]["options"])
-    spec = importlib.util.spec_from_file_location("nuvio_reapply_adaptive_runtime", ADAPTIVE_SCRIPT)
+    options = dict(current["options"])
+    script = ADAPTIVE_SCRIPT_V5 if revision >= 5 else ADAPTIVE_SCRIPT
+    module_name = "nuvio_reapply_adaptive_runtime_v5" if revision >= 5 else "nuvio_reapply_adaptive_runtime"
+    spec = importlib.util.spec_from_file_location(module_name, script)
     if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load adaptive runtime patcher: {ADAPTIVE_SCRIPT}")
+        raise RuntimeError(f"cannot load adaptive runtime patcher: {script}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     patched = module.apply(data.decode("utf-8", errors="strict"), options=options).encode("utf-8")
@@ -161,7 +171,7 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
         "name": "adaptive_runtime_implementation_revision",
         "phase": "runtime",
         "profile": "adaptive_runtime_recovery",
-        "runtime_revision": "generic-core-v2",
+        "runtime_revision": "generic-core-v3" if revision >= 5 else "generic-core-v2",
     }]
 
 

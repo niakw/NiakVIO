@@ -62,6 +62,16 @@ with tempfile.TemporaryDirectory() as tmp:
             }
         )
     )
+    (root / "provider_catalog.json").write_text(
+        json.dumps(
+            {
+                "manifestMeta": {
+                    "general": {"name": "General", "version": "1.0.0"},
+                    "vf": {"name": "VF", "version": "1.0.0"},
+                }
+            }
+        )
+    )
     script = script_source.replace(
         "ROOT = pathlib.Path(__file__).resolve().parents[1]",
         f"ROOT = pathlib.Path({str(root)!r})",
@@ -80,6 +90,9 @@ with tempfile.TemporaryDirectory() as tmp:
     assert sources["manifest_version"] == "9.8.7"
     assert sources["repository"]["manifest_version"] == "9.8.7"
     assert sources["repository"]["version"] == "9.8.7"
+    catalog = json.loads((root / "provider_catalog.json").read_text())
+    assert catalog["manifestMeta"]["general"]["version"] == "9.8.7"
+    assert catalog["manifestMeta"]["vf"]["version"] == "9.8.7"
     assert "nuvio_client_compatibility" not in sources
 
 print("release version synchronization test passed")

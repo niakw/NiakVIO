@@ -321,6 +321,33 @@ def render(results: dict[str, Any]) -> str:
     }
     platform_label = "plateforme native" if len(device_coverage) == 1 else "plateformes natives"
 
+    device_stats: dict[str, dict[str, Any]] = {}
+    for device, label in DEVICES:
+        proof_count = 0
+        provider_count = 0
+        dates: list[str] = []
+        for provider in providers:
+            summary = summaries[provider["key"]]
+            date = str((summary.get("devices") or {}).get(device) or "")
+            if not date:
+                continue
+            provider_count += 1
+            dates.append(date)
+            for row in (results.get("proofs") or []):
+                if not isinstance(row, dict):
+                    continue
+                if str(row.get("provider") or "").strip().casefold() != provider["key"]:
+                    continue
+                proof = (row.get("devices") or {}).get(device)
+                if isinstance(proof, dict) and str(proof.get("verifiedAt") or ""):
+                    proof_count += 1
+        device_stats[device] = {
+            "label": label,
+            "proofCount": proof_count,
+            "providerCount": provider_count,
+            "latest": max(dates, default="—"),
+        }
+
     lines = [
         START,
         "## Providers actifs & résultats natifs vérifiés",
@@ -338,11 +365,33 @@ def render(results: dict[str, Any]) -> str:
         "",
         f"**{len(verified)} providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **{len(verified_cases)} cas de lecture distincts** et **{len(device_coverage)} {platform_label}** déjà représentée{'s' if len(device_coverage) != 1 else ''}. L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.",
         "",
-        "### ✅ Lectures natives confirmées",
+        "### 📡 Couverture des lecteurs officiels",
         "",
-        "| Provider | Cas réellement lus | Lecteurs officiels confirmés | Preuves | Dernière validation |",
-        "|---|---|---|---:|---:|",
+        "Cette vue distingue **support du lecteur** et **preuve positive conservée** : les quatre familles sont suivies en permanence, même lorsqu'aucune preuve saine n'a encore été retenue pour l'une d'elles.",
+        "",
+        "| Lecteur officiel | Preuves positives conservées | Providers avec preuve | Dernière preuve | État |",
+        "|---|---:|---:|---:|---|",
     ]
+
+    for device, label in DEVICES:
+        stat = device_stats[device]
+        proof_count = int(stat.get("proofCount") or 0)
+        provider_count = int(stat.get("providerCount") or 0)
+        latest = str(stat.get("latest") or "—")
+        state = "✅ Couvert par une preuve native" if proof_count else "🟡 Suivi actif · aucune preuve positive conservée"
+        lines.append(
+            f"| {DEVICE_ICONS.get(device, '🧩')} **{label}** | **{proof_count}** | **{provider_count}** | `{latest}` | {state} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "### ✅ Lectures natives confirmées",
+            "",
+            "| Provider | Cas réellement lus | Lecteurs officiels confirmés | Preuves | Dernière validation |",
+        "|---|---|---|---:|---:|",
+        ]
+    )
 
     for provider in verified:
         summary = summaries[provider["key"]]
