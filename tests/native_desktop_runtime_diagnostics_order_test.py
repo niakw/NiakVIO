@@ -43,6 +43,7 @@ assert "diagnostic_nonempty" in generated
 assert "pre_brain_count=$preBrainCount post_brain_count=$postBrainCount" in generated
 assert "NIAKVIO_DESKTOP_PRE_BRAIN_CODE" in generated
 assert "NIAKVIO_DESKTOP_POST_BRAIN_CODE" in generated
+assert "suspend fun historicalCount(envName: String): Int" in generated
 assert 'private fun captureRuntimeConsole(code: String): String = code + """' not in generated
 
 print("native Desktop runtime diagnostics order contract passed")
