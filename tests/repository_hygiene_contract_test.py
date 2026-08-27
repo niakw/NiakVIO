@@ -23,6 +23,10 @@ retired_paths = (
     ".github/workflows/main-only-policy.yml",
     ".github/workflows/actions-maintenance.yml",
     ".github/workflows/native-provider-loading-compat.yml",
+    ".github/workflows/final-validation-orchestrator.yml",
+    ".github/workflows/provider-emergency-publish.yml",
+    ".github/workflows/provider-hotfix-publish.yml",
+    ".github/workflows/provider-published-main-verify.yml",
     ".github/triggers/offline-engine-regression",
     ".github/triggers/final-native-client-validation-v2",
     ".github/triggers/native-corpus-device-lab",
@@ -55,6 +59,10 @@ retired_workflow_names = (
     "main-only-policy.yml",
     "actions-maintenance.yml",
     "native-provider-loading-compat.yml",
+    "final-validation-orchestrator.yml",
+    "provider-emergency-publish.yml",
+    "provider-hotfix-publish.yml",
+    "provider-published-main-verify.yml",
 )
 for workflow in workflow_dir.iterdir():
     if not workflow.is_file() or workflow.suffix not in {".yml", ".yaml"}:
