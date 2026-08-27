@@ -277,3 +277,111 @@ jobs:
             git commit -m "brain: refresh sandbox repair learning"
             git push --force-with-lease origin HEAD:"$BRANCH"
           fi
+
+  publish-repair-proposal:
+    name: LEARNING - Open validated repair proposal PR
+    if: github.event_name == 'schedule'
+    needs: experiment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout trusted production tree
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Download validated Brain proposal
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: niakvio-brain-learning-state
+          path: .
+
+      - name: Validate proposal is concrete and review-only
+        id: proposal
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s brain-learning-output/provider-overrides.proposed.json
+          test -s brain-learning-output/repair-proposal.json
+          python -m json.tool brain-learning-output/provider-overrides.proposed.json >/dev/null
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('brain-learning-output/repair-proposal.json','utf8'));
+          if (x.policy?.publicationAllowed !== false ||
+              x.policy?.productionWritesAllowed !== false ||
+              x.policy?.pullRequestOnly !== true ||
+              x.policy?.requiresHumanMerge !== true) {
+            throw new Error('unsafe Brain proposal policy');
+          }
+          const count=Number(x.proposalCount||0);
+          console.log('FIELD_BRAIN_PR_CANDIDATE proposals='+count+' provider='+Number(x.providerProposalCount||0)+' skills='+Number(x.learnedSkillProposalCount||0));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'proposal_count='+count+'\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_changes='+(count>0?'true':'false')+'\n');
+          NODE
+
+      - name: Materialize only the validated configuration diff
+        if: steps.proposal.outputs.has_changes == 'true'
+        id: materialize
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp brain-learning-output/provider-overrides.proposed.json provider-overrides.json
+          python -m json.tool provider-overrides.json >/dev/null
+          python tests/brain_repair_proposal_test.py
+          python tests/overrides_test.py
+          node engine_v2/tests/repair-brain.test.mjs
+          node engine_v2/tests/recipe-memory.test.mjs
+          if git diff --quiet -- provider-overrides.json; then
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+            echo "Brain produced proposal metadata but no production configuration diff."
+          else
+            echo "has_diff=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or refresh the single Brain repair PR
+        if: steps.proposal.outputs.has_changes == 'true' && steps.materialize.outputs.has_diff == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: brain-repair/proposal
+        shell: bash
+        run: |
+          set -euo pipefail
+          SUMMARY=brain-learning-output/repair-proposal.json
+          git config user.name "niakvio-brain"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git switch -C "$BRANCH" main
+          git add provider-overrides.json
+          git commit -m "brain: propose validated learning repairs"
+          git push --force-with-lease origin HEAD:"$BRANCH"
+
+          PROVIDER_COUNT="$(node -e "const x=require('./$SUMMARY');process.stdout.write(String(x.providerProposalCount||0))")"
+          SKILL_COUNT="$(node -e "const x=require('./$SUMMARY');process.stdout.write(String(x.learnedSkillProposalCount||0))")"
+          PROVIDERS="$(node -e "const x=require('./$SUMMARY');process.stdout.write((x.providers||[]).join(', ')||'none')")"
+          BODY="$(cat <<EOF
+          Automated NiakVIO Brain learning proposal from the daily 92-provider sandbox.
+
+          - Concrete provider repairs: ${PROVIDER_COUNT}
+          - Validated learned-skill promotions: ${SKILL_COUNT}
+          - Providers with concrete override changes: ${PROVIDERS}
+          - Production writes from the Brain: disabled
+          - Human merge: required
+          - Fresh PR CI / provider gate: required
+
+          The daily Learning run may explore broader hypotheses than routine Quick/Deep repair, including disabled providers. Only changes that were materialized from accepted sandbox evidence are included in this PR. Core/Brain ideas without a concrete validated code diff remain learning proposals and are not auto-written.
+          EOF
+          )"
+
+          EXISTING="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --repo "$GITHUB_REPOSITORY" --title "brain: validated daily learning proposal" --body "$BODY"
+            echo "FIELD_BRAIN_PR action=refreshed pr=$EXISTING branch=$BRANCH"
+          else
+            URL="$(gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$BRANCH" --title "brain: validated daily learning proposal" --body "$BODY")"
+            echo "FIELD_BRAIN_PR action=created url=$URL branch=$BRANCH"
+          fi
