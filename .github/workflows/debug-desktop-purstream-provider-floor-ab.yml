@@ -107,6 +107,7 @@ jobs:
           import com.nuvio.app.features.plugins.runtime.PluginRuntime
           import java.io.File
           import kotlinx.coroutines.runBlocking
+          import kotlinx.coroutines.withTimeoutOrNull
           import kotlin.test.Test
 
           class NiakvioPurstreamProviderFloorAbTest {
@@ -124,15 +125,17 @@ jobs:
                   for ((label, file) in variants) {
                       trace.appendText("LABEL\t" + label + "\n")
                       val started = System.currentTimeMillis()
-                      val rows = PluginRuntime.executePlugin(
-                          code = File(workspace, file).readText(),
-                          tmdbId = "157336",
-                          mediaType = "movie",
-                          season = null,
-                          episode = null,
-                          scraperId = "PURSTREAM",
-                      )
-                      println("FIELD_DESKTOP_PURSTREAM_FLOOR_AB label=" + label + " count=" + rows.size + " duration_ms=" + (System.currentTimeMillis()-started) + " firstUrl=" + (rows.firstOrNull()?.url ?: ""))
+                      val rows = withTimeoutOrNull(45_000L) {
+                          PluginRuntime.executePlugin(
+                              code = File(workspace, file).readText(),
+                              tmdbId = "157336",
+                              mediaType = "movie",
+                              season = null,
+                              episode = null,
+                              scraperId = "PURSTREAM",
+                          )
+                      }
+                      println("FIELD_DESKTOP_PURSTREAM_FLOOR_AB label=" + label + " status=" + (if(rows==null)"timeout" else "completed") + " count=" + (rows?.size ?: -1) + " duration_ms=" + (System.currentTimeMillis()-started) + " firstUrl=" + (rows?.firstOrNull()?.url ?: ""))
                   }
               }
           }
