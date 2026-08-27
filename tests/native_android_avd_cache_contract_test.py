@@ -54,6 +54,18 @@ for suite in (tv_suite, mobile_suite):
     assert 'blocking=false' in suite
 assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE: \"1\"" not in workflow
 
+# Compile/package the official Android clients before QEMU starts. The hosted
+# runner has to accommodate both a 2 GiB emulator and Gradle; allowing the first
+# package task to happen inside the emulator window previously exhausted the
+# Gradle daemon heap during NuvioTV :app:packageFullDebug.
+assert workflow.count("prebuild_native_android_reader_suite.sh") >= 3
+assert workflow.index("Prebuild TV reader before QEMU") < workflow.index("Execute representative routes in one TV boot")
+assert workflow.index("Prebuild Mobile reader before QEMU") < workflow.index("Execute representative routes in one Mobile boot")
+assert workflow.index("Prebuild TV candidate retest before QEMU") < workflow.index("Re-read mutated providers plus deterministic sentinels after Brain mutation")
+assert prebuild.count("--max-workers=1") >= 2
+assert "--max-workers=1" in tv_suite
+assert "--max-workers=1" in mobile_suite
+
 # Every Android emulator path primes adb before the emulator action. GitHub's
 # hosted image can expose sdkmanager while platform-tools/adb is still absent,
 # so the preflight must install platform-tools itself before QEMU is launched.
