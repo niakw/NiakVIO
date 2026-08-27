@@ -24,13 +24,13 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=True)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v14"
+assert presentation.REVISION == "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v14" in patched
+    assert "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -143,4 +143,4 @@ assert desktop_native["calls"] == 0, desktop_native
 assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native
 assert desktop_native["row"]["url"] == "https://x.example/a.mp4", desktop_native
 
-print("global stream presentation V14 native-TMDB fail-open contract tests passed")
+print("global stream presentation V15 JVM-safe JSON contract tests passed")
