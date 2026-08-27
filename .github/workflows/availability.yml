@@ -123,3 +123,48 @@ jobs:
             sleep $((attempt * 2))
           done
           exit 1
+
+
+  brain-learning-watchdog:
+    name: Ensure daily Brain Learning window
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-slim
+    timeout-minutes: 5
+    permissions:
+      actions: write
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Dispatch a missing daily Learning run after 04:00 UTC
+        shell: bash
+        run: |
+          set -euo pipefail
+          HOUR="$(date -u +%H)"
+          if [ "$((10#$HOUR))" -lt 4 ]; then
+            echo "FIELD_BRAIN_WATCHDOG status=too_early utc_hour=$HOUR"
+            exit 0
+          fi
+
+          CUTOFF="$(( $(date -u +%s) - 20 * 60 * 60 ))"
+          LATEST_EPOCH=0
+          LATEST_EVENT=none
+          for EVENT in schedule workflow_dispatch; do
+            CREATED="$(gh run list --repo "$GITHUB_REPOSITORY" --workflow brain-learning-lab.yml --event "$EVENT" --limit 10 --json createdAt --jq '.[0].createdAt // empty')"
+            if [ -z "$CREATED" ]; then
+              continue
+            fi
+            EPOCH="$(date -u -d "$CREATED" +%s)"
+            if [ "$EPOCH" -gt "$LATEST_EPOCH" ]; then
+              LATEST_EPOCH="$EPOCH"
+              LATEST_EVENT="$EVENT"
+            fi
+          done
+
+          if [ "$LATEST_EPOCH" -ge "$CUTOFF" ]; then
+            echo "FIELD_BRAIN_WATCHDOG status=present event=$LATEST_EVENT epoch=$LATEST_EPOCH"
+            exit 0
+          fi
+
+          gh workflow run brain-learning-lab.yml --repo "$GITHUB_REPOSITORY" --ref main -f publish_proposal=true
+          echo "FIELD_BRAIN_WATCHDOG status=dispatched publish_proposal=true"
