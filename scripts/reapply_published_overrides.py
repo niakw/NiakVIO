@@ -137,7 +137,9 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
 
     current = accepted[-1]
     revision = int(current.get("revision") or 0)
-    if revision >= 5 and ADAPTIVE_MARKER_V5.encode("utf-8") in data:
+    # A published V5 bundle must never be downgraded through the historical V4
+    # migrator just because older provenance has no explicit revision field.
+    if ADAPTIVE_MARKER_V5.encode("utf-8") in data:
         return data, []
 
     marker_present = (
