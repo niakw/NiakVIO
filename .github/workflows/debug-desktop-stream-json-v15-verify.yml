@@ -13,6 +13,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: debug-desktop-stream-json-v15-verify
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: macos-15
