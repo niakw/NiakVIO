@@ -2,6 +2,12 @@ name: LEARNING - Brain repair sandbox
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_proposal:
+        description: Allow this explicit Learning run to open/refresh a validated Brain proposal PR
+        required: false
+        default: false
+        type: boolean
   push:
     branches: [main]
     paths:
@@ -280,7 +286,7 @@ jobs:
 
   publish-repair-proposal:
     name: LEARNING - Open validated repair proposal PR
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_proposal == 'true')
     needs: experiment
     runs-on: ubuntu-latest
     timeout-minutes: 10
