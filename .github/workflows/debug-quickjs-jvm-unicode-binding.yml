@@ -1,0 +1,108 @@
+name: Debug quickjs JVM unicode binding
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - ".github/workflows/debug-quickjs-jvm-unicode-binding.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unicode-binding:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Create minimal quickjs-kt 1.0.5 repro
+        shell: bash
+        run: |
+          set -euxo pipefail
+          mkdir -p repro/src/main/kotlin
+          cat > repro/settings.gradle.kts <<'EOF'
+          rootProject.name = "quickjs-unicode-repro"
+          EOF
+          cat > repro/build.gradle.kts <<'EOF'
+          plugins {
+              kotlin("jvm") version "2.2.10"
+              application
+          }
+          repositories { mavenCentral() }
+          dependencies {
+              implementation("io.github.dokar3:quickjs-kt:1.0.5")
+              implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+          }
+          application { mainClass.set("MainKt") }
+          kotlin { jvmToolchain(17) }
+          EOF
+          cat > repro/src/main/kotlin/Main.kt <<'EOF'
+          import com.dokar.quickjs.binding.function
+          import com.dokar.quickjs.evaluate
+          import com.dokar.quickjs.quickJs
+          import kotlinx.coroutines.runBlocking
+
+          fun main() = runBlocking {
+              quickJs {
+                  function("__capture_result") { args ->
+                      val value = args.getOrNull(0)?.toString() ?: "<null>"
+                      println("FIELD_QJS_BINDING_CAPTURE len=" + value.length + " value=" + value.replace("\n", "\\n"))
+                      null
+                  }
+
+                  fun esc(code: String): String = code
+
+                  try {
+                      evaluate<Any?>("""__capture_result(JSON.stringify([{url:"https://x/master.m3u8",title:"ASCII"}]))""")
+                      println("FIELD_QJS_BINDING_CASE label=ascii status=ok")
+                  } catch (t: Throwable) {
+                      println("FIELD_QJS_BINDING_CASE label=ascii status=error type=" + t::class.qualifiedName + " message=" + (t.message ?: ""))
+                  }
+
+                  try {
+                      evaluate<Any?>("""__capture_result(JSON.stringify([{url:"https://x/master.m3u8",title:"🎬 🇫🇷 🔊"}]))""")
+                      println("FIELD_QJS_BINDING_CASE label=emoji status=ok")
+                  } catch (t: Throwable) {
+                      println("FIELD_QJS_BINDING_CASE label=emoji status=error type=" + t::class.qualifiedName + " message=" + (t.message ?: ""))
+                  }
+
+                  try {
+                      evaluate<Any?>(
+                          """
+                          (function(){
+                            var nativeStringify=JSON.stringify;
+                            function hex4(n){return ("0000"+n.toString(16)).slice(-4)}
+                            JSON.stringify=function(value){
+                              var raw=nativeStringify.apply(JSON,arguments);
+                              if(typeof raw!=="string")return raw;
+                              var out="";
+                              for(var i=0;i<raw.length;i++){
+                                var code=raw.charCodeAt(i);
+                                out+=code>127?"\\u"+hex4(code):raw.charAt(i);
+                              }
+                              return out;
+                            };
+                            __capture_result(JSON.stringify([{url:"https://x/master.m3u8",title:"🎬 🇫🇷 🔊"}]));
+                          })()
+                          """.trimIndent()
+                      )
+                      println("FIELD_QJS_BINDING_CASE label=escaped status=ok")
+                  } catch (t: Throwable) {
+                      println("FIELD_QJS_BINDING_CASE label=escaped status=error type=" + t::class.qualifiedName + " message=" + (t.message ?: ""))
+                  }
+              }
+          }
+          EOF
+
+      - name: Run minimal repro
+        shell: bash
+        run: |
+          set -euxo pipefail
+          gradle -p repro --no-daemon --console=plain run
