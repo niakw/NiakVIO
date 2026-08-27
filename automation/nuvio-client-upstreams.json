@@ -14,10 +14,13 @@
     "nuvio-mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "verified_ref": "582ae863800414aff5f4a17a533ab19713a99ce4",
-      "platforms": ["android", "ios"],
+      "verified_ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
+      "platforms": [
+        "android",
+        "ios"
+      ],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-26: Mobile runtime and transport contract re-audited through current cmp-rewrite HEAD 4e838e470055. Detailed runtime read was performed at 071fc431a446; the sole subsequent commit changes only android-release.yml. QuickJS positional getStreams, PluginRuntimeResult projection, Android OkHttp Proxy.NO_PROXY transport and iOS Ktor/Darwin transport are therefore current and now explicitly tracked.",
+      "audit_note": "2026-08-27: Mobile contract advanced through cmp-rewrite HEAD 1b84ee475cea after reviewing the nine-commit delta from 582ae8638004. No configured provider, stream or player runtime contract path changed; only MainAppContent, details/trailer UI, SIMKL receipt, TMDB metadata and watching policies moved. QuickJS positional getStreams, PluginRuntimeResult projection and Android/iOS transport contracts remain unchanged.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -63,17 +66,64 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
+        "getStreams",
+        "PluginRuntimeResult",
+        "StreamItem",
+        "behaviorHints",
+        "proxyHeaders",
+        "MediaItem",
+        "setMedia",
+        "videoUrl",
+        "playbackUrl",
+        "httpHeaders",
+        "dataSource",
+        "sourceFactory",
+        "externalPlayer",
+        "SCRAPER_ID",
+        "SCRAPER_SETTINGS",
+        "TMDB_API_KEY",
+        "TextEncoder",
+        "TextDecoder",
+        "WebAssembly",
+        "Proxy.NO_PROXY",
+        "IPv4FirstDns",
+        "quickjs",
+        "media3",
+        "exoplayer",
+        "ktor",
+        "okhttp"
       ],
       "brain_mutation_semantic_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "ktor", "okhttp"
+        "getStreams",
+        "PluginRuntimeResult",
+        "StreamItem",
+        "behaviorHints",
+        "proxyHeaders",
+        "videoUrl",
+        "playbackUrl",
+        "httpHeaders",
+        "SCRAPER_ID",
+        "SCRAPER_SETTINGS",
+        "TMDB_API_KEY",
+        "TextEncoder",
+        "TextDecoder",
+        "WebAssembly",
+        "Proxy.NO_PROXY",
+        "IPv4FirstDns",
+        "quickjs",
+        "ktor",
+        "okhttp"
       ]
     },
     "nuvio-desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
       "branch": "Dev",
       "verified_ref": "24f63e42c6debfc7a20200bc3a9a9586370c44f0",
-      "platforms": ["windows", "macos", "linux"],
+      "platforms": [
+        "windows",
+        "macos",
+        "linux"
+      ],
       "contract": "automation/platform-runtime-contracts.json",
       "audit_note": "2026-08-26: Desktop runtime and transport contract re-audited at current Dev HEAD a4fe0bf1a98f. QuickJS positional getStreams and result projection match the current Mobile family, while Desktop keeps its distinct async __native_fetch bridge and JVM OkHttp transport without Proxy.NO_PROXY. Those transport files are now hard contract paths so future silent networking drift blocks advancement.",
       "contract_paths": [
@@ -99,17 +149,63 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "media3", "exoplayer", "ktor", "okhttp", "vlc"
+        "getStreams",
+        "PluginRuntimeResult",
+        "StreamItem",
+        "behaviorHints",
+        "proxyHeaders",
+        "MediaItem",
+        "setMedia",
+        "videoUrl",
+        "playbackUrl",
+        "httpHeaders",
+        "dataSource",
+        "sourceFactory",
+        "externalPlayer",
+        "SCRAPER_ID",
+        "SCRAPER_SETTINGS",
+        "TMDB_API_KEY",
+        "TextEncoder",
+        "TextDecoder",
+        "WebAssembly",
+        "Proxy.NO_PROXY",
+        "IPv4FirstDns",
+        "quickjs",
+        "media3",
+        "exoplayer",
+        "ktor",
+        "okhttp",
+        "vlc"
       ],
       "brain_mutation_semantic_tokens": [
-        "getStreams", "PluginRuntimeResult", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "ktor", "okhttp"
+        "getStreams",
+        "PluginRuntimeResult",
+        "StreamItem",
+        "behaviorHints",
+        "proxyHeaders",
+        "videoUrl",
+        "playbackUrl",
+        "httpHeaders",
+        "SCRAPER_ID",
+        "SCRAPER_SETTINGS",
+        "TMDB_API_KEY",
+        "TextEncoder",
+        "TextDecoder",
+        "WebAssembly",
+        "Proxy.NO_PROXY",
+        "IPv4FirstDns",
+        "quickjs",
+        "ktor",
+        "okhttp"
       ]
     },
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
       "verified_ref": "ba44afb080d878ba123c978e791be8115e324fe9",
-      "platforms": ["android-tv"],
+      "platforms": [
+        "android-tv"
+      ],
       "contract": "automation/nuvio-tv-runtime-contract.json",
       "audit_note": "2026-08-26: TV contract re-audited through current dev HEAD 0d8f99e2b92b. PluginRuntime positional getStreams, Proxy.NO_PROXY/IPv4FirstDns transport, TMDB_API_KEY injection and LocalScraperResult projection are unchanged. Recent PluginManager changes only bound scraper orchestration to MAX_CONCURRENT_SCRAPERS on low-RAM devices and skip duplicate repository writes; they do not change request arguments or returned stream mapping.",
       "contract_paths": [
@@ -138,10 +234,51 @@
         "gradle/libs.versions.toml"
       ],
       "semantic_review_tokens": [
-        "getStreams", "StreamItem", "behaviorHints", "proxyHeaders", "MediaItem", "setMedia", "videoUrl", "playbackUrl", "httpHeaders", "dataSource", "sourceFactory", "externalPlayer", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "media3", "exoplayer", "ktor", "okhttp"
+        "getStreams",
+        "StreamItem",
+        "behaviorHints",
+        "proxyHeaders",
+        "MediaItem",
+        "setMedia",
+        "videoUrl",
+        "playbackUrl",
+        "httpHeaders",
+        "dataSource",
+        "sourceFactory",
+        "externalPlayer",
+        "SCRAPER_ID",
+        "SCRAPER_SETTINGS",
+        "TMDB_API_KEY",
+        "TextEncoder",
+        "TextDecoder",
+        "WebAssembly",
+        "Proxy.NO_PROXY",
+        "IPv4FirstDns",
+        "quickjs",
+        "media3",
+        "exoplayer",
+        "ktor",
+        "okhttp"
       ],
       "brain_mutation_semantic_tokens": [
-        "getStreams", "StreamItem", "behaviorHints", "proxyHeaders", "videoUrl", "playbackUrl", "httpHeaders", "SCRAPER_ID", "SCRAPER_SETTINGS", "TMDB_API_KEY", "TextEncoder", "TextDecoder", "WebAssembly", "Proxy.NO_PROXY", "IPv4FirstDns", "quickjs", "ktor", "okhttp"
+        "getStreams",
+        "StreamItem",
+        "behaviorHints",
+        "proxyHeaders",
+        "videoUrl",
+        "playbackUrl",
+        "httpHeaders",
+        "SCRAPER_ID",
+        "SCRAPER_SETTINGS",
+        "TMDB_API_KEY",
+        "TextEncoder",
+        "TextDecoder",
+        "WebAssembly",
+        "Proxy.NO_PROXY",
+        "IPv4FirstDns",
+        "quickjs",
+        "ktor",
+        "okhttp"
       ]
     }
   }
