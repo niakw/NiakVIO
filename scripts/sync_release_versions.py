@@ -173,19 +173,34 @@ def finalize_provider_versions(previous_path: pathlib.Path, manifest_path: pathl
             # an older/stale value while the client-visible payload is unchanged.
             row["version"] = format_semver(old_version)
 
-    # VF is a projection of the principal catalogue. Keep the exact client ID and
-    # provider version synchronized while preserving its relative bundle path.
-    for row in [item for item in vf.get("scrapers", []) if isinstance(item, dict)]:
-        cid = canonical_id(row.get("id"))
-        source = current_by_id.get(cid)
-        if source is None:
-            raise RuntimeError(f"VF provider absent from principal manifest: {cid}")
-        row["id"] = source.get("id")
-        row["version"] = source.get("version")
-        row["filename"] = vf_filename(source.get("filename"))
+    # VF and the no-anime manifests are projections of the principal catalogue.
+    # Keep cache-visible ids, versions and hashed bundle filenames synchronized
+    # without changing projection membership here.
+    def sync_projection(path: pathlib.Path, source_by_id: dict[str, dict[str, Any]], label: str) -> None:
+        if not path.exists():
+            return
+        projection = load(path)
+        for row in [item for item in projection.get("scrapers", []) if isinstance(item, dict)]:
+            cid = canonical_id(row.get("id"))
+            source = source_by_id.get(cid)
+            if source is None:
+                raise RuntimeError(f"{label} provider absent from source manifest: {cid}")
+            row["id"] = source.get("id")
+            row["version"] = source.get("version")
+            row["filename"] = vf_filename(source.get("filename"))
+        dump(path, projection)
+
+    sync_projection(vf_path, current_by_id, "VF")
+    vf = load(vf_path)
+    vf_by_id = {
+        canonical_id(row.get("id")): row
+        for row in vf.get("scrapers", [])
+        if isinstance(row, dict) and canonical_id(row.get("id"))
+    }
+    sync_projection(ROOT / "no-anime" / "manifest.json", current_by_id, "no-anime")
+    sync_projection(ROOT / "vf-no-anime" / "manifest.json", vf_by_id, "VF no-anime")
 
     dump(manifest_path, current)
-    dump(vf_path, vf)
     return sorted(set(bumped))
 
 
@@ -265,7 +280,14 @@ def synchronize_global_version(version: str, manifest_path: pathlib.Path) -> Non
             row["version"] = version
         dump(catalog_path, catalog)
 
-    for path in (manifest_path, ROOT / "vf" / "manifest.json"):
+    for path in (
+        manifest_path,
+        ROOT / "vf" / "manifest.json",
+        ROOT / "no-anime" / "manifest.json",
+        ROOT / "vf-no-anime" / "manifest.json",
+    ):
+        if not path.exists():
+            continue
         payload = load(path)
         payload["version"] = version
         dump(path, payload)
