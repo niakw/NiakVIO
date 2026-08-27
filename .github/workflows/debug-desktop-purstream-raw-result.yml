@@ -58,11 +58,8 @@ jobs:
           from pathlib import Path
           p=Path("nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt")
           s=p.read_text()
-          old='''    private fun parseJsonResults(rawJson: String): List<PluginRuntimeResult> {
-        return runCatching {'''
-          new='''    private fun parseJsonResults(rawJson: String): List<PluginRuntimeResult> {
-        throw IllegalStateException("FIELD_DESKTOP_RAW_RESULT_JSON=" + rawJson.take(12000))
-        return runCatching {'''
+          old = "    private fun parseJsonResults(rawJson: String): List<PluginRuntimeResult> {\\n        return runCatching {"
+          new = "    private fun parseJsonResults(rawJson: String): List<PluginRuntimeResult> {\\n        throw IllegalStateException(\\\"FIELD_DESKTOP_RAW_RESULT_JSON=\\\" + rawJson.take(12000))\\n        return runCatching {"
           if s.count(old)!=1:
               raise SystemExit("parseJsonResults anchor count="+str(s.count(old)))
           p.write_text(s.replace(old,new,1))
