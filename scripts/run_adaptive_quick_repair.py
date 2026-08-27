@@ -14,6 +14,7 @@ import contextlib
 import copy
 import io
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -229,6 +230,11 @@ def _install_control_plane_fallback_plan(candidate: dict[str, Any], result: dict
     }
 
 
+def _planner_mode() -> str:
+    mode = str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "quick").strip().casefold()
+    return "learning" if mode == "learning" else "quick"
+
+
 def _plan_quick_results(registry_path: Path, report: dict[str, Any]) -> None:
     """Plan each runtime observation independently.
 
@@ -253,7 +259,7 @@ def _plan_quick_results(registry_path: Path, report: dict[str, Any]) -> None:
         if candidate is None:
             continue
         try:
-            brain.update_plans(registry_path, {"results": [result]}, "quick")
+            brain.update_plans(registry_path, {"results": [result]}, _planner_mode())
             planned += 1
         except RuntimeError as error:
             _install_control_plane_fallback_plan(candidate, result, error)
@@ -373,7 +379,7 @@ def main() -> int:
             else:
                 print(line)
         _rewrite_mode_metadata(stage, output)
-        brain.annotate_and_learn(output, "quick")
+        brain.annotate_and_learn(output, _planner_mode())
         return int(rc)
     finally:
         HEALTH_CONFIG.write_bytes(original_health_config)
