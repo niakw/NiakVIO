@@ -85,7 +85,9 @@ jobs:
                       episode = null,
                       scraperId = "PURSTREAM",
                   )
-                  println("FIELD_DESKTOP_MS_REASON count=" + rows.size + " firstName=" + (rows.firstOrNull()?.name ?: "") + " firstTitle=" + (rows.firstOrNull()?.title ?: ""))
+                  val line = "FIELD_DESKTOP_MS_REASON count=" + rows.size + " firstName=" + (rows.firstOrNull()?.name ?: "") + " firstTitle=" + (rows.firstOrNull()?.title ?: "")
+                  println(line)
+                  File(workspace, "purstream-ms-reason.txt").writeText(line + "\n")
               }
           }
           KOTLIN
