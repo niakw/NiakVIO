@@ -57,6 +57,8 @@ jobs:
           probe purstream_search_mx "https://api.purstream.mx/api/v1/search-bar/search/Interstellar" "https://purstream.mx/"
           probe purstream_sheet_mx "https://api.purstream.mx/api/v1/media/2466/sheet" "https://purstream.mx/"
           probe purstream_hls_master "https://free.finepulfe.xyz/movies/157336-unr8i/master.m3u8" "https://purstream.mx/"
+          probe purstream_hls_video "https://free.finepulfe.xyz/movies/157336-unr8i/720p/playlist.m3u8" "https://purstream.mx/"
+          probe purstream_hls_audio "https://free.finepulfe.xyz/movies/157336-unr8i/audio_fr/playlist.m3u8" "https://purstream.mx/"
           probe purstream_hls_video_720 "https://free.finepulfe.xyz/movies/157336-unr8i/720p/playlist.m3u8" "https://purstream.mx/"
           probe purstream_hls_audio_fr "https://free.finepulfe.xyz/movies/157336-unr8i/audio_fr/playlist.m3u8" "https://purstream.mx/"
 
@@ -128,4 +130,8 @@ jobs:
                       child=line
                       break
           print("FIELD_PURSTREAM_HLS_SHAPE stream_inf_count="+str(len(stream_inf))+" child="+child+" first_lines64="+__import__("base64").b64encode("\n".join(lines[:12]).encode()).decode())
+          for label in ("purstream_hls_video","purstream_hls_audio"):
+              body=(runner_temp/(label+".body")).read_text(encoding="utf-8",errors="replace").replace("\r","")
+              media_lines=[line.strip() for line in body.split("\n")]
+              print("FIELD_PURSTREAM_HLS_MEDIA label="+label+" extm3u="+str(bool(media_lines and media_lines[0]=="#EXTM3U")).lower()+" extinf_count="+str(sum(1 for line in media_lines if line.upper().startswith("#EXTINF:")))+" first_lines64="+__import__("base64").b64encode("\n".join(media_lines[:10]).encode()).decode())
           PY
