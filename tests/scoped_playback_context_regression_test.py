@@ -28,13 +28,14 @@ def safety_then_hls(source, provider_id, options=None):
     return hls_apply(output, options=opts, context={"provider_id":provider_id})
 
 ordinary = safety_then_hls(base, "ordinary")
-assert "c.strictPlayback||c.failClosedUnknown" in ordinary
-assert "c.strictPlayback||tv" not in ordinary
-assert "c.defaultUserAgent&&" in ordinary
-assert '"defaultUserAgent":""' in ordinary
-assert '"failClosedUnknown":false' in ordinary
+assert '"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"' in ordinary
+assert "c.strictPlayback||tv" in ordinary
+assert "c.strictPlayback||c.failClosedUnknown" not in ordinary
+assert '"defaultUserAgent"' not in ordinary
+assert '"failClosedUnknown"' not in ordinary
 assert '"strictPlayback":true' in safety_then_hls(base, "moviebox")
-assert '"defaultUserAgent":"UA-STREAMZO"' in safety_then_hls(base, "streamzo", {"default_user_agent":"UA-STREAMZO"})
+streamzo_safety = safety_then_hls(base, "streamzo", {"default_user_agent":"UA-STREAMZO"})
+assert '"defaultUserAgent"' not in streamzo_safety
 enriched = media_apply(base, options={})
 assert '"defaultUserAgent":""' in enriched
 assert 'c.defaultUserAgent&&!keyOf(out,"User-Agent")' in enriched
@@ -86,6 +87,7 @@ assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_close
 
 runtime = ordinary + (
     "\nglobalThis.__NUVIO_TV_RUNTIME__=true;\n"
+    'globalThis.__native_fetch=function(){return "{}"};\n'
     'globalThis.fetch=async function(){throw new Error("bridge cannot reprobe")};\n'
     '(async()=>{var rows=await globalThis.getStreams({tmdbId:"1",mediaType:"movie"});console.log("COUNT="+rows.length)})().catch(e=>{console.error(e);process.exit(2)});\n'
 )
