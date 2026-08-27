@@ -1,0 +1,38 @@
+name: Debug Core stream JSON V15 unit
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - "scripts/provider_patches/global_stream_presentation_v1.py"
+      - "scripts/normalize_stream_presentation_v12.py"
+      - "tests/global_stream_presentation_test.py"
+      - "tests/global_stream_presentation_pipeline_test.py"
+      - ".github/workflows/debug-core-stream-json-v15-unit.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Validate V15 presentation and ASCII-safe stream JSON
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 scripts/normalize_stream_presentation_v12.py --check
+          python3 tests/global_stream_presentation_test.py
+          python3 tests/global_stream_presentation_pipeline_test.py
