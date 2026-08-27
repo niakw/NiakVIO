@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "check_nuvio_client_upstreams.py"
 BRAIN_GUARD = ROOT / "scripts" / "guard_nuvio_client_brain_compat.py"
 CONFIG = ROOT / "automation" / "nuvio-client-upstreams.json"
-DESKTOP_CANARY = ROOT / ".github" / "workflows" / "native-desktop-stream-canary.yml"
+DESKTOP_CANARY = ROOT / ".github" / "workflows" / "native-desktop-reader-acceptance.yml"
 
 spec = importlib.util.spec_from_file_location("nuvio_client_upstream_guard", SCRIPT)
 assert spec is not None and spec.loader is not None
@@ -131,8 +131,8 @@ def main() -> int:
     ):
         assert required in desktop_canary, required
 
-    materialize_marker = "      - name: Materialize current NiakVIO Core candidate\n"
-    checkout_marker = "      - name: Checkout official NuvioDesktop HEAD\n"
+    materialize_marker = "      - name: Materialize final Core fixed-point for Desktop canary\n"
+    checkout_marker = "      - name: Checkout latest official NuvioDesktop HEAD and stage initial route\n"
     assert materialize_marker in desktop_canary
     assert checkout_marker in desktop_canary
     materialize_block = desktop_canary.split(materialize_marker, 1)[1].split(checkout_marker, 1)[0]

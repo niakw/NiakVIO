@@ -231,7 +231,7 @@ DIAGNOSTIC_CALL = f'''val rows = PluginRepository.executeScraper(loadedScraper, 
                         episode = episode,
                         scraperId = loadedScraper.id,
                     )
-                    fun historicalCount(envName: String): Int {{
+                    suspend fun historicalCount(envName: String): Int {{
                         val path = System.getenv(envName).orEmpty()
                         if (path.isBlank()) return -1
                         val file = File(path)

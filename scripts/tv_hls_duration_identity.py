@@ -6,7 +6,7 @@ import json
 import re
 import urllib.request
 from pathlib import Path
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 
 EXTINF = re.compile(r"^#EXTINF:([0-9.]+)", re.I)
 STREAM_INF = re.compile(r"^#EXT-X-STREAM-INF", re.I)
@@ -95,7 +95,7 @@ def main() -> int:
             "actual_seconds": round(actual, 3) if actual is not None else None,
             "ratio": round(ratio, 4) if ratio is not None else None,
             "ok": ok,
-            "playlist_host": urllib.request.urlparse(final_url).hostname if False else None,
+            "playlist_host": urlparse(final_url).hostname,
         }
         findings.append(finding)
         if not ok:

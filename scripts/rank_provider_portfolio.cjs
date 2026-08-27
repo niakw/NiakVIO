@@ -232,7 +232,7 @@ function add(row) {
 }
 for (const row of eligible.slice(0, target)) add(row);
 function ensure(predicate, minimum) {
-  let have = selected.filter(predicate).length;
+  let have = selected.filter((row) => predicate(row)).length;
   if (have >= minimum) return;
   for (const row of eligible) {
     if (have >= minimum || selected.length >= hardMax) break;

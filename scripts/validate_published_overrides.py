@@ -27,8 +27,20 @@ AUDIT_QUARANTINE_MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
 AUDIT_QUARANTINE_MODE = "catalogue_audit_safety_quarantine"
 
 GENERATED_RUNTIME_PROFILE_MARKERS = {
-    "adaptive_runtime_recovery": "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4",
+    "adaptive_runtime_recovery": {
+        "legacy": "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4",
+        "v5": "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
+    },
 }
+
+
+def generated_runtime_profile_marker(record: dict[str, Any]) -> str | None:
+    profile_name = str(record.get("profile") or "")
+    markers = GENERATED_RUNTIME_PROFILE_MARKERS.get(profile_name)
+    if not isinstance(markers, dict):
+        return None
+    revision = int(record.get("revision") or 0)
+    return str(markers["v5"] if revision >= 5 else markers["legacy"])
 
 
 def canonical_id(value: str) -> str:
@@ -209,7 +221,7 @@ def main() -> int:
                 effective_records.append(record)
                 continue
 
-            generated_marker = GENERATED_RUNTIME_PROFILE_MARKERS.get(profile_name)
+            generated_marker = generated_runtime_profile_marker(record)
             if generated_marker and str(record.get("phase") or "") == "runtime":
                 if generated_marker in text:
                     required_values.append(generated_marker)

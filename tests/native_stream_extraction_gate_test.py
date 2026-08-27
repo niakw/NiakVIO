@@ -102,7 +102,7 @@ missing = run([result("cineby", 1), result("VIDEASY", 0)])
 assert missing.returncode == 1
 assert "reason=missing_provider_evidence" in missing.stderr
 
-workflow = (ROOT / ".github/workflows/native-desktop-stream-canary.yml").read_text(encoding="utf-8")
+workflow = (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8")
 assert "--observational-empty" not in workflow
 
-print("native stream extraction gate passed: authoritative Desktop canary requires a real positive; observational-empty remains diagnostics-only")
+print("native stream extraction gate passed: consolidated Desktop canary requires a real positive; observational-empty remains diagnostics-only")

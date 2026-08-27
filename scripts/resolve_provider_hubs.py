@@ -125,6 +125,7 @@ def fetch(url: str, timeout: float = 10.0) -> tuple[int, str, str, dict[str, str
         },
     )
     context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     try:
         with urllib.request.urlopen(request, timeout=timeout, context=context) as response:
             raw = response.read(2_000_000)
@@ -520,6 +521,26 @@ def _telegram_context_score(provider_id: str, cfg: dict[str, Any], label: str, c
     return 0
 
 
+def _sort_official_candidates(candidates: list[dict[str, Any]], resolver: str) -> None:
+    if resolver == "latest_telegram_domain":
+        candidates.sort(key=lambda row: (
+            row.get("fallback", False),
+            -int(row.get("message_id") or -1),
+            -int(row.get("score") or 0),
+            -int(row.get("document_index") or -1),
+            row["url"],
+        ))
+        return
+    candidates.sort(
+        key=lambda row: (
+            -int(row["score"]),
+            row.get("fallback", False),
+            int(row["document_index"]),
+            row["url"],
+        )
+    )
+
+
 def choose_official(provider_id: str, cfg: dict[str, Any], hub_url: str, document: str) -> tuple[list[dict[str, Any]], str | None]:
     resolver = str(cfg.get("resolver") or "official_outbound")
     candidates: list[dict[str, Any]] = []
@@ -568,16 +589,7 @@ def choose_official(provider_id: str, cfg: dict[str, Any], hub_url: str, documen
     fallback = str(cfg.get("direct_fallback") or "").strip().rstrip("/")
     if fallback and host(fallback) != host(hub_url):
         candidates.append({"url": fallback, "label": "curated direct fallback", "score": 70, "document_index": -1, "fallback": True})
-    if resolver == "latest_telegram_domain":
-        candidates.sort(key=lambda row: (
-            row.get("fallback", False),
-            -int(row.get("message_id") or -1),
-            -int(row.get("score") or 0),
-            -int(row.get("document_index") or -1),
-            row["url"],
-        ))
-    else:
-        candidates.sort(key=lambda row: (-int(row["score"]), row.get("fallback", False), int(row["document_index"]), row["url"]))
+    _sort_official_candidates(candidates, resolver)
     return candidates, candidates[0]["url"] if candidates else None
 
 
@@ -692,28 +704,56 @@ def _candidate_identity(candidate: dict[str, Any]) -> str:
     return str(candidate.get("url") or "").rstrip("/")
 
 
-def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any], mode: str, timeout: float) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
-    observations: list[dict[str, Any]] = []
-
     for index, url in enumerate(cfg.get("direct_candidates") or []):
         if is_http_url(url):
             candidates.append({
-                "url": str(url).rstrip("/"), "label": "curated direct candidate",
-                "score": 72 - min(index, 10), "source_type": "curated_direct", "source": "provider-hubs.json",
+                "url": str(url).rstrip("/"),
+                "label": "curated direct candidate",
+                "score": 72 - min(index, 10),
+                "source_type": "curated_direct",
+                "source": "provider-hubs.json",
             })
     for index, url in enumerate(cfg.get("historical_terminal_candidates") or []):
         if is_http_url(url):
             candidates.append({
-                "url": str(url).rstrip("/"), "label": "validated historical peer candidate",
-                "score": 66 - min(index, 12), "source_type": "historical_peer", "source": "provider routing history",
+                "url": str(url).rstrip("/"),
+                "label": "validated historical peer candidate",
+                "score": 66 - min(index, 12),
+                "source_type": "historical_peer",
+                "source": "provider routing history",
             })
     current = history_row.get("current") if isinstance(history_row, dict) else None
     if isinstance(current, dict) and is_http_url(current.get("url")):
         candidates.append({
-            "url": str(current["url"]).rstrip("/"), "label": "last-known-good domain",
-            "score": 78, "source_type": "history_lkg", "source": "provider-domain-history.json",
+            "url": str(current["url"]).rstrip("/"),
+            "label": "last-known-good domain",
+            "score": 78,
+            "source_type": "history_lkg",
+            "source": "provider-domain-history.json",
         })
+    return candidates
+
+
+def _dedupe_ordered_candidates(candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    dedup: dict[str, dict[str, Any]] = {}
+    for candidate in candidates:
+        identity = _candidate_identity(candidate)
+        if not identity or not is_public_url(identity):
+            continue
+        previous = dedup.get(identity)
+        if previous is None or int(candidate.get("score") or 0) > int(previous.get("score") or 0):
+            dedup[identity] = candidate
+    return sorted(
+        dedup.values(),
+        key=lambda row: (-int(row.get("score") or 0), row.get("source_type") == "search", row["url"]),
+    )
+
+
+def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any], mode: str, timeout: float) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    candidates = _seed_known_candidates(cfg, history_row)
+    observations: list[dict[str, Any]] = []
 
     for source in cfg.get("sources") or []:
         if not isinstance(source, dict):
@@ -757,16 +797,7 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
             candidates.extend(found)
             observations.extend(search_observations)
 
-    dedup: dict[str, dict[str, Any]] = {}
-    for candidate in candidates:
-        identity = _candidate_identity(candidate)
-        if not identity or not is_public_url(identity):
-            continue
-        previous = dedup.get(identity)
-        if previous is None or int(candidate.get("score") or 0) > int(previous.get("score") or 0):
-            dedup[identity] = candidate
-    ordered = sorted(dedup.values(), key=lambda row: (-int(row.get("score") or 0), row.get("source_type") == "search", row["url"]))
-    return ordered, observations
+    return _dedupe_ordered_candidates(candidates), observations
 
 
 def _hostish(value: str) -> bool:

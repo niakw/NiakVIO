@@ -32,6 +32,7 @@ for retired in (
     ".github/workflows/permanent-real-client-labs.yml",
     ".github/workflows/nuvio-client-lab.yml",
     ".github/workflows/validate-desktop-runtime-compat.yml",
+    ".github/workflows/native-desktop-stream-canary.yml",
 ):
     assert not (ROOT / retired).exists(), retired
 

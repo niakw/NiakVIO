@@ -120,6 +120,31 @@ function globalpingProbeSummary(entry) {
   };
 }
 
+function dnsResolutionStatus(addressCount, negative, unavailable) {
+  if (addressCount > 0) return 'resolved';
+  if (negative) return 'negative';
+  if (unavailable) return 'unavailable';
+  return 'error';
+}
+
+function httpReachabilityStatus(blocked, reachable) {
+  if (blocked) return 'blocked';
+  if (reachable) return 'reachable';
+  return 'http_error';
+}
+
+function globalpingLocationCandidates(configured, generic, resolverName, isFrenchIsp) {
+  let fallback;
+  if (isFrenchIsp) {
+    fallback = [`France+${resolverName}+eyeball`, `France+${resolverName}`];
+  } else {
+    fallback = Array.isArray(generic) ? generic : [generic];
+  }
+  if (Array.isArray(configured)) return configured;
+  if (configured) return [configured];
+  return fallback;
+}
+
 function parseGlobalpingDns(measurement, resolverName, resolverConfig) {
   const entry = firstGlobalpingResult(measurement.payload);
   if (!entry) {
@@ -140,7 +165,7 @@ function parseGlobalpingDns(measurement, resolverName, resolverConfig) {
   return {
     resolver: resolverName,
     servers: resolverConfig.servers || [],
-    status: addresses.length ? 'resolved' : negative ? 'negative' : unavailable ? 'unavailable' : 'error',
+    status: dnsResolutionStatus(addresses.length, negative, unavailable),
     addresses,
     errors: addresses.length ? [] : [{ family: 4, code: statusCode || 'GLOBALPING_DNS_EMPTY' }],
     transport: 'globalping',
@@ -182,7 +207,7 @@ function parseGlobalpingHttp(measurement, originalHost) {
   const blocked = status === 451 || Boolean(blockPattern);
   const reachable = Number.isInteger(status) && status < 500 && !blocked;
   return {
-    status: blocked ? 'blocked' : reachable ? 'reachable' : 'http_error',
+    status: httpReachabilityStatus(blocked, reachable),
     http_status: status,
     final_host: finalHost,
     redirects,
@@ -205,10 +230,12 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
   async function runAtFirstAvailableLocation(bodyFactory, resolverName, resolverConfig = {}) {
     const configured = magicTable[resolverName];
     const generic = remoteConfig.neutral_location_magic || ['France+eyeball', 'France'];
-    const fallback = resolverConfig?.kind === 'french_isp'
-      ? [`France+${resolverName}+eyeball`, `France+${resolverName}`]
-      : (Array.isArray(generic) ? generic : [generic]);
-    const candidates = Array.isArray(configured) ? configured : configured ? [configured] : fallback;
+    const candidates = globalpingLocationCandidates(
+      configured,
+      generic,
+      resolverName,
+      resolverConfig?.kind === 'french_isp',
+    );
     let lastError = null;
     for (const magic of candidates.filter(Boolean)) {
       try {
@@ -467,7 +494,7 @@ export async function resolveWithResolver(host, resolverConfig, options = {}) {
   return {
     resolver: resolverConfig?.name || null,
     servers: resolverConfig?.servers || [],
-    status: unique.length ? 'resolved' : explicitNegative ? 'negative' : transportFailure ? 'unavailable' : 'error',
+    status: dnsResolutionStatus(unique.length, explicitNegative, transportFailure),
     addresses: unique,
     errors,
   };
@@ -594,7 +621,7 @@ export async function probeHttpThroughResolver(initialHost, resolverConfig, opti
 
       const reachable = Number.isInteger(response.status) && response.status < 500 && !response.block_detected;
       return {
-        status: response.block_detected ? 'blocked' : reachable ? 'reachable' : 'http_error',
+        status: httpReachabilityStatus(response.block_detected, reachable),
         http_status: response.status,
         final_host: normalizeHost(current.hostname),
         redirects,

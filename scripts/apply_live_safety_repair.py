@@ -9,7 +9,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PRESTATE = Path('/tmp/niakvio-live-safety-prestate.json')
+TEMP_ROOT = Path(os.environ.get("RUNNER_TEMP") or (ROOT / ".tmp")).resolve()
+PRESTATE = TEMP_ROOT / "niakvio-live-safety-prestate.json"
 QUARANTINE_PATCH = 'scripts/provider_patches/quarantine_provider_v1.py'
 REASONS = {
     'moviebox': 'non_playable_html_output',
@@ -22,6 +23,7 @@ def load(path: Path):
 
 
 def dump(path: Path, value) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 

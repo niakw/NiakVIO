@@ -82,5 +82,6 @@ assert "Received status code (403|408|425|429|5[0-9][0-9])" in prebuild
 assert "FIELD_NATIVE_ANDROID_PREBUILD_NETWORK_RETRY" in prebuild
 assert "attempt=$attempt status=exhausted" in prebuild
 assert "return \"$status\"" in prebuild
+assert prebuild.count("--stacktrace") >= 2
 
 print("native Android AVD persistence + cold-boot/adb/dependency + nonblocking-reader contract passed")

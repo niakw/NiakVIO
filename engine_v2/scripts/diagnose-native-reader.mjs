@@ -539,7 +539,7 @@ const payload = {
   extractionFailures: extractionFailures.length,
   providerExtractionFailures: providerExtractionFailures.length,
   clientRuntimeExtractionFailures: systemicExtractionFailures.length,
-  systemicExtractionGroups: systemicExtraction.systemicGroups.length,
+  systemicExtractionGroupCount: systemicExtraction.systemicGroups.length,
   ignoredDisabledExtractionFailures: ignoredDisabledExtractionFailures.length,
   capabilityResultObserved: capabilityResultRows.length,
   crossClientProviderFailureGroups: crossClientProviderFailures.length,

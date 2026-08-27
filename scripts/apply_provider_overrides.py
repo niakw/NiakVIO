@@ -336,7 +336,7 @@ def _runtime_domain_span_matches_rules(candidate: str, rules: dict[str, str]) ->
     tail = candidate[position + len(needle):]
     try:
         payload, payload_end = json.JSONDecoder().raw_decode(tail)
-    except (TypeError, ValueError, json.JSONDecodeError):
+    except (TypeError, ValueError):
         return False
     remainder = tail[payload_end:].strip()
     if remainder not in (")", ");"):
@@ -399,7 +399,7 @@ def _strip_runtime_domain_orphan_calls(
         tail = text[position + len(needle):]
         try:
             payload, payload_end = decoder.raw_decode(tail)
-        except (TypeError, ValueError, json.JSONDecodeError):
+        except (TypeError, ValueError):
             payload, payload_end = None, 0
 
         match: tuple[int, int] | None = None
@@ -518,7 +518,7 @@ def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) ->
 def _strip_legacy_global_stream_guards(text: str) -> tuple[str, int]:
     """Remove the obsolete one-size-fits-all output guards."""
     pattern = re.compile(
-        r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V(?:1|2|3) \*/[\s\S]*$",
+        r"\n?/\* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V[123] \*/[\s\S]*$",
         re.MULTILINE,
     )
     output, count = pattern.subn("", text)
@@ -691,7 +691,8 @@ def _safe_global_assignments(body: str) -> bool:
 
 def _safe_else_global_suffix(suffix: str) -> bool:
     """Accept only an else branch containing global provider bindings."""
-    cleaned = re.sub(r"//[^\r\n]*|/\*[\s\S]*?\*/", "", suffix).strip()
+    cleaned = re.sub(r"//[^\r\n]*", "", suffix)
+    cleaned = re.sub(r"/\*(?:[^*]|\*(?!/))*\*/", "", cleaned).strip()
     if cleaned.startswith(";"):
         cleaned = cleaned[1:].lstrip()
     braced = re.fullmatch(r"\}\s*else\s*\{([\s\S]*)\}\s*;?\s*", cleaned)

@@ -121,7 +121,7 @@ BRAIN_PAYLOAD_ANCHOR = '''  extractionFailures: extractionFailures.length,
 BRAIN_PAYLOAD_REPLACEMENT = '''  extractionFailures: extractionFailures.length,
   providerExtractionFailures: providerExtractionFailures.length,
   clientRuntimeExtractionFailures: systemicExtractionFailures.length,
-  systemicExtractionGroups: systemicExtraction.systemicGroups.length,
+  systemicExtractionGroupCount: systemicExtraction.systemicGroups.length,
   ignoredDisabledExtractionFailures: ignoredDisabledExtractionFailures.length,
 '''
 BRAIN_PAYLOAD_OBS_ANCHOR = '''  extractionHealthyObservations,

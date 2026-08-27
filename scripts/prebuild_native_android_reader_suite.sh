@@ -95,9 +95,9 @@ run_gradle_with_network_retry() {
 }
 
 if [[ "$CLIENT" = "tv" ]]; then
-  run_gradle_with_network_retry "$ROOT/gradlew" -p "$ROOT" :app:assembleFullDebug :app:assembleFullDebugAndroidTest --console=plain
+  run_gradle_with_network_retry "$ROOT/gradlew" -p "$ROOT" :app:assembleFullDebug :app:assembleFullDebugAndroidTest --console=plain --stacktrace
 else
-  run_gradle_with_network_retry "$ROOT/gradlew" -p "$ROOT" :androidApp:assembleFullDebug :composeApp:packageAndroidDeviceTest -Pnuvio.android.distribution=full --console=plain
+  run_gradle_with_network_retry "$ROOT/gradlew" -p "$ROOT" :androidApp:assembleFullDebug :composeApp:packageAndroidDeviceTest -Pnuvio.android.distribution=full --console=plain --stacktrace
 fi
 
 echo "FIELD_NATIVE_ANDROID_PREBUILD client=$CLIENT fixture=$FIXTURE manifest=$TARGET_MANIFEST provider=$TARGET_PROVIDER streams=$STREAM_SCOPE source_sha=$SOURCE_SHA status=ready"

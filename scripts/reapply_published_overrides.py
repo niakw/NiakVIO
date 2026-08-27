@@ -42,6 +42,7 @@ PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 OVERRIDES = ROOT / "provider-overrides.json"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
+ADAPTIVE_MARKER_V5 = "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 ADAPTIVE_SCRIPT = ROOT / "scripts" / "provider_patches" / "adaptive_runtime_recovery_v4.py"
 ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
@@ -120,7 +121,7 @@ def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
 
 
 def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any] | None) -> tuple[bytes, list[dict[str, Any]]]:
-    if ADAPTIVE_MARKER.encode("utf-8") not in data or not isinstance(provenance_row, dict):
+    if not isinstance(provenance_row, dict):
         return data, []
     accepted = [
         record for record in (provenance_row.get("local_patches") or [])
@@ -129,9 +130,23 @@ def reapply_adaptive_runtime_revision(data: bytes, provenance_row: dict[str, Any
         and record.get("profile") == "adaptive_runtime_recovery"
         and record.get("phase") == "runtime"
         and isinstance(record.get("options"), dict)
+        and int(record.get("revision") or 0) < 5
     ]
     if not accepted:
         return data, []
+
+    if ADAPTIVE_MARKER_V5.encode("utf-8") in data:
+        return data, []
+
+    marker_present = ADAPTIVE_MARKER.encode("utf-8") in data
+    preserved_ci_uncertain = (
+        str(provenance_row.get("activation_mode") or "") == "preserved_current_ci_uncertain"
+        and str(provenance_row.get("preserved_reason") or "")
+        == "ci_uncertain_kept_last_published_artifact"
+    )
+    if not marker_present and preserved_ci_uncertain:
+        return data, []
+
     options = dict(accepted[-1]["options"])
     spec = importlib.util.spec_from_file_location("nuvio_reapply_adaptive_runtime", ADAPTIVE_SCRIPT)
     if spec is None or spec.loader is None:
@@ -165,7 +180,12 @@ def reapply_adaptive_domain_revision(data: bytes) -> tuple[bytes, list[dict[str,
             decoded = json.loads(base64.b64decode(encoded).decode("utf-8"))
         except Exception:
             continue
-        candidate = decoded if isinstance(decoded, list) else decoded.get("groups") if isinstance(decoded, dict) else None
+        if isinstance(decoded, list):
+            candidate = decoded
+        elif isinstance(decoded, dict):
+            candidate = decoded.get("groups")
+        else:
+            candidate = None
         if isinstance(candidate, list) and all(isinstance(row, dict) for row in candidate):
             groups = candidate
     if not groups:
@@ -204,6 +224,19 @@ def write_manifest(path: Path, value: dict[str, Any]) -> None:
     write_json(path, value)
 
 
+def _origin_belongs_to_other_provider(
+    provider_id: str,
+    origin_host: str,
+    api_hosts: dict[str, set[str]],
+) -> bool:
+    provider_key = str(provider_id).casefold()
+    return any(
+        owner != provider_key
+        and any(_host_belongs(origin_host, owner_host) for owner_host in hosts)
+        for owner, hosts in api_hosts.items()
+    )
+
+
 def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any], int]:
     """Drop API origins owned by another provider from generated capability metadata."""
     patches = config.get("provider_patches") if isinstance(config.get("provider_patches"), dict) else {}
@@ -215,19 +248,11 @@ def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any],
             continue
         kept: list[Any] = []
         for value in row["observed_origins"]:
-            host = _host(value)
-            foreign = False
-            if host:
-                for owner, hosts in api_hosts.items():
-                    if owner == str(provider_id).casefold():
-                        continue
-                    if any(_host_belongs(host, owner_host) for owner_host in hosts):
-                        foreign = True
-                        break
-            if foreign:
+            origin_host = _host(value)
+            if origin_host and _origin_belongs_to_other_provider(provider_id, origin_host, api_hosts):
                 removed += 1
-            else:
-                kept.append(value)
+                continue
+            kept.append(value)
         row["observed_origins"] = kept
     meta = config.setdefault("provider_engine_normalization", {})
     if isinstance(meta, dict):
@@ -253,7 +278,7 @@ def validate_artifact(data: bytes, provider_id: str) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def published_name(provider_id: str, old_path: Path, digest: str, changed: bool) -> str:
+def published_name(provider_id: str, old_path: Path, digest: str) -> str:
     parts = old_path.stem.split("--")
     source = parts[-2] if len(parts) >= 3 else "nuvio"
     return f"{safe_fragment(provider_id.casefold())}--{safe_fragment(source)}--{digest[:16]}.js"
@@ -410,7 +435,7 @@ def main() -> int:
         if changed:
             applied_count += 1
         digest = hashlib.sha256(patched).hexdigest()
-        new_relative = f"providers/{published_name(provider_id, path, digest, changed)}"
+        new_relative = f"providers/{published_name(provider_id, path, digest)}"
         updates[provider_id] = (relative, new_relative)
         outputs[new_relative] = patched
         old_paths.add(relative)

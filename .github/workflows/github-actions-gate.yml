@@ -14,6 +14,25 @@ on:
       - "scripts/augment_native_provider_loading_compat.py"
       - "tests/native_provider_loading_compat_test.py"
       - "tests/native_evidence_codegen_pipeline_test.py"
+      - "scripts/evidence_sanitization.py"
+      - "scripts/nuvio_tv_target_diagnostics_v2.py"
+      - "scripts/extract_targeted_route_contexts.py"
+      - "scripts/augment_native_desktop_runtime_diagnostics.py"
+      - "scripts/prebuild_native_android_reader_suite.sh"
+      - "engine_v2/scripts/diagnose-native-reader.mjs"
+      - "scripts/normalize_core_runtime_compat.py"
+      - "scripts/normalize_runtime_repository_dependencies.py"
+      - "tests/evidence_sanitization_test.py"
+      - "tests/native_reader_payload_schema_test.py"
+      - "tests/native_desktop_runtime_diagnostics_order_test.py"
+      - "tests/native_android_avd_cache_contract_test.py"
+      - "scripts/tv_hls_duration_identity.py"
+      - "scripts/rank_provider_portfolio.cjs"
+      - "scripts/watch_native_device_frontend.sh"
+      - "scripts/resolve_provider_hubs.py"
+      - "tests/provider_hub_registry_test.py"
+      - "tests/generic_recovery_hardening_test.py"
+      - "tests/repository_hygiene_contract_test.py"
       - "tests/workflow_security_policy_test.py"
   push:
     branches: [main]
@@ -84,6 +103,13 @@ jobs:
       - name: Validate workflow architecture contracts
         run: |
           python3 tests/workflow_security_policy_test.py
+          python3 tests/repository_hygiene_contract_test.py
+          python3 tests/provider_hub_registry_test.py
+          python3 tests/generic_recovery_hardening_test.py
+          python3 tests/native_reader_payload_schema_test.py
+          python3 tests/evidence_sanitization_test.py
+          python3 tests/native_desktop_runtime_diagnostics_order_test.py
+          python3 tests/native_android_avd_cache_contract_test.py
           python3 tests/ci_preservation_policy_test.py
           python3 tests/native_corpus_device_lab_test.py
           python3 tests/native_corpus_suite_summary_test.py

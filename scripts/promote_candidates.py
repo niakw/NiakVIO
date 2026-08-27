@@ -426,10 +426,112 @@ def manifest_height_from_text(text: str) -> int | None:
     return None
 
 
+def _manifest_variant_claims(variant: dict[str, Any]) -> dict[str, Any]:
+    metadata = variant.get("metadata", {}) if isinstance(variant.get("metadata"), dict) else {}
+    description = str(metadata.get("description") or "").strip()
+    languages: set[str] = set()
+    declared_supported_types: set[str] = set()
+    formats: set[str] = set()
+    quality_signals: set[str] = set()
+    language_modes: set[str] = set()
+
+    content_languages = metadata.get("contentLanguage")
+    if isinstance(content_languages, list):
+        for value in content_languages:
+            normalized = normalize_manifest_language(value)
+            if normalized:
+                languages.add(normalized)
+
+    declared_types = metadata.get("supportedTypes")
+    if isinstance(declared_types, list):
+        for value in declared_types:
+            normalized_type = normalize_supported_type(value)
+            if normalized_type:
+                declared_supported_types.add(normalized_type)
+
+    declared_formats = metadata.get("formats")
+    if isinstance(declared_formats, list):
+        formats.update(str(value).casefold() for value in declared_formats if value)
+
+    quality_metadata: list[str] = []
+    for key in ("quality", "qualities", "resolution", "resolutions"):
+        value = metadata.get(key)
+        if isinstance(value, list):
+            quality_metadata.extend(str(item) for item in value if item is not None)
+        elif value is not None:
+            quality_metadata.append(str(value))
+
+    type_text = " ".join(
+        str(value or "")
+        for value in (
+            variant.get("canonical_id"),
+            metadata.get("id"),
+            metadata.get("name"),
+            description,
+        )
+    )
+    text = normalized_manifest_text(f"{type_text} {' '.join(quality_metadata)}")
+    max_height = manifest_height_from_text(text)
+    if max_height is not None:
+        quality_signals.add(f"explicit_height:{max_height}")
+
+    quality_patterns = (
+        (
+            r"\b(?:multi[ -]?quality|multiple quality|multi[ -]?resolution|multiple resolution)\b",
+            "multiple_quality_options",
+        ),
+        (
+            r"\b(?:direct links?|direct streams?|direct streaming|cdn direct|high[ -]?speed|lightning fast|fast streaming|streams? directs?|tres rapides?)\b",
+            "direct_or_fast_delivery",
+        ),
+        (
+            r"\b(?:multi[ -]?servers?|multiple (?:streaming )?servers?|server sources?)\b",
+            "multiple_servers",
+        ),
+        (
+            r"\b(?:gros catalogue|large catalogue|large catalog|big catalog|tres actif|very active|sorties du jour|latest .* daily|trending)\b",
+            "catalogue_or_freshness",
+        ),
+    )
+    for pattern, signal in quality_patterns:
+        if re.search(pattern, text):
+            quality_signals.add(signal)
+
+    explicit_vf = bool(re.search(
+        r"\b(?:vf|truefrench|version[ -]?francaise|audio[ -]?francais|french[ -]?(?:audio|dub|dubbed)|dubbed(?:[ -]?in)?[ -]?french)\b",
+        text,
+    ))
+    explicit_vostfr = bool(re.search(
+        r"\b(?:vostfr|version[ -]?originale[ -]?sous[ -]?titree?[ -]?francais|sous[ -]?titres?[ -]?francais|french[ -]?(?:sub|subbed|subtitle|subtitles)|subtitles?(?:[ -]?in)?[ -]?french)\b",
+        text,
+    ))
+    if explicit_vf:
+        language_modes.add("vf")
+        languages.add("fr")
+    if explicit_vostfr:
+        language_modes.add("vostfr")
+        languages.add("fr")
+    if re.search(r"\b(?:french|francais)\b", text):
+        languages.add("fr")
+    if re.search(r"\b(?:english|eng|dual[ -]?audio|multi[ -]?(?:language|langue))\b", text):
+        languages.add("en")
+
+    return {
+        "description": description,
+        "languages": languages,
+        "declared_supported_types": declared_supported_types,
+        "type_text": type_text,
+        "formats": formats,
+        "source": str(variant.get("source") or "unknown"),
+        "quality_signals": quality_signals,
+        "language_modes": language_modes,
+        "max_height": max_height,
+    }
+
+
 def aggregate_manifest_claims(variants: list[dict[str, Any]]) -> dict[str, Any]:
     descriptions: list[str] = []
     languages: set[str] = set()
-    supported_types: set[str] = set()
     declared_supported_types: set[str] = set()
     type_text_parts: list[str] = []
     formats: set[str] = set()
@@ -439,81 +541,20 @@ def aggregate_manifest_claims(variants: list[dict[str, Any]]) -> dict[str, Any]:
     max_height: int | None = None
 
     for variant in variants:
-        metadata = variant.get("metadata", {}) if isinstance(variant.get("metadata"), dict) else {}
-        description = str(metadata.get("description") or "").strip()
+        claims = _manifest_variant_claims(variant)
+        description = str(claims["description"])
         if description:
             descriptions.append(description)
-        sources.add(str(variant.get("source") or "unknown"))
-        for value in metadata.get("contentLanguage", []) if isinstance(metadata.get("contentLanguage"), list) else []:
-            normalized = normalize_manifest_language(value)
-            if normalized:
-                languages.add(normalized)
-        if isinstance(metadata.get("supportedTypes"), list):
-            for value in metadata.get("supportedTypes", []):
-                normalized_type = normalize_supported_type(value)
-                if normalized_type:
-                    declared_supported_types.add(normalized_type)
-        type_text_parts.extend(
-            str(value or "")
-            for value in (
-                variant.get("canonical_id"),
-                metadata.get("id"),
-                metadata.get("name"),
-                description,
-            )
-        )
-        for value in metadata.get("formats", []) if isinstance(metadata.get("formats"), list) else []:
-            if value:
-                formats.add(str(value).casefold())
-
-        quality_metadata = []
-        for key in ("quality", "qualities", "resolution", "resolutions"):
-            value = metadata.get(key)
-            if isinstance(value, list):
-                quality_metadata.extend(str(item) for item in value if item is not None)
-            elif value is not None:
-                quality_metadata.append(str(value))
-        text = normalized_manifest_text(
-            " ".join(
-                [
-                    str(variant.get("canonical_id") or ""),
-                    str(metadata.get("id") or ""),
-                    str(metadata.get("name") or ""),
-                    description,
-                    " ".join(quality_metadata),
-                ]
-            )
-        )
-        height = manifest_height_from_text(text)
-        if height is not None:
+        languages.update(claims["languages"])
+        declared_supported_types.update(claims["declared_supported_types"])
+        type_text_parts.append(str(claims["type_text"]))
+        formats.update(claims["formats"])
+        sources.add(str(claims["source"]))
+        quality_signals.update(claims["quality_signals"])
+        language_modes.update(claims["language_modes"])
+        height = claims["max_height"]
+        if isinstance(height, int):
             max_height = max(max_height or 0, height)
-            quality_signals.add(f"explicit_height:{height}")
-        if re.search(r"\b(?:multi[ -]?quality|multiple quality|multi[ -]?resolution|multiple resolution)\b", text):
-            quality_signals.add("multiple_quality_options")
-        if re.search(r"\b(?:direct links?|direct streams?|direct streaming|cdn direct|high[ -]?speed|lightning fast|fast streaming|streams? directs?|tres rapides?)\b", text):
-            quality_signals.add("direct_or_fast_delivery")
-        if re.search(r"\b(?:multi[ -]?servers?|multiple (?:streaming )?servers?|server sources?)\b", text):
-            quality_signals.add("multiple_servers")
-        if re.search(r"\b(?:gros catalogue|large catalogue|large catalog|big catalog|tres actif|very active|sorties du jour|latest .* daily|trending)\b", text):
-            quality_signals.add("catalogue_or_freshness")
-        explicit_vf = bool(re.search(
-            r"\b(?:vf|truefrench|version[ -]?francaise|audio[ -]?francais|french[ -]?(?:audio|dub|dubbed)|dubbed(?:[ -]?in)?[ -]?french)\b",
-            text,
-        ))
-        explicit_vostfr = bool(re.search(
-            r"\b(?:vostfr|version[ -]?originale[ -]?sous[ -]?titree?[ -]?francais|sous[ -]?titres?[ -]?francais|french[ -]?(?:sub|subbed|subtitle|subtitles)|subtitles?(?:[ -]?in)?[ -]?french)\b",
-            text,
-        ))
-        if explicit_vf:
-            language_modes.add("vf")
-            languages.add("fr")
-        if explicit_vostfr:
-            language_modes.add("vostfr")
-            languages.add("fr")
-        if re.search(r"\b(?:french|francais)\b", text):
-            languages.add("fr")
-        if re.search(r"\b(?:english|eng|dual[ -]?audio|multi[ -]?(?:language|langue))\b", text):
-            languages.add("en")
 
     type_signals = manifest_type_signals(" ".join(type_text_parts))
     inferred_supported_types = {

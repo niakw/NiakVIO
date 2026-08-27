@@ -9,10 +9,7 @@ on:
   schedule:
     - cron: '23 6 * * 1'
 
-permissions:
-  actions: write
-  contents: write
-  pull-requests: read
+permissions: {}
 
 concurrency:
   group: niakvio-repository-hygiene
@@ -20,6 +17,9 @@ concurrency:
 
 jobs:
   purge-stale-actions:
+    permissions:
+      actions: write
+      contents: read
     # Keep queue hygiene on the lightweight pool. Only generations older than the
     # current main HEAD are touched; current validation runs are never cancelled.
     runs-on: ubuntu-slim
@@ -178,6 +178,9 @@ jobs:
 
   cleanup:
     needs: purge-stale-actions
+    permissions:
+      contents: write
+      pull-requests: read
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

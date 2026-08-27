@@ -14,7 +14,7 @@
     "nuvio-mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "verified_ref": "4e838e470055d61facab285d283d7ec8f00c0347",
+      "verified_ref": "582ae863800414aff5f4a17a533ab19713a99ce4",
       "platforms": ["android", "ios"],
       "contract": "automation/platform-runtime-contracts.json",
       "audit_note": "2026-08-26: Mobile runtime and transport contract re-audited through current cmp-rewrite HEAD 4e838e470055. Detailed runtime read was performed at 071fc431a446; the sole subsequent commit changes only android-release.yml. QuickJS positional getStreams, PluginRuntimeResult projection, Android OkHttp Proxy.NO_PROXY transport and iOS Ktor/Darwin transport are therefore current and now explicitly tracked.",
@@ -72,7 +72,7 @@
     "nuvio-desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
       "branch": "Dev",
-      "verified_ref": "a4fe0bf1a98ff9a8ca50e1a9dccde7ca842bd817",
+      "verified_ref": "24f63e42c6debfc7a20200bc3a9a9586370c44f0",
       "platforms": ["windows", "macos", "linux"],
       "contract": "automation/platform-runtime-contracts.json",
       "audit_note": "2026-08-26: Desktop runtime and transport contract re-audited at current Dev HEAD a4fe0bf1a98f. QuickJS positional getStreams and result projection match the current Mobile family, while Desktop keeps its distinct async __native_fetch bridge and JVM OkHttp transport without Proxy.NO_PROXY. Those transport files are now hard contract paths so future silent networking drift blocks advancement.",
@@ -108,7 +108,7 @@
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "verified_ref": "0d8f99e2b92be5e2dedbbd0eaf9ccd00c78d020a",
+      "verified_ref": "ba44afb080d878ba123c978e791be8115e324fe9",
       "platforms": ["android-tv"],
       "contract": "automation/nuvio-tv-runtime-contract.json",
       "audit_note": "2026-08-26: TV contract re-audited through current dev HEAD 0d8f99e2b92b. PluginRuntime positional getStreams, Proxy.NO_PROXY/IPv4FirstDns transport, TMDB_API_KEY injection and LocalScraperResult projection are unchanged. Recent PluginManager changes only bound scraper orchestration to MAX_CONCURRENT_SCRAPERS on low-RAM devices and skip duplicate repository writes; they do not change request arguments or returned stream mapping.",
