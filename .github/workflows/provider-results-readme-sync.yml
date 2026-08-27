@@ -109,20 +109,20 @@ jobs:
             --diagnostics-root provider-results-input \
             --run-id "$RUN_ID" \
             --results automation/provider-device-results.json \
-            --readme README.md
+            --readme README.fr.md
 
       - name: Validate trust-first README contract and manifest sync
         shell: bash
         run: |
           set -euo pipefail
-          grep -q 'Lectures natives confirmées' README.md
-          grep -q 'Voir les .* providers actifs' README.md
-          grep -q 'PREUVES LECTEUR' README.md
-          grep -Fq 'fixtures de test' README.md
-          grep -Fq 'TESTING_NOTICE.md' README.md
-          grep -Fq 'DISCLAIMER.md' README.md
-          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json' README.md
-          if grep -q '| TV | Mobile | Desktop macOS | Desktop Windows |' README.md; then
+          grep -q 'Lectures natives confirmées' README.fr.md
+          grep -q 'Voir les .* providers actifs' README.fr.md
+          grep -q 'PREUVES LECTEUR' README.fr.md
+          grep -Fq 'fixtures de test' README.fr.md
+          grep -Fq 'TESTING_NOTICE.md' README.fr.md
+          grep -Fq 'DISCLAIMER.md' README.fr.md
+          grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json' README.fr.md
+          if grep -q '| TV | Mobile | Desktop macOS | Desktop Windows |' README.fr.md; then
             echo 'legacy sparse per-device matrix unexpectedly returned' >&2
             exit 1
           fi
@@ -130,7 +130,7 @@ jobs:
           import json, re
           manifest = json.load(open('manifest.json', encoding='utf-8'))
           expected = sum(1 for row in manifest.get('scrapers', []) if isinstance(row, dict) and row.get('enabled') is True)
-          readme = open('README.md', encoding='utf-8').read()
+          readme = open('README.fr.md', encoding='utf-8').read()
           match = re.search(r'PROVIDERS_ACTIFS-(\d+)-16a34a', readme)
           if not match:
               raise SystemExit('README active-provider shield missing')
@@ -149,7 +149,7 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add README.md automation/provider-device-results.json
+          git add README.fr.md automation/provider-device-results.json
           if git diff --cached --quiet; then
             echo 'Provider/device result showcase already current.'
             exit 0

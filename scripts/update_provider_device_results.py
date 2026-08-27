@@ -489,7 +489,7 @@ def main() -> int:
     parser.add_argument("--diagnostics-root", type=Path)
     parser.add_argument("--run-id", default="manual")
     parser.add_argument("--results", type=Path, default=ROOT / "automation" / "provider-device-results.json")
-    parser.add_argument("--readme", type=Path, default=ROOT / "README.md")
+    parser.add_argument("--readme", type=Path, default=ROOT / "README.fr.md")
     args = parser.parse_args()
 
     results = load_json(args.results, {"schemaVersion": 1, "fixtures": {}, "proofs": []})
