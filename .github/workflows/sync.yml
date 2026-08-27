@@ -242,6 +242,7 @@ jobs:
       - name: Checkout current published repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Capture published manifest baseline
@@ -432,7 +433,7 @@ jobs:
           python scripts/validate_release_integrity.py
           node engine_v2/tests/provider-catalog.test.mjs
 
-          git add manifest.json vf/manifest.json provider_catalog.json \
+          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json provider_catalog.json \
             package.json package-lock.json sources.json nuvio-client-id-state.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
             PROVENANCE.json provider-overrides.json provider-domain-history.json \

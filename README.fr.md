@@ -32,6 +32,22 @@ Projection centrée sur les providers proposant du français lorsque cette langu
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
+### Manifest VO sans anime ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
+
+Copie du manifest général, en retirant **uniquement les providers qui déclarent exclusivement le type anime**. Les providers mixtes film/série + anime restent présents.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
+```
+
+### Manifest VF sans anime ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
+
+Copie du manifest francophone, avec le même filtre : seuls les providers exclusivement anime sont retirés.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
+```
+
 ### Badges StreamBadge — recommandé ([Comment les ajouter ?](docs/fr/how-to-add-stream-badges.md))
 
 Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion v2**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.

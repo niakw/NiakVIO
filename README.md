@@ -23,6 +23,22 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
+### General manifest — without anime-only providers ([How to add?](docs/how-to-add-manifest.md))
+
+Same general catalogue, excluding only providers whose declared `supportedTypes` contain **anime and nothing else**.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
+```
+
+### French-focused manifest — without anime-only providers ([How to add?](docs/how-to-add-manifest.md))
+
+Same French-focused projection, excluding only providers that are explicitly anime-only.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
+```
+
 ### StreamBadge feed — recommended ([How to add?](docs/how-to-add-stream-badges.md))
 
 ```text

@@ -22,6 +22,22 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
+### Manifest VO sans anime
+
+Copie du manifest général en retirant uniquement les providers dont les types déclarés indiquent **anime uniquement**. Un provider qui propose aussi des films ou des séries reste inclus.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
+```
+
+### Manifest VF sans anime
+
+Même filtre appliqué au manifest francophone.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
+```
+
 > Installer les deux est généralement inutile car ils se recoupent. Pour la majorité des utilisateurs, installez uniquement le **manifest général**.
 
 ## Nuvio Mobile et Nuvio Desktop

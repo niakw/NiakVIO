@@ -22,6 +22,22 @@ Use this if you only want the French-focused provider selection, based on langua
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
+### General manifest without anime-only providers
+
+Use the general catalogue while excluding providers that explicitly support **anime only**. Providers supporting movies or TV in addition to anime remain included.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
+```
+
+### French-focused manifest without anime-only providers
+
+Same rule applied to the French-focused manifest.
+
+```text
+https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
+```
+
 > Installing both is usually unnecessary because they overlap. For most users, install the **General manifest only**.
 
 ## Nuvio Mobile and Nuvio Desktop

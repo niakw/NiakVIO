@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Generate the VF-only manifest alongside the general manifest.
+"""Generate deterministic language and no-anime manifest projections.
 
-Output:
+Outputs:
 - vf/manifest.json: all declared/observed French-capable providers, preserving enabled state.
+- no-anime/manifest.json: general manifest without providers that are anime-only.
+- vf-no-anime/manifest.json: VF manifest without providers that are anime-only.
 
 Classification comes from health-report.json, where observed runtime language
 modes take precedence over broad upstream descriptions. When *no* declared or
@@ -94,6 +96,35 @@ def nested_entry(entry: dict[str, Any]) -> dict[str, Any]:
     if filename and not filename.startswith(("http://", "https://", "/", "../")):
         copied["filename"] = f"../{filename}"
     return copied
+
+
+def normalized_supported_types(entry: dict[str, Any]) -> list[str]:
+    values = entry.get("supportedTypes", [])
+    if isinstance(values, str):
+        values = [values]
+    if not isinstance(values, list):
+        return []
+    return [str(value).strip().casefold() for value in values if str(value).strip()]
+
+
+def is_anime_only_provider(entry: dict[str, Any]) -> bool:
+    """True only when the provider explicitly declares anime as its sole media type."""
+    types = normalized_supported_types(entry)
+    return bool(types) and set(types) == {"anime"}
+
+
+def build_no_anime_manifest(source: dict[str, Any], name_suffix: str = "No anime-only providers") -> dict[str, Any]:
+    """Copy a manifest while removing only explicitly anime-only providers."""
+    entries = [
+        nested_entry(entry)
+        for entry in source.get("scrapers", [])
+        if isinstance(entry, dict) and not is_anime_only_provider(entry)
+    ]
+    return {
+        "name": f"{source.get('name', 'Nuvio Curated Providers')} — {name_suffix}",
+        "version": source.get("version"),
+        "scrapers": entries,
+    }
 
 
 def normalized_declared_languages(entry: dict[str, Any]) -> list[str]:
@@ -318,9 +349,19 @@ def main() -> int:
     }
 
     vf_manifest = build_manifest(manifest, language_by_id, {"vf"}, "VF uniquement")
-    atomic_write_json(ROOT / "vf" / "manifest.json", vf_manifest)
+    general_no_anime = build_no_anime_manifest(manifest)
+    vf_no_anime = build_no_anime_manifest(vf_manifest)
 
-    print(f"Generated VF manifest: VF={len(vf_manifest['scrapers'])}.")
+    atomic_write_json(ROOT / "vf" / "manifest.json", vf_manifest)
+    atomic_write_json(ROOT / "no-anime" / "manifest.json", general_no_anime)
+    atomic_write_json(ROOT / "vf-no-anime" / "manifest.json", vf_no_anime)
+
+    print(
+        "Generated manifest projections: "
+        f"VF={len(vf_manifest['scrapers'])}, "
+        f"general_no_anime={len(general_no_anime['scrapers'])}, "
+        f"vf_no_anime={len(vf_no_anime['scrapers'])}."
+    )
     return 0
 
 

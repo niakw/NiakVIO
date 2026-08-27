@@ -14,6 +14,10 @@ with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     vf_dir = root / "vf"
     vf_dir.mkdir()
+    no_anime_dir = root / "no-anime"
+    no_anime_dir.mkdir()
+    vf_no_anime_dir = root / "vf-no-anime"
+    vf_no_anime_dir.mkdir()
 
     manifest = {
         "name": "Projection fixture",
@@ -24,6 +28,14 @@ with tempfile.TemporaryDirectory() as tmp:
                 "filename": "providers/declared-fr.js",
                 "contentLanguage": ["fr"],
                 "enabled": True,
+                "supportedTypes": ["movie", "tv"],
+            },
+            {
+                "id": "anime-only",
+                "filename": "providers/anime-only.js",
+                "contentLanguage": ["fr"],
+                "supportedTypes": ["anime"],
+                "enabled": True,
             },
             {
                 # Nuvio client activation intentionally toggles id case. Runtime
@@ -31,12 +43,14 @@ with tempfile.TemporaryDirectory() as tmp:
                 "id": "OBSERVED-VF",
                 "filename": "providers/observed-vf.js",
                 "contentLanguage": ["en"],
+                "supportedTypes": ["movie", "anime"],
                 "enabled": True,
             },
             {
                 "id": "english-only",
                 "filename": "providers/english-only.js",
                 "contentLanguage": ["en"],
+                "supportedTypes": ["movie"],
                 "enabled": True,
             },
         ],
@@ -44,6 +58,7 @@ with tempfile.TemporaryDirectory() as tmp:
     report = {
         "providers": [
             {"id": "declared-fr", "manifest_ordering": {"language_group": "other"}},
+            {"id": "anime-only", "manifest_ordering": {"language_group": "vf"}},
             {"id": "observed-vf", "manifest_ordering": {"language_group": "vf"}},
             {"id": "english-only", "manifest_ordering": {"language_group": "other"}},
         ]
@@ -57,11 +72,20 @@ with tempfile.TemporaryDirectory() as tmp:
                 "filename": "../providers/declared-fr.js",
                 "contentLanguage": ["fr"],
                 "enabled": True,
+                "supportedTypes": ["movie", "tv"],
+            },
+            {
+                "id": "anime-only",
+                "filename": "../providers/anime-only.js",
+                "contentLanguage": ["fr"],
+                "supportedTypes": ["anime"],
+                "enabled": True,
             },
             {
                 "id": "OBSERVED-VF",
                 "filename": "../providers/observed-vf.js",
                 "contentLanguage": ["en"],
+                "supportedTypes": ["movie", "anime"],
                 "enabled": True,
             },
         ],
@@ -74,6 +98,29 @@ with tempfile.TemporaryDirectory() as tmp:
     report_path.write_text(json.dumps(report), encoding="utf-8")
     vf_path.write_text(json.dumps(expected_vf), encoding="utf-8")
 
+    def anime_only(row):
+        values = [str(v).casefold() for v in row.get("supportedTypes", [])]
+        return bool(values) and set(values) == {"anime"}
+
+    expected_no_anime = {
+        "name": "Projection fixture — No anime-only providers",
+        "version": "1.2.3",
+        "scrapers": [
+            {**row, "filename": "../" + row["filename"]}
+            for row in manifest["scrapers"]
+            if not anime_only(row)
+        ],
+    }
+    expected_vf_no_anime = {
+        "name": "Projection fixture — VF uniquement — No anime-only providers",
+        "version": "1.2.3",
+        "scrapers": [row for row in expected_vf["scrapers"] if not anime_only(row)],
+    }
+    no_anime_path = no_anime_dir / "manifest.json"
+    vf_no_anime_path = vf_no_anime_dir / "manifest.json"
+    no_anime_path.write_text(json.dumps(expected_no_anime), encoding="utf-8")
+    vf_no_anime_path.write_text(json.dumps(expected_vf_no_anime), encoding="utf-8")
+
     command = [
         sys.executable,
         str(VALIDATOR),
@@ -83,6 +130,10 @@ with tempfile.TemporaryDirectory() as tmp:
         str(report_path),
         "--vf",
         str(vf_path),
+        "--no-anime",
+        str(no_anime_path),
+        "--vf-no-anime",
+        str(vf_no_anime_path),
     ]
     result = subprocess.run(command, text=True, capture_output=True)
     assert result.returncode == 0, result.stdout + result.stderr
