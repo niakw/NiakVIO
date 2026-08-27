@@ -180,16 +180,6 @@ Les commits clients audités sont suivis dans [`automation/nuvio-client-upstream
 
 Le contrat logique ARCHI 2 est commun, mais **une preuve Desktop ne vaut jamais automatiquement preuve Mobile ou TV**.
 
-### Note runtime Desktop — JSON Unicode QuickJS/JVM
-
-Un bug reproductible du bridge QuickJS/JVM de Nuvio Desktop peut transformer un résultat valide en **0 stream** lorsque le JSON final transmis depuis JavaScript contient directement des caractères Unicode non ASCII, notamment des emojis dans des champs comme `title`, `name`, `description` ou `size`.
-
-Le diagnostic de référence a été isolé avec **Purstream + Interstellar (TMDB 157336)** : l'API et le `/sheet` renvoyaient bien une URL HLS valide, le résultat brut passait, mais l'objet enrichi disparaissait dès qu'un champ texte contenait un emoji. Le problème n'était donc ni le provider, ni le réseau, ni HLS, mais le transport de la chaîne JSON à travers QuickJS/JVM.
-
-Le Core V15 protège ce passage en sérialisant les payloads de streams en JSON **ASCII-safe** : les caractères Unicode sont temporairement représentés par leurs échappements JSON `\\uXXXX` avant le binding JVM. Le parseur JSON restitue ensuite les caractères originaux, donc l'UI conserve normalement les emojis et accents. Cette protection concerne **l'ensemble du payload stream**, pas seulement la description.
-
-Régression verrouillée par les probes QuickJS/JVM et par le test natif Nuvio Desktop macOS sur Purstream/Interstellar, où le bundle publié V15 retourne à nouveau un flux HLS avec `💧 Purstream - 1080p`.
-
 Les labs natifs parcourent les lignes du manifest compatibles avec la plateforme, **y compris les providers `enabled:false`**, et lisent **chaque stream retourné** sur des routes représentatives film, série et anime. Les routes incompatibles sont comptabilisées comme skips explicites ; les probes `tv/anime` non déclarés restent des preuves de capacité et ne déclenchent pas de réparation provider sur un simple échec.
 
 Les profils Nuvio, snapshots AVD, caches providers et caches Gradle sont conservés lorsque c'est sûr afin d'éviter de reconstruire inutilement l'environnement. Les retests ciblés par device restent disponibles manuellement.
