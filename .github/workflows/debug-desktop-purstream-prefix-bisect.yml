@@ -1,0 +1,182 @@
+name: Debug Desktop Purstream prefix bisect
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - ".github/workflows/debug-desktop-purstream-prefix-bisect.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  purstream-prefix-bisect:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - name: Checkout NiakVIO debug branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+
+      - name: Stage Purstream prefix variants
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("niakvio")
+          data=json.loads((root/"manifest.json").read_text(encoding="utf-8"))
+          row=next(r for r in data["scrapers"] if str(r.get("id","")).lower()=="purstream")
+          text=(root/row["filename"]).read_text(encoding="utf-8")
+          markers=[
+              ("desktop_compat","/* NUVIO_DESKTOP_RUNTIME_COMPAT_V1:"),
+              ("tv_identity","/* NUVIO_PURSTREAM_TV_IDENTITY_V3:"),
+              ("media_safety","/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
+              ("hls_integrity","/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:"),
+              ("security_hook","/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1:"),
+              ("global_runtime","/* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */"),
+              ("facts","/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
+              ("identity","/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
+              ("presentation","/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
+              ("branding","/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:"),
+          ]
+          pos={}
+          for label,marker in markers:
+              i=text.find(marker)
+              if i<0:
+                  raise SystemExit(f"missing marker {label}: {marker}")
+              pos[label]=i
+          ordered=[pos[label] for label,_ in markers]
+          if ordered!=sorted(ordered):
+              raise SystemExit(f"unexpected marker order: {pos}")
+
+          variants=[
+              ("00_provider_base", pos["desktop_compat"]),
+              ("10_desktop_compat", pos["tv_identity"]),
+              ("20_tv_identity", pos["media_safety"]),
+              ("30_media_safety", pos["hls_integrity"]),
+              ("40_hls_integrity", pos["security_hook"]),
+              ("50_security_hook", pos["global_runtime"]),
+              ("60_global_runtime", pos["facts"]),
+              ("70_facts", pos["identity"]),
+              ("80_identity", pos["presentation"]),
+              ("90_presentation", pos["branding"]),
+              ("99_full", len(text)),
+          ]
+          for label,end in variants:
+              Path(f"purstream-prefix-{label}.js").write_text(text[:end].rstrip()+"\n",encoding="utf-8")
+          Path("purstream-prefix-order.txt").write_text("\n".join(label for label,_ in variants)+"\n",encoding="utf-8")
+          print("FIELD_DESKTOP_PURSTREAM_PREFIX_STAGE path="+row["filename"]+" positions="+json.dumps(pos,sort_keys=True))
+          PY
+
+      - name: Checkout official NuvioDesktop runtime
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          git -C nuvio-desktop checkout 182c0587c991c3fd0138155ef66fa23cc09d5f0b
+          touch nuvio-desktop/local.properties
+
+      - name: Trace raw JS result in disposable checkout
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path("nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/host/HostFunctions.kt")
+          s=p.read_text()
+          old='''        runtime.function("__capture_result") { args ->
+              onResult(args.getOrNull(0)?.toString() ?: "[]")
+              null
+          }'''
+          new='''        runtime.function("__capture_result") { args ->
+              val raw = args.getOrNull(0)?.toString() ?: "[]"
+              println("FIELD_DESKTOP_PREFIX_CAPTURE bytes=" + raw.length + " raw=" + raw.take(1200))
+              onResult(raw)
+              null
+          }'''
+          if s.count(old)!=1:
+              raise SystemExit("capture anchor count="+str(s.count(old)))
+          p.write_text(s.replace(old,new,1))
+          PY
+          git -C nuvio-desktop diff --check
+
+      - name: Install focused prefix bisect test
+        shell: bash
+        run: |
+          set -euxo pipefail
+          target="nuvio-desktop/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioPurstreamPrefixBisectTest.kt"
+          cat > "$target" <<'KOTLIN'
+          package com.nuvio.app.features.plugins
+
+          import com.nuvio.app.features.plugins.runtime.PluginRuntime
+          import java.io.File
+          import kotlinx.coroutines.runBlocking
+          import kotlin.test.Test
+
+          class NiakvioPurstreamPrefixBisectTest {
+              @Test
+              fun bisectPrefixes() = runBlocking {
+                  val workspace = File(System.getenv("GITHUB_WORKSPACE"))
+                  val labels = File(workspace, "purstream-prefix-order.txt").readLines().filter { it.isNotBlank() }
+                  val output = mutableListOf<String>()
+                  for (label in labels) {
+                      val file = File(workspace, "purstream-prefix-" + label + ".js")
+                      val started = System.currentTimeMillis()
+                      val rows = PluginRuntime.executePlugin(
+                          code = file.readText(),
+                          tmdbId = "157336",
+                          mediaType = "movie",
+                          season = null,
+                          episode = null,
+                          scraperId = "PURSTREAM",
+                      )
+                      val elapsed = System.currentTimeMillis() - started
+                      output += label + "=" + rows.size
+                      println("FIELD_DESKTOP_PURSTREAM_PREFIX_BISECT label=" + label + " count=" + rows.size + " duration_ms=" + elapsed)
+                  }
+                  File(workspace, "purstream-prefix-bisect.txt").writeText(output.joinToString("\n") + "\n")
+              }
+          }
+          KOTLIN
+
+      - name: Execute prefix bisect on macOS
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop             :composeApp:desktopTest             --tests 'com.nuvio.app.features.plugins.NiakvioPurstreamPrefixBisectTest'             --no-build-cache --no-configuration-cache --console=plain
+          cat "$GITHUB_WORKSPACE/purstream-prefix-bisect.txt"
+
+      - name: Identify first zero transition
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          rows=[]
+          for line in Path("purstream-prefix-bisect.txt").read_text().splitlines():
+              k,v=line.split("=",1)
+              rows.append((k,int(v)))
+          cause="none"
+          previous=None
+          for label,value in rows:
+              if previous is not None and previous[1] > 0 and value == 0:
+                  cause=label
+                  break
+              previous=(label,value)
+          print("FIELD_DESKTOP_PURSTREAM_PREFIX_SUMMARY " + " ".join(f"{k}={v}" for k,v in rows))
+          print("FIELD_DESKTOP_PURSTREAM_PREFIX_CAUSE layer="+cause)
+          if rows and rows[0][1]==0:
+              print("FIELD_DESKTOP_PURSTREAM_PREFIX_CAUSE provider_base_zero=true")
+          PY
