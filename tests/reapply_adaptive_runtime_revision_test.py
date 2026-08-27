@@ -40,4 +40,11 @@ v5_provenance={'local_patches':[{
 }]}
 unchanged,records=reapply.reapply_adaptive_runtime_revision(v5_source.encode(),v5_provenance)
 assert unchanged.decode()==v5_source and records==[]
+
+restored_v5,records=reapply.reapply_adaptive_runtime_revision(base.encode(),v5_provenance)
+restored_v5_text=restored_v5.decode()
+assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" in restored_v5_text
+assert "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4" not in restored_v5_text
+assert '"runtimeRevision":"generic-core-v3"' in restored_v5_text
+assert records and records[0]['runtime_revision']=='generic-core-v3'
 print('adaptive runtime revision reapply test passed')
