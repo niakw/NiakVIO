@@ -41,6 +41,9 @@ jobs:
             referer="${3:-}"
             body="$RUNNER_TEMP/$label.body"
             headers=(-H "User-Agent: $ua")
+            if [[ "$label" == purstream_hls_* ]]; then
+              headers+=(-H "Accept: application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*")
+            fi
             if [[ -n "$referer" ]]; then headers+=(-H "Referer: $referer"); fi
             code="$(curl -L --silent --show-error --max-time 20 -o "$body" -w '%{http_code}' "${headers[@]}" "$url" || true)"
             size="$(wc -c < "$body" 2>/dev/null | tr -d ' ' || echo 0)"
@@ -53,13 +56,16 @@ jobs:
           probe purstream_search "https://api.purstream.id/api/v1/search-bar/search/Interstellar" "https://purstream.id/"
           probe purstream_search_mx "https://api.purstream.mx/api/v1/search-bar/search/Interstellar" "https://purstream.mx/"
           probe purstream_sheet_mx "https://api.purstream.mx/api/v1/media/2466/sheet" "https://purstream.mx/"
+          probe purstream_hls_master "https://free.finepulfe.xyz/movies/157336-unr8i/master.m3u8" "https://purstream.mx/"
 
           python3 - <<'PY'
-          import json
+          import json, os, re
           from pathlib import Path
 
+          runner_temp=Path(os.environ["RUNNER_TEMP"])
+
           def summarize(label):
-              path=Path("$RUNNER_TEMP")/(label+".body")
+              path=runner_temp/(label+".body")
               raw=path.read_text(encoding="utf-8",errors="replace")
               try:
                   obj=json.loads(raw)
@@ -91,4 +97,15 @@ jobs:
                                   print("FIELD_PURSTREAM_OBJECT_KEYS label="+label+" path=data.items."+key+" keys="+",".join(sorted(val.keys())))
           summarize("purstream_search_mx")
           summarize("purstream_sheet_mx")
+
+          hls=(runner_temp/"purstream_hls_master.body").read_text(encoding="utf-8",errors="replace")
+          lines=[line.strip() for line in hls.replace("\r","").split("\n")]
+          stream_inf=[i for i,line in enumerate(lines) if re.match(r"^#EXT-X-STREAM-INF\s*:",line,re.I)]
+          child=""
+          if stream_inf:
+              for line in lines[stream_inf[0]+1:]:
+                  if line and not line.startswith("#"):
+                      child=line
+                      break
+          print("FIELD_PURSTREAM_HLS_SHAPE stream_inf_count="+str(len(stream_inf))+" child="+child+" first_lines64="+__import__("base64").b64encode("\n".join(lines[:12]).encode()).decode())
           PY
