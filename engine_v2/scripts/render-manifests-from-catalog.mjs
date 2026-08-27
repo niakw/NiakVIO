@@ -22,7 +22,15 @@ function excludedFromNoAnime(scraper) {
 function noAnimeProjection(source) {
   const copy = structuredClone(source);
   copy.name = String(source.name || "Nuvio Curated Providers") + " — Without anime providers";
-  copy.scrapers = (source.scrapers || []).filter((row) => !excludedFromNoAnime(row));
+  copy.scrapers = (source.scrapers || [])
+    .filter((row) => !excludedFromNoAnime(row))
+    .map((row) => {
+      const projected = structuredClone(row);
+      if (typeof projected.filename === "string" && projected.filename.startsWith("providers/")) {
+        projected.filename = "../" + projected.filename;
+      }
+      return projected;
+    });
   return copy;
 }
 
