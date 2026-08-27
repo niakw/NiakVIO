@@ -1,5 +1,5 @@
 name: Debug Core safety rematerialize
-# debug-rematerialize-revision: 3
+# debug-rematerialize-revision: 4
 
 on:
   push:
@@ -66,6 +66,7 @@ jobs:
           python3 tests/runtime_media_safety_guard_test.py
           python3 tests/scoped_playback_context_regression_test.py
           python3 tests/global_playback_integrity_policy_test.py
+          python3 tests/global_stream_presentation_test.py
 
           purstream_path="$(python3 - <<'PY'
           import json
@@ -77,7 +78,9 @@ jobs:
           test "$(grep -c 'NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:' "$purstream_path")" -eq 1
           grep -q 'field-safety-v5-native-identity-collisions-all-rows' "$purstream_path"
           ! grep -q 'scoped-playback-context-v4' "$purstream_path"
-          echo "FIELD_DEBUG_SAFETY_PURSTREAM path=$purstream_path safety=current owner=runtime_capability_media_safety_v4"
+          grep -q 'all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8' "$purstream_path"
+          grep -q 'installJvmSafeStreamStringify' "$purstream_path"
+          echo "FIELD_DEBUG_SAFETY_PURSTREAM path=$purstream_path safety=current presentation=v15_jvm_json_utf8 owner=runtime_capability_media_safety_v4"
 
       - name: Commit rematerialized debug candidate
         shell: bash
