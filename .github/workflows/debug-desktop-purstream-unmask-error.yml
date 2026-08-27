@@ -70,11 +70,9 @@ jobs:
           from pathlib import Path
           p=Path("nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt")
           s=p.read_text()
-          old='''                        } catch (e) {
-                            console.error("getStreams error:", e && e.message ? e.message : e, e && e.stack ? e.stack : "");
-                            __capture_result(JSON.stringify([]));
-                        }'''
-          new='''                        } catch (e) {
+          import re
+          pattern=r'''\}\s*catch\s*\(e\)\s*\{\s*console\.error\("getStreams error:",\s*e\s*&&\s*e\.message\s*\?\s*e\.message\s*:\s*e,\s*e\s*&&\s*e\.stack\s*\?\s*e\.stack\s*:\s*""\);\s*__capture_result\(JSON\.stringify\(\[\]\)\);\s*\}'''
+          replacement='''} catch (e) {
                             var msg = e && e.message ? String(e.message) : String(e);
                             var stack = e && e.stack ? String(e.stack) : "";
                             console.error("getStreams error:", msg, stack);
@@ -85,9 +83,10 @@ jobs:
                                 description: stack
                             }]));
                         }'''
-          if s.count(old)!=1:
-              raise SystemExit("PluginRuntime catch anchor count="+str(s.count(old)))
-          p.write_text(s.replace(old,new,1))
+          s2,n=re.subn(pattern,replacement,s,count=1,flags=re.S)
+          if n!=1:
+              raise SystemExit("PluginRuntime catch regex count="+str(n))
+          p.write_text(s2)
           PY
           git -C nuvio-desktop diff --check
 
