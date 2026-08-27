@@ -19,7 +19,16 @@ provenance={'local_patches':[{'type':'patch_profile','profile':'adaptive_runtime
 upgraded,records=reapply.reapply_adaptive_runtime_revision(legacy.encode(),provenance)
 assert upgraded.decode()==expected
 assert records and records[0]['runtime_revision']=='generic-core-v2'
-unchanged,records=reapply.reapply_adaptive_runtime_revision(base.encode(),provenance)
+restored,records=reapply.reapply_adaptive_runtime_revision(base.encode(),provenance)
+assert restored.decode()==expected
+assert records and records[0]['runtime_revision']=='generic-core-v2'
+
+preserved={
+    'activation_mode':'preserved_current_ci_uncertain',
+    'preserved_reason':'ci_uncertain_kept_last_published_artifact',
+    'local_patches':provenance['local_patches'],
+}
+unchanged,records=reapply.reapply_adaptive_runtime_revision(base.encode(),preserved)
 assert unchanged.decode()==base and records==[]
 unchanged,records=reapply.reapply_adaptive_runtime_revision(legacy.encode(),{'local_patches':[]})
 assert unchanged.decode()==legacy and records==[]
