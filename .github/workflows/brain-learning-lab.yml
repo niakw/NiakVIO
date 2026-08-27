@@ -8,6 +8,20 @@ on:
         required: false
         default: false
         type: boolean
+      target_provider:
+        description: Optional exact provider id for one quick targeted Brain lab probe
+        required: false
+        default: ""
+        type: string
+      target_client:
+        description: Client profile for the quick targeted command lab
+        required: false
+        default: desktop
+        type: choice
+        options:
+          - desktop
+          - mobile
+          - tv
   push:
     branches: [main]
     paths:
@@ -16,6 +30,7 @@ on:
       - "manifest.json"
       - "provider-overrides.json"
       - "scripts/run_brain_learning_sandbox.py"
+      - "scripts/select_brain_targeted_probe.py"
       - "scripts/build_brain_repair_proposal.py"
       - "scripts/build_native_reader_brain_repair.py"
       - "scripts/build_native_reader_learning_summary.py"
@@ -25,6 +40,7 @@ on:
       - "scripts/apply_provider_overrides.py"
       - "scripts/provider_patches/**"
       - "tests/brain_cron_full_coverage_test.py"
+      - "tests/brain_targeted_probe_test.py"
       - "tests/native_reader_ownership_policy_test.py"
       - "engine_v2/scripts/learning-lab.mjs"
       - "engine_v2/scripts/build-historical-learning.mjs"
@@ -76,6 +92,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/brain_cron_full_coverage_test.py
+          python tests/brain_targeted_probe_test.py
           python tests/native_reader_provider_retention_policy_test.py
           python tests/native_reader_ownership_policy_test.py
           python -m py_compile \
@@ -153,6 +170,74 @@ jobs:
           test -s brain-sandbox/health-output/health-results.json
           test -s brain-sandbox/health-output/repair-report.json
 
+      - name: Select one targeted provider probe
+        id: targeted
+        shell: bash
+        env:
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          TARGET_CLIENT: ${{ inputs.target_client || 'desktop' }}
+        run: |
+          set -euo pipefail
+          python scripts/select_brain_targeted_probe.py \
+            --manifest manifest.json \
+            --repair-report brain-sandbox/health-output/repair-report.json \
+            --provider "$TARGET_PROVIDER" \
+            --client "$TARGET_CLIENT" \
+            --github-output "$GITHUB_OUTPUT" \
+            --json-out brain-sandbox/targeted-probe-selection.json
+
+      - name: Run one quick targeted Nuvio command lab
+        if: steps.targeted.outputs.provider != ''
+        shell: bash
+        env:
+          PROVIDER: ${{ steps.targeted.outputs.provider }}
+          CLIENT: ${{ steps.targeted.outputs.client }}
+          TMDB_ID: ${{ steps.targeted.outputs.tmdb_id }}
+          MEDIA_TYPE: ${{ steps.targeted.outputs.media_type }}
+          TITLE: ${{ steps.targeted.outputs.title }}
+          YEAR: ${{ steps.targeted.outputs.year }}
+          SEASON: ${{ steps.targeted.outputs.season }}
+          EPISODE: ${{ steps.targeted.outputs.episode }}
+          FIXTURE: ${{ steps.targeted.outputs.slug }}
+        run: |
+          set -u
+          args=(node scripts/nuvio_client_lab.cjs
+            --providers "$PROVIDER"
+            --clients "$CLIENT"
+            --tmdb-id "$TMDB_ID"
+            --media-type "$MEDIA_TYPE"
+            --title "$TITLE"
+            --year "$YEAR"
+            --max-streams 1
+            --out brain-sandbox/targeted-lab.json
+            --markdown brain-sandbox/targeted-lab.md)
+          if [ -n "$SEASON" ]; then args+=(--season "$SEASON"); fi
+          if [ -n "$EPISODE" ]; then args+=(--episode "$EPISODE"); fi
+          STATUS=0
+          "${args[@]}" || STATUS=$?
+          TARGET_STATUS="$STATUS" node - <<'NODE'
+          const fs=require('fs');
+          const selection=JSON.parse(fs.readFileSync('brain-sandbox/targeted-probe-selection.json','utf8'));
+          let report={providers:[]};
+          try { report=JSON.parse(fs.readFileSync('brain-sandbox/targeted-lab.json','utf8')); } catch {}
+          const row=(report.providers||[])[0]||{};
+          const client=selection.client;
+          const clientRow=(row.clients||{})[client]||{};
+          const summary={
+            provider:selection.provider, fixture:selection.slug, declared_type:selection.declared_type, client,
+            command_status:Number(process.env.TARGET_STATUS||0),
+            verdict:String(clientRow.verdict||'no_report'),
+            runtime_stream_count:Number(clientRow.runtime_stream_count||0),
+            playable_probe_count:Number(clientRow.playable_probe_count||0),
+            identity_status:String(clientRow.identity_status||'unknown'),
+            learning_only:true, productionWritesAllowed:false, publicationAllowed:false
+          };
+          fs.writeFileSync('brain-sandbox/targeted-lab-summary.json',JSON.stringify(summary,null,2)+'\n');
+          console.log('FIELD_BRAIN_TARGETED_LAB '+Object.entries(summary).map(([k,v])=>`${k}=${String(v).replace(/\s+/g,'_')}`).join(' '));
+          NODE
+          rm -f brain-sandbox/targeted-lab.json brain-sandbox/targeted-lab.md
+          exit 0
+
       - name: Compare sandbox evidence against historical audit
         shell: bash
         run: |
@@ -227,6 +312,8 @@ jobs:
             brain-learning-output/provider-overrides.proposed.json
             brain-learning-output/repair-proposal.json
             brain-learning-input/native-reader-summary.json
+            brain-sandbox/targeted-probe-selection.json
+            brain-sandbox/targeted-lab-summary.json
           retention-days: 14
           if-no-files-found: error
 
