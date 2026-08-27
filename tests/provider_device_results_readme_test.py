@@ -57,5 +57,9 @@ assert "| 🖥️ **Desktop macOS** | **0** | **0** | `—` | 🟡 Suivi actif �
 assert "| 🪟 **Desktop Windows** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |" in rendered
 assert "📺 **TV** ✅" in rendered
 assert "📱 **Mobile** ✅" not in rendered
+assert "fixtures de test" in rendered
+assert "TESTING_NOTICE.md" in rendered
+assert "DISCLAIMER.md" in rendered
+assert "Fixtures de test réellement validées" in rendered
 
 print("provider device README coverage test passed")

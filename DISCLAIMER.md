@@ -10,6 +10,20 @@ media files or a content catalogue. Public reports should omit complete playback
 Automated checks establish only that a software module executed and that a limited
 technical response was observed at a specific time from a GitHub-hosted runner.
 
+## Test fixtures and work references
+
+Names, titles, release years, seasons, episodes and similar identifiers of audiovisual works may appear in source files, fixture IDs, CI logs, artifact names and README evidence tables. They are used as deterministic test identifiers to verify software matching, media identity and wrong-content regressions.
+
+A named fixture is **not** a content-catalogue entry and does not represent an offer, recommendation, endorsement, ownership claim, licence determination, authorization statement or representation that a work is lawfully available from any third-party service.
+
+Repository fixtures and persisted public evidence should contain only the minimum metadata and sanitized technical observations needed for reproducible compatibility testing. They must not intentionally include or persist audiovisual files, clips, subtitles, decryption keys, access tokens, cookies, credentials or complete playback URLs.
+
+Where a compatibility check can be performed using metadata, a lawful public preview or a trailer, those lower-exposure test inputs should be preferred. This does **not** mean that every native compatibility check is a trailer test.
+
+A passing test establishes only a technical observation at a specific time. It does not establish the legal status of the work, source, provider, host, user access or downstream use.
+
+See [`TESTING_NOTICE.md`](TESTING_NOTICE.md) for the repository-wide fixture policy.
+
 They do not establish:
 
 - ownership of any content;
@@ -44,3 +58,18 @@ The software is provided without warranty. See `LICENSE` for the GNU GPL v3 prov
 concerning absence of warranty and limitation of liability.
 
 This document is informational and is not legal advice.
+
+
+---
+
+## Français — résumé
+
+NiakVIO est un projet technique de compatibilité de providers. Il n'héberge, ne stocke, ne met en cache et ne distribue aucun contenu audiovisuel.
+
+Des noms d'œuvres, années, saisons ou épisodes peuvent apparaître comme **fixtures de test déterministes** dans le code, les logs CI, les noms d'artefacts ou les tableaux de résultats. Ces références servent à vérifier le matching, l'identité du média et les régressions de type « mauvais contenu ». Elles ne constituent ni un catalogue, ni une offre de contenu, ni une recommandation, ni une affirmation de propriété, licence, disponibilité légale ou autorisation d'un service tiers.
+
+Les preuves publiques doivent rester minimales et sanitizées : pas de fichier audiovisuel, extrait, sous-titre, clé de déchiffrement, identifiant secret, cookie, credential ou URL complète de lecture persistée intentionnellement. Quand un contrôle peut être réalisé avec des métadonnées, une preview publique licite ou une bande-annonce, ces entrées à exposition réduite sont à privilégier ; cela ne signifie pas que tous les tests natifs sont des tests de bandes-annonces.
+
+Un test réussi prouve seulement une observation technique ponctuelle ; il ne prouve pas la situation juridique du contenu, du provider, de l'hébergeur ou de l'utilisation qui en est faite.
+
+L'utilisation du logiciel doit respecter la loi applicable, les conditions des services concernés et les droits des tiers. Ce document est informatif et ne constitue pas un avis juridique. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md).

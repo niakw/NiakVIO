@@ -2,6 +2,7 @@
   <img src="assets/branding/nuvio-providers-logo.png" alt="Logo NiakVIO" width="300">
 
   <h1>NiakVIO</h1>
+  <p><strong>Français</strong> · <a href="README.en.md">English</a></p>
   <p><strong>Le moteur communautaire qui agrège, teste, répare et maintient les providers Nuvio.</strong></p>
   <p>VO · VF · VOSTFR &nbsp;•&nbsp; Mobile · Desktop · TV</p>
 
@@ -64,6 +65,9 @@ Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/provi
 **Les URL restent stables.** NiakVIO peut faire évoluer derrière elles les bundles, versions, domaines, règles runtime, preuves et états d'activation.
 
 > NiakVIO ne stocke ni n'héberge de vidéo. Le projet maintient des manifests, des métadonnées, des règles de compatibilité et des bundles de providers consommés côté client.
+
+> [!IMPORTANT]
+> **Références d'œuvres = fixtures de test.** Les titres, années, saisons ou épisodes visibles dans ce README, le code, les logs CI et les artefacts servent uniquement d'**identifiants déterministes de test** pour vérifier le matching, la compatibilité et les régressions de type « mauvais média ». Leur présence ne constitue ni un catalogue, ni une mise à disposition, ni une recommandation, ni une déclaration sur les droits/licences d'un service tiers. NiakVIO ne doit pas publier de média, extrait, sous-titre, clé de déchiffrement, jeton d'accès ou URL complète de lecture. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md) et [`DISCLAIMER.md`](DISCLAIMER.md).
 
 ---
 
@@ -570,4 +574,4 @@ Le moteur applique des budgets de workers, des protections réseau/SSRF, des con
 
 NiakVIO est un projet communautaire indépendant, non affilié aux développeurs de Nuvio ni aux services tiers référencés. Le projet ne contrôle pas la disponibilité, le contenu, les droits ou les pratiques de sites tiers. L'utilisation doit respecter la législation applicable et les conditions des services concernés.
 
-Voir [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md), [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).

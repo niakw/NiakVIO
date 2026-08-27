@@ -118,6 +118,9 @@ jobs:
           grep -q 'Lectures natives confirmées' README.md
           grep -q 'Voir les .* providers actifs' README.md
           grep -q 'PREUVES LECTEUR' README.md
+          grep -Fq 'fixtures de test' README.md
+          grep -Fq 'TESTING_NOTICE.md' README.md
+          grep -Fq 'DISCLAIMER.md' README.md
           grep -Fq 'https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json' README.md
           if grep -q '| TV | Mobile | Desktop macOS | Desktop Windows |' README.md; then
             echo 'legacy sparse per-device matrix unexpectedly returned' >&2
