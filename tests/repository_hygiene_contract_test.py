@@ -141,6 +141,7 @@ assert "native-android-route-reader.yml" in install
 assert "native-desktop-reader-acceptance.yml" in install
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
+readme_fr = (ROOT / "README.fr.md").read_text(encoding="utf-8")
 architecture = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
 for stale in (
     "lab/tv-real",
@@ -151,7 +152,8 @@ for stale in (
     assert stale not in readme, f"README resurrected retired reference: {stale}"
     assert stale not in architecture, f"ARCHITECTURE resurrected retired reference: {stale}"
 
-assert "`main` : unique branche de code" in readme
+assert "`main` is the only production code branch" in readme
+assert "`main` : unique branche de code" in readme_fr
 assert "## 22. Labs natifs sur `main`" in architecture
 assert "brain-learning/proposals" in readme
 assert "brain-learning/proposals" in architecture
