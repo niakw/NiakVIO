@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   purstream-tail-bisect:
-    runs-on: ubuntu-latest
+    runs-on: macos-15
     timeout-minutes: 25
     steps:
       - name: Checkout NiakVIO debug branch
@@ -27,12 +27,6 @@ jobs:
           java-version: "17"
 
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
-
-      - name: Install Linux Desktop native dependencies
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libmpv-dev libgtk-3-dev
 
       - name: Stage current Purstream tail variants
         shell: bash
@@ -125,7 +119,7 @@ jobs:
           }
           KOTLIN
 
-      - name: Execute tail bisect
+      - name: Execute tail bisect on macOS
         shell: bash
         run: |
           set -euxo pipefail
