@@ -4,8 +4,14 @@
 
 Outputs:
 - vf/manifest.json: all declared/observed French-capable providers, preserving enabled state.
-- no-anime/manifest.json: general manifest without providers that are anime-only.
-- vf-no-anime/manifest.json: VF manifest without providers that are anime-only.
+- no-anime/manifest.json: general manifest with clearly anime-specific providers removed.
+- vf-no-anime/manifest.json: VF manifest with the same anime-specific filter.
+
+The no-anime filter is intentionally conservative and deterministic: a provider
+is excluded when it explicitly declares only ``anime`` as supported type, or
+when its committed id/name contains ``anim`` (case-insensitive). A mixed
+movie/tv/anime provider therefore remains unless its own id/name identifies it
+as anime-oriented.
 
 Classification comes from health-report.json, where observed runtime language
 modes take precedence over broad upstream descriptions. When *no* declared or
@@ -107,18 +113,24 @@ def normalized_supported_types(entry: dict[str, Any]) -> list[str]:
     return [str(value).strip().casefold() for value in values if str(value).strip()]
 
 
-def is_anime_only_provider(entry: dict[str, Any]) -> bool:
-    """True only when the provider explicitly declares anime as its sole media type."""
+def excluded_from_no_anime(entry: dict[str, Any]) -> bool:
+    """Exclude explicit anime-only rows or providers whose committed identity says anime."""
     types = normalized_supported_types(entry)
-    return bool(types) and set(types) == {"anime"}
+    anime_only = bool(types) and set(types) == {"anime"}
+    identity = " ".join(
+        str(entry.get(key) or "").strip().casefold()
+        for key in ("id", "name")
+        if str(entry.get(key) or "").strip()
+    )
+    return anime_only or "anim" in identity
 
 
-def build_no_anime_manifest(source: dict[str, Any], name_suffix: str = "No anime-only providers") -> dict[str, Any]:
-    """Copy a manifest while removing only explicitly anime-only providers."""
+def build_no_anime_manifest(source: dict[str, Any], name_suffix: str = "Without anime providers") -> dict[str, Any]:
+    """Copy a manifest while removing providers matching the deterministic anime filter."""
     entries = [
         nested_entry(entry)
         for entry in source.get("scrapers", [])
-        if isinstance(entry, dict) and not is_anime_only_provider(entry)
+        if isinstance(entry, dict) and not excluded_from_no_anime(entry)
     ]
     return {
         "name": f"{source.get('name', 'Nuvio Curated Providers')} — {name_suffix}",

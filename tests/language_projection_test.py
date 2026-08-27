@@ -38,12 +38,22 @@ with tempfile.TemporaryDirectory() as tmp:
                 "enabled": True,
             },
             {
-                # Nuvio client activation intentionally toggles id case. Runtime
-                # language evidence remains keyed by the canonical lower-case id.
+                # Mixed type stays in no-anime when the provider identity itself
+                # does not advertise anime.
                 "id": "OBSERVED-VF",
                 "filename": "providers/observed-vf.js",
                 "contentLanguage": ["en"],
                 "supportedTypes": ["movie", "anime"],
+                "enabled": True,
+            },
+            {
+                # A mixed provider whose id/name identifies it as anime-oriented
+                # is intentionally excluded by the no-anime projection.
+                "id": "ANIMEXTRA",
+                "name": "Anime Extra",
+                "filename": "providers/animextra.js",
+                "contentLanguage": ["fr"],
+                "supportedTypes": ["movie", "tv", "anime"],
                 "enabled": True,
             },
             {
@@ -60,6 +70,7 @@ with tempfile.TemporaryDirectory() as tmp:
             {"id": "declared-fr", "manifest_ordering": {"language_group": "other"}},
             {"id": "anime-only", "manifest_ordering": {"language_group": "vf"}},
             {"id": "observed-vf", "manifest_ordering": {"language_group": "vf"}},
+            {"id": "animextra", "manifest_ordering": {"language_group": "vf"}},
             {"id": "english-only", "manifest_ordering": {"language_group": "other"}},
         ]
     }
@@ -88,6 +99,14 @@ with tempfile.TemporaryDirectory() as tmp:
                 "supportedTypes": ["movie", "anime"],
                 "enabled": True,
             },
+            {
+                "id": "ANIMEXTRA",
+                "name": "Anime Extra",
+                "filename": "../providers/animextra.js",
+                "contentLanguage": ["fr"],
+                "supportedTypes": ["movie", "tv", "anime"],
+                "enabled": True,
+            },
         ],
     }
 
@@ -98,23 +117,25 @@ with tempfile.TemporaryDirectory() as tmp:
     report_path.write_text(json.dumps(report), encoding="utf-8")
     vf_path.write_text(json.dumps(expected_vf), encoding="utf-8")
 
-    def anime_only(row):
-        values = [str(v).casefold() for v in row.get("supportedTypes", [])]
-        return bool(values) and set(values) == {"anime"}
+    def excluded(row):
+        values = [str(v).strip().casefold() for v in row.get("supportedTypes", []) if str(v).strip()]
+        anime_only = bool(values) and set(values) == {"anime"}
+        identity = " ".join(str(row.get(key) or "").casefold() for key in ("id", "name"))
+        return anime_only or "anim" in identity
 
     expected_no_anime = {
-        "name": "Projection fixture — No anime-only providers",
+        "name": "Projection fixture — Without anime providers",
         "version": "1.2.3",
         "scrapers": [
             {**row, "filename": "../" + row["filename"]}
             for row in manifest["scrapers"]
-            if not anime_only(row)
+            if not excluded(row)
         ],
     }
     expected_vf_no_anime = {
-        "name": "Projection fixture — VF uniquement — No anime-only providers",
+        "name": "Projection fixture — VF uniquement — Without anime providers",
         "version": "1.2.3",
-        "scrapers": [row for row in expected_vf["scrapers"] if not anime_only(row)],
+        "scrapers": [row for row in expected_vf["scrapers"] if not excluded(row)],
     }
     no_anime_path = no_anime_dir / "manifest.json"
     vf_no_anime_path = vf_no_anime_dir / "manifest.json"
@@ -139,6 +160,13 @@ with tempfile.TemporaryDirectory() as tmp:
     assert result.returncode == 0, result.stdout + result.stderr
     assert "VF projection validation passed" in result.stdout
 
+    # Mixed movie/anime stays when identity is neutral; anim-named mixed row does not.
+    actual_no_anime = json.loads(no_anime_path.read_text(encoding="utf-8"))
+    no_anime_ids = {str(row.get("id")) for row in actual_no_anime["scrapers"]}
+    assert "OBSERVED-VF" in no_anime_ids
+    assert "anime-only" not in no_anime_ids
+    assert "ANIMEXTRA" not in no_anime_ids
+
     # Any semantic drift in the nested projection is publication-blocking.
     tampered = json.loads(json.dumps(expected_vf))
     tampered["scrapers"][1]["enabled"] = False
@@ -155,4 +183,4 @@ with tempfile.TemporaryDirectory() as tmp:
     assert result.returncode == 1
     assert "order_mismatch=True" in result.stderr
 
-print("VF language projection tests passed")
+print("VF/no-anime language projection tests passed")

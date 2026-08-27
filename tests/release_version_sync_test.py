@@ -28,7 +28,7 @@ assert (ROOT / "scripts" / "activation_preservation_core_rehash.py").is_file()
 assert "python scripts/validate_language_projection.py" in workflow
 assert workflow.index(version_call) < workflow.index("python scripts/validate_language_projection.py")
 assert workflow.rindex(version_call) < workflow.index("python scripts/generate_release_hashes.py")
-assert "git add manifest.json vf/manifest.json provider_catalog.json" in workflow
+assert "git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json provider_catalog.json" in workflow
 assert "package.json package-lock.json sources.json nuvio-client-id-state.json" in workflow
 assert "Verify exact published main" in workflow
 assert "git diff --exit-code" in workflow

@@ -17,6 +17,7 @@ fs.mkdirSync(outputDir, { recursive: true });
 
 const overrides = readJson(overridesPath, {});
 const repair = readJson(repairPath, {});
+const targetedLab = isRecord(repair.targetedLab) ? repair.targetedLab : {};
 const diagnostics = readJson(path.join(root, 'diagnostics-report.json'), {});
 const policy = readJson(path.join(root, 'engine_v2/config/brain-policy.json'), {});
 const previous = previousPath ? readJson(previousPath, {}) : {};
@@ -163,6 +164,25 @@ for (const row of repeatedReaderFailures.slice(0, 80)) {
   });
 }
 
+if (targetedLab.providerId && targetedLab.status) {
+  const clientRows = isRecord(targetedLab.clients) ? Object.values(targetedLab.clients).filter(isRecord) : [];
+  const playable = clientRows.some((row) => String(row.verdict || '') === 'playable');
+  const contradiction = clientRows.some((row) => String(row.identityStatus || '') === 'contradiction');
+  proposals.push({
+    type: 'targeted_provider_lab_observation',
+    priority: contradiction ? 'critical' : (playable ? 'low' : 'high'),
+    providerId: String(targetedLab.providerId || '').toLowerCase(),
+    failureClass: contradiction ? 'identity_mismatch' : (playable ? 'targeted_lab_playable' : 'targeted_lab_unresolved'),
+    fixtures: targetedLab.fixtureSlug ? [String(targetedLab.fixtureSlug)] : [],
+    clients: isRecord(targetedLab.clients) ? Object.keys(targetedLab.clients).slice(0, 8) : [],
+    reason: contradiction
+      ? 'Bounded targeted Learning Lab observed a media-identity contradiction; keep the provider out of automatic promotion until stronger proof exists.'
+      : (playable
+        ? 'Bounded targeted Learning Lab obtained playable evidence for the selected provider/fixture; retain this as supporting learning evidence.'
+        : 'Bounded targeted Learning Lab did not obtain playable proof; use the provider-specific observation before another broad repair attempt.'),
+  });
+}
+
 const unknown = counts.get('unknown_failure') ?? 0;
 if (unknown >= 3) proposals.push({
   type: 'instrumentation_proposal', priority: 'high', target: 'evidence pipeline',
@@ -208,13 +228,24 @@ const payload = {
       ...nativeRepairTargets,
       ...providerReaderFailures.map((row) => String(row?.provider || '').toLowerCase()).filter(Boolean),
     ])].slice(0, 240),
+    targetedLab: targetedLab.providerId ? {
+      status: String(targetedLab.status || '').slice(0, 32),
+      providerId: String(targetedLab.providerId || '').toLowerCase().slice(0, 128),
+      firstDeclaredType: String(targetedLab.firstDeclaredType || '').slice(0, 32),
+      fixtureSlug: String(targetedLab.fixtureSlug || '').slice(0, 96),
+      safetyStatus: String(targetedLab.safetyStatus || '').slice(0, 40),
+      clients: isRecord(targetedLab.clients) ? targetedLab.clients : {},
+      bounded: targetedLab.bounded === true,
+      maxProviders: nonNegative(targetedLab.maxProviders),
+      maxStreamsPerRuntime: nonNegative(targetedLab.maxStreamsPerRuntime),
+    } : null,
   },
   privacy: 'No raw URLs, tokens, header values, cookies, private notes or spreadsheet text are copied into persistent Brain learning state.',
 };
 
 fs.writeFileSync(path.join(outputDir, 'latest.json'), JSON.stringify(payload, null, 2) + '\n');
 fs.writeFileSync(path.join(outputDir, 'latest.md'), renderMarkdown(payload));
-console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length} reader_failures=${payload.nativeFeedback.nativeReaderFailures}`);
+console.log(`FIELD_BRAIN_LEARNING proposals=${payload.proposals.length} skills=${payload.learnedSkillCount} memory=${payload.experimentMemory.entries.length} historical_high=${Number(payload.historicalTraining.stats?.unresolvedHighPriority || 0)} native_repair=${payload.nativeFeedback.repairPriorityProviders.length} reader_failures=${payload.nativeFeedback.nativeReaderFailures} targeted_lab=${payload.nativeFeedback.targetedLab?.status || 'none'}`);
 
 function mergeLearnedSkills(previousSkills, currentSkills) {
   const out = {};
@@ -357,7 +388,8 @@ function renderMarkdown(data) {
     `Negative-memory entries: **${data.experimentMemory.entries.length}**`,
     `Historical high/critical unresolved: **${Number(data.historicalTraining.stats?.unresolvedHighPriority || 0)}**`,
     `Native repair-priority providers: **${data.nativeFeedback.repairPriorityProviders.length}**`,
-    `Native reader failures: **${data.nativeFeedback.nativeReaderFailures}**`, '',
+    `Native reader failures: **${data.nativeFeedback.nativeReaderFailures}**`,
+    `Targeted learning Lab: **${data.nativeFeedback.targetedLab?.status || 'none'}**${data.nativeFeedback.targetedLab?.providerId ? ` — ${data.nativeFeedback.targetedLab.providerId} / ${data.nativeFeedback.targetedLab.fixtureSlug}` : ''}`, '',
     '## Highest-priority proposals', '',
   ];
   const ordered = [...data.proposals].sort((a, b) => priorityScore(b.priority) - priorityScore(a.priority));

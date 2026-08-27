@@ -23,17 +23,17 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
-### General manifest — without anime-only providers ([How to add?](docs/how-to-add-manifest.md))
+### General manifest — without anime providers ([How to add?](docs/how-to-add-manifest.md))
 
-Same general catalogue, excluding only providers whose declared `supportedTypes` contain **anime and nothing else**.
+Copy of the general catalogue excluding providers that either declare **anime as their only supported type**, or whose committed provider id/name contains **`anim`** (case-insensitive). Mixed movie/TV/anime providers stay when their identity is not anime-oriented.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
 ```
 
-### French-focused manifest — without anime-only providers ([How to add?](docs/how-to-add-manifest.md))
+### French-focused manifest — without anime providers ([How to add?](docs/how-to-add-manifest.md))
 
-Same French-focused projection, excluding only providers that are explicitly anime-only.
+The same deterministic anime filter applied to the French-focused projection.
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
@@ -151,7 +151,9 @@ Named movies, series and anime in Lab configurations are **test fixtures**, not 
 
 The Brain classifies failures before attempting repair. It can reason about search, catalogue, episode, player, extraction, transport, playback context, identity and client-contract failures.
 
-Learning runs in a sandbox and can preserve successful/failed strategies across runs. Production code is not silently rewritten from learning state; validated automated proposals remain review-gated.
+Learning runs in a sandbox and can preserve successful/failed strategies across runs. During learning it may additionally run one **bounded targeted client Lab** against a single provider: the fixture is chosen from the provider's first declared media type (`movie`, `tv` or `anime`), with only sanitized verdict/identity/stream-count evidence fed back into learning. This is deliberately much smaller than a full native device matrix.
+
+Production code is not silently rewritten from learning state; validated automated proposals remain review-gated.
 
 ---
 
@@ -163,6 +165,8 @@ Publication is atomic and fail-closed and can include:
 - provider bundles;
 - `manifest.json`;
 - `vf/manifest.json`;
+- `no-anime/manifest.json`;
+- `vf-no-anime/manifest.json`;
 - provenance;
 - domain/LKG state;
 - release hashes.
