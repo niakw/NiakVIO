@@ -1,0 +1,94 @@
+name: Debug Core safety rematerialize
+
+on:
+  push:
+    branches:
+      - debug/desktop-zero-stream-bisect
+    paths:
+      - ".github/workflows/debug-core-safety-rematerialize.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  rematerialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout debug branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: debug/desktop-zero-stream-bisect
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Materialize fixed Core candidate
+        shell: bash
+        run: |
+          set -euxo pipefail
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 scripts/normalize_repository_docs.py --apply
+          python3 scripts/normalize_runtime_repository_dependencies.py --apply
+          python3 scripts/normalize_provider_rebuild_safety.py --apply
+          python3 scripts/normalize_core_fixed_point_contract.py --apply
+          python3 scripts/normalize_provider_branding_pipeline.py --apply
+          python3 scripts/normalize_core_media_policy.py --apply
+          python3 scripts/apply_runtime_capability_upgrade_v4.py
+          python3 scripts/build_provider_runtime_profiles.py
+          converged=0
+          for pass in 1 2 3 4 5 6; do
+            echo "FIELD_DEBUG_SAFETY_REBUILD pass=$pass"
+            python3 scripts/reapply_published_overrides.py
+            if python3 scripts/reapply_published_overrides.py --check; then
+              converged=1
+              echo "FIELD_DEBUG_SAFETY_REBUILD converged_at=$pass"
+              break
+            fi
+          done
+          test "$converged" -eq 1
+
+      - name: Validate safety ownership and focused contracts
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 scripts/normalize_runtime_repository_dependencies.py --check
+          python3 scripts/normalize_provider_rebuild_safety.py --check
+          python3 scripts/normalize_core_fixed_point_contract.py --check
+          python3 scripts/normalize_provider_branding_pipeline.py --check
+          python3 scripts/normalize_core_media_policy.py --check
+          python3 tests/runtime_capability_media_safety_v4_test.py
+          python3 tests/runtime_media_safety_guard_test.py
+          python3 tests/scoped_playback_context_regression_test.py
+          python3 tests/global_playback_integrity_policy_test.py
+
+          purstream_path="$(python3 - <<'PY'
+          import json
+          d=json.load(open("manifest.json",encoding="utf-8"))
+          print(next(r["filename"] for r in d["scrapers"] if str(r.get("id","")).lower()=="purstream"))
+          PY
+          )"
+          test -s "$purstream_path"
+          test "$(grep -c 'NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:' "$purstream_path")" -eq 1
+          grep -q 'field-safety-v5-native-identity-collisions-all-rows' "$purstream_path"
+          ! grep -q 'scoped-playback-context-v4' "$purstream_path"
+          echo "FIELD_DEBUG_SAFETY_PURSTREAM path=$purstream_path safety=current owner=runtime_capability_media_safety_v4"
+
+      - name: Commit rematerialized debug candidate
+        shell: bash
+        run: |
+          set -euxo pipefail
+          if git diff --quiet && [[ -z "$(git status --porcelain)" ]]; then
+            echo "FIELD_DEBUG_SAFETY_COMMIT changed=0"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix(core): rematerialize providers with dedicated media safety"
+          git push origin HEAD:debug/desktop-zero-stream-bisect
+          echo "FIELD_DEBUG_SAFETY_COMMIT changed=1 sha=$(git rev-parse HEAD)"
