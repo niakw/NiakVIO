@@ -49,6 +49,7 @@ jobs:
           floor_mx=floor.replace("https://api.purstream.id/api/v1","https://api.purstream.mx/api/v1").replace("https://purstream.id/","https://purstream.mx/")
           Path("purstream-15-generated-floor-mx.js").write_text(floor_mx,encoding="utf-8")
           Path("purstream-20-desktop-compat.js").write_text(text[:tv].rstrip()+"\n",encoding="utf-8")
+          Path("purstream-99-full.js").write_text(text,encoding="utf-8")
           print("FIELD_PURSTREAM_FLOOR_STAGE published="+row["filename"]+" desktop="+str(desktop)+" tv="+str(tv))
           PY
 
@@ -143,6 +144,7 @@ jobs:
                       "generated_floor" to "purstream-10-generated-floor.js",
                       "generated_floor_mx" to "purstream-15-generated-floor-mx.js",
                       "desktop_compat" to "purstream-20-desktop-compat.js",
+                      "full" to "purstream-99-full.js",
                   )
                   val capture = File(System.getenv("NIAKVIO_CAPTURE_RESULT_FILE"))
                   for ((label, file) in variants) {
