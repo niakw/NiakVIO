@@ -218,7 +218,8 @@ def main() -> int:
         },
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    persisted_report = sanitize_evidence(report)\n    OUTPUT.write_text(json.dumps(persisted_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    persisted_report = sanitize_evidence(report)
+    OUTPUT.write_text(json.dumps(persisted_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
         "streamzo_worker": report["streamzo"]["worker"].get("stream_count"),
         "frenchstream_worker": report["frenchstream"]["worker"].get("stream_count"),

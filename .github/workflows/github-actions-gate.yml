@@ -7,6 +7,8 @@ on:
       - ".github/workflows/**"
       - ".github/triggers/nuvio-client-lab.json"
       - "manifest.json"
+      - "scripts/**/*.py"
+      - "tests/**/*.py"
       - "scripts/prepare_native_corpus_validation.py"
       - "scripts/restage_native_corpus_client.py"
       - "scripts/augment_native_corpus_request_contract.py"
@@ -40,6 +42,8 @@ on:
       - ".github/workflows/**"
       - ".github/triggers/nuvio-client-lab.json"
       - "manifest.json"
+      - "scripts/**/*.py"
+      - "tests/**/*.py"
       - "scripts/prepare_native_corpus_validation.py"
       - "scripts/restage_native_corpus_client.py"
       - "scripts/augment_native_corpus_request_contract.py"
@@ -99,6 +103,21 @@ jobs:
           git grep -q 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' -- .github/workflows
           git grep -q 'actions/setup-node@820762786026740c76f36085b0efc47a31fe5020' -- .github/workflows
           git grep -q 'actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97' -- .github/workflows
+
+      - name: Validate Python syntax across scripts and tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          roots = (Path("scripts"), Path("tests"))
+          files = sorted(path for root in roots for path in root.rglob("*.py") if path.is_file())
+          for path in files:
+              source = path.read_text(encoding="utf-8")
+              compile(source, str(path), "exec")
+          print(f"Python syntax OK: {len(files)} files")
+          PY
 
       - name: Validate workflow architecture contracts
         run: |

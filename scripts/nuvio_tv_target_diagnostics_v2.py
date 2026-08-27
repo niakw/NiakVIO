@@ -263,7 +263,8 @@ def main() -> int:
         "coflix": coflix(),
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    persisted_report = sanitize_evidence(report)\n    OUTPUT.write_text(json.dumps(persisted_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    persisted_report = sanitize_evidence(report)
+    OUTPUT.write_text(json.dumps(persisted_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
         "output": str(OUTPUT),
         "streamzo_film_id": report["streamzo"].get("film_id"),
