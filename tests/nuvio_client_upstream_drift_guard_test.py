@@ -131,7 +131,7 @@ def main() -> int:
     ):
         assert required in desktop_canary, required
 
-    materialize_marker = "      - name: Materialize current NiakVIO Core candidate\n"
+    materialize_marker = "      - name: Materialize final Core fixed-point for Desktop canary\n"
     checkout_marker = "      - name: Checkout latest official NuvioDesktop HEAD and stage initial route\n"
     assert materialize_marker in desktop_canary
     assert checkout_marker in desktop_canary
