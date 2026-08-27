@@ -57,6 +57,8 @@ jobs:
           probe purstream_search_mx "https://api.purstream.mx/api/v1/search-bar/search/Interstellar" "https://purstream.mx/"
           probe purstream_sheet_mx "https://api.purstream.mx/api/v1/media/2466/sheet" "https://purstream.mx/"
           probe purstream_hls_master "https://free.finepulfe.xyz/movies/157336-unr8i/master.m3u8" "https://purstream.mx/"
+          probe purstream_hls_video_720 "https://free.finepulfe.xyz/movies/157336-unr8i/720p/playlist.m3u8" "https://purstream.mx/"
+          probe purstream_hls_audio_fr "https://free.finepulfe.xyz/movies/157336-unr8i/audio_fr/playlist.m3u8" "https://purstream.mx/"
 
           python3 - <<'PY'
           import json, os, re
@@ -98,8 +100,26 @@ jobs:
           summarize("purstream_search_mx")
           summarize("purstream_sheet_mx")
 
-          hls=(runner_temp/"purstream_hls_master.body").read_text(encoding="utf-8",errors="replace")
-          lines=[line.strip() for line in hls.replace("\r","").split("\n")]
+          def playlist_shape(label):
+              body=(runner_temp/(label+".body")).read_text(encoding="utf-8",errors="replace")
+              lines=[line.strip() for line in body.replace("\r","").split("\n") if line.strip()]
+              upper=[line.upper() for line in lines]
+              kind="invalid"
+              if lines and upper[0].startswith("#EXTM3U"):
+                  if any(line.startswith("#EXT-X-STREAM-INF:") for line in upper):
+                      kind="master"
+                  elif any(line.startswith("#EXTINF:") for line in upper):
+                      kind="media"
+                  elif any(line.startswith("#EXT-X-PART:") or line.startswith("#EXT-X-MAP:") for line in upper):
+                      kind="media"
+                  else:
+                      kind="header_only"
+              payload=[line for line in lines if not line.startswith("#")]
+              print("FIELD_PURSTREAM_PLAYLIST_SHAPE label="+label+" kind="+kind+" payload_lines="+str(len(payload))+" extinf_count="+str(sum(1 for line in upper if line.startswith("#EXTINF:")))+" first_lines64="+__import__("base64").b64encode("\n".join(lines[:12]).encode()).decode())
+              return lines
+          lines=playlist_shape("purstream_hls_master")
+          playlist_shape("purstream_hls_video_720")
+          playlist_shape("purstream_hls_audio_fr")
           stream_inf=[i for i,line in enumerate(lines) if re.match(r"^#EXT-X-STREAM-INF\s*:",line,re.I)]
           child=""
           if stream_inf:
