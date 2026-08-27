@@ -51,3 +51,44 @@ jobs:
           probe tmdb_fr "https://api.themoviedb.org/3/movie/157336?language=fr-FR&api_key=$key"
           probe purstream_root "https://api.purstream.id/api/v1" "https://purstream.id/"
           probe purstream_search "https://api.purstream.id/api/v1/search-bar/search/Interstellar" "https://purstream.id/"
+          probe purstream_search_mx "https://api.purstream.mx/api/v1/search-bar/search/Interstellar" "https://purstream.mx/"
+          probe purstream_sheet_mx "https://api.purstream.mx/api/v1/media/2466/sheet" "https://purstream.mx/"
+
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          def summarize(label):
+              path=Path("$RUNNER_TEMP")/(label+".body")
+              raw=path.read_text(encoding="utf-8",errors="replace")
+              try:
+                  obj=json.loads(raw)
+              except Exception as exc:
+                  print(f"FIELD_PURSTREAM_JSON_SHAPE label={label} valid=false error={type(exc).__name__}")
+                  return
+              def shape(value, depth=0):
+                  if depth>=4:
+                      if isinstance(value,list): return {"type":"list","count":len(value)}
+                      if isinstance(value,dict): return {"type":"object","keys":sorted(value)[:30]}
+                      return type(value).__name__
+                  if isinstance(value,dict):
+                      return {k:shape(v,depth+1) for k,v in list(value.items())[:40]}
+                  if isinstance(value,list):
+                      return {"type":"list","count":len(value),"sample":[shape(v,depth+1) for v in value[:3]]}
+                  return type(value).__name__
+              print("FIELD_PURSTREAM_JSON_SHAPE label="+label+" valid=true shape="+json.dumps(shape(obj),separators=(",",":"),sort_keys=True))
+              if isinstance(obj,dict):
+                  data=obj.get("data")
+                  if isinstance(data,dict):
+                      print("FIELD_PURSTREAM_DATA_KEYS label="+label+" keys="+",".join(sorted(data.keys())))
+                      items=data.get("items")
+                      if isinstance(items,dict):
+                          print("FIELD_PURSTREAM_DATA_ITEMS_KEYS label="+label+" keys="+",".join(sorted(items.keys())))
+                          for key,val in items.items():
+                              if isinstance(val,list):
+                                  print(f"FIELD_PURSTREAM_LIST label={label} path=data.items.{key} count={len(val)}")
+                              elif isinstance(val,dict):
+                                  print("FIELD_PURSTREAM_OBJECT_KEYS label="+label+" path=data.items."+key+" keys="+",".join(sorted(val.keys())))
+          summarize("purstream_search_mx")
+          summarize("purstream_sheet_mx")
+          PY
