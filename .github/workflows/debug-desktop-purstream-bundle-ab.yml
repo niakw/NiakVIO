@@ -73,30 +73,31 @@ jobs:
           from pathlib import Path
           p=Path("nuvio-desktop/composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt")
           s=p.read_text()
-          s=s.replace("import java.io.ByteArrayOutputStream\\n", "import java.io.ByteArrayOutputStream\\nimport java.io.File\\n", 1)
-          old="\\n".join([
-              "    .followSslRedirects(true)",
-              "    .build()",
+          nl=chr(10)
+          s=s.replace("import java.io.ByteArrayOutputStream"+nl, "import java.io.ByteArrayOutputStream"+nl+"import java.io.File"+nl, 1)
+          old=nl.join([
+              '    .followSslRedirects(true)',
+              '    .build()',
           ])
-          new="\\n".join([
-              "    .followSslRedirects(true)",
-              "    .addInterceptor { chain ->",
-              "        val request = chain.request()",
-              "        val trace = System.getenv(\\\"NIAKVIO_NATIVE_FETCH_TRACE_FILE\\\")?.takeIf { it.isNotBlank() }?.let(::File)",
-              "        runCatching { trace?.appendText(\\\"START\\\\t\\\" + request.method + \\\"\\\\t\\\" + request.url + \\\"\\\\n\\\") }",
-              "        try {",
-              "            val response = chain.proceed(request)",
-              "            runCatching { trace?.appendText(\\\"RESULT\\\\t\\\" + request.method + \\\"\\\\t\\\" + response.code + \\\"\\\\t\\\" + request.url + \\\"\\\\t\\\" + response.request.url + \\\"\\\\n\\\") }",
-              "            response",
-              "        } catch (t: Throwable) {",
-              "            runCatching { trace?.appendText(\\\"ERROR\\\\t\\\" + request.method + \\\"\\\\t\\\" + request.url + \\\"\\\\t\\\" + (t::class.simpleName ?: \\\"Throwable\\\") + \\\"\\\\t\\\" + (t.message ?: \\\"\\\").replace(\\\"\\\\n\\\", \\\" \\\") + \\\"\\\\n\\\") }",
-              "            throw t",
-              "        }",
-              "    }",
-              "    .build()",
+          new=nl.join([
+              r'    .followSslRedirects(true)',
+              r'    .addInterceptor { chain ->',
+              r'        val request = chain.request()',
+              r'        val trace = System.getenv("NIAKVIO_NATIVE_FETCH_TRACE_FILE")?.takeIf { it.isNotBlank() }?.let(::File)',
+              r'        runCatching { trace?.appendText("START\t" + request.method + "\t" + request.url + "\n") }',
+              r'        try {',
+              r'            val response = chain.proceed(request)',
+              r'            runCatching { trace?.appendText("RESULT\t" + request.method + "\t" + response.code + "\t" + request.url + "\t" + response.request.url + "\n") }',
+              r'            response',
+              r'        } catch (t: Throwable) {',
+              r'            runCatching { trace?.appendText("ERROR\t" + request.method + "\t" + request.url + "\t" + (t::class.simpleName ?: "Throwable") + "\t" + (t.message ?: "").replace("\n", " ") + "\n") }',
+              r'            throw t',
+              r'        }',
+              r'    }',
+              r'    .build()',
           ])
           if s.count(old) != 1:
-              raise SystemExit("desktopHttpClient builder anchor not found exactly once")
+              raise SystemExit("desktopHttpClient builder anchor count="+str(s.count(old)))
           p.write_text(s.replace(old,new,1))
           PY
           git -C nuvio-desktop diff --check
