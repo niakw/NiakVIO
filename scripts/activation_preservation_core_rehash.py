@@ -79,6 +79,29 @@ def _rows(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
     }
 
 
+def _sync_derived_projection(path: Path, source: dict[str, Any]) -> None:
+    """Refresh an existing projection from its current source without changing membership."""
+    if not path.is_file():
+        return
+    projection = _load_json(path)
+    source_rows = _rows(source)
+    refreshed: list[dict[str, Any]] = []
+    for row in projection.get("scrapers") or []:
+        if not isinstance(row, dict):
+            continue
+        provider_id = str(row.get("id") or "").casefold()
+        source_row = source_rows.get(provider_id)
+        if source_row is None:
+            raise RuntimeError(f"derived projection provider absent from source manifest: {provider_id}")
+        replacement = copy.deepcopy(source_row)
+        filename = str(replacement.get("filename") or "")
+        if filename.startswith("providers/"):
+            replacement["filename"] = "../" + filename
+        refreshed.append(replacement)
+    projection["version"] = source.get("version")
+    projection["scrapers"] = refreshed
+    _write_json(path, projection)
+
 def _replace_manifest_row(
     current: dict[str, Any], baseline: dict[str, Any], provider_id: str
 ) -> bool:
@@ -222,6 +245,8 @@ def restore_inconclusive_previous_state() -> list[str]:
     if restored:
         _write_json(legacy.MAIN, current_main)
         _write_json(legacy.VF, current_vf)
+        _sync_derived_projection(legacy.ROOT / "no-anime" / "manifest.json", current_main)
+        _sync_derived_projection(legacy.ROOT / "vf-no-anime" / "manifest.json", current_vf)
         _write_json(legacy.OVERRIDES, current_overrides)
         _write_json(legacy.PROVENANCE, current_provenance)
         print("FIELD_ACTIVATION_INCONCLUSIVE_STATE_RESTORED count=" + str(len(restored)) + " values=" + ",".join(restored))
