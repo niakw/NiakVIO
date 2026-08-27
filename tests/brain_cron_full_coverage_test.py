@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github/workflows/brain-learning-lab.yml"
+AVAILABILITY_WORKFLOW = ROOT / ".github/workflows/availability.yml"
 DISCOVERY = ROOT / "scripts/discover_candidates.py"
 APPLY = ROOT / "scripts/apply_provider_overrides.py"
 GLOBAL_PRESENTATION = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
@@ -62,6 +63,7 @@ def referenced_patch_scripts(config: dict) -> set[str]:
 
 def main() -> int:
     workflow = WORKFLOW.read_text(encoding="utf-8")
+    availability_workflow = AVAILABILITY_WORKFLOW.read_text(encoding="utf-8")
     discovery = DISCOVERY.read_text(encoding="utf-8")
     apply_source = APPLY.read_text(encoding="utf-8")
     presentation_source = GLOBAL_PRESENTATION.read_text(encoding="utf-8")
@@ -81,6 +83,16 @@ def main() -> int:
     assert "validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json" in workflow
     assert "python scripts/run_brain_learning_sandbox.py --stage staging" in workflow
     assert "ref: main" in workflow, "scheduled Brain must run from trusted production main"
+    assert "publish_proposal:" in workflow, "watchdog/manual proposal input disappeared"
+    assert "publish-repair-proposal:" in workflow, "validated Brain PR job disappeared"
+    assert "brain-repair/proposal" in workflow, "single Brain repair PR branch disappeared"
+    assert "github.event_name == 'schedule'" in workflow
+    assert "github.event.inputs.publish_proposal == 'true'" in workflow
+    assert "brain-learning-watchdog:" in availability_workflow
+    assert "brain-learning-lab.yml" in availability_workflow
+    assert "publish_proposal=true" in availability_workflow
+    assert "20 * 60 * 60" in availability_workflow
+    assert 'if [ "$((10#$HOUR))" -lt 4 ]' in availability_workflow
 
     # Scheduled Brain uses the same Quick Brain implementation as normal repair,
     # not a second reduced skill engine.
