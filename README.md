@@ -208,7 +208,7 @@ Cette vue distingue **support du lecteur** et **preuve positive conservée** : l
 
 | Lecteur officiel | Preuves positives conservées | Providers avec preuve | Dernière preuve | État |
 |---|---:|---:|---:|---|
-| 📺 **TV** | **33** | **15** | `2026-08-23` | ✅ Couvert par une preuve native |
+| 📺 **TV** | **27** | **12** | `2026-08-23` | ✅ Couvert par une preuve native |
 | 📱 **Mobile** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
 | 🖥️ **Desktop macOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
 | 🪟 **Desktop Windows** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
