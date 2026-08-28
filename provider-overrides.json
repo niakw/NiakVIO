@@ -699,10 +699,10 @@
     },
     "mycima": {
       "replacements": {
-        "mycima.red": "mycima.camp"
+        "mycima.red": "mycima.chat"
       },
       "runtime_domain_replacements": {
-        "mycima.red": "mycima.camp"
+        "mycima.red": "mycima.chat"
       },
       "notes": [
         "Automatically migrated mycima.red to mycima.camp after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
@@ -713,13 +713,27 @@
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
         "scripts/provider_patches/runtime_capability_media_safety_v4.py"
-      ]
+      ],
+      "official_hub": null,
+      "official_site": "https://mycima.chat",
+      "patch_script_options": {},
+      "required_values": []
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
       "manifest_overrides": {
         "disabledPlatforms": []
-      }
+      },
+      "replacements": {
+        "ww.animesultra.org": "v2.animesultra.org"
+      },
+      "runtime_domain_replacements": {
+        "ww.animesultra.org": "v2.animesultra.org"
+      },
+      "official_hub": null,
+      "official_site": "https://v2.animesultra.org",
+      "patch_script_options": {},
+      "required_values": []
     },
     "dulourd": {
       "capability": "html_scraper",
@@ -1617,16 +1631,6 @@
         "scripts/provider_patches/runtime_capability_media_safety_v4.py"
       ]
     },
-    "sekai": {
-      "capability": "html_scraper",
-      "profiles": [],
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "official_hub": null,
-      "official_site": "https://sekai.one/?v=15",
-      "required_values": [],
-      "patch_script_options": {}
-    },
     "showbox": {
       "capability": "html_scraper",
       "patch_scripts": [
@@ -1876,10 +1880,14 @@
     },
     "cineby": {
       "capability": "api_stream_resolver",
-      "replacements": {},
-      "runtime_domain_replacements": {},
+      "replacements": {
+        "cineby.top": "warflix.im"
+      },
+      "runtime_domain_replacements": {
+        "cineby.top": "warflix.im"
+      },
       "official_hub": "https://warflix.cv/",
-      "official_site": "https://cineby.top",
+      "official_site": "https://warflix.im",
       "required_values": [],
       "patch_script_options": {
         "scripts/provider_patches/runtime_repository_domain_materializer_v1.py": {
@@ -2121,9 +2129,6 @@
     "PURSTREAM": {
       "capability": "api_stream_resolver"
     },
-    "SEKAI": {
-      "capability": "html_scraper"
-    },
     "STREAMFLIX": {
       "capability": "api_stream_resolver"
     },
@@ -2221,6 +2226,15 @@
     "TOPCARTOONS": {
       "capability": "html_scraper"
     },
+    "animevost-fr": {
+      "capability": "mixed_embed_resolver"
+    },
+    "fullanime": {
+      "capability": "mixed_embed_resolver"
+    },
+    "neko-sama": {
+      "capability": "mixed_embed_resolver"
+    },
     "4khdhubnew": {
       "capability": "html_scraper",
       "patch_scripts": [
@@ -2237,6 +2251,19 @@
       }
     },
     "4KHDHUBNEW": {
+      "capability": "html_scraper"
+    },
+    "sekai": {
+      "capability": "html_scraper",
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": null,
+      "official_site": "https://sekai.one/?v=15",
+      "required_values": [],
+      "patch_script_options": {}
+    },
+    "SEKAI": {
       "capability": "html_scraper"
     },
     "toflix": {
@@ -2390,7 +2417,7 @@
       "name": "NiakVIO Brain",
       "controlPlaneVersion": 4,
       "learningOnValidatedRepair": true,
-      "lastMode": "quick",
+      "lastMode": "deep",
       "fallbackPolicy": "lkg_only_after_repair_budget",
       "coreMutationPolicy": "proposal_only"
     }
@@ -2464,7 +2491,9 @@
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -2619,7 +2648,8 @@
       "observed_origins": [
         "https://npms.io",
         "https://video.sibnet.ru",
-        "https://vidmoly.me",
+        "https://vidmoly.to",
+        "https://my.mail.ru",
         "https://fsvid.lol",
         "https://vidzy.live",
         "https://streamtape.com",
@@ -2628,6 +2658,7 @@
         "https://younetu.org",
         "https://vidoza.net",
         "https://lecteurvideo.com",
+        "https://wookafr.center",
         "https://up4fun.top",
         "https://animesama.co",
         "https://kitsu.io",
@@ -2665,7 +2696,7 @@
         "https://arm.haglund.dev",
         "https://v3-cinemeta.strem.io",
         "https://kitsu.io",
-        "https://ww.animesultra.org",
+        "https://v2.animesultra.org",
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
@@ -3123,6 +3154,8 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://mvlink.blog",
+        "https://www.dailymotion.com",
+        "https://hindmovie.fit",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -3311,6 +3344,7 @@
       "observed_origins": [
         "https://mycima.camp",
         "https://dood.re",
+        "https://mycima.chat",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -3421,14 +3455,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://npms.io",
-        "https://arm.haglund.dev",
-        "https://v3-cinemeta.strem.io",
-        "https://kitsu.io",
         "https://sekai.one",
-        "https://lodash.com",
-        "https://openjsf.org",
-        "http://underscorejs.org"
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3499,7 +3527,9 @@
       "validation": "media_url",
       "allow_html_url": false,
       "requires_direct_media": true,
-      "observed_origins": [],
+      "observed_origins": [
+        "https://old.invalid"
+      ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
     },
@@ -3823,7 +3853,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://www.cineby.at",
-        "https://cineby.top",
+        "https://warflix.im",
         "https://api.speedracelight.com",
         "https://old.invalid"
       ],
@@ -5019,6 +5049,42 @@
       "requires_direct_media": false,
       "observed_origins": [],
       "generated_from_manifest_or_stage": true
+    },
+    "animevost-fr": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://animevost.fr",
+        "https://kitsu.io",
+        "https://old.invalid"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "fullanime": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://kitsu.io",
+        "https://www.fullanime.fr",
+        "https://old.invalid"
+      ],
+      "generated_from_manifest_or_stage": true
+    },
+    "neko-sama": {
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://kitsu.io",
+        "https://animes-sama.su",
+        "https://old.invalid"
+      ],
+      "generated_from_manifest_or_stage": true
     }
   },
   "official_domain_hubs": {
@@ -5436,7 +5502,7 @@
   },
   "provider_profile_generation": {
     "schema_version": 4,
-    "provider_count": 92,
+    "provider_count": 95,
     "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,
@@ -5532,7 +5598,7 @@
       "vidlove"
     ],
     "non_safety_hard_disable_count": 8,
-    "provider_security_hardening_candidates": 188,
+    "provider_security_hardening_candidates": 191,
     "provider_security_hardening_applied": 0
   },
   "runtime_capability_media_safety": {
