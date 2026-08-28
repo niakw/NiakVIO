@@ -35,6 +35,9 @@ on:
         required: true
         default: true
         type: boolean
+  schedule:
+    # Weekly maintenance: Sunday 03:23 UTC. Keep the most recent 7 days.
+    - cron: "23 3 * * 0"
 
 permissions:
   actions: write
@@ -46,16 +49,18 @@ concurrency:
 
 jobs:
   purge:
-    if: ${{ inputs.confirm == 'PURGE ACTION LOGS' }}
+    if: ${{ github.event_name == 'schedule' || inputs.confirm == 'PURGE ACTION LOGS' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
       GH_TOKEN: ${{ github.token }}
-      PURGE_MODE: ${{ inputs.mode }}
-      BATCH_SIZE: ${{ inputs.batch_size }}
-      BEFORE_CURSOR: ${{ inputs.before }}
-      FINAL_PASS: ${{ inputs.final_pass }}
-      AUTO_CONTINUE: ${{ inputs.auto_continue }}
+      IS_SCHEDULED: ${{ github.event_name == 'schedule' }}
+      PURGE_MODE: ${{ github.event_name == 'schedule' && 'runs' || inputs.mode }}
+      BATCH_SIZE: ${{ github.event_name == 'schedule' && '800' || inputs.batch_size }}
+      BEFORE_CURSOR: ${{ inputs.before || '' }}
+      FINAL_PASS: ${{ inputs.final_pass || false }}
+      AUTO_CONTINUE: ${{ github.event_name == 'schedule' && 'true' || inputs.auto_continue }}
+      AUTO_RETENTION_DAYS: "7"
     steps:
       - name: Purge completed workflow logs
         shell: bash
@@ -78,6 +83,26 @@ jobs:
           before = os.environ.get("BEFORE_CURSOR", "").strip()
           final_pass = os.environ.get("FINAL_PASS", "false").lower() == "true"
           auto_continue = os.environ.get("AUTO_CONTINUE", "true").lower() == "true"
+          scheduled = os.environ.get("IS_SCHEDULED", "false").lower() == "true"
+
+          try:
+              retention_days = int(os.environ.get("AUTO_RETENTION_DAYS", "7"))
+          except ValueError:
+              raise SystemExit("AUTO_RETENTION_DAYS must be an integer")
+          if retention_days < 1:
+              raise SystemExit("AUTO_RETENTION_DAYS must be at least 1")
+
+          # Scheduled maintenance keeps a small rolling history for diagnostics.
+          # Continuation dispatches already carry an explicit cursor, so only the
+          # initial cron pass derives the 7-day cutoff here.
+          if scheduled and not before and not final_pass:
+              cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=retention_days)
+              before = cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
+              print(
+                  f"Scheduled maintenance: deleting completed runs older than "
+                  f"{retention_days} day(s), cutoff={before}.",
+                  flush=True,
+              )
 
           try:
               batch_size = int(os.environ.get("BATCH_SIZE", "800"))
