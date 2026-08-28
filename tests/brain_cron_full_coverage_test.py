@@ -78,7 +78,7 @@ def main() -> int:
     # The Brain cron must always reconstruct the complete catalogue, including
     # disabled providers which still need repair/re-evaluation evidence.
     assert "schedule:" in workflow and "cron:" in workflow, "Brain learning cron disappeared"
-    assert "python scripts/resolve_provider_hubs.py --apply --mode quick --include-disabled" in workflow
+    assert "python scripts/resolve_provider_hubs.py --apply --mode deep --include-disabled --search-disabled" in workflow
     assert "python scripts/discover_candidates.py --require-all-upstreams" in workflow
     assert "validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json" in workflow
     assert "python scripts/run_brain_learning_sandbox.py --stage staging" in workflow
@@ -108,6 +108,8 @@ def main() -> int:
     assert "_restore_positive_skills" in sandbox_source
     assert 'state.get("learnedSkills")' in sandbox_source
     assert "mergeLearnedSkills(previous.learnedSkills, currentSkills)" in learning_source
+    assert "yandex.com/search/?text=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
+    assert "html.duckduckgo.com/html/?q=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
     assert "learnedSkills," in learning_source
     assert "apply_overrides(canonical_id(upstream_id), data)" in discovery
     assert "GLOBAL_STREAM_PRESENTATION" in apply_source
