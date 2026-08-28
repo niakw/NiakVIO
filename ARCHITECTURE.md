@@ -461,12 +461,14 @@ Aucun nouveau comportement architectural ne doit être ajouté dans cette couche
 
 - **Publication / contrôle ARCHI 2** : `sync.yml`, `core-media-finalize-main.yml`, `provider-overrides-gate.yml`, `archi2-change-dispatch.yml` ;
 - **preuves natives** : `native-android-route-reader.yml`, `native-desktop-reader-acceptance.yml`, `native-corpus-device-targeted.yml`, `native-reader-learning-sync.yml` ;
-- **Brain / connaissance / reporting** : `brain-learning-lab.yml`, `canonical-media-types.yml`, `provider-catalogue-breadth-lab.yml`, `provider-status-export.yml`, `provider-results-readme-sync.yml` ;
+- **Brain / connaissance / reporting** : `brain-learning-lab.yml`, `brain-branch-maintenance.yml`, `canonical-media-types.yml`, `provider-catalogue-breadth-lab.yml`, `provider-status-export.yml`, `provider-results-readme-sync.yml` ;
 - **observabilité / découverte** : `availability.yml`, `domain-refresh.yml`, `weekly-upstream-provider-discovery.yml` ;
 - **sécurité / qualité** : `github-actions-gate.yml`, `codeql.yml`, `security-final-gate.yml`, `repository-hygiene.yml`, `external-code-audit.yml`, `badge-light-contrast.yml` ;
 - **maintenance GitHub Actions** : `purge-actions-history.yml` supprime automatiquement chaque semaine les runs terminés de plus de 7 jours ; le mode manuel permet une purge ponctuelle plus large.
 
 Les Labs natifs conservent les snapshots AVD lorsque cela évite une reconstruction coûteuse, mais le cache Gradle est désactivé afin de limiter le quota de cache GitHub Actions. Les artifacts temporaires des Labs natifs sont conservés 1 jour.
+
+Les branches Brain ne sont pas des branches de code alternatives : `brain-learning/proposals` est automatiquement reconstruite sur le dernier `main` en ne conservant que la mémoire sanitizée (`engine_v2/learning/latest.json` et `.md`). `brain-repair/proposal` n'existe que pendant une PR Brain ouverte ; après merge/fermeture elle est supprimée et le prochain proposal repart du `main` courant.
 
 Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent disparaître après leur absorption dans les workflows durables.
 
