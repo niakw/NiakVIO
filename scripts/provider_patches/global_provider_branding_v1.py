@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BRANDING = ROOT / "assets" / "providers" / "emojis.json"
 
 
-def _load_provider(provider_id: str) -> dict[str, str]:
+def _load_provider(provider_id: str) -> dict[str, str] | None:
     payload = json.loads(BRANDING.read_text(encoding="utf-8"))
     if payload.get("policy") != "committed-provider-default-emoji":
         raise ValueError("provider emoji map must declare committed-provider-default-emoji policy")
@@ -29,7 +29,7 @@ def _load_provider(provider_id: str) -> dict[str, str]:
     normalized_id = str(provider_id or "").strip().casefold()
     row = providers.get(normalized_id)
     if not isinstance(row, dict):
-        raise ValueError(f"provider emoji map is missing committed row: {provider_id}")
+        return None
     name = str(row.get("name") or "").strip()
     emoji = str(row.get("emoji") or "").strip()
     if not name or not emoji:
@@ -54,6 +54,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     if not provider_id:
         return text
     row = _load_provider(provider_id)
+    if row is None:
+        # Discovery may encounter a provider before the next one-shot registry
+        # refresh. Never synthesize recurring branding; leave its stream output
+        # untouched until committed branding exists.
+        return text
     payload = {
         "providerId": provider_id,
         "providerName": row["name"],
