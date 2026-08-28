@@ -87,6 +87,16 @@ def resolve_base(provider_id: str, provenance_row: dict[str, Any], *, require: b
     return path, actual
 
 
+def persist_base_from_published(provider_id: str, published_data: bytes) -> tuple[str, str, bool]:
+    """Persist provider logic only; generated Core layers are always derived."""
+    published_text = published_data.decode("utf-8", errors="strict")
+    base_text, stripped = _strip_generated_core_tail(published_text)
+    base_data = base_text.encode("utf-8")
+    validate_base(base_data, provider_id)
+    relative, digest = write_base(provider_id, base_data)
+    return relative, digest, bool(stripped)
+
+
 def migrate_existing() -> dict[str, Any]:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
@@ -123,13 +133,10 @@ def migrate_existing() -> dict[str, Any]:
         if not public_path.is_file():
             raise ValueError(f"{provider_id}: missing public provider artifact {relative}")
 
-        public_text = public_path.read_text(encoding="utf-8", errors="strict")
-        base_text, stripped = _strip_generated_core_tail(public_text)
+        public_data = public_path.read_bytes()
         # This is the only allowed legacy extraction path. Once persisted,
         # production Core/compiler code must consume ProviderBase directly.
-        base_data = base_text.encode("utf-8")
-        validate_base(base_data, provider_id)
-        base_file, base_sha = write_base(provider_id, base_data)
+        base_file, base_sha, stripped = persist_base_from_published(provider_id, public_data)
         row["base_filename"] = base_file
         row["base_sha256"] = base_sha
         row["base_source"] = "one-shot-public-core-tail-extraction"
