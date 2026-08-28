@@ -18,6 +18,7 @@ on:
       - 'tests/**'
 
 permissions:
+  actions: write
   contents: write
   issues: write
 
@@ -47,15 +48,18 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
 
-      - name: Reject stale Core generation before work
+      - name: Cancel stale Core generation before work
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main
           current="$(git rev-parse origin/main)"
           if [ "$current" != "$GITHUB_SHA" ]; then
-            echo "FIELD_CORE_STALE_GENERATION event=$GITHUB_SHA current=$current action=reject" >&2
-            exit 1
+            echo "FIELD_CORE_STALE_GENERATION event=$GITHUB_SHA current=$current action=cancel"
+            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/cancel" >/dev/null
+            exit 0
           fi
           echo "FIELD_CORE_GENERATION_ACTIVE sha=$GITHUB_SHA"
 
