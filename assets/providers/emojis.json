@@ -1,7 +1,9 @@
 {
   "schemaVersion": 1,
   "policy": "committed-provider-default-emoji",
-  "purpose": "Single source of truth for provider display names and fallback emoji while native Nuvio local-stream logo support is limited. Semantic emoji are preferred; otherwise the provider's first alphabetic initial is encoded as a regional-indicator emoji.",
+  "generationMode": "one-shot-preserve-semantic-else-initial",
+  "generatedAt": "2026-08-28T20:46:41Z",
+  "purpose": "Single source of truth for provider display names and fallback emoji while native Nuvio local-stream logo support is limited. Existing semantic emoji are preserved; only a newly seen provider without a curated symbol receives its first alphabetic regional-indicator once.",
   "providers": {
     "anime-sama": {
       "name": "Anime-Sama",
@@ -15,10 +17,6 @@
       "name": "Flemmix",
       "emoji": "🔥"
     },
-    "movieshunt": {
-      "name": "MoviesHunt",
-      "emoji": "🎬"
-    },
     "zinkmovies": {
       "name": "ZinkMovies",
       "emoji": "🔩"
@@ -27,29 +25,61 @@
       "name": "VegaMovies",
       "emoji": "⭐"
     },
+    "hindmoviez": {
+      "name": "HindMoviez",
+      "emoji": "🇮🇳"
+    },
+    "4khdhub": {
+      "name": "4KHDHub",
+      "emoji": "📺"
+    },
+    "persianstremio": {
+      "name": "PersianStremio",
+      "emoji": "🌸"
+    },
     "desiflix": {
       "name": "DesiFlix",
       "emoji": "🇮🇳"
     },
-    "papadustream": {
-      "name": "Papadustream",
-      "emoji": "🍿"
+    "animoflix": {
+      "name": "AnimoFlix",
+      "emoji": "🎞️"
     },
     "french-manga": {
       "name": "French-Manga",
       "emoji": "🇫🇷"
     },
-    "anikototv": {
-      "name": "AnikotoTV",
-      "emoji": "📺"
+    "voiranime-homes": {
+      "name": "VoirAnime.homes",
+      "emoji": "🏠"
+    },
+    "animesama-co": {
+      "name": "AnimeSama.co (DLE Mirror)",
+      "emoji": "🐍"
     },
     "cineby": {
       "name": "Cineby",
       "emoji": "🎞️"
     },
-    "hianime": {
-      "name": "HiAnime",
-      "emoji": "🌸"
+    "voiranime-rip": {
+      "name": "VoirAnime.rip",
+      "emoji": "👁️"
+    },
+    "videasy": {
+      "name": "VidEasy",
+      "emoji": "▶️"
+    },
+    "anikototv": {
+      "name": "AnikotoTV",
+      "emoji": "📺"
+    },
+    "playimdb": {
+      "name": "PlayIMDb",
+      "emoji": "▶️"
+    },
+    "castle": {
+      "name": "Castle",
+      "emoji": "🏰"
     },
     "movieblast": {
       "name": "MovieBlast",
@@ -71,10 +101,6 @@
       "name": "AnimeSalt",
       "emoji": "🧂"
     },
-    "animesama-co": {
-      "name": "AnimeSama.co (DLE Mirror)",
-      "emoji": "🐍"
-    },
     "animesultra": {
       "name": "AnimesUltra",
       "emoji": "🚀"
@@ -86,6 +112,10 @@
     "animevostfr": {
       "name": "AnimeVOSTFR",
       "emoji": "🇫🇷"
+    },
+    "animezey": {
+      "name": "AnimeZeY",
+      "emoji": "🌀"
     },
     "anizone": {
       "name": "AniZone",
@@ -111,13 +141,13 @@
       "name": "DuLourd",
       "emoji": "🏋️"
     },
-    "goated": {
-      "name": "Goated",
-      "emoji": "🐐"
-    },
     "hdhub4u": {
       "name": "HDHub4u",
       "emoji": "📺"
+    },
+    "hianime": {
+      "name": "HiAnime",
+      "emoji": "🌸"
     },
     "kurage": {
       "name": "Kurage",
@@ -143,6 +173,14 @@
       "name": "Mugiwara-no-Streaming",
       "emoji": "👒"
     },
+    "papadustream": {
+      "name": "Papadustream",
+      "emoji": "🍿"
+    },
+    "streamflix": {
+      "name": "StreamFlix",
+      "emoji": "📡"
+    },
     "streamzo": {
       "name": "StreamZo",
       "emoji": "🌊"
@@ -159,10 +197,6 @@
       "name": "VoirAnime",
       "emoji": "👁️"
     },
-    "voiranime-rip": {
-      "name": "VoirAnime.rip",
-      "emoji": "👁️"
-    },
     "vostfree": {
       "name": "Vostfree",
       "emoji": "🆓"
@@ -175,37 +209,29 @@
       "name": "YFlix",
       "emoji": "🇾"
     },
-    "hindmoviez": {
-      "name": "HindMoviez",
-      "emoji": "🇮🇳"
-    },
-    "4khdhub": {
-      "name": "4KHDHub",
+    "uhdmovies": {
+      "name": "UHDMovies",
       "emoji": "📺"
     },
-    "persianstremio": {
-      "name": "PersianStremio",
-      "emoji": "🌸"
+    "movieshunt": {
+      "name": "MoviesHunt",
+      "emoji": "🎬"
     },
     "anime-ultime": {
       "name": "Anime-Ultime",
       "emoji": "🔥"
     },
-    "animoflix": {
-      "name": "AnimoFlix",
-      "emoji": "🎞️"
+    "neko-sama": {
+      "name": "Neko-Sama",
+      "emoji": "🐱"
     },
-    "voiranime-homes": {
-      "name": "VoirAnime.homes",
-      "emoji": "🏠"
-    },
-    "frenchstream": {
-      "name": "Frenchstream",
+    "animevost-fr": {
+      "name": "AnimeVOST.fr",
       "emoji": "🇫🇷"
     },
-    "videasy": {
-      "name": "VidEasy",
-      "emoji": "▶️"
+    "fullanime": {
+      "name": "FullAnime",
+      "emoji": "🍥"
     },
     "nakios": {
       "name": "Nakios",
@@ -223,53 +249,17 @@
       "name": "WaveAnime",
       "emoji": "🌊"
     },
-    "hdghartv": {
-      "name": "HDGharTV",
-      "emoji": "🏠"
-    },
-    "playimdb": {
-      "name": "PlayIMDb",
-      "emoji": "▶️"
-    },
-    "castle": {
-      "name": "Castle",
-      "emoji": "🏰"
-    },
-    "animezey": {
-      "name": "AnimeZeY",
-      "emoji": "🌀"
-    },
-    "streamflix": {
-      "name": "StreamFlix",
-      "emoji": "📡"
-    },
-    "1shows": {
-      "name": "1Shows",
-      "emoji": "1️⃣"
-    },
-    "vidrock": {
-      "name": "VidRock",
-      "emoji": "🪨"
-    },
-    "vidsrc": {
-      "name": "VidSrc",
-      "emoji": "🔌"
-    },
-    "vixsrc": {
-      "name": "VixSrc",
-      "emoji": "🔌"
+    "goated": {
+      "name": "Goated",
+      "emoji": "🐐"
     },
     "einthusan": {
       "name": "Einthustan",
       "emoji": "🎭"
     },
-    "moviebox": {
-      "name": "MovieBox",
-      "emoji": "📦"
-    },
-    "showbox": {
-      "name": "ShowBox",
-      "emoji": "📦"
+    "vidrock": {
+      "name": "VidRock",
+      "emoji": "🪨"
     },
     "peachify": {
       "name": "Peachify",
@@ -291,21 +281,9 @@
       "name": "VidnestAnime",
       "emoji": "🪺"
     },
-    "allanime": {
-      "name": "AllAnime",
-      "emoji": "🌐"
-    },
-    "allwish": {
-      "name": "All-Wish",
-      "emoji": "🌟"
-    },
     "animeworld": {
       "name": "AnimeWorld",
       "emoji": "🗡️"
-    },
-    "cinefreak": {
-      "name": "CineFreak",
-      "emoji": "🤪"
     },
     "cinevibe": {
       "name": "Cinevibe",
@@ -315,21 +293,13 @@
       "name": "CTGMovies",
       "emoji": "🇨"
     },
-    "fibwatch": {
-      "name": "FibWatch",
-      "emoji": "👁️"
+    "hdghartv": {
+      "name": "HDGharTV",
+      "emoji": "🏠"
     },
     "moonflix": {
       "name": "MoonFlix",
       "emoji": "🌙"
-    },
-    "netmirror": {
-      "name": "NetMirror",
-      "emoji": "🪞"
-    },
-    "topcartoons": {
-      "name": "TopCartoons",
-      "emoji": "🧸"
     },
     "vidlove": {
       "name": "VidLove",
@@ -351,37 +321,69 @@
       "name": "GoatAPI",
       "emoji": "🐐"
     },
-    "dvdplay": {
-      "name": "DVDPlay",
-      "emoji": "💿"
-    },
     "kisskh": {
       "name": "Kisskh",
       "emoji": "💋"
-    },
-    "mycima": {
-      "name": "MyCima",
-      "emoji": "🎞️"
     },
     "onlykdrama": {
       "name": "OnlyKDrama",
       "emoji": "🫰"
     },
-    "uhdmovies": {
-      "name": "UHDMovies",
-      "emoji": "📺"
+    "showbox": {
+      "name": "ShowBox",
+      "emoji": "📦"
     },
-    "neko-sama": {
-      "name": "Neko-Sama",
-      "emoji": "🐱"
+    "allwish": {
+      "name": "All-Wish",
+      "emoji": "🌟"
     },
-    "animevost-fr": {
-      "name": "AnimeVOST.fr",
+    "fibwatch": {
+      "name": "FibWatch",
+      "emoji": "👁️"
+    },
+    "mycima": {
+      "name": "MyCima",
+      "emoji": "🎞️"
+    },
+    "1shows": {
+      "name": "1Shows",
+      "emoji": "1️⃣"
+    },
+    "allanime": {
+      "name": "AllAnime",
+      "emoji": "🌐"
+    },
+    "cinefreak": {
+      "name": "CineFreak",
+      "emoji": "🤪"
+    },
+    "dvdplay": {
+      "name": "DVDPlay",
+      "emoji": "💿"
+    },
+    "frenchstream": {
+      "name": "Frenchstream",
       "emoji": "🇫🇷"
     },
-    "fullanime": {
-      "name": "FullAnime",
-      "emoji": "🍥"
+    "moviebox": {
+      "name": "MovieBox",
+      "emoji": "📦"
+    },
+    "netmirror": {
+      "name": "NetMirror",
+      "emoji": "🪞"
+    },
+    "topcartoons": {
+      "name": "TopCartoons",
+      "emoji": "🧸"
+    },
+    "vidsrc": {
+      "name": "VidSrc",
+      "emoji": "🔌"
+    },
+    "vixsrc": {
+      "name": "VixSrc",
+      "emoji": "🔌"
     }
   }
 }
