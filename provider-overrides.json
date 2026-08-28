@@ -45,8 +45,7 @@
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -135,8 +134,7 @@
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/quarantine_provider_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -207,14 +205,15 @@
     "streamzo": {
       "notes": [
         "Keep the locally verified reachable StreamZo domain.",
-        "Resolve recovered StreamZo embeds to strict target media before the terminal output sanitizer validates publication candidates."
+        "Resolve recovered StreamZo embeds to strict target media before the terminal output sanitizer validates publication candidates.",
+        "Anime/TV compatibility is declarative provider capability metadata; Core invokes anime as tv when required while validating returned rows against the original Nuvio request."
       ],
       "replacements": {},
       "required_values": [],
       "route_replacements": {},
       "required_route_values": [],
       "profiles": [],
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "runtime_domain_replacements": {},
       "official_hub": null,
       "official_site": "https://streamzo.fr",
@@ -311,8 +310,7 @@
         "scripts/provider_patches/streamzo_source_identity_v3.py",
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "published_types": [
         "movie",
@@ -340,8 +338,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "allmovieland": {
@@ -368,8 +365,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "purstream": {
@@ -388,8 +384,7 @@
       ],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {},
       "manifest_overrides": {
@@ -425,8 +420,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "vixsrc": {
@@ -445,8 +439,7 @@
       "patch_scripts": [
         "scripts/provider_patches/quarantine_provider_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/quarantine_provider_v1.py": {
@@ -499,8 +492,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "coflix": {
@@ -601,8 +593,7 @@
         "scripts/provider_patches/stream_output_sanitizer_v6.py",
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "published_types": [
         "movie",
@@ -631,8 +622,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "uhdmovies": {
@@ -671,8 +661,7 @@
       "patch_scripts": [
         "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "videasy": {
@@ -693,8 +682,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "mycima": {
@@ -711,8 +699,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "official_hub": null,
       "official_site": "https://mycima.chat",
@@ -739,8 +726,7 @@
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "vostfree": {
@@ -784,8 +770,7 @@
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -901,8 +886,7 @@
       "patch_scripts": [
         "scripts/provider_patches/papadustream_anime_tv_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "4khdhub": {
@@ -970,24 +954,21 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "allwish": {
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "anidb": {
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "anikototv": {
@@ -1021,8 +1002,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "animesalt": {
@@ -1042,8 +1022,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "animesama-co": {
@@ -1060,8 +1039,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "animetsu": {
@@ -1069,8 +1047,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "animevostfr": {
@@ -1090,8 +1067,7 @@
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "animoflix": {
@@ -1104,8 +1080,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "castle": {
@@ -1115,8 +1090,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "cinefreak": {
@@ -1129,8 +1103,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "cinemm": {
@@ -1150,8 +1123,7 @@
       "capability": "direct_media",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "ctgmovies": {
@@ -1159,8 +1131,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "desiflix": {
@@ -1168,8 +1139,7 @@
       "patch_scripts": [
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
@@ -1193,8 +1163,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "dvdplay": {
@@ -1220,16 +1189,14 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "fibwatch": {
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "french-manga": {
@@ -1274,8 +1241,7 @@
         "scripts/provider_patches/nuvio_tv_target_media_v4.py",
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "manifest_overrides": {
         "supportsExternalPlayer": false,
@@ -1294,16 +1260,14 @@
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "gramcinema": {
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "hdghartv": {
@@ -1323,8 +1287,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "hdhub4u": {
@@ -1346,8 +1309,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "hianime": {
@@ -1355,8 +1317,7 @@
       "manifest_overrides": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "hindmoviez": {
@@ -1426,7 +1387,6 @@
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py",
         "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
       ],
       "manifest_overrides": {
@@ -1439,8 +1399,7 @@
       "manifest_overrides": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "kurage": {
@@ -1454,8 +1413,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "movieblast": {
@@ -1465,8 +1423,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "moviebox": {
@@ -1489,8 +1446,7 @@
       "patch_scripts": [
         "scripts/provider_patches/quarantine_provider_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
     },
@@ -1513,8 +1469,7 @@
       "patch_scripts": [
         "scripts/provider_patches/stream_output_sanitizer_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/stream_output_sanitizer_v5.py": {
@@ -1547,8 +1502,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "mugiwarastream": {
@@ -1565,8 +1519,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "netmirror": {
@@ -1589,8 +1542,7 @@
       "patch_scripts": [
         "scripts/provider_patches/quarantine_provider_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "notes": "Fail-closed safety quarantine: cross_title_search_identity_mismatch. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
     },
@@ -1598,8 +1550,7 @@
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "peachify": {
@@ -1610,16 +1561,14 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "persianstremio": {
       "capability": "direct_media",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "playimdb": {
@@ -1627,16 +1576,14 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "showbox": {
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "streamflix": {
@@ -1659,8 +1606,7 @@
       "patch_scripts": [
         "scripts/provider_patches/quarantine_provider_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/quarantine_provider_v1.py": {
@@ -1702,8 +1648,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "vidnest": {
@@ -1711,8 +1656,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "vidnest-anime": {
@@ -1720,8 +1664,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "vidrock": {
@@ -1731,8 +1674,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "vidsrc": {
@@ -1740,8 +1682,7 @@
       "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "voiranime": {
@@ -1758,8 +1699,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "voiranime-rip": {
@@ -1776,8 +1716,7 @@
       "patch_script_options": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "wookafr": {
@@ -1816,8 +1755,7 @@
       "patch_scripts": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -1827,8 +1765,7 @@
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "yflix": {
@@ -1839,8 +1776,7 @@
       },
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "zinkmovies": {
@@ -1852,8 +1788,7 @@
       "patch_scripts": [
         "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/runtime_repository_domain_materializer_v1.py": {
@@ -1910,8 +1845,7 @@
       "patch_scripts": [
         "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "official_api": "https://api.speedracelight.com",
       "notes": [
@@ -1924,8 +1858,7 @@
         "scripts/provider_patches/animezey_stream_host_v1.py",
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
@@ -1954,8 +1887,7 @@
         "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/nuvio_tv_direct_media_v2.py": {
@@ -1990,8 +1922,7 @@
       "capability": "mixed_embed_resolver",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "waveanime": {
@@ -2188,8 +2119,7 @@
       "manifest_overrides": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "vidlove": {
@@ -2197,8 +2127,7 @@
       "manifest_overrides": {},
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
     "moonflix": {
@@ -2240,8 +2169,7 @@
       "patch_scripts": [
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/nuvio_tv_playable_first_v1.py": {
@@ -2278,8 +2206,7 @@
         "scripts/provider_patches/toflix_official_endpoint.py",
         "scripts/provider_patches/toflix_explicit_vf_v2.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "patch_script_options": {
         "scripts/provider_patches/toflix_official_endpoint.py": {
@@ -2407,7 +2334,7 @@
         "successCount": 8,
         "failureCount": 0,
         "validated": true,
-        "confidence": 1.0,
+        "confidence": 1,
         "maturity": "candidate",
         "autoApply": false,
         "lastValidatedMode": "learning"
@@ -3232,7 +3159,8 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "strict_playback_validation": true
     },
     "movies4u": {
       "strategy": "html_scraper",
@@ -3534,7 +3462,11 @@
         "movie",
         "tv",
         "anime"
-      ]
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "toflix": {
       "strategy": "direct_media",
@@ -5614,8 +5546,8 @@
     "provider_security_hardening_applied": 0
   },
   "runtime_capability_media_safety": {
-    "version": 4,
-    "scope": "all_hls_capable_providers",
+    "version": 6,
+    "scope": "all_published_providers",
     "target_order_compat_patch": "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
     "target_order_patch": "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
     "final_patch": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
@@ -5633,81 +5565,14 @@
       "malformed_nested_url"
     ],
     "wrapper_upgrade": "Terser-normalized V5 compatibility precedes strict target traversal ordering; final safety patch remains last",
-    "targets": [
-      "1shows",
-      "4khdhubnew",
-      "allanime",
-      "allmovieland",
-      "allwish",
-      "anidb",
-      "animekai",
-      "animepahe",
-      "animesalt",
-      "animesama-co",
-      "animetsu",
-      "animeworld",
-      "animezey",
-      "anizone",
-      "castle",
-      "cineby",
-      "cinemacity",
-      "cinevibe",
-      "coflix",
-      "ctgmovies",
-      "desiflix",
-      "dooflix",
-      "dulourd",
-      "einthusan",
-      "fibwatch",
-      "flemmix",
-      "french-manga",
-      "frenchstream",
-      "goatapi",
-      "goated",
-      "gramcinema",
-      "hdghartv",
-      "hdhub4u",
-      "hianime",
-      "hindmoviez",
-      "kisskh",
-      "kurage",
-      "movieblast",
-      "moviebox",
-      "movies4u",
-      "moviesdrive",
-      "movieshunt",
-      "moviesmod",
-      "movix",
-      "mugiwarastream",
-      "mycima",
-      "netmirror",
-      "onlykdrama",
-      "papadustream",
-      "peachify",
-      "persianstremio",
-      "playimdb",
-      "purstream",
-      "showbox",
-      "streamzo",
-      "toflix",
-      "topcartoons",
-      "uhdmovies",
-      "videasy",
-      "vidfast",
-      "vidlink",
-      "vidlove",
-      "vidnest",
-      "vidnest-anime",
-      "vidrock",
-      "vidsrc",
-      "vixsrc",
-      "voiranime",
-      "voiranime-homes",
-      "voiranime-rip",
-      "wookafr",
-      "xpass",
-      "yflix",
-      "zinkmovies"
-    ]
+    "target_source": "manifest_and_provider_capabilities",
+    "request_identity_source": "original_nuvio_request",
+    "request_type_aliases_source": "provider_capabilities.request_type_aliases",
+    "provider_specific_core_script_entries_forbidden": true,
+    "options": {
+      "duration_identity": true,
+      "min_duration_ratio": 0.55,
+      "max_duration_ratio": 1.8
+    }
   }
 }

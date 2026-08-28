@@ -16,6 +16,8 @@ const policy = asRecord(input.policy);
 const production = asRecord(policy.production);
 const maturity = asRecord(policy.skillMaturity);
 const globalSkillConfig = readJsonFile("engine_v2/config/global-repair-skills.json", {});
+const coreRepairConfig = readJsonFile("engine_v2/config/core-repair-types.json", {});
+const providerOverrides = readJsonFile("provider-overrides.json", {});
 const learnedSkills = [
   ...normalizeLearnedSkills(input.learnedSkills),
   ...normalizeLearnedSkills(asRecord(globalSkillConfig).skills),
@@ -59,6 +61,7 @@ function buildPlan(item) {
   evidence.failureClass = classifyFailure(evidence);
   const signature = evidenceSignature(evidence);
   const providerId = stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase();
+  const capabilityStrategy = stringValue(asRecord(asRecord(providerOverrides.provider_capabilities)[providerId]).strategy, "unknown").toLowerCase();
   const reusable = learnedSkills
     .filter((skill) => !skill.failureClass || skill.failureClass === evidence.failureClass || skill.failure_class === evidence.failureClass)
     .filter((skill) => {
@@ -102,10 +105,18 @@ function buildPlan(item) {
     coreMutationRequested: state.coreMutationRequested === true,
   });
   const hypotheses = asArray(plan.hypotheses).filter(isRecord);
+  const repairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage);
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
     failureClass: stringValue(plan.failureClass, "unknown_failure"),
+    repairScope: repairTarget.scope,
+    repairType: repairTarget.repairType,
+    repairEngine: repairTarget.engine,
+    pipelineStage: repairTarget.pipelineStage,
+    observedPipelineStage: stringValue(evidence.observedPipelineStage, "unknown"),
+    learningDisposition: repairTarget.learningDisposition,
+    capabilityStrategy,
     signature,
     action: stringValue(plan.action, "deferred_retry"),
     exitReason: plan.exitReason ?? null,
@@ -117,7 +128,7 @@ function buildPlan(item) {
       learned: row.learned === true,
       maturity: row.maturity ?? null,
     })).filter((row) => row.id),
-    allowedProfiles: profilesForPlan({ ...plan, hypotheses }, reusable),
+    allowedProfiles: profilesForRepairTarget({ ...plan, hypotheses }, repairTarget),
     budget: asRecord(plan.budget),
     fallbackPolicy: stringValue(plan.fallbackPolicy, "lkg_only_after_repair_budget"),
     coreMutationPolicy: stringValue(plan.coreMutationPolicy, "proposal_only"),
@@ -131,6 +142,13 @@ function deferredPlannerError(item, error) {
     brainVersion: BRAIN_CONTROL_PLANE_VERSION,
     providerId: stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase(),
     failureClass: "unknown_failure",
+    repairScope: "learning",
+    repairType: "architecture_gap",
+    repairEngine: "brain_learning_lab",
+    pipelineStage: "learning",
+    observedPipelineStage: "unknown",
+    learningDisposition: "propose_new_or_evolved_core_type",
+    capabilityStrategy: "unknown",
     signature: null,
     action: "deferred_retry",
     exitReason: "planner_item_error",
@@ -201,35 +219,30 @@ function normalizeLearnedSkills(value) {
   return [];
 }
 
-function profilesForPlan(plan, learned) {
-  if (stringValue(plan.action) !== "probe-targeted-repair") return [];
-  const hypotheses = asArray(plan.hypotheses).filter(isRecord);
-  const hypothesisIds = new Set(hypotheses.map((row) => stringValue(row.id)).filter(Boolean));
-  const profiles = [];
-  for (const skill of learned) {
-    const profile = stringValue(skill.profile);
-    if (profile && hypothesisIds.has(stringValue(skill.id))) profiles.push(profile);
-  }
-  const map = {
-    "rediscover-search-route": ["adaptive_runtime_recovery"],
-    "repair-search-parser": ["dle_html_search_recovery", "adaptive_runtime_recovery"],
-    "repair-detail-resolution": ["adaptive_runtime_recovery"],
-    "repair-series-navigation": ["adaptive_runtime_recovery"],
-    "repair-anime-episode-mapping": ["adaptive_runtime_recovery"],
-    "discover-player-chain": ["adaptive_runtime_recovery"],
-    "capture-media-network": ["adaptive_runtime_recovery"],
-    "inspect-player-javascript": ["adaptive_runtime_recovery"],
-    "preserve-playback-context": ["adaptive_runtime_recovery"],
-    "refresh-media-token": ["adaptive_runtime_recovery"],
-    "validate-final-media": ["adaptive_runtime_recovery"],
-    "bootstrap-session": ["adaptive_runtime_recovery"],
-    "alternate-official-route": ["adaptive_runtime_recovery"],
-    "repair-structured-parser": ["safe_structured_parse"],
+function resolveRepairTarget(failureClass, capabilityStrategy, observedPipelineStage) {
+  const table = asRecord(coreRepairConfig.failureClasses);
+  const row = asRecord(table[stringValue(failureClass, "unknown_failure")]);
+  const scope = stringValue(row.scope, "learning");
+  return {
+    scope,
+    repairType: stringValue(row.repairType, "architecture_gap"),
+    engine: stringValue(row.engine, "brain_learning_lab"),
+    pipelineStage: stringValue(row.pipelineStage, "learning"),
+    profiles: stringArray(row.profiles),
+    capabilityStrategy: stringValue(capabilityStrategy, "unknown"),
+    learningDisposition: scope === "learning"
+      ? "propose_new_or_evolved_core_type"
+      : scope === "none"
+        ? "none"
+        : "run_core_type_then_learn_adaptation_if_unresolved",
+    observedPipelineStage: stringValue(observedPipelineStage, "unknown"),
   };
-  for (const hypothesis of hypotheses) {
-    for (const profile of map[stringValue(hypothesis.id)] ?? []) profiles.push(profile);
-  }
-  return [...new Set(profiles)];
+}
+
+function profilesForRepairTarget(plan, repairTarget) {
+  if (stringValue(plan.action) !== "probe-targeted-repair") return [];
+  if (repairTarget.scope !== "capability") return [];
+  return [...new Set(stringArray(repairTarget.profiles))];
 }
 
 function deriveEvidence(candidate, result) {
@@ -258,6 +271,7 @@ function deriveEvidence(candidate, result) {
     return code >= 200 && code < 300 && !isTerminalMediaObservation(row);
   });
   const fixture = asRecord(tests[0]?.fixture);
+  const observedPipelineStage = highestObservedPipelineStage(observations, tests, returned, playable);
   const metadata = asRecord(candidate.metadata);
   const supportedTypes = stringArray(metadata.supportedTypes);
   const mediaType = stringValue(fixture.category ?? fixture.mediaType ?? supportedTypes[0], "movie").toLowerCase();
@@ -265,18 +279,20 @@ function deriveEvidence(candidate, result) {
   const invoked = !/not[_ -]?invoked|invalid[_ -]?request[_ -]?argument|object%20object|object object/.test(failureText);
   const structuredParseFailure = status === "runtime_error" && playable === 0 && /(?:json(?:\.parse)?|syntaxerror|structured)[^\n]{0,120}(?:unexpected|invalid|escape|unterminated|control character|parse)|(?:unexpected token|bad escape|invalid json)/.test(failureText);
   const contractDrift = status === "runtime_error" && /invalid[_ -]?request[_ -]?argument|object%20object|object object|signature|argument/.test(failureText);
+  const audioTrackGap = /(?:missing|no|without)[_ -]?(?:usable[_ -]?)?audio|audio[_ -]?(?:track|stream)[_ -]?(?:missing|absent|gap)|silent[_ -]?media/.test(failureText);
 
+  if (audioTrackGap) return { invoked, audioTrackGap: true, request: { mediaType }, observedPipelineStage };
   if (playable > 0 && !identityContradiction) {
-    return { invoked, contractDrift, playableStreams: playable, request: { mediaType }, stages: { validation: { attempted: true, playable: true, playableCount: playable, statuses } } };
+    return { invoked, contractDrift, playableStreams: playable, request: { mediaType }, observedPipelineStage, stages: { validation: { attempted: true, playable: true, playableCount: playable, statuses } } };
   }
-  if (identityContradiction) return { invoked, suspicious: true, request: { mediaType } };
-  if (structuredParseFailure) return { invoked, structuredParseFailure: true, request: { mediaType } };
+  if (identityContradiction) return { invoked, suspicious: true, request: { mediaType }, observedPipelineStage };
+  if (structuredParseFailure) return { invoked, structuredParseFailure: true, request: { mediaType }, observedPipelineStage };
   if (status === "provider_unreachable" && /dns|enotfound|eai_again|getaddrinfo/.test(failureText)) {
-    return { invoked, dns: { ok: false }, request: { mediaType } };
+    return { invoked, dns: { ok: false }, request: { mediaType }, observedPipelineStage };
   }
   if (returned > 0) {
     return {
-      invoked, contractDrift, request: { mediaType }, playableStreams: 0,
+      invoked, contractDrift, request: { mediaType }, observedPipelineStage, playableStreams: 0,
       stages: {
         player: { attempted: true, found: true },
         media: { attempted: true, found: true, streamCount: returned },
@@ -286,7 +302,7 @@ function deriveEvidence(candidate, result) {
   }
   if (terminalMediaStatuses.length && providerSuccessObserved) {
     return {
-      invoked, contractDrift, request: { mediaType }, playableStreams: 0,
+      invoked, contractDrift, request: { mediaType }, observedPipelineStage, playableStreams: 0,
       stages: {
         player: { attempted: true, found: true },
         media: { attempted: true, found: true, streamCount: 0 },
@@ -295,21 +311,57 @@ function deriveEvidence(candidate, result) {
     };
   }
   if (status === "blocked" || blocked) {
-    return { invoked, dns: { ok: true }, request: { mediaType }, stages: { homepage: { status: blocked || 403 } } };
+    return { invoked, dns: { ok: true }, request: { mediaType }, observedPipelineStage, stages: { homepage: { status: blocked || 403 } } };
   }
   if (/episode/.test(failureText)) {
-    return { invoked, request: { mediaType: mediaType === "movie" ? "tv" : mediaType }, stages: { search: { attempted: true, status: 200, matches: 1 }, identity: { attempted: true, matched: true }, detail: { attempted: true, found: true }, episode: { attempted: true, found: false } } };
+    return { invoked, request: { mediaType: mediaType === "movie" ? "tv" : mediaType }, observedPipelineStage, stages: { search: { attempted: true, status: 200, matches: 1 }, identity: { attempted: true, matched: true }, detail: { attempted: true, found: true }, episode: { attempted: true, found: false } } };
   }
-  if (/player|iframe|embed/.test(failureText)) {
-    return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: false } } };
+  if (/player|iframe|embed/.test(failureText) && pipelineStageRank(observedPipelineStage) < pipelineStageRank("player")) {
+    return { invoked, request: { mediaType }, observedPipelineStage, stages: { player: { attempted: true, found: false } } };
+  }
+  if (pipelineStageRank(observedPipelineStage) >= pipelineStageRank("player") && returned === 0) {
+    return { invoked, request: { mediaType }, observedPipelineStage, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: false } } };
   }
   if (/media|stream|hls|dash|m3u8|mp4/.test(failureText) && !/no[_ -]?streams?/.test(failureText)) {
-    return { invoked, request: { mediaType }, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: false } } };
+    return { invoked, request: { mediaType }, observedPipelineStage, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: false } } };
   }
   if (gone || /provider_http_error|404|410|no[_ -]?streams?|runtime_empty/.test(failureText) || ["no_streams", "reachable", "degraded", "unavailable", "provider_unreachable"].includes(status)) {
-    return { invoked, request: { mediaType }, stages: { search: { attempted: true, status: gone || 200, matches: 0 } } };
+    return { invoked, request: { mediaType }, observedPipelineStage, stages: { search: { attempted: true, status: gone || 200, matches: 0 } } };
   }
-  return { invoked, contractDrift, request: { mediaType }, playableStreams: 0 };
+  return { invoked, contractDrift, request: { mediaType }, observedPipelineStage, playableStreams: 0 };
+}
+
+function pipelineStageRank(stage) {
+  const order = ["unknown", "source", "provider", "search", "detail", "episode", "player", "media", "reader"];
+  const index = order.indexOf(stringValue(stage, "unknown"));
+  return index >= 0 ? index : 0;
+}
+
+function highestObservedPipelineStage(observations, tests, returned, playable) {
+  let stage = "provider";
+  const bump = (candidate) => {
+    if (pipelineStageRank(candidate) > pipelineStageRank(stage)) stage = candidate;
+  };
+  for (const row of observations) {
+    const value = stringValue(row.stage).toLowerCase();
+    if (/^(?:origin_probe|homepage|dns)$/.test(value)) bump("source");
+    else if (/^(?:search|catalogue)$/.test(value)) bump("search");
+    else if (/^(?:content_lookup|detail)$/.test(value)) bump("detail");
+    else if (/^(?:episode|season)$/.test(value)) bump("episode");
+    else if (/^(?:player|embed)$/.test(value)) bump("player");
+    else if (/^(?:media|stream|hls|dash)$/.test(value)) bump("media");
+    else if (/^(?:reader|playback|validation)$/.test(value)) bump("reader");
+  }
+  for (const row of tests) {
+    const failure = stringValue(row.failure_class).toLowerCase();
+    if (/reader|playback|decoder|audio|duration/.test(failure)) bump("reader");
+    else if (/media|stream|hls|dash/.test(failure) && !/no[_ -]?streams?/.test(failure)) bump("media");
+    else if (/player|iframe|embed/.test(failure)) bump("player");
+    else if (/episode|season/.test(failure)) bump("episode");
+  }
+  if (finiteNumber(returned, 0) > 0) bump("media");
+  if (finiteNumber(playable, 0) > 0) bump("reader");
+  return stage;
 }
 
 function isTerminalMediaObservation(row) {

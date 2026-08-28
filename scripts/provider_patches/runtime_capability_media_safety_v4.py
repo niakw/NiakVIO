@@ -116,6 +116,7 @@ WRAPPER = r'''
   function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
   function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
   function requestInfo(a){var first=a[0],q=first&&typeof first==="object"&&!Array.isArray(first)?Object.assign({},first):{tmdbId:first,mediaType:a[1],season:a[2],episode:a[3]};q.tmdbId=s(q.tmdbId||q.id||first).replace(/^tmdb:/i,"").split(":")[0];q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;q.year=Number(q.year||q.releaseYear||0)||0;q.title=s(q.title||q.name||"");return q}
+  function invocationArgs(a,q){var out=Array.prototype.slice.call(a),aliases=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{},alias=s(aliases[q.mediaType]).toLowerCase();if(!alias||alias===q.mediaType)return out;var first=out[0];if(first&&typeof first==="object"&&!Array.isArray(first)){var copy=Object.assign({},first);copy.mediaType=alias;if("type" in copy)copy.type=alias;out[0]=copy}else out[1]=alias;return out}
   function nativeHost(){try{return typeof g.__native_fetch==="function"}catch(_e){return false}}
   function isTv(){try{var ua=s(g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_e){return false}}
   function obviousNonMedia(row){var u=s(row&&row.url);if(!u)return"missing_url";if(!/^https?:\/\//i.test(u))return"invalid_url";var lower=u.toLowerCase();if(/(?:youtube\.com|youtube-nocookie\.com)\/(?:embed|watch)(?:\/|\?|$)/i.test(lower))return"video_page_url";if(/\/embed(?:\/|\?|#|$)/i.test(lower))return"embed_page_url";if(/\.(?:html?|php)(?:[?#]|$)/i.test(lower))return"html_page_url";if(/^https?:\/\/[^/]+\/\/www\./i.test(u))return"malformed_nested_url";return""}
@@ -136,7 +137,7 @@ WRAPPER = r'''
   async function expectedSeconds(q){if(!c.durationIdentity||!q||!/^\d+$/.test(q.tmdbId||""))return null;var kind=(q.mediaType==="tv"||q.mediaType==="anime"||q.mediaType==="series")?"tv":"movie",url;if(kind==="tv"&&q.season>0&&q.episode>0)url="https://api.themoviedb.org/3/tv/"+encodeURIComponent(q.tmdbId)+"/season/"+q.season+"/episode/"+q.episode+"?api_key="+c.tmdbKey;else url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+c.tmdbKey;try{var r=await g.fetch(url,{headers:{Accept:"application/json"},signal:timeoutSignal(c.tmdbTimeoutMs)});if(!r||!r.ok)return null;var d=await r.json(),minutes=Number(d&&d.runtime||0);if(!minutes&&kind==="tv"&&Array.isArray(d&&d.episode_run_time)&&d.episode_run_time.length)minutes=Number(d.episode_run_time[0]||0);return minutes>=5?minutes*60:null}catch(_e){return null}}
   async function directPlayable(row,url){var r=await fetchText(url,row,true);if(r.state!=="ok")return r;if(/text\/html|application\/xhtml/i.test(r.contentType)||/^<!doctype html|^<html/i.test(r.text||""))return{state:"dead",reason:"html_payload"};return{state:"ok"}}
   async function remoteCheck(row,expected,tv){var kind=mediaKind(row),result;if(kind==="hls")result=await inspectHls(row,s(row.url));else if(kind==="direct")result=await directPlayable(row,s(row.url));else return{keep:true};if(result.state==="dead")return{keep:false,reason:result.reason||("http_"+result.status)};if(result.state==="unknown"){if(c.strictPlayback||tv)return{keep:false,reason:result.reason||"unverified_media"};return{keep:true}}if(kind==="hls"&&expected&&result.duration){var ratio=result.duration/expected;if(ratio<c.minDurationRatio||ratio>c.maxDurationRatio)return{keep:false,reason:"duration_identity_mismatch",ratio:ratio}}return{keep:true}}
-  function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioRuntimeCapabilitySafetyV4)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var q=requestInfo(arguments),tv=isTv(),nativeRuntime=nativeHost();var staticRows=x.list.filter(function(row){return staticSafety(row,q).keep});if(nativeRuntime)return rebuild(v,x,staticRows);var expected=await expectedSeconds(q),head=staticRows.slice(0,c.maxRows),tail=staticRows.slice(c.maxRows),checks=await Promise.all(head.map(function(row){return remoteCheck(row,expected,tv)})),kept=head.filter(function(_row,i){return checks[i]&&checks[i].keep}).concat(tail);return rebuild(v,x,kept)};wrap.__nuvioRuntimeCapabilitySafetyV4=true;o[k]=wrap;return true}
+  function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioRuntimeCapabilitySafetyV4)return false;var native=o[k];var wrap=async function(){var q=requestInfo(arguments),invoke=invocationArgs(arguments,q),v=await native.apply(this,invoke),x=slot(v);if(!x||!x.list.length)return v;var tv=isTv(),nativeRuntime=nativeHost();var staticRows=x.list.filter(function(row){return staticSafety(row,q).keep});if(nativeRuntime)return rebuild(v,x,staticRows);var expected=await expectedSeconds(q),head=staticRows.slice(0,c.maxRows),tail=staticRows.slice(c.maxRows),checks=await Promise.all(head.map(function(row){return remoteCheck(row,expected,tv)})),kept=head.filter(function(_row,i){return checks[i]&&checks[i].keep}).concat(tail);return rebuild(v,x,kept)};wrap.__nuvioRuntimeCapabilitySafetyV4=true;o[k]=wrap;return true}
   var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG);
 '''
@@ -145,18 +146,26 @@ WRAPPER = r'''
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
     provider_id = str(context.get("provider_id") or "").strip().casefold()
+    raw_options = options if isinstance(options, dict) else {}
+    aliases = raw_options.get("request_type_aliases") if isinstance(raw_options.get("request_type_aliases"), dict) else {}
     config = {
         "providerId": provider_id,
-        "timeoutMs": 6500,
-        "tmdbTimeoutMs": 4500,
-        "maxRows": 4,
-        "minDurationRatio": 0.55,
-        "maxDurationRatio": 1.8,
-        "durationIdentity": provider_id == "netmirror",
-        "strictPlayback": provider_id == "moviebox",
+        "capabilityStrategy": str(raw_options.get("capability_strategy") or "unknown"),
+        "requestTypeAliases": {
+            str(key).strip().casefold(): str(value).strip().casefold()
+            for key, value in aliases.items()
+            if str(key).strip() and str(value).strip()
+        },
+        "timeoutMs": int(raw_options.get("timeout_ms") or 6500),
+        "tmdbTimeoutMs": int(raw_options.get("tmdb_timeout_ms") or 4500),
+        "maxRows": int(raw_options.get("max_rows") or 4),
+        "minDurationRatio": float(raw_options.get("min_duration_ratio") or 0.55),
+        "maxDurationRatio": float(raw_options.get("max_duration_ratio") or 1.8),
+        "durationIdentity": bool(raw_options.get("duration_identity", True)),
+        "strictPlayback": bool(raw_options.get("strict_playback", False)),
         "collisionFixtures": _collision_policy(),
         "tmdbKey": "1865f43a0549ca50d341dd9ab8b29f49",
-        "implementationRevision": "field-safety-v5-native-identity-collisions-all-rows",
+        "implementationRevision": "field-safety-v6-core-repair-types",
     }
     payload = json.dumps(config, separators=(",", ":"), ensure_ascii=False)
     marker = "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:" + hashlib.sha256(payload.encode()).hexdigest()[:12]

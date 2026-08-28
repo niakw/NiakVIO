@@ -1,13 +1,17 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "skills": {
     "safe_structured_parse": {
       "id": "safe-structured-parse",
       "failureClass": "structured_parse_gap",
       "profile": "safe_structured_parse",
-      "autoApply": true,
+      "autoApply": false,
       "maturity": "candidate",
-      "capabilities": ["parser", "json", "javascript"],
+      "capabilities": [
+        "parser",
+        "json",
+        "javascript"
+      ],
       "actions": [
         "detect destructive generic backslash stripping around structured parsing",
         "remove the destructive transform rather than guessing an encoding",
@@ -19,7 +23,11 @@
         "sourcePatternRequired": true,
         "runtimeEvidenceRequiredForPromotion": true,
         "sharedClientCompatibilityRequired": true
-      }
+      },
+      "learningOnly": true,
+      "durableImplementationForbidden": true,
+      "repairType": "structured_parse"
     }
-  }
+  },
+  "role": "learning hypotheses only; durable repairs belong to Core global invariants or capability repair types"
 }

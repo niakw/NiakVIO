@@ -14,6 +14,7 @@ assert.equal(classifyFailure({ invoked: true, stages: { player: { attempted: tru
 assert.equal(classifyFailure({ invoked: true, stages: { media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [200] } } }), "media_validation_gap");
 assert.equal(classifyFailure({ invoked: true, playableStreams: 1, stages: { validation: { attempted: true, playable: true, playableCount: 1, statuses: [206] } } }), "healthy");
 assert.equal(classifyFailure({ contractDrift: true }), "runtime_contract_drift");
+assert.equal(classifyFailure({ audioTrackGap: true }), "audio_track_gap");
 
 const blockedEvidence = { invoked: true, stages: { player: { attempted: true, found: true }, media: { attempted: true, found: true }, validation: { attempted: true, playable: false, playableCount: 0, statuses: [403] } } };
 const plan = planRepair(blockedEvidence, { maxHypotheses: 3 });
@@ -129,6 +130,9 @@ assert.equal(playbackRun.status, 0, playbackRun.stderr);
 const playbackOutput = JSON.parse(playbackRun.stdout);
 const playbackPlan = playbackOutput.plans["published:stream-context"];
 assert.equal(playbackPlan.failureClass, "playback_context_gap");
+assert.equal(playbackPlan.repairScope, "capability");
+assert.equal(playbackPlan.repairType, "playback_context");
+assert.equal(playbackPlan.pipelineStage, "capability_global_invariants");
 assert.equal(playbackPlan.hypotheses[0].id, "preserve-playback-context");
 assert.ok(playbackPlan.allowedProfiles.includes("adaptive_runtime_recovery"));
 
@@ -185,10 +189,91 @@ assert.equal(terminalMediaRun.status, 0, terminalMediaRun.stderr);
 const terminalMediaOutput = JSON.parse(terminalMediaRun.stdout);
 const streamzoTerminalPlan = terminalMediaOutput.plans["published:streamzo-zero-return"];
 assert.equal(streamzoTerminalPlan.failureClass, "playback_context_gap");
+assert.equal(streamzoTerminalPlan.repairScope, "capability");
+assert.equal(streamzoTerminalPlan.repairType, "playback_context");
+assert.equal(streamzoTerminalPlan.capabilityStrategy, "mixed_embed_resolver");
+assert.equal(streamzoTerminalPlan.learningDisposition, "run_core_type_then_learn_adaptation_if_unresolved");
 assert.equal(streamzoTerminalPlan.hypotheses[0].id, "preserve-playback-context");
 assert.ok(streamzoTerminalPlan.allowedProfiles.includes("adaptive_runtime_recovery"));
 assert.equal(terminalMediaOutput.plans["published:provider-blocked"].failureClass, "transport_blocked");
 assert.equal(terminalMediaOutput.plans["published:provider-blocked"].hypotheses[0].id, "bootstrap-session");
+
+
+const identityPayload = {
+  mode: "quick",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [{
+    key: "published:any-provider",
+    candidate: { canonical_id: "any-provider", metadata: { supportedTypes: ["anime"] } },
+    result: {
+      status: "healthy",
+      evidence: { streams_playable: 1, identity_contradiction_count: 1 },
+      tests: [{ fixture: { category: "anime", mediaType: "anime" }, streams_playable: 1 }],
+    },
+    state: {},
+  }],
+};
+const identityRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(identityPayload), encoding: "utf8" });
+assert.equal(identityRun.status, 0, identityRun.stderr);
+const identityPlan = JSON.parse(identityRun.stdout).plans["published:any-provider"];
+assert.equal(identityPlan.failureClass, "identity_mismatch");
+assert.equal(identityPlan.repairScope, "global");
+assert.equal(identityPlan.repairType, "media_identity_guard");
+assert.deepEqual(identityPlan.allowedProfiles, []);
+
+const monotonicPayload = {
+  mode: "learning",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [{
+    key: "published:hindmovie-like",
+    candidate: { canonical_id: "hindmovie-like", metadata: { supportedTypes: ["movie", "tv", "anime"] } },
+    result: {
+      status: "no_streams",
+      evidence: { streams_returned: 0, streams_playable: 0 },
+      tests: [{
+        fixture: { category: "anime", mediaType: "anime" },
+        failure_class: "content_lookup_completed_no_streams",
+        stream_count: 0,
+        streams_playable: 0,
+        network_observations: [
+          { stage: "search", status: 200, infrastructure: false },
+          { stage: "content_lookup", status: 200, infrastructure: false },
+          { stage: "player", status: 200, infrastructure: false },
+        ],
+      }],
+    },
+    state: {},
+  }],
+};
+const monotonicRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(monotonicPayload), encoding: "utf8" });
+assert.equal(monotonicRun.status, 0, monotonicRun.stderr);
+const monotonicPlan = JSON.parse(monotonicRun.stdout).plans["published:hindmovie-like"];
+assert.equal(monotonicPlan.observedPipelineStage, "player");
+assert.equal(monotonicPlan.failureClass, "media_extraction_gap");
+assert.equal(monotonicPlan.repairType, "terminal_media_resolution");
+assert.notEqual(monotonicPlan.failureClass, "search_gap");
+assert.notEqual(monotonicPlan.failureClass, "player_gap");
+
+const unknownPayload = {
+  mode: "learning",
+  policy: dirtyPayload.policy,
+  learnedSkills: {},
+  items: [{
+    key: "published:new-pattern",
+    candidate: { canonical_id: "new-pattern", metadata: { supportedTypes: ["movie"] } },
+    result: { status: "runtime_error", evidence: { streams_returned: 0 }, tests: [{ failure_class: "novel_unknown_pattern" }] },
+    state: {},
+  }],
+};
+const unknownRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(unknownPayload), encoding: "utf8" });
+assert.equal(unknownRun.status, 0, unknownRun.stderr);
+const unknownPlan = JSON.parse(unknownRun.stdout).plans["published:new-pattern"];
+assert.equal(unknownPlan.repairScope, "learning");
+assert.equal(unknownPlan.repairType, "architecture_gap");
+assert.equal(unknownPlan.learningDisposition, "propose_new_or_evolved_core_type");
+assert.deepEqual(unknownPlan.allowedProfiles, []);
 
 // Deep repair children must inherit the original causal plan. Otherwise round 2
 // silently loses every allowed profile because PLANS is keyed by the parent.

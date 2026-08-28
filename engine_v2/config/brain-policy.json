@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 1,
-  "controlPlaneVersion": 3,
+  "schemaVersion": 2,
+  "controlPlaneVersion": 4,
   "identity": {
     "name": "NiakVIO Brain",
-    "role": "adaptive provider repair and learning orchestrator",
-    "principle": "learn aggressively, publish conservatively"
+    "role": "architecture learning and adaptive provider repair orchestrator",
+    "principle": "classify through Core first, learn only where the architecture has a gap"
   },
   "production": {
     "learningOnValidatedRepair": true,
@@ -14,7 +14,9 @@
     "maxGeneratedBytesPerProvider": 180000,
     "maxElapsedMsPerProvider": 45000,
     "coreMutationPolicy": "proposal_only",
-    "fallbackPolicy": "lkg_only_after_repair_budget"
+    "fallbackPolicy": "lkg_only_after_repair_budget",
+    "durableProviderSkillApplication": false,
+    "repairOwnership": "core_global_or_capability_type"
   },
   "skillMaturity": {
     "candidateSuccesses": 2,
@@ -34,7 +36,12 @@
     "maxRepeatedFailedProfile": 2,
     "memoryMaxEntries": 1000,
     "historicalBaselineId": "excel-provider-audit-5.20.63",
-    "consumeNativeClientFeedback": true
+    "consumeNativeClientFeedback": true,
+    "purpose": "discover new solutions, evolve existing Core repair types, or propose new repair types when evidence does not fit the current architecture",
+    "directSkillPublication": false,
+    "providerLocalMutation": "ephemeral_lab_proof_only",
+    "knownTypeUnresolvedAction": "adapt_or_evolve_type",
+    "unknownCaseAction": "propose_new_or_evolved_core_type"
   },
   "privacy": {
     "persistRawUrls": false,

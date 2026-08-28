@@ -57,17 +57,17 @@ def run_node(source: str, fetch_impl: str, expression: str, prelude: str = "") -
 
 streamzo = patched("streamzo")
 assert streamzo.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"' in streamzo
+assert '"implementationRevision":"field-safety-v6-core-repair-types"' in streamzo
 policy = module._collision_policy()
 assert policy["259544"]["expectedYear"] == 2025
 assert 1996 in policy["259544"]["ambiguousReleaseYears"]
 assert policy["760873"]["expectedYear"] == 2021
 
 # Any old published wrapper is replaced, never stacked.
-legacy = streamzo.replace('"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"', '"implementationRevision":"field-safety-v2"')
+legacy = streamzo.replace('"implementationRevision":"field-safety-v6-core-repair-types"', '"implementationRevision":"field-safety-v2"')
 upgraded = patched("streamzo", legacy)
 assert upgraded.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"' in upgraded
+assert '"implementationRevision":"field-safety-v6-core-repair-types"' in upgraded
 assert '"implementationRevision":"field-safety-v2"' not in upgraded
 assert patched("streamzo", upgraded) == upgraded
 
@@ -155,5 +155,52 @@ value = run_node(
     "global.__fetchCalls=0;global.navigator={userAgent:'web-like-test'};",
 )
 assert value["rows"] == 0 and value["calls"] >= 1, value
+
+
+# Media-type compatibility is a capability adapter: the upstream call may receive
+# tv while the Core keeps the original anime request as the identity contract.
+alias_source = r"""
+module.exports={getStreams:async function(id,type,season,episode){
+  global.__seenType=type;
+  return [{name:'Hell Mode S01E01',url:'https://media.example/hellmode.m3u8',type:'hls'}];
+}};
+"""
+alias_patched = module.apply(
+    alias_source,
+    options={"request_type_aliases": {"anime": "tv"}, "capability_strategy": "mixed_embed_resolver"},
+    context={"provider_id": "streamzo"},
+)
+value = run_node(
+    alias_patched,
+    "async function(){throw new Error('native path must not add remote media probes')}",
+    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:v.length,seenType:global.__seenType}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+)
+assert value == {"rows": 1, "seenType": "tv"}, value
+assert '"requestTypeAliases":{"anime":"tv"}' in alias_patched
+assert '"durationIdentity":true' in alias_patched
+
+
+# Duration identity is a global Core invariant, not a provider exception.
+# In a runtime where bounded media probing is allowed, an episodic request
+# expected around 24 minutes must reject a terminal HLS around 93 minutes.
+duration_fetch = r"""async function(url){
+  global.__fetchCalls++;
+  url=String(url);
+  if(url.includes('api.themoviedb.org')) {
+    return {ok:true,status:200,url,headers:{get:()=> 'application/json'},json:async()=>({runtime:24}),text:async()=>JSON.stringify({runtime:24})};
+  }
+  if(url.includes('master.m3u8')) {
+    return {ok:true,status:200,url,headers:{get:()=> 'application/vnd.apple.mpegurl'},text:async()=> '#EXTM3U\n#EXTINF:2790,\na.ts\n#EXTINF:2790,\nb.ts\n'};
+  }
+  return {ok:false,status:404,url,headers:{get:()=> 'text/plain'},text:async()=>''};
+}"""
+value = run_node(
+    module.apply(BASE, context={"provider_id": "generic-provider"}),
+    duration_fetch,
+    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.navigator={userAgent:'web-like-test'};",
+)
+assert value["rows"] == 0 and value["calls"] >= 2, value
 
 print("runtime capability media safety v4 tests passed")

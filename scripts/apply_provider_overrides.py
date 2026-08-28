@@ -934,6 +934,9 @@ def apply_overrides(
     specific = (config.get("provider_patches") or {}).get(provider_id, {})
     if not isinstance(specific, dict):
         raise ValueError(f"provider_patches.{provider_id} must be an object")
+    provider_capability = (config.get("provider_capabilities") or {}).get(provider_id, {})
+    if not isinstance(provider_capability, dict):
+        raise ValueError(f"provider_capabilities.{provider_id} must be an object")
 
     replacements = dict(config.get("domain_replacements") or {})
     replacements.update(specific.get("replacements") or {})
@@ -1015,6 +1018,12 @@ def apply_overrides(
     script_options = specific.get("patch_script_options") or {}
     if not isinstance(script_options, dict):
         raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
+    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING}
+    leaked_core_scripts = sorted(set(patch_scripts) & reserved_core_scripts)
+    if leaked_core_scripts:
+        raise ValueError(
+            f"provider_patches.{provider_id}.patch_scripts contains Core-global modules: " + ", ".join(leaked_core_scripts)
+        )
     for patch_script in patch_scripts if phase == "discovery" else []:
         per_script_options = script_options.get(patch_script)
         if per_script_options is None:
@@ -1135,14 +1144,26 @@ def apply_overrides(
                     "scope": "global_media_enrichment",
                 })
 
-        # Runtime media safety is a Core-wide responsibility. Apply the dedicated
-        # current implementation after provider/catalogue/media recovery and before
-        # the final HLS/audio ordering hook. Provider-specific legacy entries may
-        # still invoke the same module earlier; its stable marker makes that harmless,
-        # while the public HLS adapter below repositions the single wrapper around
-        # the final recovered rows.
+        # Runtime media safety is a Core-wide responsibility. Apply it exactly once
+        # to every provider. Provider differences are declarative capabilities, not
+        # durable per-provider copies of the Core implementation.
+        safety_policy = config.get("runtime_capability_media_safety") or {}
+        if not isinstance(safety_policy, dict):
+            raise ValueError("runtime_capability_media_safety must be an object")
+        safety_options = dict(safety_policy.get("options") or {})
+        safety_options["capability_strategy"] = str(provider_capability.get("strategy") or specific.get("capability") or "unknown")
+        request_type_aliases = provider_capability.get("request_type_aliases") or {}
+        if not isinstance(request_type_aliases, dict):
+            raise ValueError(f"provider_capabilities.{provider_id}.request_type_aliases must be an object")
+        safety_options["request_type_aliases"] = {
+            str(key).strip().casefold(): str(value).strip().casefold()
+            for key, value in request_type_aliases.items()
+            if str(key).strip() and str(value).strip()
+        }
+        if "strict_playback_validation" in provider_capability:
+            safety_options["strict_playback"] = bool(provider_capability.get("strict_playback_validation"))
         before = text
-        text = _apply_patch_script(text, provider_id, GLOBAL_RUNTIME_MEDIA_SAFETY, {}, None)
+        text = _apply_patch_script(text, provider_id, GLOBAL_RUNTIME_MEDIA_SAFETY, safety_options, None)
         if text != before:
             applied.append({
                 "type": "patch_script",

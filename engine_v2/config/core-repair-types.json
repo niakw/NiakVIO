@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 2,
+  "principle": "NiakVIO validates the source, recognizes the provider and its capability, applies global invariants, applies the capability engine, applies capability-global invariants, then publishes. Learning exists only to evolve this architecture when a case is not covered.",
+  "pipeline": [
+    {
+      "stage": "source_validation",
+      "role": "accept only validated NiakVIO source/provenance"
+    },
+    {
+      "stage": "provider_recognition",
+      "role": "identify provider contract and capability strategy"
+    },
+    {
+      "stage": "global_invariants",
+      "role": "apply provider-independent correctness and safety rules"
+    },
+    {
+      "stage": "capability_adapter",
+      "role": "adapt invocation semantics such as anime-to-tv without changing requested identity"
+    },
+    {
+      "stage": "capability_engine",
+      "role": "apply resolver logic for iframe, HTML, API, direct-media or equivalent strategy"
+    },
+    {
+      "stage": "capability_global_invariants",
+      "role": "apply reusable fixes shared by every provider of that strategy"
+    },
+    {
+      "stage": "public_bundle",
+      "role": "emit only output that passed the previous stages"
+    }
+  ],
+  "evidencePolicy": {
+    "monotonic": true,
+    "rule": "A proven later stage can never be diagnosed as an earlier missing stage. If a player was observed, repair search/player discovery is forbidden; diagnosis must continue at terminal media, playback context, reader, identity, audio, duration or later evidence.",
+    "unknownAfterKnownStage": "learning_must_evolve_current_or_later_core_stage"
+  },
+  "learning": {
+    "role": "discover_new_solution_or_evolve_existing_core_type",
+    "skillRole": "hypothesis_and_evidence_only",
+    "directDurablePatchFromSkillForbidden": true,
+    "providerLocalMutation": "lab_only_proof",
+    "knownTypeFailure": "run_existing_core_type_then_learn_adaptation_if_still_unresolved",
+    "unknownFailure": "classify_architecture_gap_then_propose_new_or_evolved_core_type",
+    "publicationAllowed": false
+  },
+  "policy": {
+    "workSpecificDurableFixesForbidden": true,
+    "globalInvariantProviderPatchForbidden": true,
+    "capabilityRepairAppliesByStrategy": true,
+    "brainSkillRole": "classification_hypothesis_and_lab_exploration_only",
+    "coreMutationPolicy": "proposal_only"
+  },
+  "failureClasses": {
+    "identity_mismatch": {
+      "scope": "global",
+      "repairType": "media_identity_guard",
+      "engine": "runtime_capability_media_safety",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "short_media": {
+      "scope": "global",
+      "repairType": "media_identity_guard",
+      "engine": "runtime_capability_media_safety",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "playback_duration_unknown": {
+      "scope": "global",
+      "repairType": "media_identity_validation",
+      "engine": "native_reader_and_health_validation",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "media_validation_gap": {
+      "scope": "global",
+      "repairType": "terminal_media_validation",
+      "engine": "runtime_capability_media_safety",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "playback_parser": {
+      "scope": "global",
+      "repairType": "terminal_media_validation",
+      "engine": "runtime_capability_media_safety",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "playback_decoder": {
+      "scope": "global",
+      "repairType": "playback_media_integrity",
+      "engine": "native_reader_validation",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "audio_track_gap": {
+      "scope": "global",
+      "repairType": "audio_track_integrity",
+      "engine": "hls_master_audio_preserver",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "runtime_contract_drift": {
+      "scope": "global",
+      "repairType": "runtime_contract_guard",
+      "engine": "native_client_contract",
+      "pipelineStage": "global_invariants",
+      "profiles": []
+    },
+    "not_invoked": {
+      "scope": "capability",
+      "repairType": "media_type_adapter",
+      "engine": "provider_capability_adapter",
+      "pipelineStage": "capability_adapter",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "dns_unreachable": {
+      "scope": "capability",
+      "repairType": "origin_resolution",
+      "engine": "provider_hub_and_domain_resolution",
+      "pipelineStage": "provider_recognition",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "transport_blocked": {
+      "scope": "capability",
+      "repairType": "session_transport",
+      "engine": "provider_transport_context",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "search_gap": {
+      "scope": "capability",
+      "repairType": "catalogue_search_resolution",
+      "engine": "catalogue_resolution_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "detail_gap": {
+      "scope": "capability",
+      "repairType": "catalogue_detail_resolution",
+      "engine": "catalogue_resolution_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "episode_gap": {
+      "scope": "capability",
+      "repairType": "episode_resolution",
+      "engine": "catalogue_resolution_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "player_gap": {
+      "scope": "capability",
+      "repairType": "player_page_resolution",
+      "engine": "media_enrichment_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "media_extraction_gap": {
+      "scope": "capability",
+      "repairType": "terminal_media_resolution",
+      "engine": "media_enrichment_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_context_gap": {
+      "scope": "capability",
+      "repairType": "playback_context",
+      "engine": "playback_integrity_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_http_access": {
+      "scope": "capability",
+      "repairType": "playback_context",
+      "engine": "playback_integrity_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_http_gone": {
+      "scope": "capability",
+      "repairType": "terminal_media_refresh",
+      "engine": "media_enrichment_policy",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_rate_limited": {
+      "scope": "capability",
+      "repairType": "session_transport",
+      "engine": "provider_transport_context",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_http_upstream": {
+      "scope": "capability",
+      "repairType": "terminal_media_rerank",
+      "engine": "media_enrichment_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_timeout": {
+      "scope": "capability",
+      "repairType": "playback_context",
+      "engine": "playback_integrity_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_dns": {
+      "scope": "capability",
+      "repairType": "terminal_media_refresh",
+      "engine": "media_enrichment_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_tls": {
+      "scope": "capability",
+      "repairType": "playback_context",
+      "engine": "playback_integrity_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_io": {
+      "scope": "capability",
+      "repairType": "playback_context",
+      "engine": "playback_integrity_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "playback_live_window": {
+      "scope": "capability",
+      "repairType": "terminal_media_refresh",
+      "engine": "media_enrichment_policy",
+      "pipelineStage": "capability_global_invariants",
+      "profiles": [
+        "adaptive_runtime_recovery"
+      ]
+    },
+    "structured_parse_gap": {
+      "scope": "capability",
+      "repairType": "structured_parse",
+      "engine": "structured_parser",
+      "pipelineStage": "capability_engine",
+      "profiles": [
+        "safe_structured_parse"
+      ]
+    },
+    "unknown_failure": {
+      "scope": "learning",
+      "repairType": "architecture_gap",
+      "engine": "brain_learning_lab",
+      "pipelineStage": "learning",
+      "profiles": []
+    },
+    "healthy": {
+      "scope": "none",
+      "repairType": "none",
+      "engine": "none",
+      "pipelineStage": "public_bundle",
+      "profiles": []
+    }
+  },
+  "capabilityStrategies": {
+    "iframe_player": [
+      "player_page_resolution",
+      "terminal_media_resolution",
+      "playback_context"
+    ],
+    "mixed_embed_resolver": [
+      "catalogue_search_resolution",
+      "player_page_resolution",
+      "terminal_media_resolution",
+      "playback_context"
+    ],
+    "api_stream_resolver": [
+      "catalogue_search_resolution",
+      "terminal_media_resolution",
+      "playback_context"
+    ],
+    "html_scraper": [
+      "catalogue_search_resolution",
+      "catalogue_detail_resolution",
+      "episode_resolution",
+      "player_page_resolution",
+      "terminal_media_resolution"
+    ],
+    "direct_media": [
+      "terminal_media_validation",
+      "playback_context"
+    ],
+    "official_domain_hub": [
+      "origin_resolution",
+      "catalogue_search_resolution"
+    ],
+    "quarantined": []
+  }
+}
