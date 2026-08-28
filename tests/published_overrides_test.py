@@ -19,7 +19,9 @@ reapply = (ROOT / 'scripts/reapply_published_overrides.py').read_text(encoding='
 assert 'parser.add_argument(\n        "--primary",' in reapply
 assert 'parser.add_argument(\n        "--skip-secondary",' in reapply
 assert 'primary_path = (ROOT / primary_arg).resolve()' in reapply
-assert 'secondary_paths = () if args.skip_secondary else SECONDARY' in reapply
+assert 'Path("manifest.next.json" if (ROOT / "manifest.next.json").is_file() else "manifest.json")' in reapply
+assert 'pending_transaction = primary_arg.as_posix() == "manifest.next.json"' in reapply
+assert 'secondary_paths = () if args.skip_secondary or pending_transaction else SECONDARY' in reapply
 assert 'python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary' in workflow
 post_promotion = workflow.index('Reapply durable overrides after candidate promotion')
 pending_reapply = workflow.index('python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary', post_promotion)
