@@ -9,6 +9,7 @@ tv_suite = (ROOT / "scripts/run_native_corpus_tv_suite.sh").read_text(encoding="
 mobile_suite = (ROOT / "scripts/run_native_corpus_mobile_suite.sh").read_text(encoding="utf-8")
 corpus_generator = (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 corpus_client = (ROOT / "scripts/prepare_native_corpus_client.py").read_text(encoding="utf-8")
+request_contract = (ROOT / "scripts/augment_native_corpus_request_contract.py").read_text(encoding="utf-8")
 
 # The emulator image/snapshot is a Lab infrastructure artifact. It must not be
 # invalidated whenever an official Nuvio app commit advances; the guest userdata
@@ -91,11 +92,11 @@ assert "runtime_mutation=false" in prime
 # probe image loadability from the actual device without leaking the full URL.
 assert '"logo": str(row.get("logo") or "").strip()' in corpus_client
 assert '"logo": str(row.get("logo") or "").strip()' in corpus_generator
-assert "FIELD_NATIVE_ADDON_LOGO" in corpus_generator
+assert "FIELD_NATIVE_ADDON_LOGO" in request_contract
 assert corpus_generator.count("val logo: String") >= 2
-assert "providers.size == 1" in corpus_generator
+assert "providers.size == 1" in request_contract
 assert "configured_not_probed" in corpus_generator
-assert "raw.githubusercontent.com" not in corpus_generator
+assert "raw.githubusercontent.com" not in request_contract
 
 # Dependency downloads happen before QEMU. Hosted runner/CDN bursts such as the
 # Maven Central 403 observed in run 32644909456 are infrastructure transients.
