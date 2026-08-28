@@ -123,6 +123,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/provider_base_store.py validate
           python scripts/normalize_core_media_policy.py --apply
           python scripts/apply_runtime_capability_upgrade_v4.py
           python scripts/build_provider_runtime_profiles.py
@@ -165,6 +166,7 @@ jobs:
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_provider_branding_pipeline.py --check
           python scripts/normalize_core_media_policy.py --check
+          python scripts/provider_base_store.py validate
           python scripts/enforce_main_only_repository_policy.py --check
           python tests/core_terminal_export_floor_test.py
           python tests/core_media_policy_test.py
