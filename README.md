@@ -183,6 +183,7 @@ Inconsistent generations must not silently replace a previously healthy publishe
 | `native-desktop-reader-acceptance.yml` | official macOS/Windows Desktop evidence |
 | `core-media-finalize-main.yml` | Core fixed point and publication integrity |
 | `brain-learning-lab.yml` | sandbox Repair Brain learning |
+| `brain-branch-maintenance.yml` | keep sanitized Brain memory rebased on `main` and remove closed proposal branches |
 | `github-actions-gate.yml` | workflow/dependency security invariants |
 | `codeql.yml` | CodeQL analysis |
 | `provider-results-readme-sync.yml` | positive native-evidence README synchronization |
@@ -196,7 +197,8 @@ Inconsistent generations must not silently replace a previously healthy publishe
 
 - `main` is the only production code branch;
 - Labs use exact `main` SHAs;
-- `brain-learning/proposals` stores sanitized learning memory only;
+- `brain-learning/proposals` stores sanitized learning memory only and is automatically rebased onto the current `main`;
+- `brain-repair/proposal` is ephemeral and is removed when no Brain PR is open;
 - automated Brain repair proposals require human review/merge;
 - official Nuvio repositories are consumed read-only.
 
