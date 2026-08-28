@@ -106,18 +106,18 @@ with tempfile.TemporaryDirectory() as tmp:
         if row["provider"].casefold() == "streamzo" and row["targetClient"] == "tv"
     )
     assert streamzo_gap["occurrences"] == 2, streamzo_gap
-    assert streamzo_gap["capability"] == "html_scraper", streamzo_gap
+    assert streamzo_gap["capability"] == "mixed_embed_resolver", streamzo_gap
 
     capability_gap = next(
         row for row in data["capabilitySignals"]["platformGaps"]
-        if row["capability"] == "html_scraper"
+        if row["capability"] == "mixed_embed_resolver"
     )
     assert capability_gap["occurrences"] >= 2, capability_gap
     assert "streamzo" in [p.casefold() for p in capability_gap["providers"]], capability_gap
 
     inventory = {row["capability"]: row for row in data["capabilityInventory"]}
-    assert "html_scraper" in inventory, inventory
-    assert "streamzo" in [p.casefold() for p in inventory["html_scraper"]["providers"]], inventory
+    assert "mixed_embed_resolver" in inventory, inventory
+    assert "streamzo" in [p.casefold() for p in inventory["mixed_embed_resolver"]["providers"]], inventory
 
     topcartoons = next(
         row for row in signals["repeatedContradictions"]
