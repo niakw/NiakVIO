@@ -1089,6 +1089,11 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--mode", choices=("quick", "deep"), default="quick")
     parser.add_argument("--include-disabled", action="store_true")
+    parser.add_argument(
+        "--search-disabled",
+        action="store_true",
+        help="Allow deep search-engine fallback for disabled providers without re-enabling them.",
+    )
     parser.add_argument("--provider", action="append", default=[])
     args = parser.parse_args()
 
@@ -1103,9 +1108,13 @@ def main() -> int:
     for provider_id, cfg in sorted(hubs.items()):
         if selected_ids and provider_id not in selected_ids:
             continue
-        if not args.include_disabled and str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled"}:
+        disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled"}
+        if not args.include_disabled and disabled:
             continue
-        work.append((provider_id, cfg, history_providers.setdefault(provider_id, {})))
+        effective_cfg = dict(cfg)
+        if args.search_disabled and disabled:
+            effective_cfg["search_when_disabled"] = True
+        work.append((provider_id, effective_cfg, history_providers.setdefault(provider_id, {})))
 
     report: dict[str, Any] = {
         "schema_version": 3,
