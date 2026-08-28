@@ -2,10 +2,12 @@
 
 ## Utilisateurs Nuvio
 
-Choisissez l'un des deux manifests stables :
+Choisissez le manifest adapté :
 
-- général — VF, VOSTFR, VO et autres langues : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/manifest.json` ;
-- francophone — VF/VOSTFR : `https://raw.githubusercontent.com/niakw/Niakvio/refs/heads/main/vf/manifest.json`.
+- général — VF, VOSTFR, VO et autres langues : `https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json` ;
+- francophone — VF/VOSTFR : `https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json` ;
+- général sans providers orientés anime : `https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json` ;
+- francophone sans providers orientés anime : `https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json`.
 
 Dans un client Nuvio compatible :
 
@@ -60,6 +62,12 @@ Une modification du chemin de playback partagé doit être suivie des preuves na
 - corpus natif ciblé : `.github/workflows/native-corpus-device-targeted.yml`.
 
 Le corpus de référence est versionné dans `.github/triggers/nuvio-client-lab.json` et couvre films, séries, anime ainsi que les régressions prioritaires d'identité média. Les Labs utilisent les dépôts clients Nuvio officiels uniquement comme baselines de lecture : NiakVIO ne modifie pas ces dépôts.
+
+## Maintenance GitHub Actions
+
+`.github/workflows/purge-actions-history.yml` effectue chaque semaine une maintenance automatique : les runs terminés de plus de **7 jours** sont supprimés avec leurs artifacts. Le workflow conserve aussi un mode manuel pour une purge ponctuelle des logs seuls ou des runs complets.
+
+Les artifacts temporaires des Labs natifs sont conservés **1 jour**. Le cache Gradle est désactivé sur les Labs natifs afin de préserver le quota de cache GitHub Actions ; les snapshots AVD TV/Mobile restent conservés lorsqu'ils apportent un gain de démarrage significatif.
 
 ## Règle de maintenance
 
