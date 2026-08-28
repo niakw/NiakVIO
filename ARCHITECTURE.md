@@ -494,6 +494,17 @@ bug réel
 
 `brain-learning/proposals` reste uniquement une mémoire sanitizée du Brain. Elle ne constitue ni un Lab de code ni une voie de publication, et les dépôts Nuvio officiels ne sont jamais modifiés par NiakVIO.
 
+### Logos providers et capacités clients
+
+Le catalogue publie une URL `scraper.logo` stable pour chaque provider à partir de `assets/providers/`. Les assets actuels sont des wordmarks WebP `72x32` et `96x40` ; ils sont valides comme images distantes mais les cartes Nuvio réservent un emplacement **carré** (TV : 32 dp, Mobile/Desktop : 28 dp) avec `ContentScale.Fit`. Une variante carrée serait donc une optimisation visuelle, pas une condition de fonctionnement.
+
+La disponibilité du champ dans le manifest ne garantit pas son rendu. Aux références clients auditées en août 2026 :
+- **NuvioTV** possède bien le rendu `AsyncImage(stream.addonLogo)`, mais son chemin plugin courant construit les streams avec `addonLogo = null` ;
+- **NuvioMobile** et **NuvioDesktop** possèdent aussi le rendu de carte, mais leur conversion `PluginRuntimeResult -> StreamItem` ne propage pas actuellement `scraper.logo` ;
+- les filtres/tabs providers des trois clients ne consomment que le nom texte du provider et n'acceptent pas de logo.
+
+NiakVIO conserve donc les logos correctement dans ses manifests et ses fixtures, sans modifier les dépôts Nuvio. Les Labs peuvent signaler séparément si le logo est configuré et, en ciblage mono-provider, si l'asset distant est chargeable ; le rendu final reste une capacité du client.
+
 ## 23. Structure logique
 
 ```text
