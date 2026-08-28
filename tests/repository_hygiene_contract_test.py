@@ -185,6 +185,10 @@ for maintenance_workflow in (
     assert maintenance_workflow in readme_fr, f"README.fr.md missing maintenance workflow: {maintenance_workflow}"
 assert "cache Gradle est désactivé" in readme_fr
 assert "caches Gradle sont conservés" not in readme_fr
+assert "rejoue Sinners sur NuvioTV avec tous les providers" not in readme_fr
+assert "premier type déclaré" in readme_fr
+desktop_runtime_doc = (ROOT / "docs/desktop/README.md").read_text(encoding="utf-8")
+assert "157336-unr8i" not in desktop_runtime_doc
 for manifest_path in (
     "manifest.json",
     "vf/manifest.json",
