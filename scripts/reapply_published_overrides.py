@@ -34,6 +34,7 @@ from provider_engine_normalizer import (
     sanitize_provider_hooks,
     strip_foreign_provider_wrappers,
 )
+from provider_base_store import resolve_base
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIMARY = ROOT / "manifest.json"
@@ -377,8 +378,19 @@ def main() -> int:
         if manifest_overrides:
             entry.update(manifest_overrides)
 
+        # The published bundle is only a derived artifact. Provider logic always
+        # starts from the durable ProviderBase captured by the provider pipeline.
         original = path.read_bytes()
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
+        if not isinstance(provider_provenance, dict):
+            raise ValueError(f"{provider_id}: missing provenance required for durable ProviderBase")
+        provider_base_path, provider_base_sha = resolve_base(
+            provider_id,
+            provider_provenance,
+            require=True,
+        )
+        assert provider_base_path is not None and provider_base_sha is not None
+        provider_base = provider_base_path.read_bytes()
         terminal_quarantine = (
             AUDIT_QUARANTINE_MARKER.encode("utf-8") in original
         )
@@ -391,7 +403,7 @@ def main() -> int:
             records = []
         else:
             isolated_text, removed_wrappers = strip_foreign_provider_wrappers(
-                original.decode("utf-8", errors="strict"), provider_id, override_config
+                provider_base.decode("utf-8", errors="strict"), provider_id, override_config
             )
             removed_wrappers_total += len(removed_wrappers)
             isolated = isolated_text.encode("utf-8")
@@ -487,6 +499,7 @@ def main() -> int:
             "old": relative,
             "new": new_relative,
             "sha256": digest,
+            "base_sha256": provider_base_sha,
             "records": records,
             "terminal_quarantine": terminal_quarantine,
             "audit_terminal_quarantine": audit_terminal_quarantine,
@@ -521,6 +534,8 @@ def main() -> int:
                 continue
             row["published_filename"] = update["new"]
             row["sha256"] = update["sha256"]
+            if str(row.get("base_sha256") or "").casefold() != str(update["base_sha256"]).casefold():
+                raise ValueError(f"{provider_id}: ProviderBase changed outside provider pipeline")
             if update.get("terminal_quarantine") or "patched_sha256" in row or update["records"]:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
