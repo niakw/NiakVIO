@@ -67,7 +67,7 @@ jobs:
 
   dispatch-quick:
     name: Dispatch standard Quick pipeline after merge
-    if: github.event_name == 'push' && github.event.head_commit != null && contains(toJson(github.event.commits), 'provider-overrides.json')
+    if: github.event_name == 'push' && github.event.head_commit != null
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -75,7 +75,33 @@ jobs:
       contents: read
       actions: write
     steps:
+      - name: Checkout repository history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Detect provider override change
+        id: override-change
+        shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          changed=false
+          if [ -n "${BEFORE_SHA:-}" ] && git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null; then
+            if git diff --name-only "$BEFORE_SHA" "$AFTER_SHA" -- provider-overrides.json | grep -qx 'provider-overrides.json'; then
+              changed=true
+            fi
+          elif git diff-tree --no-commit-id --name-only -r "$AFTER_SHA" -- provider-overrides.json | grep -qx 'provider-overrides.json'; then
+            changed=true
+          fi
+          echo "changed=$changed" >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_OVERRIDE_CHANGED changed=$changed before=$BEFORE_SHA after=$AFTER_SHA"
+
       - name: Dispatch canonical provider pipeline
+        if: steps.override-change.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh workflow run sync.yml --repo "${{ github.repository }}" --ref main -f mode=quick
