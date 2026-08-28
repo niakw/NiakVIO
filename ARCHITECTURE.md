@@ -470,6 +470,8 @@ Les Labs natifs conservent les snapshots AVD lorsque cela évite une reconstruct
 
 Les branches Brain ne sont pas des branches de code alternatives : `brain-learning/proposals` est automatiquement reconstruite sur le dernier `main` en ne conservant que la mémoire sanitizée (`engine_v2/learning/latest.json` et `.md`). `brain-repair/proposal` n'existe que pendant une PR Brain ouverte ; après merge/fermeture elle est supprimée et le prochain proposal repart du `main` courant.
 
+Le Learning Lab exécute une résolution **deep** des hubs/domaines sur le catalogue complet, providers désactivés inclus. Le fallback public est borné à **Yandex puis DuckDuckGo** ; un domaine découvert uniquement par moteur de recherche doit être confirmé sur deux runs consécutifs avant de remplacer un last-known-good. Cette découverte n'active jamais automatiquement un provider désactivé.
+
 Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent disparaître après leur absorption dans les workflows durables.
 
 ## 22. Labs natifs sur `main`
