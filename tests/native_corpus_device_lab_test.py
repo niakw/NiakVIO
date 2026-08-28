@@ -62,11 +62,12 @@ legacy_slugs = {
     "jujutsu-kaisen-s01e01",
     "mushoku-tensei-s01e01",
 }
-tv_wrong_media_regressions = {
+desktop_wrong_media_witnesses = {
     "colony-2021",
     "failure-frame-s01e01",
     "hell-teacher-nube-2025-s01e01",
 }
+tv_wrong_media_regressions = desktop_wrong_media_witnesses | {"hell-mode-s01e01"}
 expected_slugs = legacy_slugs | {"sinners-2025"} | tv_wrong_media_regressions
 actual_slugs = {
     str(row.get("slug") or "")
@@ -152,8 +153,9 @@ for workflow in (android_reader, targeted_runtime):
     assert "force-avd-creation: false" in workflow
     assert "-no-snapshot-save" in workflow
 
-# Desktop proof remains real macOS/Windows native player evidence. macOS also acts
-# as the witness for the three TV wrong-media cases while Windows stays bounded.
+# Desktop proof remains real macOS/Windows native player evidence. macOS keeps
+# witnessing the established three wrong-media cases while Hell Mode is carried
+# by the TV priority regression corpus.
 for required in (
     "macos-15",
     "windows-2022",
@@ -350,7 +352,7 @@ assert len(stageable) >= 80, len(stageable)
 print(
     "native device lab contract passed: "
     f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true "
-    "desktop_native=true tv_wrong_media_regressions=3 macos_witness=true "
+    "desktop_native=true tv_wrong_media_regressions=4 macos_witness=true "
     "brain_retest=movie-tv-anime cached_profiles=v5-emulator-signing targeted_manual=true "
     "reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true "
     "pr_bounded=true production_player_only=true https_repository_acceptance=true repair_materialization_explicit=true"
