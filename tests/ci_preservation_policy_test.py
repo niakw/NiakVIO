@@ -38,7 +38,9 @@ assert 'restored_from_activation_lkg' in promoter
 assert 'gates.get("01_policy_safe_no_p2p", {}).get("passed", False)' in promoter
 assert 'selected_is_published_baseline' not in promoter
 assert 'entries[cid] = retained' in promoter
-assert 'continue\n\n            try:\n                destination, digest = copy_candidate(selected)' in promoter
+assert 'continue\n\n            try:\n                destination, digest, base_filename, base_sha256 = copy_candidate(selected)' in promoter
+assert '"base_filename": base_filename' in promoter
+assert '"base_sha256": base_sha256' in promoter
 assert 'previous_state_is_safety_quarantine' in promoter
 assert 'ci_result_is_inconclusive' in promoter
 assert 'preserved-conclusive-safety-quarantine-ci-uncertain' in promoter
