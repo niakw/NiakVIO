@@ -42,6 +42,14 @@ for path in sorted([*WORKFLOWS.glob('*.yml'), *WORKFLOWS.glob('*.yaml')]):
         if not SHA.fullmatch(ref):
             errors.append(f'{rel}: external action must use full commit SHA: {value}')
 
+security_gate = (WORKFLOWS / 'security-final-gate.yml').read_text(encoding='utf-8')
+if 'exact 92-provider scan' in security_gate or 'expected=92' in security_gate or 'len(rows) != 92' in security_gate:
+    errors.append('security-final-gate.yml: published provider count must be derived from manifest.json, never hard-coded')
+if 'expected=len(rows)' not in security_gate:
+    errors.append('security-final-gate.yml: exhaustive scan must derive expected count from published rows')
+if "if checked != expected:" not in security_gate:
+    errors.append('security-final-gate.yml: exhaustive scan completion check is required')
+
 if errors:
     raise SystemExit('workflow security policy failed:\n- ' + '\n- '.join(errors))
 print('workflow security policy tests passed')
