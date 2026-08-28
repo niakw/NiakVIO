@@ -166,6 +166,37 @@ assert "## 22. Labs natifs sur `main`" in architecture
 assert "brain-learning/proposals" in readme
 assert "brain-learning/proposals" in architecture
 
+# Living documentation must track the current workflow/storage architecture.
+validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
+assert "provider-engine-v2.yml" not in architecture
+assert "nuvio-client-lab.yml" not in validation
+for current_workflow in (
+    "native-android-route-reader.yml",
+    "native-desktop-reader-acceptance.yml",
+    "native-corpus-device-targeted.yml",
+):
+    assert current_workflow in validation, f"VALIDATION.md missing current native workflow: {current_workflow}"
+for maintenance_workflow in (
+    "weekly-upstream-provider-discovery.yml",
+    "purge-actions-history.yml",
+):
+    assert maintenance_workflow in architecture, f"ARCHITECTURE.md missing durable workflow: {maintenance_workflow}"
+    assert maintenance_workflow in readme, f"README.md missing maintenance workflow: {maintenance_workflow}"
+    assert maintenance_workflow in readme_fr, f"README.fr.md missing maintenance workflow: {maintenance_workflow}"
+assert "cache Gradle est désactivé" in readme_fr
+assert "caches Gradle sont conservés" not in readme_fr
+for manifest_path in (
+    "manifest.json",
+    "vf/manifest.json",
+    "no-anime/manifest.json",
+    "vf-no-anime/manifest.json",
+):
+    assert f"NiakVIO/refs/heads/main/{manifest_path}" in install, f"INSTALL.md missing manifest: {manifest_path}"
+
+purge_workflow = (ROOT / ".github/workflows/purge-actions-history.yml").read_text(encoding="utf-8")
+assert 'cron: "23 3 * * 0"' in purge_workflow
+assert 'AUTO_RETENTION_DAYS: "7"' in purge_workflow
+
 codeql = (ROOT / ".github/workflows/codeql.yml").read_text(encoding="utf-8")
 assert "javascript-typescript" in codeql
 assert "python" in codeql
