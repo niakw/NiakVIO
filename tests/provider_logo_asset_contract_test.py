@@ -42,7 +42,8 @@ assert emojis.get("generationMode") == "one-shot-preserve-semantic-else-initial"
 branding_patch = BRANDING_PATCH.read_text(encoding="utf-8")
 assert "_initial_emoji" not in branding_patch
 assert "_fallback_name" not in branding_patch
-assert "provider emoji map is missing committed row" in branding_patch
+assert "if row is None:" in branding_patch
+assert "return text" in branding_patch
 
 for provider_id, row in providers.items():
     assets = row.get("assets") or {}
