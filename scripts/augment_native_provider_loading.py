@@ -359,9 +359,12 @@ def augment(
     # The request-contract owns requestRoutes/requestMediaType/routeMode. Insert
     # official loading checks before route construction, then leave both declared
     # and capability_probe routes intact.
-    loop_anchor = "        for (provider in providers) {\n            val requestRoutes = requestRoutesFor(provider.id, mediaType)"
-    loop_replacement = f'''        for (provider in providers) {{
-            val providerKey = provider.id.lowercase()
+    # Anchor on route construction rather than the loop opener so other
+    # evidence layers (for example sanitized addon-logo diagnostics) may be
+    # inserted between the provider loop and request routing without breaking
+    # the official Nuvio loading transform.
+    loop_anchor = "            val requestRoutes = requestRoutesFor(provider.id, mediaType)"
+    loop_replacement = f'''            val providerKey = provider.id.lowercase()
             if (providerKey in platformExcludedProviders) {{
                 emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[providerKey].orEmpty().sorted().joinToString(\",\"))}} reason=disabled_platform")
                 continue
