@@ -201,7 +201,7 @@ Le contrat logique ARCHI 2 est commun, mais **une preuve Desktop ne vaut jamais 
 
 Les labs natifs parcourent les lignes du manifest compatibles avec la plateforme, **y compris les providers `enabled:false`**, et lisent **chaque stream retourné** sur des routes représentatives film, série et anime. Les routes incompatibles sont comptabilisées comme skips explicites ; les probes `tv/anime` non déclarés restent des preuves de capacité et ne déclenchent pas de réparation provider sur un simple échec.
 
-Les profils Nuvio, snapshots AVD, caches providers et caches Gradle sont conservés lorsque c'est sûr afin d'éviter de reconstruire inutilement l'environnement. Les retests ciblés par device restent disponibles manuellement.
+Les snapshots AVD TV/Mobile restent réutilisables lorsqu'ils évitent une reconstruction coûteuse. Le **cache Gradle est désactivé sur les Labs natifs** pour préserver le quota de cache GitHub Actions, et leurs artifacts temporaires sont conservés **1 jour**. Les retests ciblés par device restent disponibles manuellement.
 
 ---
 
@@ -527,6 +527,9 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `core-media-finalize-main.yml` | fixed-point Core, non-régressions Engine v2 et intégrité de publication |
 | `provider-catalogue-breadth-lab.yml` | largeur de catalogue |
 | `provider-status-export.yml` | snapshot diagnostic |
+| `external-code-audit.yml` | rafraîchissement des preuves SonarQube Cloud / DeepSource / CodeScene |
+| `weekly-upstream-provider-discovery.yml` | découverte hebdomadaire en lecture seule des nouveaux providers upstream |
+| `purge-actions-history.yml` | suppression hebdomadaire des runs Actions terminés de plus de 7 jours |
 
 Les anciens labs à refs clientes mutables, les preuves Desktop Linux, les workflows provider-spécifiques et les orchestrateurs superseded ne font pas partie de l'architecture cible.
 
