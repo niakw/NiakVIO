@@ -67,13 +67,13 @@ assert.doesNotThrow(
 const logoIndex = JSON.parse(fs.readFileSync("assets/providers/index.json", "utf8"));
 const logoCatalog = applyCommittedProviderLogos(structuredClone(catalog), logoIndex);
 const expectedLogoRows = Object.values(logoIndex.providers ?? {}).filter(
-  (row) => typeof row?.urls?.["96x40"] === "string" && row.urls["96x40"].length > 0,
+  (row) => typeof row?.urls?.["96x96"] === "string" && row.urls["96x96"].length > 0,
 );
 assert.equal(logoCatalog.policy.committedProviderLogos, true);
 assert.equal(
   logoCatalog.policy.committedProviderLogoCount,
   expectedLogoRows.length,
-  "catalog must bind every committed 96x40 provider logo",
+  "catalog must bind every committed 96x96 provider logo",
 );
 const logoRendered = manifestsFromCatalog(logoCatalog);
 const indexedIds = new Set(Object.keys(logoIndex.providers ?? {}).map((value) => value.toLowerCase()));
@@ -81,7 +81,7 @@ for (const scraper of logoRendered.general.scrapers) {
   if (!indexedIds.has(String(scraper.id).toLowerCase())) continue;
   assert.match(
     String(scraper.logo ?? ""),
-    /^https:\/\/raw\.githubusercontent\.com\/niakw\/NiakVIO\/main\/assets\/providers\/96x40\//,
+    /^https:\/\/raw\.githubusercontent\.com\/niakw\/NiakVIO\/main\/assets\/providers\/96x96\//,
     `${scraper.id}: general manifest must use committed NiakVIO logo`,
   );
 }
@@ -89,7 +89,7 @@ for (const scraper of logoRendered.vf.scrapers) {
   if (!indexedIds.has(String(scraper.id).toLowerCase())) continue;
   assert.match(
     String(scraper.logo ?? ""),
-    /^https:\/\/raw\.githubusercontent\.com\/niakw\/NiakVIO\/main\/assets\/providers\/96x40\//,
+    /^https:\/\/raw\.githubusercontent\.com\/niakw\/NiakVIO\/main\/assets\/providers\/96x96\//,
     `${scraper.id}: VF manifest must use committed NiakVIO logo`,
   );
 }
