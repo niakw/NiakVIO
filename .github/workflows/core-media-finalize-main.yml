@@ -233,14 +233,17 @@ jobs:
           python scripts/validate_release_integrity.py
 
       - name: Publish exact finalized tree to main
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin main
           current="$(git rev-parse origin/main)"
           if [ "$current" != "$GITHUB_SHA" ]; then
-            echo "FIELD_CORE_STALE_PUBLICATION event=$GITHUB_SHA current=$current action=reject" >&2
-            exit 1
+            echo "FIELD_CORE_STALE_PUBLICATION event=$GITHUB_SHA current=$current action=cancel"
+            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/cancel" >/dev/null
+            exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
