@@ -28,14 +28,17 @@ assert.deepEqual(rendered.vf, vf, "VF manifest must round-trip byte-semantically
 
 const brandingIndex = JSON.parse(fs.readFileSync("assets/providers/emojis.json", "utf8"));
 const brandingCatalog = applyCommittedProviderNames(structuredClone(catalog), brandingIndex);
-const expectedNameRows = Object.keys(brandingIndex.providers ?? {}).length;
+const expectedNameRows = catalog.providers.length;
 assert.equal(brandingCatalog.policy.committedProviderNames, true);
 assert.equal(
   brandingCatalog.policy.committedProviderNameCount,
   expectedNameRows,
-  "catalog must bind every committed provider display name",
+  "catalog must bind every currently published provider display name",
 );
-assert.equal(expectedNameRows, catalog.providers.length, "branding map must cover the complete provider catalog");
+assert.ok(
+  Object.keys(brandingIndex.providers ?? {}).length >= catalog.providers.length,
+  "branding registry may pre-register providers from a pending transaction but must cover the current catalog",
+);
 const brandingRendered = manifestsFromCatalog(brandingCatalog);
 for (const scraper of brandingRendered.general.scrapers) {
   const branding = brandingIndex.providers?.[String(scraper.id).toLowerCase()];
@@ -53,6 +56,12 @@ assert.throws(
   () => applyCommittedProviderNames(structuredClone(catalog), incompleteBranding),
   /coverage mismatch/i,
   "catalog must reject incomplete provider branding coverage",
+);
+const forwardBranding = structuredClone(brandingIndex);
+forwardBranding.providers["future-provider-pending"] = { name: "Future Provider Pending", emoji: "🇫" };
+assert.doesNotThrow(
+  () => applyCommittedProviderNames(structuredClone(catalog), forwardBranding),
+  "branding registry must tolerate providers pre-registered for a pending transaction",
 );
 
 const logoIndex = JSON.parse(fs.readFileSync("assets/providers/index.json", "utf8"));
