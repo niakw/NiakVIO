@@ -181,7 +181,7 @@ def assert_policy(value: dict[str, Any]) -> None:
     presentation_text = presentation.read_text(encoding="utf-8")
     security_text = security.read_text(encoding="utf-8")
     branding_text = branding.read_text(encoding="utf-8")
-    if "field-safety-v5-native-identity-collisions-all-rows" not in runtime_text:
+    if "field-safety-v6-core-repair-types" not in runtime_text:
         raise ValueError("shared runtime identity safety revision is not current")
     if "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" not in presentation_text:
         raise ValueError("shared stream presentation wrapper is missing")
