@@ -187,6 +187,8 @@ Inconsistent generations must not silently replace a previously healthy publishe
 | `codeql.yml` | CodeQL analysis |
 | `provider-results-readme-sync.yml` | positive native-evidence README synchronization |
 | `external-code-audit.yml` | SonarQube Cloud / DeepSource / CodeScene evidence refresh |
+| `weekly-upstream-provider-discovery.yml` | weekly read-only discovery across the three upstream provider repositories |
+| `purge-actions-history.yml` | weekly cleanup of completed Actions runs older than 7 days |
 
 ---
 
