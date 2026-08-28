@@ -3,6 +3,9 @@ name: Brain branch maintenance
 on:
   push:
     branches: [main]
+  schedule:
+    # Catch up even when a main commit intentionally uses [skip ci].
+    - cron: "47 3 * * *"
   workflow_dispatch:
 
 permissions:
