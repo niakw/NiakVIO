@@ -45,14 +45,14 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-# Future Core probes get the first alphabetic initial too. The committed
-# registry may pre-register providers from a pending publication transaction,
-# while every currently published provider remains mandatory.
-future = module._load_provider("future-provider-never-seen-before")
-assert future["name"] == "Future Provider Never Seen Before", future
-assert future["emoji"] == "🇫", future
-assert module._initial_emoji("4KHDHub Next") == "🇰"
-assert module._initial_emoji("") == "🇸"
+# Emoji selection is a one-shot committed migration. Runtime rebuilds must
+# never synthesize a new emoji for an unknown provider.
+try:
+    module._load_provider("future-provider-never-seen-before")
+except ValueError as exc:
+    assert "missing committed row" in str(exc)
+else:
+    raise AssertionError("unknown provider branding must require one-shot registry refresh")
 
 source = 'globalThis.getStreams=async function(){return [{url:"https://example.com/video.m3u8",name:"old"}]};\n'
 output = module.apply(source, context={"provider_id": "peachify"})
