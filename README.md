@@ -1,7 +1,6 @@
 <div align="center">
-  <img src="assets/branding/nuvio-providers-logo.png" alt="NiakVIO logo" width="300">
+  <img src="assets/branding/niakvio-logo.svg" alt="NiakVIO" width="560">
 
-  <h1>NiakVIO</h1>
   <p><strong>English</strong> · <a href="README.fr.md">Français</a></p>
   <p><strong>A community engine that aggregates, tests, repairs and maintains Nuvio providers.</strong></p>
   <p>VO · VF &nbsp;•&nbsp; Mobile · Desktop · TV</p>
