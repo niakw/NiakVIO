@@ -9,6 +9,8 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 INDEX = ROOT / "assets/providers/index.json"
+EMOJIS = ROOT / "assets/providers/emojis.json"
+BRANDING_PATCH = ROOT / "scripts/provider_patches/global_provider_branding_v1.py"
 TARGETS = {
     "72x32": (72, 32),
     "96x40": (96, 40),
@@ -17,6 +19,7 @@ TARGETS = {
 
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 index = json.loads(INDEX.read_text(encoding="utf-8"))
+emojis = json.loads(EMOJIS.read_text(encoding="utf-8"))
 rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
 manifest_ids = {str(row.get("id") or "").strip().casefold() for row in rows}
 providers = index.get("providers")
@@ -30,6 +33,16 @@ assert index.get("format") == "webp-lossless"
 assert set(index.get("targets") or []) == set(TARGETS)
 assert index.get("missingCount") == 0, index.get("missing")
 assert int(index.get("providerCount") or 0) == len(rows)
+
+emoji_rows = emojis.get("providers")
+assert isinstance(emoji_rows, dict)
+assert manifest_ids <= set(emoji_rows), sorted(manifest_ids - set(emoji_rows))
+assert emojis.get("policy") == "committed-provider-default-emoji"
+assert emojis.get("generationMode") == "one-shot-preserve-semantic-else-initial"
+branding_patch = BRANDING_PATCH.read_text(encoding="utf-8")
+assert "_initial_emoji" not in branding_patch
+assert "_fallback_name" not in branding_patch
+assert "provider emoji map is missing committed row" in branding_patch
 
 for provider_id, row in providers.items():
     assets = row.get("assets") or {}
