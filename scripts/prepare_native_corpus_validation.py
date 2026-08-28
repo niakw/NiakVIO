@@ -359,7 +359,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class {klass} {{
-    data class ProviderSpec(val id: String, val asset: String, val enabled: Boolean)
+    data class ProviderSpec(val id: String, val asset: String, val enabled: Boolean, val logo: String)
 {runtime_decl}    private val providers = listOf(
         {provider_literal(providers)}
     )
