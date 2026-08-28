@@ -45,14 +45,15 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-# Emoji selection is a one-shot committed migration. Runtime rebuilds must
-# never synthesize a new emoji for an unknown provider.
-try:
-    module._load_provider("future-provider-never-seen-before")
-except ValueError as exc:
-    assert "missing committed row" in str(exc)
-else:
-    raise AssertionError("unknown provider branding must require one-shot registry refresh")
+# Emoji selection is a one-shot committed migration. Discovery may see a
+# provider before the registry is refreshed, but Core must not synthesize
+# recurring branding for it.
+assert module._load_provider("future-provider-never-seen-before") is None
+future_source = 'globalThis.getStreams=async function(){return [{url:"https://example.com/future.m3u8",name:"future"}]};\n'
+assert module.apply(
+    future_source,
+    context={"provider_id": "future-provider-never-seen-before"},
+) == future_source
 
 source = 'globalThis.getStreams=async function(){return [{url:"https://example.com/video.m3u8",name:"old"}]};\n'
 output = module.apply(source, context={"provider_id": "peachify"})
