@@ -200,13 +200,6 @@ def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str, str, str]:
     # staging artifact remains byte-identical. This prevents an unpatched
     # candidate from ever reaching providers/ even if staging changes later.
     data, promotion_patches = apply_overrides(candidate["canonical_id"], staged_data)
-    base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published(
-        candidate["canonical_id"],
-        data,
-    )
-    candidate["provider_base_filename"] = base_filename
-    candidate["provider_base_sha256"] = base_sha256
-    candidate["provider_base_stripped_generated_core"] = base_stripped_generated_core
     digest = hashlib.sha256(data).hexdigest()
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as validation_file:
         validation_file.write(data)
@@ -235,6 +228,17 @@ def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str, str, str]:
             )
     finally:
         validation_path.unlink(missing_ok=True)
+
+    # Persist provider logic only after the promoted candidate itself is valid.
+    # The durable base is provider-pipeline state; Core never creates or mutates it.
+    base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published(
+        candidate["canonical_id"],
+        data,
+    )
+    candidate["provider_base_filename"] = base_filename
+    candidate["provider_base_sha256"] = base_sha256
+    candidate["provider_base_stripped_generated_core"] = base_stripped_generated_core
+
     if promotion_patches:
         existing = candidate.setdefault("local_patches", [])
         existing.extend(patch for patch in promotion_patches if patch not in existing)
@@ -2512,6 +2516,18 @@ def main() -> int:
         },
         "providers": report_items,
     }
+    provider_base_files = {
+        str(row.get("base_filename") or "")
+        for row in provenance.values()
+        if isinstance(row, dict) and str(row.get("base_filename") or "").startswith("provider-bases/")
+    }
+    provider_base_provider_count = sum(
+        1
+        for row in provenance.values()
+        if isinstance(row, dict)
+        and str(row.get("base_filename") or "").startswith("provider-bases/")
+        and str(row.get("base_sha256") or "").strip()
+    )
     provenance_payload = {
         "schema_version": 63,
         "generated_at": now,
@@ -2519,6 +2535,16 @@ def main() -> int:
             "Third-party files retain upstream authorship and licence. "
             "See THIRD_PARTY_NOTICES.md."
         ),
+        "provider_base_store": {
+            "schema_version": 2,
+            "provider_count": provider_base_provider_count,
+            "unique_base_count": len(provider_base_files),
+            "owner": "provider_pipeline",
+            "future_source": "provider_pipeline_only",
+            "core_may_create_or_mutate_base": False,
+            "semantic_validation": "on_base_creation_or_change",
+            "core_integrity_validation": "coverage_and_sha_only",
+        },
         "providers": {cid: provenance[cid] for cid in sorted(provenance)},
     }
 
