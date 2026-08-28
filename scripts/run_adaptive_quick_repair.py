@@ -213,10 +213,14 @@ def _install_control_plane_fallback_plan(candidate: dict[str, Any], result: dict
         allowed_profiles = []
     else:
         failure_class = _fallback_failure_class(result)
-        action = "probe-targeted-repair"
-        allowed_profiles = ["adaptive_runtime_recovery"]
+        if failure_class == "unknown_failure":
+            action = "deferred_retry"
+            allowed_profiles = []
+        else:
+            action = "probe-targeted-repair"
+            allowed_profiles = ["adaptive_runtime_recovery"]
     brain.PLANS[plan_key] = {
-        "brainVersion": 3,
+        "brainVersion": 4,
         "providerId": provider_id,
         "failureClass": failure_class,
         "signature": f"control-plane-fallback:{failure_class}:{status}",
@@ -265,7 +269,7 @@ def _plan_quick_results(registry_path: Path, report: dict[str, Any]) -> None:
             _install_control_plane_fallback_plan(candidate, result, error)
             fallback_plans += 1
     print(
-        f"Quick Brain isolated planning complete: planned={planned} fallback_plans={fallback_plans}",
+        f"Core Quick isolated planning complete: planned={planned} fallback_plans={fallback_plans}",
         file=sys.stderr,
     )
 
@@ -307,8 +311,10 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         payload["mode"] = "quick"
         runtime = payload.setdefault("runtime_repair", {}) if path.name != "repair-report.json" else payload
         runtime["validation_mode"] = "quick"
-        runtime["profile_persistence"] = "brain_skill_memory"
-        runtime["acceptance_policy"] = "healthy_sibling_then_brain_targeted_repair"
+        planner_mode = _planner_mode()
+        runtime["profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"
+        runtime["learning_executed"] = planner_mode == "learning"
+        runtime["acceptance_policy"] = "healthy_sibling_then_core_type_repair"
         runtime["sibling_resolved_provider_count"] = len(sibling_ids)
         runtime["sibling_resolved_provider_ids"] = sibling_ids
         path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -356,8 +362,9 @@ def main() -> int:
         _strengthen_quick_probe(config)
         HEALTH_CONFIG.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
-        # Quick can mutate providers too, so it is subject to the same official
-        # client-runtime drift fence as deep before any Brain plan is allowed.
+        # Core Quick repair may apply already-defined Core repair types, so it is
+        # subject to the same official client-runtime drift fence as deep. Learning
+        # remains a separate daily workflow and is never executed in Quick mode.
         guard_nuvio_client_brain_compat(output / "nuvio-client-upstream-status.json")
         _run_domain_search_fallback(stage, output)
 
@@ -375,7 +382,7 @@ def main() -> int:
             rc = loop.main()
         for line in buffer.getvalue().splitlines():
             if line.startswith("Deep repair loop complete:"):
-                print(line.replace("Deep repair loop complete:", "Quick Brain repair loop complete:", 1))
+                print(line.replace("Deep repair loop complete:", "Core Quick repair loop complete:", 1))
             else:
                 print(line)
         _rewrite_mode_metadata(stage, output)

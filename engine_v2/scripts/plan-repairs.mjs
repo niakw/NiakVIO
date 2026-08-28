@@ -105,7 +105,7 @@ function buildPlan(item) {
     coreMutationRequested: state.coreMutationRequested === true,
   });
   const hypotheses = asArray(plan.hypotheses).filter(isRecord);
-  const repairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage);
+  const repairTarget = resolveRepairTarget(plan.failureClass, capabilityStrategy, evidence.observedPipelineStage, stringValue(input.mode, "quick"));
   return {
     brainVersion: finiteNumber(plan.brainVersion, BRAIN_CONTROL_PLANE_VERSION),
     providerId,
@@ -219,22 +219,37 @@ function normalizeLearnedSkills(value) {
   return [];
 }
 
-function resolveRepairTarget(failureClass, capabilityStrategy, observedPipelineStage) {
+function resolveRepairTarget(failureClass, capabilityStrategy, observedPipelineStage, mode) {
   const table = asRecord(coreRepairConfig.failureClasses);
   const row = asRecord(table[stringValue(failureClass, "unknown_failure")]);
-  const scope = stringValue(row.scope, "learning");
+  const configuredScope = stringValue(row.scope, "learning");
+  const learningMode = stringValue(mode, "quick") === "learning";
+  if (configuredScope === "learning" && !learningMode) {
+    return {
+      scope: "deferred",
+      repairType: stringValue(row.repairType, "architecture_gap"),
+      engine: "independent_learning_queue",
+      pipelineStage: "deferred_learning",
+      profiles: [],
+      capabilityStrategy: stringValue(capabilityStrategy, "unknown"),
+      learningDisposition: "queue_for_independent_learning",
+      observedPipelineStage: stringValue(observedPipelineStage, "unknown"),
+    };
+  }
   return {
-    scope,
+    scope: configuredScope,
     repairType: stringValue(row.repairType, "architecture_gap"),
     engine: stringValue(row.engine, "brain_learning_lab"),
     pipelineStage: stringValue(row.pipelineStage, "learning"),
     profiles: stringArray(row.profiles),
     capabilityStrategy: stringValue(capabilityStrategy, "unknown"),
-    learningDisposition: scope === "learning"
+    learningDisposition: configuredScope === "learning"
       ? "propose_new_or_evolved_core_type"
-      : scope === "none"
+      : configuredScope === "none"
         ? "none"
-        : "run_core_type_then_learn_adaptation_if_unresolved",
+        : learningMode
+          ? "observe_core_type_then_explore_if_unresolved"
+          : "core_repair_only",
     observedPipelineStage: stringValue(observedPipelineStage, "unknown"),
   };
 }

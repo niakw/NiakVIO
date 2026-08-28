@@ -238,7 +238,7 @@ def update_plans(registry_path: Path, report: dict[str, Any], mode: str) -> dict
     payload = {
         "mode": mode,
         "policy": policy(),
-        "learnedSkills": learned_skills(),
+        "learnedSkills": learned_skills() if str(mode).casefold() == "learning" else {},
         "items": items,
     }
     planner_input = _strict_json_dumps(payload).encode("ascii")
@@ -357,93 +357,96 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
 def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
     report_path = output_dir / "repair-report.json"
     report = _load_json(report_path, {})
-    config = _load_json(OVERRIDES_PATH, {})
-    runtime = config.setdefault("runtime_repair", {})
-    skills = runtime.setdefault("learned_skills", {})
-    if not isinstance(skills, dict):
+    learning_mode = str(mode).casefold() == "learning"
+    config = _load_json(OVERRIDES_PATH, {}) if learning_mode else {}
+    runtime = config.setdefault("runtime_repair", {}) if learning_mode else {}
+    skills = runtime.setdefault("learned_skills", {}) if learning_mode else {}
+    if learning_mode and not isinstance(skills, dict):
         skills = {}
         runtime["learned_skills"] = skills
     maturity = policy().get("skillMaturity") or {}
 
     accepted_count = 0
-    for round_row in report.get("rounds") or []:
-        attempts_by_parent: dict[str, list[dict[str, Any]]] = {}
-        for attempt in round_row.get("attempts") or []:
-            if isinstance(attempt, dict):
-                attempts_by_parent.setdefault(str(attempt.get("parent_key") or ""), []).append(attempt)
-        for accepted in round_row.get("accepted") or []:
-            if not isinstance(accepted, dict):
-                continue
-            parent_key = str(accepted.get("parent_key") or "")
-            plan = PLANS.get(parent_key) or {}
-            provider_id = str(plan.get("providerId") or parent_key.split(":")[-1]).casefold()
-            profile = str(accepted.get("profile") or "")
-            if not profile:
-                generated = [row for row in attempts_by_parent.get(parent_key, []) if row.get("status") == "generated" and row.get("profile")]
-                if generated:
-                    profile = str(generated[0]["profile"])
-            failure_class = str(plan.get("failureClass") or "unknown_failure")
-            if not profile or failure_class in {"healthy", "identity_mismatch"}:
-                continue
-            skill_id = f"{failure_class}:{profile}"
-            skill = skills.setdefault(skill_id, {
-                "id": skill_id,
-                "failureClass": failure_class,
-                "profile": profile,
-                "actions": [f"apply validated {profile} strategy for {failure_class}"],
-                "capabilities": sorted({cap for hyp in plan.get("hypotheses") or [] for cap in hyp.get("capabilities") or []}),
-                "providers": [], "successCount": 0, "failureCount": 0, "validated": True,
-            })
-            providers = {str(value).casefold() for value in skill.get("providers") or [] if str(value)}
-            if provider_id:
-                providers.add(provider_id)
-            skill["providers"] = sorted(providers)
-            skill["successCount"] = int(skill.get("successCount") or 0) + 1
-            skill["lastValidatedMode"] = mode
-            successes = int(skill["successCount"])
-            failures = int(skill.get("failureCount") or 0)
-            confidence = successes / max(1, successes + failures)
-            trusted = (
-                successes >= int(maturity.get("trustedSuccesses") or 3)
-                and len(providers) >= int(maturity.get("trustedProviders") or 2)
-                and confidence >= float(maturity.get("minimumConfidence") or 0.8)
-            )
-            skill["confidence"] = round(confidence, 4)
-            skill["maturity"] = "trusted" if trusted else ("candidate" if successes >= int(maturity.get("candidateSuccesses") or 2) else "experimental")
-            skill["autoApply"] = trusted
-            accepted_count += 1
+    if learning_mode:
+        for round_row in report.get("rounds") or []:
+            attempts_by_parent: dict[str, list[dict[str, Any]]] = {}
+            for attempt in round_row.get("attempts") or []:
+                if isinstance(attempt, dict):
+                    attempts_by_parent.setdefault(str(attempt.get("parent_key") or ""), []).append(attempt)
+            for accepted in round_row.get("accepted") or []:
+                if not isinstance(accepted, dict):
+                    continue
+                parent_key = str(accepted.get("parent_key") or "")
+                plan = PLANS.get(parent_key) or {}
+                provider_id = str(plan.get("providerId") or parent_key.split(":")[-1]).casefold()
+                profile = str(accepted.get("profile") or "")
+                if not profile:
+                    generated = [row for row in attempts_by_parent.get(parent_key, []) if row.get("status") == "generated" and row.get("profile")]
+                    if generated:
+                        profile = str(generated[0]["profile"])
+                failure_class = str(plan.get("failureClass") or "unknown_failure")
+                if not profile or failure_class in {"healthy", "identity_mismatch"}:
+                    continue
+                skill_id = f"{failure_class}:{profile}"
+                skill = skills.setdefault(skill_id, {
+                    "id": skill_id,
+                    "failureClass": failure_class,
+                    "profile": profile,
+                    "actions": [f"apply validated {profile} strategy for {failure_class}"],
+                    "capabilities": sorted({cap for hyp in plan.get("hypotheses") or [] for cap in hyp.get("capabilities") or []}),
+                    "providers": [], "successCount": 0, "failureCount": 0, "validated": True,
+                })
+                providers = {str(value).casefold() for value in skill.get("providers") or [] if str(value)}
+                if provider_id:
+                    providers.add(provider_id)
+                skill["providers"] = sorted(providers)
+                skill["successCount"] = int(skill.get("successCount") or 0) + 1
+                skill["lastValidatedMode"] = mode
+                successes = int(skill["successCount"])
+                failures = int(skill.get("failureCount") or 0)
+                confidence = successes / max(1, successes + failures)
+                trusted = (
+                    successes >= int(maturity.get("trustedSuccesses") or 3)
+                    and len(providers) >= int(maturity.get("trustedProviders") or 2)
+                    and confidence >= float(maturity.get("minimumConfidence") or 0.8)
+                )
+                skill["confidence"] = round(confidence, 4)
+                skill["maturity"] = "trusted" if trusted else ("candidate" if successes >= int(maturity.get("candidateSuccesses") or 2) else "experimental")
+                skill["autoApply"] = trusted
+                accepted_count += 1
 
-    for round_row in report.get("rounds") or []:
-        for rejected in round_row.get("rejected") or []:
-            if not isinstance(rejected, dict):
-                continue
-            parent_key = str(rejected.get("parent_key") or "")
-            plan = PLANS.get(parent_key) or {}
-            profile = str(rejected.get("profile") or "")
-            failure_class = str(plan.get("failureClass") or "")
-            skill_id = f"{failure_class}:{profile}"
-            skill = skills.get(skill_id)
-            if not isinstance(skill, dict) or not profile:
-                continue
-            skill["failureCount"] = int(skill.get("failureCount") or 0) + 1
-            successes = int(skill.get("successCount") or 0)
-            failures = int(skill["failureCount"])
-            skill["confidence"] = round(successes / max(1, successes + failures), 4)
-            if skill["confidence"] < float(maturity.get("minimumConfidence") or 0.8):
-                skill["autoApply"] = False
-                if skill.get("maturity") == "trusted":
-                    skill["maturity"] = "candidate"
+        for round_row in report.get("rounds") or []:
+            for rejected in round_row.get("rejected") or []:
+                if not isinstance(rejected, dict):
+                    continue
+                parent_key = str(rejected.get("parent_key") or "")
+                plan = PLANS.get(parent_key) or {}
+                profile = str(rejected.get("profile") or "")
+                failure_class = str(plan.get("failureClass") or "")
+                skill_id = f"{failure_class}:{profile}"
+                skill = skills.get(skill_id)
+                if not isinstance(skill, dict) or not profile:
+                    continue
+                skill["failureCount"] = int(skill.get("failureCount") or 0) + 1
+                successes = int(skill.get("successCount") or 0)
+                failures = int(skill["failureCount"])
+                skill["confidence"] = round(successes / max(1, successes + failures), 4)
+                if skill["confidence"] < float(maturity.get("minimumConfidence") or 0.8):
+                    skill["autoApply"] = False
+                    if skill.get("maturity") == "trusted":
+                        skill["maturity"] = "candidate"
 
     brain_versions = [int(row.get("brainVersion") or 0) for row in PLANS.values() if isinstance(row, dict)]
-    runtime["brain"] = {
-        "name": str((policy().get("identity") or {}).get("name") or "NiakVIO Brain"),
-        "controlPlaneVersion": max(brain_versions, default=0),
-        "learningOnValidatedRepair": True,
-        "lastMode": mode,
-        "fallbackPolicy": "lkg_only_after_repair_budget",
-        "coreMutationPolicy": "proposal_only",
-    }
-    _write_json(OVERRIDES_PATH, config)
+    if learning_mode:
+        runtime["brain"] = {
+            "name": str((policy().get("identity") or {}).get("name") or "NiakVIO Brain"),
+            "controlPlaneVersion": max(brain_versions, default=0),
+            "learningOnValidatedRepair": True,
+            "lastMode": mode,
+            "fallbackPolicy": "lkg_only_after_repair_budget",
+            "coreMutationPolicy": "proposal_only",
+        }
+        _write_json(OVERRIDES_PATH, config)
 
     sanitized_plans = {
         key: {
@@ -462,7 +465,14 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
         "mode": mode,
         "plans": sanitized_plans,
         "budgetState": runtime_state_snapshot(),
-        "learnedEvents": accepted_count,
+        "learnedEvents": accepted_count if learning_mode else 0,
+        "learningExecuted": learning_mode,
+        "learningLane": "independent_daily_lab" if learning_mode else "none_core_repair_only",
+        "queuedForLearning": sorted({
+            str(row.get("providerId") or key)
+            for key, row in PLANS.items()
+            if isinstance(row, dict) and str(row.get("repairScope") or "") in {"learning", "deferred"}
+        }),
         "privacy": "sanitized-no-raw-endpoints-tokens-header-values-private-notes",
     }
     _write_json(report_path, report)

@@ -11,6 +11,9 @@ brain_policy = json.loads((ROOT / "engine_v2/config/brain-policy.json").read_tex
 skills = json.loads((ROOT / "engine_v2/config/global-repair-skills.json").read_text(encoding="utf-8"))
 health = json.loads((ROOT / "health-config.json").read_text(encoding="utf-8"))
 apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
+brain_runtime_source = (ROOT / "scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
+brain_overlay_source = (ROOT / "scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")
+quick_source = (ROOT / "scripts/run_adaptive_quick_repair.py").read_text(encoding="utf-8")
 
 GLOBAL = {
     "scripts/provider_patches/runtime_capability_media_safety_v4.py",
@@ -41,6 +44,13 @@ assert [row["stage"] for row in repair_types["pipeline"]] == expected_pipeline
 assert repair_types["evidencePolicy"]["monotonic"] is True
 assert repair_types["learning"]["directDurablePatchFromSkillForbidden"] is True
 assert repair_types["learning"]["providerLocalMutation"] == "lab_only_proof"
+assert repair_types["learning"]["independentFromCoreRepair"] is True
+assert repair_types["learning"]["coreRepairMayInvokeLearning"] is False
+assert repair_types["executionLanes"]["coreRepair"]["learningAllowed"] is False
+assert repair_types["executionLanes"]["coreRepair"]["learnedSkillInputAllowed"] is False
+assert repair_types["executionLanes"]["coreRepair"]["unknownFailureAction"] == "queue_for_independent_learning"
+assert repair_types["executionLanes"]["dailyLearning"]["partOfCoreRepair"] is False
+assert repair_types["executionLanes"]["dailyLearning"]["requiredPublishedProviderObservationCoverage"] == 1.0
 
 classes = repair_types["failureClasses"]
 for failure in ("identity_mismatch", "short_media", "media_validation_gap", "audio_track_gap"):
@@ -53,7 +63,19 @@ assert classes["unknown_failure"]["repairType"] == "architecture_gap"
 
 assert brain_policy["controlPlaneVersion"] == 4
 assert brain_policy["production"]["durableProviderSkillApplication"] is False
+assert brain_policy["production"]["learningDuringCoreRepair"] is False
+assert brain_policy["production"]["learnedSkillInputAllowed"] is False
+assert brain_policy["production"]["unknownFailureAction"] == "queue_for_independent_learning"
 assert brain_policy["learningLab"]["directSkillPublication"] is False
+assert brain_policy["learningLab"]["independentFromCoreRepair"] is True
+assert brain_policy["learningLab"]["dailyPublishedProviderCoverageTarget"] == 1.0
+assert brain_policy["executionLanes"]["coreRepair"]["learningAllowed"] is False
+assert brain_policy["executionLanes"]["dailyLearning"]["publishedProviderObservationCoverage"] == 1.0
+assert 'learnedSkills": learned_skills() if str(mode).casefold() == "learning" else {}' in brain_runtime_source
+assert 'learnedSkills": _BASE.learned_skills() if str(mode).casefold() == "learning" else {}' in brain_overlay_source
+assert '"profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"' in quick_source
+assert '"learning_executed"] = planner_mode == "learning"' in quick_source
+
 for skill in (skills.get("skills") or {}).values():
     assert skill.get("autoApply") is False, skill
     assert skill.get("learningOnly") is True, skill

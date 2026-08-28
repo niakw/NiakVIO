@@ -192,7 +192,7 @@ assert.equal(streamzoTerminalPlan.failureClass, "playback_context_gap");
 assert.equal(streamzoTerminalPlan.repairScope, "capability");
 assert.equal(streamzoTerminalPlan.repairType, "playback_context");
 assert.equal(streamzoTerminalPlan.capabilityStrategy, "mixed_embed_resolver");
-assert.equal(streamzoTerminalPlan.learningDisposition, "run_core_type_then_learn_adaptation_if_unresolved");
+assert.equal(streamzoTerminalPlan.learningDisposition, "core_repair_only");
 assert.equal(streamzoTerminalPlan.hypotheses[0].id, "preserve-playback-context");
 assert.ok(streamzoTerminalPlan.allowedProfiles.includes("adaptive_runtime_recovery"));
 assert.equal(terminalMediaOutput.plans["published:provider-blocked"].failureClass, "transport_blocked");
@@ -255,6 +255,27 @@ assert.equal(monotonicPlan.failureClass, "media_extraction_gap");
 assert.equal(monotonicPlan.repairType, "terminal_media_resolution");
 assert.notEqual(monotonicPlan.failureClass, "search_gap");
 assert.notEqual(monotonicPlan.failureClass, "player_gap");
+
+
+const quickUnknownPayload = {
+  mode: "quick",
+  policy: dirtyPayload.policy,
+  learnedSkills: { "should-not-be-used": { profile: "adaptive_runtime_recovery" } },
+  items: [{
+    key: "published:new-pattern-quick",
+    candidate: { canonical_id: "new-pattern-quick", metadata: { supportedTypes: ["movie"] } },
+    result: { status: "runtime_error", evidence: { streams_returned: 0 }, tests: [{ failure_class: "novel_unknown_pattern" }] },
+    state: {},
+  }],
+};
+const quickUnknownRun = spawnSync(process.execPath, [planner], { input: JSON.stringify(quickUnknownPayload), encoding: "utf8" });
+assert.equal(quickUnknownRun.status, 0, quickUnknownRun.stderr);
+const quickUnknownPlan = JSON.parse(quickUnknownRun.stdout).plans["published:new-pattern-quick"];
+assert.equal(quickUnknownPlan.repairScope, "deferred");
+assert.equal(quickUnknownPlan.repairType, "architecture_gap");
+assert.equal(quickUnknownPlan.repairEngine, "independent_learning_queue");
+assert.equal(quickUnknownPlan.learningDisposition, "queue_for_independent_learning");
+assert.deepEqual(quickUnknownPlan.allowedProfiles, []);
 
 const unknownPayload = {
   mode: "learning",

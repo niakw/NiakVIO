@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "principle": "NiakVIO validates the source, recognizes the provider and its capability, applies global invariants, applies the capability engine, applies capability-global invariants, then publishes. Learning exists only to evolve this architecture when a case is not covered.",
   "pipeline": [
     {
@@ -42,8 +42,12 @@
     "directDurablePatchFromSkillForbidden": true,
     "providerLocalMutation": "lab_only_proof",
     "knownTypeFailure": "run_existing_core_type_then_learn_adaptation_if_still_unresolved",
-    "unknownFailure": "classify_architecture_gap_then_propose_new_or_evolved_core_type",
-    "publicationAllowed": false
+    "unknownFailure": "queue_from_core_then_classify_architecture_gap_in_learning",
+    "publicationAllowed": false,
+    "independentFromCoreRepair": true,
+    "coreRepairMayInvokeLearning": false,
+    "dailyCoverageRequired": true,
+    "dailyCoverageTarget": 1
   },
   "policy": {
     "workSpecificDurableFixesForbidden": true,
@@ -328,5 +332,29 @@
       "catalogue_search_resolution"
     ],
     "quarantined": []
+  },
+  "executionLanes": {
+    "coreRepair": {
+      "independent": true,
+      "learningAllowed": false,
+      "learnedSkillInputAllowed": false,
+      "stages": [
+        "source_validation",
+        "provider_recognition",
+        "global_invariants",
+        "capability_adapter",
+        "capability_engine",
+        "capability_global_invariants",
+        "public_bundle"
+      ],
+      "unknownFailureAction": "queue_for_independent_learning"
+    },
+    "dailyLearning": {
+      "independent": true,
+      "partOfCoreRepair": false,
+      "requiredPublishedProviderObservationCoverage": 1,
+      "anomalyHandling": "investigate_unknown_or_unresolved_cases_and_propose_core_evolution",
+      "directPublication": false
+    }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "controlPlaneVersion": 4,
   "identity": {
     "name": "NiakVIO Brain",
@@ -7,7 +7,7 @@
     "principle": "classify through Core first, learn only where the architecture has a gap"
   },
   "production": {
-    "learningOnValidatedRepair": true,
+    "learningOnValidatedRepair": false,
     "maxHypotheses": 3,
     "maxMutationsPerProvider": 2,
     "maxRepeatedSignature": 2,
@@ -16,7 +16,10 @@
     "coreMutationPolicy": "proposal_only",
     "fallbackPolicy": "lkg_only_after_repair_budget",
     "durableProviderSkillApplication": false,
-    "repairOwnership": "core_global_or_capability_type"
+    "repairOwnership": "core_global_or_capability_type",
+    "learnedSkillInputAllowed": false,
+    "learningDuringCoreRepair": false,
+    "unknownFailureAction": "queue_for_independent_learning"
   },
   "skillMaturity": {
     "candidateSuccesses": 2,
@@ -41,7 +44,12 @@
     "directSkillPublication": false,
     "providerLocalMutation": "ephemeral_lab_proof_only",
     "knownTypeUnresolvedAction": "adapt_or_evolve_type",
-    "unknownCaseAction": "propose_new_or_evolved_core_type"
+    "unknownCaseAction": "propose_new_or_evolved_core_type",
+    "independentFromCoreRepair": true,
+    "dailyPublishedProviderObservationRequired": true,
+    "dailyPublishedProviderCoverageTarget": 1,
+    "anomaliesFirst": true,
+    "explorationAfterCoverage": true
   },
   "privacy": {
     "persistRawUrls": false,
@@ -49,5 +57,22 @@
     "persistHeaderValues": false,
     "persistPrivateNotes": false,
     "persistSourceSpreadsheetText": false
+  },
+  "executionLanes": {
+    "coreRepair": {
+      "independent": true,
+      "learningAllowed": false,
+      "learnedSkillInputAllowed": false,
+      "unknownFailureAction": "queue_for_independent_learning",
+      "purpose": "fast deterministic repair using only Core global invariants and known capability types"
+    },
+    "dailyLearning": {
+      "independent": true,
+      "scheduleUtc": "17 2 * * *",
+      "publishedProviderObservationCoverage": 1,
+      "purpose": "detect silent provider failures and evolve Core types/invariants in an isolated sandbox",
+      "productionWritesAllowed": false,
+      "publicationAllowed": false
+    }
   }
 }
