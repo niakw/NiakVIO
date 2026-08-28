@@ -139,12 +139,11 @@ def _assert_branding_inventory() -> None:
         if isinstance(row, dict) and str(row.get("id") or "").strip()
     }
     branding_ids = {str(value).strip().casefold() for value in rows}
-    if branding_ids != manifest_ids:
-        missing = sorted(manifest_ids - branding_ids)
-        unknown = sorted(branding_ids - manifest_ids)
+    missing = sorted(manifest_ids - branding_ids)
+    if missing:
         raise ValueError(
             "provider branding coverage mismatch: "
-            f"missing={','.join(missing) or 'none'} unknown={','.join(unknown) or 'none'}"
+            f"missing={','.join(missing)}"
         )
     for provider_id, row in rows.items():
         if not isinstance(row, dict):
