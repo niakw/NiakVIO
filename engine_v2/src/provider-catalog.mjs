@@ -81,7 +81,7 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
  * Bind already-committed provider artwork into native Nuvio metadata.
  *
  * Logo discovery/conversion is intentionally NOT performed here. The one-shot
- * importer produced immutable WebP assets plus assets/providers/index.json. This
+ * importer produced immutable horizontal + square WebP assets plus assets/providers/index.json. This
  * function only consumes that committed index so every future manifest rebuild
  * keeps using repository-owned URLs instead of fragile third-party image hosts.
  */
@@ -101,7 +101,7 @@ export function applyCommittedProviderLogos(catalog, logoIndex) {
     const canonicalId = canonicalProviderId(rawId);
     const row = byId.get(canonicalId);
     if (!row) throw new Error(`provider logo index references unknown provider: ${rawId}`);
-    const url = String(logo.urls?.["96x40"] ?? "").trim();
+    const url = String(logo.urls?.["96x96"] ?? "").trim();
     if (!url) continue;
     if (!url.startsWith("https://raw.githubusercontent.com/niakw/NiakVIO/")) {
       throw new Error(`${canonicalId}: committed provider logo must use NiakVIO raw asset URL`);
