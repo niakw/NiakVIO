@@ -106,6 +106,11 @@ assert preferred == 'https://wookafr.center'
 assert wooka_candidates[0]['message_id'] == 131
 assert all(resolver.host(row['url']) != 'unrelated.example' for row in wooka_candidates)
 
+# Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
+engines = resolver.search_engine_urls('example provider')
+assert engines[0][0] == 'yandex' and 'yandex.com/search/' in engines[0][1]
+assert engines[1][0] == 'duckduckgo' and 'duckduckgo.com/html/' in engines[1][1]
+
 # Search-only discoveries require two consecutive confirmations, while a hub,
 # Telegram or curated source can be accepted immediately.
 history = {}
