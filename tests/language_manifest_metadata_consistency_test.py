@@ -7,6 +7,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 main = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 vf = json.loads((ROOT / "vf/manifest.json").read_text(encoding="utf-8"))
+sources = json.loads((ROOT / "sources.json").read_text(encoding="utf-8"))
 
 main_by_id = {str(row.get("id", "")).casefold(): row for row in main.get("scrapers", []) if isinstance(row, dict)}
 fields = (
@@ -21,6 +22,7 @@ fields = (
 )
 errors: list[str] = []
 
+assert sources.get("repository", {}).get("name") == "NiakVIO", sources.get("repository", {}).get("name")
 assert main.get("name") == "NiakVIO", main.get("name")
 assert vf.get("name") == "NiakVIO — VF uniquement", vf.get("name")
 missing_logos = [
