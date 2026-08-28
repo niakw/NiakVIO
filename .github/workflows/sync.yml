@@ -294,7 +294,7 @@ jobs:
 
       - name: Reapply durable overrides after candidate promotion
         run: |
-          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary
 
       - name: Finalize upstream last-known-good snapshots
         run: |
