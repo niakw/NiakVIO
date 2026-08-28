@@ -16,37 +16,30 @@ La suite couvre notamment :
 - contrats NuvioTV, Desktop et Mobile, ainsi que la dérive des clients officiels ;
 - validation média HLS, DASH, MP4, Matroska et MPEG-TS ;
 - versions synchronisées, provenance JSON, périmètre et empreintes de release ;
-- comportement et configuration du lab de lecture multi-œuvres.
+- contrats des Labs natifs et du corpus multi-œuvres.
 
-## Lab de lecture multi-œuvres
+## Validation native et corpus multi-œuvres
 
-Le workflow [`Nuvio client media transport lab`](.github/workflows/nuvio-client-lab.yml)
-exécute six fixtures : deux films, deux séries et deux anime, avec une œuvre récente
-à faible couverture. Il charge les bundles publiés avec les contrats NuvioTV, Desktop
-et Mobile, vérifie le média final et refuse les contradictions d'identité, de saison
-ou d'épisode.
+Le corpus canonique est versionné dans [`.github/triggers/nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json). Il contient actuellement **10 fixtures** couvrant films, séries et anime, avec des cas de désambiguïsation d'année, de saison/épisode, de durée et de mauvaise identité média.
 
-Un provider ne compte que s'il est activé et jouable sur tous les clients demandés.
-L'objectif est de 10 providers dont 3 VF par œuvre. Ce seuil mesure la couverture mais
-ne bloque pas une release lorsqu'une œuvre récente ou rare reste sous la cible. Un
-timeout isolé est retenté une fois avec un profil réduit. Les artefacts JSON et Markdown
-ne conservent ni URL complète, ni jeton, ni valeur d'en-tête sensible.
+La preuve native est répartie entre trois workflows complémentaires :
 
-Cette tolérance porte uniquement sur le nombre de résultats. Une contradiction
-d’identité sur un média lisible bloque le job, y compris si le manifest marque déjà
-le provider désactivé, jusqu’à publication d’un bundle inerte cache-safe.
+- [`native-android-route-reader.yml`](.github/workflows/native-android-route-reader.yml) : Nuvio Mobile + NuvioTV/Android TV sur les fixtures représentatives et les régressions TV prioritaires ;
+- [`native-desktop-reader-acceptance.yml`](.github/workflows/native-desktop-reader-acceptance.yml) : lecteurs officiels Desktop macOS et Windows ;
+- [`native-corpus-device-targeted.yml`](.github/workflows/native-corpus-device-targeted.yml) : retest manuel borné d'un device, d'un provider ou du corpus natif ciblé.
+
+Les preuves sont **indépendantes par client et par device** : une réussite Desktop ne vaut pas automatiquement réussite Mobile ou TV. Les Labs peuvent inclure des providers `enabled:false` afin de diagnostiquer ou revalider un provider sans le réactiver implicitement.
+
+La politique du corpus conserve une cible de couverture de **10 providers dont 3 VF**, mais cette cible n'est pas un seuil automatique de publication (`blocking:false`, `enforce_policy:false`). En revanche, une contradiction d'identité, de saison, d'épisode ou de média final reste un signal bloquant pour la preuve concernée et ne doit jamais être transformée en succès de couverture.
+
+Les timeouts isolés peuvent être retentés de manière bornée. Les artifacts natifs temporaires sont conservés **1 jour** et les preuves persistées restent sanitizées : pas d'URL de lecture complète, de token, de cookie ou de valeur d'en-tête sensible.
 
 ## Cycle de réparation et publication
 
-Une réparation n'est conservée que si le bundle exact progresse lors d'une nouvelle
-exécution bornée. La publication synchronise les versions des manifests et paquets,
-élague les bundles hachés devenus non référencés, régénère les empreintes, puis exécute
-`scripts/validate_release_integrity.py`. Le lab distant vérifie également l'intégrité
-du dépôt avant de lancer sa matrice.
+Une réparation n'est conservée que si le bundle exact progresse lors d'une nouvelle exécution bornée. La publication synchronise les versions des manifests et paquets, élague les bundles hachés devenus non référencés, régénère les empreintes, puis exécute `scripts/validate_release_integrity.py`.
+
+`sync.yml` est l'unique orchestrateur de publication complète. Les Labs natifs produisent de la preuve ; ils ne constituent pas une seconde voie de publication.
 
 ## Limites
 
-Une IP de CI peut être bloquée alors qu'une connexion résidentielle fonctionne, et un
-échantillon ne peut pas prouver tous les titres, langues ou appareils. Une couverture
-faible reste donc distincte d'une incompatibilité concluante. Une validation technique
-ne détermine pas non plus le statut juridique d'une source tierce.
+Une IP de CI peut être bloquée alors qu'une connexion résidentielle fonctionne, et un échantillon ne peut pas prouver tous les titres, langues ou appareils. Une couverture faible reste donc distincte d'une incompatibilité concluante. Une validation technique ne détermine pas non plus le statut juridique d'une source tierce.
