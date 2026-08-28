@@ -24,10 +24,9 @@ export function applyCommittedProviderNames(catalog, brandingIndex) {
   const indexedIds = new Set(Object.keys(indexed).map((value) => canonicalProviderId(value)));
   const catalogIds = new Set(byId.keys());
   const missing = [...catalogIds].filter((id) => !indexedIds.has(id));
-  const unknown = [...indexedIds].filter((id) => !catalogIds.has(id));
-  if (missing.length || unknown.length) {
+  if (missing.length) {
     throw new Error(
-      `provider branding coverage mismatch: missing=${missing.join(",") || "none"} unknown=${unknown.join(",") || "none"}`,
+      `provider branding coverage mismatch: missing=${missing.join(",") || "none"}`,
     );
   }
 
@@ -35,6 +34,9 @@ export function applyCommittedProviderNames(catalog, brandingIndex) {
   for (const [rawId, branding] of Object.entries(indexed)) {
     const canonicalId = canonicalProviderId(rawId);
     const row = byId.get(canonicalId);
+    // The committed registry may include providers discovered by a pending
+    // transaction before they land in the currently published manifest.
+    if (!row) continue;
     const cleanName = String(branding?.name ?? "").trim();
     const emoji = String(branding?.emoji ?? "").trim();
     if (!cleanName || !emoji) {
