@@ -14,6 +14,7 @@ apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding
 brain_runtime_source = (ROOT / "scripts/brain_repair_runtime.py").read_text(encoding="utf-8")
 brain_overlay_source = (ROOT / "scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")
 quick_source = (ROOT / "scripts/run_adaptive_quick_repair.py").read_text(encoding="utf-8")
+runtime_upgrade_source = (ROOT / "scripts/apply_runtime_capability_upgrade_v4.py").read_text(encoding="utf-8")
 
 GLOBAL = {
     "scripts/provider_patches/runtime_capability_media_safety_v4.py",
@@ -30,6 +31,10 @@ for provider_id, row in (overrides.get("provider_patches") or {}).items():
         leaks[provider_id] = found
 assert not leaks, leaks
 assert "contains Core-global modules" in apply_source
+assert "scripts.append(RUNTIME_PATCH)" not in runtime_upgrade_source
+assert '"scope": "all_published_providers"' in runtime_upgrade_source
+assert 'runtime_safety.pop("targets", None)' in runtime_upgrade_source
+assert "core_global_safety=true" in runtime_upgrade_source
 
 expected_pipeline = [
     "source_validation",

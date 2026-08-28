@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Configure the standalone runtime-capability media safety engine repository-wide."""
+"""Configure runtime capability adapters without materializing Core-global safety per provider."""
 from __future__ import annotations
 
 import json
@@ -133,16 +133,20 @@ def main() -> int:
                 RUNTIME_PATCH,
             }
         ]
+        # HLS target ordering is a capability-specific adapter. Runtime media
+        # identity/safety is Core-global and must never be materialized here.
         scripts.append(TARGET_ORDER_COMPAT_PATCH)
         scripts.append(TARGET_ORDER_PATCH)
-        scripts.append(RUNTIME_PATCH)
         if scripts != original:
             row["patch_scripts"] = scripts
             changed += 1
 
-    config["runtime_capability_media_safety"] = {
-        "version": 4,
-        "scope": "all_hls_capable_providers",
+    runtime_safety = config.get("runtime_capability_media_safety")
+    if not isinstance(runtime_safety, dict):
+        runtime_safety = {}
+    runtime_safety.update({
+        "version": 6,
+        "scope": "all_published_providers",
         "target_order_compat_patch": TARGET_ORDER_COMPAT_PATCH,
         "target_order_patch": TARGET_ORDER_PATCH,
         "final_patch": RUNTIME_PATCH,
@@ -159,11 +163,22 @@ def main() -> int:
             "obvious_html_or_php_page_url",
             "malformed_nested_url",
         ],
-        "wrapper_upgrade": "Terser-normalized V5 compatibility precedes strict target traversal ordering; final safety patch remains last",
-        "targets": sorted(set(targets)),
-    }
+        "wrapper_upgrade": "HLS target traversal remains a capability adapter; final identity/media safety is applied once by Core",
+        "target_source": "manifest_and_provider_capabilities",
+        "request_identity_source": "original_nuvio_request",
+        "request_type_aliases_source": "provider_capabilities.request_type_aliases",
+        "provider_specific_core_script_entries_forbidden": True,
+        "hls_capability_provider_count": len(set(targets)),
+    })
+    runtime_safety.pop("targets", None)
+    runtime_safety.setdefault("options", {
+        "duration_identity": True,
+        "min_duration_ratio": 0.55,
+        "max_duration_ratio": 1.8,
+    })
+    config["runtime_capability_media_safety"] = runtime_safety
     dump(OVERRIDES, config)
-    print(f"runtime capability upgrade v4 configured: targets={len(set(targets))} changed={changed}")
+    print(f"runtime capability upgrade v6 configured: hls_capability_targets={len(set(targets))} changed={changed} core_global_safety=true")
     return 0
 
 
