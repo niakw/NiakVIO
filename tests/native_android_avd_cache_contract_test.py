@@ -92,6 +92,7 @@ assert "runtime_mutation=false" in prime
 assert '"logo": str(row.get("logo") or "").strip()' in corpus_client
 assert '"logo": str(row.get("logo") or "").strip()' in corpus_generator
 assert "FIELD_NATIVE_ADDON_LOGO" in corpus_generator
+assert corpus_generator.count("val logo: String") >= 2
 assert "providers.size == 1" in corpus_generator
 assert "configured_not_probed" in corpus_generator
 assert "raw.githubusercontent.com" not in corpus_generator
