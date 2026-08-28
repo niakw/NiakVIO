@@ -2334,7 +2334,7 @@ def main() -> int:
 
     base_version = sources.get("repository", {}).get("manifest_version", "5.13.0")
     candidate_manifest = {
-        "name": sources.get("repository", {}).get("name", "Nuvio Curated Providers"),
+        "name": sources.get("repository", {}).get("name", "NiakVIO"),
         "scrapers": sorted(
             entries.values(),
             key=lambda entry: manifest_entry_sort_key(entry, manifest_order_profiles),
