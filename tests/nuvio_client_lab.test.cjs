@@ -32,12 +32,13 @@ assert.equal(fs.existsSync(path.join(repositoryRoot, '.github/workflows/nuvio-cl
 assert.equal(labTrigger.policy.blocking, false);
 assert.equal(labTrigger.policy.require_identity_match, true);
 assert.equal(labTrigger.policy.block_identity_contradictions, true);
-assert.equal(labTrigger.fixtures.length, 10);
+assert.equal(labTrigger.fixtures.length, 11);
 assert.equal(labTrigger.fixtures.every((row) => Number(row.fixture.expectedDurationMinutes) > 0), true);
 assert.deepEqual(labTrigger.native_reader_acceptance.tv_priority_regressions, [
   'colony-2021',
   'failure-frame-s01e01',
   'hell-teacher-nube-2025-s01e01',
+  'hell-mode-s01e01',
 ]);
 const fixturesBySlug = new Map(labTrigger.fixtures.map((row) => [row.slug, row.fixture]));
 assert.equal(fixturesBySlug.get('colony-2021').tmdbId, '760873');
@@ -49,6 +50,10 @@ assert.equal(fixturesBySlug.get('failure-frame-s01e01').episode, 1);
 assert.equal(fixturesBySlug.get('hell-teacher-nube-2025-s01e01').tmdbId, '259544');
 assert.equal(fixturesBySlug.get('hell-teacher-nube-2025-s01e01').year, 2025);
 assert.deepEqual(fixturesBySlug.get('hell-teacher-nube-2025-s01e01').ambiguousReleaseYears, [1996, 2025]);
+assert.equal(fixturesBySlug.get('hell-mode-s01e01').tmdbId, '280049');
+assert.equal(fixturesBySlug.get('hell-mode-s01e01').mediaType, 'anime');
+assert.equal(fixturesBySlug.get('hell-mode-s01e01').season, 1);
+assert.equal(fixturesBySlug.get('hell-mode-s01e01').episode, 1);
 
 const manifest = {
   scrapers: [
