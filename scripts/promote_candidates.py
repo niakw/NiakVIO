@@ -38,6 +38,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
+from provider_base_store import persist_base_from_published
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGE = Path(os.environ.get("NUVIO_STAGE", ROOT / "staging")).resolve()
@@ -184,7 +185,7 @@ def metadata_is_excluded(entry: dict[str, Any], sources: dict[str, Any]) -> bool
     )
 
 
-def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str]:
+def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str, str, str]:
     source_path = (STAGE / candidate["local_path"]).resolve()
     if not is_under(source_path, STAGE / "providers") or not source_path.exists():
         raise ValueError(f"unsafe or missing staged provider path: {source_path}")
@@ -199,6 +200,13 @@ def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str]:
     # staging artifact remains byte-identical. This prevents an unpatched
     # candidate from ever reaching providers/ even if staging changes later.
     data, promotion_patches = apply_overrides(candidate["canonical_id"], staged_data)
+    base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published(
+        candidate["canonical_id"],
+        data,
+    )
+    candidate["provider_base_filename"] = base_filename
+    candidate["provider_base_sha256"] = base_sha256
+    candidate["provider_base_stripped_generated_core"] = base_stripped_generated_core
     digest = hashlib.sha256(data).hexdigest()
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as validation_file:
         validation_file.write(data)
@@ -239,7 +247,7 @@ def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str]:
     )
     if not destination.exists() or destination.read_bytes() != data:
         destination.write_bytes(data)
-    return destination, digest
+    return destination, digest, base_filename, base_sha256
 
 
 def build_entry(
@@ -2078,7 +2086,7 @@ def main() -> int:
                 continue
 
             try:
-                destination, digest = copy_candidate(selected)
+                destination, digest, base_filename, base_sha256 = copy_candidate(selected)
             except (ValueError, OSError, subprocess.SubprocessError) as exc:
                 # A generated candidate may still be invalid after all upstream
                 # checks. Reject only that candidate, retain the last published
@@ -2202,6 +2210,10 @@ def main() -> int:
                 "published_filename": destination.relative_to(ROOT).as_posix(),
                 "sha256": digest,
                 "patched_sha256": digest,
+                "base_filename": base_filename,
+                "base_sha256": base_sha256,
+                "base_source": "selected_candidate_post_provider_overrides_pre_core",
+                "base_migration_stripped_generated_core": bool(selected.get("provider_base_stripped_generated_core")),
                 "upstream_sha256": selected.get("upstream_sha256"),
                 "local_patches": selected.get("local_patches", []),
                 "source": selected.get("source"),
