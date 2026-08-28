@@ -46,7 +46,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening + exact 92-provider scan + exact-SHA CodeQL + all High/Critical alerts."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening + exhaustive published-provider scan + exact-SHA CodeQL + all High/Critical alerts."
 
       - name: Checkout exact main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -77,7 +77,7 @@ jobs:
           python tests/native_corpus_device_lab_test.py
           python scripts/normalize_published_security_finalization.py --check
 
-      - name: Scan exactly 92 published providers for known unsafe shapes
+      - name: Scan all published providers for known unsafe shapes
         shell: bash
         run: |
           set -euo pipefail
@@ -89,9 +89,18 @@ jobs:
           from provider_security_hardening import known_unsafe_findings
           manifest=json.loads((root/'manifest.json').read_text())
           failures=[]
-          rows=[row for row in (manifest.get('scrapers') or []) if isinstance(row,dict) and str(row.get('filename') or '').strip()]
-          if len(rows) != 92:
-              failures.append(('catalogue', f'unexpected_count:{len(rows)}', 'manifest.json'))
+          manifest_rows=[row for row in (manifest.get('scrapers') or []) if isinstance(row,dict)]
+          rows=[row for row in manifest_rows if str(row.get('filename') or '').strip()]
+          if not rows:
+              failures.append(('catalogue', 'empty_provider_catalogue', 'manifest.json'))
+          if len(rows) != len(manifest_rows):
+              failures.append(('catalogue', f'missing_filename:{len(manifest_rows)-len(rows)}', 'manifest.json'))
+          ids=[str(row.get('id') or '').strip().casefold() for row in rows]
+          if any(not provider_id for provider_id in ids):
+              failures.append(('catalogue', 'missing_provider_id', 'manifest.json'))
+          if len(set(ids)) != len(ids):
+              failures.append(('catalogue', 'duplicate_provider_id', 'manifest.json'))
+          expected=len(rows)
           checked=0
           for row in rows:
               rel=str(row.get('filename') or '')
@@ -103,13 +112,13 @@ jobs:
               checked+=1
               if findings:
                   failures.append((str(row.get('id')), ','.join(sorted(set(findings))), rel))
-          if checked != len(rows):
-              failures.append(('catalogue', f'incomplete_scan:{checked}/{len(rows)}', 'manifest.json'))
+          if checked != expected:
+              failures.append(('catalogue', f'incomplete_scan:{checked}/{expected}', 'manifest.json'))
           if failures:
               for item in failures:
                   print('UNSAFE_PROVIDER=' + '|'.join(item))
               raise SystemExit(f'known unsafe provider shapes or incomplete catalogue scan remain: {len(failures)}')
-          print(f'FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected=92 unsafe=0')
+          print(f'FIELD_PUBLISHED_PROVIDER_SECURITY_SCAN checked={checked} expected={expected} unsafe=0')
           PY
 
       - name: Wait for CodeQL analysis of exact tested main SHA
@@ -183,7 +192,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening contract, exact 92-provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening contract, exhaustive published-provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
 
       - name: Report issue 69 security failure
         if: failure()
