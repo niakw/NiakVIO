@@ -143,6 +143,7 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
                 "id": provider_id,
                 "enabled": bool(row.get("enabled")),
                 "filename": filename,
+                "logo": str(row.get("logo") or "").strip(),
                 "source": _provider_source(filename),
                 "manifest": str(manifest_file.relative_to(ROOT)),
             }
