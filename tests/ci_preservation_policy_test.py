@@ -43,6 +43,13 @@ assert 'previous_state_is_safety_quarantine' in promoter
 assert 'ci_result_is_inconclusive' in promoter
 assert 'preserved-conclusive-safety-quarantine-ci-uncertain' in promoter
 assert 'ci_uncertain_kept_last_conclusive_safety_quarantine' in promoter
+assert '''if old_safety_quarantine:
+                    provenance[cid] = {
+                        **old_provenance,
+                        "id": cid,
+                        "published_filename": old_filename,
+                        "sha256": retained_digest,
+                        "patched_sha256": retained_digest,''' in promoter
 
 validator_source = (ROOT / 'scripts/validate_activation_preservation.py').read_text(encoding='utf-8')
 assert 'ci_inconclusive_is_not_disablement_proof' in validator_source
