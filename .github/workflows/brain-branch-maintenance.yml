@@ -1,0 +1,97 @@
+name: Brain branch maintenance
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: read
+
+concurrency:
+  group: niakvio-brain-branch-maintenance
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    name: Rebase Brain memory and clean proposal branch
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Rebase sanitized learning memory onto current main
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="brain-learning/proposals"
+          TMP="$(mktemp -d)"
+          trap 'rm -rf "$TMP"' EXIT
+
+          git config user.name "niakvio-brain"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin main
+          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+
+          have_memory=false
+          if git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.json" 2>/dev/null &&
+             git cat-file -e "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.md" 2>/dev/null; then
+            git show "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.json" > "$TMP/latest.json"
+            git show "refs/remotes/origin/$BRANCH:engine_v2/learning/latest.md" > "$TMP/latest.md"
+            have_memory=true
+          fi
+
+          git switch -C "$BRANCH" origin/main
+          if [ "$have_memory" = true ]; then
+            mkdir -p engine_v2/learning
+            cp "$TMP/latest.json" engine_v2/learning/latest.json
+            cp "$TMP/latest.md" engine_v2/learning/latest.md
+            git add engine_v2/learning/latest.json engine_v2/learning/latest.md
+            if ! git diff --cached --quiet; then
+              git commit -m "brain: rebase sanitized learning memory onto main [skip ci]"
+            fi
+          fi
+
+          git push --force-with-lease origin HEAD:"$BRANCH"
+
+          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH"
+          mapfile -t changed < <(git diff --name-only origin/main...refs/remotes/origin/"$BRANCH")
+          unexpected=0
+          for file in "${changed[@]}"; do
+            case "$file" in
+              engine_v2/learning/latest.json|engine_v2/learning/latest.md) ;;
+              *)
+                echo "Unexpected persistent Brain branch file: $file" >&2
+                unexpected=1
+                ;;
+            esac
+          done
+          if [ "$unexpected" -ne 0 ]; then
+            exit 1
+          fi
+          echo "FIELD_BRAIN_MEMORY_BRANCH base=$(git rev-parse --short origin/main) files=${#changed[@]}"
+
+      - name: Remove closed repair proposal branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="brain-repair/proposal"
+          OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -n "$OPEN_PR" ]; then
+            echo "FIELD_BRAIN_REPAIR_BRANCH action=keep_open_pr pr=$OPEN_PR"
+            exit 0
+          fi
+          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
+            git push origin --delete "$BRANCH"
+            echo "FIELD_BRAIN_REPAIR_BRANCH action=deleted_closed_branch"
+          else
+            echo "FIELD_BRAIN_REPAIR_BRANCH action=already_absent"
+          fi
