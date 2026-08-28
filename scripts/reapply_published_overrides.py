@@ -305,11 +305,31 @@ def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[An
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
+    parser.add_argument(
+        "--primary",
+        default="manifest.json",
+        help="Repository-relative manifest transaction to update (default: manifest.json)",
+    )
+    parser.add_argument(
+        "--skip-secondary",
+        action="store_true",
+        help="Do not rewrite language projection manifests for a pending transaction",
+    )
     args = parser.parse_args()
 
-    primary = load_manifest(PRIMARY)
+    primary_arg = Path(args.primary)
+    if primary_arg.is_absolute():
+        raise ValueError("--primary must be repository-relative")
+    primary_path = (ROOT / primary_arg).resolve()
+    try:
+        primary_path.relative_to(ROOT.resolve())
+    except ValueError as exc:
+        raise ValueError("--primary escapes repository root") from exc
+    secondary_paths = () if args.skip_secondary else SECONDARY
+
+    primary = load_manifest(primary_path)
     if primary is None:
-        raise ValueError("manifest.json is missing")
+        raise ValueError(f"{primary_arg.as_posix()} is missing")
 
     provenance: dict[str, Any] | None = None
     provenance_rows: dict[str, Any] = {}
@@ -468,7 +488,7 @@ def main() -> int:
         }
 
     secondary_payloads: list[tuple[Path, dict[str, Any]]] = []
-    for path in SECONDARY:
+    for path in secondary_paths:
         payload = load_manifest(path)
         if payload is None:
             continue
@@ -538,7 +558,7 @@ def main() -> int:
                 stale = True
 
     if args.check:
-        if json.loads(PRIMARY.read_text(encoding="utf-8")) != primary:
+        if json.loads(primary_path.read_text(encoding="utf-8")) != primary:
             stale = True
         for path, payload in secondary_payloads:
             if json.loads(path.read_text(encoding="utf-8")) != payload:
@@ -556,7 +576,7 @@ def main() -> int:
         destination.parent.mkdir(parents=True, exist_ok=True)
         if not destination.exists() or destination.read_bytes() != data:
             destination.write_bytes(data)
-    write_manifest(PRIMARY, primary)
+    write_manifest(primary_path, primary)
     for path, payload in secondary_payloads:
         write_manifest(path, payload)
     if provenance is not None:
