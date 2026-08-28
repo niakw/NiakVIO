@@ -1360,6 +1360,51 @@
           "normalize_missing_episodes": true,
           "filter_episode_labels": true,
           "max_series_streams": 24
+        },
+        "scripts/provider_patches/adaptive_runtime_recovery_v5.py": {
+          "provider_name": "🇮🇳 HindMoviez",
+          "base_url": "https://hindmovie.fit",
+          "endpoint_origins": [
+            "https://mvlink.blog",
+            "https://old.invalid"
+          ],
+          "types": [
+            "movie",
+            "tv"
+          ],
+          "search_paths": [
+            "/?s={query}",
+            "/search?q={query}",
+            "/index.php?do=search&subaction=search&story={query}"
+          ],
+          "direct_paths": [
+            "/{slug}",
+            "/film/{slug}",
+            "/films/{slug}",
+            "/anime/{slug}",
+            "/serie/{slug}",
+            "/series/{slug}"
+          ],
+          "max_pages": 10,
+          "max_embeds": 10,
+          "max_depth": 3,
+          "timeout_ms": 9000,
+          "blocked_hosts": [
+            "cloudflareinsights.com",
+            "connect.facebook.net",
+            "doubleclick.net",
+            "fstream.top",
+            "google-analytics.com",
+            "googlesyndication.com",
+            "googletagmanager.com",
+            "static.cloudflareinsights.com"
+          ],
+          "blocked_path_patterns": [
+            "/beacon.min.js",
+            "/cdn-cgi/rum",
+            "/gtag/js",
+            "/troll/"
+          ]
         }
       },
       "required_values": [],
@@ -1367,7 +1412,8 @@
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/runtime_capability_media_safety_v4.py"
+        "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+        "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -2316,7 +2362,30 @@
     "reject_malformed_requests": true,
     "retry_identical_repairs": false,
     "generic_metadata_mutation_enabled": false,
-    "learned_skills": {},
+    "learned_skills": {
+      "media_validation_gap:adaptive_runtime_recovery": {
+        "id": "media_validation_gap:adaptive_runtime_recovery",
+        "failureClass": "media_validation_gap",
+        "profile": "adaptive_runtime_recovery",
+        "actions": [
+          "apply validated adaptive_runtime_recovery strategy for media_validation_gap"
+        ],
+        "capabilities": [
+          "identity",
+          "media"
+        ],
+        "providers": [
+          "hindmoviez"
+        ],
+        "successCount": 8,
+        "failureCount": 0,
+        "validated": true,
+        "confidence": 1.0,
+        "maturity": "candidate",
+        "autoApply": false,
+        "lastValidatedMode": "learning"
+      }
+    },
     "brain": {
       "name": "NiakVIO Brain",
       "controlPlaneVersion": 4,
