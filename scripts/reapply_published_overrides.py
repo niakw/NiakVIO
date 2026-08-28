@@ -307,8 +307,8 @@ def main() -> int:
     parser.add_argument("--check", action="store_true")
     parser.add_argument(
         "--primary",
-        default="manifest.json",
-        help="Repository-relative manifest transaction to update (default: manifest.json)",
+        default=None,
+        help="Repository-relative manifest transaction to update (default: pending manifest.next.json when present, otherwise manifest.json)",
     )
     parser.add_argument(
         "--skip-secondary",
@@ -317,7 +317,11 @@ def main() -> int:
     )
     args = parser.parse_args()
 
-    primary_arg = Path(args.primary)
+    primary_arg = (
+        Path(args.primary)
+        if args.primary
+        else Path("manifest.next.json" if (ROOT / "manifest.next.json").is_file() else "manifest.json")
+    )
     if primary_arg.is_absolute():
         raise ValueError("--primary must be repository-relative")
     primary_path = (ROOT / primary_arg).resolve()
@@ -325,7 +329,8 @@ def main() -> int:
         primary_path.relative_to(ROOT.resolve())
     except ValueError as exc:
         raise ValueError("--primary escapes repository root") from exc
-    secondary_paths = () if args.skip_secondary else SECONDARY
+    pending_transaction = primary_arg.as_posix() == "manifest.next.json"
+    secondary_paths = () if args.skip_secondary or pending_transaction else SECONDARY
 
     primary = load_manifest(primary_path)
     if primary is None:
