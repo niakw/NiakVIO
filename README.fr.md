@@ -522,6 +522,7 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `native-reader-learning-sync.yml` | import idempotent des résultats lecteur validés de `main` |
 | `provider-results-readme-sync.yml` | fusion des nouvelles preuves lecteur positives dans la matrice README |
 | `brain-learning-lab.yml` | expérimentation et mémoire du Repair Brain en sandbox |
+| `brain-branch-maintenance.yml` | rebase la mémoire Brain sur `main` et supprime les branches proposal fermées |
 | `availability.yml` | disponibilité des providers publiés |
 | `domain-refresh.yml` | observation des domaines |
 | `core-media-finalize-main.yml` | fixed-point Core, non-régressions Engine v2 et intégrité de publication |
@@ -530,6 +531,8 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `external-code-audit.yml` | rafraîchissement des preuves SonarQube Cloud / DeepSource / CodeScene |
 | `weekly-upstream-provider-discovery.yml` | découverte hebdomadaire en lecture seule des nouveaux providers upstream |
 | `purge-actions-history.yml` | suppression hebdomadaire des runs Actions terminés de plus de 7 jours |
+
+La branche `brain-learning/proposals` ne conserve que la mémoire sanitizée et est reconstruite sur le dernier `main`. La branche `brain-repair/proposal` est temporaire : elle est supprimée lorsqu'aucune PR Brain n'est ouverte, afin que le proposal suivant reparte du `main` courant.
 
 Les anciens labs à refs clientes mutables, les preuves Desktop Linux, les workflows provider-spécifiques et les orchestrateurs superseded ne font pas partie de l'architecture cible.
 
