@@ -21,7 +21,7 @@ function excludedFromNoAnime(scraper) {
 
 function noAnimeProjection(source) {
   const copy = structuredClone(source);
-  copy.name = String(source.name || "Nuvio Curated Providers") + " — Without anime providers";
+  copy.name = String(source.name || "NiakVIO") + " — Without anime providers";
   copy.scrapers = (source.scrapers || [])
     .filter((row) => !excludedFromNoAnime(row))
     .map((row) => {

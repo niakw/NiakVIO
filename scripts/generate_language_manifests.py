@@ -133,7 +133,7 @@ def build_no_anime_manifest(source: dict[str, Any], name_suffix: str = "Without 
         if isinstance(entry, dict) and not excluded_from_no_anime(entry)
     ]
     return {
-        "name": f"{source.get('name', 'Nuvio Curated Providers')} — {name_suffix}",
+        "name": f"{source.get('name', 'NiakVIO')} — {name_suffix}",
         "version": source.get("version"),
         "scrapers": entries,
     }
@@ -340,7 +340,7 @@ def build_manifest(
             continue
         entries.append(nested_entry(entry))
     return {
-        "name": f"{source.get('name', 'Nuvio Curated Providers')} — {name_suffix}",
+        "name": f"{source.get('name', 'NiakVIO')} — {name_suffix}",
         "version": source.get("version"),
         "scrapers": entries,
     }

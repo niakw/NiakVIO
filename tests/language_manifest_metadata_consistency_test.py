@@ -20,6 +20,15 @@ fields = (
     "disabledPlatforms",
 )
 errors: list[str] = []
+
+assert main.get("name") == "NiakVIO", main.get("name")
+assert vf.get("name") == "NiakVIO — VF uniquement", vf.get("name")
+missing_logos = [
+    str(row.get("id") or "")
+    for row in main.get("scrapers", [])
+    if isinstance(row, dict) and not str(row.get("logo") or "").strip()
+]
+assert not missing_logos, f"providers missing logo metadata: {missing_logos}"
 for row in vf.get("scrapers", []):
     if not isinstance(row, dict):
         continue
