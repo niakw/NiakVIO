@@ -19,11 +19,13 @@ from typing import Any
 from urllib.parse import urlparse
 
 from provider_engine_normalizer import normalize_mapping_keys, sanitize_provider_hooks
+from provider_base_store import resolve_base
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
 DEFAULT_OUTPUT = ROOT / "staging" / "provider-rebuild"
+PROVENANCE = ROOT / "PROVENANCE.json"
 CONTRACT_MARKER = "NUVIO_PROVIDER_CONTRACT_V1"
 CONTRACT_RE = re.compile(r"\A/\*\s*NUVIO_PROVIDER_CONTRACT_V1:([A-Za-z0-9+/=]+)\s*\*/\n?", re.MULTILINE)
 URL_RE = re.compile(r"https?://[^\s\"'`<>\\)]+", re.I)
@@ -387,6 +389,17 @@ def compile_manifest(
     removed_hooks = list(removed_api_hooks)
     removed_hooks.extend(row for row in removed_backend_hooks if row not in removed_hooks)
     ownership = declared_backend_hosts(config)
+    canonical_provider_base_mode = (
+        manifest_path.parent.resolve() == ROOT.resolve()
+        and manifest_path.name in {"manifest.json", "manifest.next.json"}
+    )
+    provenance_rows: dict[str, Any] = {}
+    if canonical_provider_base_mode:
+        provenance = load_json(PROVENANCE)
+        rows_value = provenance.get("providers")
+        if not isinstance(rows_value, dict):
+            raise ValueError("PROVENANCE.providers must be an object for canonical ProviderBase compilation")
+        provenance_rows = rows_value
     output_dir.mkdir(parents=True, exist_ok=True)
     providers_dir = output_dir / "providers"
     providers_dir.mkdir(parents=True, exist_ok=True)
@@ -400,10 +413,19 @@ def compile_manifest(
         if not provider_id or not filename or provider_id in seen:
             continue
         seen.add(provider_id)
-        source_path = (manifest_path.parent / filename).resolve()
-        if ROOT not in source_path.parents or not source_path.is_file():
-            rows.append({"provider_id": provider_id, "status": "missing_source", "source_file": filename})
-            continue
+        if canonical_provider_base_mode:
+            provenance_row = provenance_rows.get(provider_id)
+            if not isinstance(provenance_row, dict):
+                raise ValueError(f"{provider_id}: missing provenance required for ProviderBase compilation")
+            source_path, _base_sha = resolve_base(provider_id, provenance_row, require=True)
+            assert source_path is not None
+            source_file = source_path.relative_to(ROOT).as_posix()
+        else:
+            source_path = (manifest_path.parent / filename).resolve()
+            if ROOT not in source_path.parents or not source_path.is_file():
+                rows.append({"provider_id": provider_id, "status": "missing_source", "source_file": filename})
+                continue
+            source_file = filename
         source_bytes = source_path.read_bytes()
         compiled, contract, isolation_records = compile_provider(
             provider_id,
@@ -418,8 +440,9 @@ def compile_manifest(
         rows.append({
             "provider_id": provider_id,
             "status": "compiled",
-            "source_file": filename,
+            "source_file": source_file,
             "source_sha256": sha256_bytes(source_bytes),
+            "source_kind": "provider_base" if canonical_provider_base_mode else "explicit_manifest_source",
             "compiled_file": f"providers/{target_name}",
             "compiled_sha256": digest,
             "contract_sha256": sha256_bytes(json.dumps(contract, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")),
