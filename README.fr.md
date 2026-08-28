@@ -475,7 +475,7 @@ Le dispositif comprend :
 - un lab **Nuvio Desktop natif macOS/Windows**, Linux étant explicitement exclu comme preuve lecteur ;
 - une preuve repository → provider → HTTP → stream → lecteur, plus des phases frontend capturées ;
 - des retests ciblés par device disponibles **manuellement** sans relancer toute la matrice ;
-- un sandbox Brain v4 qui peut matérialiser jusqu'à 24 mutations provider génériques justifiées, puis rejoue Sinners sur NuvioTV avec tous les providers et tous les streams avant comparaison ;
+- un sandbox Brain borné qui peut matérialiser des mutations provider génériques justifiées et, pendant l'apprentissage, lancer un **Lab client ciblé sur un seul provider** ; la fixture est choisie selon son **premier type déclaré** (`movie`, `tv` ou `anime`) afin d'éviter de rejouer inutilement toute la matrice ;
 - une mémoire lecteur fail-closed : preuve incomplète = pas d'apprentissage et pas de plan de réparation.
 
 ---
@@ -516,7 +516,7 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `sync.yml` | discovery → repair → validation → publication Quick/Deep |
 | `canonical-media-types.yml` | contrats media, evidence native, cache et mémoire Brain |
 | `github-actions-gate.yml` | sécurité et invariants des workflows |
-| `native-android-route-reader.yml` | preuve native exhaustive NuvioTV + Mobile et retest Brain v4 |
+| `native-android-route-reader.yml` | preuve native NuvioTV + Mobile et retest Brain représentatif |
 | `native-desktop-reader-acceptance.yml` | preuve lecteur officielle Desktop macOS/Windows |
 | `native-corpus-device-targeted.yml` | retests device à la demande uniquement |
 | `native-reader-learning-sync.yml` | import idempotent des résultats lecteur validés de `main` |
