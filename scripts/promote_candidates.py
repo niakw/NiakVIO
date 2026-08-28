@@ -1998,6 +1998,10 @@ def main() -> int:
                 if old_safety_quarantine:
                     provenance[cid] = {
                         **old_provenance,
+                        "id": cid,
+                        "published_filename": old_filename,
+                        "sha256": retained_digest,
+                        "patched_sha256": retained_digest,
                         "checked_at": now,
                         "check_mode": mode,
                         "check_status": observed_status,
