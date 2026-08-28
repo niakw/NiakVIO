@@ -50,6 +50,7 @@ def manifest_providers() -> list[dict]:
                 "id": provider_id,
                 "enabled": bool(row.get("enabled")),
                 "filename": filename,
+                "logo": str(row.get("logo") or "").strip(),
                 "source": source,
             }
         )
@@ -80,7 +81,8 @@ def provider_literal(providers: list[dict]) -> str:
             "ProviderSpec("
             f"id={kotlin_string(provider['id'])},"
             f"asset={kotlin_string(provider['asset'])},"
-            f"enabled={'true' if provider['enabled'] else 'false'}"
+            f"enabled={'true' if provider['enabled'] else 'false'},"
+            f"logo={kotlin_string(provider.get('logo') or '')}"
             ")"
         )
     return ",\n        ".join(rows)
@@ -110,6 +112,50 @@ TRANSPORT_HELPERS = r'''
         val host: String,
         val mediaHint: String,
     )
+
+    data class LogoProbe(
+        val state: String,
+        val status: Int,
+        val contentType: String,
+        val host: String,
+    )
+
+    private fun probeLogo(raw: String, enabled: Boolean): LogoProbe {
+        val host = hostOnly(raw)
+        if (raw.isBlank()) return LogoProbe("missing", 0, "", host)
+        if (!enabled) return LogoProbe("configured_not_probed", 0, "", host)
+        return try {
+            val connection = java.net.URL(raw).openConnection() as java.net.HttpURLConnection
+            connection.instanceFollowRedirects = true
+            connection.connectTimeout = 8_000
+            connection.readTimeout = 8_000
+            connection.setRequestProperty("Accept", "image/avif,image/webp,image/*,*/*;q=0.8")
+            connection.setRequestProperty("Range", "bytes=0-31")
+            try {
+                val status = connection.responseCode
+                val contentType = connection.contentType.orEmpty()
+                val input = if (status in 200..299 || status == 206) connection.inputStream else connection.errorStream
+                val prefix = ByteArray(16)
+                val count = input?.use { it.read(prefix) } ?: 0
+                val webp = count >= 12 &&
+                    prefix[0].toInt() == 0x52 && prefix[1].toInt() == 0x49 &&
+                    prefix[2].toInt() == 0x46 && prefix[3].toInt() == 0x46 &&
+                    prefix[8].toInt() == 0x57 && prefix[9].toInt() == 0x45 &&
+                    prefix[10].toInt() == 0x42 && prefix[11].toInt() == 0x50
+                val png = count >= 8 &&
+                    prefix[0].toInt() == 0x89 && prefix[1].toInt() == 0x50 &&
+                    prefix[2].toInt() == 0x4e && prefix[3].toInt() == 0x47
+                val jpeg = count >= 2 &&
+                    (prefix[0].toInt() and 0xff) == 0xff && (prefix[1].toInt() and 0xff) == 0xd8
+                val image = contentType.startsWith("image/", ignoreCase = true) || webp || png || jpeg
+                LogoProbe(if (status in 200..299 && image) "loadable" else "unloadable", status, contentType, host)
+            } finally {
+                connection.disconnect()
+            }
+        } catch (error: Throwable) {
+            LogoProbe("error", 0, error::class.simpleName.orEmpty(), host)
+        }
+    }
 
     private fun humanMediaHint(raw: String): String {
         return try {
@@ -227,7 +273,7 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 
 class NiakvioNativeCorpusDesktopTest {{
-    data class ProviderSpec(val id: String, val asset: String, val enabled: Boolean)
+    data class ProviderSpec(val id: String, val asset: String, val enabled: Boolean, val logo: String)
 
     private val workspace = File(System.getenv("GITHUB_WORKSPACE"))
     private val root = File(workspace, "niakvio/native-corpus-stage")
@@ -256,6 +302,8 @@ class NiakvioNativeCorpusDesktopTest {{
         emit("FIELD_NATIVE_CORPUS_BEGIN client=desktop fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
         for (provider in providers) {{
             val started = System.currentTimeMillis()
+            val logoProbe = probeLogo(provider.logo, providers.size == 1)
+            emit("FIELD_NATIVE_ADDON_LOGO client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} configured=${provider.logo.isNotBlank()} state=${logoProbe.state} status=${logoProbe.status} content_type64=${b64(logoProbe.contentType)} host64=${b64(logoProbe.host)}")
             try {{
                 val rows = PluginRuntime.executePlugin(
                     code = File(root, provider.asset).readText(),
@@ -340,6 +388,8 @@ class {klass} {{
         emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
         for (provider in providers) {{
             val started = System.currentTimeMillis()
+            val logoProbe = probeLogo(provider.logo, providers.size == 1)
+            emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${b64(provider.id)} configured=${provider.logo.isNotBlank()} state=${logoProbe.state} status=${logoProbe.status} content_type64=${b64(logoProbe.contentType)} host64=${b64(logoProbe.host)}")
             try {{
                 val rows = {execute}(
                     code = code(provider.asset),
