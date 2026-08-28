@@ -56,6 +56,16 @@ assert repair_types["executionLanes"]["coreRepair"]["learnedSkillInputAllowed"] 
 assert repair_types["executionLanes"]["coreRepair"]["unknownFailureAction"] == "queue_for_independent_learning"
 assert repair_types["executionLanes"]["dailyLearning"]["partOfCoreRepair"] is False
 assert repair_types["executionLanes"]["dailyLearning"]["requiredPublishedProviderObservationCoverage"] == 1.0
+lifecycle = repair_types["providerArtifactLifecycle"]
+assert lifecycle["model"] == "stable_provider_base_plus_derived_public_bundle"
+assert lifecycle["providerBase"]["startsFromEmpty"] is False
+assert lifecycle["providerBase"]["durableOwner"] == "provider_pipeline"
+assert lifecycle["providerBase"]["coreMayReplaceProviderLogic"] is False
+assert lifecycle["coreFinalizer"]["mode"] == "verify_first"
+assert lifecycle["coreFinalizer"]["materializeOnlyWhenStale"] is True
+assert lifecycle["coreFinalizer"]["noOpWhenFixedPoint"] is True
+assert lifecycle["coreFinalizer"]["forbiddenTrigger"] == "core_invocation_alone"
+assert lifecycle["publicBundle"]["rebuildOnlyOnInputChange"] is True
 
 classes = repair_types["failureClasses"]
 for failure in ("identity_mismatch", "short_media", "media_validation_gap", "audio_track_gap"):

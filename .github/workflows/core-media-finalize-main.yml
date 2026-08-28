@@ -127,15 +127,21 @@ jobs:
           python scripts/apply_runtime_capability_upgrade_v4.py
           python scripts/build_provider_runtime_profiles.py
           converged=0
-          for pass in 1 2 3 4 5 6; do
-            echo "FIELD_PROVIDER_REBUILD_CONVERGENCE pass=${pass}"
-            python scripts/reapply_published_overrides.py
-            if python scripts/reapply_published_overrides.py --check; then
-              converged=1
-              echo "FIELD_PROVIDER_REBUILD_CONVERGENCE converged_at=${pass}"
-              break
-            fi
-          done
+          if python scripts/reapply_published_overrides.py --check; then
+            converged=1
+            echo "FIELD_PROVIDER_REBUILD_MODE mode=verify-only reason=already-fixed-point"
+          else
+            echo "FIELD_PROVIDER_REBUILD_MODE mode=materialize reason=stale-provider-or-core-contract"
+            for pass in 1 2 3 4 5 6; do
+              echo "FIELD_PROVIDER_REBUILD_CONVERGENCE pass=${pass}"
+              python scripts/reapply_published_overrides.py
+              if python scripts/reapply_published_overrides.py --check; then
+                converged=1
+                echo "FIELD_PROVIDER_REBUILD_CONVERGENCE converged_at=${pass}"
+                break
+              fi
+            done
+          fi
           if [[ "$converged" -ne 1 ]]; then
             echo 'provider publication failed to converge within 6 passes' >&2
             exit 1

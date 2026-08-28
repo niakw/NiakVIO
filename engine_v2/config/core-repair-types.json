@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "principle": "NiakVIO validates the source, recognizes the provider and its capability, applies global invariants, applies the capability engine, applies capability-global invariants, then publishes. Learning exists only to evolve this architecture when a case is not covered.",
   "pipeline": [
     {
@@ -355,6 +355,33 @@
       "requiredPublishedProviderObservationCoverage": 1,
       "anomalyHandling": "investigate_unknown_or_unresolved_cases_and_propose_core_evolution",
       "directPublication": false
+    }
+  },
+  "providerArtifactLifecycle": {
+    "model": "stable_provider_base_plus_derived_public_bundle",
+    "providerBase": {
+      "created": "initial_import_or_explicit_provider_source_change",
+      "startsFromEmpty": false,
+      "durableOwner": "provider_pipeline",
+      "coreMayReplaceProviderLogic": false
+    },
+    "coreFinalizer": {
+      "mode": "verify_first",
+      "verifyCommand": "python scripts/reapply_published_overrides.py --check",
+      "materializeOnlyWhenStale": true,
+      "noOpWhenFixedPoint": true,
+      "allowedRebuildTriggers": [
+        "provider_base_changed",
+        "provider_capability_or_type_changed",
+        "core_embedded_revision_changed",
+        "security_or_presentation_contract_changed"
+      ],
+      "forbiddenTrigger": "core_invocation_alone"
+    },
+    "publicBundle": {
+      "derivation": "provider_base_plus_known_core_and_capability_layers",
+      "contentAddressed": true,
+      "rebuildOnlyOnInputChange": true
     }
   }
 }
