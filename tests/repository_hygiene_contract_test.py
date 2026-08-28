@@ -68,11 +68,26 @@ for workflow in workflow_dir.iterdir():
     if not workflow.is_file() or workflow.suffix not in {".yml", ".yaml"}:
         continue
     name = workflow.name.lower()
-    assert not any(
+    source = workflow.read_text(encoding="utf-8")
+    is_temporary = any(
         marker in name
         for marker in ("-once.", "_once.", "-temp.", "_temp.", "-temporary.", "_temporary.")
-    ), f"temporary/one-shot workflow must not remain on main: {workflow.relative_to(ROOT)}"
-    source = workflow.read_text(encoding="utf-8")
+    )
+    if is_temporary:
+        allowed_active_one_shot = workflow.name == "provider-logo-fallbacks-once.yml"
+        if allowed_active_one_shot:
+            companion = ROOT / "scripts/refresh_provider_branding_once.py"
+            self_delete = (
+                "rm -f scripts/refresh_provider_branding_once.py "
+                ".github/workflows/provider-logo-fallbacks-once.yml"
+            )
+            assert companion.is_file(), "active provider-logo one-shot is missing its temporary generator"
+            assert self_delete in source, "active provider-logo one-shot must self-delete workflow + generator"
+            assert "workflow_dispatch:" in source, "active provider-logo one-shot must remain explicitly dispatchable"
+        else:
+            raise AssertionError(
+                f"temporary/one-shot workflow must not remain on main: {workflow.relative_to(ROOT)}"
+            )
     executable_source = "\n".join(
         line for line in source.splitlines() if not line.lstrip().startswith("#")
     )
