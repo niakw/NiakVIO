@@ -15,6 +15,10 @@ brain_runtime_source = (ROOT / "scripts/brain_repair_runtime.py").read_text(enco
 brain_overlay_source = (ROOT / "scripts/adaptive_runtime/brain_repair_runtime.py").read_text(encoding="utf-8")
 quick_source = (ROOT / "scripts/run_adaptive_quick_repair.py").read_text(encoding="utf-8")
 runtime_upgrade_source = (ROOT / "scripts/apply_runtime_capability_upgrade_v4.py").read_text(encoding="utf-8")
+reapply_source = (ROOT / "scripts/reapply_published_overrides.py").read_text(encoding="utf-8")
+compiler_source = (ROOT / "scripts/provider_compiler.py").read_text(encoding="utf-8")
+promoter_source = (ROOT / "scripts/promote_candidates.py").read_text(encoding="utf-8")
+base_store_source = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
 
 GLOBAL = {
     "scripts/provider_patches/runtime_capability_media_safety_v4.py",
@@ -35,6 +39,14 @@ assert "scripts.append(RUNTIME_PATCH)" not in runtime_upgrade_source
 assert '"scope": "all_published_providers"' in runtime_upgrade_source
 assert 'runtime_safety.pop("targets", None)' in runtime_upgrade_source
 assert "core_global_safety=true" in runtime_upgrade_source
+assert "from provider_base_store import resolve_base" in reapply_source
+assert "provider_base = provider_base_path.read_bytes()" in reapply_source
+assert 'provider_base.decode("utf-8", errors="strict")' in reapply_source
+assert "from provider_base_store import resolve_base" in compiler_source
+assert 'source_kind": "provider_base" if canonical_provider_base_mode' in compiler_source
+assert "from provider_base_store import persist_base_from_published" in promoter_source
+assert "base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published" in promoter_source
+assert "def persist_base_from_published" in base_store_source
 
 expected_pipeline = [
     "source_validation",
