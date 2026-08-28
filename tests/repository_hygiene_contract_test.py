@@ -119,6 +119,13 @@ assert "if: github.event_name == 'schedule'" in brain
 assert "pull-requests: write" in brain
 assert "gh pr create" in brain
 assert 'BRANCH="brain-learning/proposals"' in brain
+brain_branch_maintenance = (ROOT / ".github/workflows/brain-branch-maintenance.yml").read_text(encoding="utf-8")
+assert 'BRANCH="brain-learning/proposals"' in brain_branch_maintenance
+assert 'BRANCH="brain-repair/proposal"' in brain_branch_maintenance
+assert "git switch -C \"$BRANCH\" origin/main" in brain_branch_maintenance
+assert "engine_v2/learning/latest.json|engine_v2/learning/latest.md" in brain_branch_maintenance
+assert "gh pr list" in brain_branch_maintenance
+assert "git push origin --delete \"$BRANCH\"" in brain_branch_maintenance
 assert "--baseline-health brain-learning-input/baseline-health.json" in brain
 assert "tests/native_reader_ownership_policy_test.py" in brain
 
@@ -179,6 +186,7 @@ for current_workflow in (
 for maintenance_workflow in (
     "weekly-upstream-provider-discovery.yml",
     "purge-actions-history.yml",
+    "brain-branch-maintenance.yml",
 ):
     assert maintenance_workflow in architecture, f"ARCHITECTURE.md missing durable workflow: {maintenance_workflow}"
     assert maintenance_workflow in readme, f"README.md missing maintenance workflow: {maintenance_workflow}"
