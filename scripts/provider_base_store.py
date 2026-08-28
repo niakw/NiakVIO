@@ -166,7 +166,7 @@ def migrate_existing() -> dict[str, Any]:
     return {"providers": provider_count, "migrated": migrated, "reused": reused}
 
 
-def validate_all() -> dict[str, Any]:
+def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers") or {}
@@ -183,26 +183,40 @@ def validate_all() -> dict[str, Any]:
             raise ValueError(f"{provider_id}: missing provenance row")
         path, _digest = resolve_base(provider_id, row, require=True)
         assert path is not None
-        validate_base(path.read_bytes(), provider_id)
+        if validate_artifacts:
+            validate_base(path.read_bytes(), provider_id)
         bases.add(path.relative_to(ROOT).as_posix())
         checked += 1
     if checked != len(manifest.get("scrapers") or []):
         raise ValueError(f"ProviderBase coverage mismatch checked={checked} manifest={len(manifest.get('scrapers') or [])}")
-    return {"checked": checked, "unique_bases": len(bases)}
+    return {
+        "checked": checked,
+        "unique_bases": len(bases),
+        "artifact_validation": bool(validate_artifacts),
+    }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("migrate-existing")
-    sub.add_parser("validate")
+    validate_parser = sub.add_parser("validate")
+    validate_parser.add_argument(
+        "--artifacts",
+        action="store_true",
+        help="Also run the expensive Node provider validator for every base.",
+    )
     args = parser.parse_args()
     if args.command == "migrate-existing":
         result = migrate_existing()
         print(f"FIELD_PROVIDER_BASE_MIGRATION providers={result['providers']} migrated={result['migrated']} reused={result['reused']}")
     else:
-        result = validate_all()
-        print(f"FIELD_PROVIDER_BASE_COVERAGE checked={result['checked']} unique_bases={result['unique_bases']}")
+        result = validate_all(validate_artifacts=bool(args.artifacts))
+        print(
+            f"FIELD_PROVIDER_BASE_COVERAGE checked={result['checked']} "
+            f"unique_bases={result['unique_bases']} "
+            f"artifact_validation={str(result['artifact_validation']).lower()}"
+        )
     return 0
 
 
