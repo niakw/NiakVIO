@@ -11,25 +11,12 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 from pathlib import Path
 from typing import Any
 
 MARKER = "NUVIO_GLOBAL_PROVIDER_BRANDING_V1"
 ROOT = Path(__file__).resolve().parents[2]
 BRANDING = ROOT / "assets" / "providers" / "emojis.json"
-
-
-def _fallback_name(provider_id: str) -> str:
-    parts = [part for part in re.split(r"[-_\s]+", str(provider_id or "").strip()) if part]
-    return " ".join(part[:1].upper() + part[1:] for part in parts) or "Source"
-
-
-def _initial_emoji(name: str) -> str:
-    for char in str(name or "").upper():
-        if "A" <= char <= "Z":
-            return chr(0x1F1E6 + ord(char) - ord("A"))
-    return chr(0x1F1E6 + ord("S") - ord("A"))
 
 
 def _load_provider(provider_id: str) -> dict[str, str]:
@@ -42,8 +29,7 @@ def _load_provider(provider_id: str) -> dict[str, str]:
     normalized_id = str(provider_id or "").strip().casefold()
     row = providers.get(normalized_id)
     if not isinstance(row, dict):
-        name = _fallback_name(normalized_id)
-        return {"name": name, "emoji": _initial_emoji(name)}
+        raise ValueError(f"provider emoji map is missing committed row: {provider_id}")
     name = str(row.get("name") or "").strip()
     emoji = str(row.get("emoji") or "").strip()
     if not name or not emoji:
