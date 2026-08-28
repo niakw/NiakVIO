@@ -15,6 +15,16 @@ promote = (ROOT / 'scripts/promote_candidates.py').read_text(encoding='utf-8')
 workflow = (ROOT / '.github/workflows/sync.yml').read_text(encoding='utf-8')
 assert 'apply_overrides(candidate["canonical_id"], staged_data)' in promote
 assert 'python scripts/validate_published_overrides.py' in workflow
+reapply = (ROOT / 'scripts/reapply_published_overrides.py').read_text(encoding='utf-8')
+assert 'parser.add_argument(\n        "--primary",' in reapply
+assert 'parser.add_argument(\n        "--skip-secondary",' in reapply
+assert 'primary_path = (ROOT / primary_arg).resolve()' in reapply
+assert 'secondary_paths = () if args.skip_secondary else SECONDARY' in reapply
+assert 'python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary' in workflow
+post_promotion = workflow.index('Reapply durable overrides after candidate promotion')
+pending_reapply = workflow.index('python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary', post_promotion)
+pending_validate = workflow.index('python scripts/validate_published_overrides.py', pending_reapply)
+assert post_promotion < pending_reapply < pending_validate
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
