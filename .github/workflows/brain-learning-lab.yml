@@ -142,7 +142,7 @@ jobs:
           rm -rf brain-sandbox staging
           mkdir -p brain-sandbox/health-output
           python scripts/normalize_provider_activation_overrides.py
-          python scripts/resolve_provider_hubs.py --apply --mode quick --include-disabled --workers 8 --timeout 8 --output brain-sandbox/health-output/provider-hub-report.json
+          python scripts/resolve_provider_hubs.py --apply --mode deep --include-disabled --search-disabled --workers 8 --timeout 8 --output brain-sandbox/health-output/provider-hub-report.json
           python scripts/discover_candidates.py --require-all-upstreams
           node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
           node scripts/provider_dns_preflight.mjs --stage staging --output brain-sandbox/health-output/dns-preflight-report.json
