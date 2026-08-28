@@ -392,7 +392,7 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                     "id": skill_id,
                     "failureClass": failure_class,
                     "profile": profile,
-                    "actions": [f"apply validated {profile} strategy for {failure_class}"],
+                    "actions": [f"reproduce and evaluate validated {profile} strategy for {failure_class}"],
                     "capabilities": sorted({cap for hyp in plan.get("hypotheses") or [] for cap in hyp.get("capabilities") or []}),
                     "providers": [], "successCount": 0, "failureCount": 0, "validated": True,
                 })
@@ -412,7 +412,8 @@ def annotate_and_learn(output_dir: Path, mode: str) -> dict[str, Any]:
                 )
                 skill["confidence"] = round(confidence, 4)
                 skill["maturity"] = "trusted" if trusted else ("candidate" if successes >= int(maturity.get("candidateSuccesses") or 2) else "experimental")
-                skill["autoApply"] = trusted
+                skill["autoApply"] = False
+                skill["proposalEligible"] = trusted
                 accepted_count += 1
 
         for round_row in report.get("rounds") or []:

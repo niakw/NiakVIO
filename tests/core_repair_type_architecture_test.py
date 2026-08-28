@@ -80,6 +80,12 @@ assert 'learnedSkills": learned_skills() if str(mode).casefold() == "learning" e
 assert 'learnedSkills": _BASE.learned_skills() if str(mode).casefold() == "learning" else {}' in brain_overlay_source
 assert '"profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"' in quick_source
 assert '"learning_executed"] = planner_mode == "learning"' in quick_source
+assert 'skill["autoApply"] = trusted' not in brain_runtime_source
+assert 'skill["autoApply"] = False' in brain_runtime_source
+assert 'skill["proposalEligible"] = trusted' in brain_runtime_source
+assert '"repairScope": "deferred" if unknown' in quick_source
+assert '"repairEngine": "independent_learning_queue" if unknown' in quick_source
+assert '"learningDisposition": "queue_for_independent_learning" if unknown' in quick_source
 
 for skill in (skills.get("skills") or {}).values():
     assert skill.get("autoApply") is False, skill

@@ -99,6 +99,11 @@ const plannerOutput = JSON.parse(plannerRun.stdout);
 assert.equal(plannerOutput.brainVersion, 4);
 assert.equal(plannerOutput.plannerErrors, 0);
 assert.ok(plannerOutput.plans["published:dirty-provider"]);
+assert.equal(
+  plannerOutput.plans["published:dirty-provider"].hypotheses.some((row) => row.learned === true),
+  false,
+  "Quick/Core planner must ignore learned skills entirely",
+);
 assert.equal(plannerOutput.plans["published:healthy-provider"].action, "none");
 
 // A provider can return media successfully while the final media request is

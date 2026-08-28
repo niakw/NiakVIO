@@ -219,10 +219,16 @@ def _install_control_plane_fallback_plan(candidate: dict[str, Any], result: dict
         else:
             action = "probe-targeted-repair"
             allowed_profiles = ["adaptive_runtime_recovery"]
+    unknown = failure_class == "unknown_failure"
     brain.PLANS[plan_key] = {
         "brainVersion": 4,
         "providerId": provider_id,
         "failureClass": failure_class,
+        "repairScope": "deferred" if unknown else ("global" if failure_class == "identity_mismatch" else "capability"),
+        "repairType": "architecture_gap" if unknown else "planner_transport_fallback",
+        "repairEngine": "independent_learning_queue" if unknown else "core_fallback",
+        "pipelineStage": "deferred_learning" if unknown else "core_repair",
+        "learningDisposition": "queue_for_independent_learning" if unknown else "core_repair_only",
         "signature": f"control-plane-fallback:{failure_class}:{status}",
         "action": action,
         "exitReason": "planner_transport_fallback",
@@ -245,7 +251,7 @@ def _plan_quick_results(registry_path: Path, report: dict[str, Any]) -> None:
     A malformed or oversized control-plane payload must never prevent the other
     providers from entering Repair. Every result gets its own Node planner call;
     an isolated planner failure receives a bounded generic Repair plan instead of
-    aborting the 92-provider refresh.
+    aborting the published-provider refresh.
     """
     registry = json.loads(registry_path.read_text(encoding="utf-8"))
     candidates = {

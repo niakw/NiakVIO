@@ -164,11 +164,16 @@ except RuntimeError as exc:
 else:
     raise AssertionError("unknown target-media shape must fail closed")
 
-# The repository-wide runtime upgrade must keep this traversal transform directly
-# before the final safety wrapper for every HLS-capable provider.
+# The repository-wide runtime upgrade owns only the HLS capability adapter.
+# Final media identity/safety is Core-global and must never be materialized into
+# each provider's patch_scripts.
 upgrade = UPGRADE.read_text(encoding="utf-8")
 assert 'TARGET_ORDER_PATCH = "scripts/provider_patches/native_sync_fetch_target_order_v1.py"' in upgrade
-assert "scripts.append(TARGET_ORDER_PATCH)\n        scripts.append(RUNTIME_PATCH)" in upgrade
+assert "scripts.append(TARGET_ORDER_PATCH)" in upgrade
+assert "scripts.append(RUNTIME_PATCH)" not in upgrade
 assert '"target_order_patch": TARGET_ORDER_PATCH' in upgrade
+assert '"scope": "all_published_providers"' in upgrade
+assert 'runtime_safety.pop("targets", None)' in upgrade
+assert "core_global_safety=true" in upgrade
 
 print("native synchronous target ordering tests passed for V4 and V5 playback-context resolvers")

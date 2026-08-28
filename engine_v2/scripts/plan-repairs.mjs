@@ -18,10 +18,13 @@ const maturity = asRecord(policy.skillMaturity);
 const globalSkillConfig = readJsonFile("engine_v2/config/global-repair-skills.json", {});
 const coreRepairConfig = readJsonFile("engine_v2/config/core-repair-types.json", {});
 const providerOverrides = readJsonFile("provider-overrides.json", {});
-const learnedSkills = [
-  ...normalizeLearnedSkills(input.learnedSkills),
-  ...normalizeLearnedSkills(asRecord(globalSkillConfig).skills),
-];
+const learningMode = stringValue(input.mode, "quick") === "learning";
+const learnedSkills = learningMode
+  ? [
+      ...normalizeLearnedSkills(input.learnedSkills),
+      ...normalizeLearnedSkills(asRecord(globalSkillConfig).skills),
+    ]
+  : [];
 const runtimeCompatibility = buildRuntimeCompatibility(
   readJsonFile("automation/nuvio-client-compatibility-matrix.json", {}),
 );
@@ -138,16 +141,17 @@ function buildPlan(item) {
 
 function deferredPlannerError(item, error) {
   const candidate = asRecord(item.candidate);
+  const learningMode = stringValue(input.mode, "quick") === "learning";
   return {
     brainVersion: BRAIN_CONTROL_PLANE_VERSION,
     providerId: stringValue(candidate.canonical_id ?? candidate.upstream_id).toLowerCase(),
     failureClass: "unknown_failure",
-    repairScope: "learning",
+    repairScope: learningMode ? "learning" : "deferred",
     repairType: "architecture_gap",
-    repairEngine: "brain_learning_lab",
-    pipelineStage: "learning",
+    repairEngine: learningMode ? "brain_learning_lab" : "independent_learning_queue",
+    pipelineStage: learningMode ? "learning" : "deferred_learning",
     observedPipelineStage: "unknown",
-    learningDisposition: "propose_new_or_evolved_core_type",
+    learningDisposition: learningMode ? "propose_new_or_evolved_core_type" : "queue_for_independent_learning",
     capabilityStrategy: "unknown",
     signature: null,
     action: "deferred_retry",
