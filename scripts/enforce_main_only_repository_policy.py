@@ -14,6 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 BRAIN_WORKFLOW = ROOT / ".github/workflows/brain-learning-lab.yml"
 HYGIENE_WORKFLOW = ROOT / ".github/workflows/repository-hygiene.yml"
+BRAIN_BRANCH_MAINTENANCE = ROOT / ".github/workflows/brain-branch-maintenance.yml"
 BRAIN_PROPOSAL_BRANCH = "brain-repair/proposal"
 LEGACY_FORBIDDEN_BRANCH = "brain-repair/proposals"
 JOB_MARKER = "\n  publish-repair-proposal:\n"
@@ -53,6 +54,25 @@ def assert_policy() -> None:
             if path.resolve() == BRAIN_WORKFLOW.resolve():
                 continue
             if path.resolve() == HYGIENE_WORKFLOW.resolve():
+                continue
+            if path.resolve() == BRAIN_BRANCH_MAINTENANCE.resolve():
+                cleanup_markers = (
+                    f'REPAIR_BRANCH="{BRAIN_PROPOSAL_BRANCH}"',
+                    'gh pr list',
+                    '--head "$REPAIR_BRANCH"',
+                    'git push origin --delete "$REPAIR_BRANCH"',
+                )
+                for marker in cleanup_markers:
+                    if marker not in text:
+                        raise ValueError(f"Brain branch maintenance cleanup contract missing: {marker}")
+                forbidden_cleanup_markers = (
+                    'gh pr create',
+                    'HEAD:"$REPAIR_BRANCH"',
+                    'git switch -C "$REPAIR_BRANCH"',
+                )
+                for marker in forbidden_cleanup_markers:
+                    if marker in text:
+                        raise ValueError(f"Brain branch maintenance may only delete repair branch: {marker}")
                 continue
             raise ValueError(
                 f"only scheduled Brain Learning may create the repair PR branch: {path.relative_to(ROOT)}"

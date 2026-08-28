@@ -86,14 +86,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BRANCH="brain-repair/proposal"
-          OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          REPAIR_BRANCH="brain-repair/proposal"
+          OPEN_PR="$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --head "$REPAIR_BRANCH" --json number --jq '.[0].number // empty')"
           if [ -n "$OPEN_PR" ]; then
             echo "FIELD_BRAIN_REPAIR_BRANCH action=keep_open_pr pr=$OPEN_PR"
             exit 0
           fi
-          if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null 2>&1; then
-            git push origin --delete "$BRANCH"
+          if git ls-remote --exit-code --heads origin "$REPAIR_BRANCH" >/dev/null 2>&1; then
+            git push origin --delete "$REPAIR_BRANCH"
             echo "FIELD_BRAIN_REPAIR_BRANCH action=deleted_closed_branch"
           else
             echo "FIELD_BRAIN_REPAIR_BRANCH action=already_absent"
