@@ -12,7 +12,7 @@ Le cas de référence utilisé pour isoler la régression est **Purstream + Inte
 
 - la résolution TMDB fonctionne ;
 - le endpoint Purstream `/sheet` renvoie bien un média ;
-- l'URL HLS `https://free.finepulfe.xyz/movies/157336-unr8i/master.m3u8` est présente ;
+- une URL HLS finale sur `free.finepulfe.xyz` est bien présente ;
 - le résultat brut passe ;
 - le résultat enrichi disparaissait lors du passage QuickJS → JVM.
 
@@ -71,7 +71,7 @@ Le bundle Purstream publié avec le Core V15 a été exécuté sur le runtime of
 ```text
 status=completed
 count=1
-firstUrl=https://free.finepulfe.xyz/movies/157336-unr8i/master.m3u8
+firstUrl=https://free.finepulfe.xyz/<redacted>/master.m3u8
 firstTitle=💧 Purstream - 1080p
 firstName=💧 Purstream
 ```
