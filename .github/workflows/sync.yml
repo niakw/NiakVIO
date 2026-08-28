@@ -352,6 +352,7 @@ jobs:
             --general manifest.json \
             --vf vf/manifest.json
           node engine_v2/tests/provider-catalog.test.mjs
+          python tests/language_manifest_metadata_consistency_test.py
 
           python scripts/release_evidence_fence.py fingerprint \
             --manifest manifest.json \
