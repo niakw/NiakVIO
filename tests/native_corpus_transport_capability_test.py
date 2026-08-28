@@ -51,9 +51,10 @@ with tempfile.TemporaryDirectory() as tmp:
     assert '"transportExpectedEmbeds":1' in vidfast.stdout, vidfast.stdout
     assert '"transportFailures":0' in vidfast.stdout, vidfast.stdout
 
-    # StreamZo is a normal html_scraper whose repaired contract is
-    # site -> player -> final media. Returning only HTML must remain blocking,
-    # especially on Android TV.
+    # StreamZo is a mixed_embed_resolver. HTML is a valid intermediate player
+    # stage and must not be rejected by transport classification. Final-media
+    # HTML rejection is owned globally by runtime_capability_media_safety_v4,
+    # not by this capability-stage analyzer.
     streamzo_log = root / "tv-native-corpus-streamzo.log"
     streamzo_log.write_text(html_log("streamzo"), encoding="utf-8")
     streamzo = subprocess.run(
@@ -62,9 +63,9 @@ with tempfile.TemporaryDirectory() as tmp:
         text=True,
         capture_output=True,
     )
-    assert streamzo.returncode != 0, streamzo.stdout
-    assert "FIELD_NATIVE_TRANSPORT_FAILURE" in streamzo.stdout, streamzo.stdout
-    assert "FIELD_NATIVE_EXPECTED_EMBED" not in streamzo.stdout, streamzo.stdout
-    assert '"transportFailures":1' in streamzo.stdout, streamzo.stdout
+    assert streamzo.returncode == 0, streamzo.stdout + "\n" + streamzo.stderr
+    assert "FIELD_NATIVE_EXPECTED_EMBED" in streamzo.stdout, streamzo.stdout
+    assert '"transportExpectedEmbeds":1' in streamzo.stdout, streamzo.stdout
+    assert '"transportFailures":0' in streamzo.stdout, streamzo.stdout
 
 print("native corpus transport capability tests passed")
