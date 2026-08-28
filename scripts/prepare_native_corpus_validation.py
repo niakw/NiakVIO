@@ -302,8 +302,6 @@ class NiakvioNativeCorpusDesktopTest {{
         emit("FIELD_NATIVE_CORPUS_BEGIN client=desktop fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
         for (provider in providers) {{
             val started = System.currentTimeMillis()
-            val logoProbe = probeLogo(provider.logo, providers.size == 1)
-            emit("FIELD_NATIVE_ADDON_LOGO client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")
             try {{
                 val rows = PluginRuntime.executePlugin(
                     code = File(root, provider.asset).readText(),
@@ -388,8 +386,6 @@ class {klass} {{
         emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
         for (provider in providers) {{
             val started = System.currentTimeMillis()
-            val logoProbe = probeLogo(provider.logo, providers.size == 1)
-            emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")
             try {{
                 val rows = {execute}(
                     code = code(provider.asset),
