@@ -34,6 +34,7 @@ jobs:
     timeout-minutes: 120
     permissions:
       contents: read
+      actions: read
     steps:
       - name: Checkout trusted production baseline with history
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -92,6 +93,57 @@ jobs:
           else
             printf '{}\n' > brain-learning-input/previous.json
           fi
+          node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
+
+      - name: Import latest weekly FULL native Lab diagnostics into Learning memory
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p brain-learning-input/native-full-labs
+
+          import_weekly_full() {
+            workflow="$1"
+            pattern="$2"
+            label="$3"
+            run_id="$(gh run list --workflow "$workflow" --event schedule --status completed --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+            if [ -z "$run_id" ]; then
+              echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label status=no_completed_weekly_run"
+              return 0
+            fi
+
+            dest="brain-learning-input/native-full-labs/$label-$run_id"
+            rm -rf "$dest"
+            mkdir -p "$dest"
+            gh run download "$run_id" --pattern "$pattern" --dir "$dest" || true
+
+            if ! find "$dest" -type f -name '*brain.json' -print -quit | grep -q .; then
+              echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label run=$run_id status=no_diagnostics"
+              return 0
+            fi
+
+            python scripts/merge_native_reader_backlog.py \
+              --state brain-learning-input/previous.json \
+              --previous-state brain-learning-input/previous.json \
+              --diagnostics-root "$dest" \
+              --run-id "$run_id" \
+              --output brain-learning-input/previous.json
+
+            python scripts/merge_native_reader_learning_failures.py \
+              --state brain-learning-input/previous.json \
+              --diagnostics-root "$dest" \
+              --run-id "$run_id" \
+              --output brain-learning-input/previous.json
+
+            echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label run=$run_id status=imported"
+          }
+
+          import_weekly_full native-tv-route-reader.yml "native-tv-route-*-"'*' tv
+          import_weekly_full native-mobile-android-reader.yml "native-mobile-android-*-"'*' android
+          import_weekly_full native-mobile-ios-reader.yml "native-mobile-ios-routes-"'*' ios
+          import_weekly_full native-desktop-reader-acceptance.yml "native-desktop-reader-*-"'*' desktop
+
           node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
 
       - name: Materialize native reader failure learning summary
