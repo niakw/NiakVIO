@@ -31,7 +31,7 @@ def patched(provider_id: str, source: str = BASE) -> str:
 
 future = patched("future-provider")
 assert future.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"' in future
+assert '"implementationRevision":"field-safety-v6-core-repair-types"' in future
 assert '"implementationRevision":"scoped-playback-context-v4"' not in future
 assert '"durationIdentity":false' in future
 assert '"strictPlayback":false' in future
