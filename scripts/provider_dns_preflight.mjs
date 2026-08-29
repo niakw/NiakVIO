@@ -142,14 +142,6 @@ function httpReachabilityStatus(blocked, reachable) {
   return 'http_error';
 }
 
-function continueOnUnverifiedNetworkEvidence(preflightConfig = {}) {
-  if (Object.prototype.hasOwnProperty.call(preflightConfig, 'continue_on_unverified_network_evidence')) {
-    return preflightConfig.continue_on_unverified_network_evidence !== false;
-  }
-  // Backward-compatible fallback for older configs/reports.
-  return preflightConfig.continue_on_inconclusive !== false;
-}
-
 function globalpingLocationCandidates(configured, generic, resolverName, isFrenchIsp) {
   let fallback;
   if (isFrenchIsp) {
@@ -831,7 +823,7 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
       status: 'french_probe_unavailable_neutral_reachable',
       evidence_state: 'neutral_reachable_french_probe_unavailable',
       selected_resolver: neutralChecks.find((item) => item.http?.status === 'reachable')?.resolver || null,
-      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
+      continue_runtime: true,
       french_checks: frenchChecks,
       neutral_checks: neutralChecks,
       migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -843,7 +835,7 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
       status: 'accessible_neutral_only',
       evidence_state: 'neutral_reachable_french_access_unverified',
       selected_resolver: neutralChecks.find((item) => item.http?.status === 'reachable')?.resolver || null,
-      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
+      continue_runtime: true,
       french_checks: frenchChecks,
       neutral_checks: neutralChecks,
       migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -859,7 +851,7 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
       status: 'resolver_probes_unavailable',
       evidence_state: 'probe_transport_unavailable',
       selected_resolver: null,
-      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
+      continue_runtime: true,
       french_checks: frenchChecks,
       neutral_checks: neutralChecks,
       migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -882,7 +874,7 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
     status: 'network_probe_unverified',
     evidence_state: 'insufficient_dns_http_evidence',
     selected_resolver: null,
-    continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
+    continue_runtime: true,
     french_checks: frenchChecks,
     neutral_checks: neutralChecks,
     migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -967,7 +959,7 @@ export function providerDecision(domainResults, preflightConfig) {
     return {
       status: 'french_access_unverified',
       evidence_state: 'neutral_reachable_french_access_unverified',
-      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
+      continue_runtime: true,
       reason: 'neutral_accessible_with_dead_peer_migration',
       selected_resolver: neutralPass.selected_resolver,
       migration_candidate: migration,
@@ -998,7 +990,7 @@ export function providerDecision(domainResults, preflightConfig) {
   return {
     status: 'french_access_unverified',
     evidence_state: 'insufficient_french_network_evidence',
-    continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
+    continue_runtime: true,
     reason: 'french_access_not_verified_by_available_probes',
     migration_candidate: migration,
     migration_candidates: migrations,
