@@ -91,6 +91,12 @@ on:
     branches:
       - main
     paths:
+      - 'tests/global_media_type_resolution_test.py'
+      - 'tests/tmdb_media_type_resolution.test.mjs'
+      - 'tests/native_media_type_resolution_test.py'
+      - 'engine_v2/src/tmdb-metadata.mjs'
+      - 'scripts/provider_patches/global_media_type_resolution_v1.py'
+      - 'scripts/native_media_type_contract.py'
       - '.github/triggers/deep-provider-repair'
       - '.github/workflows/sync.yml'
       - 'provider_catalog.json'
@@ -173,6 +179,9 @@ jobs:
     name: Discover, repair and validate providers
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     permissions:
       contents: read
     outputs:
