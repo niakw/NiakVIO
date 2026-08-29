@@ -25,6 +25,10 @@ assert workflow.count("      - 'tests/patched_provider_runtime_smoke.test.cjs'")
     "Sync must run on provider runtime smoke changes for both PR and main push"
 )
 
+assert workflow.count("      - 'tests/sync_atomic_publication_test.py'") == 2, (
+    "Sync must run on its publication contract test changes for both PR and main push"
+)
+
 build = workflow.index("Build canonical publication transaction")
 first_version = workflow.index("python scripts/sync_release_versions.py", build)
 first_activation = workflow.index("python scripts/activation_preservation_core_rehash.py", first_version)

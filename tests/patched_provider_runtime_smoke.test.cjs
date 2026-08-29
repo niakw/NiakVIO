@@ -6,15 +6,17 @@ const { spawnSync } = require('node:child_process');
 
 const root = path.resolve(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
+const rows = (manifest.scrapers || []).filter((row) => row && typeof row === 'object');
+const disabledCount = rows.filter((row) => row.enabled === false && String(row.filename || '').includes('--nuvio--')).length;
 const files = [...new Set(
-  (manifest.scrapers || [])
+  rows
     .filter((row) => row && row.enabled !== false)
     .map((row) => String(row && row.filename || ''))
     .filter((relative) => relative.startsWith('providers/') && relative.includes('--nuvio--') && relative.endsWith('.js')),
 )].sort();
 
 if (!files.length) {
-  console.log('patched provider runtime smoke skipped (0 enabled referenced artifacts)');
+  console.log(`patched provider runtime smoke skipped (0 enabled referenced artifacts, disabled_skipped=${disabledCount})`);
   process.exit(0);
 }
 
@@ -77,4 +79,4 @@ for (const relative of files) {
   }
 }
 
-console.log(`patched provider runtime smoke passed (${files.length} enabled referenced artifact(s), isolated=true)`);
+console.log(`patched provider runtime smoke passed (${files.length} enabled referenced artifact(s), disabled_skipped=${disabledCount}, isolated=true)`);
