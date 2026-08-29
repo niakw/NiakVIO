@@ -78,7 +78,11 @@ def main() -> int:
     # The Brain cron must always reconstruct the complete catalogue, including
     # disabled providers which still need repair/re-evaluation evidence.
     assert "schedule:" in workflow and "cron:" in workflow, "Brain learning cron disappeared"
-    assert "python scripts/resolve_provider_hubs.py --apply --mode deep --include-disabled --search-disabled" in workflow
+    assert "python scripts/select_brain_access_recovery.py" in workflow
+    assert '--provider "$PROVIDER"' in workflow, "Learning route discovery must be targeted to one provider"
+    assert "python scripts/resolve_provider_hub_search_fallback.py" in workflow
+    assert "--max-providers 1" in workflow
+    assert "provider_dns_preflight.mjs" not in workflow, "DNS diagnostics belong to the daily domain observer, not Learning"
     assert "python scripts/discover_candidates.py --require-all-upstreams" in workflow
     assert "validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json" in workflow
     assert "python scripts/run_brain_learning_sandbox.py --stage staging" in workflow
@@ -102,7 +106,7 @@ def main() -> int:
     # marks the planner as learning mode. Routine workflows remain conservative.
     assert "NUVIO_BRAIN_PLANNER_MODE" in quick_source
     assert 'return "learning" if mode == "learning" else "quick"' in quick_source
-    assert "_sibling_aware_matching_profiles" in sandbox_source
+    assert "_base_matching_profiles" in sandbox_source
     assert "explorationShare" in sandbox_source
     assert "learningExplorationApplied" in sandbox_source
     assert "_restore_positive_skills" in sandbox_source
@@ -110,12 +114,16 @@ def main() -> int:
     assert '"maxRepairRounds": 1' in (ROOT / "engine_v2" / "config" / "brain-policy.json").read_text(encoding="utf-8")
     assert 'return list(dict.fromkeys(kept))' in sandbox_source, "one pass may evaluate multiple compatible fix profiles"
     assert '"scripts/brain_repair_runtime.py"' in workflow
+    assert "Run one quick targeted Nuvio command lab" in workflow
+    assert 'TARGET_PROVIDER: ${{ inputs.target_provider || steps.access-target.outputs.provider || \'\' }}' in workflow
+    assert '--providers "$PROVIDER"' in workflow
+    assert '--max-streams 1' in workflow
     assert 'state.get("learnedSkills")' in sandbox_source
     assert "mergeLearnedSkills(previous.learnedSkills, currentSkills)" in learning_source
     assert "yandex.com/search/?text=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
     assert "html.duckduckgo.com/html/?q=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
     assert "learnedSkills," in learning_source
-    assert "apply_overrides(canonical_id(upstream_id), data)" in discovery
+    assert "apply_overrides(provider_id, data)" in discovery
     assert "GLOBAL_STREAM_PRESENTATION" in apply_source
     assert '"scope": "global_stream_presentation"' in apply_source
 
