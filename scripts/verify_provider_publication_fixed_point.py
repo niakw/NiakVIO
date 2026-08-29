@@ -36,7 +36,7 @@ def main() -> int:
         raise ValueError("PROVENANCE.providers must be an object")
 
     contract = provenance.get("provider_publication_contract")
-    if not isinstance(contract, dict) or int(contract.get("schema_version") or 0) != 1:
+    if not isinstance(contract, dict) or int(contract.get("schema_version") or 0) != 2:
         raise ValueError("missing current provider publication contract proof")
     if not str(contract.get("sha256") or "").strip():
         raise ValueError("provider publication contract SHA is missing")
