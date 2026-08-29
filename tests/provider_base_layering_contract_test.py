@@ -43,6 +43,25 @@ for marker in sorted(required):
     else:
         raise AssertionError(f"derived marker accepted in ProviderBase: {marker}")
 
+adaptive_fixture = """const keep=true;
+/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V4:deadbeef */
+;(function(g,c){g.__derived=true})(typeof globalThis!==\"undefined\"?globalThis:this,{\"x\":1});
+const after=true;
+"""
+adaptive_clean, adaptive_count = module.strip_adaptive_runtime_wrappers(adaptive_fixture)
+assert adaptive_count == 1
+assert "NUVIO_ADAPTIVE_RUNTIME_RECOVERY" not in adaptive_clean
+assert "const keep=true;" in adaptive_clean and "const after=true;" in adaptive_clean
+
+v5_fixture = """const keep=true;
+/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5:deadbeef */
+;(function(g,c){g.__derived=true})(typeof globalThis!==\"undefined\"?globalThis:this,{\"x\":1});
+"""
+v5_clean, v5_count = module.strip_adaptive_runtime_wrappers(v5_fixture)
+assert v5_count == 1
+assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" not in v5_clean
+assert "const keep=true;" in v5_clean
+
 assert set(module.LEGACY_LOCAL_SEEDS) == {
     "cineby", "cinemm", "goatapi", "toflix", "4khdhubnew"
 }
