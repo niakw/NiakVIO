@@ -293,7 +293,11 @@ def main() -> int:
     args = parser.parse_args()
     stage = args.stage.resolve()
     output = args.output.resolve()
-    max_rounds = max(1, int(args.max_rounds)) if _planner_mode() == "learning" else 1
+    if _planner_mode() == "learning":
+        requested_rounds = int(args.max_rounds)
+        max_rounds = 10000 if requested_rounds <= 0 else max(1, requested_rounds)
+    else:
+        max_rounds = 1
 
     original_health_config = HEALTH_CONFIG.read_bytes()
     original_argv = list(sys.argv)
