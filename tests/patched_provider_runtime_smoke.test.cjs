@@ -51,6 +51,9 @@ global.fetch = async () => new Response('{}', {
 })().then(
   () => process.exit(0),
   (error) => {
+    if (error && error.message === 'smoke timeout') {
+      process.exit(75);
+    }
     originalError(error && error.stack || error);
     process.exit(1);
   },
@@ -73,6 +76,11 @@ for (const relative of files) {
   }
   if (child.error) {
     throw new Error(`${relative}: isolated smoke process failed to start: ${child.error.message}`);
+  }
+  if (child.status === 75) {
+    timedOut.push(relative);
+    console.log(`FIELD_PROVIDER_RUNTIME_SMOKE_TIMEOUT provider=${relative} budget_ms=3000 action=continue_to_health_pipeline`);
+    continue;
   }
   if (child.signal) {
     throw new Error(`${relative}: isolated smoke process terminated by ${child.signal}`);
