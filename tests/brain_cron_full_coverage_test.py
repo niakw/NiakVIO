@@ -15,6 +15,7 @@ GLOBAL_PRESENTATION = ROOT / "scripts/provider_patches/global_stream_presentatio
 GLOBAL_FACTS = ROOT / "scripts/provider_patches/global_stream_facts_v1.py"
 READER_REPAIR = ROOT / "scripts/build_native_reader_brain_repair.py"
 RUN_SANDBOX = ROOT / "scripts/run_brain_learning_sandbox.py"
+LEARNING_QUEUE = ROOT / "scripts/run_brain_learning_queue.py"
 QUICK_REPAIR = ROOT / "scripts/run_adaptive_quick_repair.py"
 LEARNING_LAB = ROOT / "engine_v2/scripts/learning-lab.mjs"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -69,6 +70,7 @@ def main() -> int:
     presentation_source = GLOBAL_PRESENTATION.read_text(encoding="utf-8")
     facts_source = GLOBAL_FACTS.read_text(encoding="utf-8")
     sandbox_source = RUN_SANDBOX.read_text(encoding="utf-8")
+    queue_source = LEARNING_QUEUE.read_text(encoding="utf-8")
     quick_source = QUICK_REPAIR.read_text(encoding="utf-8")
     learning_source = LEARNING_LAB.read_text(encoding="utf-8")
     overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -78,14 +80,16 @@ def main() -> int:
     # The Brain cron must always reconstruct the complete catalogue, including
     # disabled providers which still need repair/re-evaluation evidence.
     assert "schedule:" in workflow and "cron:" in workflow, "Brain learning cron disappeared"
-    assert "python scripts/select_brain_learning_target.py" in workflow
-    assert '--provider "$PROVIDER"' in workflow, "Learning route discovery must be targeted to one provider"
-    assert "python scripts/resolve_provider_hub_search_fallback.py" in workflow
-    assert "--max-providers 1" in workflow
+    assert "python scripts/run_brain_learning_queue.py" in workflow, "canonical adaptive Learning queue disappeared"
+    assert "python scripts/select_brain_learning_target.py" not in workflow, "obsolete single-target selector is executing again"
+    assert "--budget-minutes 60" in workflow, "global one-hour Learning budget disappeared"
+    assert "--reserve-minutes 5" in workflow, "Learning finalization reserve disappeared"
+    assert "--stream-safety-cap 40" in workflow, "bounded all-stream Lab safety cap disappeared"
+    assert "TARGET_PROVIDER: ${{ inputs.target_provider || '' }}" in workflow, "manual provider override disappeared"
+    assert 'args+=(--provider "$TARGET_PROVIDER")' in workflow, "manual provider override is not delegated to the canonical queue"
     assert "provider_dns_preflight.mjs" not in workflow, "DNS diagnostics belong to the daily domain observer, not Learning"
     assert "python scripts/discover_candidates.py --require-all-upstreams" in workflow
     assert "validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json" in workflow
-    assert "python scripts/run_brain_learning_sandbox.py --stage staging" in workflow
     assert "ref: main" in workflow, "scheduled Brain must run from trusted production main"
     assert "publish_proposal:" in workflow, "watchdog/manual proposal input disappeared"
     assert "publish-repair-proposal:" in workflow, "validated Brain PR job disappeared"
@@ -95,6 +99,9 @@ def main() -> int:
     assert "scripts/build_brain_architecture_proposal.py" in workflow
     assert "engine_v2/config/brain-self-evolution.json" in workflow
     assert "brain-architecture-proposal.md" in workflow
+    assert "--queue-summary brain-sandbox/health-output/learning-queue-summary.json" in workflow
+    assert "--queue-state brain-sandbox/health-output/learning-queue-state.json" in workflow
+    assert "--learning-queue-state brain-sandbox/health-output/learning-queue-state.json" in workflow
     assert "github.event_name == 'schedule'" in workflow
     assert "github.event.inputs.publish_proposal == 'true'" in workflow
     assert "brain-learning-watchdog:" in availability_workflow
@@ -103,34 +110,46 @@ def main() -> int:
     assert "20 * 60 * 60" in availability_workflow
     assert 'if [ "$((10#$HOUR))" -lt 4 ]' in availability_workflow
 
-    # Scheduled Brain uses the same Quick Brain implementation as normal repair,
-    # not a second reduced skill engine.
+    # Scheduled Learning uses the same repair engine as normal Quick repair, but
+    # the canonical queue owns provider scheduling, route recovery, retries,
+    # rotating fixtures, multi-device Labs and cross-day resume.
     assert "import run_adaptive_quick_repair as quick" in sandbox_source
-    # Learning is deliberately broader than routine Quick repair: it restores
-    # cross-day positive skills, rotates bounded exploration across providers and
-    # marks the planner as learning mode. Routine workflows remain conservative.
     assert "NUVIO_BRAIN_PLANNER_MODE" in quick_source
     assert 'return "learning" if mode == "learning" else "quick"' in quick_source
     assert "_base_matching_profiles" in sandbox_source
     assert "explorationShare" in sandbox_source
     assert "learningExplorationApplied" in sandbox_source
     assert "_restore_positive_skills" in sandbox_source
-    assert '--max-rounds 1' in workflow, "Learning must execute exactly one repair round"
-    assert '"maxRepairRounds": 1' in (ROOT / "engine_v2" / "config" / "brain-policy.json").read_text(encoding="utf-8")
-    assert 'return list(dict.fromkeys(kept))' in sandbox_source, "one pass may evaluate multiple compatible fix profiles"
-    assert '"scripts/brain_repair_runtime.py"' in workflow
-    assert "Run one deep targeted Nuvio command lab" in workflow
-    assert 'TARGET_PROVIDER: ${{ inputs.target_provider || steps.learning-target.outputs.provider || \'\' }}' in workflow
-    assert '--providers "$PROVIDER"' in workflow
-    assert '--all-streams' in workflow
-    assert '--stream-safety-cap 40' in workflow
-    assert '--playback-timeout-ms 8000' in workflow
-    assert 'NUVIO_BRAIN_TARGET_PROVIDER: ${{ steps.learning-target.outputs.provider }}' in workflow
-    assert 'steps.learning-target.outputs.needs_route_search' in workflow
-    assert 'coreIsAuthoritative:false' in workflow
+    assert 'return list(dict.fromkeys(kept))' in sandbox_source, "one repair pass may evaluate multiple compatible fix profiles"
+
+    assert 'str(SCRIPTS / "run_brain_learning_sandbox.py")' in queue_source
+    assert '"--max-rounds", "0"' in queue_source, "queue must let the sandbox explore until its global deadline"
+    assert "while time.time() < work_deadline:" in queue_source, "provider repair loop is no longer deadline-driven"
+    assert "seen_method_sets" in queue_source, "Learning must stop repeating an exhausted method set"
+    assert "retryProviders" in queue_source and "pendingProviders" in queue_source, "cross-day queue persistence disappeared"
+    assert "interleave(" in queue_source, "retry work must not starve unseen providers"
+    assert '"tv,desktop,mobile"' in queue_source, "scheduled Learning must test TV, Desktop and Mobile"
+    assert '"--all-streams"' in queue_source, "Learning Lab must inspect all returned streams subject to the safety cap"
+    assert '"--stream-safety-cap"' in queue_source
+    assert '"--playback-timeout-ms", "8000"' in queue_source
+    assert '"coreIsAuthoritative": False' in queue_source, "Core evidence must remain a hypothesis in Learning"
+    assert "hiddenFailureProviders" in queue_source, "Core/Lab contradictions must be persisted"
+    assert "routeEvidenceCount" in queue_source, "route discovery must emit evidence depth"
+    assert 'str(SCRIPTS / "resolve_provider_hubs.py")' in queue_source
+    assert 'str(SCRIPTS / "resolve_provider_hub_search_fallback.py")' in queue_source
+    assert "needs_route_search" in queue_source, "route discovery must remain conditional per provider"
+    assert "refresh_stage_routes(stage, work_deadline)" in queue_source, "newly discovered routes must be reprojected into the Lab stage"
+
     policy_source = (ROOT / "engine_v2" / "config" / "brain-policy.json").read_text(encoding="utf-8")
+    assert '"targetProvidersPerRun": "time_budgeted_queue"' in policy_source
+    assert '"clientSelection": "tv_desktop_mobile_for_scheduled_learning"' in policy_source
+    assert '"streamSampling": "all_returned_streams_with_safety_cap"' in policy_source
+    assert '"retryPolicy": "continue_with_new_hypotheses_until_global_deadline_or_no_new_method"' in policy_source
+    assert '"maxRepairRounds"' not in policy_source, "obsolete one-round Learning limit returned"
     assert '"selfArchitectureAudit": true' in policy_source
     assert '"selfArchitectureChanges": "review_only_pr_with_allowlisted_policy_changes_and_structural_change_plan"' in policy_source
+
+    # Learning memory and discovery capabilities remain shared and sanitized.
     assert 'state.get("learnedSkills")' in sandbox_source
     assert "mergeLearnedSkills(previous.learnedSkills, currentSkills)" in learning_source
     assert "yandex.com/search/?text=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
