@@ -238,13 +238,14 @@ jobs:
             --repair-report brain-sandbox/health-output/repair-report.json \
             --historical-training brain-sandbox/historical-training.json \
             --native-summary brain-learning-input/native-reader-summary.json \
-            --targeted-lab-summary brain-sandbox/targeted-lab-summary.json \
+            --targeted-lab-summary brain-sandbox/health-output/targeted-lab-summary.json \
+            --scheduler-state brain-sandbox/health-output/learning-queue-state.json \
             --previous-state brain-learning-input/previous.json \
             --overrides provider-overrides.json
           node engine_v2/tests/repair-brain.test.mjs
           node engine_v2/tests/recipe-memory.test.mjs
           node engine_v2/tests/learning-lab-memory.test.mjs
-          python -m py_compile scripts/run_brain_learning_sandbox.py scripts/build_brain_repair_proposal.py scripts/build_native_reader_learning_summary.py scripts/merge_native_reader_learning_failures.py scripts/classify_native_reader_ownership.py
+          python -m py_compile scripts/run_brain_learning_sandbox.py scripts/run_brain_learning_queue.py scripts/build_brain_repair_proposal.py scripts/build_brain_architecture_proposal.py scripts/build_native_reader_learning_summary.py scripts/merge_native_reader_learning_failures.py scripts/classify_native_reader_ownership.py
           node -e "const x=require('./brain-learning-output/latest.json'); if(x.productionWritesAllowed!==false||x.publicationAllowed!==false||x.sandboxExecutedProviders!==true) process.exit(1)"
           node - <<'NODE'
           const fs=require('fs');
@@ -309,8 +310,9 @@ jobs:
             brain-learning-output/brain-architecture-proposal.json
             brain-learning-input/native-reader-summary.json
             brain-sandbox/daily-learning-coverage.json
-            brain-sandbox/targeted-probe-selection.json
-            brain-sandbox/targeted-lab-summary.json
+            brain-sandbox/health-output/learning-queue-state.json
+            brain-sandbox/health-output/learning-queue-summary.json
+            brain-sandbox/health-output/targeted-lab-summary.json
           retention-days: 14
           if-no-files-found: error
 
