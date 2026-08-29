@@ -66,13 +66,14 @@ assert '"playback_timeout_ms": 5000' in LEARNING
 
 # iOS exposes the same quick/full distinction. Device IPA is a full gate;
 # Learning reuses the installed simulator app instead of rebuilding per provider.
-assert "mode:" in IOS and "- full" in IOS and "- learning" in IOS
-assert "inputs.mode != 'learning'" in IOS
+assert "mode:" in IOS and "- full" in IOS and "- only" in IOS
+assert "inputs.mode != 'only'" in IOS
 assert "./scripts/build-ios-ipa.sh" in IOS
 assert "NIAKVIO_IOS_TARGET_PROVIDER" in IOS
 assert "FIELD_NATIVE_IOS_SESSION state=warm-created" in IOS_SUITE
 assert "FIELD_NATIVE_IOS_SESSION state=warm-reused" in IOS_SUITE
 assert 'xcrun simctl launch --terminate-running-process' in IOS_SUITE
+assert "native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}" in IOS
 
 # Full native platform Labs remain weekly + manual, never push-triggered.
 for path in (
