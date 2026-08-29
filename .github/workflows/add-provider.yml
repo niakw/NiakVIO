@@ -1,0 +1,246 @@
+name: Add Provider - full auto
+
+on:
+  workflow_dispatch:
+    inputs:
+      provider_id:
+        description: Canonical provider id
+        required: true
+        type: string
+      display_name:
+        description: Provider display name
+        required: true
+        type: string
+      hub_url:
+        description: Official hub/wiki URL
+        required: false
+        default: ""
+        type: string
+      direct_url:
+        description: Known terminal site URL
+        required: false
+        default: ""
+        type: string
+      telegram_url:
+        description: Public Telegram address channel URL
+        required: false
+        default: ""
+        type: string
+      api_url:
+        description: Known official API/base URL
+        required: false
+        default: ""
+        type: string
+      search_queries:
+        description: Comma-separated Yandex/DDG fallback queries
+        required: false
+        default: ""
+        type: string
+      supported_types:
+        description: Comma-separated movie,tv,anime
+        required: false
+        default: "movie,tv,anime"
+        type: string
+      language:
+        description: Comma-separated content languages
+        required: false
+        default: ""
+        type: string
+      strategy:
+        description: Provider capability strategy
+        required: false
+        default: "html_scraper"
+        type: choice
+        options:
+          - html_scraper
+          - mixed_embed_resolver
+          - iframe_player
+          - api_stream_resolver
+          - direct_media
+      enable_when_healthy:
+        description: Activate only when targeted runtime proof is healthy
+        required: false
+        default: true
+        type: boolean
+  push:
+    branches: [main]
+    paths:
+      - "provider-intake/*.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-add-provider
+  cancel-in-progress: false
+
+jobs:
+  onboard:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 2
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install deterministic provider toolchain
+        run: npm ci --ignore-scripts
+
+      - id: intake
+        name: Resolve structured provider intake
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+          INPUT_ID: ${{ inputs.provider_id }}
+          INPUT_NAME: ${{ inputs.display_name }}
+          INPUT_HUB: ${{ inputs.hub_url }}
+          INPUT_DIRECT: ${{ inputs.direct_url }}
+          INPUT_TELEGRAM: ${{ inputs.telegram_url }}
+          INPUT_API: ${{ inputs.api_url }}
+          INPUT_SEARCH: ${{ inputs.search_queries }}
+          INPUT_TYPES: ${{ inputs.supported_types }}
+          INPUT_LANGUAGE: ${{ inputs.language }}
+          INPUT_STRATEGY: ${{ inputs.strategy }}
+          INPUT_ENABLE: ${{ inputs.enable_when_healthy }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            INTAKE="$RUNNER_TEMP/manual-provider-intake.json"
+            python3 - "$INTAKE" <<'PY'
+          import json
+          import os
+          import sys
+          path=sys.argv[1]
+          payload={
+              "id": os.environ["INPUT_ID"].strip(),
+              "name": os.environ["INPUT_NAME"].strip(),
+              "hub": os.environ.get("INPUT_HUB","").strip() or None,
+              "direct": os.environ.get("INPUT_DIRECT","").strip() or None,
+              "telegram": os.environ.get("INPUT_TELEGRAM","").strip() or None,
+              "api": os.environ.get("INPUT_API","").strip() or None,
+              "search_queries": [x.strip() for x in os.environ.get("INPUT_SEARCH","").split(",") if x.strip()],
+              "supportedTypes": [x.strip() for x in os.environ.get("INPUT_TYPES","").split(",") if x.strip()],
+              "contentLanguage": [x.strip() for x in os.environ.get("INPUT_LANGUAGE","").split(",") if x.strip()],
+              "strategy": os.environ.get("INPUT_STRATEGY","html_scraper"),
+              "enableRequested": os.environ.get("INPUT_ENABLE","true").lower()=="true",
+          }
+          with open(path,"w",encoding="utf-8") as handle:
+              json.dump(payload,handle,ensure_ascii=False,indent=2)
+              handle.write("\n")
+          PY
+          else
+            mapfile -t FILES < <(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA" -- 'provider-intake/*.json')
+            if [ "${#FILES[@]}" -ne 1 ]; then
+              echo "exactly one provider-intake JSON must change per automatic onboarding push" >&2
+              printf '%s\n' "${FILES[@]}" >&2
+              exit 1
+            fi
+            INTAKE="${FILES[0]}"
+          fi
+
+          test -s "$INTAKE"
+          PROVIDER_ID="$(python3 - "$INTAKE" <<'PY'
+          import json
+          import re
+          import sys
+          data=json.load(open(sys.argv[1],encoding="utf-8"))
+          print(re.sub(r"[^a-z0-9.-]+","-",str(data.get("id") or data.get("provider_id") or "").lower()).strip(".-"))
+          PY
+          )"
+          test -n "$PROVIDER_ID"
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            mkdir -p provider-intake
+            CANONICAL_INTAKE="provider-intake/${PROVIDER_ID}.json"
+            cp "$INTAKE" "$CANONICAL_INTAKE"
+            INTAKE="$CANONICAL_INTAKE"
+          fi
+
+          echo "path=$INTAKE" >> "$GITHUB_OUTPUT"
+          echo "provider_id=$PROVIDER_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Snapshot pre-onboarding manifest
+        run: cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+
+      - name: Register clean ProviderBase and routing knowledge
+        run: python3 scripts/add_provider.py --input "${{ steps.intake.outputs.path }}" --phase register
+
+      - name: Resolve hub direct Telegram and search route
+        run: |
+          python3 scripts/resolve_provider_hubs.py             --provider "${{ steps.intake.outputs.provider_id }}"             --mode deep             --timeout 8             --workers 1             --apply             --output "health-output/add-provider-hub.json"
+
+      - name: Refresh clean ProviderBase after route resolution
+        run: python3 scripts/add_provider.py --input "${{ steps.intake.outputs.path }}" --phase register
+
+      - name: Derive canonical Core and public bundle
+        run: |
+          python3 scripts/normalize_provider_activation_overrides.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/add_provider.py --input "${{ steps.intake.outputs.path }}" --phase sync
+          python3 scripts/generate_language_manifests.py
+
+      - name: Run targeted fast provider proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET="$RUNNER_TEMP/add-provider-target.json"
+          STAGE="$RUNNER_TEMP/add-provider-stage"
+          OUTPUT="$RUNNER_TEMP/add-provider-health"
+          printf '{"targets":["%s"]}\n' "${{ steps.intake.outputs.provider_id }}" > "$TARGET"
+          python3 scripts/stage_published.py --include-file "$TARGET" --stage "$STAGE"
+          mkdir -p "$OUTPUT"
+          NUVIO_STAGE="$STAGE"           NUVIO_CANDIDATES_PATH="$STAGE/candidates.json"           NUVIO_HEALTH_OUTPUT="$OUTPUT"           NUVIO_HEALTH_RESULTS_FILENAME="health-results.json"           NUVIO_HEALTH_CONFIG="$GITHUB_WORKSPACE/health-config.json"           NUVIO_HEALTH_CONCURRENCY=1           node scripts/health_check.mjs
+          test -s "$OUTPUT/health-results.json"
+          cp "$OUTPUT/health-results.json" "$RUNNER_TEMP/add-provider-health.json"
+
+      - name: Finalize activation from current targeted proof
+        run: |
+          python3 scripts/add_provider.py             --input "${{ steps.intake.outputs.path }}"             --phase finalize             --health "$RUNNER_TEMP/add-provider-health.json"
+          python3 scripts/generate_language_manifests.py
+          python3 scripts/add_provider.py --input "${{ steps.intake.outputs.path }}" --phase sync
+
+      - name: Finalize versions hashes and repository contracts
+        run: |
+          python3 scripts/sync_release_versions.py --previous "$RUNNER_TEMP/manifest.before.json"
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 scripts/provider_base_store.py validate
+          python3 tests/provider_hub_registry_test.py
+          python3 tests/provider_clean_reconstruction_contract_test.py
+          python3 tests/native_corpus_device_lab_test.py
+          python3 tests/native_lab_nonblocking_contract_test.py
+          python3 tests/add_provider_workflow_test.py
+          npm test
+
+      - name: Publish validated provider transaction
+        shell: bash
+        env:
+          PROVIDER_ID: ${{ steps.intake.outputs.provider_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "NiakVIO Provider Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No provider onboarding changes to publish"
+            exit 0
+          fi
+          git commit -m "feat(provider): onboard ${PROVIDER_ID}"
+          git pull --rebase origin main
+          git push origin HEAD:main
