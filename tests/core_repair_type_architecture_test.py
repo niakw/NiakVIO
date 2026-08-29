@@ -118,7 +118,11 @@ assert brain_policy["learningLab"]["directSkillPublication"] is False
 assert brain_policy["learningLab"]["independentFromCoreRepair"] is True
 assert brain_policy["learningLab"]["dailyPublishedProviderCoverageTarget"] == 1.0
 assert brain_policy["executionLanes"]["coreRepair"]["learningAllowed"] is False
-assert brain_policy["executionLanes"]["dailyLearning"]["publishedProviderObservationCoverage"] == 1.0
+assert brain_policy["executionLanes"]["dailyLearning"]["independent"] is True
+assert brain_policy["executionLanes"]["dailyLearning"]["timeBudgetMinutes"] == 60
+assert "persistent anomaly-first queue" in brain_policy["executionLanes"]["dailyLearning"]["providerScheduling"]
+assert brain_policy["executionLanes"]["dailyLearning"]["productionWritesAllowed"] is False
+assert brain_policy["executionLanes"]["dailyLearning"]["publicationAllowed"] is False
 assert 'learnedSkills": learned_skills() if str(mode).casefold() == "learning" else {}' in brain_runtime_source
 assert 'learnedSkills": _BASE.learned_skills() if str(mode).casefold() == "learning" else {}' in brain_overlay_source
 assert '"profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"' in quick_source
