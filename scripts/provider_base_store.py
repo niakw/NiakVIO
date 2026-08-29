@@ -623,6 +623,8 @@ def repair_legacy_bases() -> dict[str, Any]:
         "schema_version": max(4, int(store.get("schema_version") or 0)),
         "provider_count": provider_count,
         "unique_base_count": provider_count,
+        "initial_reconstruction_scope": int(store.get("initial_reconstruction_scope") or provider_count),
+        "migration_scope": "all-current-providers",
         "owner": "provider_pipeline",
         "future_source": "provider_pipeline_only",
         "clean_reconstructed": clean_reconstructed,
