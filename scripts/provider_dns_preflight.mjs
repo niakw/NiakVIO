@@ -1065,7 +1065,7 @@ async function runCli() {
   const registryPath = manifestPath
     ? null
     : path.resolve(args.registry || process.env.NUVIO_CANDIDATES_PATH || path.join(stage, 'candidates.json'));
-  const configPath = path.resolve(args.config || process.env.NUVIO_HEALTH_CONFIG || path.join(ROOT, 'health-config.json'));
+  const configPath = path.resolve(args.config || process.env.NUVIO_DOMAIN_OBSERVATION_CONFIG || path.join(ROOT, 'domain-observation-config.json'));
   const outputPath = path.resolve(args.output || process.env.NUVIO_DNS_PREFLIGHT_RESULTS || path.join(ROOT, 'health-output', 'dns-preflight-report.json'));
   const hubReportPath = args['hub-report'] ? path.resolve(String(args['hub-report'])) : null;
   const [registry, config, overrides, hubReport] = await Promise.all([
