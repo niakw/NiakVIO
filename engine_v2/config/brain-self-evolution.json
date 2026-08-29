@@ -1,30 +1,24 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "enabled": true,
   "branch": "brain-architecture/proposal",
   "reviewOnly": true,
   "requiresHumanMerge": true,
   "productionWritesAllowed": false,
   "publicationAllowed": false,
-  "principle": "The Brain may challenge its own architecture when repeated evidence shows a self-imposed limitation. Self-evolution is proposal-only and must remain reproducible, bounded, reviewable and covered by CI.",
+  "principle": "The Brain may challenge Core evidence and its own architecture when experiments show a self-imposed limitation. Self-evolution is proposal-only, time-budgeted, reviewable, reproducible and covered by CI; method exhaustion should create a new capability hypothesis rather than merely increasing retry counters.",
   "evidenceInputs": [
-    "sanitized cross-day learning memory",
-    "targeted Lab summary",
-    "repair report",
-    "Learning target selection",
-    "targeted route discovery summary",
-    "current Brain policy and workflow contracts"
+    "sanitized cross-day learning memory and persistent provider queue",
+    "multi-device all-stream Learning Lab summaries",
+    "repair and failed-method memory",
+    "provider route recovery observations",
+    "current Brain policy, workflow, sandbox and self-audit contracts"
   ],
   "autoPatchAllowlist": {
     "learningLab.allStreamsSafetyCap": {
       "min": 20,
       "max": 200,
       "step": 20
-    },
-    "learningLab.maxExploratoryProfilesPerProvider": {
-      "min": 1,
-      "max": 5,
-      "step": 1
     },
     "production.maxHypotheses": {
       "min": 1,
@@ -46,7 +40,10 @@
     "scripts/nuvio_client_lab.cjs",
     "engine_v2/scripts/learning-lab.mjs",
     "engine_v2/src/repair-brain.mjs",
-    "engine_v2/config/brain-policy.json"
+    "engine_v2/config/brain-policy.json",
+    "scripts/build_brain_learning_queue.py",
+    "scripts/run_brain_route_recovery_queue.py",
+    "scripts/run_brain_learning_lab_queue.py"
   ],
   "thresholds": {
     "repeatedUnknownFailures": 2,
