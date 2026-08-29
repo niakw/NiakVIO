@@ -1018,7 +1018,7 @@ async function runCli() {
   ]);
   const preflightConfig = config.dns_preflight || {};
   if (preflightConfig.enabled === false) {
-    const disabled = { schema_version: 2, enabled: false, generated_at: new Date().toISOString(), providers: [] };
+    const disabled = { schema_version: 3, enabled: false, generated_at: new Date().toISOString(), providers: [] };
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, `${JSON.stringify(disabled, null, 2)}\n`);
     return;
@@ -1088,7 +1088,7 @@ async function runCli() {
     internalCounts[item.decision.status] = (internalCounts[item.decision.status] || 0) + 1;
   }
   const report = {
-    schema_version: 2,
+    schema_version: 3,
     enabled: true,
     semantics: {
       'DNS OK': 'All French ISP DNS probes completed without a block signal',
