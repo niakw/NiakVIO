@@ -29,18 +29,24 @@ assert workflow.count("      - 'tests/sync_atomic_publication_test.py'") == 2, (
     "Sync must run on its publication contract test changes for both PR and main push"
 )
 
-concurrency_block = workflow[workflow.index("concurrency:"):workflow.index("\njobs:")]
-assert "github.run_id" not in concurrency_block, (
-    "manual provider runs must not escape the shared main-writer concurrency lane"
-)
-assert "group: nuvio-provider-publish-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}" in concurrency_block
-assert "cancel-in-progress: ${{ github.event_name == 'pull_request' }}" in concurrency_block
+stage_block = workflow[workflow.index("  stage-and-test:"):workflow.index("\n  publish:\n")]
 publish_block = workflow[workflow.index("\n  publish:\n"):]
+
+# Long validation is latest-wins and may be cancelled, but the actual main writer
+# lane is publication-only, shared with Add Provider, and never cancels an active writer.
+assert "group: nuvio-provider-stage-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}" in stage_block
+assert "cancel-in-progress: true" in stage_block
+assert "group: nuvio-provider-publish-main" in publish_block
+assert "cancel-in-progress: false" in publish_block
 assert "if: github.event_name != 'pull_request'" in publish_block, (
     "PR validation must never publish provider transactions to main"
 )
+assert "validated_sha: ${{ steps.validated-tree.outputs.sha }}" in stage_block
+assert "Reject stale validated transaction" in publish_block
+assert 'VALIDATED_SHA: ${{ needs.stage-and-test.outputs.validated_sha }}' in publish_block
+assert 'FIELD_PROVIDER_PUBLICATION_SKIPPED reason=main_advanced' in publish_block
+assert "steps.freshness.outputs.stale != 'true'" in publish_block
 
-stage_block = workflow[workflow.index("  stage-and-test:"):workflow.index("\n  publish:\n")]
 assert "ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}" in stage_block, (
     "serialized main runs must validate the current main tree when they actually start"
 )
