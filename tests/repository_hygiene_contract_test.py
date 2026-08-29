@@ -56,6 +56,8 @@ retired_paths = (
     "automation/targeted-vf-publication.json",
     "scripts/targeted_provider_route_diagnostics.py",
     "scripts/nuvio_tv_target_diagnostics_v2.py",
+    "automation/nuvio-tv-global-audit.json",
+    "automation/nuvio-tv-global-audit-v2.json",
 )
 for rel in retired_paths:
     assert not (ROOT / rel).exists(), f"retired path resurrected: {rel}"
