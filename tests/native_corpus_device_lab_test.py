@@ -94,7 +94,7 @@ assert 'NIAKVIO_PRIMARY_STREAM_SCOPE: "2"' in tv_reader
 assert 'NIAKVIO_REGRESSION_STREAM_SCOPE: "2"' in tv_reader
 assert "--streams all" not in tv_reader.split("\n  mobile-android-reader:", 1)[0]
 assert "--streams all" in tv_reader.split("\n  mobile-android-reader:", 1)[1]
-assert "native-tv-route-representative-${{ github.run_id }}" in tv_reader
+assert "native-tv-full-${{ github.run_id }}" in tv_reader
 
 def artifact_block(workflow: str, marker: str) -> str:
     start = workflow.index(marker)
@@ -102,10 +102,10 @@ def artifact_block(workflow: str, marker: str) -> str:
     return workflow[start:] if end < 0 else workflow[start:end]
 
 for workflow, marker in (
-    (tv_reader, 'name: native-tv-route-representative-${{ github.run_id }}'),
-    (mobile_android, 'name: native-mobile-android-routes-${{ github.run_id }}'),
-    (mobile_ios, 'name: native-mobile-ios-routes-${{ github.run_id }}'),
-    (desktop_reader, 'name: native-desktop-reader-${{ matrix.os_name }}-routes-${{ github.run_id }}'),
+    (tv_reader, 'name: native-tv-full-${{ github.run_id }}'),
+    (mobile_android, 'name: native-mobile-android-full-${{ github.run_id }}'),
+    (mobile_ios, "name: native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}"),
+    (desktop_reader, 'name: native-desktop-full-${{ matrix.os_name }}-${{ github.run_id }}'),
 ):
     assert "retention-days: 8" in artifact_block(workflow, marker), marker
 
@@ -113,7 +113,7 @@ assert "mobile-android-reader:" in mobile_android
 assert "name: Native Android TV + Mobile reader acceptance" in mobile_android
 assert "resolve_tv:" in mobile_android and "resolve_mobile:" in mobile_android
 assert "NuvioMedia/NuvioMobile.git" in mobile_android
-assert "native-mobile-android-routes-${{ github.run_id }}" in mobile_android
+assert "native-mobile-android-full-${{ github.run_id }}" in mobile_android
 
 assert "mobile-ios-reader:" in mobile_ios
 assert "runs-on: macos-26" in mobile_ios
@@ -121,11 +121,11 @@ assert "DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer" in mobil
 assert "Build official unsigned device IPA before Lab instrumentation" in mobile_ios
 assert "./scripts/build-ios-ipa.sh" in mobile_ios
 assert "NIAKVIO_IOS_LAB_MODE" in mobile_ios
-assert "workflow_dispatch:\n    inputs:" in mobile_ios
+assert "workflow_dispatch:\n    inputs:" in mobile_ios\nassert "          - full\n          - only" in mobile_ios
 assert 'schedule:\n    - cron: "15 18 * * 6"' in mobile_ios
 assert "NIAKVIO_IOS_TARGET_PROVIDER" in mobile_ios
 assert "NIAKVIO_IOS_SESSION_STATE" in mobile_ios
-assert "inputs.mode != 'learning'" in mobile_ios
+assert "inputs.mode != 'only'" in mobile_ios
 ios_suite = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
 assert "FIELD_NATIVE_IOS_SESSION state=warm-created" in ios_suite
 assert "FIELD_NATIVE_IOS_SESSION state=warm-reused" in ios_suite
@@ -134,7 +134,7 @@ assert 'mode == "learning" || mode == "quick"' in prepare_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
 assert "analyze_native_ios_results.py" in mobile_ios
-assert "native-mobile-ios-routes-${{ github.run_id }}" in mobile_ios
+assert "native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}" in mobile_ios
 
 prepare_ios_tree = ast.parse(prepare_ios)
 fixture_list_function = next(
