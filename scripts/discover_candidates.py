@@ -408,20 +408,24 @@ def main() -> int:
         })
         known_keys.add(key)
 
-    # Attach a canonical metadata summary before runtime validation so fixture
-    # selection can use the combined descriptions of all three manifests rather
-    # than whichever upstream variant happens to execute first.
-    canonical_variants: dict[str, list[dict[str, Any]]] = {}
+    # Canonicalize duplicate upstream declarations before Health/Repair.
+    # The repair engine must receive exactly one candidate per provider.
+    canonical_groups: dict[str, list[dict[str, Any]]] = {}
     for candidate in candidates:
-        canonical_variants.setdefault(candidate["canonical_id"], []).append(candidate)
-    for variants in canonical_variants.values():
+        canonical_groups.setdefault(candidate["canonical_id"], []).append(candidate)
+
+    canonical_candidates: list[dict[str, Any]] = []
+    duplicate_inputs: list[dict[str, Any]] = []
+    fallback_sources = {"published-baseline", "local-lkg"}
+
+    for canonical, rows in canonical_groups.items():
         descriptions: list[str] = []
         supported_types: list[str] = []
         content_languages: list[str] = []
         formats: list[str] = []
-        sources: list[str] = []
-        for variant in variants:
-            metadata = variant.get("metadata", {}) if isinstance(variant.get("metadata"), dict) else {}
+        source_names: list[str] = []
+        for row in rows:
+            metadata = row.get("metadata", {}) if isinstance(row.get("metadata"), dict) else {}
             description = str(metadata.get("description") or "").strip()
             if description and description not in descriptions:
                 descriptions.append(description)
@@ -437,24 +441,66 @@ def main() -> int:
                 text = str(value).strip()
                 if text and text not in formats:
                     formats.append(text)
-            source = str(variant.get("source") or "").strip()
-            if source and source not in sources:
-                sources.append(source)
-        summary = {
+            source_name = str(row.get("source") or "").strip()
+            if source_name and source_name not in source_names:
+                source_names.append(source_name)
+
+        live = [row for row in rows if str(row.get("source") or "") not in fallback_sources]
+        pool = live or rows
+        selected = min(
+            pool,
+            key=lambda row: (
+                int(row.get("source_priority", 999)),
+                str(row.get("source") or ""),
+                str(row.get("key") or ""),
+            ),
+        )
+        selected["canonical_metadata"] = {
             "descriptions": descriptions,
             "supportedTypes": supported_types,
             "contentLanguage": content_languages,
             "formats": formats,
-            "sources": sources,
+            "sources": source_names,
         }
-        for variant in variants:
-            variant["canonical_metadata"] = summary
+        selected["input_deduplication"] = {
+            "duplicate_count": max(0, len(rows) - 1),
+            "observed_sources": source_names,
+            "selected_source": selected.get("source"),
+            "selection": "live_upstream_priority_then_published_fallback",
+        }
+        canonical_candidates.append(selected)
+
+        for row in rows:
+            if row is selected:
+                continue
+            duplicate_inputs.append({
+                "canonical_id": canonical,
+                "discarded_key": row.get("key"),
+                "discarded_source": row.get("source"),
+                "selected_key": selected.get("key"),
+                "selected_source": selected.get("source"),
+            })
+            local_path = str(row.get("local_path") or "").strip()
+            if local_path:
+                try:
+                    discarded_path = (stage / local_path).resolve()
+                    discarded_path.relative_to(stage.resolve())
+                    discarded_path.unlink(missing_ok=True)
+                except (OSError, ValueError):
+                    pass
+
+    candidates = sorted(
+        canonical_candidates,
+        key=lambda row: (str(row.get("canonical_id") or ""), int(row.get("source_priority", 999))),
+    )
 
     registry = {
-        "schema_version": 63,
+        "schema_version": 64,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "candidate_count": len(candidates),
-        "canonical_provider_count": len({item["canonical_id"] for item in candidates}),
+        "canonical_provider_count": len(candidates),
+        "input_duplicate_count": len(duplicate_inputs),
+        "input_duplicates": duplicate_inputs,
         "excluded_count": len(excluded),
         "excluded": excluded,
         "upstreams": upstream_reports,
@@ -480,8 +526,8 @@ def main() -> int:
         )
 
     print(
-        f"Discovered {len(candidates)} variants for "
-        f"{registry['canonical_provider_count']} canonical providers; "
+        f"Discovered {len(candidates)} canonical providers after input deduplication "
+        f"({registry['input_duplicate_count']} duplicate source declaration(s) discarded); "
         f"excluded {len(excluded)} P2P/torrent entries."
     )
     return 0
