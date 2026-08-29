@@ -264,7 +264,7 @@ await fs.writeFile(path.join(process.env.NUVIO_HEALTH_OUTPUT,'health-results.jso
         assert final["accepted_repairs"] == 1
         assert final["rounds"][0]["accepted"][0]["reason"] == "strict_playable_stream_improvement"
         assert final["rounds"][0]["accepted"][0]["streams_playable_after"] == 1
-        assert len(final["rounds"]) <= 2
+        assert len(final["rounds"]) == 1
 
 
 test_runtime_signatures()
@@ -273,4 +273,9 @@ test_html_profile_is_syntax_safe()
 test_repair_candidate_and_comparison_requires_playable_stream()
 test_accepted_profiles_are_persistable()
 test_bounded_loop_accepts_only_verified_dle_repair()
+deep_wrapper = (ROOT / "scripts" / "run_adaptive_deep_repair.py").read_text(encoding="utf-8")
+overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+assert overrides.get("runtime_repair", {}).get("max_rounds") == 1
+assert 'sys.argv.extend(["--max-rounds", "1"])' in deep_wrapper
+
 print("runtime repair tests passed")
