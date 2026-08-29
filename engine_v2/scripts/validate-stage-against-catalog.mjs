@@ -36,6 +36,7 @@ for (const provider of catalog.providers) {
     missing.push(provider.canonicalId);
     continue;
   }
+}
 
 if (missing.length) {
   throw new Error(`staging/catalog preservation gate failed: missing canonical providers: ${missing.join(", ")}`);
