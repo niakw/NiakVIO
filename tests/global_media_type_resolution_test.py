@@ -28,7 +28,7 @@ assert "TMDB_ACCESS_TOKEN" in patched
 assert "series" in patched and "show" in patched and "other" in patched
 
 runner = r'''
-global.TMDB_API_KEY = "test-key";
+global.TMDB_API_KEY = String(1);
 global.fetch = async (url) => ({
   ok: true,
   json: async () => ({

@@ -44,7 +44,7 @@ assert finalized.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < finalized.index("NUV
 runner = r'''
 const assert=require('assert');
 const searches=[];
-global.TMDB_API_KEY='test-key';
+global.TMDB_API_KEY=String(1);
 function response(data){return {ok:true,status:200,json:async()=>data};}
 global.fetch=async function(raw){
   const url=String(raw);
@@ -101,7 +101,7 @@ finally:
 id_source = "module.exports={getStreams:async()=>[{url:'https://cdn.example/a.m3u8',tmdbId:'999999'},{url:'https://cdn.example/b.m3u8'}]};"
 id_patched = identity.apply(id_source, context={"provider_id": "example"})
 id_runner = r'''
-global.TMDB_API_KEY='test-key';
+global.TMDB_API_KEY=String(1);
 global.fetch=async raw=>{const u=String(raw);if(u.includes('/movie/157336?'))return {ok:true,json:async()=>({id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05'})};return {ok:true,json:async()=>({results:[]})}};
 PATCHED
 module.exports.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(rows=>{if(rows.length!==1||!rows[0].url.endsWith('/b.m3u8'))process.exit(2)}).catch(()=>process.exit(3));
@@ -128,7 +128,7 @@ homonym_source = r'''module.exports={getStreams:async()=>[
 homonym_patched = identity.apply(homonym_source, context={"provider_id": "example"})
 homonym_runner = r'''
 const assert=require('assert');
-global.TMDB_API_KEY='test-key';
+global.TMDB_API_KEY=String(1);
 global.fetch=async raw=>{const u=String(raw);if(u.includes('/movie/222?'))return {ok:true,status:200,json:async()=>({id:222,title:'Unstoppable',original_title:'Unstoppable',release_date:'2024-12-06',external_ids:{imdb_id:'tt3864060'}})};return {ok:true,status:200,json:async()=>({results:[]})}};
 PATCHED
 module.exports.getStreams({tmdbId:'222',imdbId:'tt3864060',mediaType:'movie',title:'Unstoppable',year:2024}).then(rows=>{
@@ -153,7 +153,7 @@ finally:
 movie_source = "module.exports={getStreams:async()=>[{url:'https://cdn.example/Other-Show-S02E04.mp4'},{name:'Server 1',url:'https://cdn.example/a8f.m3u8'}]};"
 movie_patched = identity.apply(movie_source, context={"provider_id": "example"})
 movie_runner = r'''
-global.TMDB_API_KEY='test-key';
+global.TMDB_API_KEY=String(1);
 global.fetch=async raw=>{const u=String(raw);if(u.includes('/movie/157336?'))return {ok:true,json:async()=>({id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05'})};return {ok:true,json:async()=>({results:[]})}};
 PATCHED
 module.exports.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(rows=>{if(rows.length!==1||!rows[0].url.endsWith('/a8f.m3u8'))process.exit(2)}).catch(()=>process.exit(3));
@@ -177,7 +177,7 @@ fail_open_patched = identity.apply(fail_open_source, context={"provider_id": "ex
 assert "cross-client-positive-mismatch-runtime-tmdb-fail-open-v6" in fail_open_patched
 fail_open_runner = r'''
 const assert=require('assert');
-global.TMDB_API_KEY='test-key';
+global.TMDB_API_KEY=String(1);
 global.fetch=async()=>{throw new Error('simulated Desktop TMDB transport failure')};
 PATCHED
 module.exports.getStreams('157336','movie',undefined,undefined).then(rows=>{

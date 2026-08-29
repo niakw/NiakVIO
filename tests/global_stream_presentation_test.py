@@ -38,7 +38,7 @@ def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None,
         runner = root / "runner.cjs"
         provider.write_text(patched, encoding="utf-8")
         fetch = fetch_impl or "async function(){throw new Error('offline')}"
-        runtime_key = "global.TMDB_API_KEY='test-key';\n" if fetch_impl else ""
+        runtime_key = "global.TMDB_API_KEY=String(1);\n" if fetch_impl else ""
         runner.write_text(
             runtime_key + "global.fetch=" + fetch + ";\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
             encoding="utf-8",
