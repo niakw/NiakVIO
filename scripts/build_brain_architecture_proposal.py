@@ -97,6 +97,8 @@ def main() -> int:
     p.add_argument("--target-selection", type=Path)
     p.add_argument("--route-report", type=Path)
     p.add_argument("--route-fallback", type=Path)
+    p.add_argument("--queue-summary", type=Path)
+    p.add_argument("--queue-state", type=Path)
     p.add_argument("--output-policy", type=Path, required=True)
     p.add_argument("--summary", type=Path, required=True)
     p.add_argument("--markdown", type=Path, required=True)
@@ -111,7 +113,9 @@ def main() -> int:
         if isinstance(targeted.get("providers"), list)
         else ([targeted] if targeted else [])
     )
-    selection = load_optional(a.target_selection)
+    queue_summary = load_optional(a.queue_summary)
+    queue_state = load_optional(a.queue_state)
+    selection = queue_summary or load_optional(a.target_selection)
     route_report = load_optional(a.route_report)
     route_fallback = load_optional(a.route_fallback)
     workflow = a.workflow.read_text(encoding="utf-8")
@@ -278,7 +282,7 @@ def main() -> int:
         "multiDeviceLab": "tv_desktop_mobile" in str(lab.get("clientSelection") or ""),
         "allStreamsLab": "all_returned_streams" in str(lab.get("streamSampling") or "") or "--stream-safety-cap 40" in workflow,
         "persistentQueue": "run_brain_learning_queue.py" in workflow,
-        "crossDayScheduler": "--scheduler-state" in workflow,
+        "crossDayScheduler": "--learning-queue-state" in workflow,
         "conditionalRouteSearch": "run_brain_learning_queue.py" in workflow,
         "selfArchitecturePr": "publish-architecture-proposal:" in workflow,
     }
@@ -304,6 +308,8 @@ def main() -> int:
         "allowedTargets": allowed,
         "architectureChecks": architecture_checks,
         "targetProvider": target_provider or None,
+        "providersObserved": int(selection.get("processedProviderCount") or 0),
+        "pendingProviders": int(queue_state.get("remainingProviderCount") or 0),
         "policy": {
             "publicationAllowed": False,
             "productionWritesAllowed": False,
