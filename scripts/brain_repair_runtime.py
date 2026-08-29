@@ -287,6 +287,17 @@ def wrap_matching_profiles(base_matching: Callable[..., list[str]]) -> Callable[
 def _budget_error(candidate: dict[str, Any], plan_key: str, plan: dict[str, Any]) -> str | None:
     state = _public_state(candidate, plan_key)
     current_policy = policy()
+    learning_mode = str(__import__("os").environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning"
+    if learning_mode:
+        deadline_raw = str(__import__("os").environ.get("NUVIO_BRAIN_DEADLINE_EPOCH_MS") or "").strip()
+        if deadline_raw:
+            try:
+                if int(time.time() * 1000) >= int(deadline_raw):
+                    return "brain_learning_time_budget_exhausted"
+            except ValueError:
+                pass
+        return None
+
     production = current_policy.get("production") if isinstance(current_policy.get("production"), dict) else {}
     if state["mutationCount"] >= int(production.get("maxMutationsPerProvider") or 2):
         return "brain_mutation_budget_exhausted"
@@ -316,8 +327,8 @@ def _discard_generated_candidate(stage: Path, repaired: dict[str, Any] | None) -
 def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any] | None, str | None]]) -> Callable[..., tuple[dict[str, Any] | None, str | None]]:
     """Enforce production Brain budgets around actual code mutation attempts.
 
-    Budgets are shared by canonical provider family, not by upstream variant, so
-    three siblings cannot each consume a fresh mutation/loop allowance.
+    Production budgets remain strict. Learning instead follows the global
+    workflow deadline and may test successive hypotheses in its isolated sandbox.
     """
     def _create(stage: Path, candidate: dict[str, Any], profile_name: str, round_number: int):
         parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
