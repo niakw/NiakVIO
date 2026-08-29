@@ -2,6 +2,8 @@ name: Native Mobile Android reader acceptance
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "10 18 * * 6"
 
 permissions:
   contents: read
