@@ -11,13 +11,16 @@ const repairPath = resolveArg('--repair-report', path.join(root, 'repair-report.
 const historicalPath = optionalArg('--historical-training');
 const previousPath = optionalArg('--previous-state');
 const nativeSummaryPath = optionalArg('--native-summary');
+const targetedLabPath = optionalArg('--targeted-lab-summary');
 const portfolioPath = optionalArg('--provider-portfolio');
 const overridesPath = resolveArg('--overrides', path.join(root, 'provider-overrides.json'));
 fs.mkdirSync(outputDir, { recursive: true });
 
 const overrides = readJson(overridesPath, {});
 const repair = readJson(repairPath, {});
-const targetedLab = isRecord(repair.targetedLab) ? repair.targetedLab : {};
+const targetedLab = targetedLabPath
+  ? readJson(targetedLabPath, {})
+  : (isRecord(repair.targetedLab) ? repair.targetedLab : {});
 const diagnostics = readJson(path.join(root, 'diagnostics-report.json'), {});
 const policy = readJson(path.join(root, 'engine_v2/config/brain-policy.json'), {});
 const previous = previousPath ? readJson(previousPath, {}) : {};
