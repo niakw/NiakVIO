@@ -199,7 +199,7 @@ value = run_node(
     module.apply(BASE, context={"provider_id": "generic-provider"}),
     duration_fetch,
     "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
-    "global.__fetchCalls=0;global.navigator={userAgent:'web-like-test'};",
+    "global.__fetchCalls=0;global.TMDB_API_KEY=String(1);global.navigator={userAgent:'web-like-test'};",
 )
 assert value["rows"] == 0 and value["calls"] >= 2, value
 
