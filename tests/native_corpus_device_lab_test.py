@@ -80,13 +80,18 @@ for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
     assert "\n  pull_request:" not in workflow
     assert "\n  push:" not in workflow
     assert "workflow_dispatch:" in workflow
-    assert "\n  schedule:" in workflow and "cron:" in workflow
+    assert "\n  schedule:" not in workflow
+    assert "cron:" not in workflow
 
 assert "matrix:" not in tv_reader
 assert tv_reader.count("tv-route-reader:") == 1
 assert "NIAKVIO_TARGET_FIXTURES: \"interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01\"" in tv_reader
 assert "NIAKVIO_TV_PRIORITY_APPEND: \"0\"" in tv_reader
 assert "NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: \"45\"" in tv_reader
+assert "--streams 2" in tv_reader
+assert 'NIAKVIO_PRIMARY_STREAM_SCOPE: "2"' in tv_reader
+assert 'NIAKVIO_REGRESSION_STREAM_SCOPE: "2"' in tv_reader
+assert "--streams all" not in tv_reader
 assert "native-tv-route-representative-${{ github.run_id }}" in tv_reader
 
 assert "mobile-android-reader:" in mobile_android
