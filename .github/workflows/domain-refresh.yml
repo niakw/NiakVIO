@@ -1,4 +1,4 @@
-name: Observe official provider domains
+name: Observe provider domains and DNS
 
 on:
   workflow_dispatch:
@@ -16,6 +16,14 @@ on:
       - main
     paths:
       - ".github/triggers/domain-refresh"
+      - ".github/workflows/domain-refresh.yml"
+      - "scripts/resolve_provider_hubs.py"
+      - "scripts/provider_dns_preflight.mjs"
+      - "provider-hubs.json"
+      - "health-config.json"
+      - "tests/provider_hub_registry_test.py"
+      - "tests/dns_preflight.test.mjs"
+      - "tests/domain_refresh_workflow_test.py"
   schedule:
     - cron: "23 3 * * *"
 
@@ -28,9 +36,9 @@ concurrency:
 
 jobs:
   observe:
-    name: Observe hubs and domain candidates
+    name: Observe hubs, domains and French ISP DNS
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 50
     permissions:
       contents: read
 
@@ -67,6 +75,63 @@ jobs:
             --timeout 8 \
             --output health-output/provider-hub-report.json
 
+      - name: Diagnose all observed provider domains through French ISPs
+        shell: bash
+        env:
+          GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
+        run: |
+          node scripts/provider_dns_preflight.mjs \
+            --manifest manifest.json \
+            --hub-report health-output/provider-hub-report.json \
+            --all-domains \
+            --output health-output/dns-preflight-report.json
+
+      - name: Summarize domain and DNS observation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          hubs = json.loads(Path("health-output/provider-hub-report.json").read_text(encoding="utf-8"))
+          dns = json.loads(Path("health-output/dns-preflight-report.json").read_text(encoding="utf-8"))
+
+          providers = hubs.get("providers") or {}
+          moved = [
+              (pid, row.get("official_site"), row.get("status"))
+              for pid, row in providers.items()
+              if isinstance(row, dict) and row.get("status") in {"site_validated", "pending_confirmation"}
+          ]
+          counts = dns.get("counts") or {}
+          blocked = [
+              row for row in dns.get("providers") or []
+              if isinstance(row, dict) and row.get("dns_status") == "DNS BLOCK"
+          ]
+          limited = [
+              row for row in dns.get("providers") or []
+              if isinstance(row, dict) and row.get("dns_status") == "DNS API LIMIT REACH"
+          ]
+
+          summary = [
+              "## Daily provider domain observation",
+              "",
+              f"- Providers observed: **{len(providers)}**",
+              f"- DNS OK: **{counts.get('DNS OK', 0)}**",
+              f"- DNS BLOCK: **{counts.get('DNS BLOCK', 0)}**",
+              f"- DNS API LIMIT REACH: **{counts.get('DNS API LIMIT REACH', 0)}**",
+              f"- DNS blocks: **{', '.join(str(row.get('canonical_id')) for row in blocked) or '-'}**",
+              f"- API-limited providers: **{', '.join(str(row.get('canonical_id')) for row in limited) or '-'}**",
+              "",
+              "DNS is diagnostic-only and never blocks Health/Repair or publication.",
+          ]
+          text = "\n".join(summary) + "\n"
+          print(text)
+          path = os.environ.get("GITHUB_STEP_SUMMARY")
+          if path:
+              Path(path).write_text(text, encoding="utf-8")
+          PY
+
       - name: Validate observation did not mutate publication state
         shell: bash
         run: |
@@ -74,13 +139,17 @@ jobs:
             manifest.json vf/manifest.json provider_catalog.json providers/ \
             provider-overrides.json provider-domain-history.json
           test -s health-output/provider-hub-report.json
+          test -s health-output/dns-preflight-report.json
           python tests/provider_hub_registry_test.py
+          node tests/dns_preflight.test.mjs
           python tests/domain_refresh_workflow_test.py
 
       - name: Upload domain observation
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
           name: provider-domain-observation-${{ github.run_id }}
-          path: health-output/provider-hub-report.json
+          path: |
+            health-output/provider-hub-report.json
+            health-output/dns-preflight-report.json
           retention-days: 7
           if-no-files-found: error
