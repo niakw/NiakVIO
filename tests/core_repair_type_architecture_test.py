@@ -45,7 +45,7 @@ assert "provider_base = provider_base_path.read_bytes()" in reapply_source
 assert 'provider_base.decode("utf-8", errors="strict")' in reapply_source
 assert "from provider_base_store import resolve_base" in compiler_source
 assert 'source_kind": "provider_base" if canonical_provider_base_mode' in compiler_source
-assert "from provider_base_store import persist_base_from_published" in promoter_source
+assert "from provider_base_store import (" in promoter_source\nassert "    persist_base_from_published," in promoter_source
 assert "base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published" in promoter_source
 assert "def persist_base_from_published" in base_store_source
 
