@@ -13,7 +13,6 @@ from typing import Any
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
 from provider_purification import split_owned_prefix_bootstraps
-from upstream_lkg import load_registry
 
 ROOT = Path(__file__).resolve().parents[1]
 BASES = ROOT / "provider-bases"
@@ -53,34 +52,22 @@ DERIVED_BASE_MARKERS = (
     "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1",
 )
 
-# Five providers are retained locally but are no longer present in the retained
-# upstream snapshots. These commits predate the global Core/security finalizers
-# and contain the last clean provider implementation from which current durable
-# provider-specific overrides can be replayed.
-PRE_HARDENING_MANIFEST_COMMIT = "775d35d586e2e0bafe0bb54b0ecd30527b99f51c"
+CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v2"
+CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 2
 
-LEGACY_LOCAL_SEEDS: dict[str, tuple[str, str]] = {
-    "cineby": (
-        "6f5c13750049ca5227d44eda192d2670c819bfea",
-        "providers/cineby--nuvio--d96e163f6372cafd.js",
-    ),
-    "cinemm": (
-        "6f5c13750049ca5227d44eda192d2670c819bfea",
-        "providers/cinemm--published-baseline--c298a89c18a2efb5.js",
-    ),
-    "goatapi": (
-        "6f5c13750049ca5227d44eda192d2670c819bfea",
-        "providers/goatapi--published-baseline--1db196320e8c7bf2.js",
-    ),
-    "toflix": (
-        "0c16cc5a4fe009c9585017b3fc74653749615790",
-        "providers/toflix--published-baseline--dd2dbb2d068dae21.js",
-    ),
-    "4khdhubnew": (
-        "4ac0002d48d725bb35e14f2948875cf80c0b3443",
-        "providers/4khdhubnew--published-baseline--e64aea603b3c3786.js",
-    ),
-}
+
+def is_clean_reconstructed(provenance_row: dict[str, Any] | None) -> bool:
+    row = provenance_row if isinstance(provenance_row, dict) else {}
+    return (
+        str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_SOURCE
+        and row.get("clean_reconstruction_verified") is True
+        and int(row.get("clean_reconstruction_authoring_version") or 0)
+        >= CLEAN_RECONSTRUCTION_AUTHORING_VERSION
+    )
+
+
+def requires_clean_reconstruction(provenance_row: dict[str, Any] | None) -> bool:
+    return not is_clean_reconstructed(provenance_row)
 
 
 def safe_fragment(value: str) -> str:
@@ -289,224 +276,33 @@ def persist_clean_provider_seed(
     )
 
 
-def _snapshot_seed(
-    registry: dict[str, Any],
-    provider_id: str,
-    row: dict[str, Any],
-) -> tuple[bytes, str] | None:
-    expected = str(row.get("upstream_sha256") or "").strip().casefold()
-    upstream_id = str(row.get("upstream_id") or provider_id).strip()
-    preferred = str(row.get("source") or "").strip()
-    sources = registry.get("sources") or {}
-    if not isinstance(sources, dict):
-        return None
-
-    ordered_sources = []
-    if preferred in sources:
-        ordered_sources.append(preferred)
-    ordered_sources.extend(key for key in sources if key not in ordered_sources)
-
-    matches: list[tuple[str, dict[str, Any]]] = []
-    for source_key in ordered_sources:
-        source_row = sources.get(source_key)
-        if not isinstance(source_row, dict):
-            continue
-        for generation in source_row.get("generations") or []:
-            if not isinstance(generation, dict):
-                continue
-            providers = generation.get("providers") or {}
-            if not isinstance(providers, dict):
-                continue
-            record = providers.get(upstream_id)
-            if not isinstance(record, dict):
-                record = next(
-                    (
-                        value
-                        for raw_id, value in providers.items()
-                        if canonical_id(str(raw_id)) == provider_id and isinstance(value, dict)
-                    ),
-                    None,
-                )
-            if not isinstance(record, dict):
-                continue
-            record_sha = str(record.get("sha256") or "").strip().casefold()
-            if expected and record_sha != expected:
-                continue
-            matches.append((source_key, record))
-
-    if not matches:
-        return None
-    source_key, record = matches[0]
-    filename = str(record.get("file") or "").strip()
-    record_sha = str(record.get("sha256") or "").strip().casefold()
-    path = (ROOT / "upstream-lkg" / "providers" / filename).resolve()
-    try:
-        path.relative_to((ROOT / "upstream-lkg" / "providers").resolve())
-    except ValueError:
-        return None
-    if not path.is_file():
-        return None
-    data = path.read_bytes()
-    if not record_sha or sha256(data) != record_sha:
-        return None
-    return data, f"upstream-lkg:{source_key}:{record_sha[:16]}"
-
-
-def _git_seed(provider_id: str) -> tuple[bytes, str] | None:
-    seed = LEGACY_LOCAL_SEEDS.get(provider_id)
-    if seed is None:
-        return None
-    commit, path = seed
-    result = subprocess.run(
-        ["git", "show", f"{commit}:{path}"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode or not result.stdout:
-        return None
-    return result.stdout, f"git:{commit[:12]}:{path}"
-
-
-def _pre_hardening_git_seed(provider_id: str) -> tuple[bytes, str] | None:
-    """Recover only when current legacy bytes are unrecoverable (for example quarantine)."""
-    manifest_result = subprocess.run(
-        ["git", "show", f"{PRE_HARDENING_MANIFEST_COMMIT}:manifest.json"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    if manifest_result.returncode or not manifest_result.stdout:
-        return None
-    try:
-        manifest = json.loads(manifest_result.stdout.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return None
-    entry = next(
-        (
-            row
-            for row in manifest.get("scrapers") or []
-            if isinstance(row, dict) and canonical_id(str(row.get("id") or "")) == provider_id
-        ),
-        None,
-    )
-    if not isinstance(entry, dict):
-        return None
-    relative = str(entry.get("filename") or "").strip()
-    if not relative.startswith("providers/"):
-        return None
-    result = subprocess.run(
-        ["git", "show", f"{PRE_HARDENING_MANIFEST_COMMIT}:{relative}"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode or not result.stdout:
-        return None
-    return result.stdout, f"git-pre-hardening:{PRE_HARDENING_MANIFEST_COMMIT[:12]}:{relative}"
-
-
-def _latest_snapshot_seed(
-    registry: dict[str, Any],
-    provider_id: str,
-    row: dict[str, Any],
-) -> tuple[bytes, str] | None:
-    """Return the newest retained raw upstream only as quarantine recovery input."""
-    upstream_id = str(row.get("upstream_id") or provider_id).strip()
-    sources = registry.get("sources") or {}
-    if not isinstance(sources, dict):
-        return None
-    preferred = str(row.get("source") or "").strip()
-    order = []
-    if preferred in sources:
-        order.append(preferred)
-    order.extend(key for key in sources if key not in order)
-    for source_key in order:
-        source_row = sources.get(source_key)
-        if not isinstance(source_row, dict):
-            continue
-        for generation in source_row.get("generations") or []:
-            if not isinstance(generation, dict):
-                continue
-            providers = generation.get("providers") or {}
-            if not isinstance(providers, dict):
-                continue
-            record = providers.get(upstream_id)
-            if not isinstance(record, dict):
-                record = next(
-                    (
-                        value
-                        for raw_id, value in providers.items()
-                        if canonical_id(str(raw_id)) == provider_id and isinstance(value, dict)
-                    ),
-                    None,
-                )
-            if not isinstance(record, dict):
-                continue
-            filename = str(record.get("file") or "").strip()
-            digest = str(record.get("sha256") or "").strip().casefold()
-            path = (ROOT / "upstream-lkg" / "providers" / filename).resolve()
-            try:
-                path.relative_to((ROOT / "upstream-lkg" / "providers").resolve())
-            except ValueError:
-                continue
-            if not path.is_file():
-                continue
-            data = path.read_bytes()
-            if not digest or sha256(data) != digest:
-                continue
-            return data, f"upstream-lkg-latest-quarantine-recovery:{source_key}:{digest[:16]}"
-    return None
-
-
-def _persist_recovery_fallback(
-    registry: dict[str, Any],
-    provider_id: str,
-    row: dict[str, Any],
-) -> tuple[str, str, bool, str]:
-    """Recover destroyed legacy logic without changing the public quarantine state."""
-    candidates = [
-        _git_seed(provider_id),
-        _pre_hardening_git_seed(provider_id),
-        _latest_snapshot_seed(registry, provider_id, row),
-    ]
-    errors: list[str] = []
-    for candidate in candidates:
-        if candidate is None:
-            continue
-        seed_data, seed_source = candidate
-        try:
-            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
-            return base_file, base_sha, stripped, seed_source
-        except ValueError as exc:
-            errors.append(f"{seed_source}:{exc}")
-    detail = " | ".join(errors[-3:]) if errors else "no recovery candidates"
-    raise ValueError(f"{provider_id}: no clean recovery seed for legacy ProviderBase ({detail})")
-
-
 def repair_legacy_bases() -> dict[str, Any]:
-    """Replace one-shot/public-derived bases with provider-pipeline bases.
+    """Mark every pre-v2 ProviderBase as compatibility-only legacy state.
 
-    Exact upstream SHA is required whenever provenance has one. This prevents the
-    migration from silently advancing provider logic without validation.
+    This command deliberately does *not* reconstruct ProviderBase bytes. The
+    currently published implementation may remain available to existing clients
+    and may be observed as LKG evidence, but it is never an executable seed for
+    the new NiakVIO-owned ProviderBase.
+
+    A provider leaves this queue only after a clean NiakVIO seed has been
+    reconstructed independently, validated in Learning/Lab, materialized as a
+    ProviderBase, and recorded with CLEAN_RECONSTRUCTION_SOURCE.
     """
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers")
     if not isinstance(rows, dict):
         raise ValueError("PROVENANCE.providers must be an object")
-    registry = load_registry(ROOT)
 
-    repaired = 0
-    reused = 0
-    old_paths: set[Path] = set()
     provider_count = 0
-    repair_sources: dict[str, str] = {}
+    reconstruction_required = 0
+    clean_reconstructed = 0
+    marked_at = datetime.now(timezone.utc).isoformat()
 
     for entry in manifest.get("scrapers") or []:
         if not isinstance(entry, dict):
             continue
-        provider_id = str(entry.get("id") or "").strip().casefold()
+        provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
             continue
         provider_count += 1
@@ -514,149 +310,58 @@ def repair_legacy_bases() -> dict[str, Any]:
         if not isinstance(row, dict):
             raise ValueError(f"{provider_id}: missing provenance row")
 
-        existing_path, _existing_sha = resolve_base(provider_id, row, require=False)
-        existing_data = existing_path.read_bytes() if existing_path is not None else None
-        legacy_source = str(row.get("base_source") or "") == "one-shot-public-core-tail-extraction"
-        contaminated = bool(existing_data and forbidden_base_markers(existing_data))
-        if existing_data is not None and not legacy_source and not contaminated:
-            assert_base_layering(existing_data, provider_id)
-            reused += 1
-            continue
+        path, _digest = resolve_base(provider_id, row, require=True)
+        assert path is not None
+        assert_base_layering(path.read_bytes(), provider_id)
 
-        seed = _snapshot_seed(registry, provider_id, row)
-        base_file: str
-        base_sha: str
-        stripped: bool
-        seed_source: str
-
-        if seed is not None:
-            seed_data, seed_source = seed
-            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
-        elif existing_data is not None:
-            # Preserve the exact current provider implementation whenever the
-            # one-shot base is recoverable. This retains later provider repairs
-            # without trusting a newer upstream variant. Security-normalized
-            # source is allowed here because it is idempotent provider code, not
-            # a Core/routing/quarantine layer.
-            try:
-                clean_data, stripped = clean_base_from_published(provider_id, existing_data)
-                validate_base(clean_data, provider_id)
-                base_file, base_sha = write_base(provider_id, clean_data)
-                seed_source = "legacy-current-provider-logic"
-            except ValueError:
-                base_file, base_sha, stripped, seed_source = _persist_recovery_fallback(
-                    registry, provider_id, row
-                )
+        if requires_clean_reconstruction(row):
+            reconstruction_required += 1
+            row["clean_reconstruction_required"] = True
+            row["legacy_provider_base_role"] = "compatibility-lkg-only"
+            row["legacy_provider_js_role"] = "knowledge-only-for-reconstruction"
+            row["legacy_provider_js_executed_for_reconstruction"] = False
+            row["clean_reconstruction_marked_at"] = marked_at
         else:
-            base_file, base_sha, stripped, seed_source = _persist_recovery_fallback(
-                registry, provider_id, row
-            )
-
-        if existing_path is not None:
-            old_paths.add(existing_path)
-        row["base_filename"] = base_file
-        row["base_sha256"] = base_sha
-        row["base_source"] = "provider-pipeline-legacy-rebase"
-        row["base_seed_source"] = seed_source
-        row["base_rebased_at"] = datetime.now(timezone.utc).isoformat()
-        row["base_migration_stripped_generated_core"] = bool(stripped)
-        row.pop("build_input_sha256", None)
-        row.pop("final_fixed_point", None)
-        repair_sources[provider_id] = seed_source
-        repaired += 1
-
-    referenced = {
-        str(row.get("base_filename") or "")
-        for row in rows.values()
-        if isinstance(row, dict) and str(row.get("base_filename") or "")
-    }
-    removed = 0
-    for path in old_paths:
-        relative = path.relative_to(ROOT).as_posix()
-        if relative not in referenced and path.is_file():
-            path.unlink()
-            removed += 1
+            clean_reconstructed += 1
+            row["clean_reconstruction_required"] = False
+            row.pop("legacy_provider_base_role", None)
+            row.pop("legacy_provider_js_role", None)
+            row.pop("legacy_provider_js_executed_for_reconstruction", None)
 
     provenance["provider_base_store"] = {
-        "schema_version": 2,
+        "schema_version": 4,
         "provider_count": provider_count,
-        "legacy_rebased": repaired,
-        "reused": reused,
-        "migration": "provider-pipeline-source-rebase",
-        "future_source": "provider_pipeline_only",
+        "clean_reconstructed": clean_reconstructed,
+        "reconstruction_required": reconstruction_required,
+        "authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+        "authoring_policy": "niakvio-owned-clean-reconstruction-only",
+        "clean_source": CLEAN_RECONSTRUCTION_SOURCE,
+        "legacy_provider_role": "compatibility-lkg-and-knowledge-only",
+        "upstream_code_role": "knowledge-only",
+        "upstream_code_executed": False,
+        "published_legacy_code_may_seed_new_base": False,
+        "upstream_code_may_seed_new_base": False,
+        "git_history_code_may_seed_new_base": False,
         "core_may_create_or_mutate_base": False,
         "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
-        "dynamic_domain_layers_derived": True,
-        "legacy_security_normalization_may_be_preserved": True,
-        "removed_legacy_base_files": removed,
     }
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return {
         "providers": provider_count,
-        "repaired": repaired,
-        "reused": reused,
-        "removed": removed,
-        "sources": repair_sources,
+        "clean_reconstructed": clean_reconstructed,
+        "reconstruction_required": reconstruction_required,
     }
-
 
 def migrate_existing() -> dict[str, Any]:
-    """Legacy entry point retained for old workflows; new runs use repair-legacy."""
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
-    rows = provenance.get("providers")
-    if not isinstance(rows, dict):
-        raise ValueError("PROVENANCE.providers must be an object")
+    """Disabled legacy migration entry point.
 
-    migrated = 0
-    reused = 0
-    provider_count = 0
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
-        provider_id = str(entry.get("id") or "").strip().casefold()
-        relative = str(entry.get("filename") or "").strip()
-        if not provider_id or not relative.startswith("providers/"):
-            continue
-        provider_count += 1
-        row = rows.get(provider_id)
-        if not isinstance(row, dict):
-            raise ValueError(f"{provider_id}: missing provenance row")
-
-        existing_path, _existing_sha = resolve_base(provider_id, row, require=False)
-        if existing_path is not None:
-            assert_base_layering(existing_path.read_bytes(), provider_id)
-            reused += 1
-            continue
-
-        public_path = (ROOT / relative).resolve()
-        try:
-            public_path.relative_to((ROOT / "providers").resolve())
-        except ValueError as exc:
-            raise ValueError(f"{provider_id}: unsafe public provider path") from exc
-        if not public_path.is_file():
-            raise ValueError(f"{provider_id}: missing public provider artifact {relative}")
-
-        base_file, base_sha, stripped = persist_base_from_published(provider_id, public_path.read_bytes())
-        row["base_filename"] = base_file
-        row["base_sha256"] = base_sha
-        row["base_source"] = "one-shot-public-core-tail-extraction"
-        row["base_migrated_at"] = datetime.now(timezone.utc).isoformat()
-        row["base_migration_stripped_generated_core"] = bool(stripped)
-        migrated += 1
-
-    provenance["provider_base_store"] = {
-        "schema_version": 1,
-        "provider_count": provider_count,
-        "migrated": migrated,
-        "reused": reused,
-        "migration": "one-shot",
-        "future_source": "provider_pipeline_only",
-        "core_may_create_or_mutate_base": False,
-    }
-    PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return {"providers": provider_count, "migrated": migrated, "reused": reused}
-
+    Published, upstream, snapshot and Git-history JavaScript are knowledge only;
+    none of them may be transformed into a durable ProviderBase.
+    """
+    raise ValueError(
+        "migrate-existing is disabled: legacy/upstream/public JavaScript may not seed ProviderBase; "
+        "use NiakVIO clean reconstruction through Learning"
+    )
 
 def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -683,10 +388,18 @@ def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
         checked += 1
     if checked != len(manifest.get("scrapers") or []):
         raise ValueError(f"ProviderBase coverage mismatch checked={checked} manifest={len(manifest.get('scrapers') or [])}")
+    clean_reconstructed = sum(
+        1
+        for entry in manifest.get("scrapers") or []
+        if isinstance(entry, dict)
+        and is_clean_reconstructed(rows.get(canonical_id(str(entry.get("id") or ""))))
+    )
     return {
         "checked": checked,
         "unique_bases": len(bases),
         "artifact_validation": bool(validate_artifacts),
+        "clean_reconstructed": clean_reconstructed,
+        "reconstruction_required": checked - clean_reconstructed,
     }
 
 
@@ -712,13 +425,14 @@ def main() -> int:
         result = repair_legacy_bases()
         print(
             f"FIELD_PROVIDER_BASE_REPAIR providers={result['providers']} "
-            f"repaired={result['repaired']} reused={result['reused']} removed={result['removed']}"
+            f"clean={result['clean_reconstructed']} required={result['reconstruction_required']}"
         )
     else:
         result = validate_all(validate_artifacts=bool(args.artifacts))
         print(
             f"FIELD_PROVIDER_BASE_COVERAGE checked={result['checked']} "
             f"unique_bases={result['unique_bases']} "
+            f"clean={result['clean_reconstructed']} required={result['reconstruction_required']} "
             f"artifact_validation={str(result['artifact_validation']).lower()}"
         )
     return 0
