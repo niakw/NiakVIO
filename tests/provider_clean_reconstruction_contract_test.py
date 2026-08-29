@@ -32,11 +32,27 @@ provider_ids = [
 assert len(provider_ids) == len(set(provider_ids)), "manifest provider ids must be unique"
 assert len(provider_ids) == 95, f"expected the canonical 95-provider catalogue, got {len(provider_ids)}"
 
+store = provenance.get("provider_base_store")
+assert isinstance(store, dict)
+assert store.get("provider_count") == 95
+assert store.get("reconstruction_required") == 95
+assert store.get("clean_reconstructed") == 0
+assert store.get("published_legacy_code_may_seed_new_base") is False
+assert store.get("upstream_code_may_seed_new_base") is False
+assert store.get("git_history_code_may_seed_new_base") is False
+
 required = []
 clean = []
 for provider_id in provider_ids:
     row = rows.get(provider_id)
     assert isinstance(row, dict), f"{provider_id}: missing provenance"
+    assert row.get("clean_reconstruction_required") is True, f"{provider_id}: v2 reconstruction flag missing"
+    assert row.get("legacy_provider_base_role") in {
+        "compatibility-lkg-only",
+        "superseded-by-clean-candidate",
+    }, f"{provider_id}: invalid legacy base role"
+    assert row.get("legacy_provider_js_role") == "knowledge-only-for-reconstruction"
+    assert row.get("legacy_provider_js_executed_for_reconstruction") is False
     if base_store.requires_clean_reconstruction(row):
         required.append(provider_id)
     else:
@@ -70,6 +86,9 @@ assert base_store.requires_clean_reconstruction(pending_row) is True
 
 discover = (SCRIPTS / "discover_candidates.py").read_text(encoding="utf-8")
 promoter = (SCRIPTS / "promote_candidates.py").read_text(encoding="utf-8")
+base_store_source = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf-8")
+assert 'row.setdefault("clean_reconstruction_marked_at", marked_at)' in base_store_source
+assert 'store.update({' in base_store_source
 assert "--clean-reconstruction" in discover
 assert '"upstream_code_role": "knowledge-only"' in discover
 assert '"upstream_code_executed": False' in discover
