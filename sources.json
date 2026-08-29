@@ -1,9 +1,9 @@
 {
-  "schema_version": 66,
+  "schema_version": 67,
   "repository": {
     "name": "NiakVIO",
     "manifest_version": "5.21.10",
-    "description": "Combined Nuvio manifest generated from every non-P2P entry declared by Gowaru, All-in-One-Nuvio and Yoru. Official address hubs, public Telegram announcements, curated candidates, consecutive search confirmation and persistent last-known-good history maintain provider routes. Each upstream keeps two content-addressed snapshots; current published bundles remain the final functional fallback. Curation merges descriptions, catalogue types, languages, formats and quality signals across the three upstream manifests. Enabled providers follow the explicit priority list, then French-language and quality ranking. P2P remains excluded."
+    "description": "Combined Nuvio manifest generated from non-P2P providers declared by Gowaru, All-in-One-Nuvio and Yoru. Provider IDs are canonicalized and duplicates are rejected immediately at import; the first valid declaration according to upstream order is retained. Official address hubs, public Telegram announcements, curated candidates, consecutive search confirmation and persistent last-known-good history maintain routes. Current published bundles remain the functional fallback when no live upstream provider can be imported."
   },
   "upstreams": {
     "gowaru": {
@@ -38,7 +38,7 @@
   "selection_policy": {
     "discover_every_declared_provider": true,
     "duplicate_key": "case-insensitive canonical provider id",
-    "preserve_complete_upstream_manifest_entry": "preserve all upstream fields, then replace supportedTypes with the canonical union inferred from all three manifests",
+    "preserve_complete_upstream_manifest_entry": "preserve the complete manifest entry of the first successfully imported canonical provider; rejected duplicates never alter provider metadata",
     "include_unconfirmed_providers_disabled": true,
     "require_all_upstream_manifests_before_publication": false,
     "content_addressed_provider_filenames": true,
@@ -70,7 +70,7 @@
     "previous_strict_validation_has_finite_inconclusive_grace": true,
     "runtime_check": "one representative provider request and at most one playable stream",
     "server_accessibility": "any HTTP response from a non-infrastructure provider host; DNS/connection/timeout failures remain inaccessible",
-    "metadata_curation": "aggregate descriptions, catalogue types, languages, formats and quality signals across all canonical variants from the three manifests",
+    "metadata_curation": "use the selected canonical provider entry only; rejected duplicate declarations are audit evidence, not metadata inputs",
     "minimum_manifest_curation_score": 5,
     "enabled_manifest_order": [
       "explicit or runtime-confirmed VF providers first",
@@ -103,11 +103,7 @@
     "last_known_good_domain_retention": true,
     "published_provider_functional_fallback": true,
     "deduplicate_at_input": true,
-    "duplicate_selection": [
-      "live upstream declaration",
-      "configured upstream priority",
-      "published/LKG fallback only when no live upstream declaration is available"
-    ]
+    "duplicate_policy": "reject later declaration immediately once a canonical provider has been successfully imported"
   },
   "exclusions": {
     "provider_ids": [
