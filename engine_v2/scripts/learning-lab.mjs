@@ -22,6 +22,9 @@ const repair = readJson(repairPath, {});
 const targetedLab = targetedLabPath
   ? readJson(targetedLabPath, {})
   : (isRecord(repair.targetedLab) ? repair.targetedLab : {});
+const targetedLabs = Array.isArray(targetedLab.providers)
+  ? targetedLab.providers.filter(isRecord)
+  : (targetedLab.providerId ? [targetedLab] : []);
 const diagnostics = readJson(path.join(root, 'diagnostics-report.json'), {});
 const policy = readJson(path.join(root, 'engine_v2/config/brain-policy.json'), {});
 const previous = previousPath ? readJson(previousPath, {}) : {};
@@ -170,22 +173,25 @@ for (const row of repeatedReaderFailures.slice(0, 80)) {
   });
 }
 
-if (targetedLab.providerId && targetedLab.status) {
-  const clientRows = isRecord(targetedLab.clients) ? Object.values(targetedLab.clients).filter(isRecord) : [];
-  const playable = clientRows.some((row) => String(row.verdict || '') === 'playable');
-  const contradiction = clientRows.some((row) => String(row.identityStatus || '') === 'contradiction');
+for (const labRow of targetedLabs) {
+  const clientRows = isRecord(labRow.clients) ? Object.values(labRow.clients).filter(isRecord) : [];
+  const playable = clientRows.length > 0 && clientRows.every((row) => String(row.verdict || '') === 'playable' && row.hiddenFailure !== true);
+  const contradiction = clientRows.some((row) => String(row.identityStatus || '') === 'contradiction' || Number(row.identityContradictions || 0) > 0);
+  const hiddenFailure = clientRows.some((row) => row.hiddenFailure === true);
   proposals.push({
-    type: 'targeted_provider_lab_observation',
+    type: hiddenFailure ? 'hidden_failure_discovered_by_learning' : 'targeted_provider_lab_observation',
     priority: contradiction ? 'critical' : (playable ? 'low' : 'high'),
-    providerId: String(targetedLab.providerId || '').toLowerCase(),
+    providerId: String(labRow.providerId || '').toLowerCase(),
     failureClass: contradiction ? 'identity_mismatch' : (playable ? 'targeted_lab_playable' : 'targeted_lab_unresolved'),
-    fixtures: targetedLab.fixtureSlug ? [String(targetedLab.fixtureSlug)] : [],
-    clients: isRecord(targetedLab.clients) ? Object.keys(targetedLab.clients).slice(0, 8) : [],
+    fixtures: labRow.fixtureSlug ? [String(labRow.fixtureSlug)] : [],
+    clients: isRecord(labRow.clients) ? Object.keys(labRow.clients).slice(0, 8) : [],
     reason: contradiction
-      ? 'Bounded targeted Learning Lab observed a media-identity contradiction; keep the provider out of automatic promotion until stronger proof exists.'
-      : (playable
-        ? 'Bounded targeted Learning Lab obtained playable evidence for the selected provider/fixture; retain this as supporting learning evidence.'
-        : 'Bounded targeted Learning Lab did not obtain playable proof; use the provider-specific observation before another broad repair attempt.'),
+      ? 'Independent Learning Lab observed a media-identity contradiction across the sandbox candidate.'
+      : (hiddenFailure
+        ? 'Learning found a stream/device failure that the Core sample may not expose; keep rotating fixtures, clients and stream positions.'
+        : (playable
+          ? 'Independent multi-device Learning Lab obtained playable evidence for the sandbox candidate.'
+          : 'Independent Learning Lab did not obtain complete playable proof; retain the observation for another hypothesis.')),
   });
 }
 
@@ -245,16 +251,11 @@ const payload = {
       ...nativeRepairTargets,
       ...providerReaderFailures.map((row) => String(row?.provider || '').toLowerCase()).filter(Boolean),
     ])].slice(0, 240),
-    targetedLab: targetedLab.providerId ? {
-      status: String(targetedLab.status || '').slice(0, 32),
-      providerId: String(targetedLab.providerId || '').toLowerCase().slice(0, 128),
-      firstDeclaredType: String(targetedLab.firstDeclaredType || '').slice(0, 32),
-      fixtureSlug: String(targetedLab.fixtureSlug || '').slice(0, 96),
-      safetyStatus: String(targetedLab.safetyStatus || '').slice(0, 40),
-      clients: isRecord(targetedLab.clients) ? targetedLab.clients : {},
-      bounded: targetedLab.bounded === true,
-      maxProviders: nonNegative(targetedLab.maxProviders),
-      maxStreamsPerRuntime: nonNegative(targetedLab.maxStreamsPerRuntime),
+    targetedLab: targetedLabs.length ? {
+      status: targetedLabs.length > 1 ? 'multi_provider' : String(targetedLabs[0]?.status || '').slice(0, 32),
+      providerId: String(targetedLabs.at(-1)?.providerId || '').toLowerCase().slice(0, 128),
+      providers: targetedLabs.slice(0, 96),
+      providerCount: targetedLabs.length,
     } : null,
   },
   privacy: 'No raw URLs, tokens, header values, cookies, private notes or spreadsheet text are copied into persistent Brain learning state.',
