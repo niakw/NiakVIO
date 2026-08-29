@@ -1,5 +1,4 @@
 {
-
   "fixtures": [
     {
       "slug": "sinners-2025",
@@ -492,7 +491,7 @@
     "desktop",
     "mobile"
   ],
-  "run_revision": "native-reader-diagnostics-v16-pinned-https-repository",
+  "run_revision": "native-reader-diagnostics-v17-one-fixture-per-declared-type",
   "policy": {
     "target_total": 10,
     "minimum_vf": 3,
@@ -506,32 +505,26 @@
   "provider_concurrency": 2,
   "max_settings_profiles": 4,
   "max_streams_per_runtime": 3,
-  "provider_timeout_ms": 70000,
-  "retry_provider_timeouts": true,
-  "retry_provider_timeout_ms": 70000,
+  "provider_timeout_ms": 25000,
+  "retry_provider_timeouts": false,
+  "retry_provider_timeout_ms": 25000,
   "playback_timeout_ms": 18000,
   "native_reader_acceptance": {
-    "provider_scope": "all",
+    "provider_scope": "declared-type",
     "include_disabled": true,
     "stream_scope": "all",
-    "primary_fixture": "sinners-2025",
+    "primary_fixture": "interstellar",
     "regression_fixtures": [
-      "interstellar",
-      "mon-ninja-et-moi-3",
-      "colony-2021",
       "breaking-bad-s01e01",
-      "revenant-s01e01",
-      "jujutsu-kaisen-s01e01",
-      "mushoku-tensei-s01e01",
-      "failure-frame-s01e01",
-      "hell-teacher-nube-2025-s01e01"
+      "jujutsu-kaisen-s01e01"
     ],
-    "tv_priority_regressions": [
-      "colony-2021",
-      "failure-frame-s01e01",
-      "hell-teacher-nube-2025-s01e01",
-      "hell-mode-s01e01"
-    ],
-    "publication_requires_fresh_reader_proof": true
+    "tv_priority_regressions": [],
+    "publication_requires_fresh_reader_proof": true,
+    "one_fixture_per_type_per_provider": true,
+    "fixture_by_type": {
+      "movie": "interstellar",
+      "tv": "breaking-bad-s01e01",
+      "anime": "jujutsu-kaisen-s01e01"
+    }
   }
 }

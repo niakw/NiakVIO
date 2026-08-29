@@ -23,11 +23,11 @@ PLAYER_AUGMENT="${NIAKVIO}/scripts/augment_native_desktop_player.py"
 FRONTEND_PHASES="${NIAKVIO}/scripts/complete_native_desktop_frontend_phases.py"
 DESKTOP_TEST_JVM_INIT="${NIAKVIO}/scripts/nuvio_desktop_test_jvm.init.gradle"
 TEST_SOURCE="${DESKTOP_ROOT}/composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
-DEFAULT_FIXTURES=(sinners-2025 interstellar mon-ninja-et-moi-3 breaking-bad-s01e01 revenant-s01e01 jujutsu-kaisen-s01e01 mushoku-tensei-s01e01)
+DEFAULT_FIXTURES=(interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01)
 TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"
-TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-all}"
+TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
-PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-sinners-2025}"
+PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
 REQUESTED_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
@@ -107,15 +107,15 @@ PY
   HTTP_LOG="${WORKSPACE}/desktop-native-http-evidence.log"
   rm -f "$BASE_LOG" "$LOG" "$GRADLE_LOG" "$HTTP_LOG"
   RUNTIME_STATUS=0
-  # The test source is regenerated for every fixture. Gradle's build cache can
-  # otherwise restore desktopTest outputs from an earlier injected source and make
-  # the native corpus appear to execute while producing no corpus/player markers.
-  # Force this one lab test to run from the exact source just staged above.
+  # The test source changes for each fixture, so Gradle reruns the affected
+  # compile/test tasks automatically. Keep build-cache restoration disabled to
+  # prevent stale injected sources, but preserve normal up-to-date work between
+  # the three movie/tv/anime passes.
   if [[ "$HOST_OS" = "windows" ]]; then
-    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --rerun-tasks --no-build-cache --no-configuration-cache --console=plain 2>&1 | tee "$GRADLE_LOG"
+    "$DESKTOP_ROOT/gradlew.bat" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --no-build-cache --no-configuration-cache --console=plain 2>&1 | tee "$GRADLE_LOG"
     RUNTIME_STATUS=${PIPESTATUS[0]}
   else
-    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --rerun-tasks --no-build-cache --no-configuration-cache --console=plain 2>&1 | tee "$GRADLE_LOG"
+    "$DESKTOP_ROOT/gradlew" -p "$DESKTOP_ROOT" --init-script "$DESKTOP_TEST_JVM_INIT" :composeApp:desktopTest --tests 'com.nuvio.app.features.plugins.NiakvioNativeCorpusDesktopTest' --no-build-cache --no-configuration-cache --console=plain 2>&1 | tee "$GRADLE_LOG"
     RUNTIME_STATUS=${PIPESTATUS[0]}
   fi
 

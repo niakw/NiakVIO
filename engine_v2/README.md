@@ -8,7 +8,7 @@
 3 upstreams + published LKG
         |
         v
-provider discovery / sibling selection
+provider discovery / input deduplication
         |
 hubs / DNS / public address discovery / LKG
         |
@@ -41,7 +41,7 @@ The Brain is the repair orchestrator. It is intentionally separated from the val
 ### Production world
 
 - classify the first causal gap rather than patching from a global status;
-- prefer a healthy sibling when it already proves the canonical provider;
+- receive exactly one canonical provider after staging input deduplication;
 - reuse a learned skill when compatible;
 - otherwise select a targeted built-in skill;
 - allow validated production discoveries to become learned skills immediately;
@@ -96,7 +96,7 @@ The Native corpus Device Lab remains the real Mobile/Desktop/TV proof. A visual 
 2. Upstreams are knowledge sources, not automatically trusted final bundles.
 3. Domain discovery precedes structural provider mutation.
 4. Broken providers are repair inputs; safety quarantine requires positive evidence.
-5. A healthy sibling is a useful canonical source, not an excuse to stack endless patches.
+5. Repair never substitutes sibling/source variants; duplicate canonical inputs are rejected before Health/Repair.
 6. Every accepted repair requires real playable evidence and no positive identity/duration contradiction.
 7. File extension alone is never final-media proof.
 8. Movie, TV and anime are first-class regression dimensions; Breaking Bad remains a mandatory TV fixture.

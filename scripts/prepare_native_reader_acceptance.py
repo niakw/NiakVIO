@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Prepare real-reader acceptance corpus runs for official Nuvio Android clients.
 
-The fixture can provide a curated provider scope, while ``--provider all`` deliberately
-selects every stageable provider from the chosen manifest, including entries whose
-published ``enabled`` flag is false. Primary acceptance can play every returned
-stream; broad regression can sample a bounded number of streams. No provider-specific
-repair logic lives here.
+Canonical acceptance uses exactly one fixture per declared media type for each
+provider. A movie/tv/anime provider is therefore exercised three times total:
+one movie, one tv episode and one anime episode. Providers declaring fewer types are
+tested only for those types. The fixture itself comes from the central fixture list.
+No provider-specific repair logic lives here.
 
-Pull-request validation is intentionally bounded: a small provider sample from each
-fixture and a small returned-stream sample are enough to prove the real reader path
-while the trusted-main/manual runs keep the exhaustive all-provider/all-stream
-evidence path.
+Pull-request validation may still bound stream playback, but it does not change this
+one-fixture-per-declared-type provider coverage contract.
 """
 from __future__ import annotations
 
@@ -80,6 +78,17 @@ def select_providers(manifest_path: str, slug: str, provider: str | None) -> lis
     mode = str(provider or "fixture").strip().casefold()
     if mode == "all":
         requested = [str(row.get("id") or "") for row in available if str(row.get("id") or "").strip()]
+    elif mode == "declared-type":
+        fixture_type = client_prepare.fixture_media_type(fixture_row(slug)["fixture"])
+        requested = [
+            str(row.get("id") or "")
+            for row in available
+            if fixture_type in {
+                str(value).strip().casefold()
+                for value in (row.get("supportedTypes") or [])
+                if str(value).strip()
+            }
+        ]
     elif mode == "fixture":
         requested = [str(value) for value in fixture_row(slug)["providers"] if str(value).strip()]
     else:
@@ -188,7 +197,7 @@ def prepare(
 
     if pr_bounded:
         if effective_provider.casefold() == "all":
-            effective_provider = "fixture"
+            effective_provider = "declared-type"
         if str(effective_stream_scope).strip().casefold() == "all":
             effective_stream_scope = _pr_stream_limit()
 
@@ -242,7 +251,7 @@ def main() -> int:
     parser.add_argument("--fixture", required=True)
     parser.add_argument("--workspace", required=True)
     parser.add_argument("--manifest", default="manifest.json")
-    parser.add_argument("--provider", default="fixture", help="all selects every manifest provider, including disabled; fixture uses fixture scope; otherwise exact provider id")
+    parser.add_argument("--provider", default="fixture", help="declared-type selects every provider declaring the fixture type; all selects every manifest provider; fixture uses its curated list; otherwise exact provider id")
     parser.add_argument("--streams", default="all", help="all, or a bounded reader sample 1-4")
     parser.add_argument("--initial", action="store_true", help="enable official client device tests before first fixture")
     args = parser.parse_args()

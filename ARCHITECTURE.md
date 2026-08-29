@@ -95,8 +95,8 @@ resolve mode
   → catalog preservation gate
   → DNS migrations
   → runtime profiles / compat primitives
-  → healthy sibling selection
-  → repair unresolved
+  → input deduplication / canonical provider selection
+  → repair unresolved canonical providers
   → evidence gates
   → promotion
   → audit contenu/média
@@ -115,10 +115,10 @@ Aucun autre workflow durable ne doit dupliquer cette boucle de publication.
 Quick est une maintenance **réparatrice et publiable** :
 
 1. recharge les hubs/domaines ;
-2. redécouvre toutes les variantes ;
-3. garde les bundles publiés/LKG comme siblings de secours ;
-4. préfère un sibling déjà sain ;
-5. ne répare structurellement que les familles non résolues ;
+2. redécouvre les sources et **rejette les doublons dès l'entrée du staging** ;
+3. conserve le publié/LKG comme fallback d'état, pas comme sibling concurrent dans Repair ;
+4. transmet exactement **un provider canonique** à Health/Repair ;
+5. répare uniquement ce provider canonique lorsqu'il reste non résolu ;
 6. accepte uniquement une amélioration sans régression runtime/identité ;
 7. peut publier sans attendre Deep.
 
@@ -147,8 +147,8 @@ La discovery :
 - valide que l'artefact est bien JavaScript ;
 - conserve source, repository, licence, manifest URL et SHA ;
 - applique uniquement les transformations locales connues avant probe ;
-- conserve toutes les variantes exploitables avant triage ;
-- agrège les metadata des siblings par provider canonique.
+- sélectionne une seule entrée par identifiant provider canonique avant Health/Repair ;
+- rejette toute déclaration canonique dupliquée au staging au lieu de la repousser vers Repair.
 
 La provenance finale reste inscrite dans `PROVENANCE.json`.
 
@@ -279,24 +279,19 @@ classify
   → generate candidate
   → probe
   → validate
-  → compare to parent/sibling
+  → compare to parent
   → accept or reject
 ```
 
 Les recettes réussies sont versionnées et liées au contexte/runtime qui les prouve.
 
-## 10. Healthy sibling first
+## 10. Déduplication avant Repair
 
-Avant une transformation, les variantes du même provider sont testées.
+Les variantes/source duplicates sont résolues **à l'entrée du staging**. Health et Repair ne reçoivent ensuite qu'un provider canonique par identifiant.
 
-Si un sibling couvre déjà les catégories déclarées avec des médias vérifiés, il devient le candidat privilégié. Les siblings cassés ne consomment pas inutilement des rounds de repair.
+Repair ne sélectionne jamais un sibling et ne substitue jamais un autre provider pour masquer un échec. Il travaille sur le provider canonique reçu, compare uniquement le candidat réparé à son parent, puis accepte ou rejette selon les preuves.
 
-Cette règle réduit :
-
-- les patches inutiles ;
-- les régressions ;
-- le temps quick ;
-- la dépendance à une variante upstream arbitraire.
+Le publié/LKG reste disponible comme fallback de publication lorsque la nouvelle observation est inconclusive ou qu'aucune amélioration sûre n'est prouvée ; ce fallback n'est pas une seconde variante à parcourir dans la boucle de repair.
 
 ## 11. LKG et activation
 

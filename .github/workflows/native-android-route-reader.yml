@@ -3,52 +3,6 @@ name: Native Android route reader acceptance
 # Final validation checkpoint: rerun Android acceptance on the current published main.
 
 on:
-  pull_request:
-    branches: [main]
-    paths:
-      - ".github/workflows/native-android-route-reader.yml"
-      - ".github/triggers/nuvio-client-lab.json"
-      - "manifest.json"
-      - "vf/manifest.json"
-      - "provider_catalog.json"
-      - "provider-overrides.json"
-      - "providers/**"
-      - "sources.json"
-      - "automation/nuvio-client-upstreams.json"
-      - "automation/nuvio-client-compatibility-matrix.json"
-      - "automation/platform-runtime-contracts.json"
-      - "automation/nuvio-tv-runtime-contract.json"
-      - "engine_v2/**"
-      - "scripts/check_nuvio_client_upstreams.py"
-      - "scripts/resolve_nuvio_lab_heads.py"
-      - "scripts/scope_native_reader_learning_runtime.py"
-      - "scripts/prepare_native_reader_acceptance.py"
-      - "scripts/augment_native_corpus_request_contract.py"
-      - "scripts/augment_native_provider_loading.py"
-      - "scripts/augment_native_provider_loading_compat.py"
-      - "scripts/resolve_native_repository.sh"
-      - "scripts/prepare_native_candidate_repository.py"
-      - "scripts/instrument_native_client_evidence.py"
-      - "scripts/instrument_native_repository_http_evidence.py"
-      - "scripts/capture_native_device_frontend.sh"
-      - "scripts/watch_native_device_frontend.sh"
-      - "scripts/native_player_diagnostics_codegen.py"
-      - "scripts/native_player_diagnostics.cjs"
-      - "scripts/native_evidence_completeness.cjs"
-      - "scripts/run_native_corpus_tv_suite.sh"
-      - "scripts/native_tv_route_checkpoint.py"
-      - "scripts/build_native_reader_retest_manifest.py"
-      - "tests/native_tv_route_resume_test.py"
-      - "scripts/run_native_corpus_mobile_suite.sh"
-      - "scripts/gate_native_reader_coverage.cjs"
-      - "scripts/gate_native_reader_result.cjs"
-      - "scripts/gate_native_player_reached.cjs"
-      - "scripts/build_native_reader_brain_repair.py"
-      - "scripts/compare_native_reader_brain_repair.py"
-      - "scripts/prime_android_lab_adb.sh"
-      - "scripts/prebuild_native_android_reader_suite.sh"
-      - "scripts/provider_patches/global_media_enrichment_v1.py"
-      - "tests/native_android_avd_cache_contract_test.py"
   push:
     branches: [main]
     paths:
@@ -99,15 +53,15 @@ on:
 permissions:
   contents: read
 
-# Latest commit wins on main/PR so expensive emulator generations never pile up.
+# Latest commit wins on main so expensive emulator generations never pile up.
 # Manual dispatches remain isolated because an explicitly requested proof may be
 # watched as authoritative evidence even if main advances concurrently.
 concurrency:
-  group: native-android-route-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main' }}
+  group: native-android-route-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main' }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 env:
-  NIAKVIO_REPRESENTATIVE_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+  NIAKVIO_REPRESENTATIVE_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
   # This workflow owns one explicit prebuild after all fixture/client hardening.
   # Disable prepare_native_reader_acceptance.py's implicit --initial prebuild so
   # every Android path compiles exactly once before QEMU.
@@ -129,7 +83,7 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
       - name: Inspect current official Nuvio client drift
         shell: bash
         run: |
@@ -152,11 +106,15 @@ jobs:
           import os
           from pathlib import Path
           data = json.loads(Path('.github/triggers/nuvio-client-lab.json').read_text(encoding='utf-8'))
-          fixtures = os.environ['NIAKVIO_REPRESENTATIVE_FIXTURES'].split()
-          for fixture in (data.get('native_reader_acceptance') or {}).get('tv_priority_regressions') or []:
-              fixture = str(fixture).strip()
-              if fixture and fixture not in fixtures:
-                  fixtures.append(fixture)
+          acceptance = data.get('native_reader_acceptance') or {}
+          fixtures = [
+              str((acceptance.get('fixture_by_type') or {}).get(kind) or '').strip()
+              for kind in ('movie', 'tv', 'anime')
+          ]
+          fixtures = [fixture for fixture in fixtures if fixture]
+          expected = os.environ['NIAKVIO_REPRESENTATIVE_FIXTURES'].split()
+          if fixtures != expected:
+              raise SystemExit(f'representative fixture contract drift: config={fixtures} env={expected}')
           shards = [[], []]
           for index, fixture in enumerate(fixtures):
               shards[index % len(shards)].append(fixture)
@@ -186,14 +144,14 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.resolve.outputs.tv_shards) }}
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 160 }}
+    timeout-minutes: 160
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           path: niakvio
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -220,12 +178,12 @@ jobs:
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
           FIRST_FIXTURE="${{ matrix.fixtures }}"
           FIRST_FIXTURE="${FIRST_FIXTURE%% *}"
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$FIRST_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture "$FIRST_FIXTURE" --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
       - name: Prebuild TV reader before QEMU
         shell: bash
         env:
           NIAKVIO_TARGET_MANIFEST: manifest.json
-          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: |
           set -euo pipefail
@@ -248,14 +206,14 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
           NIAKVIO_TARGET_FIXTURES: ${{ matrix.fixtures }}
-          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
           NIAKVIO_TV_PRIORITY_APPEND: "0"
           NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"
           NIAKVIO_TV_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
           NIAKVIO_TV_RESUME_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
-          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"
@@ -298,14 +256,14 @@ jobs:
   mobile-route-reader:
     needs: resolve
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 180 }}
+    timeout-minutes: 180
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           path: niakvio
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -330,14 +288,14 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider all --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
       - name: Prebuild Mobile reader before QEMU
         shell: bash
         env:
           NIAKVIO_TARGET_MANIFEST: manifest.json
-          NIAKVIO_TARGET_PROVIDER: all
-          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_TARGET_PROVIDER: declared-type
+          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh mobile
       - name: Enable KVM
@@ -347,11 +305,11 @@ jobs:
       - name: Execute representative routes in one Mobile boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
-          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+          NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
-          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"
@@ -392,16 +350,16 @@ jobs:
   brain-reader-repair-sandbox:
     name: Brain representative repair sandbox and official TV retest
     needs: [resolve, tv-route-reader, mobile-route-reader]
-    if: ${{ always() && needs.resolve.result == 'success' }}
+    if: ${{ needs.resolve.result == 'success' && needs.tv-route-reader.result == 'success' && needs.mobile-route-reader.result == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ github.event_name == 'pull_request' && 100 || 180 }}
+    timeout-minutes: 180
     steps:
       - name: Checkout exact NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           path: niakvio
           persist-credentials: false
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -491,7 +449,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest native-reader-repair/retest-manifest.json --provider all --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-reader-repair/retest-manifest.json --provider declared-type --streams all --initial
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           cache-disabled: true
@@ -501,8 +459,8 @@ jobs:
         shell: bash
         env:
           NIAKVIO_TARGET_MANIFEST: native-reader-repair/retest-manifest.json
-          NIAKVIO_TARGET_PROVIDER: all
-          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_TARGET_PROVIDER: declared-type
+          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
       - name: Enable KVM for candidate retest
@@ -515,13 +473,13 @@ jobs:
         if: steps.repair.outputs.proposals != '0'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
-          NIAKVIO_TARGET_PROVIDER: all
+          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+          NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: native-reader-repair/retest-manifest.json
           NIAKVIO_TV_PRIORITY_APPEND: "0"
           NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: "45"
           NIAKVIO_READER_ACCEPTANCE: "1"
-          NIAKVIO_PRIMARY_FIXTURE: sinners-2025
+          NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"

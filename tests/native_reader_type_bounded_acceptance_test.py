@@ -17,7 +17,7 @@ spec.loader.exec_module(mod)
 
 
 def source(client: str) -> str:
-    return f'''package example\n\nimport android.util.Log\nimport androidx.test.platform.app.InstrumentationRegistry\nimport org.junit.Test\n\nclass Sample {{\n    private fun b64(v: Any?) = ""\n    private fun hostOnly(v: String) = ""\n    private fun probeTransport(url: String, headers: Map<String,String>?) = TODO()\n\n    @Test\n    fun run() {{\n        val fixtureSlug = "sinners-2025"\n        val provider = object {{ val id = "MOVIESDRIVE" }}\n        val rows = emptyList<dynamic>()\n                rows.take(3).forEachIndexed {{ index, row ->\n                    emit("FIELD_NATIVE_ROW client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index")\n                }}\n                rows.firstOrNull()?.let {{ row ->\n                    val probe = probeTransport(row.url, row.headers)\n                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")\n                }}\n    }}\n    private fun emit(v: String) {{}}\n}}\n'''
+    return f'''package example\n\nimport android.util.Log\nimport androidx.test.platform.app.InstrumentationRegistry\nimport org.junit.Test\n\nclass Sample {{\n    private fun b64(v: Any?) = ""\n    private fun hostOnly(v: String) = ""\n    private fun probeTransport(url: String, headers: Map<String,String>?) = TODO()\n\n    @Test\n    fun run() {{\n        val fixtureSlug = "interstellar"\n        val provider = object {{ val id = "MOVIESDRIVE" }}\n        val rows = emptyList<dynamic>()\n                rows.take(3).forEachIndexed {{ index, row ->\n                    emit("FIELD_NATIVE_ROW client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} index=$index")\n                }}\n                rows.firstOrNull()?.let {{ row ->\n                    val probe = probeTransport(row.url, row.headers)\n                    emit("FIELD_NATIVE_TRANSPORT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} state=${{probe.state}} kind=${{probe.kind}} status=${{probe.status}} content_type64=${{b64(probe.contentType)}} extm3u=${{probe.extm3u}} duration_seconds=${{probe.durationSeconds ?: 0.0}} host64=${{b64(probe.host)}} media_hint64=${{b64(probe.mediaHint)}}")\n                }}\n    }}\n    private fun emit(v: String) {{}}\n}}\n'''
 
 
 out = mod.reader_source(source("tv"), "tv", 137, "all")
@@ -36,9 +36,7 @@ sampled = mod.reader_source(source("tv"), "tv", 137, 2)
 assert "rows.take(2).forEachIndexed" in sampled
 assert "rows.take(3).forEachIndexed" in sampled
 
-# Curated fixture scope remains available for a manual/targeted diagnosis. Its
-# ordering is deliberate: the PR-bounded lab consumes the first canaries exactly
-# in this order, while deep acceptance below still traverses the whole manifest.
+# Curated fixture scope remains available for a manual/targeted diagnosis.
 selected_fixture = mod.select_providers("manifest.json", "sinners-2025", "fixture")
 fixture_ids = [str(row["id"]).casefold() for row in selected_fixture]
 assert fixture_ids == [
@@ -52,20 +50,40 @@ assert fixture_ids == [
 ], fixture_ids
 assert "4khdhubnew" not in fixture_ids
 
-# Acceptance scope is intentionally exhaustive and includes inactive providers.
-selected_all = mod.select_providers("manifest.json", "sinners-2025", "all")
+# Canonical acceptance is exhaustive by declared type, not by repeating every
+# provider on every work. A provider is selected once for each type it declares.
 manifest_all = mod.client_prepare.manifest_providers("manifest.json")
-all_ids = [str(row["id"]).casefold() for row in selected_all]
-assert len(selected_all) == len(manifest_all) >= 90, (len(selected_all), len(manifest_all))
-assert len(set(all_ids)) == len(all_ids)
-assert any(not bool(row.get("enabled")) for row in selected_all), "inactive providers must stay in reader lab scope"
-assert any(bool(row.get("enabled")) for row in selected_all), "active providers must stay in reader lab scope"
+assert len(manifest_all) >= 90, len(manifest_all)
+for slug, media_type in (
+    ("interstellar", "movie"),
+    ("breaking-bad-s01e01", "tv"),
+    ("jujutsu-kaisen-s01e01", "anime"),
+):
+    selected = mod.select_providers("manifest.json", slug, "declared-type")
+    assert selected, (slug, media_type)
+    assert all(media_type in row.get("supportedTypes", []) for row in selected), (slug, media_type)
+    assert len({str(row["id"]).casefold() for row in selected}) == len(selected)
+    # Disabled providers are still legitimate Learning/acceptance evidence when
+    # they declare the tested type.
+    assert any(not bool(row.get("enabled")) for row in selected), (slug, "disabled coverage")
+
+# The explicit all mode remains available only for manual diagnostics.
+selected_all = mod.select_providers("manifest.json", "interstellar", "all")
+assert len(selected_all) == len(manifest_all)
 
 config = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
 acceptance = config["native_reader_acceptance"]
-assert acceptance["provider_scope"] == "all"
+assert acceptance["provider_scope"] == "declared-type"
+assert acceptance["one_fixture_per_type_per_provider"] is True
+assert acceptance["fixture_by_type"] == {
+    "movie": "interstellar",
+    "tv": "breaking-bad-s01e01",
+    "anime": "jujutsu-kaisen-s01e01",
+}
 assert acceptance["include_disabled"] is True
 assert acceptance["publication_requires_fresh_reader_proof"] is True
+assert config["provider_timeout_ms"] == 25000
+assert config["retry_provider_timeouts"] is False
 for suite in ("scripts/run_native_corpus_tv_suite.sh", "scripts/run_native_corpus_mobile_suite.sh"):
     text = (ROOT / suite).read_text(encoding="utf-8")
     assert "CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE" in text
@@ -75,11 +93,11 @@ b64 = lambda value: __import__("base64").urlsafe_b64encode(value.encode()).decod
 with tempfile.TemporaryDirectory() as tmp:
     log = Path(tmp) / "reader.log"
     lines = [
-        "FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=sinners-2025 title64=x providers=1",
-        f"FIELD_NATIVE_RESULT client=tv fixture=sinners-2025 provider64={b64('MOVIESDRIVE')} enabled=true duration_ms=1 count=9",
+        "FIELD_NATIVE_CORPUS_BEGIN client=tv fixture=interstellar title64=x providers=1",
+        f"FIELD_NATIVE_RESULT client=tv fixture=interstellar provider64={b64('MOVIESDRIVE')} enabled=true duration_ms=1 count=9",
     ]
     for index in range(3):
-        lines.append(f"FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64={b64('MOVIESDRIVE')} index={index} state=error")
+        lines.append(f"FIELD_NATIVE_PLAYER client=tv fixture=interstellar provider64={b64('MOVIESDRIVE')} index={index} state=error")
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
     # Explicitly isolate both modes. GitHub's provider pipeline itself runs as a
@@ -115,7 +133,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert "expected_played=3 played=3" in sampled_pass.stdout
 
     for index in range(3, 9):
-        lines.append(f"FIELD_NATIVE_PLAYER client=tv fixture=sinners-2025 provider64={b64('MOVIESDRIVE')} index={index} state=error")
+        lines.append(f"FIELD_NATIVE_PLAYER client=tv fixture=interstellar provider64={b64('MOVIESDRIVE')} index={index} state=error")
     log.write_text("\n".join(lines) + "\n", encoding="utf-8")
     passed = subprocess.run(
         ["node", str(ROOT / "scripts/gate_native_reader_coverage.cjs"), "--streams", "all", str(log)],
@@ -124,4 +142,4 @@ with tempfile.TemporaryDirectory() as tmp:
     assert passed.returncode == 0, passed.stdout + passed.stderr
     assert "expected_played=9 played=9" in passed.stdout
 
-print("sampled/exhaustive native reader acceptance tests passed: pr_floor=2 deep=all production_player=true")
+print("native reader acceptance tests passed: one-fixture-per-declared-type=true pr_stream_floor=2 deep_streams=all production_player=true")

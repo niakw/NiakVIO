@@ -61,7 +61,7 @@ Une modification du chemin de playback partagé doit être suivie des preuves na
 - Nuvio Desktop macOS/Windows : `.github/workflows/native-desktop-reader-acceptance.yml` ;
 - corpus natif ciblé : `.github/workflows/native-corpus-device-targeted.yml`.
 
-Le corpus de référence est versionné dans `.github/triggers/nuvio-client-lab.json` et couvre films, séries, anime ainsi que les régressions prioritaires d'identité média. Les Labs utilisent les dépôts clients Nuvio officiels uniquement comme baselines de lecture : NiakVIO ne modifie pas ces dépôts.
+Le corpus de référence est versionné dans `.github/triggers/nuvio-client-lab.json`. Le Lab standard utilise au maximum **une fixture film, une fixture série et une fixture anime par provider selon ses types déclarés** ; les autres œuvres restent disponibles pour les diagnostics ciblés. Les Labs utilisent les dépôts clients Nuvio officiels uniquement comme baselines de lecture : NiakVIO ne modifie pas ces dépôts. Les preuves natives lourdes s'exécutent sur `main` ou manuellement et ne constituent pas un verrou de publication.
 
 ## Maintenance GitHub Actions
 

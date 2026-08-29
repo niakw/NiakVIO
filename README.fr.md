@@ -96,7 +96,7 @@ Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/provi
 
 ### Repositories providers suivis
 
-NiakVIO agrège et compare plusieurs upstreams au lieu de dépendre d'une seule copie d'un provider :
+NiakVIO consulte plusieurs upstreams au lieu de dépendre d'une seule source ; les doublons canoniques sont éliminés avant Health/Repair :
 
 - [Gowaru — `Gowaru/gowaru-nuvio-providers`](https://github.com/Gowaru/gowaru-nuvio-providers)
 - [Yoru — `yoruix/nuvio-providers`](https://github.com/yoruix/nuvio-providers)
@@ -113,7 +113,7 @@ Un provider peut fonctionner aujourd'hui puis casser demain à cause d'un domain
 NiakVIO ajoute une couche de maintenance entre les repositories providers et Nuvio :
 
 - **un point d'installation unique** plutôt qu'une collection de manifests à gérer séparément ;
-- **plusieurs variantes comparées** avant de modifier du code ;
+- **plusieurs upstreams observés**, puis une seule entrée canonique déterministe retenue avant Health/Repair ;
 - **réparation automatique bornée** lorsque la meilleure variante connue ne fonctionne plus ;
 - **contrôle réel du média**, pas seulement de l'URL retournée ;
 - **vérification de l'œuvre, de la saison et de l'épisode** pour éviter les faux positifs ;
@@ -199,7 +199,7 @@ Les commits clients audités sont suivis dans [`automation/nuvio-client-upstream
 
 Le contrat logique ARCHI 2 est commun, mais **une preuve Desktop ne vaut jamais automatiquement preuve Mobile ou TV**.
 
-Les labs natifs parcourent les lignes du manifest compatibles avec la plateforme, **y compris les providers `enabled:false`**, et lisent **chaque stream retourné** sur des routes représentatives film, série et anime. Les routes incompatibles sont comptabilisées comme skips explicites ; les probes `tv/anime` non déclarés restent des preuves de capacité et ne déclenchent pas de réparation provider sur un simple échec.
+Les labs natifs parcourent les providers compatibles avec la plateforme, **y compris les providers `enabled:false`**. La couverture standard est désormais **1/1/1 par provider selon les types déclarés** : au maximum une œuvre film, une œuvre série et une œuvre anime, chacune choisie dans la liste centrale de fixtures. Un provider n'est jamais rejoué sur une seconde œuvre du même type dans le Lab standard. Les routes non déclarées ne sont plus ajoutées comme probes automatiques ; leur découverte appartient au Learning/Deep ciblé. Ces Labs produisent des preuves health/lecteur mais ne bloquent pas le fonctionnement ni la publication normale.
 
 Les snapshots AVD TV/Mobile restent réutilisables lorsqu'ils évitent une reconstruction coûteuse. Le **cache Gradle est désactivé sur les Labs natifs** pour préserver le quota de cache GitHub Actions, et leurs artifacts temporaires sont conservés **1 jour**. Les retests ciblés par device restent disponibles manuellement.
 
