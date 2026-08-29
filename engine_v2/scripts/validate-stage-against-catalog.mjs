@@ -12,7 +12,6 @@ for (let i = 2; i < process.argv.length; i += 1) {
 
 const catalogPath = String(args.get("--catalog") || "provider_catalog.json");
 const stagePath = String(args.get("--stage") || "staging/candidates.json");
-const requirePublishedBaseline = args.get("--allow-missing-baseline") !== true;
 const catalog = loadProviderCatalog(catalogPath);
 const stage = JSON.parse(fs.readFileSync(stagePath, "utf8"));
 const candidates = Array.isArray(stage.candidates) ? stage.candidates : [];
@@ -31,31 +30,15 @@ if (duplicateCanonical.length) {
 }
 
 const missing = [];
-const missingBaseline = [];
 for (const provider of catalog.providers) {
   const variants = byCanonical.get(provider.canonicalId) || [];
   if (!variants.length) {
     missing.push(provider.canonicalId);
     continue;
   }
-  // The current published/LKG artifact is retained outside the live candidate
-  // comparison path. A fallback candidate is required only when discovery has no
-  // live upstream declaration for this canonical provider.
-  if (requirePublishedBaseline && variants.length === 1) {
-    const row = variants[0];
-    const source = String(row.source || "");
-    const hasLive = source !== "published-baseline" && source !== "local-lkg";
-    if (!hasLive && !(row.baseline === true || source === "published-baseline" || source === "local-lkg")) {
-      missingBaseline.push(provider.canonicalId);
-    }
-  }
-}
 
-if (missing.length || missingBaseline.length) {
-  const details = [];
-  if (missing.length) details.push(`missing canonical providers: ${missing.join(", ")}`);
-  if (missingBaseline.length) details.push(`missing LKG/published baseline: ${missingBaseline.join(", ")}`);
-  throw new Error(`staging/catalog preservation gate failed\n- ${details.join("\n- ")}`);
+if (missing.length) {
+  throw new Error(`staging/catalog preservation gate failed: missing canonical providers: ${missing.join(", ")}`);
 }
 
 const discoveredIds = [...byCanonical.keys()];
