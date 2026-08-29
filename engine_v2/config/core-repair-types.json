@@ -382,6 +382,29 @@
       "derivation": "provider_base_plus_known_core_and_capability_layers",
       "contentAddressed": true,
       "rebuildOnlyOnInputChange": true
+    },
+    "domainIntelligence": {
+      "independentFromProviderBase": true,
+      "currentOfficialSiteIsResolvedStateNotIdentity": true,
+      "sources": [
+        "official_hub",
+        "public_telegram",
+        "validated_redirect",
+        "direct_candidates",
+        "last_known_good_history",
+        "yandex_deep_search",
+        "duckduckgo_deep_fallback"
+      ],
+      "validation": [
+        "same_provider_brand_or_explicit_allowlist",
+        "dns",
+        "http_redirect_chain",
+        "terminal_site_or_api_role"
+      ],
+      "searchOnlyPromotionRequiresConsecutiveRuns": 2,
+      "inconclusiveKeepsLastKnownGood": true,
+      "domainChangeMayRebuildDerivedBundle": true,
+      "domainChangeMayReplaceProviderLogic": false
     }
   }
 }
