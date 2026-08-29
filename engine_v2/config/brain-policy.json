@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 4,
+  "schemaVersion": 5,
   "controlPlaneVersion": 4,
   "identity": {
     "name": "NiakVIO Brain",
     "role": "architecture learning and adaptive provider repair orchestrator",
-    "principle": "classify through Core first, learn only where the architecture has a gap"
+    "principle": "Core evidence is a fallible observation, never ground truth; Learning reproduces, challenges, experiments, learns from failed hypotheses, and proposes only after independent proof"
   },
   "production": {
     "learningOnValidatedRepair": false,
@@ -30,17 +30,17 @@
   "learningLab": {
     "enabled": true,
     "scheduleUtc": "17 2 * * *",
-    "budgetMinutes": 50,
+    "budgetMinutes": 60,
     "publicationAllowed": false,
     "productionWritesAllowed": false,
     "pullRequestOnly": true,
-    "explorationShare": 0.35,
+    "explorationShare": 1,
     "coreChanges": "proposal_only",
     "maxRepeatedFailedProfile": 2,
     "memoryMaxEntries": 1000,
     "historicalBaselineId": "excel-provider-audit-5.20.63",
     "consumeNativeClientFeedback": true,
-    "purpose": "diagnose each provider, run one bounded repair pass that may evaluate all compatible Core fix types, retain evidence, and learn or propose improvements for later runs",
+    "purpose": "use Core/native evidence as hypotheses, independently reproduce providers, explore alternative routes and repair methods for up to 60 minutes, deep-sample healthy providers too, remember failures/successes, and resume unfinished providers on later days",
     "directSkillPublication": false,
     "providerLocalMutation": "ephemeral_lab_proof_only",
     "knownTypeUnresolvedAction": "adapt_or_evolve_type",
@@ -50,8 +50,18 @@
     "dailyPublishedProviderCoverageTarget": 1,
     "anomaliesFirst": true,
     "explorationAfterCoverage": true,
-    "maxRepairRounds": 1,
-    "maxExploratoryProfilesPerProvider": 1
+    "coreEvidenceAuthority": "hypothesis_only",
+    "resumeAcrossDays": true,
+    "allProvidersEventuallyDebugged": true,
+    "healthyProviderDeepSampling": true,
+    "clients": [
+      "tv",
+      "desktop",
+      "mobile"
+    ],
+    "streamSampling": "spread",
+    "maxLabStreamsPerRuntime": 6,
+    "fixtureSelection": "rotate_across_declared_type_fixture_pool_and_previous_memory"
   },
   "privacy": {
     "persistRawUrls": false,
@@ -72,7 +82,7 @@
       "independent": true,
       "scheduleUtc": "17 2 * * *",
       "publishedProviderObservationCoverage": 1,
-      "purpose": "detect silent provider failures and evolve Core types/invariants in an isolated sandbox",
+      "purpose": "adaptive independent investigation across the full provider catalogue: anomalies first, healthy deep-sampling after, multi-device Labs, route discovery, repeated repair experimentation until the global time budget expires",
       "productionWritesAllowed": false,
       "publicationAllowed": false
     }
