@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts" / "provider_base_store.py"
+sys.path.insert(0, str(ROOT / "scripts"))
 
 spec = importlib.util.spec_from_file_location("provider_base_store_layering", SCRIPT)
 assert spec is not None and spec.loader is not None
