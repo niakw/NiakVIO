@@ -306,7 +306,7 @@ class NiakvioNativeCorpusDesktopTest {{
         for (provider in providers) {{
             val started = System.currentTimeMillis()
             try {{
-                val rows = kotlinx.coroutines.withTimeout(undefinedL) {
+                val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {
                     PluginRuntime.executePlugin(
                         code = File(root, provider.asset).readText(),
                         tmdbId = tmdbId,
@@ -392,7 +392,7 @@ class {klass} {{
         for (provider in providers) {{
             val started = System.currentTimeMillis()
             try {{
-                val rows = kotlinx.coroutines.withTimeout(undefinedL) {{
+                val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {{
                     {execute}(
                         code = code(provider.asset),
                         tmdbId = tmdbId,
