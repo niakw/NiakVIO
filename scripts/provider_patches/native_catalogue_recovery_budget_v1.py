@@ -14,6 +14,7 @@ recovery diversity while keeping the number of blocking host calls finite.
 """
 from __future__ import annotations
 
+import re
 from typing import Any
 
 MARKER = "NUVIO_NATIVE_CATALOGUE_RECOVERY_BUDGET_V2"
@@ -33,11 +34,10 @@ CANDIDATE_NEW = "var candidates=nativeRuntime?nativeRecoveryCandidatePlan(found,
 INSTALL_OLD = "var wrap=async function(){var q=args(arguments),v,deadline=Date.now()+c.budgetMs;"
 INSTALL_V1 = "var wrap=async function(){var q=args(arguments),v,deadline=Date.now()+(nativeRecoveryHost()?Math.min(c.budgetMs,12000):c.budgetMs);"
 INSTALL_NEW = "var wrap=async function(){var q=args(arguments),v,deadline=Date.now()+(nativeRecoveryHost()?Math.min(c.budgetMs,30000):c.budgetMs);"
-LEGACY_HELPER_ANCHOR = 'var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";'
 HELPER_ANCHOR = 'var TMDB_KEY=(g&&g.TMDB_API_KEY)||"";'
 HOST_HELPER = 'function nativeRecoveryHost(){try{return typeof g.__native_fetch==="function"}catch(_){return false}}'
 HELPER_V1 = HELPER_ANCHOR + HOST_HELPER
-LEGACY_HELPER_V1 = LEGACY_HELPER_ANCHOR + HOST_HELPER
+LEGACY_HELPER_RE = re.compile(r'var TMDB_KEY="[0-9a-fA-F]{32}";')
 SEARCH_PLAN_HELPER = 'function nativeRecoverySearchPlan(values,cap){var out=[],routes=3,aliases=Math.max(1,Math.ceil((values||[]).length/routes)),step=0,max=Math.max((values||[]).length*2,cap*routes);while(out.length<cap&&step<max){var alias=step%aliases,route=Math.floor(step/aliases)%routes,idx=alias*routes+route,u=values[idx];if(u&&out.indexOf(u)<0)out.push(u);step++}return out}'
 CANDIDATE_PLAN_HELPER = 'function nativeRecoveryCandidatePlan(found,guessed,cap){var out=[],f=unique(found||[]),g2=unique(guessed||[]),i=0;while(out.length<cap&&(i<f.length||i<g2.length)){if(i<f.length&&out.indexOf(f[i])<0)out.push(f[i]);if(out.length>=cap)break;if(i<g2.length&&out.indexOf(g2[i])<0)out.push(g2[i]);i++}return out.slice(0,cap)}'
 HELPER = HELPER_ANCHOR + HOST_HELPER + SEARCH_PLAN_HELPER + CANDIDATE_PLAN_HELPER
@@ -69,8 +69,10 @@ def _remove_marker(text: str, marker: str) -> str:
 
 def _migrate_v1_wrapper(wrapper: str) -> str:
     """Return an old V1-budget wrapper to canonical recovery before installing V2."""
-    if LEGACY_HELPER_V1 in wrapper:
-        wrapper = _replace_once(wrapper, LEGACY_HELPER_V1, HELPER_ANCHOR, "legacy hardcoded native helper")
+    legacy = LEGACY_HELPER_RE.search(wrapper)
+    if legacy and wrapper.startswith(HOST_HELPER, legacy.end()):
+        wrapper = wrapper[:legacy.start()] + HELPER_ANCHOR + wrapper[legacy.end():]
+        wrapper = _replace_once(wrapper, HELPER_V1, HELPER_ANCHOR, "legacy native helper")
     elif HELPER_V1 in wrapper:
         wrapper = _replace_once(wrapper, HELPER_V1, HELPER_ANCHOR, "legacy native helper")
     if RECOVER_V1 in wrapper:
@@ -94,8 +96,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     wrapper = text[start:end]
     if had_v1:
         wrapper = _migrate_v1_wrapper(wrapper)
-    elif LEGACY_HELPER_ANCHOR in wrapper:
-        wrapper = _replace_once(wrapper, LEGACY_HELPER_ANCHOR, HELPER_ANCHOR, "hardcoded TMDB helper anchor")
+    else:
+        wrapper = LEGACY_HELPER_RE.sub(HELPER_ANCHOR, wrapper, count=1)
 
     wrapper = _replace_once(wrapper, HELPER_ANCHOR, HELPER, "native helper anchor")
     wrapper = _replace_once(wrapper, RECOVER_OLD, RECOVER_NEW, "recover function")
