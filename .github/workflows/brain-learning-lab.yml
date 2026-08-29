@@ -13,15 +13,6 @@ on:
         required: false
         default: ""
         type: string
-      target_client:
-        description: Client profile for the quick targeted command lab
-        required: false
-        default: desktop
-        type: choice
-        options:
-          - desktop
-          - mobile
-          - tv
   push:
     branches: [main]
     paths:
@@ -30,6 +21,11 @@ on:
       - "manifest.json"
       - "provider-overrides.json"
       - "scripts/run_brain_learning_sandbox.py"
+      - "health-config.json"
+      - "scripts/nuvio_client_lab.cjs"
+      - "scripts/deep_repair_loop.py"
+      - "scripts/run_adaptive_quick_repair.py"
+      - "scripts/run_brain_learning_queue.py"
       - "scripts/select_brain_learning_target.py"
       - "tests/brain_learning_target_selector_test.py"
       - "scripts/resolve_provider_hub_search_fallback.py"
@@ -108,6 +104,7 @@ jobs:
           python tests/native_reader_ownership_policy_test.py
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
+            scripts/run_brain_learning_queue.py \
             scripts/build_brain_repair_proposal.py \
             scripts/build_brain_architecture_proposal.py \
             scripts/select_brain_learning_target.py \
@@ -307,6 +304,7 @@ jobs:
             brain-learning-output/repair-proposal.json
             brain-learning-output/brain-policy.proposed.json
             brain-learning-output/brain-architecture-proposal.json
+            brain-learning-output/brain-architecture-proposal.md
             brain-learning-input/native-reader-summary.json
             brain-sandbox/daily-learning-coverage.json
             brain-sandbox/health-output/learning-queue-state.json
