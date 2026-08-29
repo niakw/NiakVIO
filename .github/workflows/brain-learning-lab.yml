@@ -30,6 +30,7 @@ on:
       - "manifest.json"
       - "provider-overrides.json"
       - "scripts/run_brain_learning_sandbox.py"
+      - "scripts/select_brain_access_recovery.py"
       - "scripts/brain_repair_runtime.py"
       - "scripts/select_brain_targeted_probe.py"
       - "scripts/build_brain_repair_proposal.py"
@@ -138,18 +139,53 @@ jobs:
           git show "$BASELINE:manifest.json" > brain-learning-input/baseline-manifest.json
           git show "$BASELINE:health-report.json" > brain-learning-input/baseline-health.json
 
+      - name: Select one provider for access recovery
+        id: access-target
+        shell: bash
+        env:
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+        run: |
+          set -euo pipefail
+          mkdir -p brain-sandbox
+          python scripts/select_brain_access_recovery.py \
+            --health health-report.json \
+            --provider "$TARGET_PROVIDER" \
+            --github-output "$GITHUB_OUTPUT" \
+            --json-out brain-sandbox/access-recovery-selection.json
+
+      - name: Explore one failing provider route deeply
+        if: steps.access-target.outputs.provider != ''
+        shell: bash
+        env:
+          PROVIDER: ${{ steps.access-target.outputs.provider }}
+        run: |
+          set -euo pipefail
+          mkdir -p brain-sandbox/health-output
+          python scripts/resolve_provider_hubs.py \
+            --apply \
+            --mode deep \
+            --include-disabled \
+            --search-disabled \
+            --provider "$PROVIDER" \
+            --workers 1 \
+            --timeout 8 \
+            --output brain-sandbox/health-output/targeted-provider-hub-report.json
+          python scripts/resolve_provider_hub_search_fallback.py \
+            --report brain-sandbox/health-output/targeted-provider-hub-report.json \
+            --output brain-sandbox/health-output/targeted-provider-search-fallback.json \
+            --apply \
+            --max-providers 1 \
+            --timeout 8
+
       - name: Build isolated current provider stage
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf brain-sandbox staging
+          rm -rf staging
           mkdir -p brain-sandbox/health-output
           python scripts/normalize_provider_activation_overrides.py
-          python scripts/resolve_provider_hubs.py --apply --mode deep --include-disabled --search-disabled --workers 8 --timeout 8 --output brain-sandbox/health-output/provider-hub-report.json
           python scripts/discover_candidates.py --require-all-upstreams
           node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
-          node scripts/provider_dns_preflight.mjs --stage staging --output brain-sandbox/health-output/dns-preflight-report.json
-          python scripts/apply_dns_migration_overrides.py --stage staging --report brain-sandbox/health-output/dns-preflight-report.json
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
           python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
@@ -158,7 +194,6 @@ jobs:
 
       - name: Diagnose mutate retest and learn inside sandbox
         env:
-          NUVIO_DNS_PREFLIGHT_RESULTS: brain-sandbox/health-output/dns-preflight-report.json
           NUVIO_WORKER_MEMORY_MB: "1024"
           NUVIO_BRAIN_LEARNING_STATE: brain-learning-input/previous.json
         shell: bash
@@ -187,7 +222,7 @@ jobs:
         id: targeted
         shell: bash
         env:
-          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || steps.access-target.outputs.provider || '' }}
           TARGET_CLIENT: ${{ inputs.target_client || 'desktop' }}
         run: |
           set -euo pipefail
