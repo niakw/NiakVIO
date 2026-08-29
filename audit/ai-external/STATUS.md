@@ -1,12 +1,12 @@
 # External code-audit status
 
-Generated from `niakw/NiakVIO` at commit `a374c0d448fb229191a5982afdd5e762a6aa7aa4`.
+Generated from `niakw/NiakVIO` at commit `18967e4311f6cf33ff5f4c1c1afd1734fbff5e65`.
 
 | Source | Status | Findings/files | Access | Notes |
 |---|---:|---:|---|---|
-| SonarQube Cloud | OK | 2416 | public organization key | OK |
+| SonarQube Cloud | OK | 2405 | public organization key | OK |
 | DeepSource | OK | 172 | GraphQL API bearer token | OK |
-| CodeScene | OK | 710 | REST API bearer token | OK |
+| CodeScene | OK | 873 | REST API bearer token | OK |
 
 ## AI reading order
 
