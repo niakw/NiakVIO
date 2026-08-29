@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides
-from provider_base_store import build_clean_provider_seed, requires_clean_reconstruction, resolve_base
+from provider_base_store import build_clean_provider_seed, is_clean_reconstruction_candidate, requires_clean_reconstruction, resolve_base
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
     record_pending_source, validate_manifest_quality, write_pending,
@@ -280,6 +280,20 @@ def executable_seed(
     knowledge = upstream_knowledge(provider_id, entry, raw_upstream)
     provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
     reconstruction_required = requires_clean_reconstruction(previous_row)
+
+    pending_clean = is_clean_reconstruction_candidate(previous_row)
+
+    if pending_clean:
+        path, _digest = resolve_base(provider_id, previous_row, require=True)
+        assert path is not None
+        return (
+            path.read_bytes(),
+            "pending-niakvio-clean-reconstruction-v2",
+            site,
+            True,
+            knowledge,
+            provider_model,
+        )
 
     if reconstruction_required and clean_reconstruction:
         return (
