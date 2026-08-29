@@ -216,7 +216,8 @@ def main() -> int:
     lab = policy.get("learningLab") if isinstance(policy.get("learningLab"), dict) else {}
     threshold = max(1, int(lab.get("maxRepeatedFailedProfile") or 2))
     exploration_share = max(0.0, min(1.0, float(lab.get("explorationShare") or 0.35)))
-    exploration_limit = max(1, min(3, int(lab.get("maxExploratoryProfilesPerProvider") or 1)))
+    configured_limit = lab.get("maxExploratoryProfilesPerProvider")
+    exploration_limit = max(1, int(configured_limit)) if configured_limit not in {None, "", 0} else 10000
     day = datetime.now(timezone.utc).date().isoformat()
     target_provider = _norm(os.environ.get("NUVIO_BRAIN_TARGET_PROVIDER"))
     routine_matcher = quick._brain_matching_profiles
@@ -267,6 +268,7 @@ def main() -> int:
             and bool(exploratory_pool)
             and (
                 (target_provider and provider_id == target_provider)
+                or exploration_share >= 1.0
                 or _exploration_gate(day, provider_id, signature, exploration_share)
             )
         )
