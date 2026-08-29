@@ -350,6 +350,12 @@ function runProviderWorker(root, providerPath, fixture, context, timeoutMs = DEF
   });
 }
 
+function maxStreamsForProbe(config = {}) {
+  const allStreams = config.probe_all_streams === true;
+  if (allStreams) return Math.max(1, Math.min(Number(config.all_streams_safety_cap || 40), 200));
+  return Math.max(1, Math.min(Number(config.max_streams_per_runtime || 3), 6));
+}
+
 function selectStreamsForProbe(streams, maxStreams, mode = 'head') {
   const rows = Array.isArray(streams) ? streams : [];
   if (rows.length <= maxStreams) return rows.slice();
@@ -365,11 +371,7 @@ function selectStreamsForProbe(streams, maxStreams, mode = 'head') {
 async function probeStreams(root, streams, fixture, config) {
   const { guardedFetch } = require(path.join(root, 'scripts/network_guard.cjs'));
   const { probeDirectMedia } = require(path.join(root, 'scripts/direct_media_probe.cjs'));
-  const allStreams = config.probe_all_streams === true;
-  const safetyCap = Math.max(1, Math.min(Number(config.all_streams_safety_cap || 40), 200));
-  const maxStreams = allStreams
-    ? safetyCap
-    : Math.max(1, Math.min(Number(config.max_streams_per_runtime || 3), 6));
+  const maxStreams = maxStreamsForProbe(config);
   const timeoutMs = Math.max(3000, Math.min(Number(config.playback_timeout_ms || DEFAULT_PLAYBACK_TIMEOUT_MS), 30_000));
   const selected = selectStreamsForProbe(streams, maxStreams, config.stream_sampling || 'head');
   const results = [];
@@ -722,6 +724,7 @@ module.exports = {
   classify,
   executionGroups,
   mapLimit,
+  maxStreamsForProbe,
   markdown,
   normalizeProviderIds,
   parseArgs,
