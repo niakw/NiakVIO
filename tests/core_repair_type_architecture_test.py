@@ -78,6 +78,16 @@ assert lifecycle["coreFinalizer"]["materializeOnlyWhenStale"] is True
 assert lifecycle["coreFinalizer"]["noOpWhenFixedPoint"] is True
 assert lifecycle["coreFinalizer"]["forbiddenTrigger"] == "core_invocation_alone"
 assert lifecycle["publicBundle"]["rebuildOnlyOnInputChange"] is True
+domain_intelligence = lifecycle["domainIntelligence"]
+assert domain_intelligence["independentFromProviderBase"] is True
+assert domain_intelligence["currentOfficialSiteIsResolvedStateNotIdentity"] is True
+assert domain_intelligence["searchOnlyPromotionRequiresConsecutiveRuns"] == 2
+assert domain_intelligence["inconclusiveKeepsLastKnownGood"] is True
+assert domain_intelligence["domainChangeMayRebuildDerivedBundle"] is True
+assert domain_intelligence["domainChangeMayReplaceProviderLogic"] is False
+assert domain_intelligence["sources"][:2] == ["official_hub", "public_telegram"]
+assert "yandex_deep_search" in domain_intelligence["sources"]
+assert "duckduckgo_deep_fallback" in domain_intelligence["sources"]
 
 classes = repair_types["failureClasses"]
 for failure in ("identity_mismatch", "short_media", "media_validation_gap", "audio_track_gap"):
