@@ -76,7 +76,16 @@ async function globalpingJson(url, init, remoteConfig = {}) {
     let payload = null;
     try { payload = text ? JSON.parse(text) : {}; } catch { payload = { raw: text }; }
     if (!response.ok) {
-      const error = new Error(`Globalping HTTP ${response.status}: ${String(payload?.message || payload?.error || text).slice(0, 300)}`);
+      const detailValue = payload?.error?.message
+        || payload?.message
+        || payload?.error?.type
+        || payload?.error
+        || payload
+        || text;
+      const detail = typeof detailValue === 'string'
+        ? detailValue
+        : JSON.stringify(detailValue);
+      const error = new Error(`Globalping HTTP ${response.status}: ${String(detail).slice(0, 600)}`);
       error.status = response.status;
       error.payload = payload;
       throw error;
@@ -131,6 +140,14 @@ function httpReachabilityStatus(blocked, reachable) {
   if (blocked) return 'blocked';
   if (reachable) return 'reachable';
   return 'http_error';
+}
+
+function continueOnUnverifiedNetworkEvidence(preflightConfig = {}) {
+  if (Object.prototype.hasOwnProperty.call(preflightConfig, 'continue_on_unverified_network_evidence')) {
+    return preflightConfig.continue_on_unverified_network_evidence !== false;
+  }
+  // Backward-compatible fallback for older configs/reports.
+  return preflightConfig.continue_on_inconclusive !== false;
 }
 
 function globalpingLocationCandidates(configured, generic, resolverName, isFrenchIsp) {
@@ -292,8 +309,8 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
             target: `https://${normalizeHost(host)}/`,
             locations: [{ magic: dnsResult.location_magic }],
             limit: 1,
-            // Globalping HTTP options are top-level within measurementOptions.
-            measurementOptions: { method: 'GET', ipVersion: 4 },
+            // Globalping HTTP request options live under measurementOptions.request.
+            measurementOptions: { request: { method: 'GET' }, ipVersion: 4 },
           }, remoteConfig);
           return parseGlobalpingHttp(measurement, host);
         } catch (error) {
@@ -710,6 +727,7 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
       return {
         host,
         status: name === preflightConfig.primary_french_isp ? 'accessible_primary_french_isp' : 'accessible_french_fallback',
+        evidence_state: 'verified_french_reachable',
         selected_resolver: name,
         continue_runtime: true,
         french_checks: frenchChecks,
@@ -746,6 +764,7 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
     return {
       host,
       status: 'confirmed_french_dns_or_http_block',
+      evidence_state: 'verified_french_block_neutral_reachable',
       selected_resolver: null,
       continue_runtime: false,
       french_failure_kind: summarizeFailureKind(frenchChecks),
@@ -757,9 +776,10 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
   if (neutralReachable && allFrenchUnavailable) {
     return {
       host,
-      status: 'french_resolvers_inconclusive',
+      status: 'french_probe_unavailable_neutral_reachable',
+      evidence_state: 'neutral_reachable_french_probe_unavailable',
       selected_resolver: neutralChecks.find((item) => item.http?.status === 'reachable')?.resolver || null,
-      continue_runtime: preflightConfig.continue_on_inconclusive !== false,
+      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
       french_checks: frenchChecks,
       neutral_checks: neutralChecks,
       migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -769,8 +789,9 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
     return {
       host,
       status: 'accessible_neutral_only',
+      evidence_state: 'neutral_reachable_french_access_unverified',
       selected_resolver: neutralChecks.find((item) => item.http?.status === 'reachable')?.resolver || null,
-      continue_runtime: preflightConfig.continue_on_inconclusive !== false,
+      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
       french_checks: frenchChecks,
       neutral_checks: neutralChecks,
       migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -783,9 +804,10 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
   if (allFrenchUnavailable && allNeutralUnavailable) {
     return {
       host,
-      status: 'all_custom_resolvers_unavailable',
+      status: 'resolver_probes_unavailable',
+      evidence_state: 'probe_transport_unavailable',
       selected_resolver: null,
-      continue_runtime: preflightConfig.continue_on_inconclusive !== false,
+      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
       french_checks: frenchChecks,
       neutral_checks: neutralChecks,
       migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -795,6 +817,7 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
     return {
       host,
       status: 'globally_unreachable',
+      evidence_state: 'verified_unreachable',
       selected_resolver: null,
       continue_runtime: preflightConfig.continue_on_global_unreachable === true,
       french_checks: frenchChecks,
@@ -804,9 +827,10 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
   }
   return {
     host,
-    status: 'resolver_or_http_inconclusive',
+    status: 'network_probe_unverified',
+    evidence_state: 'insufficient_dns_http_evidence',
     selected_resolver: null,
-    continue_runtime: preflightConfig.continue_on_inconclusive !== false,
+    continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
     french_checks: frenchChecks,
     neutral_checks: neutralChecks,
     migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
@@ -864,7 +888,7 @@ export function discoverPeerMigrationCandidates(domainResults, preflightConfig =
 
 export function providerDecision(domainResults, preflightConfig) {
   if (!domainResults.length) {
-    return { status: 'no_provider_domain_detected', continue_runtime: true, reason: 'no_static_provider_domain' };
+    return { status: 'no_provider_domain_detected', evidence_state: 'not_applicable', continue_runtime: true, reason: 'no_static_provider_domain' };
   }
   const redirectMigrations = domainResults
     .flatMap((item) => item.migration_candidates || [])
@@ -878,6 +902,7 @@ export function providerDecision(domainResults, preflightConfig) {
   if (frenchPass) {
     return {
       status: 'pass',
+      evidence_state: 'verified_french_reachable',
       continue_runtime: true,
       reason: migration ? 'accessible_with_dead_peer_migration' : frenchPass.status,
       selected_resolver: frenchPass.selected_resolver,
@@ -888,8 +913,9 @@ export function providerDecision(domainResults, preflightConfig) {
   const neutralPass = domainResults.find((item) => item.status === 'accessible_neutral_only');
   if (neutralPass && migration) {
     return {
-      status: 'inconclusive',
-      continue_runtime: preflightConfig.continue_on_inconclusive !== false,
+      status: 'french_access_unverified',
+      evidence_state: 'neutral_reachable_french_access_unverified',
+      continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
       reason: 'neutral_accessible_with_dead_peer_migration',
       selected_resolver: neutralPass.selected_resolver,
       migration_candidate: migration,
@@ -900,6 +926,7 @@ export function providerDecision(domainResults, preflightConfig) {
   if (confirmedBlock) {
     return {
       status: 'confirmed_french_block',
+      evidence_state: 'verified_french_block',
       continue_runtime: preflightConfig.skip_runtime_on_confirmed_french_block === false,
       reason: migration ? 'confirmed_block_with_migration_candidate' : 'confirmed_block_without_safe_migration',
       migration_candidate: migration,
@@ -909,6 +936,7 @@ export function providerDecision(domainResults, preflightConfig) {
   if (domainResults.every((item) => item.status === 'globally_unreachable')) {
     return {
       status: 'globally_unreachable',
+      evidence_state: 'verified_unreachable',
       continue_runtime: preflightConfig.continue_on_global_unreachable === true,
       reason: 'all_french_and_neutral_resolvers_confirmed_unreachable',
       migration_candidate: migration,
@@ -916,9 +944,10 @@ export function providerDecision(domainResults, preflightConfig) {
     };
   }
   return {
-    status: 'inconclusive',
-    continue_runtime: preflightConfig.continue_on_inconclusive !== false,
-    reason: 'french_isp_resolvers_unavailable_or_neutral_only',
+    status: 'french_access_unverified',
+    evidence_state: 'insufficient_french_network_evidence',
+    continue_runtime: continueOnUnverifiedNetworkEvidence(preflightConfig),
+    reason: 'french_access_not_verified_by_available_probes',
     migration_candidate: migration,
     migration_candidates: migrations,
   };
@@ -937,7 +966,7 @@ async function runCli() {
   ]);
   const preflightConfig = config.dns_preflight || {};
   if (preflightConfig.enabled === false) {
-    const disabled = { schema_version: 1, enabled: false, generated_at: new Date().toISOString(), providers: [] };
+    const disabled = { schema_version: 2, enabled: false, generated_at: new Date().toISOString(), providers: [] };
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
     await fs.writeFile(outputPath, `${JSON.stringify(disabled, null, 2)}\n`);
     return;
@@ -989,7 +1018,7 @@ async function runCli() {
           sha256: candidate.sha256,
           domain_hints: [],
           domains: [],
-          decision: { status: 'preflight_error', continue_runtime: true, reason: compactError(error) },
+          decision: { status: 'preflight_error', evidence_state: 'probe_internal_error', continue_runtime: true, reason: compactError(error) },
         };
         process.stderr.write(`[DNS WARN] ${candidate.key}: ${compactError(error)}\n`);
       }
@@ -1000,8 +1029,16 @@ async function runCli() {
   const counts = {};
   for (const item of providers) counts[item.decision.status] = (counts[item.decision.status] || 0) + 1;
   const report = {
-    schema_version: 1,
+    schema_version: 2,
     enabled: true,
+    semantics: {
+      pass: 'French ISP reachability verified; runtime continues',
+      french_access_unverified: 'No French-access verdict; this is not a provider failure and runtime continues by policy',
+      confirmed_french_block: 'French ISP block verified against neutral reachability',
+      globally_unreachable: 'French and neutral probes verify the domain is unreachable',
+      no_provider_domain_detected: 'No provider-owned static domain was available to preflight',
+      preflight_error: 'The preflight subsystem itself errored; runtime continues fail-safe',
+    },
     generated_at: new Date().toISOString(),
     candidate_count: providers.length,
     resolver_order: frenchResolverNames,
