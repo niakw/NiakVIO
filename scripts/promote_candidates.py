@@ -39,8 +39,11 @@ from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
 from provider_base_store import (
+    CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+    CLEAN_RECONSTRUCTION_SOURCE,
     persist_base_from_published,
     persist_clean_provider_seed,
+    requires_clean_reconstruction,
     resolve_base,
 )
 
@@ -199,13 +202,25 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
     if staged_digest != candidate["sha256"]:
         raise ValueError(f"hash mismatch for {candidate['key']}")
 
+    previous_requires_clean = requires_clean_reconstruction(previous_base_row)
+    origin = str(candidate.get("candidate_code_origin") or "")
+    source = str(candidate.get("source") or "")
+    if previous_requires_clean and source in {"published-baseline", "local-lkg"}:
+        raise ValueError(
+            f"{candidate['canonical_id']}: compatibility/LKG JavaScript cannot seed or replace ProviderBase; clean reconstruction required"
+        )
+    if bool(candidate.get("provider_base_reconstruction_required")) and origin == "legacy-providerbase-compatibility-only":
+        raise ValueError(
+            f"{candidate['canonical_id']}: legacy ProviderBase is compatibility-only; publication frozen until clean reconstruction"
+        )
+
     if candidate.get("source") not in {"published-baseline", "local-lkg"}:
         if candidate.get("upstream_code_role") != "knowledge-only":
             raise ValueError(f"{candidate['canonical_id']}: upstream code role must be knowledge-only")
         if candidate.get("upstream_code_executed") is not False:
             raise ValueError(f"{candidate['canonical_id']}: upstream JavaScript must never be executable candidate input")
         if str(candidate.get("candidate_code_origin") or "") not in {
-            "existing-niakvio-provider-base",
+            "existing-niakvio-provider-base-v2",
             "new-niakvio-clean-seed",
         }:
             raise ValueError(f"{candidate['canonical_id']}: candidate is not NiakVIO-owned")
@@ -2189,7 +2204,14 @@ def main() -> int:
                 "patched_sha256": digest,
                 "base_filename": base_filename,
                 "base_sha256": base_sha256,
-                "base_source": "selected_candidate_post_provider_overrides_pre_core",
+                "base_source": CLEAN_RECONSTRUCTION_SOURCE,
+                "clean_reconstruction_verified": True,
+                "clean_reconstruction_authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+                "clean_reconstruction_required": False,
+                "clean_reconstruction_candidate_origin": selected.get("candidate_code_origin"),
+                "legacy_provider_js_executed_for_reconstruction": False,
+                "upstream_code_role": "knowledge-only",
+                "upstream_code_executed": False,
                 "base_migration_stripped_generated_core": bool(selected.get("provider_base_stripped_generated_core")),
                 "upstream_sha256": selected.get("upstream_sha256"),
                 "local_patches": selected.get("local_patches", []),
