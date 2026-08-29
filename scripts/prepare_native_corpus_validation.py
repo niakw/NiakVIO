@@ -306,7 +306,7 @@ class NiakvioNativeCorpusDesktopTest {{
         for (provider in providers) {{
             val started = System.currentTimeMillis()
             try {{
-                val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {
+                val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {{
                     PluginRuntime.executePlugin(
                         code = File(root, provider.asset).readText(),
                         tmdbId = tmdbId,
@@ -315,7 +315,7 @@ class NiakvioNativeCorpusDesktopTest {{
                         episode = episode,
                         scraperId = provider.id,
                     )
-                }
+                }}
                 emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
                     val hint = humanMediaHint(row.url)
