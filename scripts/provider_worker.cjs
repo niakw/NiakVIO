@@ -725,6 +725,15 @@ async function main() {
 
   const providerPath = path.resolve(providerArg);
   const fixture = JSON.parse(fixtureArg);
+  const inputType = String(fixture.mediaType || fixture.type || fixture.category || 'movie').trim().toLowerCase();
+  const category = String(fixture.category || '').trim().toLowerCase();
+  const canonicalType = category === 'anime' || inputType === 'anime'
+    ? 'anime'
+    : (inputType === 'movie' ? 'movie' : 'tv');
+  fixture.nuvioInputMediaType = inputType;
+  fixture.mediaType = canonicalType;
+  fixture.type = canonicalType;
+  if (canonicalType === 'anime') fixture.category = 'anime';
   const startedAt = Date.now();
   const loaded = await loadProvider(providerPath);
   const getStreams = findGetStreams(loaded);
