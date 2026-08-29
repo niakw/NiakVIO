@@ -303,6 +303,186 @@ def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[An
     return merged
 
 
+PUBLICATION_CONTRACT_SCHEMA = 1
+PUBLICATION_CONTRACT_FILES = (
+    "scripts/apply_provider_overrides.py",
+    "scripts/override_text_utils.py",
+    "scripts/provider_engine_normalizer.py",
+    "scripts/provider_security_hardening.py",
+    "scripts/provider_purification.py",
+    "scripts/validate_provider_artifact.cjs",
+    "engine_v2/scripts/purify-provider.mjs",
+    "package-lock.json",
+)
+
+
+def _canonical_sha(value: Any) -> str:
+    return hashlib.sha256(
+        json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+
+
+def publication_contract_sha(config: dict[str, Any]) -> str:
+    """Hash every deterministic input that can change derived provider bytes.
+
+    This deliberately includes the complete sanitized override/capability policy.
+    A real policy change may rebuild more providers than strictly necessary, but a
+    Core invocation with unchanged inputs performs no provider reconstruction at all.
+    """
+    files: dict[str, str] = {}
+    relatives = set(PUBLICATION_CONTRACT_FILES)
+    patch_dir = ROOT / "scripts" / "provider_patches"
+    if patch_dir.is_dir():
+        relatives.update(
+            path.relative_to(ROOT).as_posix()
+            for path in patch_dir.rglob("*.py")
+            if path.is_file()
+        )
+    for relative in sorted(relatives):
+        path = (ROOT / relative).resolve()
+        try:
+            path.relative_to(ROOT.resolve())
+        except ValueError as exc:
+            raise ValueError(f"unsafe publication contract input: {relative}") from exc
+        if not path.is_file():
+            raise ValueError(f"missing publication contract input: {relative}")
+        files[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+    return _canonical_sha({
+        "schema_version": PUBLICATION_CONTRACT_SCHEMA,
+        "config": config,
+        "files": files,
+    })
+
+
+def _adaptive_runtime_contract(row: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {
+            "profile": record.get("profile"),
+            "phase": record.get("phase"),
+            "revision": record.get("revision"),
+            "options": record.get("options"),
+        }
+        for record in (row.get("local_patches") or [])
+        if isinstance(record, dict)
+        and record.get("type") == "patch_profile"
+        and record.get("profile") == "adaptive_runtime_recovery"
+        and record.get("phase") == "runtime"
+    ]
+
+
+def provider_build_input_sha(
+    provider_id: str,
+    base_sha256: str,
+    contract_sha256: str,
+    provenance_row: dict[str, Any],
+) -> str:
+    return _canonical_sha({
+        "schema_version": PUBLICATION_CONTRACT_SCHEMA,
+        "provider_id": str(provider_id).casefold(),
+        "base_sha256": str(base_sha256).casefold(),
+        "publication_contract_sha256": str(contract_sha256).casefold(),
+        "adaptive_runtime": _adaptive_runtime_contract(provenance_row),
+        "preservation": {
+            "activation_mode": provenance_row.get("activation_mode"),
+            "preserved_reason": provenance_row.get("preserved_reason"),
+        },
+    })
+
+
+def fast_fixed_point_check(
+    primary: dict[str, Any],
+    primary_path: Path,
+    secondary_paths: tuple[Path, ...],
+    config: dict[str, Any],
+    provenance: dict[str, Any] | None,
+    *,
+    removed_hooks: list[Any],
+    removed_origins: int,
+) -> tuple[bool, str]:
+    """Verify immutable inputs/references without rebuilding provider JavaScript."""
+    if provenance is None or not isinstance(provenance.get("providers"), dict):
+        return False, "missing-provenance"
+    if removed_hooks or removed_origins:
+        return False, "sanitized-config-stale"
+
+    rows = provenance["providers"]
+    contract_sha = publication_contract_sha(config)
+    contract_meta = provenance.get("provider_publication_contract")
+    if not isinstance(contract_meta, dict):
+        return False, "missing-publication-contract"
+    if int(contract_meta.get("schema_version") or 0) != PUBLICATION_CONTRACT_SCHEMA:
+        return False, "publication-contract-schema-changed"
+    if str(contract_meta.get("sha256") or "").casefold() != contract_sha:
+        return False, "publication-contract-changed"
+
+    primary_by_id: dict[str, dict[str, Any]] = {}
+    for entry in primary.get("scrapers") or []:
+        if not isinstance(entry, dict):
+            continue
+        provider_id = str(entry.get("id") or "").strip().casefold()
+        relative = str(entry.get("filename") or "").strip()
+        if not provider_id or not relative.startswith("providers/"):
+            return False, f"invalid-primary-row:{provider_id or 'missing-id'}"
+        primary_by_id[provider_id] = entry
+        row = rows.get(provider_id)
+        if not isinstance(row, dict):
+            return False, f"missing-provenance:{provider_id}"
+        base_path, base_sha = resolve_base(provider_id, row, require=True)
+        assert base_path is not None and base_sha is not None
+        expected_input = provider_build_input_sha(provider_id, base_sha, contract_sha, row)
+        if str(row.get("build_input_sha256") or "").casefold() != expected_input:
+            return False, f"provider-input-changed:{provider_id}"
+        if str(row.get("published_filename") or "") != relative:
+            return False, f"published-reference-drift:{provider_id}"
+        public_path = (ROOT / relative).resolve()
+        try:
+            public_path.relative_to(PROVIDERS.resolve())
+        except ValueError:
+            return False, f"unsafe-public-path:{provider_id}"
+        if not public_path.is_file():
+            return False, f"missing-public-bundle:{provider_id}"
+        actual_public_sha = hashlib.sha256(public_path.read_bytes()).hexdigest()
+        if actual_public_sha != str(row.get("sha256") or "").casefold():
+            return False, f"public-sha-drift:{provider_id}"
+
+        authoritative_types = configured_authoritative_types(config, provider_id)
+        if authoritative_types and entry.get("supportedTypes") != authoritative_types:
+            return False, f"supported-types-drift:{provider_id}"
+        for key, value in configured_manifest_overrides(config, provider_id).items():
+            if entry.get(key) != value:
+                return False, f"manifest-override-drift:{provider_id}"
+
+    if len(primary_by_id) != len(rows):
+        return False, "manifest-provenance-provider-count-drift"
+
+    for path in secondary_paths:
+        payload = load_manifest(path)
+        if payload is None:
+            continue
+        for entry in payload.get("scrapers") or []:
+            if not isinstance(entry, dict):
+                continue
+            provider_id = str(entry.get("id") or "").strip().casefold()
+            primary_entry = primary_by_id.get(provider_id)
+            if primary_entry is None:
+                continue
+            if entry.get("filename") != "../" + str(primary_entry.get("filename") or ""):
+                return False, f"secondary-reference-drift:{path.name}:{provider_id}"
+            if primary_entry.get("version") and entry.get("version") != primary_entry.get("version"):
+                return False, f"secondary-version-drift:{path.name}:{provider_id}"
+            if isinstance(primary_entry.get("supportedTypes"), list):
+                if entry.get("supportedTypes") != primary_entry.get("supportedTypes"):
+                    return False, f"secondary-types-drift:{path.name}:{provider_id}"
+            for key, value in configured_manifest_overrides(config, provider_id).items():
+                if entry.get(key) != value:
+                    return False, f"secondary-override-drift:{path.name}:{provider_id}"
+
+    return True, (
+        f"fixed-point inputs={len(primary_by_id)} contract={contract_sha[:16]} "
+        f"primary={primary_path.relative_to(ROOT).as_posix()}"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check", action="store_true")
@@ -357,6 +537,23 @@ def main() -> int:
     if not args.check:
         write_json(OVERRIDES, override_config)
 
+    if args.check:
+        fast_ok, fast_reason = fast_fixed_point_check(
+            primary,
+            primary_path,
+            secondary_paths,
+            override_config,
+            provenance,
+            removed_hooks=removed_hooks,
+            removed_origins=removed_origins,
+        )
+        if fast_ok:
+            print(f"FIELD_PROVIDER_FAST_FIXED_POINT status=hit {fast_reason}")
+            print("published provider overrides are current")
+            return 0
+        print(f"FIELD_PROVIDER_FAST_FIXED_POINT status=miss reason={fast_reason}")
+
+    publication_contract = publication_contract_sha(override_config)
     removed_wrappers_total = 0
     for entry in primary["scrapers"]:
         if not isinstance(entry, dict):
@@ -540,6 +737,13 @@ def main() -> int:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
                 row["local_patches"] = merge_patch_records(row.get("local_patches"), update["records"])
+            row["build_contract_schema"] = PUBLICATION_CONTRACT_SCHEMA
+            row["build_input_sha256"] = provider_build_input_sha(
+                provider_id,
+                str(update["base_sha256"]),
+                publication_contract,
+                row,
+            )
             manifest_overrides = configured_manifest_overrides(override_config, provider_id)
             if update.get("audit_terminal_quarantine"):
                 row["activation_eligible"] = False
@@ -565,6 +769,14 @@ def main() -> int:
                     if str(value) and str(value) not in {"configured_safety_quarantine", AUDIT_QUARANTINE_BLOCKER}
                 ]
                 row["activation_blockers"] = blockers + ["configured_safety_quarantine"]
+
+    if provenance is not None:
+        provenance["provider_publication_contract"] = {
+            "schema_version": PUBLICATION_CONTRACT_SCHEMA,
+            "sha256": publication_contract,
+            "provider_count": len(provenance_updates),
+            "mode": "provider_base_plus_deterministic_core",
+        }
 
     stale = False
     for new_relative, data in outputs.items():
