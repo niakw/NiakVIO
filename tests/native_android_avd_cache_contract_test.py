@@ -40,7 +40,7 @@ assert "--install platform-tools" in prime
 assert "adb start-server" in prime
 assert prebuild.count("--max-workers=1") >= 2
 
-assert "runs-on: macos-15" in IOS
+assert "runs-on: macos-26" in IOS
 assert "iphonesimulator" in (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
 assert "NuvioPlayerBridgeFactory" in (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")
 assert "PluginRepository.executeScraper" in (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")

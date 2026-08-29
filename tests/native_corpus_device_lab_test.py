@@ -75,8 +75,12 @@ assert corpus.get("retry_provider_timeouts") is False
 fixtures = "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
 for workflow in (tv_reader, mobile_android, desktop_reader):
     assert fixtures in workflow
+
+for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
     assert "\n  pull_request:" not in workflow
-    assert "workflow_dispatch:" in workflow and "\n  push:" in workflow
+    assert "\n  push:" not in workflow
+    assert "workflow_dispatch:" in workflow
+    assert "\n  schedule:" in workflow and "cron:" in workflow
 
 assert "matrix:" not in tv_reader
 assert tv_reader.count("tv-route-reader:") == 1

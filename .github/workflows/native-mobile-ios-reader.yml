@@ -1,27 +1,9 @@
 name: Native Mobile iOS reader acceptance
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/triggers/nuvio-client-lab.json"
-      - "manifest.json"
-      - "vf/manifest.json"
-      - "provider_catalog.json"
-      - "provider-overrides.json"
-      - "providers/**"
-      - "sources.json"
-      - "automation/nuvio-client-upstreams.json"
-      - "automation/nuvio-client-compatibility-matrix.json"
-      - "automation/platform-runtime-contracts.json"
-      - "engine_v2/**"
-      - "scripts/check_nuvio_client_upstreams.py"
-      - "scripts/resolve_nuvio_lab_heads.py"
-      - "scripts/prepare_native_ios_reader_acceptance.py"
-      - "scripts/run_native_corpus_ios_suite.sh"
-      - "scripts/analyze_native_ios_results.py"
-      - ".github/workflows/native-mobile-ios-reader.yml"
   workflow_dispatch:
+  schedule:
+    - cron: "15 18 * * 6"
 
 permissions:
   contents: read

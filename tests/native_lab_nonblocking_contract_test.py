@@ -12,7 +12,8 @@ WORKFLOWS = {
 texts = {name: path.read_text(encoding="utf-8") for name, path in WORKFLOWS.items()}
 for name, workflow in texts.items():
     assert "\n  pull_request:" not in workflow, f"{name} native Lab must not block PR flow"
-    assert "\n  push:" in workflow, f"{name} native Lab must collect evidence from main"
+    assert "\n  push:" not in workflow, f"{name} full native Lab must not run on routine main pushes"
+    assert "\n  schedule:" in workflow and "cron:" in workflow, f"{name} full native Lab must keep weekly evidence"
     assert "workflow_dispatch:" in workflow, f"{name} native Lab must remain manually runnable"
     assert "github.event.pull_request" not in workflow, f"{name} retained PR-only logic"
 
@@ -34,4 +35,4 @@ assert "workflow_run:" not in learning, "native Labs must never invoke Brain aut
 assert "workflow_dispatch:" in learning
 assert "run_id:" in learning
 
-print("native Lab nonblocking contract passed: tv=single-job android=separate ios=separate brain=decoupled")
+print("native Lab nonblocking contract passed: weekly+manual=true push=false tv=single-job android=separate ios=separate brain=decoupled")
