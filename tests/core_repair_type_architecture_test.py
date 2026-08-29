@@ -19,6 +19,7 @@ reapply_source = (ROOT / "scripts/reapply_published_overrides.py").read_text(enc
 compiler_source = (ROOT / "scripts/provider_compiler.py").read_text(encoding="utf-8")
 promoter_source = (ROOT / "scripts/promote_candidates.py").read_text(encoding="utf-8")
 base_store_source = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
+architecture_doc = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
 
 GLOBAL = {
     "scripts/provider_patches/runtime_capability_media_safety_v4.py",
@@ -88,6 +89,8 @@ assert domain_intelligence["domainChangeMayReplaceProviderLogic"] is False
 assert domain_intelligence["sources"][:2] == ["official_hub", "public_telegram"]
 assert "yandex_deep_search" in domain_intelligence["sources"]
 assert "duckduckgo_deep_fallback" in domain_intelligence["sources"]
+assert "L'identité d'un provider et son domaine courant sont **deux états différents**." in architecture_doc
+assert "ne remplace jamais la logique durable du ProviderBase" in architecture_doc
 
 classes = repair_types["failureClasses"]
 for failure in ("identity_mismatch", "short_media", "media_validation_gap", "audio_track_gap"):
