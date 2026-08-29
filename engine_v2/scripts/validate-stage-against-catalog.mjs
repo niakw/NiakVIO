@@ -25,6 +25,11 @@ for (const candidate of candidates) {
   byCanonical.get(id).push(candidate);
 }
 
+const duplicateCanonical = [...byCanonical.entries()].filter(([, rows]) => rows.length !== 1);
+if (duplicateCanonical.length) {
+  throw new Error(`staging input deduplication failed: ${duplicateCanonical.map(([id, rows]) => `${id}=${rows.length}`).join(", ")}`);
+}
+
 const missing = [];
 const missingBaseline = [];
 for (const provider of catalog.providers) {
@@ -33,8 +38,16 @@ for (const provider of catalog.providers) {
     missing.push(provider.canonicalId);
     continue;
   }
-  if (requirePublishedBaseline && !variants.some((row) => row.source === "published-baseline" || row.source === "local-lkg" || row.baseline === true)) {
-    missingBaseline.push(provider.canonicalId);
+  // The current published/LKG artifact is retained outside the live candidate
+  // comparison path. A fallback candidate is required only when discovery has no
+  // live upstream declaration for this canonical provider.
+  if (requirePublishedBaseline && variants.length === 1) {
+    const row = variants[0];
+    const source = String(row.source || "");
+    const hasLive = source !== "published-baseline" && source !== "local-lkg";
+    if (!hasLive && !(row.baseline === true || source === "published-baseline" || source === "local-lkg")) {
+      missingBaseline.push(provider.canonicalId);
+    }
   }
 }
 
@@ -51,7 +64,7 @@ const newUpstreamProviders = discoveredIds.filter((id) => !catalogIds.has(id));
 console.log(JSON.stringify({
   catalogProviders: catalog.providers.length,
   stagedCanonicalProviders: byCanonical.size,
-  stagedVariants: candidates.length,
+  stagedCanonicalCandidates: candidates.length,
   preservedCatalogProviders: catalog.providers.length - missing.length,
   newUpstreamProviders,
 }, null, 2));
