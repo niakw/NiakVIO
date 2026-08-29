@@ -1089,6 +1089,7 @@ async function runCli() {
   const candidates = Array.isArray(registry.candidates) ? registry.candidates : [];
   const frenchResolverNames = [preflightConfig.primary_french_isp, ...(preflightConfig.fallback_french_isps || [])].filter(Boolean);
   const remoteDependencies = createGlobalpingDependencies(preflightConfig);
+  let apiLimitReached = false;
   const resolverTransport = frenchResolverNames.map((name) => ({
     resolver: name,
     status: preflightConfig.remote_probe?.enabled === false ? 'direct' : 'globalping',
@@ -1104,6 +1105,25 @@ async function runCli() {
       if (index >= candidates.length) return;
       const candidate = candidates[index];
       try {
+        if (apiLimitReached) {
+          results[index] = {
+            key: candidate.key,
+            source: candidate.source,
+            canonical_id: candidate.canonical_id,
+            sha256: candidate.sha256,
+            domain_hints: [],
+            domains: [],
+            dns_status: 'DNS API LIMIT REACH',
+            decision: {
+              status: 'probe_api_limit_reached',
+              evidence_state: 'probe_transport_rate_limited',
+              continue_runtime: true,
+              reason: 'globalping_api_limit_reached',
+            },
+          };
+          process.stdout.write(`[DNS ${index + 1}/${candidates.length}] ${candidate.key}: DNS API LIMIT REACH (circuit-breaker)\n`);
+          continue;
+        }
         const providerPath = path.resolve(stage, String(candidate.local_path || ''));
         const sourceText = await fs.readFile(providerPath, 'utf8');
         const domainLimit = args['all-domains']
@@ -1129,6 +1149,8 @@ async function runCli() {
         }
         const decision = providerDecision(domainResults, preflightConfig);
         const dnsStatus = simpleDnsStatus(domainResults);
+        if (dnsStatus === 'DNS API LIMIT REACH') apiLimitReached = true;
+        if (Number(error?.status) === 429 || /(?:^|\D)429(?:\D|$)/.test(compactError(error))) apiLimitReached = true;
         results[index] = {
           key: candidate.key,
           source: candidate.source,
