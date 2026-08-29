@@ -598,7 +598,12 @@ def repair_legacy_bases() -> dict[str, Any]:
         if requires_clean_reconstruction(row):
             reconstruction_required += 1
             row["clean_reconstruction_required"] = True
-            row["legacy_provider_base_role"] = "compatibility-lkg-only"
+            if is_clean_reconstruction_candidate(row):
+                row["legacy_provider_base_role"] = "superseded-by-clean-candidate"
+                row["clean_reconstruction_candidate_role"] = "pending-pipeline-proof"
+            else:
+                row["legacy_provider_base_role"] = "compatibility-lkg-only"
+                row.pop("clean_reconstruction_candidate_role", None)
             row["legacy_provider_js_role"] = "knowledge-only-for-reconstruction"
             row["legacy_provider_js_executed_for_reconstruction"] = False
             row["clean_reconstruction_marked_at"] = marked_at
@@ -608,6 +613,7 @@ def repair_legacy_bases() -> dict[str, Any]:
             row.pop("legacy_provider_base_role", None)
             row.pop("legacy_provider_js_role", None)
             row.pop("legacy_provider_js_executed_for_reconstruction", None)
+            row.pop("clean_reconstruction_candidate_role", None)
 
     provenance["provider_base_store"] = {
         "schema_version": 4,
