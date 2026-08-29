@@ -9,10 +9,17 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SCOPE = ROOT / "scripts/scope_native_reader_learning_runtime.py"
-WORKFLOW = ROOT / ".github/workflows/native-android-route-reader.yml"
+WORKFLOWS = [
+    ROOT / ".github/workflows/native-tv-route-reader.yml",
+    ROOT / ".github/workflows/native-mobile-android-reader.yml",
+    ROOT / ".github/workflows/native-mobile-ios-reader.yml",
+    ROOT / ".github/workflows/native-desktop-reader-acceptance.yml",
+]
+BRAIN = ROOT / ".github/workflows/brain-learning-lab.yml"
 
 scope = SCOPE.read_text(encoding="utf-8")
-workflow = WORKFLOW.read_text(encoding="utf-8")
+workflows = [path.read_text(encoding="utf-8") for path in WORKFLOWS]
+brain = BRAIN.read_text(encoding="utf-8")
 for required in (
     "gate_native_cross_client_runtime.cjs",
     "FIELD_NATIVE_READER_RUNTIME_PREBRAIN_GATE",
@@ -22,11 +29,16 @@ for required in (
 ):
     assert required in scope, required
 
+# Native device Labs are evidence-only and never run pre-Brain mutation logic.
+# Cross-client/runtime scoping remains a fail-closed reusable primitive, while the
+# independent Brain workflow consumes sanitized native-reader summaries later.
 scope_call = "scope_native_reader_learning_runtime.py filter"
-brain_step = "Materialize bounded generic Brain mutations across three representative routes"
-assert scope_call in workflow
-assert brain_step in workflow
-assert workflow.index(scope_call) < workflow.index(brain_step)
+for workflow in workflows:
+    assert scope_call not in workflow
+    assert "Materialize bounded generic Brain mutations" not in workflow
+    assert "build_native_reader_brain_repair.py" not in workflow
+assert "--native-summary brain-learning-input/native-reader-summary.json" in brain
+assert "build_native_reader_learning_summary.py" in brain
 
 with tempfile.TemporaryDirectory(dir=ROOT) as raw:
     temp = Path(raw)
