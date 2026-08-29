@@ -27,10 +27,6 @@ const OUTPUT_DIR = path.resolve(process.env.NUVIO_HEALTH_OUTPUT || STAGE);
 const REGISTRY_PATH = path.resolve(process.env.NUVIO_CANDIDATES_PATH || path.join(STAGE, 'candidates.json'));
 const RESULTS_FILENAME = String(process.env.NUVIO_HEALTH_RESULTS_FILENAME || 'health-results.json');
 const WORKER_PATH = path.join(ROOT, 'scripts', 'provider_worker.cjs');
-const DNS_PREFLIGHT_PATH = path.resolve(
-  process.env.NUVIO_DNS_PREFLIGHT_RESULTS || path.join(OUTPUT_DIR, 'dns-preflight-report.json'),
-);
-
 function compareText(left, right) {
   const a = String(left);
   const b = String(right);
@@ -116,7 +112,6 @@ function configuredWorkerMemoryMb() {
 const workerMemoryMb = configuredWorkerMemoryMb();
 const activationConfig = config.activation || {};
 const executionConfig = config.execution_context || {};
-const dnsPreflightConfig = config.dns_preflight || {};
 function configuredConcurrency() {
   const fallback = Number(config.concurrency || 4);
   const requested = Number(process.env.NUVIO_HEALTH_CONCURRENCY || fallback);
@@ -125,25 +120,6 @@ function configuredConcurrency() {
 }
 
 const concurrency = configuredConcurrency();
-let dnsPreflightReport = null;
-try {
-  dnsPreflightReport = JSON.parse(await fs.readFile(DNS_PREFLIGHT_PATH, 'utf8'));
-} catch (error) {
-  if (dnsPreflightConfig.enabled !== false) {
-    process.stderr.write(`[DNS WARN] preflight report unavailable: ${sanitizeError(error)}\n`);
-  }
-}
-const dnsPreflightRows = Array.isArray(dnsPreflightReport?.providers) ? dnsPreflightReport.providers : [];
-const dnsPreflightByKey = new Map(dnsPreflightRows.map((item) => [String(item.key || ''), item]));
-const dnsPreflightBySourceCanonical = new Map(
-  dnsPreflightRows.map((item) => [`${String(item.source || '')}:${String(item.canonical_id || '')}`, item]),
-);
-const dnsPreflightByCanonical = new Map();
-for (const item of dnsPreflightRows) {
-  const canonical = String(item.canonical_id || '');
-  if (canonical && !dnsPreflightByCanonical.has(canonical)) dnsPreflightByCanonical.set(canonical, item);
-}
-
 const ACCEPTED_AUDIO = new Set(
   (activationConfig.accepted_audio_languages || ['fr', 'en']).map((value) => String(value).toLowerCase()),
 );
@@ -1452,18 +1428,7 @@ function manifestClaims(candidate) {
   };
 }
 
-function dnsPreflightForCandidate(candidate) {
-  return dnsPreflightByKey.get(String(candidate.key || ''))
-    || dnsPreflightBySourceCanonical.get(`${String(candidate.source || '')}:${String(candidate.canonical_id || '')}`)
-    || dnsPreflightByCanonical.get(String(candidate.canonical_id || ''))
-    || null;
-}
-
 async function testCandidate(candidate) {
-  const dnsPreflight = dnsPreflightForCandidate(candidate);
-  // DNS preflight is diagnostic-only. Even a confirmed French ISP block or a
-  // globally unreachable domain must still reach the runtime lane so NiakVIO
-  // records the complete cause chain (DNS, HTTP, provider runtime, streams).
   const fixtureResults = [];
   const { profile, fixtures, fallbackFixtures } = fixturesForCandidate(candidate);
 
@@ -1729,7 +1694,6 @@ async function testCandidate(candidate) {
     status,
     ci_classification: ciClassification(status, inconclusiveStatuses),
     score,
-    dns_preflight: dnsPreflight,
     candidate_profile: {
       anime: profile.anime,
       supported_types: profile.types,
@@ -1791,12 +1755,6 @@ async function testCandidate(candidate) {
       selected_settings_profiles: selectedProfiles,
       selected_setting_keys: selectedSettingKeys,
       settings_diagnostics: settingsProfileAttempts,
-      dns_preflight_status: dnsPreflight?.dns_status || null,
-      dns_preflight_internal_status: dnsPreflight?.decision?.status || null,
-      dns_preflight_reason: dnsPreflight?.decision?.reason || null,
-      dns_preflight_selected_resolver: dnsPreflight?.decision?.selected_resolver || null,
-      dns_migration_candidate: dnsPreflight?.decision?.migration_candidate || null,
-      runtime_skipped_by_dns_preflight: false,
     },
     verified_max_height: Math.max(0, ...fixtureResults.map((item) => item.verified_max_height || 0)) || null,
     reported_max_height: Math.max(0, ...fixtureResults.map((item) => item.reported_max_height || 0)) || null,
@@ -1869,13 +1827,6 @@ const report = {
   duration_seconds: Math.round((Date.now() - startedAt.getTime()) / 1000),
   candidate_count: results.length,
   excluded_during_discovery: registry.excluded_count || 0,
-  dns_preflight: dnsPreflightReport ? {
-    generated_at: dnsPreflightReport.generated_at || null,
-    counts: dnsPreflightReport.counts || {},
-    internal_counts: dnsPreflightReport.internal_counts || {},
-    resolver_order: dnsPreflightReport.resolver_order || [],
-    neutral_resolvers: dnsPreflightReport.neutral_resolvers || [],
-  } : null,
   counts: Object.fromEntries(statuses.map((status) => [status, results.filter((item) => item.status === status).length])),
   results,
 };
