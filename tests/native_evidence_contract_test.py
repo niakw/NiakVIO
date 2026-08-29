@@ -34,8 +34,8 @@ diagnosis = text("engine_v2/scripts/diagnose-native-reader.mjs")
 reader_gate = text("scripts/gate_native_reader_result.cjs")
 coverage_gate = text("scripts/gate_native_reader_coverage.cjs")
 player_reach_gate = text("scripts/gate_native_player_reached.cjs")
-tv_workflow = text(".github/workflows/native-tv-route-reader.yml")
 mobile_android_workflow = text(".github/workflows/native-mobile-android-reader.yml")
+tv_workflow = mobile_android_workflow
 mobile_ios_workflow = text(".github/workflows/native-mobile-ios-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
 learning_sync = text(".github/workflows/native-reader-learning-sync.yml")
@@ -141,10 +141,10 @@ for workflow in (tv_workflow, mobile_android_workflow, mobile_ios_workflow, desk
 assert "workflow_run:" not in learning_sync
 assert "workflow_dispatch:" in learning_sync
 assert "Exact completed native reader run ID to import manually" in learning_sync
-assert '"native-tv-route-*-$RUN_ID"' in learning_sync
-assert '"native-mobile-android-*-$RUN_ID"' in learning_sync
-assert '"native-mobile-ios-*-$RUN_ID"' in learning_sync
-assert '"native-desktop-reader-*-$RUN_ID"' in learning_sync
+assert '"native-tv-full-$RUN_ID"' in learning_sync
+assert '"native-mobile-android-full-$RUN_ID"' in learning_sync
+assert '"native-mobile-ios-full-$RUN_ID"' in learning_sync
+assert '"native-desktop-full-*-$RUN_ID"' in learning_sync
 
 # Android may not gain a test-only transport capability.
 assert "validate_manifest" in android_transport
