@@ -38,7 +38,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
-from provider_base_store import persist_base_from_published
+from provider_base_store import persist_base_from_published, persist_base_from_seed, resolve_base
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGE = Path(os.environ.get("NUVIO_STAGE", ROOT / "staging")).resolve()
@@ -185,7 +185,7 @@ def metadata_is_excluded(entry: dict[str, Any], sources: dict[str, Any]) -> bool
     )
 
 
-def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str, str, str]:
+def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] | None = None) -> tuple[Path, str, str, str]:
     source_path = (STAGE / candidate["local_path"]).resolve()
     if not is_under(source_path, STAGE / "providers") or not source_path.exists():
         raise ValueError(f"unsafe or missing staged provider path: {source_path}")
@@ -231,10 +231,36 @@ def copy_candidate(candidate: dict[str, Any]) -> tuple[Path, str, str, str]:
 
     # Persist provider logic only after the promoted candidate itself is valid.
     # The durable base is provider-pipeline state; Core never creates or mutates it.
-    base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published(
-        candidate["canonical_id"],
-        data,
-    )
+    # A publication-only quarantine/security wrapper must never replace a clean base.
+    try:
+        base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published(
+            candidate["canonical_id"],
+            data,
+        )
+    except ValueError as exc:
+        if "contains derived publication layer(s)" not in str(exc):
+            raise
+        previous = previous_base_row if isinstance(previous_base_row, dict) else {}
+        previous_path, previous_sha = resolve_base(
+            candidate["canonical_id"],
+            previous,
+            require=False,
+        )
+        if previous_path is not None and previous_sha is not None:
+            base_filename = previous_path.relative_to(ROOT).as_posix()
+            base_sha256 = previous_sha
+            base_stripped_generated_core = False
+        else:
+            upstream_sha = str(candidate.get("upstream_sha256") or "").strip().casefold()
+            raw_seed = STAGE / "upstream-lkg-pending" / "providers" / f"{upstream_sha}.js"
+            if not upstream_sha or not raw_seed.is_file():
+                raise ValueError(
+                    f"{candidate['canonical_id']}: derived candidate cannot seed ProviderBase and no clean prior/raw seed exists"
+                ) from exc
+            base_filename, base_sha256, base_stripped_generated_core = persist_base_from_seed(
+                candidate["canonical_id"],
+                raw_seed.read_bytes(),
+            )
     candidate["provider_base_filename"] = base_filename
     candidate["provider_base_sha256"] = base_sha256
     candidate["provider_base_stripped_generated_core"] = base_stripped_generated_core
@@ -2090,7 +2116,10 @@ def main() -> int:
                 continue
 
             try:
-                destination, digest, base_filename, base_sha256 = copy_candidate(selected)
+                destination, digest, base_filename, base_sha256 = copy_candidate(
+                    selected,
+                    previous_provenance.get("providers", {}).get(cid, {}),
+                )
             except (ValueError, OSError, subprocess.SubprocessError) as exc:
                 # A generated candidate may still be invalid after all upstream
                 # checks. Reject only that candidate, retain the last published
