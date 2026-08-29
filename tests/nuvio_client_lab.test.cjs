@@ -36,12 +36,14 @@ assert.equal(labTrigger.policy.require_identity_match, true);
 assert.equal(labTrigger.policy.block_identity_contradictions, true);
 assert.equal(labTrigger.fixtures.length, 11);
 assert.equal(labTrigger.fixtures.every((row) => Number(row.fixture.expectedDurationMinutes) > 0), true);
-assert.deepEqual(labTrigger.native_reader_acceptance.tv_priority_regressions, [
-  'colony-2021',
-  'failure-frame-s01e01',
-  'hell-teacher-nube-2025-s01e01',
-  'hell-mode-s01e01',
-]);
+assert.deepEqual(labTrigger.native_reader_acceptance.tv_priority_regressions, []);
+assert.equal(labTrigger.native_reader_acceptance.provider_scope, 'declared-type');
+assert.equal(labTrigger.native_reader_acceptance.one_fixture_per_type_per_provider, true);
+assert.deepEqual(labTrigger.native_reader_acceptance.fixture_by_type, {
+  movie: 'interstellar',
+  tv: 'breaking-bad-s01e01',
+  anime: 'jujutsu-kaisen-s01e01',
+});
 const fixturesBySlug = new Map(labTrigger.fixtures.map((row) => [row.slug, row.fixture]));
 assert.equal(fixturesBySlug.get('colony-2021').tmdbId, '760873');
 assert.equal(fixturesBySlug.get('colony-2021').year, 2021);
