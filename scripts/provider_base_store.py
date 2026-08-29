@@ -11,16 +11,73 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from apply_provider_overrides import _strip_generated_core_tail
+from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
+from provider_purification import split_owned_prefix_bootstraps
+from upstream_lkg import load_registry
 
 ROOT = Path(__file__).resolve().parents[1]
 BASES = ROOT / "provider-bases"
 MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
+QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
+
+# ProviderBase owns durable provider logic. Everything below is derived publication
+# state and must never become an input to the next Core build.
+DERIVED_BASE_MARKERS = (
+    "NUVIO_PROVIDER_SECURITY_HARDENING_V1",
+    "NUVIO_PROVIDER_QUARANTINE_V1",
+    "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+    "NUVIO_GLOBAL_STREAM_FACTS_V1",
+    "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+    "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
+    "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+    "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+    "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+    "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+    "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+    "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+    "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
+    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+    "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
+    "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
+    "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
+    "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
+)
+
+# Five providers are retained locally but are no longer present in the retained
+# upstream snapshots. These commits predate the global Core/security finalizers
+# and contain the last clean provider implementation from which current durable
+# provider-specific overrides can be replayed.
+LEGACY_LOCAL_SEEDS: dict[str, tuple[str, str]] = {
+    "cineby": (
+        "6f5c13750049ca5227d44eda192d2670c819bfea",
+        "providers/cineby--nuvio--d96e163f6372cafd.js",
+    ),
+    "cinemm": (
+        "6f5c13750049ca5227d44eda192d2670c819bfea",
+        "providers/cinemm--published-baseline--c298a89c18a2efb5.js",
+    ),
+    "goatapi": (
+        "6f5c13750049ca5227d44eda192d2670c819bfea",
+        "providers/goatapi--published-baseline--1db196320e8c7bf2.js",
+    ),
+    "toflix": (
+        "0c16cc5a4fe009c9585017b3fc74653749615790",
+        "providers/toflix--published-baseline--dd2dbb2d068dae21.js",
+    ),
+    "4khdhubnew": (
+        "4ac0002d48d725bb35e14f2948875cf80c0b3443",
+        "providers/4khdhubnew--published-baseline--e64aea603b3c3786.js",
+    ),
+}
 
 
 def safe_fragment(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9._-]+", "-", str(value).strip()).strip(".-")[:120] or "provider"
+
+
+def canonical_id(value: str) -> str:
+    return safe_fragment(value).casefold().replace("_", "-")
 
 
 def sha256(data: bytes) -> str:
@@ -42,8 +99,23 @@ def safe_base_path(relative: str) -> Path | None:
     return path
 
 
+def forbidden_base_markers(data: bytes) -> list[str]:
+    text = data.decode("utf-8", errors="strict")
+    return [marker for marker in DERIVED_BASE_MARKERS if marker in text]
+
+
+def assert_base_layering(data: bytes, provider_id: str) -> None:
+    markers = forbidden_base_markers(data)
+    if markers:
+        raise ValueError(
+            f"{provider_id}: ProviderBase contains derived publication layer(s): "
+            + ",".join(markers)
+        )
+
+
 def validate_base(data: bytes, provider_id: str) -> None:
     # A ProviderBase must remain an independently valid provider implementation.
+    assert_base_layering(data, provider_id)
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as handle:
         handle.write(data)
         temporary = Path(handle.name)
@@ -87,17 +159,218 @@ def resolve_base(provider_id: str, provenance_row: dict[str, Any], *, require: b
     return path, actual
 
 
-def persist_base_from_published(provider_id: str, published_data: bytes) -> tuple[str, str, bool]:
-    """Persist provider logic only; generated Core layers are always derived."""
+def clean_base_from_published(provider_id: str, published_data: bytes) -> tuple[bytes, bool]:
+    """Remove every owned derived layer while preserving durable provider logic."""
     published_text = published_data.decode("utf-8", errors="strict")
-    base_text, stripped = _strip_generated_core_tail(published_text)
+    base_text, stripped_core = _strip_generated_core_tail(published_text)
     base_data = base_text.encode("utf-8")
+    prefix, body = split_owned_prefix_bootstraps(base_data)
+    if prefix:
+        base_data = body
+    assert_base_layering(base_data, provider_id)
+    return base_data, bool(stripped_core or prefix)
+
+
+def persist_base_from_published(provider_id: str, published_data: bytes) -> tuple[str, str, bool]:
+    """Persist provider logic only; generated Core/routing layers are always derived."""
+    base_data, stripped = clean_base_from_published(provider_id, published_data)
     validate_base(base_data, provider_id)
     relative, digest = write_base(provider_id, base_data)
-    return relative, digest, bool(stripped)
+    return relative, digest, stripped
+
+
+def persist_base_from_seed(provider_id: str, seed_data: bytes) -> tuple[str, str, bool]:
+    """Rebuild durable provider logic from a clean provider seed.
+
+    Publication-only quarantine is deliberately excluded. Current domain routing,
+    Core, security and presentation layers are regenerated later by the finalizer.
+    """
+    rebuilt, _records = apply_overrides(
+        provider_id,
+        seed_data,
+        phase="discovery",
+        excluded_patch_scripts={QUARANTINE_PATCH},
+    )
+    return persist_base_from_published(provider_id, rebuilt)
+
+
+def _snapshot_seed(
+    registry: dict[str, Any],
+    provider_id: str,
+    row: dict[str, Any],
+) -> tuple[bytes, str] | None:
+    expected = str(row.get("upstream_sha256") or "").strip().casefold()
+    upstream_id = str(row.get("upstream_id") or provider_id).strip()
+    preferred = str(row.get("source") or "").strip()
+    sources = registry.get("sources") or {}
+    if not isinstance(sources, dict):
+        return None
+
+    ordered_sources = []
+    if preferred in sources:
+        ordered_sources.append(preferred)
+    ordered_sources.extend(key for key in sources if key not in ordered_sources)
+
+    matches: list[tuple[str, dict[str, Any]]] = []
+    for source_key in ordered_sources:
+        source_row = sources.get(source_key)
+        if not isinstance(source_row, dict):
+            continue
+        for generation in source_row.get("generations") or []:
+            if not isinstance(generation, dict):
+                continue
+            providers = generation.get("providers") or {}
+            if not isinstance(providers, dict):
+                continue
+            record = providers.get(upstream_id)
+            if not isinstance(record, dict):
+                record = next(
+                    (
+                        value
+                        for raw_id, value in providers.items()
+                        if canonical_id(str(raw_id)) == provider_id and isinstance(value, dict)
+                    ),
+                    None,
+                )
+            if not isinstance(record, dict):
+                continue
+            record_sha = str(record.get("sha256") or "").strip().casefold()
+            if expected and record_sha != expected:
+                continue
+            matches.append((source_key, record))
+
+    if not matches:
+        return None
+    source_key, record = matches[0]
+    filename = str(record.get("file") or "").strip()
+    record_sha = str(record.get("sha256") or "").strip().casefold()
+    path = (ROOT / "upstream-lkg" / "providers" / filename).resolve()
+    try:
+        path.relative_to((ROOT / "upstream-lkg" / "providers").resolve())
+    except ValueError:
+        return None
+    if not path.is_file():
+        return None
+    data = path.read_bytes()
+    if not record_sha or sha256(data) != record_sha:
+        return None
+    return data, f"upstream-lkg:{source_key}:{record_sha[:16]}"
+
+
+def _git_seed(provider_id: str) -> tuple[bytes, str] | None:
+    seed = LEGACY_LOCAL_SEEDS.get(provider_id)
+    if seed is None:
+        return None
+    commit, path = seed
+    result = subprocess.run(
+        ["git", "show", f"{commit}:{path}"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode or not result.stdout:
+        return None
+    return result.stdout, f"git:{commit[:12]}:{path}"
+
+
+def repair_legacy_bases() -> dict[str, Any]:
+    """Replace one-shot/public-derived bases with provider-pipeline bases.
+
+    Exact upstream SHA is required whenever provenance has one. This prevents the
+    migration from silently advancing provider logic without validation.
+    """
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+    rows = provenance.get("providers")
+    if not isinstance(rows, dict):
+        raise ValueError("PROVENANCE.providers must be an object")
+    registry = load_registry(ROOT)
+
+    repaired = 0
+    reused = 0
+    old_paths: set[Path] = set()
+    provider_count = 0
+    repair_sources: dict[str, str] = {}
+
+    for entry in manifest.get("scrapers") or []:
+        if not isinstance(entry, dict):
+            continue
+        provider_id = str(entry.get("id") or "").strip().casefold()
+        if not provider_id:
+            continue
+        provider_count += 1
+        row = rows.get(provider_id)
+        if not isinstance(row, dict):
+            raise ValueError(f"{provider_id}: missing provenance row")
+
+        existing_path, _existing_sha = resolve_base(provider_id, row, require=False)
+        existing_data = existing_path.read_bytes() if existing_path is not None else None
+        legacy_source = str(row.get("base_source") or "") == "one-shot-public-core-tail-extraction"
+        contaminated = bool(existing_data and forbidden_base_markers(existing_data))
+        if existing_data is not None and not legacy_source and not contaminated:
+            assert_base_layering(existing_data, provider_id)
+            reused += 1
+            continue
+
+        seed = _snapshot_seed(registry, provider_id, row)
+        if seed is None:
+            seed = _git_seed(provider_id)
+        if seed is None:
+            raise ValueError(
+                f"{provider_id}: cannot safely reconstruct legacy ProviderBase from exact upstream/LKG or approved local seed"
+            )
+        seed_data, seed_source = seed
+        base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
+
+        if existing_path is not None:
+            old_paths.add(existing_path)
+        row["base_filename"] = base_file
+        row["base_sha256"] = base_sha
+        row["base_source"] = "provider-pipeline-legacy-rebase"
+        row["base_seed_source"] = seed_source
+        row["base_rebased_at"] = datetime.now(timezone.utc).isoformat()
+        row["base_migration_stripped_generated_core"] = bool(stripped)
+        row.pop("build_input_sha256", None)
+        row.pop("final_fixed_point", None)
+        repair_sources[provider_id] = seed_source
+        repaired += 1
+
+    referenced = {
+        str(row.get("base_filename") or "")
+        for row in rows.values()
+        if isinstance(row, dict) and str(row.get("base_filename") or "")
+    }
+    removed = 0
+    for path in old_paths:
+        relative = path.relative_to(ROOT).as_posix()
+        if relative not in referenced and path.is_file():
+            path.unlink()
+            removed += 1
+
+    provenance["provider_base_store"] = {
+        "schema_version": 2,
+        "provider_count": provider_count,
+        "legacy_rebased": repaired,
+        "reused": reused,
+        "migration": "provider-pipeline-source-rebase",
+        "future_source": "provider_pipeline_only",
+        "core_may_create_or_mutate_base": False,
+        "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
+        "dynamic_domain_layers_derived": True,
+        "removed_legacy_base_files": removed,
+    }
+    PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return {
+        "providers": provider_count,
+        "repaired": repaired,
+        "reused": reused,
+        "removed": removed,
+        "sources": repair_sources,
+    }
 
 
 def migrate_existing() -> dict[str, Any]:
+    """Legacy entry point retained for old workflows; new runs use repair-legacy."""
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers")
@@ -119,9 +392,9 @@ def migrate_existing() -> dict[str, Any]:
         if not isinstance(row, dict):
             raise ValueError(f"{provider_id}: missing provenance row")
 
-        existing_path, existing_sha = resolve_base(provider_id, row, require=False)
+        existing_path, _existing_sha = resolve_base(provider_id, row, require=False)
         if existing_path is not None:
-            validate_base(existing_path.read_bytes(), provider_id)
+            assert_base_layering(existing_path.read_bytes(), provider_id)
             reused += 1
             continue
 
@@ -133,25 +406,13 @@ def migrate_existing() -> dict[str, Any]:
         if not public_path.is_file():
             raise ValueError(f"{provider_id}: missing public provider artifact {relative}")
 
-        public_data = public_path.read_bytes()
-        # This is the only allowed legacy extraction path. Once persisted,
-        # production Core/compiler code must consume ProviderBase directly.
-        base_file, base_sha, stripped = persist_base_from_published(provider_id, public_data)
+        base_file, base_sha, stripped = persist_base_from_published(provider_id, public_path.read_bytes())
         row["base_filename"] = base_file
         row["base_sha256"] = base_sha
         row["base_source"] = "one-shot-public-core-tail-extraction"
         row["base_migrated_at"] = datetime.now(timezone.utc).isoformat()
         row["base_migration_stripped_generated_core"] = bool(stripped)
         migrated += 1
-
-    if provider_count != len(rows):
-        missing_manifest = sorted(set(rows) - {
-            str(row.get("id") or "").strip().casefold()
-            for row in manifest.get("scrapers") or []
-            if isinstance(row, dict)
-        })
-        if missing_manifest:
-            raise ValueError("provenance-only providers during base migration: " + ",".join(missing_manifest[:20]))
 
     provenance["provider_base_store"] = {
         "schema_version": 1,
@@ -183,8 +444,10 @@ def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
             raise ValueError(f"{provider_id}: missing provenance row")
         path, _digest = resolve_base(provider_id, row, require=True)
         assert path is not None
+        data = path.read_bytes()
+        assert_base_layering(data, provider_id)
         if validate_artifacts:
-            validate_base(path.read_bytes(), provider_id)
+            validate_base(data, provider_id)
         bases.add(path.relative_to(ROOT).as_posix())
         checked += 1
     if checked != len(manifest.get("scrapers") or []):
@@ -200,6 +463,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("migrate-existing")
+    sub.add_parser("repair-legacy")
     validate_parser = sub.add_parser("validate")
     validate_parser.add_argument(
         "--artifacts",
@@ -209,7 +473,16 @@ def main() -> int:
     args = parser.parse_args()
     if args.command == "migrate-existing":
         result = migrate_existing()
-        print(f"FIELD_PROVIDER_BASE_MIGRATION providers={result['providers']} migrated={result['migrated']} reused={result['reused']}")
+        print(
+            f"FIELD_PROVIDER_BASE_MIGRATION providers={result['providers']} "
+            f"migrated={result['migrated']} reused={result['reused']}"
+        )
+    elif args.command == "repair-legacy":
+        result = repair_legacy_bases()
+        print(
+            f"FIELD_PROVIDER_BASE_REPAIR providers={result['providers']} "
+            f"repaired={result['repaired']} reused={result['reused']} removed={result['removed']}"
+        )
     else:
         result = validate_all(validate_artifacts=bool(args.artifacts))
         print(
