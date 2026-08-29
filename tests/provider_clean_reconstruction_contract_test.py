@@ -103,6 +103,8 @@ assert '"pending-niakvio-clean-reconstruction-v2"' in discover
 assert '"legacy-providerbase-compatibility-only"' in discover
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
+assert "refusing legacy ProviderBase fallback" in promoter
+assert "if previous_requires_clean:" in promoter
 assert "CLEAN_RECONSTRUCTION_SOURCE" in promoter
 
 print(
