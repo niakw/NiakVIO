@@ -106,6 +106,11 @@ def main() -> int:
     policy = load_json(a.policy)
     self_config = load_json(a.self_config)
     targeted = load_optional(a.targeted_lab)
+    targeted_rows = (
+        [row for row in targeted.get("providers") or [] if isinstance(row, dict)]
+        if isinstance(targeted.get("providers"), list)
+        else ([targeted] if targeted else [])
+    )
     selection = load_optional(a.target_selection)
     route_report = load_optional(a.route_report)
     route_fallback = load_optional(a.route_fallback)
@@ -167,12 +172,17 @@ def main() -> int:
             evidence={"unknownFailureCount": unknown},
         )
 
-    client_rows = targeted.get("clients") if isinstance(targeted.get("clients"), dict) else {}
-    runtime_streams = max((int(row.get("runtimeStreams") or 0) for row in client_rows.values() if isinstance(row, dict)), default=0)
-    probed_streams = max((int(row.get("probedStreams") or 0) for row in client_rows.values() if isinstance(row, dict)), default=0)
-    complete = all(bool(row.get("probeCoverageComplete", True)) for row in client_rows.values() if isinstance(row, dict)) if client_rows else True
+    all_client_rows = [
+        client
+        for lab_row in targeted_rows
+        for client in ((lab_row.get("clients") or {}).values() if isinstance(lab_row.get("clients"), dict) else [])
+        if isinstance(client, dict)
+    ]
+    runtime_streams = max((int(row.get("runtimeStreams") or 0) for row in all_client_rows), default=0)
+    probed_streams = max((int(row.get("probedStreams") or 0) for row in all_client_rows), default=0)
+    complete = all(bool(row.get("probeCoverageComplete", True)) for row in all_client_rows) if all_client_rows else True
     current_cap = int(lab.get("allStreamsSafetyCap") or 40)
-    if client_rows and not complete and probed_streams >= current_cap:
+    if all_client_rows and not complete and probed_streams >= current_cap:
         rule = patch_allow.get("learningLab.allStreamsSafetyCap") if isinstance(patch_allow.get("learningLab.allStreamsSafetyCap"), dict) else {}
         step = max(1, int(rule.get("step") or 20))
         patch_number(
@@ -188,15 +198,22 @@ def main() -> int:
             evidence={"runtimeStreams": runtime_streams, "probedStreams": probed_streams, "currentCap": current_cap},
         )
 
-    targeted_status = str(targeted.get("status") or "").strip().casefold()
-    target_status = str(selection.get("status") or "").strip().casefold()
-    if targeted_status == "partial_failure" and target_status in {"healthy", "reachable"}:
+    queue_results = selection.get("results") if isinstance(selection.get("results"), list) else []
+    blind_spots = []
+    for row in queue_results:
+        if not isinstance(row, dict):
+            continue
+        core_status = str((row.get("coreHypothesis") or {}).get("status") or "").strip().casefold()
+        lab_status = str((row.get("finalLab") or {}).get("status") or "").strip().casefold()
+        if core_status in {"healthy", "reachable"} and lab_status and lab_status != "playable":
+            blind_spots.append({"provider": row.get("provider"), "coreStatus": core_status, "labStatus": lab_status})
+    if blind_spots:
         add(
             "core_sampling_blind_spot",
-            f"Core status={target_status} but the independent all-stream Learning Lab found partial playback failure.",
-            ["scripts/nuvio_client_lab.cjs", "scripts/select_brain_learning_target.py", "engine_v2/scripts/learning-lab.mjs", "tests/brain_*"],
+            f"{len(blind_spots)} provider(s) looked healthy/reachable to Core but failed independent Learning Lab coverage.",
+            ["scripts/nuvio_client_lab.cjs", "scripts/run_brain_learning_queue.py", "engine_v2/scripts/learning-lab.mjs", "tests/brain_*"],
             "Keep Core evidence non-authoritative and evolve Learning sampling/fixtures or causal classification before trusting the healthy sample.",
-            evidence={"coreStatus": target_status, "labStatus": targeted_status},
+            evidence={"providers": blind_spots[:24]},
         )
 
     repeated = [
@@ -207,7 +224,11 @@ def main() -> int:
     ]
     memory = state.get("experimentMemory") if isinstance(state.get("experimentMemory"), dict) else {}
     entries = [row for row in memory.get("entries") or [] if isinstance(row, dict)]
-    target_provider = str(targeted.get("providerId") or selection.get("provider") or "").strip().casefold()
+    target_provider = str(
+        (targeted_rows[-1].get("providerId") if targeted_rows else "")
+        or selection.get("provider")
+        or ""
+    ).strip().casefold()
     repeated_profiles = {
         str(row.get("profile") or "")
         for row in entries
@@ -233,26 +254,32 @@ def main() -> int:
             evidence={"repeatedMethodSignals": len(repeated)},
         )
 
-    if bool(selection.get("needs_route_search")):
-        route_count = route_evidence_count(route_report) + route_evidence_count(route_fallback)
-        if route_count < int(thresholds.get("routeDiscoveryEmptyEvidence") or 1):
-            add(
-                "route_discovery_blind_spot",
-                "The selected provider has an access failure but the current hub/history/Telegram/Yandex/DDG chain produced no usable route evidence.",
-                ["scripts/resolve_provider_hubs.py", "scripts/resolve_provider_hub_search_fallback.py", ".github/workflows/brain-learning-lab.yml", "tests/brain_*"],
-                "Evolve route discovery with a new evidence source or extraction method before mutating provider code.",
-                evidence={"providerId": target_provider, "routeEvidenceCount": route_count},
-            )
+    route_blind_spots = []
+    for row in queue_results:
+        if not isinstance(row, dict):
+            continue
+        core_hypothesis = row.get("coreHypothesis") if isinstance(row.get("coreHypothesis"), dict) else {}
+        route = row.get("routeSearch") if isinstance(row.get("routeSearch"), dict) else {}
+        if core_hypothesis.get("needs_route_search") and int(route.get("routeEvidenceCount") or 0) < int(thresholds.get("routeDiscoveryEmptyEvidence") or 1):
+            route_blind_spots.append(str(row.get("provider") or ""))
+    if route_blind_spots:
+        add(
+            "route_discovery_blind_spot",
+            f"{len(route_blind_spots)} access-failure provider(s) produced no usable route evidence with the current search chain.",
+            ["scripts/resolve_provider_hubs.py", "scripts/resolve_provider_hub_search_fallback.py", "scripts/run_brain_learning_queue.py", "tests/brain_*"],
+            "Evolve route discovery with a new evidence source or extraction method before mutating provider code.",
+            evidence={"providers": route_blind_spots[:24]},
+        )
 
     architecture_checks = {
         "coreEvidenceIsHypothesis": lab.get("coreEvidenceAuthority") == "hypothesis_only",
         "timeBudgetedProviderQueue": lab.get("targetProvidersPerRun") == "time_budgeted_queue",
         "deadlineDrivenRepair": "maxRepairRounds" not in lab and "deadline" in str(lab.get("retryPolicy") or ""),
         "multiDeviceLab": "tv_desktop_mobile" in str(lab.get("clientSelection") or ""),
-        "allStreamsLab": "--all-streams" in workflow or "run_brain_learning_lab_queue.py" in workflow,
-        "persistentQueue": "build_brain_learning_queue.py" in workflow,
+        "allStreamsLab": "all_returned_streams" in str(lab.get("streamSampling") or "") or "--stream-safety-cap 40" in workflow,
+        "persistentQueue": "run_brain_learning_queue.py" in workflow,
         "crossDayScheduler": "--scheduler-state" in workflow,
-        "conditionalRouteSearch": "run_brain_route_recovery_queue.py" in workflow or "needs_route_search" in workflow,
+        "conditionalRouteSearch": "run_brain_learning_queue.py" in workflow,
         "selfArchitecturePr": "publish-architecture-proposal:" in workflow,
     }
     missing = sorted(key for key, ok in architecture_checks.items() if not ok)
