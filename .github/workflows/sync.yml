@@ -168,18 +168,13 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  # Any execution that can publish to main shares the same writer lane.
-  # PRs never publish and may supersede only an older run for the same PR.
-  group: nuvio-provider-publish-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
-  # A newer main tree supersedes an older repair transaction. This prevents
-  # stale 60-90 minute runs from blocking current provider work.
-  cancel-in-progress: true
-
 jobs:
   stage-and-test:
     if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[sync-control-only]') }}
     name: Discover, repair and validate providers
+    concurrency:
+      group: nuvio-provider-stage-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
@@ -189,6 +184,7 @@ jobs:
       contents: read
     outputs:
       validation_mode: ${{ steps.resolve-mode.outputs.validation_mode }}
+      validated_sha: ${{ steps.validated-tree.outputs.sha }}
 
     steps:
       - name: Checkout without persisted credentials
@@ -200,6 +196,11 @@ jobs:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Capture validated main tree
+        id: validated-tree
+        shell: bash
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Resolve validation mode
         id: resolve-mode
@@ -351,6 +352,9 @@ jobs:
     name: Publish validated provider transaction
     needs: stage-and-test
     if: github.event_name != 'pull_request'
+    concurrency:
+      group: nuvio-provider-publish-main
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
@@ -364,7 +368,23 @@ jobs:
           ref: main
           fetch-depth: 0
 
+      - name: Reject stale validated transaction
+        id: freshness
+        shell: bash
+        env:
+          VALIDATED_SHA: ${{ needs.stage-and-test.outputs.validated_sha }}
+        run: |
+          set -euo pipefail
+          CURRENT_SHA="$(git rev-parse HEAD)"
+          if [ "$CURRENT_SHA" != "$VALIDATED_SHA" ]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            echo "FIELD_PROVIDER_PUBLICATION_SKIPPED reason=main_advanced validated=$VALIDATED_SHA current=$CURRENT_SHA"
+          else
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Capture published manifest baseline
+        if: steps.freshness.outputs.stale != 'true'
         shell: bash
         run: |
           NUVIO_PUBLISHED_MANIFEST_BASELINE="$RUNNER_TEMP/published-manifest.json"
@@ -372,27 +392,32 @@ jobs:
           git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
 
       - name: Set up Python
+        if: steps.freshness.outputs.stale != 'true'
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
 
       - name: Set up Node.js
+        if: steps.freshness.outputs.stale != 'true'
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           package-manager-cache: false
 
       - name: Install pinned runtime dependencies
+        if: steps.freshness.outputs.stale != 'true'
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Download validated staging transaction
+        if: steps.freshness.outputs.stale != 'true'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: nuvio-validation-stage-${{ github.run_id }}
           path: checked-artifact
 
       - name: Restore validated routing state
+        if: steps.freshness.outputs.stale != 'true'
         run: |
           cp checked-artifact/provider-overrides.json provider-overrides.json
           cp checked-artifact/provider-domain-history.json provider-domain-history.json
@@ -400,6 +425,7 @@ jobs:
           python scripts/reapply_published_overrides.py
 
       - name: Promote only proven candidates
+        if: steps.freshness.outputs.stale != 'true'
         env:
           NUVIO_STAGE: checked-artifact/staging
           NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
@@ -412,10 +438,12 @@ jobs:
           fi
 
       - name: Reapply durable overrides after candidate promotion
+        if: steps.freshness.outputs.stale != 'true'
         run: |
           python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary
 
       - name: Finalize upstream last-known-good snapshots
+        if: steps.freshness.outputs.stale != 'true'
         run: |
           test -f checked-artifact/staging/upstream-lkg-pending.json
           python scripts/finalize_upstream_lkg.py \
@@ -423,11 +451,13 @@ jobs:
             --keep-generations 2
 
       - name: Prune stale bundles and validate overrides
+        if: steps.freshness.outputs.stale != 'true'
         run: |
           python scripts/prune_unreferenced_providers.py
           python scripts/validate_published_overrides.py
 
       - name: Restore validated reports
+        if: steps.freshness.outputs.stale != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -440,6 +470,7 @@ jobs:
           cp checked-artifact/health-output/repair-report.json repair-report.json
 
       - name: Build canonical publication transaction
+        if: steps.freshness.outputs.stale != 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -524,6 +555,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Measure Interstellar real coverage
+        if: steps.freshness.outputs.stale != 'true'
         continue-on-error: true
         run: |
           python scripts/interstellar_nuvio_matrix.py \
@@ -542,6 +574,7 @@ jobs:
           if-no-files-found: warn
 
       - name: Publish atomic ARCHI2 transaction
+        if: steps.freshness.outputs.stale != 'true'
         shell: bash
         run: |
           python scripts/release_evidence_fence.py validate \
@@ -591,6 +624,7 @@ jobs:
           git push origin HEAD:main
 
       - name: Verify exact published main
+        if: steps.freshness.outputs.stale != 'true'
         shell: bash
         run: |
           git fetch origin main
