@@ -40,9 +40,11 @@ assert "Create Mobile AVD snapshot on cache miss" not in workflow
 assert "Create TV AVD snapshot on cache miss" not in workflow
 assert "Create TV AVD snapshot on candidate cache miss" not in workflow
 
-# Expensive main/PR Android generations are latest-wins so obsolete emulator
-# work cannot pile up. Explicit workflow_dispatch runs stay isolated.
-assert "github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main'" in workflow
+# Expensive main Android generations are latest-wins so obsolete emulator work
+# cannot pile up. Heavy native proof is not a PR gate; explicit workflow_dispatch
+# runs stay isolated.
+assert "\n  pull_request:" not in workflow
+assert "github.event_name == 'workflow_dispatch' && github.run_id || 'main'" in workflow
 assert "cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}" in workflow
 
 # Player/read failures are observations for Brain/Deep, never publication locks.
