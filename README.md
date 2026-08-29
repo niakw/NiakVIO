@@ -60,7 +60,7 @@ Providers can break because of domain moves, API changes, player changes, expire
 NiakVIO adds a maintenance layer between upstream provider repositories and Nuvio:
 
 - one installation point;
-- multiple upstream variants compared before promotion;
+- multiple upstream repositories observed with one deterministic canonical input retained before Health/Repair;
 - bounded automated repair;
 - final-media validation rather than URL-only checks;
 - title/year/season/episode identity validation;
