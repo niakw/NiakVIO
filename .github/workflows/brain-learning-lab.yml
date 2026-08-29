@@ -139,12 +139,12 @@ jobs:
           }
 
           import_weekly_full native-mobile-android-reader.yml android \
-            "native-tv-route-representative-*" \
-            "native-mobile-android-routes-*"
+            "native-tv-full-*" \
+            "native-mobile-android-full-*"
           import_weekly_full native-mobile-ios-reader.yml ios \
-            "native-mobile-ios-routes-*"
+            "native-mobile-ios-full-*"
           import_weekly_full native-desktop-reader-acceptance.yml desktop \
-            "native-desktop-reader-*-routes-*"
+            "native-desktop-full-*-*"
 
           node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
 
