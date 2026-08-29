@@ -7,6 +7,7 @@ import {
   discoverPeerMigrationCandidates,
   extractCandidateDomains,
   providerDecision,
+  simpleDnsStatus,
 } from '../scripts/provider_dns_preflight.mjs';
 
 const baseConfig = {
@@ -56,21 +57,52 @@ function dnsResult(name, status, addresses = []) {
 }
 
 {
+  const seen = [];
   const result = await checkDomainAcrossResolvers('example.test', baseConfig, {
     resolveFn: async (_host, resolver) => {
+      seen.push(resolver.name);
       if (resolver.name === 'sfr') return dnsResult('sfr', 'negative');
-      if (resolver.name === 'orange') return dnsResult('orange', 'resolved', [{ address: '93.184.216.34', family: 4 }]);
-      throw new Error('neutral resolver should not be reached after Orange passes');
+      return dnsResult(resolver.name, 'resolved', [{ address: '93.184.216.34', family: 4 }]);
     },
     probeFn: async (_host, resolver) => ({
-      status: resolver.name === 'orange' ? 'reachable' : 'unreachable',
+      status: resolver.name === 'sfr' ? 'unreachable' : 'reachable',
       redirects: [],
       body_excerpt: '',
     }),
   });
-  assert.equal(result.status, 'accessible_french_fallback');
+  assert.deepEqual(seen.slice(0, 3), ['sfr', 'orange', 'free']);
+  assert.equal(result.status, 'accessible_french_with_partial_block');
   assert.equal(result.selected_resolver, 'orange');
   assert.equal(result.continue_runtime, true);
+  assert.equal(simpleDnsStatus([result]), 'DNS BLOCK');
+}
+
+{
+  const seen = [];
+  const result = await checkDomainAcrossResolvers('all-good.test', baseConfig, {
+    resolveFn: async (_host, resolver) => {
+      seen.push(resolver.name);
+      if (resolver.name === 'cloudflare') throw new Error('neutral resolver must not run when all French ISP checks are clean');
+      return dnsResult(resolver.name, 'resolved', [{ address: '93.184.216.34', family: 4 }]);
+    },
+    probeFn: async () => ({ status: 'reachable', redirects: [], body_excerpt: '' }),
+  });
+  assert.deepEqual(seen, ['sfr', 'orange', 'free']);
+  assert.equal(result.status, 'accessible_primary_french_isp');
+  assert.equal(simpleDnsStatus([result]), 'DNS OK');
+}
+
+{
+  const rateLimited = {
+    host: 'quota.test',
+    french_checks: [
+      { isp: 'sfr', dns: { status: 'unavailable', rate_limited: true }, http: null },
+      { isp: 'orange', dns: { status: 'resolved' }, http: { status: 'reachable' } },
+      { isp: 'free', dns: { status: 'resolved' }, http: { status: 'reachable' } },
+    ],
+    neutral_checks: [],
+  };
+  assert.equal(simpleDnsStatus([rateLimited]), 'DNS API LIMIT REACH');
 }
 
 {
@@ -104,6 +136,7 @@ function dnsResult(name, status, addresses = []) {
     domainHints: [{ host: 'movix.fun' }],
   });
   assert.equal(result.status, 'confirmed_french_dns_or_http_block');
+  assert.equal(simpleDnsStatus([result]), 'DNS BLOCK');
   assert.equal(result.continue_runtime, false);
   assert.equal(result.migration_candidates[0].host, 'movix.fun');
   assert.ok(result.migration_candidates[0].confidence >= 80);
