@@ -359,7 +359,7 @@ def repair_attempt(
     completed = run([
         sys.executable, str(SCRIPTS / "run_brain_learning_sandbox.py"),
         "--stage", str(stage), "--registry", str(registry_path),
-        "--output", str(output), "--max-rounds", "50",
+        "--output", str(output), "--max-rounds", "0",
     ], env=env, deadline=deadline, allow_fail=True)
     report = load_json(output / "repair-report.json", {})
     # Validate accepted repairs against the exact targeted registry before the
@@ -545,14 +545,30 @@ def main() -> int:
     queue["hiddenFailureProviders"] = unique(hidden_failures)
     queue["fixtureHistoryUpdates"] = fixture_updates
 
+    hidden_core_failures = sorted({
+        str(row.get("provider") or "")
+        for row in run_results
+        if isinstance(row, dict)
+        and str((row.get("coreHypothesis") or {}).get("status") or "") in {"healthy", "reachable"}
+        and isinstance(row.get("finalLab"), dict)
+        and str((row.get("finalLab") or {}).get("status") or "") != "playable"
+        and str(row.get("provider") or "")
+    })
+    previous_hidden = [
+        norm(value) for value in queue.get("hiddenFailureProviders") or []
+        if norm(value)
+    ]
+    queue["hiddenFailureProviders"] = unique([*previous_hidden, *hidden_core_failures])
+
     summary = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "coreEvidenceAuthority": "hypothesis_only",
         "budgetMinutes": args.budget_minutes,
         "processedProviders": processed,
         "processedProviderCount": len(processed),
         "retryProviders": queue["retryProviders"],
+        "hiddenFailureProviders": hidden_core_failures,
         "results": run_results,
         "productionWritesAllowed": False,
         "publicationAllowed": False,
@@ -571,10 +587,11 @@ def main() -> int:
         "brain": {"plans": combined_plans},
     })
     write_json(output / "targeted-lab-summary.json", {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "status": "multi_provider",
         "providers": [x.get("finalLab") for x in run_results if isinstance(x.get("finalLab"), dict)],
         "providerId": processed[-1] if processed else "",
+        "hiddenFailureProviders": hidden_core_failures,
         "productionWritesAllowed": False,
         "publicationAllowed": False,
     })
