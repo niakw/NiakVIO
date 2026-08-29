@@ -497,7 +497,7 @@ Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent
 
 ## 22. Labs natifs sur `main`
 
-Les Labs ne reposent pas sur des branches de code permanentes. Les preuves NuvioTV, Mobile et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule et résolus à leur HEAD courant après contrôle de drift.
+Les Labs ne reposent pas sur des branches de code permanentes. Les preuves NuvioTV, Mobile Android, Mobile iOS et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule et résolus à leur HEAD courant après contrôle de drift. TV, Android et iOS sont des workflows autonomes ; le Lab TV exécute les trois fixtures canoniques dans un seul job/boot. Aucun de ces Labs n'appelle le Brain.
 
 Une anomalie réelle devient une non-régression durable par la chaîne :
 
@@ -565,7 +565,7 @@ Niakvio/
 9. Un média jouable avec mauvaise identité est un échec bloquant.
 10. Aucun provider ne peut réussir grâce à la route ou au résultat d'un autre.
 11. `Unknown/Inconnue` de présentation n'est pas une contradiction d'identité.
-12. Les preuves Mobile/Desktop/TV sont indépendantes.
+12. Les preuves Mobile Android/Mobile iOS/Desktop/TV sont indépendantes.
 13. Quick peut réparer/publier sans attendre Deep.
 14. Deep ne doit pas être relancé inutilement à chaque modification.
 15. Les manifests sont rendus depuis le catalogue avant publication.
