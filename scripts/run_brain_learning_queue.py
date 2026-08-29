@@ -117,6 +117,21 @@ def build_queue(
         }
 
     prev = previous.get("learningQueue") if isinstance(previous.get("learningQueue"), dict) else {}
+    if not prev and isinstance(previous.get("learningScheduler"), dict):
+        scheduler = previous.get("learningScheduler") or {}
+        fixture_history = scheduler.get("fixtureHistory") if isinstance(scheduler.get("fixtureHistory"), dict) else {}
+        provider_state = {
+            norm(pid): {"attemptCount": 0, "fixtureCursor": {"movie": len(rows or []), "tv": len(rows or []), "anime": len(rows or [])}}
+            for pid, rows in fixture_history.items()
+            if norm(pid)
+        }
+        prev = {
+            "cycle": int(scheduler.get("cycle") or 1),
+            "pendingProviders": scheduler.get("pendingProviders") or [],
+            "retryProviders": [],
+            "completedInCycle": scheduler.get("completedProviders") or [],
+            "providerState": provider_state,
+        }
     cycle = max(1, int(prev.get("cycle") or 1))
     provider_state = copy.deepcopy(prev.get("providerState") or {})
     completed = [pid for pid in unique(prev.get("completedInCycle") or []) if pid in by_id]
@@ -493,8 +508,11 @@ def main() -> int:
         queue["completedInCycle"] = completed
 
     remaining_order = [pid for pid in order if pid not in processed]
-    queue["pendingProviders"] = unique([*(queue.get("pendingProviders") or []), *remaining_order])
     queue["retryProviders"] = unique(retry_next)
+    queue["pendingProviders"] = interleave(
+        queue["retryProviders"],
+        unique([*(queue.get("pendingProviders") or []), *remaining_order]),
+    )
     queue["processedThisRun"] = processed
     queue["generatedAt"] = datetime.now(timezone.utc).isoformat()
     queue["budgetMinutes"] = args.budget_minutes
@@ -505,6 +523,27 @@ def main() -> int:
     if not queue["pendingProviders"] and not args.provider:
         queue["cycle"] = int(queue.get("cycle") or 1) + 1
         queue["completedInCycle"] = []
+
+    hidden_failures = [
+        row["provider"]
+        for row in run_results
+        if isinstance(row, dict)
+        and isinstance(row.get("finalLab"), dict)
+        and row["finalLab"].get("status") != "playable"
+        and str((row.get("coreHypothesis") or {}).get("status") or "") in {"healthy", "reachable"}
+    ]
+    fixture_updates = {
+        row["provider"]: [
+            str(attempt.get("lab", {}).get("fixtureSlug") or "")
+            for attempt in row.get("attempts") or []
+            if isinstance(attempt, dict) and str(attempt.get("lab", {}).get("fixtureSlug") or "")
+        ]
+        for row in run_results
+        if isinstance(row, dict) and row.get("provider")
+    }
+    queue["completedProviders"] = processed
+    queue["hiddenFailureProviders"] = unique(hidden_failures)
+    queue["fixtureHistoryUpdates"] = fixture_updates
 
     summary = {
         "schemaVersion": 2,
