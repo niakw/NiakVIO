@@ -40,14 +40,13 @@ mobile_ios_workflow = text(".github/workflows/native-mobile-ios-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
 learning_sync = text(".github/workflows/native-reader-learning-sync.yml")
 
-# Canonical media route traversal remains explicit; capability probes are evidence,
-# never permission for a Lab-side provider/player rewrite.
+# Canonical media route traversal remains explicit. Native acceptance runs only
+# the declared fixture route; cross-type capability discovery belongs to Learning/Deep.
 for required in (
     'CANONICAL = {"movie", "tv", "anime"}',
     "ProviderRequestRoute",
-    'listOf<String>(fixtureMediaType).filter { it in declared }',
+    'listOf<String>(fixtureMediaType).filter {{ it in declared }}',
     'ProviderRequestRoute(type)',
-    '"capability_probe"',
     "FIELD_NATIVE_PROVIDER_BEGIN",
     "FIELD_NATIVE_PLAYER_BEGIN",
     "request_type=$requestMediaType route_mode=$routeMode",
