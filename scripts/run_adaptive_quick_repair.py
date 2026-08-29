@@ -288,6 +288,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, default=ROOT / "staging")
     parser.add_argument("--output", type=Path, default=ROOT / "health-output")
+    parser.add_argument("--registry", type=Path, default=None)
     parser.add_argument("--max-rounds", type=int, default=1)
     args = parser.parse_args()
     stage = args.stage.resolve()
@@ -323,6 +324,8 @@ def main() -> int:
             str(SCRIPTS / "deep_repair_loop.py"), "--stage", str(stage), "--output", str(output),
             "--mode", "deep", "--max-rounds", str(max_rounds),
         ]
+        if args.registry is not None:
+            sys.argv.extend(["--registry", str(args.registry.resolve())])
         buffer = io.StringIO()
         with contextlib.redirect_stdout(buffer):
             rc = loop.main()
