@@ -228,13 +228,15 @@ def build_clean_provider_seed(
     manifest_entry: dict[str, Any] | None = None,
     *,
     known_site: str | None = None,
+    provider_model: dict[str, Any] | None = None,
 ) -> bytes:
-    """Create NiakVIO-owned provider code without importing upstream JavaScript.
+    """Build a fresh NiakVIO-owned provider implementation from structured knowledge.
 
-    Upstream manifests/code may contribute metadata and route knowledge, but
-    executable ProviderBase bytes always start from NiakVIO-owned source.
-    A brand-new provider is intentionally inert until Learning/Deep reconstructs
-    and proves a provider-specific resolver.
+    The structured model may contain observed routes/domains/capability metadata,
+    but never executable upstream source. The generated JavaScript is authored by
+    NiakVIO and uses one common deterministic resolver skeleton. Learning may then
+    specialize the model/runtime and must prove the resulting ProviderBase before
+    publication.
     """
     entry = manifest_entry if isinstance(manifest_entry, dict) else {}
     supported = [
@@ -244,35 +246,276 @@ def build_clean_provider_seed(
     ]
     supported = list(dict.fromkeys(supported))
     display_name = str(entry.get("name") or provider_id).strip() or provider_id
-    metadata = {
+    incoming_model = provider_model if isinstance(provider_model, dict) else {}
+    model = {
         "providerId": canonical_id(provider_id),
         "displayName": display_name,
-        "knownSite": str(known_site or "").strip() or None,
+        "knownSite": str(known_site or incoming_model.get("knownSite") or "").strip() or None,
         "supportedTypes": supported,
-        "reconstructionState": "needs-learning-repair",
-        "authoring": "niakvio-owned",
+        "strategy": str(incoming_model.get("strategy") or "unknown").strip().casefold(),
+        "officialSite": str(incoming_model.get("officialSite") or "").strip() or None,
+        "officialHub": str(incoming_model.get("officialHub") or "").strip() or None,
+        "officialApi": str(incoming_model.get("officialApi") or "").strip() or None,
+        "fixedApi": str(incoming_model.get("fixedApi") or "").strip() or None,
+        "origins": [
+            str(value).strip()
+            for value in incoming_model.get("origins") or []
+            if str(value).strip()
+        ][:24],
+        "observedUrls": [
+            str(value).strip()
+            for value in incoming_model.get("observedUrls") or []
+            if str(value).strip()
+        ][:32],
+        "routes": [
+            str(value).strip()
+            for value in incoming_model.get("routes") or []
+            if str(value).strip()
+        ][:32],
+        "reconstructionState": "learning-clean-seed",
+        "authoring": "niakvio-owned-v2",
         "upstreamCodeEmbedded": False,
+        "upstreamCodeExecuted": False,
     }
-    payload = json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    source = (
-        '"use strict";\n\n'
-        '/* NIAKVIO_PROVIDER_BASE_OWNED_V1 */\n'
-        f'const NIAKVIO_PROVIDER_META = Object.freeze({payload});\n'
-        'async function getStreams(_tmdbId, _mediaType, _season, _episode) { return []; }\n'
-        'module.exports = { getStreams, __niakvioProviderBase: NIAKVIO_PROVIDER_META };\n'
-    )
-    return source.encode("utf-8")
+    payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    template = r'''"use strict";
 
+/* NIAKVIO_PROVIDER_BASE_OWNED_V2 */
+const NIAKVIO_PROVIDER_MODEL = Object.freeze(__MODEL_JSON__);
+
+function _uniq(values) {
+  return [...new Set((values || []).filter(Boolean))];
+}
+function _origin(value) {
+  try { return new URL(value).origin; } catch (_) { return ""; }
+}
+function _absolute(value, base) {
+  try { return new URL(value, base).toString(); } catch (_) { return ""; }
+}
+function _text(value) {
+  return String(value == null ? "" : value);
+}
+function _directMedia(url) {
+  return /\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)|\/(?:hls|dash|stream)(?:\/|[?#]|$)/i.test(_text(url));
+}
+function _extractUrls(text, base) {
+  const out = [];
+  const patterns = [
+    /(?:src|href|file|url)\s*[:=]\s*["']([^"'<>\s]+)["']/gi,
+    /https?:\\?\/\\?\/[^"'<>\s]+/gi
+  ];
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(text || ""))) {
+      const raw = (match[1] || match[0] || "").replace(/\\\//g, "/").replace(/&amp;/g, "&");
+      const absolute = _absolute(raw, base);
+      if (absolute && /^https?:/i.test(absolute)) out.push(absolute);
+      if (out.length >= 160) break;
+    }
+  }
+  return _uniq(out);
+}
+async function _fetch(url, options) {
+  const response = await fetch(url, {
+    redirect: "follow",
+    headers: Object.assign({
+      "Accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+      "User-Agent": "Mozilla/5.0 NiakVIO/2"
+    }, (options && options.headers) || {})
+  });
+  if (!response.ok) throw new Error("provider_http_" + response.status);
+  return response;
+}
+async function _tmdb(tmdbId, mediaType) {
+  const key = typeof globalThis !== "undefined" ? globalThis.TMDB_API_KEY : null;
+  if (!key || !tmdbId) return null;
+  const type = String(mediaType || "movie").toLowerCase() === "movie" ? "movie" : "tv";
+  try {
+    const response = await _fetch(
+      "https://api.themoviedb.org/3/" + type + "/" + encodeURIComponent(tmdbId) +
+      "?api_key=" + encodeURIComponent(key) + "&language=en-US"
+    );
+    const row = await response.json();
+    return {
+      title: row.title || row.name || row.original_title || row.original_name || "",
+      year: String(row.release_date || row.first_air_date || "").slice(0, 4)
+    };
+  } catch (_) {
+    return null;
+  }
+}
+function _searchBases() {
+  return _uniq([
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite,
+    NIAKVIO_PROVIDER_MODEL.officialHub,
+    ...(NIAKVIO_PROVIDER_MODEL.origins || [])
+  ]).filter(value => /^https?:/i.test(value));
+}
+function _searchUrls(title) {
+  const query = encodeURIComponent(title || "");
+  const out = [];
+  for (const base of _searchBases()) {
+    out.push(_absolute("/?s=" + query, base));
+    out.push(_absolute("/search?q=" + query, base));
+    out.push(_absolute("/search/" + query, base));
+  }
+  return _uniq(out);
+}
+function _apiUrls(tmdbId, mediaType, season, episode) {
+  const bases = _uniq([
+    NIAKVIO_PROVIDER_MODEL.fixedApi,
+    NIAKVIO_PROVIDER_MODEL.officialApi,
+    ...(NIAKVIO_PROVIDER_MODEL.observedUrls || []).filter(value => /api|stream|source|embed|player/i.test(value))
+  ]);
+  const out = [];
+  for (const base of bases) {
+    if (!/^https?:/i.test(base)) continue;
+    let url = base
+      .replace(/\{(?:tmdb_?id|id)\}/gi, encodeURIComponent(tmdbId || ""))
+      .replace(/\{(?:media_?type|type)\}/gi, encodeURIComponent(mediaType || "movie"))
+      .replace(/\{season\}/gi, encodeURIComponent(season == null ? "" : season))
+      .replace(/\{episode\}/gi, encodeURIComponent(episode == null ? "" : episode));
+    out.push(url);
+    try {
+      const parsed = new URL(url);
+      if (!parsed.searchParams.size) {
+        parsed.searchParams.set("tmdbId", tmdbId || "");
+        parsed.searchParams.set("type", mediaType || "movie");
+        if (season != null) parsed.searchParams.set("season", String(season));
+        if (episode != null) parsed.searchParams.set("episode", String(episode));
+        out.push(parsed.toString());
+      }
+    } catch (_) {}
+  }
+  return _uniq(out);
+}
+function _jsonUrls(value, out) {
+  out = out || [];
+  if (typeof value === "string") {
+    if (/^https?:/i.test(value)) out.push(value);
+    return out;
+  }
+  if (Array.isArray(value)) {
+    for (const child of value) _jsonUrls(child, out);
+    return out;
+  }
+  if (value && typeof value === "object") {
+    for (const child of Object.values(value)) _jsonUrls(child, out);
+  }
+  return out;
+}
+function _streams(urls, referer) {
+  return _uniq(urls).slice(0, 40).map((url, index) => ({
+    name: NIAKVIO_PROVIDER_MODEL.displayName,
+    title: NIAKVIO_PROVIDER_MODEL.displayName + (index ? " #" + (index + 1) : ""),
+    url,
+    headers: referer ? { Referer: referer } : undefined
+  }));
+}
+async function _resolveApi(tmdbId, mediaType, season, episode) {
+  const streams = [];
+  for (const url of _apiUrls(tmdbId, mediaType, season, episode).slice(0, 12)) {
+    try {
+      const response = await _fetch(url);
+      const type = _text(response.headers.get("content-type")).toLowerCase();
+      if (type.includes("json")) {
+        const value = await response.json();
+        streams.push(..._jsonUrls(value).filter(_directMedia));
+      } else {
+        const text = await response.text();
+        streams.push(..._extractUrls(text, response.url || url).filter(_directMedia));
+      }
+    } catch (_) {}
+    if (streams.length) break;
+  }
+  return _streams(streams, _searchBases()[0] || "");
+}
+async function _resolveHtml(meta, mediaType, season, episode) {
+  if (!meta || !meta.title) return [];
+  const candidates = [];
+  for (const searchUrl of _searchUrls(meta.title).slice(0, 9)) {
+    try {
+      const response = await _fetch(searchUrl);
+      const html = await response.text();
+      const urls = _extractUrls(html, response.url || searchUrl);
+      candidates.push(...urls.filter(value => {
+        const host = _origin(value);
+        return host && _searchBases().some(base => _origin(base) === host);
+      }));
+    } catch (_) {}
+    if (candidates.length) break;
+  }
+  const streams = [];
+  for (const detailUrl of _uniq(candidates).slice(0, 8)) {
+    try {
+      const response = await _fetch(detailUrl);
+      const html = await response.text();
+      let urls = _extractUrls(html, response.url || detailUrl);
+      if (mediaType !== "movie" && season != null && episode != null) {
+        const token = new RegExp("(?:s(?:eason)?\\s*0*" + Number(season) + "[^\\n]{0,80}e(?:pisode)?\\s*0*" + Number(episode) + "|0*" + Number(season) + "x0*" + Number(episode) + ")", "i");
+        const episodeLinks = urls.filter(value => token.test(value));
+        if (episodeLinks.length) {
+          for (const episodeUrl of episodeLinks.slice(0, 4)) {
+            try {
+              const episodeResponse = await _fetch(episodeUrl);
+              const episodeHtml = await episodeResponse.text();
+              urls = urls.concat(_extractUrls(episodeHtml, episodeResponse.url || episodeUrl));
+            } catch (_) {}
+          }
+        }
+      }
+      const direct = urls.filter(_directMedia);
+      if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
+      if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
+        const embeds = urls.filter(value => /embed|player|watch|iframe/i.test(value));
+        streams.push(..._streams(embeds, response.url || detailUrl));
+      }
+    } catch (_) {}
+    if (streams.length >= 12) break;
+  }
+  return streams.slice(0, 40);
+}
+async function getStreams(tmdbId, mediaType, season, episode) {
+  const type = String(mediaType || "movie").toLowerCase();
+  if (NIAKVIO_PROVIDER_MODEL.supportedTypes.length &&
+      !NIAKVIO_PROVIDER_MODEL.supportedTypes.includes(type) &&
+      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
+    return [];
+  }
+  const strategy = NIAKVIO_PROVIDER_MODEL.strategy;
+  if (/api_stream_resolver|direct_media/i.test(strategy)) {
+    const api = await _resolveApi(tmdbId, type, season, episode);
+    if (api.length) return api;
+  }
+  const meta = await _tmdb(tmdbId, type);
+  const html = await _resolveHtml(meta, type, season, episode);
+  if (html.length) return html;
+  if (!/api_stream_resolver|direct_media/i.test(strategy)) {
+    return _resolveApi(tmdbId, type, season, episode);
+  }
+  return [];
+}
+module.exports = { getStreams, __niakvioProviderBase: NIAKVIO_PROVIDER_MODEL };
+'''
+    source = template.replace("__MODEL_JSON__", payload)
+    return source.encode("utf-8")
 
 def persist_clean_provider_seed(
     provider_id: str,
     manifest_entry: dict[str, Any] | None = None,
     *,
     known_site: str | None = None,
+    provider_model: dict[str, Any] | None = None,
 ) -> tuple[str, str, bool]:
     return persist_base_from_seed(
         provider_id,
-        build_clean_provider_seed(provider_id, manifest_entry, known_site=known_site),
+        build_clean_provider_seed(
+            provider_id,
+            manifest_entry,
+            known_site=known_site,
+            provider_model=provider_model,
+        ),
     )
 
 
