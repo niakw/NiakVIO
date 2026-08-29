@@ -8,6 +8,13 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from reapply_published_overrides import (  # noqa: E402
+    AUDIT_QUARANTINE_BLOCKER,
+    provider_build_input_sha,
+    publication_audit_quarantine,
+)
 
 # Static assertions ensure the true publish path has both defence-in-depth and
 # a final tree guard, rather than only a staging-unit test.
@@ -23,6 +30,8 @@ assert 'Path("manifest.next.json" if (ROOT / "manifest.next.json").is_file() els
 assert 'pending_transaction = primary_arg.as_posix() == "manifest.next.json"' in reapply
 assert 'secondary_paths = () if args.skip_secondary or pending_transaction else SECONDARY' in reapply
 assert 'python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary' in workflow
+assert 'patched = original' not in reapply
+assert 'publication_audit_quarantine(' in reapply
 post_promotion = workflow.index('Reapply durable overrides after candidate promotion')
 pending_reapply = workflow.index('python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary', post_promotion)
 pending_validate = workflow.index('python scripts/validate_published_overrides.py', pending_reapply)
@@ -255,5 +264,78 @@ with tempfile.TemporaryDirectory() as tmp:
         'reason':'marker_absent_from_preserved_artifact'
     }]
     assert 'discarded stale preserved runtime provenance: movies4u:adaptive_runtime_recovery' in result.stdout
+
+# Publication-scoped audit quarantine is a deterministic derived layer. The
+# public bundle is never its source: full/scoped quarantine is replayed from
+# ProviderBase bytes plus durable provenance, and scope changes invalidate the
+# provider build fingerprint.
+base = b"module.exports={getStreams:async function(){return [{url:'https://media.example/ok.mp4'}]}};"
+plain, plain_kind = publication_audit_quarantine(
+    base,
+    "demo",
+    "providers/demo--nuvio--abc.js",
+    {"activation_mode": "strict_current_proof"},
+)
+assert plain == base and plain_kind is None
+
+terminal, terminal_kind = publication_audit_quarantine(
+    base,
+    "demo",
+    "providers/demo--nuvio-audit-quarantine--abc.js",
+    {
+        "activation_mode": "catalogue_audit_safety_quarantine",
+        "activation_blockers": [AUDIT_QUARANTINE_BLOCKER],
+    },
+)
+assert terminal_kind == "terminal"
+assert b"NUVIO_PROVIDER_QUARANTINE_V1" in terminal
+assert b"wrong.example" not in terminal
+assert b"media.example" not in terminal
+
+scope = [{
+    "kind": "fixture",
+    "fixture": "vf_revenant_s01e01",
+    "mediaType": "tv",
+    "tmdbId": "126485",
+    "season": 1,
+    "episode": 1,
+    "reason": "playable_identity_contradiction",
+}]
+scoped, scoped_kind = publication_audit_quarantine(
+    base,
+    "demo",
+    "providers/demo--nuvio-audit-quarantine--def.js",
+    {
+        "activation_mode": "catalogue_audit_scoped_quarantine",
+        "catalogue_audit_quarantine_scopes": scope,
+    },
+)
+assert scoped_kind == "scoped"
+assert b"NUVIO_CATALOGUE_SCOPE_QUARANTINE_V1" in scoped
+assert b"media.example" in scoped
+
+fingerprint_a = provider_build_input_sha(
+    "demo",
+    "a" * 64,
+    "b" * 64,
+    {
+        "activation_mode": "catalogue_audit_scoped_quarantine",
+        "catalogue_audit_quarantine_scopes": scope,
+    },
+)
+fingerprint_b = provider_build_input_sha(
+    "demo",
+    "a" * 64,
+    "b" * 64,
+    {
+        "activation_mode": "catalogue_audit_scoped_quarantine",
+        "catalogue_audit_quarantine_scopes": scope + [{
+            "kind": "media_type",
+            "mediaType": "movie",
+            "reason": "playable_unknown_identity_false_positive",
+        }],
+    },
+)
+assert fingerprint_a != fingerprint_b
 
 print('published override tests passed')
