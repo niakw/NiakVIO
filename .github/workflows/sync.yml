@@ -157,6 +157,13 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
 
+      - name: Normalize legacy ProviderBases in provider pipeline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/provider_base_store.py repair-legacy
+          python scripts/provider_base_store.py validate
+
       - name: Validate ARCHI2 control plane
         shell: bash
         run: |
