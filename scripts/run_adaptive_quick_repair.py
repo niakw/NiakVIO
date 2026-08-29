@@ -311,7 +311,8 @@ def main() -> int:
         # subject to the same official client-runtime drift fence as deep. Learning
         # remains a separate daily workflow and is never executed in Quick mode.
         guard_nuvio_client_brain_compat(output / "nuvio-client-upstream-status.json")
-        _run_domain_search_fallback(stage, output)
+        if _planner_mode() != "learning":
+            _run_domain_search_fallback(stage, output)
 
         loop.compare_results = _quick_compare_results
         loop.run_health = _quick_run_health
