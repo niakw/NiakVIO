@@ -171,6 +171,9 @@ def main() -> int:
     assert "clean_provider_model(" in discovery
     assert "GLOBAL_STREAM_PRESENTATION" in apply_source
     assert '"scope": "global_stream_presentation"' in apply_source
+    assert "GLOBAL_MEDIA_TYPE_RESOLUTION" in apply_source
+    assert '"scope": "global_media_type_resolution"' in apply_source
+    assert "global_media_type_resolution_v1.py" in apply_source
 
     # Stream facts/badges are a Core-wide contract. No provider-specific facts
     # adapter may be required for Purstream or any other provider.
