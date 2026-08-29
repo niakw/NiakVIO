@@ -7,6 +7,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
+WORKSPACE = ROOT.parent
+NUVIO_MOBILE = WORKSPACE / "nuvio-mobile"
+IOS_KOTLIN_TARGET = NUVIO_MOBILE / "composeApp/src/iosFull/kotlin/com/nuvio/app/NiakvioIosLab.kt"
+IOS_SWIFT_TARGET = NUVIO_MOBILE / "iosApp/iosApp/iOSApp.swift"
 
 KOTLIN_TEMPLATE = r'''@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 
@@ -308,8 +312,8 @@ def kotlin_fixture_list(rows: list[dict]) -> str:
         )
     return "listOf(\\n    " + ",\\n    ".join(values) + "\\n)"
 
-def patch_swift(path: Path) -> None:
-    source = path.read_text(encoding="utf-8")
+def patch_swift() -> None:
+    source = IOS_SWIFT_TARGET.read_text(encoding="utf-8")
     marker = "NiakvioIosLabKt.startNiakvioIosLabIfRequested()"
     if marker in source:
         return
@@ -325,7 +329,7 @@ def patch_swift(path: Path) -> None:
 """
     if anchor not in source:
         raise SystemExit("NuvioMobile iOSApp.swift instrumentation anchor drifted")
-    path.write_text(source.replace(anchor, replacement, 1), encoding="utf-8")
+    IOS_SWIFT_TARGET.write_text(source.replace(anchor, replacement, 1), encoding="utf-8")
 
 def main() -> int:
     parser = argparse.ArgumentParser()
@@ -333,19 +337,17 @@ def main() -> int:
     parser.add_argument("--provider-timeout-ms", type=int, default=25_000)
     args = parser.parse_args()
 
-    # The harness is CI-only: all writable paths are rooted in the current
-    # GitHub Actions workspace, never in a CLI-controlled filesystem path.
-    workspace = Path.cwd().resolve(strict=True)
-    repo = workspace / "nuvio-mobile"
+    # The harness is CI-only: its checkout target is derived solely from this
+    # script's own repository location, never from cwd, env, or CLI input.
+    repo = NUVIO_MOBILE
     if not repo.is_dir():
         raise SystemExit(f"missing NuvioMobile checkout: {repo}")
     rows = fixture_rows()
     source = KOTLIN_TEMPLATE.replace("__PROVIDER_TIMEOUT_MS__", str(args.provider_timeout_ms))
     source = source.replace("__FIXTURES__", kotlin_fixture_list(rows))
-    target = repo / "composeApp/src/iosFull/kotlin/com/nuvio/app/NiakvioIosLab.kt"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(source, encoding="utf-8")
-    patch_swift(repo / "iosApp/iosApp/iOSApp.swift")
+    IOS_KOTLIN_TARGET.parent.mkdir(parents=True, exist_ok=True)
+    IOS_KOTLIN_TARGET.write_text(source, encoding="utf-8")
+    patch_swift()
     print("FIELD_NATIVE_IOS_PREPARED fixtures=" + ",".join(row["slug"] for row in rows))
     return 0
 
