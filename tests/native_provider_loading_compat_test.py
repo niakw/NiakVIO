@@ -78,6 +78,7 @@ with tempfile.TemporaryDirectory() as raw_tmp:
         + "\n}",
         encoding="utf-8",
     )
+    assert compat.unwrap_runtime_trap(wrapped, "tv") is True
     wrapped_text = canonical.replace_official_execution(wrapped.read_text(encoding="utf-8"), "tv")
     assert "kotlinx.coroutines.withTimeout(25000L)" in wrapped_text
     assert CASES["tv"][1] in wrapped_text
