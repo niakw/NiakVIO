@@ -350,6 +350,18 @@ function runProviderWorker(root, providerPath, fixture, context, timeoutMs = DEF
   });
 }
 
+function selectStreamsForProbe(streams, maxStreams, mode = 'head') {
+  const rows = Array.isArray(streams) ? streams : [];
+  if (rows.length <= maxStreams) return rows.slice();
+  if (String(mode || '').toLowerCase() !== 'spread') return rows.slice(0, maxStreams);
+  if (maxStreams === 1) return [rows[0]];
+  const indexes = new Set();
+  for (let i = 0; i < maxStreams; i += 1) {
+    indexes.add(Math.round((i * (rows.length - 1)) / (maxStreams - 1)));
+  }
+  return [...indexes].sort((a, b) => a - b).map((index) => rows[index]);
+}
+
 async function probeStreams(root, streams, fixture, config) {
   const { guardedFetch } = require(path.join(root, 'scripts/network_guard.cjs'));
   const { probeDirectMedia } = require(path.join(root, 'scripts/direct_media_probe.cjs'));
@@ -359,7 +371,7 @@ async function probeStreams(root, streams, fixture, config) {
     ? safetyCap
     : Math.max(1, Math.min(Number(config.max_streams_per_runtime || 3), 6));
   const timeoutMs = Math.max(3000, Math.min(Number(config.playback_timeout_ms || DEFAULT_PLAYBACK_TIMEOUT_MS), 30_000));
-  const selected = Array.isArray(streams) ? streams.slice(0, maxStreams) : [];
+  const selected = selectStreamsForProbe(streams, maxStreams, config.stream_sampling || 'head');
   const results = [];
   for (let index = 0; index < selected.length; index += 1) {
     const stream = selected[index];
@@ -682,6 +694,7 @@ async function main() {
       },
       clients: args.clients ? normalizeProviderIds(args.clients) : ['tv', 'desktop', 'mobile'],
       max_streams_per_runtime: args.max_streams ? Number(args.max_streams) : undefined,
+      stream_sampling: args.stream_sampling || 'head',
       probe_all_streams: Boolean(args.all_streams),
       all_streams_safety_cap: args.stream_safety_cap ? Number(args.stream_safety_cap) : undefined,
       playback_timeout_ms: args.playback_timeout_ms ? Number(args.playback_timeout_ms) : undefined,
@@ -714,6 +727,7 @@ module.exports = {
   parseArgs,
   parseWorkerOutput,
   resolveProvider,
+  selectStreamsForProbe,
   safeHost,
   sanitizeText,
   streamFingerprint,
