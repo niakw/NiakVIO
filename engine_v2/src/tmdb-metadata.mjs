@@ -5,8 +5,18 @@ const TMDB_BASE = "https://api.themoviedb.org/3";
 
 export function createTmdbMetadataResolver(options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const accessToken = String(options.accessToken ?? process.env.TMDB_ACCESS_TOKEN ?? "").trim();
-  const apiKey = String(options.apiKey ?? process.env.TMDB_API_KEY ?? "").trim();
+  const explicitAccessToken = Object.prototype.hasOwnProperty.call(options, "accessToken");
+  const explicitApiKey = Object.prototype.hasOwnProperty.call(options, "apiKey");
+  const accessToken = String(
+    explicitAccessToken
+      ? (options.accessToken ?? "")
+      : (explicitApiKey ? "" : (process.env.TMDB_ACCESS_TOKEN ?? ""))
+  ).trim();
+  const apiKey = String(
+    explicitApiKey
+      ? (options.apiKey ?? "")
+      : (explicitAccessToken ? "" : (process.env.TMDB_API_KEY ?? ""))
+  ).trim();
   const language = String(options.language ?? "fr-FR").trim() || "fr-FR";
   const timeoutMs = Math.max(1000, Math.min(15000, Number(options.timeoutMs ?? 6000)));
   if (!accessToken && !apiKey) {
