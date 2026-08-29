@@ -332,22 +332,76 @@ function _absolute(value, base) {
 function _text(value) {
   return String(value == null ? "" : value);
 }
+function _embeddedText(value) {
+  return _text(value)
+    .replace(/\\u002[fF]/g, "/")
+    .replace(/\\u003[aA]/g, ":")
+    .replace(/\\u0026/g, "&")
+    .replace(/\\u003[dD]/g, "=")
+    .replace(/\\\//g, "/")
+    .replace(/\\"/g, '"')
+    .replace(/&quot;|&#34;/gi, '"')
+    .replace(/&amp;/gi, "&");
+}
+function _slug(value) {
+  return _text(value)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 function _directMedia(url) {
   return /\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)|\/(?:hls|dash|stream)(?:\/|[?#]|$)/i.test(_text(url));
 }
 function _extractUrls(text, base) {
   const out = [];
+  const normalized = _embeddedText(text);
   const patterns = [
-    /(?:src|href|file|url)\s*[:=]\s*["']([^"'<>\s]+)["']/gi,
+    /(?:src|href|file|url|pathname|permalink|embedUrl|embed_url|contentUrl)\s*["']?\s*[:=]\s*["']([^"'<>\s]+)["']/gi,
     /https?:\\?\/\\?\/[^"'<>\s]+/gi
   ];
   for (const pattern of patterns) {
     let match;
-    while ((match = pattern.exec(text || ""))) {
+    while ((match = pattern.exec(normalized))) {
       const raw = (match[1] || match[0] || "").replace(/\\\//g, "/").replace(/&amp;/g, "&");
       const absolute = _absolute(raw, base);
       if (absolute && /^https?:/i.test(absolute)) out.push(absolute);
-      if (out.length >= 160) break;
+      if (out.length >= 240) break;
+    }
+  }
+  return _uniq(out);
+}
+function _candidateScore(url, meta) {
+  let parsed;
+  try { parsed = new URL(url); } catch (_) { return -1; }
+  const path = decodeURIComponent(parsed.pathname || "").toLowerCase();
+  if (!path || path === "/" || /\/(?:_next|static|assets?|images?|icons?|fonts?)(?:\/|$)/i.test(path)) return -1;
+  const slug = _slug(meta && meta.title);
+  const tokens = slug.split("-").filter(token => token.length >= 3);
+  let score = 0;
+  if (slug && path.includes(slug)) score += 120;
+  for (const token of tokens) if (path.includes(token)) score += 18;
+  if (meta && meta.year && path.includes(String(meta.year))) score += 20;
+  if (meta && meta.tmdbId && path.includes(String(meta.tmdbId))) score += 45;
+  if (/\/(?:movie|movies|film|films|series|tv|show|watch|title|media)\//i.test(path)) score += 12;
+  return score;
+}
+function _detailGuesses(meta, mediaType) {
+  const out = [];
+  const slug = _slug(meta && meta.title);
+  const id = _text(meta && meta.tmdbId);
+  const routes = mediaType === "movie"
+    ? ["movie", "movies", "film", "films", "watch", "title"]
+    : ["series", "tv", "show", "watch", "title"];
+  for (const base of _searchBases()) {
+    if (slug) {
+      out.push(_absolute("/" + slug, base));
+      for (const route of routes) out.push(_absolute("/" + route + "/" + slug, base));
+    }
+    if (id) {
+      out.push(_absolute("/" + id, base));
+      for (const route of routes) out.push(_absolute("/" + route + "/" + encodeURIComponent(id), base));
     }
   }
   return _uniq(out);
@@ -375,7 +429,8 @@ async function _tmdb(tmdbId, mediaType) {
     const row = await response.json();
     return {
       title: row.title || row.name || row.original_title || row.original_name || "",
-      year: String(row.release_date || row.first_air_date || "").slice(0, 4)
+      year: String(row.release_date || row.first_air_date || "").slice(0, 4),
+      tmdbId: String(tmdbId || "")
     };
   } catch (_) {
     return null;
@@ -475,16 +530,22 @@ async function _resolveHtml(meta, mediaType, season, episode) {
     try {
       const response = await _fetch(searchUrl);
       const html = await response.text();
-      const urls = _extractUrls(html, response.url || searchUrl);
-      candidates.push(...urls.filter(value => {
-        const host = _origin(value);
-        return host && _searchBases().some(base => _origin(base) === host);
-      }));
+      const urls = _extractUrls(html, response.url || searchUrl)
+        .filter(value => {
+          const host = _origin(value);
+          return host && _searchBases().some(base => _origin(base) === host);
+        })
+        .map(value => ({ url: value, score: _candidateScore(value, meta) }))
+        .filter(row => row.score >= 18)
+        .sort((a, b) => b.score - a.score)
+        .map(row => row.url);
+      candidates.push(...urls);
     } catch (_) {}
     if (candidates.length) break;
   }
+  candidates.push(..._detailGuesses(meta, mediaType));
   const streams = [];
-  for (const detailUrl of _uniq(candidates).slice(0, 8)) {
+  for (const detailUrl of _uniq(candidates).slice(0, 24)) {
     try {
       const response = await _fetch(detailUrl);
       const html = await response.text();
