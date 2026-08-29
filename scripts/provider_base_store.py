@@ -206,7 +206,12 @@ def persist_base_from_published(provider_id: str, published_data: bytes) -> tupl
     return relative, digest, stripped
 
 
-def persist_base_from_seed(provider_id: str, seed_data: bytes) -> tuple[str, str, bool]:
+def persist_base_from_seed(
+    provider_id: str,
+    seed_data: bytes,
+    *,
+    overrides_path: Path | None = None,
+) -> tuple[str, str, bool]:
     """Rebuild durable provider logic from a clean provider seed.
 
     Publication-only quarantine, dynamic domain materialization and adaptive
@@ -219,6 +224,7 @@ def persist_base_from_seed(provider_id: str, seed_data: bytes) -> tuple[str, str
         phase="discovery",
         excluded_patch_scripts=DERIVED_PATCH_SCRIPTS,
         include_global_core=False,
+        config_path=overrides_path,
     )
     return persist_base_from_published(provider_id, rebuilt)
 
@@ -507,6 +513,7 @@ def persist_clean_provider_seed(
     *,
     known_site: str | None = None,
     provider_model: dict[str, Any] | None = None,
+    overrides_path: Path | None = None,
 ) -> tuple[str, str, bool]:
     return persist_base_from_seed(
         provider_id,
@@ -516,6 +523,7 @@ def persist_clean_provider_seed(
             known_site=known_site,
             provider_model=provider_model,
         ),
+        overrides_path=overrides_path,
     )
 
 
