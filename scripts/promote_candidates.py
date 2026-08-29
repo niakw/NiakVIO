@@ -38,7 +38,11 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
-from provider_base_store import persist_base_from_published, persist_base_from_seed, resolve_base
+from provider_base_store import (
+    persist_base_from_published,
+    persist_clean_provider_seed,
+    resolve_base,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGE = Path(os.environ.get("NUVIO_STAGE", ROOT / "staging")).resolve()
@@ -195,6 +199,17 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
     if staged_digest != candidate["sha256"]:
         raise ValueError(f"hash mismatch for {candidate['key']}")
 
+    if candidate.get("source") not in {"published-baseline", "local-lkg"}:
+        if candidate.get("upstream_code_role") != "knowledge-only":
+            raise ValueError(f"{candidate['canonical_id']}: upstream code role must be knowledge-only")
+        if candidate.get("upstream_code_executed") is not False:
+            raise ValueError(f"{candidate['canonical_id']}: upstream JavaScript must never be executable candidate input")
+        if str(candidate.get("candidate_code_origin") or "") not in {
+            "existing-niakvio-provider-base",
+            "new-niakvio-clean-seed",
+        }:
+            raise ValueError(f"{candidate['canonical_id']}: candidate is not NiakVIO-owned")
+
     # Defence in depth: reapply provider overrides in the write-enabled
     # promotion job. The operation is idempotent, so a correctly patched
     # staging artifact remains byte-identical. This prevents an unpatched
@@ -251,15 +266,10 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
             base_sha256 = previous_sha
             base_stripped_generated_core = False
         else:
-            upstream_sha = str(candidate.get("upstream_sha256") or "").strip().casefold()
-            raw_seed = STAGE / "upstream-lkg-pending" / "providers" / f"{upstream_sha}.js"
-            if not upstream_sha or not raw_seed.is_file():
-                raise ValueError(
-                    f"{candidate['canonical_id']}: derived candidate cannot seed ProviderBase and no clean prior/raw seed exists"
-                ) from exc
-            base_filename, base_sha256, base_stripped_generated_core = persist_base_from_seed(
+            base_filename, base_sha256, base_stripped_generated_core = persist_clean_provider_seed(
                 candidate["canonical_id"],
-                raw_seed.read_bytes(),
+                candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {},
+                known_site=str(candidate.get("observed_upstream_site") or "").strip() or None,
             )
     candidate["provider_base_filename"] = base_filename
     candidate["provider_base_sha256"] = base_sha256
