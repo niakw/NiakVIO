@@ -131,6 +131,8 @@ def main() -> int:
     manifests_dir.mkdir(parents=True)
 
     candidates: list[dict[str, Any]] = []
+    seen_canonical_ids: dict[str, dict[str, str]] = {}
+    duplicate_inputs: list[dict[str, str]] = []
     excluded: list[dict[str, str]] = []
     upstream_reports: dict[str, Any] = {}
     errors: list[str] = []
@@ -176,11 +178,27 @@ def main() -> int:
             if not isinstance(entry, dict):
                 continue
             upstream_id = str(entry.get("id") or entry.get("name") or f"entry-{index}")
+            provider_id = canonical_id(upstream_id)
             preliminary_reason = exclusion_reason(entry, None, exclusions)
             if preliminary_reason:
                 excluded.append({"source": source_key, "id": upstream_id, "reason": preliminary_reason})
                 source_excluded += 1
                 print(f"[SKIP] {source_key}:{upstream_id}: {preliminary_reason}")
+                continue
+            if provider_id in seen_canonical_ids:
+                existing = seen_canonical_ids[provider_id]
+                duplicate_inputs.append({
+                    "canonical_id": provider_id,
+                    "rejected_source": source_key,
+                    "rejected_id": upstream_id,
+                    "existing_source": existing["source"],
+                    "existing_key": existing["key"],
+                })
+                source_excluded += 1
+                print(
+                    f"[DUPLICATE] {source_key}:{upstream_id} rejected; "
+                    f"{provider_id} already imported as {existing['key']}"
+                )
                 continue
 
             filename = entry.get("filename")
@@ -227,7 +245,7 @@ def main() -> int:
                     continue
 
                 upstream_digest = hashlib.sha256(data).hexdigest()
-                data, applied_patches = apply_overrides(canonical_id(upstream_id), data)
+                data, applied_patches = apply_overrides(provider_id, data)
                 validate_javascript(data, provider_url)
                 local_path.write_bytes(data)
                 subprocess.run([
@@ -246,7 +264,7 @@ def main() -> int:
                         "manifest_url": manifest_url,
                         "manifest_origin": manifest_origin,
                         "upstream_id": upstream_id,
-                        "canonical_id": canonical_id(upstream_id),
+                        "canonical_id": provider_id,
                         "provider_url": provider_url,
                         "local_path": str(local_path.relative_to(stage)),
                         "sha256": digest,
@@ -256,6 +274,10 @@ def main() -> int:
                         "metadata": entry,
                     }
                 )
+                seen_canonical_ids[provider_id] = {
+                    "source": source_key,
+                    "key": f"{source_key}:{upstream_id}",
+                }
                 source_count += 1
                 print(f"[OK] {source_key}:{upstream_id} ({manifest_origin})")
             except Exception as exc:
@@ -312,7 +334,7 @@ def main() -> int:
         if not source_path.is_file() or exclusion_reason(entry, source_path.read_bytes(), exclusions):
             continue
         key = f"published:{provider_id}"
-        if key in known_keys:
+        if provider_id in seen_canonical_ids or key in known_keys:
             continue
         data = source_path.read_bytes()
         validate_javascript(data, filename)
@@ -345,6 +367,7 @@ def main() -> int:
             "lkg_verified_categories": list(lkg_record.get("verified_categories") or []) if is_registered_lkg else [],
         })
         known_keys.add(key)
+        seen_canonical_ids[provider_id] = {"source": "published-baseline", "key": key}
 
     # Keep registered last-known-good artifacts available even after a future
     # manifest has moved to another hash. The pruner also retains these files.
@@ -377,7 +400,7 @@ def main() -> int:
             published["lkg_verified_categories"] = list(record.get("verified_categories") or [])
             continue
         key = f"lkg:{provider_id}"
-        if key in known_keys:
+        if provider_id in seen_canonical_ids or key in known_keys:
             continue
         local_path = baseline_dir / f"lkg-{safe_fragment(provider_id)}.js"
         local_path.write_bytes(data)
@@ -407,98 +430,23 @@ def main() -> int:
             "lkg_verified_categories": list(record.get("verified_categories") or []),
         })
         known_keys.add(key)
+        seen_canonical_ids[provider_id] = {"source": "local-lkg", "key": key}
 
-    # Canonicalize duplicate upstream declarations before Health/Repair.
-    # The repair engine must receive exactly one candidate per provider.
-    canonical_groups: dict[str, list[dict[str, Any]]] = {}
-    for candidate in candidates:
-        canonical_groups.setdefault(candidate["canonical_id"], []).append(candidate)
-
-    canonical_candidates: list[dict[str, Any]] = []
-    duplicate_inputs: list[dict[str, Any]] = []
-    fallback_sources = {"published-baseline", "local-lkg"}
-
-    for canonical, rows in canonical_groups.items():
-        descriptions: list[str] = []
-        supported_types: list[str] = []
-        content_languages: list[str] = []
-        formats: list[str] = []
-        source_names: list[str] = []
-        for row in rows:
-            metadata = row.get("metadata", {}) if isinstance(row.get("metadata"), dict) else {}
-            description = str(metadata.get("description") or "").strip()
-            if description and description not in descriptions:
-                descriptions.append(description)
-            for value in metadata.get("supportedTypes", []) if isinstance(metadata.get("supportedTypes"), list) else []:
-                text = str(value).strip()
-                if text and text not in supported_types:
-                    supported_types.append(text)
-            for value in metadata.get("contentLanguage", []) if isinstance(metadata.get("contentLanguage"), list) else []:
-                text = str(value).strip()
-                if text and text not in content_languages:
-                    content_languages.append(text)
-            for value in metadata.get("formats", []) if isinstance(metadata.get("formats"), list) else []:
-                text = str(value).strip()
-                if text and text not in formats:
-                    formats.append(text)
-            source_name = str(row.get("source") or "").strip()
-            if source_name and source_name not in source_names:
-                source_names.append(source_name)
-
-        live = [row for row in rows if str(row.get("source") or "") not in fallback_sources]
-        pool = live or rows
-        selected = min(
-            pool,
-            key=lambda row: (
-                int(row.get("source_priority", 999)),
-                str(row.get("source") or ""),
-                str(row.get("key") or ""),
-            ),
-        )
-        selected["canonical_metadata"] = {
-            "descriptions": descriptions,
-            "supportedTypes": supported_types,
-            "contentLanguage": content_languages,
-            "formats": formats,
-            "sources": source_names,
-        }
-        selected["input_deduplication"] = {
-            "duplicate_count": max(0, len(rows) - 1),
-            "observed_sources": source_names,
-            "selected_source": selected.get("source"),
-            "selection": "live_upstream_priority_then_published_fallback",
-        }
-        canonical_candidates.append(selected)
-
-        for row in rows:
-            if row is selected:
-                continue
-            duplicate_inputs.append({
-                "canonical_id": canonical,
-                "discarded_key": row.get("key"),
-                "discarded_source": row.get("source"),
-                "selected_key": selected.get("key"),
-                "selected_source": selected.get("source"),
-            })
-            local_path = str(row.get("local_path") or "").strip()
-            if local_path:
-                try:
-                    discarded_path = (stage / local_path).resolve()
-                    discarded_path.relative_to(stage.resolve())
-                    discarded_path.unlink(missing_ok=True)
-                except (OSError, ValueError):
-                    pass
-
+    # Every duplicate has already been rejected at import time. Health/Repair
+    # therefore receives exactly one candidate per canonical provider.
     candidates = sorted(
-        canonical_candidates,
+        candidates,
         key=lambda row: (str(row.get("canonical_id") or ""), int(row.get("source_priority", 999))),
     )
 
+    if len(candidates) != len({item["canonical_id"] for item in candidates}):
+        raise RuntimeError("duplicate canonical candidate escaped input rejection")
+
     registry = {
-        "schema_version": 64,
+        "schema_version": 65,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "candidate_count": len(candidates),
-        "canonical_provider_count": len(candidates),
+        "canonical_provider_count": len(seen_canonical_ids),
         "input_duplicate_count": len(duplicate_inputs),
         "input_duplicates": duplicate_inputs,
         "excluded_count": len(excluded),
@@ -526,8 +474,8 @@ def main() -> int:
         )
 
     print(
-        f"Discovered {len(candidates)} canonical providers after input deduplication "
-        f"({registry['input_duplicate_count']} duplicate source declaration(s) discarded); "
+        f"Imported {len(candidates)} canonical providers "
+        f"({registry['input_duplicate_count']} duplicate declaration(s) rejected at input); "
         f"excluded {len(excluded)} P2P/torrent entries."
     )
     return 0
