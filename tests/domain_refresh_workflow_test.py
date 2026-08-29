@@ -11,6 +11,8 @@ assert "node scripts/provider_dns_preflight.mjs" in text
 assert "--manifest manifest.json" in text
 assert "--hub-report health-output/provider-hub-report.json" in text
 assert "--all-domains" in text
+assert "--config domain-observation-config.json" in text
+assert "domain-observation-config.json" in text
 assert "health-output/dns-preflight-report.json" in text
 assert "DNS is diagnostic-only and never blocks Health/Repair or publication." in text
 assert "--apply" not in text, "domain observer must never apply migrations"
@@ -30,5 +32,7 @@ sync = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
 assert "python scripts/resolve_provider_hubs.py" in sync and "--apply" in sync, (
     "only the canonical ARCHI2 pipeline applies validated hub/domain changes"
 )
+assert "scripts/provider_dns_preflight.mjs" not in sync
+assert "dns-preflight-report.json" not in sync
 
 print("ARCHI2 observation-only domain workflow test passed")
