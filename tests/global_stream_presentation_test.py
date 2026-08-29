@@ -30,7 +30,7 @@ assert presentation.REVISION == "all-providers-title-quality-ordered-description
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8" in patched
+    assert "all-providers-title-quality-ordered-description-runtime-tmdb-fail-open-v16-jvm-json-utf8" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -161,4 +161,4 @@ assert desktop_native["calls"] == 0, desktop_native
 assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native
 assert desktop_native["row"]["url"] == "https://x.example/a.mp4", desktop_native
 
-print("global stream presentation V15 JVM-safe JSON contract tests passed")
+print("global stream presentation V16 JVM-safe JSON contract tests passed")
