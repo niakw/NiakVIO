@@ -20,6 +20,15 @@ BASES = ROOT / "provider-bases"
 MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
+DYNAMIC_DOMAIN_PATCH = "scripts/provider_patches/runtime_repository_domain_materializer_v1.py"
+DERIVED_PATCH_SCRIPTS = {
+    QUARANTINE_PATCH,
+    DYNAMIC_DOMAIN_PATCH,
+    "scripts/provider_patches/adaptive_domain_recovery.py",
+    "scripts/provider_patches/adaptive_runtime_recovery.py",
+    "scripts/provider_patches/adaptive_runtime_recovery_v4.py",
+    "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
+}
 
 # ProviderBase owns durable provider logic. Everything below is derived publication
 # state and must never become an input to the next Core build.
@@ -42,6 +51,7 @@ DERIVED_BASE_MARKERS = (
     "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
     "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
     "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
+    "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1",
 )
 
 # Five providers are retained locally but are no longer present in the retained
@@ -182,14 +192,15 @@ def persist_base_from_published(provider_id: str, published_data: bytes) -> tupl
 def persist_base_from_seed(provider_id: str, seed_data: bytes) -> tuple[str, str, bool]:
     """Rebuild durable provider logic from a clean provider seed.
 
-    Publication-only quarantine is deliberately excluded. Current domain routing,
-    Core, security and presentation layers are regenerated later by the finalizer.
+    Publication-only quarantine, dynamic domain materialization and adaptive
+    runtime/domain recovery are deliberately excluded. They remain derived state
+    and are regenerated later by the finalizer from current policy/evidence.
     """
     rebuilt, _records = apply_overrides(
         provider_id,
         seed_data,
         phase="discovery",
-        excluded_patch_scripts={QUARANTINE_PATCH},
+        excluded_patch_scripts=DERIVED_PATCH_SCRIPTS,
     )
     return persist_base_from_published(provider_id, rebuilt)
 
