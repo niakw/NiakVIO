@@ -1385,9 +1385,9 @@
       "required_values": [],
       "patch_scripts": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py",
-        "scripts/provider_patches/adaptive_runtime_recovery_v5.py"
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -2156,13 +2156,25 @@
       "capability": "html_scraper"
     },
     "animevost-fr": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "patch_scripts": [
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ]
     },
     "fullanime": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "patch_scripts": [
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ]
     },
     "neko-sama": {
-      "capability": "mixed_embed_resolver"
+      "capability": "mixed_embed_resolver",
+      "patch_scripts": [
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ]
     },
     "4khdhubnew": {
       "capability": "html_scraper",
@@ -3734,7 +3746,6 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "https://www.dailymotion.com",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -5564,7 +5575,7 @@
       "obvious_html_or_php_page_url",
       "malformed_nested_url"
     ],
-    "wrapper_upgrade": "Terser-normalized V5 compatibility precedes strict target traversal ordering; final safety patch remains last",
+    "wrapper_upgrade": "HLS target traversal remains a capability adapter; final identity/media safety is applied once by Core",
     "target_source": "manifest_and_provider_capabilities",
     "request_identity_source": "original_nuvio_request",
     "request_type_aliases_source": "provider_capabilities.request_type_aliases",
@@ -5573,6 +5584,7 @@
       "duration_identity": true,
       "min_duration_ratio": 0.55,
       "max_duration_ratio": 1.8
-    }
+    },
+    "hls_capability_provider_count": 76
   }
 }

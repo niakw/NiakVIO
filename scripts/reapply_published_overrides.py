@@ -27,6 +27,7 @@ from typing import Any
 from apply_provider_overrides import apply_overrides, load_overrides
 from provider_purification import TERSER_VERSION, purify_bytes
 from provider_security_hardening import assert_hardened, harden_bytes
+from provider_purification import purify_bytes
 from provider_engine_normalizer import (
     _host,
     _host_belongs,

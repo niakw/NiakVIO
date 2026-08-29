@@ -5,12 +5,34 @@
   "provider_base_store": {
     "schema_version": 2,
     "provider_count": 95,
-    "unique_base_count": 95,
-    "owner": "provider_pipeline",
+    "legacy_rebased": 52,
+    "reused": 43,
+    "migration": "provider-pipeline-source-rebase",
     "future_source": "provider_pipeline_only",
     "core_may_create_or_mutate_base": false,
-    "semantic_validation": "on_base_creation_or_change",
-    "core_integrity_validation": "coverage_and_sha_only"
+    "derived_layers_forbidden": [
+      "NUVIO_PROVIDER_QUARANTINE_V1",
+      "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+      "NUVIO_GLOBAL_STREAM_FACTS_V1",
+      "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+      "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
+      "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+      "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+      "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+      "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+      "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+      "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+      "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
+      "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+      "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
+      "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
+      "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
+      "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
+      "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1"
+    ],
+    "dynamic_domain_layers_derived": true,
+    "legacy_security_normalization_may_be_preserved": true,
+    "removed_legacy_base_files": 50
   },
   "providers": {
     "1shows": {
@@ -357,11 +379,14 @@
       "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
       "preserved_candidate_key": "published:1shows",
       "preserved_candidate_sha256": "c0a9fa15709f53d435464250cac509993e2822e78de822b5e4be0bea8cc7669d",
-      "base_filename": "provider-bases/1shows--base--7947316d3cbed215.js",
-      "base_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/1shows--base--a4a936ed5dcde387.js",
+      "base_sha256": "a4a936ed5dcde38764c961029eccac3bd70409e46e5e507d8786ee5ef4b49520",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.682612+00:00",
       "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg-latest-quarantine-recovery:aio:9d8e329755b00a42",
+      "base_rebased_at": "2026-08-29T08:26:39.534738+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -370,14 +395,13 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "b96b8b593a44a153d1b81b2e4ded58bda0ca9e2e69e0d043ad7ca8757ba7855d"
+      "build_input_sha256": "d821efa822af6802cba8cec91bb5d4e8b7645d44401e2ae48f59c34974ea4421"
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--nuvio--1be3bf0cf9cb7019.js",
-      "sha256": "1be3bf0cf9cb70193709ad4bef1b1f8c72e76efc2e2de5af905cc5bf80d964f4",
-      "patched_sha256": "1be3bf0cf9cb70193709ad4bef1b1f8c72e76efc2e2de5af905cc5bf80d964f4",
+      "published_filename": "providers/4khdhub--nuvio--43f7a6fe94c63e61.js",
+      "sha256": "43f7a6fe94c63e61655ca2a591ea0feda7423cc3712d9e171d20397c69f3d357",
+      "patched_sha256": "43f7a6fe94c63e61655ca2a591ea0feda7423cc3712d9e171d20397c69f3d357",
       "upstream_sha256": "c9940593c2ca77c694994781c462d21f1c07189aace946879ade166cb03da306",
       "local_patches": [
         {
@@ -688,6 +712,24 @@
           "output_sha256": "1be3bf0cf9cb70193709ad4bef1b1f8c72e76efc2e2de5af905cc5bf80d964f4",
           "bytes_before": 114820,
           "bytes_after": 111113
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "d0b53fc15767e312c73ce0e2b7fc0a0cf113a314fa32cd42ebd76966bad97a5d",
+          "output_sha256": "43f7a6fe94c63e61655ca2a591ea0feda7423cc3712d9e171d20397c69f3d357",
+          "bytes_before": 120517,
+          "bytes_after": 111305
         }
       ],
       "source": "published-baseline",
@@ -962,21 +1004,23 @@
       ],
       "preserved_candidate_key": "published:4khdhub",
       "preserved_candidate_sha256": "39a9f9c928a28d5d746cf4de3b9177cc4e29264d756e6f11dc4d3b6a28eb5bbc",
-      "base_filename": "provider-bases/4khdhub--base--c193caaacf070596.js",
-      "base_sha256": "c193caaacf070596905dc12201d69cfd1a0d9167d65bb39f01db82b0673ac4e5",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/4khdhub--base--77c94f18103e7414.js",
+      "base_sha256": "77c94f18103e7414db67ff2be168f90899aa282ecc5427d7dfeb39cfd828bdd7",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:50.241877+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "git-pre-hardening:775d35d586e2:providers/4khdhub--nuvio--4697cfe81e4f7265.js",
+      "base_rebased_at": "2026-08-29T08:26:32.556178+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "1be3bf0cf9cb70193709ad4bef1b1f8c72e76efc2e2de5af905cc5bf80d964f4"
+        "sha256": "43f7a6fe94c63e61655ca2a591ea0feda7423cc3712d9e171d20397c69f3d357"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "a1cb9b2b1c5f0881281f2398ce47c67ac3f1de6e9aeed2a65ccf38cc07dc191b"
+      "build_input_sha256": "746476a2c1a3cb3a0dabec871130556d4cc84125f38efb18220ea05ab9c5816c"
     },
     "allanime": {
       "id": "allanime",
@@ -1331,11 +1375,14 @@
       "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
       "preserved_candidate_key": "published:allanime",
       "preserved_candidate_sha256": "e1b885f92d72f160a30e7bcf485e4a16bde61d4194e5715a8bedc803b22a4970",
-      "base_filename": "provider-bases/allanime--base--7947316d3cbed215.js",
-      "base_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/allanime--base--25fb224e2ac05750.js",
+      "base_sha256": "25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.728456+00:00",
-      "base_migration_stripped_generated_core": false,
+      "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg-latest-quarantine-recovery:aio:25fb224e2ac05750",
+      "base_rebased_at": "2026-08-29T08:26:40.009190+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -1344,14 +1391,13 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "2ad86937116bec57eb879bd73ac8d49aae8ec5495ea68a4a8a362701f45c652b"
+      "build_input_sha256": "6ff16ca90ad30f2c7d07f9f5ee225b4d561e5987308c0de41f00b1c9c0a5d501"
     },
     "allmovieland": {
       "id": "allmovieland",
-      "published_filename": "providers/allmovieland--published-baseline--1c9e3ac5fda9b1a4.js",
-      "sha256": "1c9e3ac5fda9b1a4d65acde3314db5aed269955dcc20170785ffe03bea8cd4b9",
-      "patched_sha256": "1c9e3ac5fda9b1a4d65acde3314db5aed269955dcc20170785ffe03bea8cd4b9",
+      "published_filename": "providers/allmovieland--published-baseline--8a385072a732205d.js",
+      "sha256": "8a385072a732205d9f25bd4eeb47ec1683bc6150651f7a76f0fd09c366dbb1b3",
+      "patched_sha256": "8a385072a732205d9f25bd4eeb47ec1683bc6150651f7a76f0fd09c366dbb1b3",
       "upstream_sha256": "2217246fc678c9944a374bf227414e640ffa9e6a46775fd0fc62eea6e98eaf81",
       "local_patches": [
         {
@@ -1584,6 +1630,24 @@
           "output_sha256": "1c9e3ac5fda9b1a4d65acde3314db5aed269955dcc20170785ffe03bea8cd4b9",
           "bytes_before": 106709,
           "bytes_after": 103004
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "060ad098604e9dcbeb7afc48da0edd59a23130045150dd5422e102a0375e8176",
+          "output_sha256": "8a385072a732205d9f25bd4eeb47ec1683bc6150651f7a76f0fd09c366dbb1b3",
+          "bytes_before": 102323,
+          "bytes_after": 98618
         }
       ],
       "source": "published-baseline",
@@ -1802,21 +1866,23 @@
         "yoru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/allmovieland--base--997cc48d8cd26fcd.js",
-      "base_sha256": "997cc48d8cd26fcd2671b9cc6f450f18e0f2c2a91153e5a71a8ccbf70b5e4423",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/allmovieland--base--a3b00e025166c238.js",
+      "base_sha256": "a3b00e025166c23874861dfaf5f86795d2a1fa9990f1a506f44ddcda796ede1f",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:50.989497+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:33.126094+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "1c9e3ac5fda9b1a4d65acde3314db5aed269955dcc20170785ffe03bea8cd4b9"
+        "sha256": "8a385072a732205d9f25bd4eeb47ec1683bc6150651f7a76f0fd09c366dbb1b3"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "0524f419b312b2845704008e542ca678d620f5f51fed56a750339fd101a3f801"
+      "build_input_sha256": "a46d1b2a18881508f92b3ada1c2160dd3b90ab7778a91542dcb91ae129630bbb"
     },
     "allwish": {
       "id": "allwish",
@@ -2137,7 +2203,7 @@
         "sha256": "4f53a16d3e8ce2cf512d3383dd153c9d3c01330758dedc78b75c772fe5c364a9"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "04ed46ce4a948d509743bdd10957e4bf0cfe345d31c7abd3e9f34f68102e04c8"
+      "build_input_sha256": "fb62e4dcf1cd49613433ff513706e92545c26aee216bb4780fa2d4e957d56097"
     },
     "anidb": {
       "id": "anidb",
@@ -2569,11 +2635,14 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/anidb--base--c57ee2eb45c926ac.js",
-      "base_sha256": "c57ee2eb45c926acb7e8b6607f779d06032da1326d1ba864adaed388267ab97a",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/anidb--base--a70c328f7be2984c.js",
+      "base_sha256": "a70c328f7be2984c58c00876a9ab6ea2f1bdf737f5cdecc92821c09ecb0b45ce",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.049902+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:60ec5bba1e6d0052",
+      "base_rebased_at": "2026-08-29T08:26:33.383865+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -2582,8 +2651,7 @@
         "mangle": false,
         "sha256": "e7df5f3cf1b2c71fa2abba40b9881a7491a4726f059b766157fb5ee3276c8e14"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "1d6e7dbd402304924553933d62e9ba59c15a493e1e3bba0040e079a7a791505d"
+      "build_input_sha256": "944170c761a34efbbcd0bdb910b69580f45cc27e170ea6eee193ff7c4d831842"
     },
     "anikototv": {
       "id": "anikototv",
@@ -2917,7 +2985,7 @@
         "sha256": "a46c966f59d503818d22ea52d55fcab083ba08b78fc10ebc7f8c9a92dfe0e8d7"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "57e92f07940121f4d1888db4a0994245906584e8b6d38db13914cb672d7f2a36"
+      "build_input_sha256": "af88b23bf240033aa1f7921d724ac4db18e7edf1251974da07befa3200b29ec1"
     },
     "anime-sama": {
       "id": "anime-sama",
@@ -3268,7 +3336,7 @@
         "sha256": "d4887c0c6602e0b774663c5d9b24f3d1c3d48282af70ea2b9712527db792f216"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "889ba0c8e665c911966a39844effe37c7b7c1bef6d0601c417278daa911e9ea8"
+      "build_input_sha256": "a4cf024cbe4436b36fcd4dd7ab1ee2c6b9b43236b2afa15d12f323dbbca62854"
     },
     "anime-ultime": {
       "id": "anime-ultime",
@@ -3599,7 +3667,7 @@
         "sha256": "62000010281b8fa2c73ddec61fbe3b4c6bd9b7b2ca36d17b43dc33b92206aba8"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "19b5f998e71702b319110a6821b7349ab85b5b9f51de4154484ab27cb949185c"
+      "build_input_sha256": "de4f696de537f382943200f8245194e4e58821b6e5b8a7078502d08d9cb156d0"
     },
     "animekai": {
       "id": "animekai",
@@ -3926,13 +3994,13 @@
         "sha256": "5209c5030c3f90edd32e512136da6e214243c4e51a09f1da118669d8bd3cd948"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "18cb7bf3ba79984a55720d062f022e1c3178c6dd65e910c9526387cbc160d1d8"
+      "build_input_sha256": "1eb8cb7218554845808b0d144f8ad3d58430c403046813a53951aba54fed529b"
     },
     "animepahe": {
       "id": "animepahe",
-      "published_filename": "providers/animepahe--published-baseline--eb0d2fda481a0110.js",
-      "sha256": "eb0d2fda481a011089acb0bf8d1437708a577aaeb947b3e65debf709ce630375",
-      "patched_sha256": "eb0d2fda481a011089acb0bf8d1437708a577aaeb947b3e65debf709ce630375",
+      "published_filename": "providers/animepahe--published-baseline--bf1fa486c3e9b6de.js",
+      "sha256": "bf1fa486c3e9b6de798f9e9fc7c5c2c261c31a751d60de88090ba66fc9ddf101",
+      "patched_sha256": "bf1fa486c3e9b6de798f9e9fc7c5c2c261c31a751d60de88090ba66fc9ddf101",
       "upstream_sha256": "9e132e5efb0371493041ba7e321e2fc714f8a3177c7549e30b85e98528a263b9",
       "local_patches": [
         {
@@ -4117,6 +4185,24 @@
           "output_sha256": "eb0d2fda481a011089acb0bf8d1437708a577aaeb947b3e65debf709ce630375",
           "bytes_before": 96674,
           "bytes_after": 93055
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "c8eaef81c073da723b9e5fdf1524e91007c47dcb34c8fa9d2a53b4c0e5834ecc",
+          "output_sha256": "bf1fa486c3e9b6de798f9e9fc7c5c2c261c31a751d60de88090ba66fc9ddf101",
+          "bytes_before": 92308,
+          "bytes_after": 88689
         }
       ],
       "source": "published-baseline",
@@ -4343,21 +4429,23 @@
         "yoru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/animepahe--base--3427666c3679b9ad.js",
-      "base_sha256": "3427666c3679b9ad38fb96a20595e2cc49bf6e1723195b4a12f3fbbb8891a7ba",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/animepahe--base--a9abe59661ccb0d0.js",
+      "base_sha256": "a9abe59661ccb0d03667f32ce75cd402d619a696756c9217b6b54519fcbb3f7b",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.109689+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:33.424450+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "eb0d2fda481a011089acb0bf8d1437708a577aaeb947b3e65debf709ce630375"
+        "sha256": "bf1fa486c3e9b6de798f9e9fc7c5c2c261c31a751d60de88090ba66fc9ddf101"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "4d52ef259b5398009b6ee55ed0ee11bccc5b3db6519a0ed088a743fe75d2c516"
+      "build_input_sha256": "c1f2feb8dfb6caacef474bdb02b985244bb6dc415d5942d6cb132a3d59c3f91e"
     },
     "animesalt": {
       "id": "animesalt",
@@ -4824,11 +4912,14 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/animesalt--base--e447a80d415b9354.js",
-      "base_sha256": "e447a80d415b9354a235eb2921def6e72a3b9219eec0b208eb6c5dc094e981ea",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/animesalt--base--140150b604c10ade.js",
+      "base_sha256": "140150b604c10adef1df8c0d0c3fb10ebdab477febb05ebe7ac5a9f96d2e64f0",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.169891+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:33.467388+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -4837,8 +4928,7 @@
         "mangle": false,
         "sha256": "951b6db3ea61da0ef3d272ba0a78bd719ef62613c850b88298e9104d007e8a5f"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "3241086d44a83b04a92846c174ee8386973c832257edbad538053ef88d7ce8d3"
+      "build_input_sha256": "cfcb1f749386a9d93bea09d2862883ecfd83e3c48a00bfb2f2cdf85d31a8afcc"
     },
     "animesama-co": {
       "id": "animesama-co",
@@ -5176,7 +5266,7 @@
         "sha256": "2c05bea54ff026f54db6b1907d7a85d3a0cda64868a4eafe5e109cd1dc496360"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ab99ab0d4c7d0d7ba2726fc8211b0c294700bc46afbc9ca1d518c84856066999"
+      "build_input_sha256": "5ebc8dbd556381035da2dea6197dcf1d5d6e63e5aa0003a4e0401ab3750c7ce0"
     },
     "animesultra": {
       "id": "animesultra",
@@ -5653,11 +5743,14 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/animesultra--base--07d031a99110c3d4.js",
-      "base_sha256": "07d031a99110c3d44e99bfa6fe7dbe15b392908dddd1d78649afe416d40561cd",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/animesultra--base--76250c2726ff62c5.js",
+      "base_sha256": "76250c2726ff62c54a4f92551b01dd1cf26d60bf32bc5e1935ef43b7c869e6ab",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.347102+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:33.534607+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -5666,8 +5759,7 @@
         "mangle": false,
         "sha256": "b264d174fcd3438bdf7553d3a8c9a60af0bddd319fb3b0d8d7c7a8d8be69d615"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "dea4755004fcc52db1bc8b72b7de37a0f4d83da5f6771aaafc3c481f295e3d21"
+      "build_input_sha256": "252c24a753f1d9636eba80c9b25c6de6ecb34f31f28a053ad9e4ab1f92572c5c"
     },
     "animetsu": {
       "id": "animetsu",
@@ -6074,11 +6166,14 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/animetsu--base--bd573fc45bd366df.js",
-      "base_sha256": "bd573fc45bd366df00f4b92f82e3fc1adfb3f06d2ec665002828c671bad4b555",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/animetsu--base--23957dc89ce2827c.js",
+      "base_sha256": "23957dc89ce2827ca5de2621bd3b0e17570c71e98f473a659dd7ede2b4c61333",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.405835+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:243edd8c76b0995a",
+      "base_rebased_at": "2026-08-29T08:26:33.794820+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -6087,8 +6182,7 @@
         "mangle": false,
         "sha256": "bcbd7c7af071e5c278d7f21ef63cb724bb687ba3b92048cc202cc8a6762f655e"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "9514a4c501acb8a8a084bfdfeba188413d1f74f711de8bcd0c96689f0c39eb5f"
+      "build_input_sha256": "dfb1871111add8828c3023b91bfb0a0f59555b8d371363b2ab527db950d7c236"
     },
     "animevost-fr": {
       "id": "animevost-fr",
@@ -6414,7 +6508,7 @@
         "sha256": "71e1b05105cdc9db65210b68596f9e9a74da23a4c0f62a099c9af6dae1529253"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "b18ecab14c199af048232881311d60dab3eb4bfe7876e93c3e6d421cd336ba0b"
+      "build_input_sha256": "46daa22eee7275443c8679e10d4a0614f29fd871761127f9ee5836e6471e7c98"
     },
     "animevostfr": {
       "id": "animevostfr",
@@ -6802,9 +6896,12 @@
       "publication_mode": "strict_existing_provider_refresh",
       "base_filename": "provider-bases/animevostfr--base--5d59b9d787078103.js",
       "base_sha256": "5d59b9d7870781039ea02771434ced699908312a12b348569c629fd2b5d084e4",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.492968+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:33.862455+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -6813,8 +6910,7 @@
         "mangle": false,
         "sha256": "3151a72ffe07aa7655c6434f29a9af0efd9dded7f03d24d67081f0d5e037e7a9"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "98f1a03e59e1ce1a00de38318d8979608e7f74fd8ae8ac54cb086191e425cea1"
+      "build_input_sha256": "b8d0ba4e69d3f03ae9b5b4e43ff45990f5bb4fd04bc93f95808d1f6b9a5bd0ec"
     },
     "animeworld": {
       "id": "animeworld",
@@ -7143,7 +7239,7 @@
         "sha256": "c37a8d4fe2b3e7bf8da282d18fa34b673d8829fd71fc3914e5afee478e1f5275"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4c741dfbbe6c7f236de87e7fc0815f7d4dd1a367e7f350ddaebaf1be9aa914ea"
+      "build_input_sha256": "67ec951e099bb6be76685d262e190b957cd15a3f2a4064a1c1384cfbd74b7cd0"
     },
     "animezey": {
       "id": "animezey",
@@ -7446,7 +7542,7 @@
         "sha256": "e5265789613cfdf594c4072856acc1ee3f73219cefc56c73ac2c0673c4e77886"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "eb80d294607751e4fe06c93f758aad8ff2a4fc6e60872a4bee419da1aa1c6603"
+      "build_input_sha256": "87c01c75661eab04a011e45f87eedeede80f2e8e65859a87b14dc70ab228745e"
     },
     "animoflix": {
       "id": "animoflix",
@@ -7816,11 +7912,14 @@
       ],
       "preserved_candidate_key": "published:animoflix",
       "preserved_candidate_sha256": "7a89d8b66058ab2a64a2934cdbe97ffee3dd0e51a632f7977001db6dd7a355ec",
-      "base_filename": "provider-bases/animoflix--base--4f10b417d9bcd04b.js",
-      "base_sha256": "4f10b417d9bcd04b50714c272bc38881e5ae1f509e10861ea54d5d83afe57400",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/animoflix--base--1fbe36e44ccf9128.js",
+      "base_sha256": "1fbe36e44ccf9128e5e69a23bfc9b14b894891a3eb17e5a619312fea9e091daf",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.648288+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:gowaru:d4c6681f4c679215",
+      "base_rebased_at": "2026-08-29T08:26:34.191963+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -7829,8 +7928,7 @@
         "mangle": false,
         "sha256": "054205321b920467ca10cf7b365d7e46eb690dd24db420fa591e37ed43a653b4"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "ea26a8d9803c71782b6491cc2d5cdb041c87029f27558ac2c7d8fbe1bbac609b"
+      "build_input_sha256": "ef98bac7bed99b8f980dba083f9da2e048eb77f648faa880c4dc84ffb3b7c907"
     },
     "anizone": {
       "id": "anizone",
@@ -8264,11 +8362,14 @@
         "yoru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/anizone--base--ebced86a4cc82d4e.js",
-      "base_sha256": "ebced86a4cc82d4e7fa964ca5746c85da400999a286714c7f1c02e6616b48658",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/anizone--base--d064512358757307.js",
+      "base_sha256": "d06451235875730771d287163c19d8407f6de391dbcbb7cc5bf43d2b79440dae",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.706994+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:yoru:0dbdc78b24804bab",
+      "base_rebased_at": "2026-08-29T08:26:34.454871+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -8277,8 +8378,7 @@
         "mangle": false,
         "sha256": "03b7a88f7a68734a542b5f03774bf7cbf93254c96774df7dfa34e14a3f924949"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "5c7b5e05e895c914d2b2c8c5fe60b1da92af775c76f978a1c6a2ee958e377b98"
+      "build_input_sha256": "ab5f5bb8087b96a907385466b2fc4d39cfed60262671e481359cedb844315ed3"
     },
     "castle": {
       "id": "castle",
@@ -8613,17 +8713,17 @@
         "sha256": "44ab45d8a35a13d72e8cfe22234298b1f0fef7fa65fcc8a89aeaa30ab1400ef5"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ae356a2d7b49daf3c704b5549c4c20ad746d68f3100a1b493daf5db206872559"
+      "build_input_sha256": "ff90036fe164a8801a7a0f7e8dce7a9b9d91018893219a7713e3f7dcd883bda1"
     },
     "cineby": {
       "id": "cineby",
       "published_filename": "providers/cineby--nuvio--7ba7f47f898cdc89.js",
       "sha256": "7ba7f47f898cdc8936c0b23fd4c6989b7179e160ab6787187d70cfb57276978c",
       "patched_sha256": "7ba7f47f898cdc8936c0b23fd4c6989b7179e160ab6787187d70cfb57276978c",
-      "base_filename": "provider-bases/cineby--base--e40c152d8c07012c.js",
-      "base_sha256": "e40c152d8c07012ce28bb27e4a2a0c49d0a36a6c1133e84b415b01d2ef7e9b4c",
-      "base_source": "selected_candidate_post_provider_overrides_pre_core",
-      "base_migration_stripped_generated_core": false,
+      "base_filename": "provider-bases/cineby--base--f0ba2f5ef641b5fc.js",
+      "base_sha256": "f0ba2f5ef641b5fcc9b1fd79b6ac14bd60f46487ac469b656f7317e36dc5d5e8",
+      "base_source": "provider-pipeline-legacy-rebase",
+      "base_migration_stripped_generated_core": true,
       "upstream_sha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
       "local_patches": [
         {
@@ -8990,6 +9090,9 @@
       "strict_consecutive_deep_passes": 1,
       "strict_total_deep_passes": 1,
       "publication_mode": "strict_existing_provider_refresh",
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:06a14293c93a83d3",
+      "base_rebased_at": "2026-08-29T08:26:33.077253+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -8998,8 +9101,7 @@
         "mangle": false,
         "sha256": "7ba7f47f898cdc8936c0b23fd4c6989b7179e160ab6787187d70cfb57276978c"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "204ee550293bb72b3fb40437e077973c07896b8d85c084172cb89900eff7df9d"
+      "build_input_sha256": "8ee44455862a3c8f706852bfd8e7b644a152693506a1d87aa520851c77a786b2"
     },
     "cinefreak": {
       "id": "cinefreak",
@@ -9338,11 +9440,14 @@
       "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
       "preserved_candidate_key": "published:cinefreak",
       "preserved_candidate_sha256": "40ce483096e3a3809c372b79b481ea2ef258680415e15835821d5efe3e99f3b8",
-      "base_filename": "provider-bases/cinefreak--base--7947316d3cbed215.js",
-      "base_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/cinefreak--base--ef2325ef30b5cd1d.js",
+      "base_sha256": "ef2325ef30b5cd1d7700dd629eb480a227f9c9a8607458c270389418f774449b",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.773214+00:00",
       "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg-latest-quarantine-recovery:aio:422d7f2fc6c51ea3",
+      "base_rebased_at": "2026-08-29T08:26:40.485044+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -9351,8 +9456,7 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "64922fb382ede895a80c92cbda53c34ef942a944370e22e5d4c6c89033144809"
+      "build_input_sha256": "c7d9c99f13033a6ce2666742d5b05379e28942e3aba35d68ade49d7ae56b722e"
     },
     "cinemacity": {
       "id": "cinemacity",
@@ -9778,11 +9882,14 @@
         "yoru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/cinemacity--base--f4a30a0cab8f2c3f.js",
-      "base_sha256": "f4a30a0cab8f2c3f9c048d69195b03584b296da18d7defb60c9b36964f86fae5",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/cinemacity--base--31e470ecf830e5c0.js",
+      "base_sha256": "31e470ecf830e5c02ed6e25e42a7177353c271acc90a941f5a308f3bfae97cc9",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.772218+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:e97516075e2f0d47",
+      "base_rebased_at": "2026-08-29T08:26:34.723975+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -9791,8 +9898,7 @@
         "mangle": false,
         "sha256": "5ed8de63d5d21e5291a0550bc247ec5bd0db68dba19619ad874257ef106e0eb4"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "9297963b57b35f00fcd7ceb342472b92c75ccbfff408e67ff7bb77004b304ca6"
+      "build_input_sha256": "9f135e5441101b90bd4e4e24363687761044e5e1b73c6756dc1f636d0952687c"
     },
     "cinemm": {
       "id": "cinemm",
@@ -10223,11 +10329,14 @@
       "preservation_upstream_enabled": true,
       "preservation_live_upstream_sources": [],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/cinemm--base--4be3e406d15f33ce.js",
-      "base_sha256": "4be3e406d15f33ceb83e92490f050ff813910a9b39cbfeaf46a297c308edd832",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/cinemm--base--f42d774d88cd67d3.js",
+      "base_sha256": "f42d774d88cd67d3b78442b90868581abdbbacbacdb81388aca996200fdb97b3",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.834937+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:34.767600+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -10236,8 +10345,7 @@
         "mangle": false,
         "sha256": "1c7413fefc20fb996d271ebbf995edb9ea1c486c669af4608d6aeedf96853b61"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "d3d486a59d648a74c76d51c98b70236214b537fb89da3bd54905feaafce8fde1"
+      "build_input_sha256": "5d6656f9ce0df7693ba21d85513b16ade74792d641c15e921f6d3fe5f296f985"
     },
     "cinevibe": {
       "id": "cinevibe",
@@ -10555,13 +10663,13 @@
         "sha256": "5914898f5bca27f3f8c826fda48cba63eb2767da574b53eb814a2d55ceeefdac"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "170c0ae520c1dc8bfcfe0c17ec1952b50fd9f0ed2c44fbc77b14e9ef708a631a"
+      "build_input_sha256": "c36571a3736e15e2aff80a6a316b03b388dda09ff2ad18e0d6160872bc940475"
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--fa74e37dcf0f41c4.js",
-      "sha256": "fa74e37dcf0f41c48574539ddacc9bee7099da63528d5bb54ec34bf952fba728",
-      "patched_sha256": "fa74e37dcf0f41c48574539ddacc9bee7099da63528d5bb54ec34bf952fba728",
+      "published_filename": "providers/coflix--nuvio--f99ece24253fab01.js",
+      "sha256": "f99ece24253fab01fb4fa9da6d314353639d07d06095db732518906d40233bc8",
+      "patched_sha256": "f99ece24253fab01fb4fa9da6d314353639d07d06095db732518906d40233bc8",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -10891,6 +10999,27 @@
           "output_sha256": "fa74e37dcf0f41c48574539ddacc9bee7099da63528d5bb54ec34bf952fba728",
           "bytes_before": 437834,
           "bytes_after": 433571
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "6a13e11dff53fa657ec1980559e0f69300b4e3bf169055c77362c5ed607ecd00",
+          "output_sha256": "f99ece24253fab01fb4fa9da6d314353639d07d06095db732518906d40233bc8",
+          "bytes_before": 437367,
+          "bytes_after": 433104
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -11168,21 +11297,23 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/coflix--base--3974d99c1d326d88.js",
-      "base_sha256": "3974d99c1d326d88fac2ee5e256844d928206d32dccd18ed82bf069d70d0f194",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/coflix--base--8f4ece9205389790.js",
+      "base_sha256": "8f4ece920538979019b5b5efdb8a92559bc956f8a641326cd0bcd2b99f87e982",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:51.944186+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:34.853880+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "fa74e37dcf0f41c48574539ddacc9bee7099da63528d5bb54ec34bf952fba728"
+        "sha256": "f99ece24253fab01fb4fa9da6d314353639d07d06095db732518906d40233bc8"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "1e5ba158f6487531194a75a5116efdd00f6c951aa293b2cc411e4dfcbb36e2f8"
+      "build_input_sha256": "02012f76f5f525dbe26019cf47d32ef2753f17bd12a4bc8c9e32b5a3ba076263"
     },
     "ctgmovies": {
       "id": "ctgmovies",
@@ -11503,7 +11634,7 @@
         "sha256": "8f7498afb0cac470aafd5b822fffefd7575b00d0ee58a3ec3eadd4a366ec47c5"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "e8a811b1d6551d9fd70082b8c81e9c693540b79b5f6b8b6f68d5b587f6934a02"
+      "build_input_sha256": "b175da0a3d67e9006f0b6da29842f1991e78784f1341c39b666916e1d7b59e4e"
     },
     "desiflix": {
       "id": "desiflix",
@@ -11983,11 +12114,14 @@
       ],
       "preserved_candidate_key": "published:desiflix",
       "preserved_candidate_sha256": "bd52322e7923068935565a5ef6f3a8c37c5469c72279a85d086594d056858bb3",
-      "base_filename": "provider-bases/desiflix--base--217cc46a3fbc05f7.js",
-      "base_sha256": "217cc46a3fbc05f7ed447530c3ad6b3ed1471767613d5305d17d152159e0ec5f",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/desiflix--base--7603520b5189e3a6.js",
+      "base_sha256": "7603520b5189e3a6367ea2e50856dbb1275933d3f197804dafffb73caec64bed",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:50.366915+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:89d80b0ac5aac7e9",
+      "base_rebased_at": "2026-08-29T08:26:32.815158+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -11996,8 +12130,7 @@
         "mangle": false,
         "sha256": "1ddf347ce426fc503c2f34d0c298147e6e1acb944c01b78c34d454d4547daa71"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "041c50b637ab6214c0601e4dcd65fc23a714e1dd29a6061dbd642ef9a32455f1"
+      "build_input_sha256": "1e936047645cd2d72dd94d52a3ea4d61f7c4d217b2cb402d6709a6c9127889df"
     },
     "dooflix": {
       "id": "dooflix",
@@ -12414,11 +12547,14 @@
         "yoru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/dooflix--base--88bd7122d4105405.js",
-      "base_sha256": "88bd7122d41054053e70d5a4948aeff7acb7b8b7ed06aba3cafd274156f58e7f",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/dooflix--base--8262f6812bb41aea.js",
+      "base_sha256": "8262f6812bb41aea3c6999acfcf016363f940660905587c52ccf5ce80fbeeb51",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.002308+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:34.897713+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -12427,8 +12563,7 @@
         "mangle": false,
         "sha256": "5aa3069c1d13af2942e37c0af8589f15ab5e9cdfa064c23fa73d14facffea8cf"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "d30f906c175906a105f0f4031007ec9c7714a32247cf7e69890b58a46e892111"
+      "build_input_sha256": "2feb2ff74979de1f26da214c3b053f338f15ea75ea06f06be912812b2ac8b059"
     },
     "dulourd": {
       "id": "dulourd",
@@ -12889,11 +13024,14 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/dulourd--base--8e4e38d426335d80.js",
-      "base_sha256": "8e4e38d426335d80724678d6e8b3df9ab9ad82d95df83083dd5d16c0037b16f7",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/dulourd--base--9f0003e8dd9bf97c.js",
+      "base_sha256": "9f0003e8dd9bf97c441cabe49d1a875dd344dcd7107e6e439e99afeca513dcd4",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.088871+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:34.966379+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -12902,8 +13040,7 @@
         "mangle": false,
         "sha256": "0015aa337150fc78ed21ad9b365f64edc8bd3c9bb6510a052551d2e8181d9ed1"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "36b6929f1c6c95929bf0b1de082b8ff355337be74953854928d4f1eb5be97b79"
+      "build_input_sha256": "ceaa2f874ae4456f9182c3942802ad09fddc4b974096b548e5b994c5acae9c86"
     },
     "dvdplay": {
       "id": "dvdplay",
@@ -13277,11 +13414,14 @@
       "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
       "preserved_candidate_key": "published:dvdplay",
       "preserved_candidate_sha256": "27ce3aa134cc547da2c7df846c8b8c511ae0da3c96606ffe504438eacc271b5e",
-      "base_filename": "provider-bases/dvdplay--base--931f9954cbc76332.js",
-      "base_sha256": "931f9954cbc763328845b38e0b4f1a150bf03be38697bea3751cd406e7ce90e8",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/dvdplay--base--d67399b8f3d221de.js",
+      "base_sha256": "d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.819874+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg-latest-quarantine-recovery:yoru:d67399b8f3d221de",
+      "base_rebased_at": "2026-08-29T08:26:40.962816+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -13290,8 +13430,7 @@
         "mangle": false,
         "sha256": "503854129dd5892f5385b52f0ce870ff05089000e98148e850b4ada4d9f1d530"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "16eca01202cee47249bfd51e773ff2a54c21994f46b7e7a32274dc739f2fb640"
+      "build_input_sha256": "e33309fced8869e18a20b0426a42df46df02709db9a8aca891752f36ee18d72d"
     },
     "einthusan": {
       "id": "einthusan",
@@ -13614,7 +13753,7 @@
         "sha256": "d7dee9297eaa4fcbde33931d2a5c7b8607e7d57136aaa75e648d5327b5e7a567"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "179ba943431e9c181eee7215559525f8c4d560025c40d30f7fabee004c232135"
+      "build_input_sha256": "085865249e0dc327bac5087f2ddd43e6ddbc4592146df4574271ca7dd466098c"
     },
     "fibwatch": {
       "id": "fibwatch",
@@ -13937,13 +14076,13 @@
         "sha256": "8d4b1eb988b12b2d3d08b90622cfd831db46182a5ea582dc4fc494bad674947c"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "e00c5065e25abf5555608345439fd943470ef29cb9a888221186a6fb2baf3d22"
+      "build_input_sha256": "f6a3164864720cfebfab32f88417166a5928627704b5258fe16d343c4690a57d"
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--92b0ef56a86aa803.js",
-      "sha256": "92b0ef56a86aa803fefcb0e61d03ae91e22afdb66fe6cc2cf13b96c9d0fbdce6",
-      "patched_sha256": "92b0ef56a86aa803fefcb0e61d03ae91e22afdb66fe6cc2cf13b96c9d0fbdce6",
+      "published_filename": "providers/flemmix--nuvio--9cb0c8089ff7975b.js",
+      "sha256": "9cb0c8089ff7975b5fbad8ba453ac009d45e16c860edc0791f3e39ce4bf736cb",
+      "patched_sha256": "9cb0c8089ff7975b5fbad8ba453ac009d45e16c860edc0791f3e39ce4bf736cb",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -14243,6 +14382,27 @@
           "output_sha256": "92b0ef56a86aa803fefcb0e61d03ae91e22afdb66fe6cc2cf13b96c9d0fbdce6",
           "bytes_before": 411766,
           "bytes_after": 407503
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "4fcae1829973725d772fba65b2ecb83a76473e74bc6eb663913dfc0bd53146c3",
+          "output_sha256": "9cb0c8089ff7975b5fbad8ba453ac009d45e16c860edc0791f3e39ce4bf736cb",
+          "bytes_before": 411299,
+          "bytes_after": 407036
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -14474,21 +14634,23 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/flemmix--base--ff54a9b599316c94.js",
-      "base_sha256": "ff54a9b599316c949dc5a0ff103a5509ae36315856f31a3a709dea54ff8f3867",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/flemmix--base--d389ec231e33b37a.js",
+      "base_sha256": "d389ec231e33b37a9959e125a515803cd8c8c4250916e2f5c11ed2988c0a2b83",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:49.984799+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:31.745582+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "92b0ef56a86aa803fefcb0e61d03ae91e22afdb66fe6cc2cf13b96c9d0fbdce6"
+        "sha256": "9cb0c8089ff7975b5fbad8ba453ac009d45e16c860edc0791f3e39ce4bf736cb"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "6f64dd7f9bfee15e8777577d3496df0408a7368e9ca1eff47d305a2b10c5ca41"
+      "build_input_sha256": "8878f9118486c7fa5faa7df9272ccf337cc5dbc8674ad2d628e8e808639123a1"
     },
     "french-manga": {
       "id": "french-manga",
@@ -14853,7 +15015,7 @@
         "sha256": "7d4b2e291171ff4656cb8560dbbedabfc74492daf9606b737421ef58047799bb"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f16b5ec9ee5e5c077299f1cd78c6c86848feb325f5f9de426ad894ca33c31982"
+      "build_input_sha256": "7fdd137a8046faef3f01ea61d0dff5481e9f3354a3d221a1841d5ca1e05f19ae"
     },
     "frenchstream": {
       "id": "frenchstream",
@@ -15297,11 +15459,14 @@
       ],
       "preserved_candidate_key": "published:frenchstream",
       "preserved_candidate_sha256": "4321bb3e5cc6e6220c1728672fff4dbc2ff1d418cdc8836df17444db5b3ec311",
-      "base_filename": "provider-bases/frenchstream--base--bb961f4ad52daf51.js",
-      "base_sha256": "bb961f4ad52daf510a7ff99fc73989cb6b8402abfc44d2230bd8e26edda73940",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/frenchstream--base--59777c81e4dafd56.js",
+      "base_sha256": "59777c81e4dafd5624f44c40142099a658fc7e1f1c4b8f7679812483b261df7c",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.864906+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg-latest-quarantine-recovery:gowaru:2a0287d0a686bed6",
+      "base_rebased_at": "2026-08-29T08:26:41.538872+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -15310,8 +15475,7 @@
         "mangle": false,
         "sha256": "b09e31b3c7c74d31acef9bb5c040e3f52acc0f43147705fab0f767e6aab0ce85"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "2c971e35638b2e5274a846337b43edbdaef9a8542bb3bf6ef1580ce8e096ab9f"
+      "build_input_sha256": "84e9adc66df9ddd15de541f382e2ca5440b7e546def6b05ae509b268b17b102d"
     },
     "fullanime": {
       "id": "fullanime",
@@ -15637,7 +15801,7 @@
         "sha256": "18040e03ccb3a0d4c05b6f274af04d5f8246e37a598f318cf49890d7298b6453"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "8f795071ca2b03a9284d5f61b848049b46ca78a54cb782e9f7965be41d550215"
+      "build_input_sha256": "41fbc265cd0b469c917d4b18b4ee49550010551e6dfca04652fd3d016e68a7a7"
     },
     "goatapi": {
       "id": "goatapi",
@@ -15960,16 +16124,16 @@
         "sha256": "bfb9af785afec4c224c12f5f4ee0ee34faf6bde0658b40ee26313a61818b9438"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "89c9ef953d597f45dd64926c020060b3b058b4f11602818c9541f8223697b1c0"
+      "build_input_sha256": "4511bbea0d311806a6579cb56b7270e3b1b1cb50d6bcab83d2ca277f6538a4d1"
     },
     "goated": {
       "id": "goated",
       "published_filename": "providers/goated--nuvio--d119c03d976b5907.js",
       "sha256": "d119c03d976b5907e2f6165ff9ff707d9ccf7e3ac6f0d1d9b93530b793eb695c",
       "patched_sha256": "d119c03d976b5907e2f6165ff9ff707d9ccf7e3ac6f0d1d9b93530b793eb695c",
-      "base_filename": "provider-bases/goated--base--68529a07af5d4015.js",
-      "base_sha256": "68529a07af5d401593fe1d2d40cb1ef794586488e4687bc328fc3f7869769dc6",
-      "base_source": "selected_candidate_post_provider_overrides_pre_core",
+      "base_filename": "provider-bases/goated--base--dcfb5a83da4ee890.js",
+      "base_sha256": "dcfb5a83da4ee890ecf47af0b5073d700298496cffe6bda6a16be20ad82f83e8",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "d119c03d976b5907e2f6165ff9ff707d9ccf7e3ac6f0d1d9b93530b793eb695c",
       "local_patches": [
@@ -16285,6 +16449,9 @@
       "strict_consecutive_deep_passes": 0,
       "strict_total_deep_passes": 0,
       "publication_mode": "strict_existing_provider_refresh",
+      "build_contract_schema": 2,
+      "base_seed_source": "git-pre-hardening:775d35d586e2:providers/goated--nuvio--ddfc9682852223ff.js",
+      "base_rebased_at": "2026-08-29T08:26:38.509889+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -16293,8 +16460,7 @@
         "mangle": false,
         "sha256": "d119c03d976b5907e2f6165ff9ff707d9ccf7e3ac6f0d1d9b93530b793eb695c"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "c8785e03476b206093e2e7ff9f893baa011df10f9cc9e8f15fdaee84f7e91c7b"
+      "build_input_sha256": "61857630268e01bc40eaa6e772b436e059025c925b022259bce01adebfe123b7"
     },
     "gramcinema": {
       "id": "gramcinema",
@@ -16619,7 +16785,7 @@
         "sha256": "10c45cb247b9fd39570eeba91851858a4df13b54b52b52c12ed44ba977dc2ab6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0f1325799b38d27bdded680ce6d4c6e6e5a3b3762718cc57ac63347eb06bddd4"
+      "build_input_sha256": "9ee38bae5bf538ecd8e6c47877408070489c9227b1f7307c665b43eabde9cbd3"
     },
     "hdghartv": {
       "id": "hdghartv",
@@ -16956,7 +17122,7 @@
         "sha256": "d70ad929c5f808272c59ff00ced0b0f97e04110c4750facd7b7fa53f751968f7"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "2e318649fa7bc01e9552e6422a4bf519ed004501e14ec0d51e7eecf4591ca947"
+      "build_input_sha256": "4f489fb3af6f316ec1ad05df3adc2aacb074af15e2fa6b8f6bc213465b95bb96"
     },
     "hdhub4u": {
       "id": "hdhub4u",
@@ -17451,11 +17617,14 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/hdhub4u--base--da4bc32c0cc05749.js",
-      "base_sha256": "da4bc32c0cc0574927a718b0dbfc6e319496fb00d1d96035a6727f7c5414128e",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/hdhub4u--base--772b0370dbe2d41a.js",
+      "base_sha256": "772b0370dbe2d41a3bf1d8b7bc734291bb7ac93881fd0224b381b1188e398385",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.154217+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:35.014453+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -17464,8 +17633,7 @@
         "mangle": false,
         "sha256": "221e80ed4fa139393c76e00f4492f5abb249ac7886068ab4b06dc67e81984966"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "c3eaed9e1d51203449712e072564b00b1ecdb13dfff394c478f82a91d0299aae"
+      "build_input_sha256": "564ab878f08dc924b34309b1d7f72032e7d767dcbc3ff6370d0894f955ebf83d"
     },
     "hianime": {
       "id": "hianime",
@@ -17939,11 +18107,14 @@
       ],
       "preserved_candidate_key": "published:hianime",
       "preserved_candidate_sha256": "e18508007604654a175d1a22156b9dd6f10223a0eddedc3d0f6cb9524c9ac36f",
-      "base_filename": "provider-bases/hianime--base--fb0ab39be045cfd6.js",
-      "base_sha256": "fb0ab39be045cfd61cf0cf2e47bce7fd8491a7c1a94ff6da8119280e684a7568",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/hianime--base--6841dc56c6d46f58.js",
+      "base_sha256": "6841dc56c6d46f582b4d9c1b83c6f71adac7e5a9824dd46da127054b7d7aedbf",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.212730+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:11124b38985b9780",
+      "base_rebased_at": "2026-08-29T08:26:35.277869+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -17952,8 +18123,7 @@
         "mangle": false,
         "sha256": "68ec2b812ca81ad022e03d644301dbabe56b6b2a83fb37c690f5b87dd1830528"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "fb0643b8202bfe132f3556bc2c8dfa8f12823a593071a74d77d1b6d1116f39fc"
+      "build_input_sha256": "82ed680c7eb92bed5ceaea0fc5ea2d80f127acbf74652f3fb24eb342fae34b4e"
     },
     "hindmoviez": {
       "id": "hindmoviez",
@@ -18316,7 +18486,7 @@
         "sha256": "056c86f37e8a7284c0c24c8111994454104c1b2b0be155dbe1a2f226a08b488b"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "32e7ee835f1349f5822592e22b0af5cd04427641a80243c3afd689e655c53dad"
+      "build_input_sha256": "434522536de758833bc375e4f76918fbfa8a4fe17ca763ecf4380a248c546cb4"
     },
     "kisskh": {
       "id": "kisskh",
@@ -18637,7 +18807,7 @@
         "sha256": "888c7cb823b1671e723319b053dc9e636a0aa084433499125d790757ca086734"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0ec3ed4a857d3fb8a85906519adf7a26c64a600fab0737054cde0c26ffa88d8c"
+      "build_input_sha256": "8bdbe771adc82eff8002891da5bb6b6d035a0df2551b24927137e8ab1cefca7e"
     },
     "kurage": {
       "id": "kurage",
@@ -19018,11 +19188,14 @@
       ],
       "preserved_candidate_key": "published:kurage",
       "preserved_candidate_sha256": "cc2e99dd76b1b343abc63d9681ac1509168897ae35c55aa513df321da182887a",
-      "base_filename": "provider-bases/kurage--base--0caa8b38149a6ff3.js",
-      "base_sha256": "0caa8b38149a6ff3174a642051cc5b9de4138af9f33c85ff547c73772c0fa58c",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/kurage--base--b1999310691a4f89.js",
+      "base_sha256": "b1999310691a4f89223c06c6eeeabc2417c3d8922868d11da468788532dec277",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.269631+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:yoru:87bbb1d8359caec9",
+      "base_rebased_at": "2026-08-29T08:26:35.532190+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -19031,8 +19204,7 @@
         "mangle": false,
         "sha256": "ad412050abaacee667285e72d039ca69f7d2bbb3ae8e1b3bb383ca7a80526751"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "29145d8cd9472dfb6677e520fa3fd7ecc4ef800ed1b0739d5cb09950d2ccd945"
+      "build_input_sha256": "ddf55cc05d22f4a2d85fdc579bf98a66ced1dc5e7a71b5be7a187a2c93ca6e1e"
     },
     "mallumv": {
       "id": "mallumv",
@@ -19373,7 +19545,7 @@
         "sha256": "34374c95b80d063cc83f3d83b81ec48e04334ea444d009aa907cacba68e99d04"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "b2cf4e0cc2b1692a144350400ace0ede8773fc81817475d67cc422319d9daa9c"
+      "build_input_sha256": "e726db782331c2a8e15ec774b427774510f707019a6f27d8a030cdfcffc15969"
     },
     "moonflix": {
       "id": "moonflix",
@@ -19696,7 +19868,7 @@
         "sha256": "634bfd3529eb673e359dda21c30900e2d93184811ea9d43c2d31e9aff99d189d"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1ee28550d4e10950ae97d1e52ec013871b6d01ada983f215f8fd4a53bedb34bb"
+      "build_input_sha256": "74569ce97dc42c06c1eb35f2eac37cc2c5421587150d5e4dcdf2a7f2730ec356"
     },
     "movieblast": {
       "id": "movieblast",
@@ -20028,7 +20200,7 @@
         "sha256": "e78bf44d6259b214c6b2c959459c196d0a1d5b8778e652ba3642dfd99d062930"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "398d1f6eb92ecba6f26a5e22c2f6f67591b2030645786f0b2f924e1efa039e59"
+      "build_input_sha256": "bca62b8c45bb025744ee3fb9d7462676c0551db60c5d56a1d53dfdf732315942"
     },
     "moviebox": {
       "id": "moviebox",
@@ -20411,11 +20583,14 @@
         "aio",
         "yoru"
       ],
-      "base_filename": "provider-bases/moviebox--base--716fe7a6044f112f.js",
-      "base_sha256": "716fe7a6044f112f666b5011157a7c09928567ac816e58065d5b8ef028bc51e3",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/moviebox--base--b53034cc8cfb7888.js",
+      "base_sha256": "b53034cc8cfb7888384fc93d76eb2ee338290e056c5a04504b0cc942d512e3f0",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.912926+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:f19ec5a037e53220",
+      "base_rebased_at": "2026-08-29T08:26:41.792674+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -20424,8 +20599,7 @@
         "mangle": false,
         "sha256": "87f216de1ef35038ea3e66e8cff4d9f892472ef1885cf251b5bc3fa341c4f8c3"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "973026ebfa5bfcbd0150c12e6703b32b673312393403a101a0a3a09e9f3c0f36"
+      "build_input_sha256": "87181c69284baffd986b26fc6b851cc33f61a5157c9efc6854086da4724c953f"
     },
     "movies4u": {
       "id": "movies4u",
@@ -20959,11 +21133,14 @@
       "preservation_upstream_enabled": true,
       "preservation_live_upstream_sources": [],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/movies4u--base--66ca468caeff413d.js",
-      "base_sha256": "66ca468caeff413d7c1441fa853c2627ea2d662fbf6b1000ff9c669c424aabba",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/movies4u--base--c8546330090efc04.js",
+      "base_sha256": "c8546330090efc04ed3531da7c1c6ad4e9d51ab86d25d15b69f4e0481610473a",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.337163+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:35.585249+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -20972,14 +21149,13 @@
         "mangle": false,
         "sha256": "1599bbb127fed738979e7327e56bb152a16713fa87b35125323ef4b45dd67f5d"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "9afa561b17e83573d9a345fa44c8d6905cbe8d186c29f53094bc96258d1d74ec"
+      "build_input_sha256": "24cdb605e94e9732e57f84ddc063004894690de115113a32343342a1cc037d41"
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--d8de9ca96ae5196c.js",
-      "sha256": "d8de9ca96ae5196c21295cd56d971294e0795b35606525c61e7865e535d793a1",
-      "patched_sha256": "d8de9ca96ae5196c21295cd56d971294e0795b35606525c61e7865e535d793a1",
+      "published_filename": "providers/moviesdrive--nuvio--25d8e84fa7ad0c8f.js",
+      "sha256": "25d8e84fa7ad0c8f4d940f9748469b9b6d280042014448f25f4299b5dd5ca4b7",
+      "patched_sha256": "25d8e84fa7ad0c8f4d940f9748469b9b6d280042014448f25f4299b5dd5ca4b7",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -21278,6 +21454,24 @@
           "output_sha256": "d8de9ca96ae5196c21295cd56d971294e0795b35606525c61e7865e535d793a1",
           "bytes_before": 116782,
           "bytes_after": 113077
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "3163e2ce7481947b4c1ba15e6e88a4bc0a1f02a6a60376f95189a32c2a1119ad",
+          "output_sha256": "25d8e84fa7ad0c8f4d940f9748469b9b6d280042014448f25f4299b5dd5ca4b7",
+          "bytes_before": 115471,
+          "bytes_after": 110851
         }
       ],
       "source": "published-baseline",
@@ -21495,21 +21689,23 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/moviesdrive--base--2e62d93d50dd0cdf.js",
-      "base_sha256": "2e62d93d50dd0cdf1136fd9856720bf32d78cf6f1d2266762a46e8ac23cc87e3",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/moviesdrive--base--cbec4d1dc06357d2.js",
+      "base_sha256": "cbec4d1dc06357d228a94347d507a54cf99e1b391f744ebf2d28997e91e30421",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.401563+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "git-pre-hardening:775d35d586e2:providers/moviesdrive--nuvio--5dc3f76ffce35d14.js",
+      "base_rebased_at": "2026-08-29T08:26:35.863072+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "d8de9ca96ae5196c21295cd56d971294e0795b35606525c61e7865e535d793a1"
+        "sha256": "25d8e84fa7ad0c8f4d940f9748469b9b6d280042014448f25f4299b5dd5ca4b7"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "119e30ebe57fd3e761f16eb818181c73c21c0757093cfa1c79ebd6d3afe82ccd"
+      "build_input_sha256": "1eadc7e203fedc015729860946ec2d8cddacc72c66cb31e907be2b69d142f96f"
     },
     "movieshunt": {
       "id": "movieshunt",
@@ -21836,13 +22032,13 @@
         "sha256": "8f08fa4f3d7ab8f013562f0357863c4c849a3291024ba12f26c60679264b941c"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "14d732bddd649c228926d544af121b0a3e973356468f686bbea48df9ce0d7d3d"
+      "build_input_sha256": "3a31a2a8b79c1af18ff6e3afa6d63434196639512853a5883f3c6b3c98c7cfd2"
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--9985056ea8bc9c1c.js",
-      "sha256": "9985056ea8bc9c1c46bbeca9fa7016cade89b7bb6fd5cc1ce5c6e91e8d47f324",
-      "patched_sha256": "9985056ea8bc9c1c46bbeca9fa7016cade89b7bb6fd5cc1ce5c6e91e8d47f324",
+      "published_filename": "providers/moviesmod--published-baseline--704b853982f972ff.js",
+      "sha256": "704b853982f972ff3099b468964eb14cf36b6449339dd2b817cbc70f466eeaa7",
+      "patched_sha256": "704b853982f972ff3099b468964eb14cf36b6449339dd2b817cbc70f466eeaa7",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -22075,6 +22271,24 @@
           "output_sha256": "9985056ea8bc9c1c46bbeca9fa7016cade89b7bb6fd5cc1ce5c6e91e8d47f324",
           "bytes_before": 129807,
           "bytes_after": 126102
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1ec2dd64696526767d7a23b3dfaa204c2d75181815454499f2317f04cda96ed5",
+          "output_sha256": "704b853982f972ff3099b468964eb14cf36b6449339dd2b817cbc70f466eeaa7",
+          "bytes_before": 125525,
+          "bytes_after": 121820
         }
       ],
       "source": "published-baseline",
@@ -22293,27 +22507,29 @@
       "preservation_upstream_enabled": true,
       "preservation_live_upstream_sources": [],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/moviesmod--base--bcda7d1d36a35be4.js",
-      "base_sha256": "bcda7d1d36a35be4569bcee8f66964308cacb776b21f0e147bfbef3a09afc2a2",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/moviesmod--base--6e1c00bd9d7aa299.js",
+      "base_sha256": "6e1c00bd9d7aa299c9d0396bd8e8ba299512d42fa1b7965dc83b159d129b1371",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.468845+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:35.913787+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "9985056ea8bc9c1c46bbeca9fa7016cade89b7bb6fd5cc1ce5c6e91e8d47f324"
+        "sha256": "704b853982f972ff3099b468964eb14cf36b6449339dd2b817cbc70f466eeaa7"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "220ccd8f90b9be586493a1222b910ed5aaeed0a10b31288d54b50bbcdc628738"
+      "build_input_sha256": "b5c645e58539e9bde2cd354c61298882599f7b71407f9105a45ec48f354e83a4"
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--nuvio--26a1d4b10548c6d7.js",
-      "sha256": "26a1d4b10548c6d7314d511b2070da2edd7a3713d4819fa2427fd2e1fa115429",
-      "patched_sha256": "26a1d4b10548c6d7314d511b2070da2edd7a3713d4819fa2427fd2e1fa115429",
+      "published_filename": "providers/movix--nuvio--ee3307b772e79c34.js",
+      "sha256": "ee3307b772e79c34bcd0c8eb1d870388350b99e3f4221fbd2f9b2d6b2921a8ed",
+      "patched_sha256": "ee3307b772e79c34bcd0c8eb1d870388350b99e3f4221fbd2f9b2d6b2921a8ed",
       "upstream_sha256": "b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -22601,6 +22817,32 @@
           "output_sha256": "26a1d4b10548c6d7314d511b2070da2edd7a3713d4819fa2427fd2e1fa115429",
           "bytes_before": 401936,
           "bytes_after": 397673
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 3,
+          "phase": "discovery"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "51aa6c863a5528d702f4b2af7e88d37e8198fbda39ea4cd5aae5f1c9abc0a978",
+          "output_sha256": "ee3307b772e79c34bcd0c8eb1d870388350b99e3f4221fbd2f9b2d6b2921a8ed",
+          "bytes_before": 401469,
+          "bytes_after": 397206
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -22834,21 +23076,23 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/movix--base--d1723df915fed7f3.js",
-      "base_sha256": "d1723df915fed7f3076d91b09c4f1edca8548b0fd68f977fbdc2ce5e73a0ce74",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/movix--base--072897581a4683cf.js",
+      "base_sha256": "072897581a4683cf927b87495f6803e0f90f88d9aef7c246d4c9f9c5f786a6f1",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.565764+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:35.994450+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "26a1d4b10548c6d7314d511b2070da2edd7a3713d4819fa2427fd2e1fa115429"
+        "sha256": "ee3307b772e79c34bcd0c8eb1d870388350b99e3f4221fbd2f9b2d6b2921a8ed"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "b33b39358052338f446be8aed0a6aa9d0ec65e40c77934d3f22b940ea972476a"
+      "build_input_sha256": "c1364402bf2d4a9058b57bdee3f5c8070cd6da2076112fac0c95df36b172d575"
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
@@ -23192,17 +23436,17 @@
         "sha256": "5a40753288d49d5f72c3fc3baf5687e1775f8d7d18b6eece77fb30dc397607c1"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "305164542093494776129d07866f904d16242a5a2a91ff6906d4bb55966b47ed"
+      "build_input_sha256": "61d82cbc7dbd5224fc34e4c06f406c10823f22aafdac52b29efe5b5a90a890ce"
     },
     "mycima": {
       "id": "mycima",
-      "published_filename": "providers/mycima--nuvio--33a9cc0f055357a6.js",
-      "sha256": "33a9cc0f055357a6e9f7a3bfacb3a3679c2da7222f00cd591367e29bab0659a2",
-      "patched_sha256": "33a9cc0f055357a6e9f7a3bfacb3a3679c2da7222f00cd591367e29bab0659a2",
-      "base_filename": "provider-bases/mycima--base--0e6ba20186dec90c.js",
-      "base_sha256": "0e6ba20186dec90cc867eec2ef9cbaa1a8741bed8e5bce5d748a617a0a1b1f80",
-      "base_source": "selected_candidate_post_provider_overrides_pre_core",
-      "base_migration_stripped_generated_core": false,
+      "published_filename": "providers/mycima--nuvio--bf59908c0288d137.js",
+      "sha256": "bf59908c0288d1378e7120893225cfd4b72e043d11444e712497e6480d9183a7",
+      "patched_sha256": "bf59908c0288d1378e7120893225cfd4b72e043d11444e712497e6480d9183a7",
+      "base_filename": "provider-bases/mycima--base--56dec449d28badc9.js",
+      "base_sha256": "56dec449d28badc9b438e11b874e30308c4755b523ece219af96855cb452c3a1",
+      "base_source": "provider-pipeline-legacy-rebase",
+      "base_migration_stripped_generated_core": true,
       "upstream_sha256": "33a9cc0f055357a6e9f7a3bfacb3a3679c2da7222f00cd591367e29bab0659a2",
       "local_patches": [
         {
@@ -23282,6 +23526,30 @@
           "output_sha256": "33a9cc0f055357a6e9f7a3bfacb3a3679c2da7222f00cd591367e29bab0659a2",
           "bytes_before": 109227,
           "bytes_after": 105522
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 1,
+          "phase": "discovery"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "function_source_introspection"
+          ],
+          "source_sha256": "a4fadbfc538c9b72f52e79e00be52247e2b3bf6ac8c49e48b4f8ddfb9ea8f415",
+          "output_sha256": "bf59908c0288d1378e7120893225cfd4b72e043d11444e712497e6480d9183a7",
+          "bytes_before": 113511,
+          "bytes_after": 103169
         }
       ],
       "source": "published-baseline",
@@ -23512,16 +23780,18 @@
       "strict_consecutive_deep_passes": 0,
       "strict_total_deep_passes": 0,
       "publication_mode": "strict_existing_provider_refresh",
+      "build_contract_schema": 2,
+      "base_seed_source": "git-pre-hardening:775d35d586e2:providers/mycima--published-baseline--be86ad51c4a5f898.js",
+      "base_rebased_at": "2026-08-29T08:26:39.056820+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "33a9cc0f055357a6e9f7a3bfacb3a3679c2da7222f00cd591367e29bab0659a2"
+        "sha256": "bf59908c0288d1378e7120893225cfd4b72e043d11444e712497e6480d9183a7"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "bebc42de4c6a636f7d719561cc741cbadace7cbc3d423f8ff00fa871a5d3bea3"
+      "build_input_sha256": "85ba7168a42916e69b84a46e72b36e4ce65b8508551e6ac208a9b9179d231d34"
     },
     "nakios": {
       "id": "nakios",
@@ -23853,7 +24123,7 @@
         "sha256": "b2bcfd6e2de4e8371e59510201bc9f1952eb63194315bbf98938bbd1b33764c2"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "8491ce6b0be142f69da39c52b7fed1118558db10780944d759dae063a8d669b2"
+      "build_input_sha256": "65b25b58ff2946200ffe052d3d67e85218676d8d6c95d8d2a0bbf842ce239535"
     },
     "neko-sama": {
       "id": "neko-sama",
@@ -24187,7 +24457,7 @@
         "sha256": "8896d3edddf8488d8183ee76cb3010dbb92d1bb1f64329503d97df5e4a079d93"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "00c786c72efe2666ffcf7f132abd86f3ee70a57ffd48169763409946e875cf89"
+      "build_input_sha256": "1fc6b8639ab1a5c1401d955ef33e9ec965cc45259b68a7a080ba2ccebee28659"
     },
     "netmirror": {
       "id": "netmirror",
@@ -24572,11 +24842,14 @@
         "aio",
         "yoru"
       ],
-      "base_filename": "provider-bases/netmirror--base--d811c4c26c567c7b.js",
-      "base_sha256": "d811c4c26c567c7b67a8d7d29172694db1896a35112783f83859d84e2de4b3d1",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/netmirror--base--f3729d780a638943.js",
+      "base_sha256": "f3729d780a638943b170b941eb5e0cae52077f8378945bb255c36a7d64cbccd1",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.960868+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:5cc8283a945c663e",
+      "base_rebased_at": "2026-08-29T08:26:42.055040+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -24585,8 +24858,7 @@
         "mangle": false,
         "sha256": "aa6763733f715e8aa8d7019c955f4776cf6f27ba2505e8b6ce1193d9bfbe9567"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "84d274eabd05566b02db9f75a82103120a3461cf9684f7e3926516126c3a61d6"
+      "build_input_sha256": "219bc6888845d70d32be1fd08cbbad353fbd2f44f84f7bedd80a3c537c8098af"
     },
     "onlykdrama": {
       "id": "onlykdrama",
@@ -24913,7 +25185,7 @@
         "sha256": "2ecd7ef59a56181c1d59c2ab1395d44ca221b7918b1528215664bf4153c6951b"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "6c6cce72464ba449daf1fc0444bf894caa9a6439f933db7f077a9bcce3b82e3b"
+      "build_input_sha256": "174f3eb23be7d1ad61cf9c2f54c9ad707d0554d1939fa460529b5d0106a94d69"
     },
     "papadustream": {
       "id": "papadustream",
@@ -25440,11 +25712,14 @@
       ],
       "preserved_candidate_key": "published:papadustream",
       "preserved_candidate_sha256": "ab0ba4f2bd5925f43bab91db3995e603b836d2b593500df28adaea75ff9f06bd",
-      "base_filename": "provider-bases/papadustream--base--3af420681af415f9.js",
-      "base_sha256": "3af420681af415f9e7cc118a0f3e117998866066bb3febc74b6a027a88f8d550",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/papadustream--base--f24f4c5872c04057.js",
+      "base_sha256": "f24f4c5872c040573fdde0dd7adaf5c88362ad929eaffdd2aabf27ecc6b687df",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.738245+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:36.058276+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -25453,8 +25728,7 @@
         "mangle": false,
         "sha256": "410999d9533f63efda1218612a56735b862024ea39a6c241046a76348147057d"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "37c51169679e3dbec5605c356b027c76920a05a4c42f3e3db338d9341ddabb21"
+      "build_input_sha256": "15a8b795b4ecec63b5efa64f257164178b804b76fe3735f1d29102e5336e2eac"
     },
     "peachify": {
       "id": "peachify",
@@ -25784,7 +26058,7 @@
         "sha256": "06ebce6d235f77438b35ee75c81f68427f373087f427fd9a5326c9fca731c392"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "219053bc068f2b50c486e87ae098696ebcb55f39391204c5dadad8de6cf477b3"
+      "build_input_sha256": "b1be61ee93603eea191fa0bbf9a3bd47c3945aca513e7cc0561483a81cc5ed4f"
     },
     "persianstremio": {
       "id": "persianstremio",
@@ -26109,7 +26383,7 @@
         "sha256": "1c0ffd029bda640ef06416df11f4363497d8ab11db8ba46de0d99e395d671b72"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "d3f1df1fbec40ea34e80320544946d17567e0631ac5018ac8b3e1c0309356da7"
+      "build_input_sha256": "cdb96d77278b4ab898ddc09ca9d116a6330947f0d45b521f7917b41e3b22674b"
     },
     "playimdb": {
       "id": "playimdb",
@@ -26432,7 +26706,7 @@
         "sha256": "ae54be3df3cb17188718d2284b72b1c4d4149a5836ab599aac39a8693c2ff406"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1eb877931a99b905f3576afc411e100c139158888f237f2e3964beaf6effb4c8"
+      "build_input_sha256": "e3336daa37aab56b8b610303505470c3c56e5c9feb7c84ca22eba9d955c18468"
     },
     "purstream": {
       "id": "purstream",
@@ -26765,7 +27039,7 @@
         "sha256": "baa08ef3c1e0d7e6e7b84dbadd8280d86d1fdbc84f2ef5d5e61094c86cfc8473"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "87d84ac9aede4e13d89fca3a79d6da24419b289956d09f22c266cbf2b9435c4c"
+      "build_input_sha256": "03996c326534c8728bfa7f4478f509d9eee87958fc6c1dd6e282f7ad7ab9714d"
     },
     "showbox": {
       "id": "showbox",
@@ -27088,7 +27362,7 @@
         "sha256": "541dba07e0f626b70337c4526d10f79901b1c8e65af2bdd68ec34bd4ea932fdd"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "27a368fed51137139342301a838b1474b03a2b310ed6b7a2aa12b16ba38def88"
+      "build_input_sha256": "d04d6043c428f8ae60654dffa87afc92be5147cbe193799b2d4b2211abf81c6a"
     },
     "streamflix": {
       "id": "streamflix",
@@ -27521,11 +27795,14 @@
       ],
       "preserved_candidate_key": "published:streamflix",
       "preserved_candidate_sha256": "000242cf7a381e34e8b162f1ee86c17315c352273acbe2db0735f151b247703c",
-      "base_filename": "provider-bases/streamflix--base--8a0ed1496a14ae0b.js",
-      "base_sha256": "8a0ed1496a14ae0b2446e44ce1612c59fce43efcda076abedd5da01617d175f4",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/streamflix--base--e3e2a111b46546ed.js",
+      "base_sha256": "e3e2a111b46546edb6a4c86c8c1e7a369040e3a09ce3256c5f094a96b99e173f",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.802301+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:36.098706+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -27534,8 +27811,7 @@
         "mangle": false,
         "sha256": "58b928521566b6cc552411d3580f3c772532ee79a93c07957da0bff3a434bbd7"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "ae163ff4823ddc1b5fe500a2725c62395016f489368969f34fc03d63bcf221aa"
+      "build_input_sha256": "fca92e29430e8f37ea024a94b596db4a28a2f4f9cf1f82b943f8826e821bd31c"
     },
     "streamzo": {
       "id": "streamzo",
@@ -27932,11 +28208,14 @@
       "preserved_candidate_key": "published:streamzo",
       "preserved_candidate_sha256": "f5e94f661dc8c81060d08bbe9dd9e39c81421812254e57de36d9cf5677de64df",
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/streamzo--base--b7e57babb3dd6fe8.js",
-      "base_sha256": "b7e57babb3dd6fe8cb4ee3abf3f5ea5ca69f25fbe24a02ef47522ba5ea12ba1b",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/streamzo--base--aedbe9fb48d45e88.js",
+      "base_sha256": "aedbe9fb48d45e882fda73c9a94dd63f53e04c77a02fece3843b9922a17d569a",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.906948+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:36.178043+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -27945,8 +28224,7 @@
         "mangle": false,
         "sha256": "681fcc412606777d161c3c94f62adf20b7b070c097693a9facef3eb183010485"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "381ca6d6e15b313f4f8a1934f0a4064a7ce6118110ca2223f9885f1f16850ddb"
+      "build_input_sha256": "ac77e6b0e8211f4f5a5f3d6f17de35ddcbec299e0dc523b773a0f8a71aa57349"
     },
     "topcartoons": {
       "id": "topcartoons",
@@ -28319,11 +28597,14 @@
       "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
       "preserved_candidate_key": "published:topcartoons",
       "preserved_candidate_sha256": "143f6a006cc6e2310dabbdc0310f56893a19d3bdd6798ad5f482c95db801269e",
-      "base_filename": "provider-bases/topcartoons--base--5c86d4cfbbe28bd9.js",
-      "base_sha256": "5c86d4cfbbe28bd9b9913813dc8bdae2404ddb0574b6e4b574f7164d89457e94",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/topcartoons--base--750fcd19261d241e.js",
+      "base_sha256": "750fcd19261d241e48e1a5714e4b796740bd0d0c0a9b189eeb03391e6a5ed518",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:56.007444+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg-latest-quarantine-recovery:aio:df33f490a73779f4",
+      "base_rebased_at": "2026-08-29T08:26:42.526554+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -28332,18 +28613,17 @@
         "mangle": false,
         "sha256": "906ddd56175fd89c5e5c92d748ba5db309749e68f8760473cc86ea410d833671"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "e235601e64cfebd2eaf933aeec0246af787c2da6519d7ddb5044e59421b0904d"
+      "build_input_sha256": "129cbe3faae1779c73daef901bb4974eb8d9a839c585e3a71d404ca498fe0a3f"
     },
     "uhdmovies": {
       "id": "uhdmovies",
       "published_filename": "providers/uhdmovies--nuvio--5195e1ac50ab8e9e.js",
       "sha256": "5195e1ac50ab8e9e7f16df7b6b3d5471f2757cd0436449b9f3953a3b58ec56c6",
       "patched_sha256": "5195e1ac50ab8e9e7f16df7b6b3d5471f2757cd0436449b9f3953a3b58ec56c6",
-      "base_filename": "provider-bases/uhdmovies--base--0c274cf8430e85ff.js",
-      "base_sha256": "0c274cf8430e85ff86b4b9a1abf33a49d593b6b180337555ab60383708be9d92",
-      "base_source": "selected_candidate_post_provider_overrides_pre_core",
-      "base_migration_stripped_generated_core": false,
+      "base_filename": "provider-bases/uhdmovies--base--d1b498dabeaeb833.js",
+      "base_sha256": "d1b498dabeaeb8338f8c6c6dbe98201a57fed86eace7140e1367f7bb2157a881",
+      "base_source": "provider-pipeline-legacy-rebase",
+      "base_migration_stripped_generated_core": true,
       "upstream_sha256": "5195e1ac50ab8e9e7f16df7b6b3d5471f2757cd0436449b9f3953a3b58ec56c6",
       "local_patches": [
         {
@@ -28427,6 +28707,11 @@
           "output_sha256": "5195e1ac50ab8e9e7f16df7b6b3d5471f2757cd0436449b9f3953a3b58ec56c6",
           "bytes_before": 112300,
           "bytes_after": 108594
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 1,
+          "phase": "discovery"
         }
       ],
       "source": "published-baseline",
@@ -28664,6 +28949,9 @@
       "strict_consecutive_deep_passes": 0,
       "strict_total_deep_passes": 0,
       "publication_mode": "strict_existing_provider_refresh",
+      "build_contract_schema": 2,
+      "base_seed_source": "git-pre-hardening:775d35d586e2:providers/uhdmovies--published-baseline--7276813b3dbc4f47.js",
+      "base_rebased_at": "2026-08-29T08:26:37.435918+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -28672,8 +28960,7 @@
         "mangle": false,
         "sha256": "5195e1ac50ab8e9e7f16df7b6b3d5471f2757cd0436449b9f3953a3b58ec56c6"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "3d391766484141bc142be1a86639d92b7fd441abdc6e0e11cdf7d7a5c192053c"
+      "build_input_sha256": "ed3f07f770cd618961e562d74a7568445898270d72c5b4c160cd5e4a522142e7"
     },
     "vegamovies": {
       "id": "vegamovies",
@@ -29155,11 +29442,14 @@
       ],
       "preserved_candidate_key": "published:vegamovies",
       "preserved_candidate_sha256": "b0a998e65e21f633a56e52c754b6db5d5592e01f42e5eeb84a4ab961f2bad53c",
-      "base_filename": "provider-bases/vegamovies--base--b8dce1bcf22efb33.js",
-      "base_sha256": "b8dce1bcf22efb3300e310d4a0996df5b0e1a3c3e5a156ba49fb49b8a95e33b3",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/vegamovies--base--38b1a6525ffcb81b.js",
+      "base_sha256": "38b1a6525ffcb81bee524ccf6a18eb85645010007125ebd06113246ae995fac7",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:50.116417+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:0641a31d6068d8d2",
+      "base_rebased_at": "2026-08-29T08:26:32.277323+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -29168,8 +29458,7 @@
         "mangle": false,
         "sha256": "28a4443890c0dbc8d9bde4ed09f0bcfd6982476087184abc8f090c41f14fd9a0"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "42e9da978556a5527cf7fbacbe66d6e3b81069127e5a6b6432c94388a6e1f773"
+      "build_input_sha256": "d6dd52ec1247634360acb65647a5c321ee488c44fade5e0b1b1a62b69c0217c1"
     },
     "videasy": {
       "id": "videasy",
@@ -29522,7 +29811,7 @@
         "sha256": "9fbd0bda0f6f851a20e122c4ba871f0fea2e213736a0c9e0316b22fd5a0b1e59"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0eccb35adda48049286ab053930553679d12401c5ff8afa157c16c699dd38835"
+      "build_input_sha256": "df1679bedcff668be9af8fde9d9b6c84ea989017bbd6fb44b28dd3fad08883cd"
     },
     "vidfast": {
       "id": "vidfast",
@@ -29945,11 +30234,14 @@
       "preserved_candidate_key": "published:vidfast",
       "preserved_candidate_sha256": "84fd9790b651e4e9e8bde338d050c59295628c26cc5db7c2bc43fd1e1570329f",
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/vidfast--base--fe926b50dc6f01ed.js",
-      "base_sha256": "fe926b50dc6f01edeeb8c56f0f8c41f5f4f371946e2551609b1b4f49077ebbed",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/vidfast--base--3c68e574b2266522.js",
+      "base_sha256": "3c68e574b2266522acfb0111d8514bdab6011f3f7d3807eceb3e769505cd8e61",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:52.963317+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:9750c41a72fe7978",
+      "base_rebased_at": "2026-08-29T08:26:36.434454+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -29958,8 +30250,7 @@
         "mangle": false,
         "sha256": "03581b3113d37dfdc8a8989eeaabb31c49862c3b7b91c9945a2a95f7e145bbf3"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "053d3e09bd216eba1cacdce8ff1f6227b086b4cbe675533988493a8c5f22b760"
+      "build_input_sha256": "878ffb29580d54da66eb93be707271a958f2e035ed793a2db318ac03b1b09e2a"
     },
     "vidlink": {
       "id": "vidlink",
@@ -30393,11 +30684,14 @@
         "yoru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/vidlink--base--3f9c3fb19da37c92.js",
-      "base_sha256": "3f9c3fb19da37c9263959dd00ed5c402e669ab23af7a48cc668a23c7a335cc34",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/vidlink--base--b1b24a19f562bcc0.js",
+      "base_sha256": "b1b24a19f562bcc064b0239dc5f393be58022f0dacfe4406c0a6649de0556b80",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:53.021812+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:bedc41b8caf7e7cb",
+      "base_rebased_at": "2026-08-29T08:26:36.693730+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -30406,8 +30700,7 @@
         "mangle": false,
         "sha256": "0af625b2bf5b499678ae44f653aa04787cb4159d71bc2c407ede9488c1d6815b"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "6b0618b683e4b230e8225fb47927ad24210b97bd60c7db21c1f6dc5ee719471b"
+      "build_input_sha256": "15a1d2698260541a1c5d1525771d4b3f549bf2c36cfb056a21169181c4086401"
     },
     "vidlove": {
       "id": "vidlove",
@@ -30734,7 +31027,7 @@
         "sha256": "0e2ad2929afda012f4ffcf6d92028ac83d45124d84d4f293c00e68bc9d04efc8"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7220d6ae872114271fe8d487553d5e23c06aed577069cfd6040c9031954ca22c"
+      "build_input_sha256": "be4de7862464cf8cab006dc90e8c65dc253615d70392561b170cd956f9b3816a"
     },
     "vidnest": {
       "id": "vidnest",
@@ -31054,7 +31347,7 @@
         "sha256": "0c21d63a6e5204f5aa97a7c94a254de8b1cb98e4ba45a52f7553046bbf95ef66"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5b4873de79acc363e66a7d6373d3e2680fbfc7244937940b6fbbbfce3aa44488"
+      "build_input_sha256": "6c909309d0278158688b4a0b97b511a8a428c6443b49087ebe887d8d7e3caf57"
     },
     "vidnest-anime": {
       "id": "vidnest-anime",
@@ -31381,7 +31674,7 @@
         "sha256": "b67ece05f8b749042ee22e6decbd69b2f4efd2c6944397dbf95fac501b1809fa"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "49c99786d8424de3d8abeca06daf007db067967a8dc45b3d7684172676b70f62"
+      "build_input_sha256": "95741199714966ceab0751f89325bfc56ae89284b65386ffec151621d4a454d2"
     },
     "vidrock": {
       "id": "vidrock",
@@ -31708,7 +32001,7 @@
         "sha256": "4a83ff04c1160c9f90ba2c31d706bdfe2318b3e743409dcfa1dfee8a61e3f010"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1aad1cb0095c18c76610abe7941fb78afbbb7a0b1000a5ce6d3bb886cf9b1457"
+      "build_input_sha256": "ae460bcfefc2a538fe30be0b47f0c3b5e2314a02189d453c05b199ca8f93cd46"
     },
     "vidsrc": {
       "id": "vidsrc",
@@ -32100,11 +32393,14 @@
       ],
       "preserved_candidate_key": "published:vidsrc",
       "preserved_candidate_sha256": "ad7fe8696f5411fc9393581329234fc216291e4af35f056f5cb6fe496e5427c4",
-      "base_filename": "provider-bases/vidsrc--base--7947316d3cbed215.js",
-      "base_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/vidsrc--base--71de5fb6d077d0ac.js",
+      "base_sha256": "71de5fb6d077d0acd8ed8a70a5169c9c21289067bdd6c124e1119541d215b3b9",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:56.055302+00:00",
       "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:c83b23943f9783f2",
+      "base_rebased_at": "2026-08-29T08:26:42.786353+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -32113,8 +32409,7 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "bc5d12a3871e26f9f497f521a44b711ec5d52d33cf30c52374337c0fe19f9550"
+      "build_input_sha256": "20b1ee7d83e6636bbc53bd193b3fc5c3dde1611c4a9fbd85946ce8daa7e2e6d3"
     },
     "vixsrc": {
       "id": "vixsrc",
@@ -32525,11 +32820,14 @@
       ],
       "preserved_candidate_key": "published:vixsrc",
       "preserved_candidate_sha256": "77c6154cac3728e83d5a06f3458e4bd512ee52581e740ea078d7d03cf7b02f79",
-      "base_filename": "provider-bases/vixsrc--base--0cc007ead45c0193.js",
-      "base_sha256": "0cc007ead45c01938d59eacee6e11e7f5470b998eca0cbb610bc9ebef10536ad",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/vixsrc--base--b38a464f826f7ea8.js",
+      "base_sha256": "b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:56.103484+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:b38a464f826f7ea8",
+      "base_rebased_at": "2026-08-29T08:26:43.320932+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -32538,8 +32836,7 @@
         "mangle": false,
         "sha256": "80a618d8c79b10ed9f3a8910a5b10f18756d3e794bd556c4e4de401c5a66755d"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "76bd9251416c61d41ba385bf7abc9e2cef09a0ff6847d83458d5ecf7d508700b"
+      "build_input_sha256": "152c7a72629bacb6156e198c5d520a106ff38c4f0f9171b11fcc34ddb8043c67"
     },
     "voiranime": {
       "id": "voiranime",
@@ -32935,11 +33232,14 @@
       "preserved_candidate_key": "published:voiranime",
       "preserved_candidate_sha256": "674c4e61d53d138e5e8dea0dedcc6e998f4a39895bfa43b772679db47d9fea87",
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/voiranime--base--289c5344b4295a3a.js",
-      "base_sha256": "289c5344b4295a3a87b261d253e932e0cb902c4bab48b563bc8aecc75ee97a36",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/voiranime--base--2a6be4c289b7f653.js",
+      "base_sha256": "2a6be4c289b7f653e5f7ff6e0883f25e87d8337e93041b8d613f9f7a25ddff01",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:53.111599+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:36.761375+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -32948,8 +33248,7 @@
         "mangle": false,
         "sha256": "5cde63b8c5953fe9783eca19a5901f4e6b2981b3f5cd3433ce0bb04f79c5edaf"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "23b547d5cfe0c75818085b4abd5d8b71f234964dfb4a28c672d7e0e198bb906c"
+      "build_input_sha256": "54179b51fa1fbf7481b8870a39558dda9726e21521079e0fc38eb5785068ee23"
     },
     "voiranime-homes": {
       "id": "voiranime-homes",
@@ -33286,7 +33585,7 @@
         "sha256": "b6dc7c96fca4365d5d3a1fae091e9bf1a1e86e9e57f60d4af3342b98ee4b978a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4667005703301df01dfe551202ce502cc9899f34fbfac4c44e3d8b0292a56bee"
+      "build_input_sha256": "d851be32091b344dea50798ca403a3e4feedfa1936d84133a8cfa7b166e3569f"
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
@@ -33622,7 +33921,7 @@
         "sha256": "65d3b11422b74ee42595141ac6a865a9e07f029bac98845dcc456705d19817c6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0bcf347a4d57844a806bc89d7c3e5d86941b2f2feb16c747043caa3580794865"
+      "build_input_sha256": "0f7cfbd74643759d3e2a544c0159867de50937ed4e577b426848df15e015b1f6"
     },
     "vostfree": {
       "id": "vostfree",
@@ -34060,9 +34359,12 @@
       "publication_mode": "strict_existing_provider_refresh",
       "base_filename": "provider-bases/vostfree--base--45293708787ffee3.js",
       "base_sha256": "45293708787ffee3ed0e3c763c37dc1c91d84c1abc1531a566018a5ac19453fb",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:53.288893+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:36.831002+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -34071,8 +34373,7 @@
         "mangle": false,
         "sha256": "7df8accd87e7bd5ec0c9e6138dc493fc11109a007c637d2d9c0f1ac43b52b50b"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "8ece4433f09ebf064546deea6293db0441cbd5fdebba7238210ca4fdf978f832"
+      "build_input_sha256": "aecc4aac81c7882b1191070f67b307637741ea52096e79e6d034b78a8f31f9fc"
     },
     "waveanime": {
       "id": "waveanime",
@@ -34397,13 +34698,13 @@
         "sha256": "680810c31467782723f64f2325e555b069486dc3fbec0200d3a75e3035f1de5f"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ba7cf8c27ca63a9953fac7b4710ed59e5c35441f9b37cc7d58c2a275a4bfde9a"
+      "build_input_sha256": "40c8b55b66b19d3e60d897d5423602064d00e105e12f33f23fd55a7389eaa4e4"
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--nuvio--cf5d53efedf2330f.js",
-      "sha256": "cf5d53efedf2330f14a1a3bbd0c69f113916f21375e1e8ad2a42b367d767bede",
-      "patched_sha256": "cf5d53efedf2330f14a1a3bbd0c69f113916f21375e1e8ad2a42b367d767bede",
+      "published_filename": "providers/wookafr--nuvio--53dfaf12f3adad82.js",
+      "sha256": "53dfaf12f3adad82b08584ddba5849ad4f96832189c9958222a67171dfedf127",
+      "patched_sha256": "53dfaf12f3adad82b08584ddba5849ad4f96832189c9958222a67171dfedf127",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
@@ -34687,6 +34988,32 @@
           "output_sha256": "cf5d53efedf2330f14a1a3bbd0c69f113916f21375e1e8ad2a42b367d767bede",
           "bytes_before": 397874,
           "bytes_after": 393612
+        },
+        {
+          "type": "runtime_domain_overrides",
+          "count": 5,
+          "phase": "discovery"
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "dynamic_eval",
+            "dynamic_function_constructor",
+            "function_source_introspection",
+            "source_directive"
+          ],
+          "source_sha256": "b3a387ac58d8b35ec6fe5cfed2716060ff8688c483bd7df86e8601effc1effea",
+          "output_sha256": "53dfaf12f3adad82b08584ddba5849ad4f96832189c9958222a67171dfedf127",
+          "bytes_before": 390031,
+          "bytes_after": 385768
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -34920,21 +35247,23 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/wookafr--base--591abfabdfa69144.js",
-      "base_sha256": "591abfabdfa6914434a76c3defeb3a48a4457a22fc29bae9d53165d856554ee4",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/wookafr--base--13475346c3a6958b.js",
+      "base_sha256": "13475346c3a6958b6de9915b6b38751b7799506be4ee73f539ddf36d5f787c0c",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:53.386302+00:00",
       "base_migration_stripped_generated_core": true,
+      "build_contract_schema": 2,
+      "base_seed_source": "legacy-current-provider-logic",
+      "base_rebased_at": "2026-08-29T08:26:36.909200+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "cf5d53efedf2330f14a1a3bbd0c69f113916f21375e1e8ad2a42b367d767bede"
+        "sha256": "53dfaf12f3adad82b08584ddba5849ad4f96832189c9958222a67171dfedf127"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "1e73e63c9cb19c0cde65bd7b7c2925364e6bf4f66d264d6b91ab40329a639a1f"
+      "build_input_sha256": "e49af01724cdff39db1da21206189ca74612cf96c9fd97465d611e3ebb513388"
     },
     "xpass": {
       "id": "xpass",
@@ -35262,7 +35591,7 @@
         "sha256": "f0a87e09e2e9bfaa7e491593939b8317f9f5984992c2683937f7e87ca5a37bb6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "6830c1ebb26e900065994b0a3decb8302919027800b09cb0778ac56e06cd3f25"
+      "build_input_sha256": "7e20a7357f4c8ddbae3f969336e5ac100b54669e65c550d55c3a0195814b331b"
     },
     "yflix": {
       "id": "yflix",
@@ -35676,11 +36005,14 @@
         "yoru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/yflix--base--00a9ebf3f4c7b614.js",
-      "base_sha256": "00a9ebf3f4c7b6145675ff5286dd46bd9a5b1b3b0ccb71b1421ad487e2820624",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/yflix--base--41bc7c6aa6bce910.js",
+      "base_sha256": "41bc7c6aa6bce91070973e8fd265498923992e767f367e9d98b24a6319a2a71d",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:53.443097+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:yoru:ca1223b5ee78c12b",
+      "base_rebased_at": "2026-08-29T08:26:37.162746+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -35689,8 +36021,7 @@
         "mangle": false,
         "sha256": "2dc0033a5572d5dbae98fe51c2592a43527854e0c4062608a2194363c40304ff"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "054542be0d659e9a0f4a65292b9ac7a09a0174ca44100def184dec46f0c9920e"
+      "build_input_sha256": "165839d9b29d4cd9e63c72a21af800449bfaa378aad4aa80447cdbf0e3f5268b"
     },
     "zinkmovies": {
       "id": "zinkmovies",
@@ -36126,11 +36457,14 @@
         "aio"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/zinkmovies--base--6b621c8bb5b4cfe1.js",
-      "base_sha256": "6b621c8bb5b4cfe17b1a098cb14f34b227d3d07190c2bb2238dfed45a70ee57f",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/zinkmovies--base--5fdaaf0f2c1f3e8f.js",
+      "base_sha256": "5fdaaf0f2c1f3e8f63131eb3fb646bc38968e31dfc8df53dbef7217440533670",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:50.047568+00:00",
-      "base_migration_stripped_generated_core": true,
+      "base_migration_stripped_generated_core": false,
+      "build_contract_schema": 2,
+      "base_seed_source": "upstream-lkg:aio:5989f97be6cce82a",
+      "base_rebased_at": "2026-08-29T08:26:32.010392+00:00",
       "final_fixed_point": {
         "schema_version": 1,
         "verified": true,
@@ -36139,8 +36473,7 @@
         "mangle": false,
         "sha256": "1e8cb00561982779035772fe4aa8c271ad35ad7fc09ae6a6a9b8035ddb97cb07"
       },
-      "build_contract_schema": 2,
-      "build_input_sha256": "980f379dfe5a9c17c21b1373532b2af0160c0328afaa7ba0ef209024fb4d21cb"
+      "build_input_sha256": "584290b026909bc690efad45602f26eae2d56672b15f4c442646a696115085a5"
     },
     "4khdhubnew": {
       "id": "4khdhubnew",
@@ -36164,6 +36497,61 @@
           "output_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
           "bytes_before": 302,
           "bytes_after": 284
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_enrichment_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_enrichment"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "publication_quarantine_replay",
+          "phase": "final-pre-security",
+          "source": "provenance",
+          "scope": "terminal",
+          "reason": "catalogue_audit_playable_identity_contradiction"
         }
       ],
       "source": "published-baseline",
@@ -36401,11 +36789,23 @@
       },
       "strict_consecutive_deep_passes": 1,
       "strict_total_deep_passes": 1,
-      "base_filename": "provider-bases/4khdhubnew--base--7947316d3cbed215.js",
-      "base_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/4khdhubnew--base--b42b35d5d35f932a.js",
+      "base_sha256": "b42b35d5d35f932abfda6901ba5669d95b536e32292ceefa474a0fdcc501d87c",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:55.194596+00:00",
-      "base_migration_stripped_generated_core": false
+      "base_migration_stripped_generated_core": false,
+      "base_seed_source": "git:4ac0002d48d7:providers/4khdhubnew--published-baseline--e64aea603b3c3786.js",
+      "base_rebased_at": "2026-08-29T08:26:38.779607+00:00",
+      "final_fixed_point": {
+        "schema_version": 1,
+        "verified": true,
+        "tool": "terser",
+        "tool_version": "5.50.0",
+        "mangle": false,
+        "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
+      },
+      "build_contract_schema": 2,
+      "build_input_sha256": "b0a1681029aec06e03a6d119e6a50649e921dbfa177495dcbdd4a968e3198a30"
     },
     "sekai": {
       "id": "sekai",
@@ -36457,6 +36857,55 @@
           "output_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
           "bytes_before": 302,
           "bytes_after": 284
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+          "phase": "discovery",
+          "scope": "global_catalogue_resolution"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "publication_quarantine_replay",
+          "phase": "final-pre-security",
+          "source": "provenance",
+          "scope": "terminal",
+          "reason": "catalogue_audit_playable_identity_contradiction"
         }
       ],
       "source": "published-baseline",
@@ -36714,11 +37163,23 @@
       "preserved_reason": "ci_uncertain_kept_last_conclusive_safety_quarantine",
       "preserved_candidate_key": "published:sekai",
       "preserved_candidate_sha256": "5e3013553710062dbf8bd2d46fc8cf90d64b9d49d371c68877990a84185ffe73",
-      "base_filename": "provider-bases/sekai--base--7947316d3cbed215.js",
-      "base_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/sekai--base--fd20b0e14d8ed1bc.js",
+      "base_sha256": "fd20b0e14d8ed1bcb6004f8f887bf9fd5aec1e3ef1282af1a81293e8c8e38401",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:53.929205+00:00",
-      "base_migration_stripped_generated_core": false
+      "base_migration_stripped_generated_core": false,
+      "base_seed_source": "upstream-lkg-latest-quarantine-recovery:gowaru:34e2f2fe9df06c7c",
+      "base_rebased_at": "2026-08-29T08:26:37.967300+00:00",
+      "final_fixed_point": {
+        "schema_version": 1,
+        "verified": true,
+        "tool": "terser",
+        "tool_version": "5.50.0",
+        "mangle": false,
+        "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
+      },
+      "build_contract_schema": 2,
+      "build_input_sha256": "f4382700a44d21eda974492d0afae5a4128bd39ec1369d98693c6e67179f2aa7"
     },
     "toflix": {
       "id": "toflix",
@@ -36742,6 +37203,55 @@
           "output_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
           "bytes_before": 302,
           "bytes_after": 284
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_runtime_integrity_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
+          "phase": "discovery",
+          "scope": "global_runtime_media_safety"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/hls_master_audio_preserver_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_security_hardening_v1.py",
+          "phase": "discovery",
+          "scope": "global_playback_integrity"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_runtime_compat_v1.py",
+          "phase": "discovery",
+          "scope": "global_runtime_compat"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_stream_presentation_v1.py",
+          "phase": "discovery",
+          "scope": "global_stream_presentation"
+        },
+        {
+          "type": "patch_script",
+          "path": "scripts/provider_patches/global_provider_branding_v1.py",
+          "phase": "discovery",
+          "scope": "global_provider_branding"
+        },
+        {
+          "type": "publication_quarantine_replay",
+          "phase": "final-pre-security",
+          "source": "provenance",
+          "scope": "terminal",
+          "reason": "catalogue_audit_playable_identity_contradiction"
         }
       ],
       "source": "published-baseline",
@@ -36979,18 +37489,30 @@
       },
       "strict_consecutive_deep_passes": 1,
       "strict_total_deep_passes": 1,
-      "base_filename": "provider-bases/toflix--base--7947316d3cbed215.js",
-      "base_sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6",
-      "base_source": "one-shot-public-core-tail-extraction",
+      "base_filename": "provider-bases/toflix--base--e6fffe0dbe1bde5b.js",
+      "base_sha256": "e6fffe0dbe1bde5be253c3d49716613caaee00d6ce951b193a2c99afa085755d",
+      "base_source": "provider-pipeline-legacy-rebase",
       "base_migrated_at": "2026-08-28T23:38:53.976438+00:00",
-      "base_migration_stripped_generated_core": false
+      "base_migration_stripped_generated_core": false,
+      "base_seed_source": "git:0c16cc5a4fe0:providers/toflix--published-baseline--dd2dbb2d068dae21.js",
+      "base_rebased_at": "2026-08-29T08:26:38.228337+00:00",
+      "final_fixed_point": {
+        "schema_version": 1,
+        "verified": true,
+        "tool": "terser",
+        "tool_version": "5.50.0",
+        "mangle": false,
+        "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
+      },
+      "build_contract_schema": 2,
+      "build_input_sha256": "d6f219811c6b6aa8dec767c24b7e291fda8c4357734ff7595f371c30963e25d7"
     }
   },
   "validation_mode": "quick",
   "publication_mode": "strict_existing_provider_refresh",
   "provider_publication_contract": {
     "schema_version": 2,
-    "sha256": "5ae89b445f917ad3c7219378233834a5f445b08e3bfe9b677ecd58b844f55b0c",
+    "sha256": "1c8a30f093e40d9250ecdd91155c8babe78a8e045a9859afcefe8caeb7e828b5",
     "provider_count": 95,
     "mode": "provider_base_plus_deterministic_core"
   }
