@@ -20,10 +20,9 @@ QUARANTINE = "scripts/provider_patches/quarantine_provider_v1.py"
 NATIVE_TARGET_ORDER_COMPAT = "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py"
 NATIVE_TARGET_ORDER = "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
 RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
-SHARED_RUNTIME_TAIL = [
+PROVIDER_RUNTIME_TAIL = [
     NATIVE_TARGET_ORDER_COMPAT,
     NATIVE_TARGET_ORDER,
-    RUNTIME_MEDIA_SAFETY,
 ]
 COFLIX_BLOCKED_PATHS = {
     "/wp-admin/",
@@ -37,21 +36,21 @@ def target_options(provider: dict) -> dict:
 
 
 def provider_profile(scripts: list[str], provider_id: str) -> list[str]:
-    """Return the provider-owned profile after validating the optional Core tail.
+    """Return provider-owned recovery after validating its optional runtime-order tail.
 
-    apply_runtime_capability_upgrade_v4.py materializes the three shared runtime
-    patches after provider-specific recovery/compatibility layers. The VF profile
-    contract must remain valid before and after that Core materialization, while a
-    partial, duplicated or misplaced Core tail must fail closed.
+    Media safety is a Core-global invariant and must never be materialized in
+    provider_patches.patch_scripts. Only the two provider-scoped native target
+    ordering adapters may form an optional trailing pair here.
     """
-    counts = {path: scripts.count(path) for path in SHARED_RUNTIME_TAIL}
+    assert RUNTIME_MEDIA_SAFETY not in scripts, (provider_id, scripts)
+    counts = {path: scripts.count(path) for path in PROVIDER_RUNTIME_TAIL}
     present = [path for path, count in counts.items() if count]
     if not present:
         return list(scripts)
-    assert present == SHARED_RUNTIME_TAIL, (provider_id, scripts, counts)
+    assert present == PROVIDER_RUNTIME_TAIL, (provider_id, scripts, counts)
     assert all(count == 1 for count in counts.values()), (provider_id, scripts, counts)
-    assert scripts[-len(SHARED_RUNTIME_TAIL):] == SHARED_RUNTIME_TAIL, (provider_id, scripts)
-    return scripts[:-len(SHARED_RUNTIME_TAIL)]
+    assert scripts[-len(PROVIDER_RUNTIME_TAIL):] == PROVIDER_RUNTIME_TAIL, (provider_id, scripts)
+    return scripts[:-len(PROVIDER_RUNTIME_TAIL)]
 
 
 def main() -> int:
