@@ -47,6 +47,23 @@ def main() -> int:
         "ProviderBase/Core boundary must stay explicit in apply_overrides"
     )
 
+    sync_workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
+    for critical_path in (
+        "scripts/apply_provider_overrides.py",
+        "scripts/provider_base_store.py",
+        "scripts/provider_compiler.py",
+        "provider-overrides.json",
+        "provider-type-policy.json",
+        "package.json",
+        "package-lock.json",
+        "tests/override_transaction_order_test.py",
+        "tests/provider_base_layering_contract_test.py",
+        "tests/publication_contract_fingerprint_test.py",
+    ):
+        assert sync_workflow.count(f"- '{critical_path}'") >= 2, (
+            f"sync push/PR triggers must include {critical_path}"
+        )
+
     module = load_module()
     clean = "native-provider-code\n\n"
     untouched, count = module._strip_legacy_global_stream_guards(clean)
