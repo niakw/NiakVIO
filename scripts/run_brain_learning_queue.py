@@ -347,6 +347,14 @@ def repair_attempt(
         "--output", str(output), "--max-rounds", "50",
     ], env=env, deadline=deadline, allow_fail=True)
     report = load_json(output / "repair-report.json", {})
+    # Validate accepted repairs against the exact targeted registry before the
+    # candidate is merged back into the full Learning staging tree.
+    run([
+        sys.executable, str(SCRIPTS / "validate_automatic_repair_results.py"),
+        "--stage", str(registry_path.parent),
+        "--health", str(output / "health-results.json"),
+        "--repairs", str(output / "repair-report.json"),
+    ], env=env, deadline=deadline)
     accepted = sum(len(x.get("accepted") or []) for x in report.get("rounds") or [] if isinstance(x, dict))
     attempted = sorted({
         str(a.get("profile") or "")
