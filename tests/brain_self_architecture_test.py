@@ -99,9 +99,11 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
 
     current = json.loads(POLICY.read_text(encoding="utf-8"))
     assert next_policy["learningLab"]["allStreamsSafetyCap"] > current["learningLab"]["allStreamsSafetyCap"]
-    assert "maxExploratoryProfilesPerProvider" not in (json.loads(SELF.read_text(encoding="utf-8")).get("autoPatchAllowlist") or {})
-    assert next_policy["learningLab"].get("targetProvidersPerRun") == "time_budgeted_queue"
-    assert markdown.is_file() and "self" not in ""
+    allow = json.loads(SELF.read_text(encoding="utf-8")).get("autoPatchAllowlist") or {}
+    assert "learningLab.maxExploratoryProfilesPerProvider" in allow
+    assert next_policy["learningLab"].get("targetProvidersPerRun") == 1
+    assert next_policy["learningLab"].get("maxRepairRounds") == 1
+    assert markdown.is_file()
     assert "NiakVIO Brain architecture evolution" in markdown.read_text(encoding="utf-8")
 
 print("Brain self-architecture tests passed")
