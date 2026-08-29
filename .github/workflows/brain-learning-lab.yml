@@ -37,6 +37,9 @@ on:
       - "scripts/brain_repair_runtime.py"
       - "scripts/select_brain_targeted_probe.py"
       - "scripts/build_brain_repair_proposal.py"
+      - "scripts/build_brain_architecture_proposal.py"
+      - "tests/brain_self_architecture_test.py"
+      - "engine_v2/config/brain-self-evolution.json"
       - "scripts/build_native_reader_brain_repair.py"
       - "scripts/build_native_reader_learning_summary.py"
       - "scripts/merge_native_reader_learning_failures.py"
@@ -392,8 +395,15 @@ jobs:
           python scripts/build_brain_architecture_proposal.py \
             --learning-state brain-learning-output/latest.json \
             --policy engine_v2/config/brain-policy.json \
+            --self-config engine_v2/config/brain-self-evolution.json \
+            --workflow .github/workflows/brain-learning-lab.yml \
+            --targeted-lab brain-sandbox/targeted-lab-summary.json \
+            --target-selection brain-sandbox/learning-target-selection.json \
+            --route-report brain-sandbox/health-output/targeted-provider-hub-report.json \
+            --route-fallback brain-sandbox/health-output/targeted-provider-search-fallback.json \
             --output-policy brain-learning-output/brain-policy.proposed.json \
-            --summary brain-learning-output/brain-architecture-proposal.json
+            --summary brain-learning-output/brain-architecture-proposal.json \
+            --markdown brain-learning-output/brain-architecture-proposal.md
           node -e "const x=require('./brain-learning-output/brain-architecture-proposal.json'); if(x.policy?.publicationAllowed!==false||x.policy?.productionWritesAllowed!==false||x.policy?.pullRequestOnly!==true||x.policy?.requiresHumanMerge!==true) process.exit(1)"
 
       - name: Upload sanitized learning and proposal state
@@ -605,6 +615,7 @@ jobs:
         run: |
           set -euo pipefail
           test -s brain-learning-output/brain-architecture-proposal.json
+          test -s brain-learning-output/brain-architecture-proposal.md
           test -s brain-learning-output/brain-policy.proposed.json
           python -m json.tool brain-learning-output/brain-architecture-proposal.json >/dev/null
           python -m json.tool brain-learning-output/brain-policy.proposed.json >/dev/null
@@ -632,13 +643,14 @@ jobs:
           set -euo pipefail
           mkdir -p engine_v2/learning
           cp brain-learning-output/brain-architecture-proposal.json engine_v2/learning/architecture-proposal.json
+          cp brain-learning-output/brain-architecture-proposal.md engine_v2/learning/architecture-proposal.md
           if [ "${{ steps.architecture.outputs.policy_changed }}" = "true" ]; then
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
           python -m json.tool engine_v2/learning/architecture-proposal.json >/dev/null
           python -m json.tool engine_v2/config/brain-policy.json >/dev/null
           python tests/brain_cron_full_coverage_test.py
-          if git diff --quiet -- engine_v2/learning/architecture-proposal.json engine_v2/config/brain-policy.json; then
+          if git diff --quiet -- engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md engine_v2/config/brain-policy.json; then
             echo "has_diff=false" >> "$GITHUB_OUTPUT"
           else
             echo "has_diff=true" >> "$GITHUB_OUTPUT"
@@ -662,15 +674,19 @@ jobs:
           if [ "$(node -e "const x=require('./$SUMMARY');process.stdout.write(x.policyChanged===true?'true':'false')")" = "true" ]; then
             cp brain-learning-output/brain-policy.proposed.json engine_v2/config/brain-policy.json
           fi
-          git add engine_v2/learning/architecture-proposal.json engine_v2/config/brain-policy.json
+          git add engine_v2/learning/architecture-proposal.json engine_v2/learning/architecture-proposal.md engine_v2/config/brain-policy.json
           git commit -m "brain: propose Learning architecture evolution"
           git push --force-with-lease origin HEAD:"$BRANCH"
 
           COUNT="$(node -e "const x=require('./$SUMMARY');process.stdout.write(String(x.proposalCount||0))")"
+          POLICY_CHANGES="$(node -e "const x=require('./$SUMMARY');process.stdout.write(String((x.policyChanges||[]).length))")"
+          KINDS="$(node -e "const x=require('./$SUMMARY');process.stdout.write((x.proposals||[]).map(p=>p.evolutionKind).filter(Boolean).join(', ')||'none')")"
           BODY="$(cat <<EOF
           NiakVIO Brain detected limitations in its own Learning/diagnostic architecture and produced a review-only evolution proposal.
 
           - Architecture proposals: ${COUNT}
+          - Allowlisted policy changes proposed: ${POLICY_CHANGES}
+          - Evolution kinds: ${KINDS}
           - Production writes from Learning: disabled
           - Human merge: required
           - Fresh CI: required
