@@ -68,7 +68,7 @@ jobs:
   experiment:
     name: LEARNING - Sandbox repair and evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 75
     permissions:
       contents: read
     steps:
@@ -149,44 +149,6 @@ jobs:
           git show "$BASELINE:manifest.json" > brain-learning-input/baseline-manifest.json
           git show "$BASELINE:health-report.json" > brain-learning-input/baseline-health.json
 
-      - name: Select one provider for deep Learning
-        id: learning-target
-        shell: bash
-        env:
-          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
-        run: |
-          set -euo pipefail
-          mkdir -p brain-sandbox
-          python scripts/select_brain_learning_target.py \
-            --health health-report.json \
-            --provider "$TARGET_PROVIDER" \
-            --github-output "$GITHUB_OUTPUT" \
-            --json-out brain-sandbox/learning-target-selection.json
-
-      - name: Explore targeted provider route when access evidence warrants it
-        if: steps.learning-target.outputs.provider != '' && steps.learning-target.outputs.needs_route_search == 'true'
-        shell: bash
-        env:
-          PROVIDER: ${{ steps.learning-target.outputs.provider }}
-        run: |
-          set -euo pipefail
-          mkdir -p brain-sandbox/health-output
-          python scripts/resolve_provider_hubs.py \
-            --apply \
-            --mode deep \
-            --include-disabled \
-            --search-disabled \
-            --provider "$PROVIDER" \
-            --workers 1 \
-            --timeout 8 \
-            --output brain-sandbox/health-output/targeted-provider-hub-report.json
-          python scripts/resolve_provider_hub_search_fallback.py \
-            --report brain-sandbox/health-output/targeted-provider-hub-report.json \
-            --output brain-sandbox/health-output/targeted-provider-search-fallback.json \
-            --apply \
-            --max-providers 1 \
-            --timeout 8
-
       - name: Build isolated current provider stage
         shell: bash
         run: |
@@ -202,22 +164,20 @@ jobs:
           python scripts/normalize_terminal_quarantine_stage.py --stage staging
           python scripts/validate_override_pipeline.py --stage staging
 
-      - name: Diagnose mutate retest and learn inside sandbox
-        env:
-          NUVIO_WORKER_MEMORY_MB: "1024"
-          NUVIO_BRAIN_LEARNING_STATE: brain-learning-input/previous.json
-          NUVIO_BRAIN_TARGET_PROVIDER: ${{ steps.learning-target.outputs.provider }}
+      - name: Observe the complete catalogue once for Learning
         shell: bash
+        env:
+          NUVIO_STAGE: staging
+          NUVIO_CANDIDATES_PATH: staging/candidates.json
+          NUVIO_HEALTH_OUTPUT: brain-sandbox/full-health
+          NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
+          NUVIO_WORKER_MEMORY_MB: "1024"
         run: |
           set -euo pipefail
-          # Unresolved providers/failed repairs are valid learning outcomes. The
-          # repair engine returns nonzero only for broken infrastructure/contracts;
-          # accepted mutations are still validated strictly below.
-          python scripts/run_brain_learning_sandbox.py --stage staging --output brain-sandbox/health-output --max-rounds 1
-          python scripts/validate_automatic_repair_results.py --stage staging --health brain-sandbox/health-output/health-results.json --repairs brain-sandbox/health-output/repair-report.json
-          python scripts/generate_diagnostics.py --results brain-sandbox/health-output/health-results.json --output brain-sandbox/health-output
-          test -s brain-sandbox/health-output/health-results.json
-          test -s brain-sandbox/health-output/repair-report.json
+          mkdir -p brain-sandbox/full-health brain-sandbox/health-output
+          node scripts/health_check.mjs --deep
+          test -s brain-sandbox/full-health/health-results.json
+          cp brain-sandbox/full-health/health-results.json brain-sandbox/health-output/health-results.json
 
       - name: Prove daily published-provider observation coverage
         shell: bash
@@ -226,105 +186,32 @@ jobs:
           python scripts/validate_daily_learning_coverage.py \
             --manifest manifest.json \
             --stage staging/candidates.json \
-            --health brain-sandbox/health-output/health-results.json \
+            --health brain-sandbox/full-health/health-results.json \
             --output brain-sandbox/daily-learning-coverage.json
 
-      - name: Select one targeted provider probe
-        id: targeted
+      - name: Run adaptive Learning provider queue
         shell: bash
         env:
-          TARGET_PROVIDER: ${{ inputs.target_provider || steps.learning-target.outputs.provider || '' }}
-          TARGET_CLIENT: ${{ inputs.target_client || 'desktop' }}
+          TARGET_PROVIDER: ${{ inputs.target_provider || '' }}
         run: |
           set -euo pipefail
-          python scripts/select_brain_targeted_probe.py \
-            --manifest manifest.json \
-            --repair-report brain-sandbox/health-output/repair-report.json \
-            --provider "$TARGET_PROVIDER" \
-            --client "$TARGET_CLIENT" \
-            --github-output "$GITHUB_OUTPUT" \
-            --json-out brain-sandbox/targeted-probe-selection.json
-
-      - name: Run one deep targeted Nuvio command lab
-        if: steps.targeted.outputs.provider != ''
-        shell: bash
-        env:
-          PROVIDER: ${{ steps.targeted.outputs.provider }}
-          CLIENT: ${{ steps.targeted.outputs.client }}
-          TMDB_ID: ${{ steps.targeted.outputs.tmdb_id }}
-          MEDIA_TYPE: ${{ steps.targeted.outputs.media_type }}
-          TITLE: ${{ steps.targeted.outputs.title }}
-          YEAR: ${{ steps.targeted.outputs.year }}
-          SEASON: ${{ steps.targeted.outputs.season }}
-          EPISODE: ${{ steps.targeted.outputs.episode }}
-          FIXTURE: ${{ steps.targeted.outputs.slug }}
-        run: |
-          set -u
-          args=(node scripts/nuvio_client_lab.cjs
-            --providers "$PROVIDER"
-            --clients "$CLIENT"
-            --tmdb-id "$TMDB_ID"
-            --media-type "$MEDIA_TYPE"
-            --title "$TITLE"
-            --year "$YEAR"
-            --all-streams
-            --stream-safety-cap 40
-            --playback-timeout-ms 8000
-            --out brain-sandbox/targeted-lab.json
-            --markdown brain-sandbox/targeted-lab.md)
-          if [ -n "$SEASON" ]; then args+=(--season "$SEASON"); fi
-          if [ -n "$EPISODE" ]; then args+=(--episode "$EPISODE"); fi
-          STATUS=0
-          "${args[@]}" || STATUS=$?
-          TARGET_STATUS="$STATUS" node - <<'NODE'
-          const fs=require('fs');
-          const selection=JSON.parse(fs.readFileSync('brain-sandbox/targeted-probe-selection.json','utf8'));
-          let report={providers:[]};
-          try { report=JSON.parse(fs.readFileSync('brain-sandbox/targeted-lab.json','utf8')); } catch {}
-          const row=(report.providers||[])[0]||{};
-          const client=selection.client;
-          const clientRow=(row.clients||{})[client]||{};
-          const runtimeStreams=Number(clientRow.runtime_stream_count||0);
-          const probedStreams=Number(clientRow.probed_stream_count||0);
-          const playable=Number(clientRow.playable_probe_count||0);
-          const unplayable=Number(clientRow.unplayable_probe_count||0);
-          const inconclusive=Number(clientRow.inconclusive_probe_count||0);
-          const contradictions=Number(clientRow.identity_contradiction_count||0);
-          const complete=Boolean(clientRow.probe_coverage_complete);
-          const partialFailure=playable>0 && (unplayable>0 || inconclusive>0 || contradictions>0);
-          const verdict=String(clientRow.verdict||'no_report');
-          const status=partialFailure ? 'partial_failure' : verdict;
-          const summary={
-            status,
-            providerId:selection.provider,
-            firstDeclaredType:selection.declared_type,
-            fixtureSlug:selection.slug,
-            clients:{
-              [client]:{
-                verdict,
-                runtimeStreams,
-                probedStreams,
-                playableProbes:playable,
-                unplayableProbes:unplayable,
-                inconclusiveProbes:inconclusive,
-                identityContradictions:contradictions,
-                identityStatus:String(clientRow.identity_status||'unknown'),
-                probeCoverageComplete:complete
-              }
-            },
-            bounded:true,
-            maxProviders:1,
-            maxStreamsPerRuntime:probedStreams,
-            allReturnedStreams:complete,
-            commandStatus:Number(process.env.TARGET_STATUS||0),
-            coreIsAuthoritative:false,
-            learning_only:true, productionWritesAllowed:false, publicationAllowed:false
-          };
-          fs.writeFileSync('brain-sandbox/targeted-lab-summary.json',JSON.stringify(summary,null,2)+'\n');
-          console.log('FIELD_BRAIN_TARGETED_LAB '+Object.entries(summary).map(([k,v])=>`${k}=${String(v).replace(/\s+/g,'_')}`).join(' '));
-          NODE
-          rm -f brain-sandbox/targeted-lab.json brain-sandbox/targeted-lab.md
-          exit 0
+          args=(python scripts/run_brain_learning_queue.py
+            --stage staging
+            --health health-report.json
+            --previous-state brain-learning-input/previous.json
+            --output-dir brain-sandbox/health-output
+            --budget-minutes 60
+            --reserve-minutes 5
+            --stream-safety-cap 40)
+          if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi
+          "${args[@]}"
+          test -s brain-sandbox/health-output/repair-report.json
+          test -s brain-sandbox/health-output/learning-queue-state.json
+          test -s brain-sandbox/health-output/learning-queue-summary.json
+          test -s brain-sandbox/health-output/targeted-lab-summary.json
+          python scripts/generate_diagnostics.py \
+            --results brain-sandbox/full-health/health-results.json \
+            --output brain-sandbox/health-output
 
       - name: Compare sandbox evidence against historical audit
         shell: bash
