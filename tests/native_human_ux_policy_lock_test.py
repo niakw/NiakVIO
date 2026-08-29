@@ -5,7 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = json.loads((ROOT / "automation/native-human-ux-policy.json").read_text(encoding="utf-8"))
-ANDROID_WORKFLOW = (ROOT / ".github/workflows/native-android-route-reader.yml").read_text(encoding="utf-8")
+TV_WORKFLOW = (ROOT / ".github/workflows/native-tv-route-reader.yml").read_text(encoding="utf-8")
+MOBILE_ANDROID_WORKFLOW = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
+ANDROID_WORKFLOWS = (TV_WORKFLOW, MOBILE_ANDROID_WORKFLOW)
 
 assert POLICY["version"] >= 6
 assert POLICY["mode"] == "human-ux-observation-only"
@@ -88,23 +90,29 @@ assert "freeze the head until evidence is collected" in entries["reader-run-canc
 # artifact. Canonical route-reader caches therefore remain stable across audited
 # Nuvio HEAD changes, while each run still checks out the exact current client
 # revision separately. ADB must be ready before any cold/warm emulator boot.
-assert "avd-v1-" not in ANDROID_WORKFLOW
-canonical_cache_lines = [
-    line.strip()
-    for line in ANDROID_WORKFLOW.splitlines()
+for workflow in ANDROID_WORKFLOWS:
+    assert "avd-v1-" not in workflow
+    assert "restore-keys:" not in workflow
+    assert workflow.count("Prime Android adb server") == 1
+    assert "prime_android_lab_adb.sh" in workflow
+    assert workflow.count("~/.android/debug.keystore") == 1
+
+tv_cache_lines = [
+    line.strip() for line in TV_WORKFLOW.splitlines()
     if line.strip().startswith("key: avd-v5-")
 ]
-assert len(canonical_cache_lines) == 3, canonical_cache_lines
-assert sum("tv-api31-android-tv-x86-tv_1080p" in line for line in canonical_cache_lines) == 2
-assert sum("mobile-api35-google_apis-x86_64-pixel_2" in line for line in canonical_cache_lines) == 1
-for line in canonical_cache_lines:
+mobile_cache_lines = [
+    line.strip() for line in MOBILE_ANDROID_WORKFLOW.splitlines()
+    if line.strip().startswith("key: avd-v5-")
+]
+assert len(tv_cache_lines) == 1, tv_cache_lines
+assert len(mobile_cache_lines) == 1, mobile_cache_lines
+assert "tv-api31-android-tv-x86-tv_1080p" in tv_cache_lines[0]
+assert "mobile-api35-google_apis-x86_64-pixel_2" in mobile_cache_lines[0]
+for line in tv_cache_lines + mobile_cache_lines:
     assert "runtime_fingerprint" not in line, line
     assert "tv_sha" not in line, line
     assert "mobile_sha" not in line, line
-assert ANDROID_WORKFLOW.count("Prime Android adb server") >= 3
-assert "prime_android_lab_adb.sh" in ANDROID_WORKFLOW
-assert "restore-keys:" not in ANDROID_WORKFLOW
-assert ANDROID_WORKFLOW.count("~/.android/debug.keystore") == 3
 
 human_path = POLICY["human_ux_acceptance_path"]
 for step in (
