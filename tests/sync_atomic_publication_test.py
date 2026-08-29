@@ -29,6 +29,17 @@ assert workflow.count("      - 'tests/sync_atomic_publication_test.py'") == 2, (
     "Sync must run on its publication contract test changes for both PR and main push"
 )
 
+concurrency_block = workflow[workflow.index("concurrency:"):workflow.index("\njobs:")]
+assert "github.run_id" not in concurrency_block, (
+    "manual provider runs must not escape the shared main-writer concurrency lane"
+)
+assert "group: nuvio-provider-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}" in concurrency_block
+assert "cancel-in-progress: ${{ github.event_name == 'pull_request' }}" in concurrency_block
+publish_block = workflow[workflow.index("\n  publish:\n"):]
+assert "if: github.event_name != 'pull_request'" in publish_block, (
+    "PR validation must never publish provider transactions to main"
+)
+
 for forbidden_dns_coupling in [
     "scripts/provider_dns_preflight.mjs",
     "scripts/apply_dns_migration_overrides.py",
