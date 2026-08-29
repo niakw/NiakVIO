@@ -459,6 +459,32 @@ export function extractCandidateDomains(candidate, sourceText, overrides = {}, l
     .slice(0, Math.max(1, Number(limit || 4)));
 }
 
+function hubObservationDomains(providerId, hubReport = null) {
+  const row = hubReport?.providers?.[providerId];
+  if (!row || typeof row !== 'object') return [];
+  const values = [];
+  const push = (value, evidence, score) => {
+    const host = hostFromValue(value);
+    if (!validPublicHost(host)) return;
+    values.push({ host, score, evidence: [evidence] });
+  };
+  push(row.official_site, 'hub_official_site', 220);
+  push(row.site_final_url, 'hub_site_final_url', 215);
+  push(row.validated_api, 'hub_validated_api', 210);
+  for (const item of row.site_candidates || []) push(item?.url, 'hub_site_candidate', Number(item?.score || 180));
+  for (const item of row.site_validations || []) {
+    push(item?.url, 'hub_site_validation_input', 175);
+    push(item?.final_url, 'hub_site_validation_final', 190);
+  }
+  for (const value of row.api_candidates || []) push(value, 'hub_api_candidate', 170);
+  const merged = new Map();
+  for (const item of values) {
+    const current = merged.get(item.host);
+    if (!current || item.score > current.score) merged.set(item.host, item);
+  }
+  return [...merged.values()].sort((a, b) => b.score - a.score || a.host.localeCompare(b.host));
+}
+
 function compactError(error) {
   return String(error?.code || error?.message || error || 'unknown_error').slice(0, 160);
 }
@@ -1041,12 +1067,14 @@ async function runCli() {
     : path.resolve(args.registry || process.env.NUVIO_CANDIDATES_PATH || path.join(stage, 'candidates.json'));
   const configPath = path.resolve(args.config || process.env.NUVIO_HEALTH_CONFIG || path.join(ROOT, 'health-config.json'));
   const outputPath = path.resolve(args.output || process.env.NUVIO_DNS_PREFLIGHT_RESULTS || path.join(ROOT, 'health-output', 'dns-preflight-report.json'));
-  const [registry, config, overrides] = await Promise.all([
+  const hubReportPath = args['hub-report'] ? path.resolve(String(args['hub-report'])) : null;
+  const [registry, config, overrides, hubReport] = await Promise.all([
     manifestPath
       ? registryFromPublishedManifest(manifestPath)
       : fs.readFile(registryPath, 'utf8').then(JSON.parse),
     fs.readFile(configPath, 'utf8').then(JSON.parse),
     fs.readFile(path.join(ROOT, 'provider-overrides.json'), 'utf8').then(JSON.parse),
+    hubReportPath ? fs.readFile(hubReportPath, 'utf8').then(JSON.parse) : Promise.resolve(null),
   ]);
   const preflightConfig = config.dns_preflight || {};
   if (preflightConfig.enabled === false) {
@@ -1081,7 +1109,20 @@ async function runCli() {
         const domainLimit = args['all-domains']
           ? Number.MAX_SAFE_INTEGER
           : (preflightConfig.max_domains_per_provider || 4);
-        const domainHints = extractCandidateDomains(candidate, sourceText, overrides, domainLimit);
+        const extractedHints = extractCandidateDomains(candidate, sourceText, overrides, domainLimit);
+        const freshHubHints = hubObservationDomains(String(candidate.canonical_id || ''), hubReport);
+        const domainHintMap = new Map();
+        for (const hint of [...freshHubHints, ...extractedHints]) {
+          const current = domainHintMap.get(hint.host);
+          if (!current || Number(hint.score || 0) > Number(current.score || 0)) {
+            domainHintMap.set(hint.host, hint);
+          } else if (current) {
+            current.evidence = [...new Set([...(current.evidence || []), ...(hint.evidence || [])])].sort();
+          }
+        }
+        const domainHints = [...domainHintMap.values()]
+          .sort((left, right) => Number(right.score || 0) - Number(left.score || 0) || left.host.localeCompare(right.host))
+          .slice(0, domainLimit);
         const domainResults = [];
         for (const hint of domainHints) {
           domainResults.push(await checkDomainAcrossResolvers(hint.host, preflightConfig, { domainHints, resolveFn: remoteDependencies.resolveFn, probeFn: remoteDependencies.probeFn }));
@@ -1132,6 +1173,7 @@ async function runCli() {
     },
     generated_at: new Date().toISOString(),
     source_mode: manifestPath ? 'published-manifest' : 'staging-registry',
+    hub_observation_included: Boolean(hubReportPath),
     observation_only: true,
     candidate_count: providers.length,
     resolver_order: frenchResolverNames,
