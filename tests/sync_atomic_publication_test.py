@@ -21,6 +21,9 @@ assert "Capture published manifest baseline" in workflow
 assert workflow.count("      - 'scripts/activation_preservation_core_rehash.py'") == 2, (
     "Sync must run on preservation-adapter changes for both PR and main push"
 )
+assert workflow.count("      - 'tests/patched_provider_runtime_smoke.test.cjs'") == 2, (
+    "Sync must run on provider runtime smoke changes for both PR and main push"
+)
 
 build = workflow.index("Build canonical publication transaction")
 first_version = workflow.index("python scripts/sync_release_versions.py", build)
