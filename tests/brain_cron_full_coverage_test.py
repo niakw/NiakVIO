@@ -83,6 +83,10 @@ def main() -> int:
     assert "python scripts/run_brain_learning_queue.py" in workflow, "canonical adaptive Learning queue disappeared"
     assert "python scripts/select_brain_learning_target.py" not in workflow, "obsolete single-target selector is executing again"
     assert "--budget-minutes 60" in workflow, "global one-hour Learning budget disappeared"
+    experiment_block = workflow[workflow.index("  experiment:"):workflow.index("\n  publish-learning:")]
+    assert "timeout-minutes: 120" in experiment_block, (
+        "Brain job timeout must cover full-catalogue observation plus the independent one-hour Learning queue"
+    )
     assert "--reserve-minutes 5" in workflow, "Learning finalization reserve disappeared"
     assert "--stream-safety-cap 40" in workflow, "bounded all-stream Lab safety cap disappeared"
     assert "TARGET_PROVIDER: ${{ inputs.target_provider || '' }}" in workflow, "manual provider override disappeared"

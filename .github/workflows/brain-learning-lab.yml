@@ -60,7 +60,9 @@ jobs:
   experiment:
     name: LEARNING - Sandbox repair and evidence
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    # Full-catalogue observation runs before the independent 60-minute adaptive queue.
+    # Keep enough job headroom for setup, observation, queue reserve and sanitized finalization.
+    timeout-minutes: 120
     permissions:
       contents: read
     steps:
