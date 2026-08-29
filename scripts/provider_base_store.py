@@ -33,7 +33,6 @@ DERIVED_PATCH_SCRIPTS = {
 # ProviderBase owns durable provider logic. Everything below is derived publication
 # state and must never become an input to the next Core build.
 DERIVED_BASE_MARKERS = (
-    "NUVIO_PROVIDER_SECURITY_HARDENING_V1",
     "NUVIO_PROVIDER_QUARANTINE_V1",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
@@ -58,6 +57,8 @@ DERIVED_BASE_MARKERS = (
 # upstream snapshots. These commits predate the global Core/security finalizers
 # and contain the last clean provider implementation from which current durable
 # provider-specific overrides can be replayed.
+PRE_HARDENING_MANIFEST_COMMIT = "775d35d586e2e0bafe0bb54b0ecd30527b99f51c"
+
 LEGACY_LOCAL_SEEDS: dict[str, tuple[str, str]] = {
     "cineby": (
         "6f5c13750049ca5227d44eda192d2670c819bfea",
@@ -284,6 +285,44 @@ def _git_seed(provider_id: str) -> tuple[bytes, str] | None:
     return result.stdout, f"git:{commit[:12]}:{path}"
 
 
+def _pre_hardening_git_seed(provider_id: str) -> tuple[bytes, str] | None:
+    """Recover only when current legacy bytes are unrecoverable (for example quarantine)."""
+    manifest_result = subprocess.run(
+        ["git", "show", f"{PRE_HARDENING_MANIFEST_COMMIT}:manifest.json"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if manifest_result.returncode or not manifest_result.stdout:
+        return None
+    try:
+        manifest = json.loads(manifest_result.stdout.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    entry = next(
+        (
+            row
+            for row in manifest.get("scrapers") or []
+            if isinstance(row, dict) and canonical_id(str(row.get("id") or "")) == provider_id
+        ),
+        None,
+    )
+    if not isinstance(entry, dict):
+        return None
+    relative = str(entry.get("filename") or "").strip()
+    if not relative.startswith("providers/"):
+        return None
+    result = subprocess.run(
+        ["git", "show", f"{PRE_HARDENING_MANIFEST_COMMIT}:{relative}"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode or not result.stdout:
+        return None
+    return result.stdout, f"git-pre-hardening:{PRE_HARDENING_MANIFEST_COMMIT[:12]}:{relative}"
+
+
 def repair_legacy_bases() -> dict[str, Any]:
     """Replace one-shot/public-derived bases with provider-pipeline bases.
 
@@ -324,14 +363,41 @@ def repair_legacy_bases() -> dict[str, Any]:
             continue
 
         seed = _snapshot_seed(registry, provider_id, row)
-        if seed is None:
-            seed = _git_seed(provider_id)
-        if seed is None:
-            raise ValueError(
-                f"{provider_id}: cannot safely reconstruct legacy ProviderBase from exact upstream/LKG or approved local seed"
-            )
-        seed_data, seed_source = seed
-        base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
+        base_file: str
+        base_sha: str
+        stripped: bool
+        seed_source: str
+
+        if seed is not None:
+            seed_data, seed_source = seed
+            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
+        elif existing_data is not None:
+            # Preserve the exact current provider implementation whenever the
+            # one-shot base is recoverable. This retains later provider repairs
+            # without trusting a newer upstream variant. Security-normalized
+            # source is allowed here because it is idempotent provider code, not
+            # a Core/routing/quarantine layer.
+            try:
+                clean_data, stripped = clean_base_from_published(provider_id, existing_data)
+                validate_base(clean_data, provider_id)
+                base_file, base_sha = write_base(provider_id, clean_data)
+                seed_source = "legacy-current-provider-logic"
+            except ValueError:
+                fallback = _git_seed(provider_id) or _pre_hardening_git_seed(provider_id)
+                if fallback is None:
+                    raise ValueError(
+                        f"{provider_id}: unrecoverable legacy ProviderBase and no approved historical provider seed"
+                    )
+                seed_data, seed_source = fallback
+                base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
+        else:
+            fallback = _git_seed(provider_id) or _pre_hardening_git_seed(provider_id)
+            if fallback is None:
+                raise ValueError(
+                    f"{provider_id}: missing legacy ProviderBase and no exact upstream or approved historical seed"
+                )
+            seed_data, seed_source = fallback
+            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
 
         if existing_path is not None:
             old_paths.add(existing_path)
@@ -368,6 +434,7 @@ def repair_legacy_bases() -> dict[str, Any]:
         "core_may_create_or_mutate_base": False,
         "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
         "dynamic_domain_layers_derived": True,
+        "legacy_security_normalization_may_be_preserved": True,
         "removed_legacy_base_files": removed,
     }
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
