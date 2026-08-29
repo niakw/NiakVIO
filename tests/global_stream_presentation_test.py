@@ -24,7 +24,7 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=True)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-title-quality-ordered-description-native-tmdb-fail-open-v15-jvm-json-utf8"
+assert presentation.REVISION == "all-providers-title-quality-ordered-description-runtime-tmdb-fail-open-v16-jvm-json-utf8"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
@@ -38,8 +38,9 @@ def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None,
         runner = root / "runner.cjs"
         provider.write_text(patched, encoding="utf-8")
         fetch = fetch_impl or "async function(){throw new Error('offline')}"
+        runtime_key = "global.TMDB_API_KEY='test-key';\n" if fetch_impl else ""
         runner.write_text(
-            "global.fetch=" + fetch + ";\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
+            runtime_key + "global.fetch=" + fetch + ";\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
             encoding="utf-8",
         )
         # The contract intentionally contains emoji. Never inherit the Windows
