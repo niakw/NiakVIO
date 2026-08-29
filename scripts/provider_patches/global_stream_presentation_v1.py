@@ -15,7 +15,6 @@ from pathlib import Path
 from typing import Any
 
 MARKER = "NUVIO_GLOBAL_STREAM_PRESENTATION_V1"
-TMDB_KEY = "1865f43a0549ca50d341dd9ab8b29f49"
 FACTS_PATH = Path(__file__).with_name("global_stream_facts_v1.py")
 IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
 PROVIDER_CATALOG_PATH = Path(__file__).resolve().parents[2] / "provider_catalog.json"
