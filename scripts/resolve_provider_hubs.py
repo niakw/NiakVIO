@@ -366,7 +366,7 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
         target.setdefault("terminal_aliases", row.get("terminal_aliases") or [])
         target.setdefault("resolver", row.get("resolver") or "official_outbound")
         target.setdefault("official_link_labels", row.get("official_link_labels") or [
-            "Accéder", "Accedez", "site officiel", "adresse officielle", "ouvrir",
+            "Entrer", "Accéder", "Accedez", "site officiel", "adresse officielle", "ouvrir",
             "website", "click here", "go to homepage", "watch now", "visit now",
         ])
         target.setdefault("require_api_validation", bool(row.get("require_api_validation", False)))
