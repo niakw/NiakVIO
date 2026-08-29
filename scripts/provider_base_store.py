@@ -53,6 +53,7 @@ DERIVED_BASE_MARKERS = (
 )
 
 CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v2"
+CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE = "niakvio-clean-reconstruction-v2-candidate"
 CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 2
 
 
@@ -68,6 +69,17 @@ def is_clean_reconstructed(provenance_row: dict[str, Any] | None) -> bool:
 
 def requires_clean_reconstruction(provenance_row: dict[str, Any] | None) -> bool:
     return not is_clean_reconstructed(provenance_row)
+
+
+def is_clean_reconstruction_candidate(provenance_row: dict[str, Any] | None) -> bool:
+    row = provenance_row if isinstance(provenance_row, dict) else {}
+    return (
+        str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE
+        and row.get("clean_reconstruction_candidate") is True
+        and row.get("clean_reconstruction_verified") is not True
+        and int(row.get("clean_reconstruction_authoring_version") or 0)
+        >= CLEAN_RECONSTRUCTION_AUTHORING_VERSION
+    )
 
 
 def safe_fragment(value: str) -> str:
