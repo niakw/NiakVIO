@@ -131,6 +131,9 @@ ios_suite = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding
 assert "FIELD_NATIVE_IOS_SESSION state=warm-created" in ios_suite
 assert "FIELD_NATIVE_IOS_SESSION state=warm-reused" in ios_suite
 assert 'MODE="${NIAKVIO_IOS_LAB_MODE:-full}"' in ios_suite
+assert 'LAUNCH_RETRY_TIMEOUT_SECONDS="${NIAKVIO_IOS_LAUNCH_RETRY_TIMEOUT_SECONDS:-}"' in ios_suite
+assert 'LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS"' in ios_suite
+assert 'FIELD_NATIVE_IOS_SIM_LAUNCH_TIMEOUT' in ios_suite
 assert 'mode == "learning" || mode == "quick"' in prepare_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
