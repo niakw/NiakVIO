@@ -79,7 +79,8 @@ for workflow in (tv_reader, mobile_android, desktop_reader):
 
 for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
     assert "\n  pull_request:" not in workflow
-    assert "\n  push:" not in workflow
+    if "\n  push:" in workflow:
+        assert ".github/triggers/full-native-lab-validation.json" in workflow
     assert "workflow_dispatch:" in workflow
     assert "\n  schedule:" in workflow and "cron:" in workflow
 

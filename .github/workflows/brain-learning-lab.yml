@@ -105,44 +105,46 @@ jobs:
 
           import_weekly_full() {
             workflow="$1"
-            pattern="$2"
-            label="$3"
-            run_id="$(gh run list --workflow "$workflow" --event schedule --status completed --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+            label="$2"
+            shift 2
+            row="$(gh run list --workflow "$workflow" --event schedule --status completed --limit 1 --json databaseId,conclusion --jq '.[0] | [.databaseId, (.conclusion // "unknown")] | @tsv' || true)"
+            run_id="$(printf '%s' "$row" | cut -f1)"
+            conclusion="$(printf '%s' "$row" | cut -f2)"
             if [ -z "$run_id" ]; then
               echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label status=no_completed_weekly_run"
               return 0
             fi
-
             dest="brain-learning-input/native-full-labs/$label-$run_id"
             rm -rf "$dest"
             mkdir -p "$dest"
-            gh run download "$run_id" --pattern "$pattern" --dir "$dest" || true
-
+            for pattern in "$@"; do
+              gh run download "$run_id" --pattern "$pattern" --dir "$dest" || true
+            done
             if ! find "$dest" -type f -name '*brain.json' -print -quit | grep -q .; then
-              echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label run=$run_id status=no_diagnostics"
+              echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label run=$run_id conclusion=$conclusion status=no_diagnostics"
               return 0
             fi
-
             python scripts/merge_native_reader_backlog.py \
               --state brain-learning-input/previous.json \
               --previous-state brain-learning-input/previous.json \
               --diagnostics-root "$dest" \
               --run-id "$run_id" \
               --output brain-learning-input/previous.json
-
             python scripts/merge_native_reader_learning_failures.py \
               --state brain-learning-input/previous.json \
               --diagnostics-root "$dest" \
               --run-id "$run_id" \
               --output brain-learning-input/previous.json
-
-            echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label run=$run_id status=imported"
+            echo "FIELD_LEARNING_FULL_LAB_IMPORT client=$label run=$run_id conclusion=$conclusion status=processed"
           }
 
-          import_weekly_full native-tv-route-reader.yml "native-tv-route-*-"'*' tv
-          import_weekly_full native-mobile-android-reader.yml "native-mobile-android-*-"'*' android
-          import_weekly_full native-mobile-ios-reader.yml "native-mobile-ios-routes-"'*' ios
-          import_weekly_full native-desktop-reader-acceptance.yml "native-desktop-reader-*-"'*' desktop
+          import_weekly_full native-mobile-android-reader.yml android \
+            "native-tv-route-representative-*" \
+            "native-mobile-android-routes-*"
+          import_weekly_full native-mobile-ios-reader.yml ios \
+            "native-mobile-ios-routes-*"
+          import_weekly_full native-desktop-reader-acceptance.yml desktop \
+            "native-desktop-reader-*-routes-*"
 
           node -e "const x=require('./brain-learning-input/previous.json'); if(x.productionWritesAllowed===true||x.publicationAllowed===true) process.exit(1)"
 

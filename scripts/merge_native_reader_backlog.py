@@ -217,6 +217,21 @@ def main() -> int:
     imported_set = set(imported_evidence)
     imported_runs = [clean(v, 32) for v in prior.get("importedRunIds") or [] if clean(v, 32).isdigit()]
     imported_runs = list(dict.fromkeys(imported_runs))[-100:]
+    if run_id in imported_runs:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if args.markdown_output:
+            base = "# NiakVIO Brain Learning\n"
+            if args.markdown_input and args.markdown_input.is_file():
+                base = args.markdown_input.read_text(encoding="utf-8")
+            args.markdown_output.parent.mkdir(parents=True, exist_ok=True)
+            args.markdown_output.write_text(render_markdown(base, prior), encoding="utf-8")
+        print(
+            "FIELD_NATIVE_READER_BACKLOG "
+            f"run={run_id} duplicate=true imported_files=0 opened=0 resolved=0 "
+            f"open={non_negative(prior.get('openCount'))} external_candidates={non_negative(prior.get('externalCandidateOpenCount'))}"
+        )
+        return 0
 
     entries: dict[str, dict[str, Any]] = {}
     for raw in prior.get("entries") or []:

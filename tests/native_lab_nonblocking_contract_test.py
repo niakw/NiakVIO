@@ -3,7 +3,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOWS = {
-    "tv": ROOT / ".github/workflows/native-tv-route-reader.yml",
+    "tv": ROOT / ".github/workflows/native-mobile-android-reader.yml",
     "mobile_android": ROOT / ".github/workflows/native-mobile-android-reader.yml",
     "mobile_ios": ROOT / ".github/workflows/native-mobile-ios-reader.yml",
     "desktop": ROOT / ".github/workflows/native-desktop-reader-acceptance.yml",
@@ -12,7 +12,8 @@ WORKFLOWS = {
 texts = {name: path.read_text(encoding="utf-8") for name, path in WORKFLOWS.items()}
 for name, workflow in texts.items():
     assert "\n  pull_request:" not in workflow, f"{name} native Lab must not block PR flow"
-    assert "\n  push:" not in workflow, f"{name} full native Lab must not run on routine main pushes"
+    if "\n  push:" in workflow:
+        assert ".github/triggers/full-native-lab-validation.json" in workflow, f"{name} full Lab push trigger must be validation-marker-only"
     assert "\n  schedule:" in workflow and "cron:" in workflow, f"{name} full native Lab must keep weekly evidence"
     assert "workflow_dispatch:" in workflow, f"{name} native Lab must remain manually runnable"
     assert "github.event.pull_request" not in workflow, f"{name} retained PR-only logic"
@@ -35,4 +36,4 @@ assert "workflow_run:" not in learning, "native Labs must never invoke Brain aut
 assert "workflow_dispatch:" in learning
 assert "run_id:" in learning
 
-print("native Lab nonblocking contract passed: weekly+manual=true push=false tv=single-job android=separate ios=separate brain=decoupled")
+print("native Lab nonblocking contract passed: weekly+manual=true routine_push=false android_tv_mobile=combined ios=separate brain=decoupled")

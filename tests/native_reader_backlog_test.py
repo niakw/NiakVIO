@@ -151,7 +151,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     duplicate_md = tmp / "duplicate.md"
     duplicate = run_merge(first_out, evidence, "100", duplicate_out, first_md, duplicate_md)
     duplicate_backlog = backlog_of(duplicate)
-    assert duplicate_backlog["skippedDuplicateThisRun"] == 1, duplicate_backlog
+    assert duplicate_backlog["importedRunIds"] == ["100"], duplicate_backlog
     assert next(row for row in duplicate_backlog["entries"] if row["providerId"] == "moviesdrive")["occurrences"] == 1
 
     # Simulate a repair-memory merger rebuilding nativeReaderRepairMemory without
@@ -192,10 +192,10 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     diag.write_text(json.dumps(second_diag), encoding="utf-8")
     second_out = tmp / "second.json"
     second_md = tmp / "second.md"
-    second = run_merge(rebuilt, evidence, "100", second_out, duplicate_md, second_md, previous=duplicate_out)
+    second = run_merge(rebuilt, evidence, "102", second_out, duplicate_md, second_md, previous=duplicate_out)
     second_backlog = backlog_of(second)
     assert second["nativeReaderRepairMemory"]["entries"][0]["skill"] == "x"
-    assert second_backlog["importedRunIds"] == ["100"], second_backlog
+    assert second_backlog["importedRunIds"] == ["100", "102"], second_backlog
     assert len(second_backlog["importedEvidenceIds"]) == 2, second_backlog
     assert second_backlog["openCount"] == 1, second_backlog
     assert second_backlog["resolvedCount"] == 2, second_backlog
