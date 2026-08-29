@@ -13,7 +13,7 @@ const baseConfig = {
   primary_french_isp: 'sfr',
   fallback_french_isps: ['orange', 'free'],
   neutral_resolvers: ['cloudflare'],
-  continue_on_inconclusive: true,
+  continue_on_unverified_network_evidence: true,
   continue_on_global_unreachable: false,
   skip_runtime_on_confirmed_french_block: true,
   migration_discovery: { minimum_confidence: 80 },
@@ -85,7 +85,8 @@ function dnsResult(name, status, addresses = []) {
       body_excerpt: '',
     }),
   });
-  assert.equal(result.status, 'french_resolvers_inconclusive');
+  assert.equal(result.status, 'french_probe_unavailable_neutral_reachable');
+  assert.equal(result.evidence_state, 'neutral_reachable_french_probe_unavailable');
   assert.equal(result.continue_runtime, true);
 }
 
@@ -124,9 +125,10 @@ function dnsResult(name, status, addresses = []) {
 
 {
   const decision = providerDecision([
-    { status: 'all_custom_resolvers_unavailable', migration_candidates: [] },
+    { status: 'resolver_probes_unavailable', migration_candidates: [] },
   ], baseConfig);
-  assert.equal(decision.status, 'inconclusive');
+  assert.equal(decision.status, 'french_access_unverified');
+  assert.equal(decision.evidence_state, 'insufficient_french_network_evidence');
   assert.equal(decision.continue_runtime, true);
 }
 
@@ -181,9 +183,9 @@ function dnsResult(name, status, addresses = []) {
   assert.equal(calls[0].locations[0].magic, 'France+SFR+eyeball');
   assert.equal(calls[0].measurementOptions.resolver, '109.0.66.10');
   assert.equal(calls[1].locations[0].magic, 'France+SFR+eyeball');
-  assert.equal(calls[1].measurementOptions.method, 'GET');
+  assert.equal(calls[1].measurementOptions.request.method, 'GET');
   assert.equal(calls[1].measurementOptions.ipVersion, 4);
-  assert.equal('request' in calls[1].measurementOptions, false);
+  assert.equal('method' in calls[1].measurementOptions, false);
 }
 
 
