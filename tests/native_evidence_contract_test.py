@@ -45,7 +45,8 @@ learning_sync = text(".github/workflows/native-reader-learning-sync.yml")
 for required in (
     'CANONICAL = {"movie", "tv", "anime"}',
     "ProviderRequestRoute",
-    'listOf("anime", "tv").map',
+    'listOf<String>(fixtureMediaType).filter { it in declared }',
+    'ProviderRequestRoute(type)',
     '"capability_probe"',
     "FIELD_NATIVE_PROVIDER_BEGIN",
     "FIELD_NATIVE_PLAYER_BEGIN",
