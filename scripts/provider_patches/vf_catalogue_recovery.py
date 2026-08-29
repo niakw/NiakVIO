@@ -70,7 +70,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 /* MARKER_PLACEHOLDER */
 ;(function(g,config){
   "use strict";
-  var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";
+  var TMDB_KEY=(g&&g.TMDB_API_KEY)||"";
   function clean(v){return String(v==null?"":v).replace(/&amp;/gi,"&").trim()}
   function stripHtml(v){return clean(v).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim()}
   function normalize(v){try{return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_e){return String(v||"").toLowerCase()}}
@@ -106,7 +106,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function metadata(req){
     var title=clean(req.title||req.name||req.label||req.settings&&req.settings.title),year=Number(req.year||req.settings&&req.settings.year)||0,original="";
     if(title)title=title.replace(/\s*\(\d{4}\)\s*$/,"");
-    if(req.tmdbId){
+    if(req.tmdbId&&TMDB_KEY){
       var kind=req.mediaType==="tv"?"tv":"movie",data=await request("https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(req.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR",true);
       if(data){title=clean(data.title||data.name)||title;original=clean(data.original_title||data.original_name);var date=clean(data.release_date||data.first_air_date);year=Number(date.slice(0,4))||year}
     }
