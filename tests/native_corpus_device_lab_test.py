@@ -90,7 +90,7 @@ assert "NuvioMedia/NuvioMobile.git" in mobile_android
 assert "native-mobile-android-routes-${{ github.run_id }}" in mobile_android
 
 assert "mobile-ios-reader:" in mobile_ios
-assert "runs-on: macos-15" in mobile_ios
+assert "runs-on: macos-26" in mobile_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
 assert "analyze_native_ios_results.py" in mobile_ios

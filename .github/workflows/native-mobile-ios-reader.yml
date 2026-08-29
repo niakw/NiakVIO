@@ -70,7 +70,7 @@ jobs:
 
   mobile-ios-reader:
     needs: resolve
-    runs-on: macos-15
+    runs-on: macos-26
     timeout-minutes: 240
     env:
       NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/manifest.json
