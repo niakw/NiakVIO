@@ -46,4 +46,32 @@ assert "NIAKVIO_DESKTOP_POST_BRAIN_CODE" in generated
 assert "suspend fun historicalCount(envName: String): Int" in generated
 assert 'private fun captureRuntimeConsole(code: String): String = code + """' not in generated
 
+wrapped_fixture = """class DesktopProbe {
+    private fun trapRuntimeErrors(code: String): String = code
+    private fun b64(value: Any?): String = ""
+    fun execute() {
+        val rows = kotlinx.coroutines.withTimeout(25000L) {
+            PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()
+        }
+    }
+}
+"""
+
+with tempfile.TemporaryDirectory() as tmp:
+    target = Path(tmp) / "DesktopProbeWrapped.kt"
+    target.write_text(wrapped_fixture, encoding="utf-8")
+    proc = subprocess.run(
+        ["python3", str(SCRIPT), "--source", str(target)],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=20,
+    )
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+    wrapped_generated = target.read_text(encoding="utf-8")
+
+assert "kotlinx.coroutines.withTimeout(25000L)" in wrapped_generated
+assert "FIELD_NATIVE_RUNTIME_DIAGNOSTIC" in wrapped_generated
+assert wrapped_generated.count("PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()") >= 1
+
 print("native Desktop runtime diagnostics order contract passed")
