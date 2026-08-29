@@ -1,12 +1,12 @@
 {
   "name": "NiakVIO — VF uniquement",
-  "version": "5.21.10",
+  "version": "5.21.11",
   "scrapers": [
     {
       "id": "anime-sama",
       "name": "🐍 Anime-Sama",
       "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
-      "version": "1.1.109",
+      "version": "1.1.111",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -76,22 +76,24 @@
       "supportsExternalPlayer": true
     },
     {
-      "id": "NEKO-SAMA",
-      "name": "🐱 Neko-Sama",
-      "description": "Anime VF et VOSTFR en streaming sur animes-sama.su (via neko-sama.lol).",
-      "version": "0.0.7",
+      "id": "VOIRANIME",
+      "name": "👁️ VoirAnime",
+      "description": "Un des plus gros catalogues français d'animes.",
+      "version": "1.2.58",
       "author": "Gowaru",
       "supportedTypes": [
+        "movie",
         "anime"
       ],
-      "filename": "../providers/neko-sama--nuvio--8896d3edddf8488d.js",
+      "filename": "../providers/voiranime--nuvio--502d227b064f4d4f.js",
       "enabled": true,
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/neko-sama.webp",
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime.webp",
       "contentLanguage": [
         "fr"
       ],
       "formats": [
         "mp4",
+        "mkv",
         "m3u8"
       ],
       "limited": false,
@@ -102,7 +104,7 @@
       "id": "french-manga",
       "name": "🇫🇷 French-Manga",
       "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
-      "version": "1.0.67",
+      "version": "1.0.69",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -126,7 +128,7 @@
       "id": "VOIRANIME-HOMES",
       "name": "🏠 VoirAnime.homes",
       "description": "Animes VF et VOSTFR en streaming sur voiranime.homes (moteur DLE, miroir French-Manga).",
-      "version": "0.0.46",
+      "version": "0.0.48",
       "author": "Gowaru",
       "supportedTypes": [
         "anime",
@@ -147,10 +149,34 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "VOIRANIME-RIP",
+      "name": "👁️ VoirAnime.rip",
+      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+      "version": "1.0.54",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/voiranime-rip--nuvio--74e21a64985fe851.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime-rip.webp",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "ANIMESAMA-CO",
       "name": "🐍 AnimeSama.co (DLE Mirror)",
       "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-      "version": "1.0.47",
+      "version": "1.0.49",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
@@ -171,49 +197,24 @@
       "supportsExternalPlayer": false
     },
     {
-      "id": "MUGIWARASTREAM",
-      "name": "👒 Mugiwara-no-Streaming",
-      "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.66",
+      "id": "ANIMEVOSTFR",
+      "name": "🇫🇷 AnimeVOSTFR",
+      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+      "version": "1.1.80",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime"
       ],
-      "filename": "../providers/mugiwarastream--nuvio--5a40753288d49d5f.js",
+      "filename": "../providers/animevostfr--nuvio--c60d709aca77ac3d.js",
       "enabled": true,
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/mugiwarastream.webp",
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animevostfr.webp",
       "contentLanguage": [
         "fr"
       ],
       "formats": [
         "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "VOIRANIME-RIP",
-      "name": "👁️ VoirAnime.rip",
-      "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-      "version": "1.0.52",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/voiranime-rip--nuvio--65d3b11422b74ee4.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime-rip.webp",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "m3u8"
+        "mkv"
       ],
       "limited": false,
       "disabledPlatforms": [],
@@ -232,30 +233,6 @@
       "filename": "../providers/animesultra--published-baseline--b264d174fcd3438b.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animesultra.webp",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
-    },
-    {
-      "id": "ANIMEVOSTFR",
-      "name": "🇫🇷 AnimeVOSTFR",
-      "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-      "version": "1.1.78",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/animevostfr--nuvio--3151a72ffe07aa76.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animevostfr.webp",
       "contentLanguage": [
         "fr"
       ],
@@ -371,6 +348,31 @@
       "supportsExternalPlayer": true
     },
     {
+      "id": "MUGIWARASTREAM",
+      "name": "👒 Mugiwara-no-Streaming",
+      "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
+      "version": "1.0.66",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "movie",
+        "anime"
+      ],
+      "filename": "../providers/mugiwarastream--nuvio--5a40753288d49d5f.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/mugiwarastream.webp",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "PAPADUSTREAM",
       "name": "🍿 Papadustream",
       "description": "Films et séries TV en streaming HLS via Papadustream.",
@@ -418,31 +420,6 @@
       "limited": false,
       "disabledPlatforms": [],
       "supportsExternalPlayer": true
-    },
-    {
-      "id": "VOIRANIME",
-      "name": "👁️ VoirAnime",
-      "description": "Un des plus gros catalogues français d'animes.",
-      "version": "1.2.56",
-      "author": "Gowaru",
-      "supportedTypes": [
-        "movie",
-        "anime"
-      ],
-      "filename": "../providers/voiranime--nuvio--5cde63b8c5953fe9.js",
-      "enabled": true,
-      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime.webp",
-      "contentLanguage": [
-        "fr"
-      ],
-      "formats": [
-        "mp4",
-        "mkv",
-        "m3u8"
-      ],
-      "limited": false,
-      "disabledPlatforms": [],
-      "supportsExternalPlayer": false
     },
     {
       "id": "VOSTFREE",
@@ -496,14 +473,14 @@
       "id": "anime-ultime",
       "name": "🔥 Anime-Ultime",
       "description": "Animes VOSTFR et VF en streaming sur v5.anime-ultime.net (séries licenciées exclues par le site).",
-      "version": "0.0.46",
+      "version": "0.0.48",
       "author": "Gowaru",
       "supportedTypes": [
         "anime",
         "movie",
         "tv"
       ],
-      "filename": "../providers/anime-ultime--nuvio--62000010281b8fa2.js",
+      "filename": "../providers/anime-ultime--nuvio--97e8468c57f7a01e.js",
       "enabled": false,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/anime-ultime.webp",
       "contentLanguage": [
@@ -517,10 +494,33 @@
       "supportsExternalPlayer": false
     },
     {
+      "id": "NEKO-SAMA",
+      "name": "🐱 Neko-Sama",
+      "description": "Anime VF et VOSTFR en streaming sur animes-sama.su (via neko-sama.lol).",
+      "version": "0.0.7",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime"
+      ],
+      "filename": "../providers/neko-sama--nuvio--8896d3edddf8488d.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/neko-sama.webp",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false
+    },
+    {
       "id": "animevost-fr",
       "name": "🇫🇷 AnimeVOST.fr",
       "description": "Anime VOSTFR 1080p en streaming via animevost.fr (API JSON, catalogue en croissance).",
-      "version": "0.0.13",
+      "version": "0.0.15",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
@@ -543,7 +543,7 @@
       "id": "fullanime",
       "name": "🍥 FullAnime",
       "description": "Anime VOSTFR en streaming sur fullanime.fr. Catalogue large avec 3 hébergeurs par épisode.",
-      "version": "0.0.13",
+      "version": "0.0.15",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"
@@ -566,14 +566,14 @@
       "id": "NAKIOS",
       "name": "🇳 Nakios",
       "description": "Films et séries en streaming MP4 via Nakios (API REST, TMDB natif, CDN direct).",
-      "version": "3.8.48",
+      "version": "3.8.50",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
         "anime"
       ],
-      "filename": "../providers/nakios--nuvio--b2bcfd6e2de4e837.js",
+      "filename": "../providers/nakios--nuvio--37a51eadc3baf68c.js",
       "enabled": false,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/nakios.webp",
       "contentLanguage": [
@@ -641,7 +641,7 @@
       "id": "waveanime",
       "name": "🌊 WaveAnime",
       "description": "Animes en DASH (MPD) via waveanime.fr — lecture native ExoPlayer/Media3 (Android), non supporté par AVPlayer (iOS).",
-      "version": "0.0.47",
+      "version": "0.0.49",
       "author": "Gowaru",
       "supportedTypes": [
         "anime"

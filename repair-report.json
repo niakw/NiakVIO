@@ -1,14 +1,42 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-29T01:37:26.744242+00:00",
+  "generated_at": "2026-08-29T11:14:37.074595+00:00",
   "mode": "quick",
   "provider_specific_rules": false,
   "max_rounds": 1,
   "rounds": [
     {
       "round": 1,
-      "generated_candidates": 30,
+      "generated_candidates": 32,
       "attempts": [
+        {
+          "parent_key": "aio:1shows",
+          "parent_sha256": "89b2d1229ee414598c045161b1b1dead51187742797dd4b65407b2cbfbd7c063",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "aio:1shows::repair:r1:adaptive_runtime_recovery:fbe23e3f",
+          "repair_sha256": "91a8a150bf72e19f85ab57f37c015cfb1f3e8b32ad456b4f9b1caefc553c44de"
+        },
+        {
+          "parent_key": "aio:allanime",
+          "parent_sha256": "4c2d33572273ef305317675b52e8d02ec30657c45dc4aa83510a0fe809c9a8aa",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "aio:allanime::repair:r1:adaptive_runtime_recovery:40a2cacc",
+          "repair_sha256": "092179b4eb583700b944f35fb814987ff8164f2f8602c89aa7bee159ad53489d"
+        },
         {
           "parent_key": "gowaru:anime-ultime",
           "parent_sha256": "7920341ea1992f738db6a7377d38e0a3043aa1ee016469144fd2daffc65d6421",
@@ -38,8 +66,8 @@
           "repair_sha256": "62b06b20d68d27005675e5ae14804e16fc7dfa3e75127ed0ab0d167a9e8ee637"
         },
         {
-          "parent_key": "gowaru:animoflix",
-          "parent_sha256": "59573fd6058b98e09aa395f196b25474e0409c446826575e643e19d461a4d6f3",
+          "parent_key": "aio:animetsu",
+          "parent_sha256": "35dc4d62cbc50b78bd3b2ec0b54070971c571498d1fe3170357675f08ee03e3b",
           "profile": "adaptive_runtime_recovery",
           "baseline_status": "no_streams",
           "baseline_score": 10,
@@ -48,106 +76,8 @@
           "baseline_runtime_errors": 0,
           "baseline_malformed_requests": 0,
           "status": "generated",
-          "repair_key": "gowaru:animoflix::repair:r1:adaptive_runtime_recovery:07164552",
-          "repair_sha256": "342baf76197d5a60597e9055b3d730fbde0fabcb824febae95f1e10d51e48b08"
-        },
-        {
-          "parent_key": "gowaru:coflix",
-          "parent_sha256": "47c4f95d947ae5f9ad246d3bd4bd925f8f8cf3eda83ccae73c28998c64a30b52",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "gowaru:coflix::repair:r1:adaptive_runtime_recovery:f3977ac6",
-          "repair_sha256": "c32ba8b33606575d6a8b7732870897a890015ecbc890a48d0e7031b77d3caf64"
-        },
-        {
-          "parent_key": "gowaru:dulourd",
-          "parent_sha256": "941ed2a6ad9551dbbeaddb958e9f9d101fc6870342ba9d3680ef16248437e824",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "gowaru:dulourd::repair:r1:adaptive_runtime_recovery:c3e637d4",
-          "repair_sha256": "5b4e769daff69b90b1630bfd3721e2a4878eeba550f6727640f5e20788562ca7"
-        },
-        {
-          "parent_key": "gowaru:frenchstream",
-          "parent_sha256": "1210187241f7113ec0f73792128f85b78b62cc1facf17114eccba435a0ca5b65",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "gowaru:frenchstream::repair:r1:adaptive_runtime_recovery:796174ea",
-          "repair_sha256": "a15d97cedc66cbc2e2f1f53063359fb02957e9a60ae3937cd52d91509a6f293b"
-        },
-        {
-          "parent_key": "gowaru:movix",
-          "parent_sha256": "7ee1cd117e6e3a074aded94de21391fa71de13e33b29df634c62caec8eeaa5d1",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "gowaru:movix::repair:r1:adaptive_runtime_recovery:77f2d397",
-          "repair_sha256": "eccfbf52c333a578dd21462162c7d3986f50c2353b8fa93399178c4fb189c83c"
-        },
-        {
-          "parent_key": "gowaru:nakios",
-          "parent_sha256": "731419f8c6e9eaa3fefd624fa37e908c2fbc89672367bc85d6bfcc1802edd70b",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "unavailable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "gowaru:nakios::repair:r1:adaptive_runtime_recovery:54b67138",
-          "repair_sha256": "0d8d16a495f98a5998811cc93b3f2839a207c810a824538f847227a0a3222e9a"
-        },
-        {
-          "parent_key": "gowaru:wookafr",
-          "parent_sha256": "a84ba0e8477a93e5c8fb686e76ebebd8b911a5d30013903f1f521436bf4ceec2",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "gowaru:wookafr::repair:r1:adaptive_runtime_recovery:1e2e9606",
-          "repair_sha256": "93fb2c653028636904fff2773c51d2136f9f6b3b52b5d4e9e8a34c4769bdd417"
-        },
-        {
-          "parent_key": "gowaru:fullanime",
-          "parent_sha256": "2a7743ac926fc7e9c611a20e9ed5456389e31b112e092ad1f896644cf532528e",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "gowaru:fullanime::repair:r1:adaptive_runtime_recovery:af747d0f",
-          "repair_sha256": "4a05b5f60b08debb9c69939f9242fa27b0abfb5ec5b219a0726a21090b9be618"
+          "repair_key": "aio:animetsu::repair:r1:adaptive_runtime_recovery:ba1051d0",
+          "repair_sha256": "939a5de476695d9c7d055373f990f0328198b91b69fca20e646da672d46faa57"
         },
         {
           "parent_key": "gowaru:animevost-fr",
@@ -164,48 +94,6 @@
           "repair_sha256": "0fe8795feb6a845d51e1c8c384123db95ea5a8ec1cf7766d89303e0db5d927fc"
         },
         {
-          "parent_key": "aio:allanime",
-          "parent_sha256": "4c2d33572273ef305317675b52e8d02ec30657c45dc4aa83510a0fe809c9a8aa",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "aio:allanime::repair:r1:adaptive_runtime_recovery:40a2cacc",
-          "repair_sha256": "092179b4eb583700b944f35fb814987ff8164f2f8602c89aa7bee159ad53489d"
-        },
-        {
-          "parent_key": "aio:1shows",
-          "parent_sha256": "89b2d1229ee414598c045161b1b1dead51187742797dd4b65407b2cbfbd7c063",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "aio:1shows::repair:r1:adaptive_runtime_recovery:fbe23e3f",
-          "repair_sha256": "91a8a150bf72e19f85ab57f37c015cfb1f3e8b32ad456b4f9b1caefc553c44de"
-        },
-        {
-          "parent_key": "aio:animetsu",
-          "parent_sha256": "35dc4d62cbc50b78bd3b2ec0b54070971c571498d1fe3170357675f08ee03e3b",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "aio:animetsu::repair:r1:adaptive_runtime_recovery:ba1051d0",
-          "repair_sha256": "939a5de476695d9c7d055373f990f0328198b91b69fca20e646da672d46faa57"
-        },
-        {
           "parent_key": "aio:animeworld",
           "parent_sha256": "55d05f4849ee1cf7ba6eeb42de53f9db9c00b12c111a315d41cc9187b3f0a1bb",
           "profile": "adaptive_runtime_recovery",
@@ -218,6 +106,48 @@
           "status": "generated",
           "repair_key": "aio:animeworld::repair:r1:adaptive_runtime_recovery:37df936a",
           "repair_sha256": "c35c9c9cba12eb1c6a64187e73d1ee3aa21f171e9c012e209ee328eff1bb77fe"
+        },
+        {
+          "parent_key": "gowaru:animoflix",
+          "parent_sha256": "59573fd6058b98e09aa395f196b25474e0409c446826575e643e19d461a4d6f3",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "gowaru:animoflix::repair:r1:adaptive_runtime_recovery:07164552",
+          "repair_sha256": "342baf76197d5a60597e9055b3d730fbde0fabcb824febae95f1e10d51e48b08"
+        },
+        {
+          "parent_key": "yoru:cinevibe",
+          "parent_sha256": "59dff94b0ee5b66f6293a5cb3616aa6aafe881e66f26ec0f19af30700cbf50c2",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "blocked",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "yoru:cinevibe::repair:r1:adaptive_runtime_recovery:35a263c0",
+          "repair_sha256": "c52b522a9c60ff38df1338c643fc75c31e45e243904c98c6878b29531fc629f2"
+        },
+        {
+          "parent_key": "gowaru:coflix",
+          "parent_sha256": "47c4f95d947ae5f9ad246d3bd4bd925f8f8cf3eda83ccae73c28998c64a30b52",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "gowaru:coflix::repair:r1:adaptive_runtime_recovery:f3977ac6",
+          "repair_sha256": "c32ba8b33606575d6a8b7732870897a890015ecbc890a48d0e7031b77d3caf64"
         },
         {
           "parent_key": "aio:ctgmovies",
@@ -234,6 +164,20 @@
           "repair_sha256": "8d5b2957eb534c4aa4f77638ee347b609b059b8e1de70340a7dcee97fdcb8e28"
         },
         {
+          "parent_key": "gowaru:dulourd",
+          "parent_sha256": "941ed2a6ad9551dbbeaddb958e9f9d101fc6870342ba9d3680ef16248437e824",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "blocked",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "gowaru:dulourd::repair:r1:adaptive_runtime_recovery:c3e637d4",
+          "repair_sha256": "5b4e769daff69b90b1630bfd3721e2a4878eeba550f6727640f5e20788562ca7"
+        },
+        {
           "parent_key": "aio:einthusan",
           "parent_sha256": "3d45115f6bb7663464d7de276d58ed69965fbca246a92585b9d9154b1d827637",
           "profile": "adaptive_runtime_recovery",
@@ -246,6 +190,34 @@
           "status": "generated",
           "repair_key": "aio:einthusan::repair:r1:adaptive_runtime_recovery:863ee371",
           "repair_sha256": "9923606acbba7bed240f5d383b4814554a085d6613a07e4bb6cdcc201e2fbe6d"
+        },
+        {
+          "parent_key": "gowaru:frenchstream",
+          "parent_sha256": "1210187241f7113ec0f73792128f85b78b62cc1facf17114eccba435a0ca5b65",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "provider_unreachable",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "gowaru:frenchstream::repair:r1:adaptive_runtime_recovery:796174ea",
+          "repair_sha256": "a15d97cedc66cbc2e2f1f53063359fb02957e9a60ae3937cd52d91509a6f293b"
+        },
+        {
+          "parent_key": "gowaru:fullanime",
+          "parent_sha256": "2a7743ac926fc7e9c611a20e9ed5456389e31b112e092ad1f896644cf532528e",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "blocked",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "gowaru:fullanime::repair:r1:adaptive_runtime_recovery:af747d0f",
+          "repair_sha256": "4a05b5f60b08debb9c69939f9242fa27b0abfb5ec5b219a0726a21090b9be618"
         },
         {
           "parent_key": "aio:goated",
@@ -276,6 +248,20 @@
           "repair_sha256": "76b871ec31a962ec8825a13690e7b6ad391474ba387c6427ccb4d7a0b4e1fa22"
         },
         {
+          "parent_key": "published:movies4u",
+          "parent_sha256": "271599b426a8011c9fe9995d4174fa331ff7739e5bd2c90b92f73e60c5509696",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "published:movies4u::repair:r1:adaptive_runtime_recovery:090f44d2",
+          "repair_sha256": "dc8c7df8a73207aa7a7ad68d5e0ae2c463bbb471ad0fd15d1b51de9030531f4d"
+        },
+        {
           "parent_key": "aio:moviesdrive",
           "parent_sha256": "2aa14e2286fa743c4e1c53258593ce6ceeed3869b0dc2628fb0e421a9fa8efdf",
           "profile": "adaptive_runtime_recovery",
@@ -288,6 +274,48 @@
           "status": "generated",
           "repair_key": "aio:moviesdrive::repair:r1:adaptive_runtime_recovery:8bb4fccf",
           "repair_sha256": "a97e32c39eaa1a0870c459b0e1aaa190b5f8d446a8fc34cad792aeec2e3fc62c"
+        },
+        {
+          "parent_key": "published:moviesmod",
+          "parent_sha256": "1ec2dd64696526767d7a23b3dfaa204c2d75181815454499f2317f04cda96ed5",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "provider_unreachable",
+          "baseline_score": 0,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 3,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "published:moviesmod::repair:r1:adaptive_runtime_recovery:8167f5f4",
+          "repair_sha256": "6c586bf017f25932387416fe7cf06295d29c42197da41b8d81cb995508c5da9a"
+        },
+        {
+          "parent_key": "gowaru:movix",
+          "parent_sha256": "7ee1cd117e6e3a074aded94de21391fa71de13e33b29df634c62caec8eeaa5d1",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "blocked",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "gowaru:movix::repair:r1:adaptive_runtime_recovery:77f2d397",
+          "repair_sha256": "eccfbf52c333a578dd21462162c7d3986f50c2353b8fa93399178c4fb189c83c"
+        },
+        {
+          "parent_key": "gowaru:nakios",
+          "parent_sha256": "731419f8c6e9eaa3fefd624fa37e908c2fbc89672367bc85d6bfcc1802edd70b",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "unavailable",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "gowaru:nakios::repair:r1:adaptive_runtime_recovery:54b67138",
+          "repair_sha256": "0d8d16a495f98a5998811cc93b3f2839a207c810a824538f847227a0a3222e9a"
         },
         {
           "parent_key": "aio:netmirror",
@@ -318,8 +346,8 @@
           "repair_sha256": "47d0805cab439269cb73ca403682abd240220f5ddd4d8ef23c02aa09f371c0d8"
         },
         {
-          "parent_key": "aio:vidlink",
-          "parent_sha256": "53b352ac9601bef459d7d78e3aa1d7dedafed60f56578efa3a42c8c018b2f537",
+          "parent_key": "published:sekai",
+          "parent_sha256": "631b4a277e5c8a36573f849475ae781196c900282af1df8048e6b2e78359f691",
           "profile": "adaptive_runtime_recovery",
           "baseline_status": "no_streams",
           "baseline_score": 10,
@@ -328,22 +356,22 @@
           "baseline_runtime_errors": 0,
           "baseline_malformed_requests": 0,
           "status": "generated",
-          "repair_key": "aio:vidlink::repair:r1:adaptive_runtime_recovery:ac4e49be",
-          "repair_sha256": "4f0c8332f959e71b5708bc9cb86799fc8f98f53498aaf94622dc913ebdd06f61"
+          "repair_key": "published:sekai::repair:r1:adaptive_runtime_recovery:d8d9e4f1",
+          "repair_sha256": "7179225f4b8c06a45674a3ba87e5b36ba181d1a18f507bc79357fa40ec8d3efe"
         },
         {
-          "parent_key": "aio:vidsrc",
-          "parent_sha256": "4cf190611380a3ab979a7d72a8770340f7488edd192316ab599cf43c036d5650",
+          "parent_key": "published:toflix",
+          "parent_sha256": "12ee78261349e3c556806be413603f9b6dbd68744e777c6f584b7e345f566c79",
           "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
+          "baseline_status": "provider_unreachable",
           "baseline_score": 10,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
           "baseline_runtime_errors": 0,
           "baseline_malformed_requests": 0,
           "status": "generated",
-          "repair_key": "aio:vidsrc::repair:r1:adaptive_runtime_recovery:b62c3dd1",
-          "repair_sha256": "5eb45a225fa3248784f50b1fad2b816a230e9f252face78d890a59896693c26a"
+          "repair_key": "published:toflix::repair:r1:adaptive_runtime_recovery:183ee1ec",
+          "repair_sha256": "b69f5dfb9e1036a9ee532fd5c181cfb50427e9124e3c3647ab1a51477366f5d1"
         },
         {
           "parent_key": "aio:vidfast",
@@ -360,6 +388,20 @@
           "repair_sha256": "229543176b233be71f52281bc18042894c55502ec324f919ff88362833e74524"
         },
         {
+          "parent_key": "aio:vidlink",
+          "parent_sha256": "53b352ac9601bef459d7d78e3aa1d7dedafed60f56578efa3a42c8c018b2f537",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "generated",
+          "repair_key": "aio:vidlink::repair:r1:adaptive_runtime_recovery:ac4e49be",
+          "repair_sha256": "4f0c8332f959e71b5708bc9cb86799fc8f98f53498aaf94622dc913ebdd06f61"
+        },
+        {
           "parent_key": "aio:vidlove",
           "parent_sha256": "c33718aab64786371d62d8b3e990195380c2d7bf82e074179a5bbbf78e3bab4a",
           "profile": "adaptive_runtime_recovery",
@@ -374,104 +416,6 @@
           "repair_sha256": "a7141a307e2a7602927aab73e156b3b61bd520f8e5ab5f4f643d28a4f0ea4a57"
         },
         {
-          "parent_key": "aio:xpass",
-          "parent_sha256": "4d23f18724354c91b48f3829a929a13d43b8760ff43974e81cc821c70adc5b70",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "aio:xpass::repair:r1:adaptive_runtime_recovery:8bb846ef",
-          "repair_sha256": "0fbbc7e005a4ec3efd364cb138f036f868c2c5e3bf44b5ea4763b012d851e256"
-        },
-        {
-          "parent_key": "aio:zinkmovies",
-          "parent_sha256": "099738f3bcfd12c3e4506a2a78179e52b0176227da8619ab8fc2e25554be581e",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "aio:zinkmovies::repair:r1:adaptive_runtime_recovery:374705d7",
-          "repair_sha256": "86b0155d5a47fa9f3f9b98a868d5367478e454408473515f6c1200ec2d326b29"
-        },
-        {
-          "parent_key": "yoru:netmirror",
-          "parent_sha256": "d24ae423f70448a9bf9251d96f2f797be31bdaf249ffc5d012a2332d9280d4bd",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "skipped",
-          "reason": "identical_repair_already_retested",
-          "repair_key": "yoru:netmirror::repair:r1:adaptive_runtime_recovery:a150456b",
-          "repair_sha256": "74256be5716eafe0d0dc7182c0b8d9defdc030e5b749dda0f6061deca0d532ea"
-        },
-        {
-          "parent_key": "yoru:moviebox",
-          "parent_sha256": "c6dd4e52b7566cfb9cdd3c1ca1592bc3abdbad28701adcd03a6f7d9f5e823f18",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "skipped",
-          "reason": "identical_repair_already_retested",
-          "repair_key": "yoru:moviebox::repair:r1:adaptive_runtime_recovery:4770f18a",
-          "repair_sha256": "76b871ec31a962ec8825a13690e7b6ad391474ba387c6427ccb4d7a0b4e1fa22"
-        },
-        {
-          "parent_key": "yoru:vixsrc",
-          "parent_sha256": "7b187469d3e59f858572b0b0f13baa55eaae0afc324cc0976574dfcb72d0cf94",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "generated",
-          "repair_key": "yoru:vixsrc::repair:r1:adaptive_runtime_recovery:e43b3564",
-          "repair_sha256": "cbe857f43f55aca0b22a14db2faf2e826b56327b03416fdc28c8631cc84c593a"
-        },
-        {
-          "parent_key": "yoru:yflix",
-          "parent_sha256": "df8c88b7c9b34b66b1f58b8039b34b2fe04fe9567561fecdc08314cd8b6a16fa",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "yoru:vidlink",
-          "parent_sha256": "7f1dc194a3f79b75073a31d96a091c665655b4ef05fdc0b72a6781187fe9613f",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "degraded",
-          "baseline_score": 20,
-          "baseline_streams_returned": 4,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
           "parent_key": "yoru:vidnest",
           "parent_sha256": "e9ae27520f48a3c7fa6fcf78fc5cda2ce71b70da493d2ad20d3d1ab679597609",
           "profile": "adaptive_runtime_recovery",
@@ -481,116 +425,13 @@
           "baseline_streams_playable": 0,
           "baseline_runtime_errors": 0,
           "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
+          "status": "generated",
+          "repair_key": "yoru:vidnest::repair:r1:adaptive_runtime_recovery:531ca863",
+          "repair_sha256": "84dcf9a18bf2663cfab3de0587fa221601b7f3a7ace66a049fd4a89e424e7fb4"
         },
         {
-          "parent_key": "yoru:cinevibe",
-          "parent_sha256": "59dff94b0ee5b66f6293a5cb3616aa6aafe881e66f26ec0f19af30700cbf50c2",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:zinkmovies",
-          "parent_sha256": "db90c69952d092883d8f97742646a0dc821d46ec719577ee70de3a37645ed565",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:animesultra",
-          "parent_sha256": "b19e0e2614453b93af5fc387254fc2d78d0fd17c50945784955dbaab7596b529",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:animetsu",
-          "parent_sha256": "37f2a73b1880fbfd385eeb631fa589de1fe32778201f05a35ad1fade08d06090",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:animevostfr",
-          "parent_sha256": "0318cdc8daf726154333086941168f6fae548a4d59fe34fe05938fc385dd96b5",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:animoflix",
-          "parent_sha256": "7a89d8b66058ab2a64a2934cdbe97ffee3dd0e51a632f7977001db6dd7a355ec",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:coflix",
-          "parent_sha256": "27039fc7ffbed5350ed385bad4dc60fd5d576d7e4183421291ee6a0067d0302c",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:dulourd",
-          "parent_sha256": "13ed75c9fe80af588ee22364ab115fa046cb3821a1a1873f994a5cf8103c3f0c",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:movies4u",
-          "parent_sha256": "271599b426a8011c9fe9995d4174fa331ff7739e5bd2c90b92f73e60c5509696",
+          "parent_key": "aio:vidsrc",
+          "parent_sha256": "4cf190611380a3ab979a7d72a8770340f7488edd192316ab599cf43c036d5650",
           "profile": "adaptive_runtime_recovery",
           "baseline_status": "no_streams",
           "baseline_score": 10,
@@ -599,60 +440,8 @@
           "baseline_runtime_errors": 0,
           "baseline_malformed_requests": 0,
           "status": "generated",
-          "repair_key": "published:movies4u::repair:r1:adaptive_runtime_recovery:090f44d2",
-          "repair_sha256": "dc8c7df8a73207aa7a7ad68d5e0ae2c463bbb471ad0fd15d1b51de9030531f4d"
-        },
-        {
-          "parent_key": "published:moviesdrive",
-          "parent_sha256": "80d859f5fb91d341e71f5ef2d779a3fd95c8a185c3f70564a1ce130ebf0fdf05",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:movix",
-          "parent_sha256": "f38af9ff989b962c417e9c10ccfa8d6f254e6aa01616a54198a62c723855f1b1",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:vidfast",
-          "parent_sha256": "84fd9790b651e4e9e8bde338d050c59295628c26cc5db7c2bc43fd1e1570329f",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:vidlink",
-          "parent_sha256": "d01865d998246a3fa210d4717455d32294dc113755d0bd4f9bf4637af66edf1a",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
+          "repair_key": "aio:vidsrc::repair:r1:adaptive_runtime_recovery:b62c3dd1",
+          "repair_sha256": "5eb45a225fa3248784f50b1fad2b816a230e9f252face78d890a59896693c26a"
         },
         {
           "parent_key": "published:vostfree",
@@ -664,99 +453,9 @@
           "baseline_streams_playable": 0,
           "baseline_runtime_errors": 0,
           "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:wookafr",
-          "parent_sha256": "fa8cdc0303d80200a99c1663da7990dcab80a11d9670af8ed34d8df55be083ba",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:anime-ultime",
-          "parent_sha256": "598be58d13ab6c4562d4732eb207cefc9f638be4184679c42a2e28f017598699",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:animevost-fr",
-          "parent_sha256": "795aa8bd7cdf2c32f50fc35b648f6ddd5776910709c99369729c435b2e6214ff",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:fullanime",
-          "parent_sha256": "6977ad7cbe325178f63886c8550cb0d0564e3a080dfd3e0e4156559888b2bf0d",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:nakios",
-          "parent_sha256": "c1dc29afbc685bc123e316f4c878c84686b9474b9d024547742a0bc81dc9da76",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "unavailable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:sekai",
-          "parent_sha256": "631b4a277e5c8a36573f849475ae781196c900282af1df8048e6b2e78359f691",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:toflix",
-          "parent_sha256": "12ee78261349e3c556806be413603f9b6dbd68744e777c6f584b7e345f566c79",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
+          "status": "generated",
+          "repair_key": "published:vostfree::repair:r1:adaptive_runtime_recovery:6c47362a",
+          "repair_sha256": "079d155de83a44127886e14bd26342f078e57da48c4bba56df228044b11a38d5"
         },
         {
           "parent_key": "published:waveanime",
@@ -772,21 +471,8 @@
           "reason": "brain_time_budget_exhausted"
         },
         {
-          "parent_key": "published:goated",
-          "parent_sha256": "f344f0b948eb0dcdda07f9cf1709817be99e95fa8a5c49a68a49791c6352629a",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "unavailable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:einthusan",
-          "parent_sha256": "2cca016d4410e23599deaccc852773d21316559f919af0113ebd5fc7ac2e50ab",
+          "parent_key": "gowaru:wookafr",
+          "parent_sha256": "a84ba0e8477a93e5c8fb686e76ebebd8b911a5d30013903f1f521436bf4ceec2",
           "profile": "adaptive_runtime_recovery",
           "baseline_status": "no_streams",
           "baseline_score": 10,
@@ -798,8 +484,8 @@
           "reason": "brain_time_budget_exhausted"
         },
         {
-          "parent_key": "published:animeworld",
-          "parent_sha256": "1508fe8040c5ffa09ca680faf9f017277f3fcb5294cded72829846fa31de1dd8",
+          "parent_key": "aio:xpass",
+          "parent_sha256": "4d23f18724354c91b48f3829a929a13d43b8760ff43974e81cc821c70adc5b70",
           "profile": "adaptive_runtime_recovery",
           "baseline_status": "blocked",
           "baseline_score": 10,
@@ -811,153 +497,23 @@
           "reason": "brain_time_budget_exhausted"
         },
         {
-          "parent_key": "published:cinevibe",
-          "parent_sha256": "2915e2eb63fc2e8914dc07d1ba50def5f0c0d747ea0e0c648ee28f9999645e8f",
+          "parent_key": "yoru:yflix",
+          "parent_sha256": "df8c88b7c9b34b66b1f58b8039b34b2fe04fe9567561fecdc08314cd8b6a16fa",
+          "profile": "adaptive_runtime_recovery",
+          "baseline_status": "no_streams",
+          "baseline_score": 10,
+          "baseline_streams_returned": 0,
+          "baseline_streams_playable": 0,
+          "baseline_runtime_errors": 0,
+          "baseline_malformed_requests": 0,
+          "status": "not_generated",
+          "reason": "brain_time_budget_exhausted"
+        },
+        {
+          "parent_key": "aio:zinkmovies",
+          "parent_sha256": "099738f3bcfd12c3e4506a2a78179e52b0176227da8619ab8fc2e25554be581e",
           "profile": "adaptive_runtime_recovery",
           "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:ctgmovies",
-          "parent_sha256": "2a02eb388297aa23565451e21916fb8f02b555cfc76b95dd56956ddffa33080c",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "unavailable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:vidlove",
-          "parent_sha256": "ba7d3f2b84c6d21e67ce4d528fc01615eb6c746226bf51ad3ba31ac315af0d59",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:vidnest",
-          "parent_sha256": "9b737659c686e61879264b5705d1eb2597973420f0e3ffbd54b60fab4ca751a3",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "unavailable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:xpass",
-          "parent_sha256": "315dda63f53f0fdc68f276aadb65a0e92dcd7091d51962c6ef49e700f000d719",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "blocked",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:1shows",
-          "parent_sha256": "746d96308243f71ba773cae47d04c53dd3578df7c490614f36de789b3b6c904e",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:allanime",
-          "parent_sha256": "969bcf4bcf99f1b13ec9a8260f1a47d1ce3e276c158ea7669d2074dcd1996e87",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:cinefreak",
-          "parent_sha256": "2fb5fa41b38e7d3a25c2c23094b9b5bf17982ca948467e353d606ee4da219ca7",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:frenchstream",
-          "parent_sha256": "1210187241f7113ec0f73792128f85b78b62cc1facf17114eccba435a0ca5b65",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_time_budget_exhausted"
-        },
-        {
-          "parent_key": "published:moviebox",
-          "parent_sha256": "c6dd4e52b7566cfb9cdd3c1ca1592bc3abdbad28701adcd03a6f7d9f5e823f18",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_mutation_budget_exhausted"
-        },
-        {
-          "parent_key": "published:netmirror",
-          "parent_sha256": "d24ae423f70448a9bf9251d96f2f797be31bdaf249ffc5d012a2332d9280d4bd",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
-          "baseline_score": 10,
-          "baseline_streams_returned": 0,
-          "baseline_streams_playable": 0,
-          "baseline_runtime_errors": 0,
-          "baseline_malformed_requests": 0,
-          "status": "not_generated",
-          "reason": "brain_mutation_budget_exhausted"
-        },
-        {
-          "parent_key": "published:vidsrc",
-          "parent_sha256": "5393578047334ce76cf7f1229e6c2c3a68e015c5a6924038f7908d1a2d2418c2",
-          "profile": "adaptive_runtime_recovery",
-          "baseline_status": "provider_unreachable",
           "baseline_score": 10,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
@@ -969,6 +525,54 @@
       ],
       "accepted": [],
       "rejected": [
+        {
+          "parent_key": "aio:1shows",
+          "repair_key": "aio:1shows::repair:r1:adaptive_runtime_recovery:fbe23e3f",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "aio:allanime",
+          "repair_key": "aio:allanime::repair:r1:adaptive_runtime_recovery:40a2cacc",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
         {
           "parent_key": "gowaru:anime-ultime",
           "repair_key": "gowaru:anime-ultime::repair:r1:adaptive_runtime_recovery:2392a6a7",
@@ -1018,8 +622,8 @@
           }
         },
         {
-          "parent_key": "gowaru:animoflix",
-          "repair_key": "gowaru:animoflix::repair:r1:adaptive_runtime_recovery:07164552",
+          "parent_key": "aio:animetsu",
+          "repair_key": "aio:animetsu::repair:r1:adaptive_runtime_recovery:ba1051d0",
           "profile": "",
           "status": "no_streams",
           "score": 10,
@@ -1035,174 +639,6 @@
             "blocked": 0,
             "degraded": 0,
             "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "gowaru:coflix",
-          "repair_key": "gowaru:coflix::repair:r1:adaptive_runtime_recovery:f3977ac6",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "gowaru:dulourd",
-          "repair_key": "gowaru:dulourd::repair:r1:adaptive_runtime_recovery:c3e637d4",
-          "profile": "",
-          "status": "blocked",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 3,
-            "degraded": 0,
-            "no_streams": 0,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "gowaru:frenchstream",
-          "repair_key": "gowaru:frenchstream::repair:r1:adaptive_runtime_recovery:796174ea",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "gowaru:movix",
-          "repair_key": "gowaru:movix::repair:r1:adaptive_runtime_recovery:77f2d397",
-          "profile": "",
-          "status": "blocked",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 3,
-            "degraded": 0,
-            "no_streams": 0,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "gowaru:nakios",
-          "repair_key": "gowaru:nakios::repair:r1:adaptive_runtime_recovery:54b67138",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "gowaru:wookafr",
-          "repair_key": "gowaru:wookafr::repair:r1:adaptive_runtime_recovery:1e2e9606",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "gowaru:fullanime",
-          "repair_key": "gowaru:fullanime::repair:r1:adaptive_runtime_recovery:af747d0f",
-          "profile": "",
-          "status": "blocked",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 3,
-            "degraded": 0,
-            "no_streams": 0,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
@@ -1234,78 +670,6 @@
           }
         },
         {
-          "parent_key": "aio:allanime",
-          "repair_key": "aio:allanime::repair:r1:adaptive_runtime_recovery:40a2cacc",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "aio:1shows",
-          "repair_key": "aio:1shows::repair:r1:adaptive_runtime_recovery:fbe23e3f",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "aio:animetsu",
-          "repair_key": "aio:animetsu::repair:r1:adaptive_runtime_recovery:ba1051d0",
-          "profile": "",
-          "status": "no_streams",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 0,
-            "degraded": 0,
-            "no_streams": 3,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
           "parent_key": "aio:animeworld",
           "repair_key": "aio:animeworld::repair:r1:adaptive_runtime_recovery:37df936a",
           "profile": "",
@@ -1323,6 +687,78 @@
             "blocked": 3,
             "degraded": 0,
             "no_streams": 0,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "gowaru:animoflix",
+          "repair_key": "gowaru:animoflix::repair:r1:adaptive_runtime_recovery:07164552",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "yoru:cinevibe",
+          "repair_key": "yoru:cinevibe::repair:r1:adaptive_runtime_recovery:35a263c0",
+          "profile": "",
+          "status": "blocked",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 3,
+            "degraded": 0,
+            "no_streams": 0,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "gowaru:coflix",
+          "repair_key": "gowaru:coflix::repair:r1:adaptive_runtime_recovery:f3977ac6",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
@@ -1379,6 +815,30 @@
           }
         },
         {
+          "parent_key": "gowaru:dulourd",
+          "repair_key": "gowaru:dulourd::repair:r1:adaptive_runtime_recovery:c3e637d4",
+          "profile": "",
+          "status": "blocked",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 3,
+            "degraded": 0,
+            "no_streams": 0,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
           "parent_key": "aio:einthusan",
           "repair_key": "aio:einthusan::repair:r1:adaptive_runtime_recovery:863ee371",
           "profile": "",
@@ -1396,6 +856,54 @@
             "blocked": 0,
             "degraded": 0,
             "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "gowaru:frenchstream",
+          "repair_key": "gowaru:frenchstream::repair:r1:adaptive_runtime_recovery:796174ea",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "gowaru:fullanime",
+          "repair_key": "gowaru:fullanime::repair:r1:adaptive_runtime_recovery:af747d0f",
+          "profile": "",
+          "status": "blocked",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 3,
+            "degraded": 0,
+            "no_streams": 0,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
@@ -1430,6 +938,47 @@
           "parent_key": "aio:moviebox",
           "repair_key": "aio:moviebox::repair:r1:adaptive_runtime_recovery:4770f18a",
           "profile": "",
+          "status": "unavailable",
+          "score": 10,
+          "reason": "introduced_runtime_error",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 2,
+          "malformed_requests": 0,
+          "error_summary": [
+            {
+              "fixture": "The Walking Dead S01E01",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            },
+            {
+              "fixture": "The Boys S01E01",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            }
+          ],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 0,
+            "provider_unreachable": 2,
+            "runtime_error": 0,
+            "unavailable": 1,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "published:movies4u",
+          "repair_key": "published:movies4u::repair:r1:adaptive_runtime_recovery:090f44d2",
+          "profile": "",
           "status": "no_streams",
           "score": 10,
           "reason": "safety_gate:no_playable_proof",
@@ -1453,6 +1002,103 @@
         {
           "parent_key": "aio:moviesdrive",
           "repair_key": "aio:moviesdrive::repair:r1:adaptive_runtime_recovery:8bb4fccf",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "published:moviesmod",
+          "repair_key": "published:moviesmod::repair:r1:adaptive_runtime_recovery:8167f5f4",
+          "profile": "",
+          "status": "provider_unreachable",
+          "score": 0,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 3,
+          "malformed_requests": 0,
+          "error_summary": [
+            {
+              "fixture": "The Walking Dead S01E01",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            },
+            {
+              "fixture": "Avatar",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            },
+            {
+              "fixture": "The Boys S01E01",
+              "failure_class": "network_unreachable",
+              "name": "ProviderTimeoutError",
+              "code": "NUVIO_PROVIDER_TIMEOUT",
+              "message": "provider exceeded 50000 ms",
+              "phase": "worker_process"
+            }
+          ],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 0,
+            "provider_unreachable": 3,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "gowaru:movix",
+          "repair_key": "gowaru:movix::repair:r1:adaptive_runtime_recovery:77f2d397",
+          "profile": "",
+          "status": "blocked",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 3,
+            "degraded": 0,
+            "no_streams": 0,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "gowaru:nakios",
+          "repair_key": "gowaru:nakios::repair:r1:adaptive_runtime_recovery:54b67138",
           "profile": "",
           "status": "no_streams",
           "score": 10,
@@ -1523,8 +1169,8 @@
           }
         },
         {
-          "parent_key": "aio:vidlink",
-          "repair_key": "aio:vidlink::repair:r1:adaptive_runtime_recovery:ac4e49be",
+          "parent_key": "published:sekai",
+          "repair_key": "published:sekai::repair:r1:adaptive_runtime_recovery:d8d9e4f1",
           "profile": "",
           "status": "no_streams",
           "score": 10,
@@ -1547,13 +1193,13 @@
           }
         },
         {
-          "parent_key": "aio:vidsrc",
-          "repair_key": "aio:vidsrc::repair:r1:adaptive_runtime_recovery:b62c3dd1",
+          "parent_key": "published:toflix",
+          "repair_key": "published:toflix::repair:r1:adaptive_runtime_recovery:183ee1ec",
           "profile": "",
-          "status": "degraded",
-          "score": 20,
+          "status": "no_streams",
+          "score": 10,
           "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 1,
+          "streams_returned": 0,
           "streams_playable": 0,
           "runtime_errors": 0,
           "malformed_requests": 0,
@@ -1562,8 +1208,8 @@
             "healthy": 0,
             "reachable": 0,
             "blocked": 0,
-            "degraded": 3,
-            "no_streams": 0,
+            "degraded": 0,
+            "no_streams": 3,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
@@ -1573,6 +1219,30 @@
         {
           "parent_key": "aio:vidfast",
           "repair_key": "aio:vidfast::repair:r1:adaptive_runtime_recovery:ff2f6e25",
+          "profile": "",
+          "status": "no_streams",
+          "score": 10,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 0,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 0,
+            "no_streams": 3,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "aio:vidlink",
+          "repair_key": "aio:vidlink::repair:r1:adaptive_runtime_recovery:ac4e49be",
           "profile": "",
           "status": "no_streams",
           "score": 10,
@@ -1619,56 +1289,8 @@
           }
         },
         {
-          "parent_key": "aio:xpass",
-          "repair_key": "aio:xpass::repair:r1:adaptive_runtime_recovery:8bb846ef",
-          "profile": "",
-          "status": "blocked",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 3,
-            "degraded": 0,
-            "no_streams": 0,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "aio:zinkmovies",
-          "repair_key": "aio:zinkmovies::repair:r1:adaptive_runtime_recovery:374705d7",
-          "profile": "",
-          "status": "blocked",
-          "score": 10,
-          "reason": "safety_gate:no_playable_proof",
-          "streams_returned": 0,
-          "streams_playable": 0,
-          "runtime_errors": 0,
-          "malformed_requests": 0,
-          "error_summary": [],
-          "fixture_status_counts": {
-            "healthy": 0,
-            "reachable": 0,
-            "blocked": 3,
-            "degraded": 0,
-            "no_streams": 0,
-            "provider_unreachable": 0,
-            "runtime_error": 0,
-            "unavailable": 0,
-            "excluded": 0
-          }
-        },
-        {
-          "parent_key": "yoru:vixsrc",
-          "repair_key": "yoru:vixsrc::repair:r1:adaptive_runtime_recovery:e43b3564",
+          "parent_key": "yoru:vidnest",
+          "repair_key": "yoru:vidnest::repair:r1:adaptive_runtime_recovery:531ca863",
           "profile": "",
           "status": "no_streams",
           "score": 10,
@@ -1691,10 +1313,34 @@
           }
         },
         {
-          "parent_key": "published:movies4u",
-          "repair_key": "published:movies4u::repair:r1:adaptive_runtime_recovery:090f44d2",
+          "parent_key": "aio:vidsrc",
+          "repair_key": "aio:vidsrc::repair:r1:adaptive_runtime_recovery:b62c3dd1",
           "profile": "",
-          "status": "no_streams",
+          "status": "degraded",
+          "score": 20,
+          "reason": "safety_gate:no_playable_proof",
+          "streams_returned": 1,
+          "streams_playable": 0,
+          "runtime_errors": 0,
+          "malformed_requests": 0,
+          "error_summary": [],
+          "fixture_status_counts": {
+            "healthy": 0,
+            "reachable": 0,
+            "blocked": 0,
+            "degraded": 3,
+            "no_streams": 0,
+            "provider_unreachable": 0,
+            "runtime_error": 0,
+            "unavailable": 0,
+            "excluded": 0
+          }
+        },
+        {
+          "parent_key": "published:vostfree",
+          "repair_key": "published:vostfree::repair:r1:adaptive_runtime_recovery:6c47362a",
+          "profile": "",
+          "status": "blocked",
           "score": 10,
           "reason": "safety_gate:no_playable_proof",
           "streams_returned": 0,
@@ -1705,9 +1351,9 @@
           "fixture_status_counts": {
             "healthy": 0,
             "reachable": 0,
-            "blocked": 0,
+            "blocked": 3,
             "degraded": 0,
-            "no_streams": 3,
+            "no_streams": 0,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
@@ -1717,33 +1363,24 @@
       ]
     }
   ],
-  "completed_at": "2026-08-29T01:41:07.537851+00:00",
+  "completed_at": "2026-08-29T11:18:29.574102+00:00",
   "accepted_repairs": 0,
   "persisted_runtime_profiles": [],
   "final_counts": {
-    "healthy": 36,
+    "healthy": 18,
     "reachable": 0,
-    "blocked": 32,
-    "degraded": 3,
-    "no_streams": 45,
-    "provider_unreachable": 23,
-    "runtime_error": 35,
-    "unavailable": 20,
+    "blocked": 17,
+    "degraded": 0,
+    "no_streams": 24,
+    "provider_unreachable": 10,
+    "runtime_error": 14,
+    "unavailable": 12,
     "excluded": 0
   },
   "validation_mode": "quick",
   "profile_persistence": "none_core_repair_only",
   "learning_executed": false,
-  "acceptance_policy": "healthy_sibling_then_core_type_repair",
-  "sibling_resolved_provider_count": 6,
-  "sibling_resolved_provider_ids": [
-    "castle",
-    "cineby",
-    "hindmoviez",
-    "movieblast",
-    "playimdb",
-    "videasy"
-  ],
+  "acceptance_policy": "canonical_input_then_core_type_repair",
   "brain": {
     "name": "NiakVIO Brain",
     "mode": "quick",
@@ -1935,15 +1572,18 @@
       },
       "aio:animezey": {
         "providerId": "animezey",
-        "failureClass": "media_validation_gap",
+        "failureClass": "playback_context_gap",
         "brainVersion": 4,
-        "signature": "b58f1b160e8ed2368bb43cb7",
+        "signature": "5407c463899932290181bd71",
         "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
-          "validate-final-media"
+          "preserve-playback-context",
+          "refresh-media-token"
         ],
-        "allowedProfiles": [],
+        "allowedProfiles": [
+          "adaptive_runtime_recovery"
+        ],
         "plannerErrorClass": null
       },
       "aio:castle": {
@@ -2019,7 +1659,7 @@
         "providerId": "dooflix",
         "failureClass": "transport_blocked",
         "brainVersion": 4,
-        "signature": "30530842628cc794490ce21e",
+        "signature": "8bb05fd8add5e23a4edc8989",
         "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
@@ -2288,18 +1928,13 @@
       },
       "aio:persianstremio": {
         "providerId": "persianstremio",
-        "failureClass": "search_gap",
+        "failureClass": "healthy",
         "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
+        "signature": "4fac9ab4b2f72b0c36d8a260",
+        "action": "none",
         "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
+        "hypotheses": [],
+        "allowedProfiles": [],
         "plannerErrorClass": null
       },
       "aio:playimdb": {
@@ -2759,18 +2394,15 @@
       },
       "gowaru:neko-sama": {
         "providerId": "neko-sama",
-        "failureClass": "playback_context_gap",
+        "failureClass": "unknown_failure",
         "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
+        "signature": "5483782c3b851d5d525648d5",
+        "action": "collect-more-evidence",
         "exitReason": null,
         "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
+          "collect-missing-evidence"
         ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
+        "allowedProfiles": [],
         "plannerErrorClass": null
       },
       "gowaru:papadustream": {
@@ -2845,35 +2477,6 @@
         ],
         "plannerErrorClass": null
       },
-      "published:1shows": {
-        "providerId": "1shows",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:4khdhub": {
-        "providerId": "4khdhub",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
       "published:4khdhubnew": {
         "providerId": "4khdhubnew",
         "failureClass": "search_gap",
@@ -2884,343 +2487,6 @@
         "hypotheses": [
           "rediscover-search-route",
           "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:allanime": {
-        "providerId": "allanime",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:allmovieland": {
-        "providerId": "allmovieland",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:allwish": {
-        "providerId": "allwish",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:anidb": {
-        "providerId": "anidb",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:anikototv": {
-        "providerId": "anikototv",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:anime-sama": {
-        "providerId": "anime-sama",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:anime-ultime": {
-        "providerId": "anime-ultime",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animekai": {
-        "providerId": "animekai",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animepahe": {
-        "providerId": "animepahe",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:animesalt": {
-        "providerId": "animesalt",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "5483782c3b851d5d525648d5",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:animesama-co": {
-        "providerId": "animesama-co",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animesultra": {
-        "providerId": "animesultra",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animetsu": {
-        "providerId": "animetsu",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animevost-fr": {
-        "providerId": "animevost-fr",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animevostfr": {
-        "providerId": "animevostfr",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animeworld": {
-        "providerId": "animeworld",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:animezey": {
-        "providerId": "animezey",
-        "failureClass": "media_validation_gap",
-        "brainVersion": 4,
-        "signature": "b58f1b160e8ed2368bb43cb7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "validate-final-media"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:animoflix": {
-        "providerId": "animoflix",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:anizone": {
-        "providerId": "anizone",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:castle": {
-        "providerId": "castle",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:cineby": {
-        "providerId": "cineby",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:cinefreak": {
-        "providerId": "cinefreak",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:cinemacity": {
-        "providerId": "cinemacity",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "9c5002c2f25fce9cea8338b6",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
         ],
         "allowedProfiles": [
           "adaptive_runtime_recovery"
@@ -3240,205 +2506,6 @@
         "allowedProfiles": [],
         "plannerErrorClass": null
       },
-      "published:cinevibe": {
-        "providerId": "cinevibe",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "407798151f15452ec1ccd098",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:coflix": {
-        "providerId": "coflix",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:ctgmovies": {
-        "providerId": "ctgmovies",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:desiflix": {
-        "providerId": "desiflix",
-        "failureClass": "runtime_contract_drift",
-        "brainVersion": 4,
-        "signature": "2bd62dae6a278d3ee1742f47",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "reaudit-device-adapter"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:dooflix": {
-        "providerId": "dooflix",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "8bb05fd8add5e23a4edc8989",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:dulourd": {
-        "providerId": "dulourd",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:dvdplay": {
-        "providerId": "dvdplay",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:einthusan": {
-        "providerId": "einthusan",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:fibwatch": {
-        "providerId": "fibwatch",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:flemmix": {
-        "providerId": "flemmix",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "c1562206ae33056d8b7a0640",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:french-manga": {
-        "providerId": "french-manga",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:frenchstream": {
-        "providerId": "frenchstream",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:fullanime": {
-        "providerId": "fullanime",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
       "published:goatapi": {
         "providerId": "goatapi",
         "failureClass": "unknown_failure",
@@ -3450,170 +2517,6 @@
           "collect-missing-evidence"
         ],
         "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:goated": {
-        "providerId": "goated",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:gramcinema": {
-        "providerId": "gramcinema",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:hdghartv": {
-        "providerId": "hdghartv",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "c1562206ae33056d8b7a0640",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:hdhub4u": {
-        "providerId": "hdhub4u",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:hianime": {
-        "providerId": "hianime",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:hindmoviez": {
-        "providerId": "hindmoviez",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:kisskh": {
-        "providerId": "kisskh",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:kurage": {
-        "providerId": "kurage",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "5483782c3b851d5d525648d5",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:mallumv": {
-        "providerId": "mallumv",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "5c839fd0abf2244d9aa0190d",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:moonflix": {
-        "providerId": "moonflix",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "c1562206ae33056d8b7a0640",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:movieblast": {
-        "providerId": "movieblast",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:moviebox": {
-        "providerId": "moviebox",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
         "plannerErrorClass": null
       },
       "published:movies4u": {
@@ -3632,125 +2535,8 @@
         ],
         "plannerErrorClass": null
       },
-      "published:moviesdrive": {
-        "providerId": "moviesdrive",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:movieshunt": {
-        "providerId": "movieshunt",
-        "failureClass": "identity_mismatch",
-        "brainVersion": 4,
-        "signature": "6f63559fd16222aaae2e9d57",
-        "action": "hold-or-quarantine-pending-proof",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
       "published:moviesmod": {
         "providerId": "moviesmod",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:movix": {
-        "providerId": "movix",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "ac5f8426938872bee42dae1d",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:mugiwarastream": {
-        "providerId": "mugiwarastream",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:mycima": {
-        "providerId": "mycima",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:nakios": {
-        "providerId": "nakios",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:neko-sama": {
-        "providerId": "neko-sama",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:netmirror": {
-        "providerId": "netmirror",
         "failureClass": "search_gap",
         "brainVersion": 4,
         "signature": "51f8aeda416a44e89e8c4d61",
@@ -3759,89 +2545,6 @@
         "hypotheses": [
           "rediscover-search-route",
           "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:onlykdrama": {
-        "providerId": "onlykdrama",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "9c5002c2f25fce9cea8338b6",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:papadustream": {
-        "providerId": "papadustream",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "5483782c3b851d5d525648d5",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:peachify": {
-        "providerId": "peachify",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:persianstremio": {
-        "providerId": "persianstremio",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:playimdb": {
-        "providerId": "playimdb",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:purstream": {
-        "providerId": "purstream",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
         ],
         "allowedProfiles": [
           "adaptive_runtime_recovery"
@@ -3862,32 +2565,6 @@
         "allowedProfiles": [
           "adaptive_runtime_recovery"
         ],
-        "plannerErrorClass": null
-      },
-      "published:showbox": {
-        "providerId": "showbox",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:streamflix": {
-        "providerId": "streamflix",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
         "plannerErrorClass": null
       },
       "published:streamzo": {
@@ -3919,144 +2596,6 @@
         ],
         "plannerErrorClass": null
       },
-      "published:topcartoons": {
-        "providerId": "topcartoons",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:uhdmovies": {
-        "providerId": "uhdmovies",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "c1562206ae33056d8b7a0640",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:vegamovies": {
-        "providerId": "vegamovies",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:videasy": {
-        "providerId": "videasy",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "5407c463899932290181bd71",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:vidfast": {
-        "providerId": "vidfast",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "9c5002c2f25fce9cea8338b6",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:vidlink": {
-        "providerId": "vidlink",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:vidlove": {
-        "providerId": "vidlove",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "9c5002c2f25fce9cea8338b6",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:vidnest": {
-        "providerId": "vidnest",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:vidnest-anime": {
-        "providerId": "vidnest-anime",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "324ebdec180c9bda40b3a2b7",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
       "published:vidrock": {
         "providerId": "vidrock",
         "failureClass": "unknown_failure",
@@ -4067,78 +2606,6 @@
         "hypotheses": [
           "collect-missing-evidence"
         ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:vidsrc": {
-        "providerId": "vidsrc",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:vixsrc": {
-        "providerId": "vixsrc",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:voiranime": {
-        "providerId": "voiranime",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "5483782c3b851d5d525648d5",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "published:voiranime-homes": {
-        "providerId": "voiranime-homes",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "063a0bef693abf4ce1d81472",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:voiranime-rip": {
-        "providerId": "voiranime-rip",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "e6fc71dc52a4131f6c31dfcc",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
         "allowedProfiles": [],
         "plannerErrorClass": null
       },
@@ -4174,109 +2641,6 @@
         ],
         "plannerErrorClass": null
       },
-      "published:wookafr": {
-        "providerId": "wookafr",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:xpass": {
-        "providerId": "xpass",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "9c5002c2f25fce9cea8338b6",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:yflix": {
-        "providerId": "yflix",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "published:zinkmovies": {
-        "providerId": "zinkmovies",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "593232078bc8dc6560e0de79",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "yoru:4khdhub": {
-        "providerId": "4khdhub",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:allmovieland": {
-        "providerId": "allmovieland",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:animepahe": {
-        "providerId": "animepahe",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
       "yoru:anizone": {
         "providerId": "anizone",
         "failureClass": "unknown_failure",
@@ -4290,51 +2654,11 @@
         "allowedProfiles": [],
         "plannerErrorClass": null
       },
-      "yoru:castle": {
-        "providerId": "castle",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:cinemacity": {
-        "providerId": "cinemacity",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
       "yoru:cinevibe": {
         "providerId": "cinevibe",
         "failureClass": "transport_blocked",
         "brainVersion": 4,
         "signature": "407798151f15452ec1ccd098",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "bootstrap-session",
-          "alternate-official-route"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "yoru:dooflix": {
-        "providerId": "dooflix",
-        "failureClass": "transport_blocked",
-        "brainVersion": 4,
-        "signature": "8bb05fd8add5e23a4edc8989",
         "action": "probe-targeted-repair",
         "exitReason": null,
         "hypotheses": [
@@ -4362,32 +2686,6 @@
         ],
         "plannerErrorClass": null
       },
-      "yoru:hianime": {
-        "providerId": "hianime",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:kurage": {
-        "providerId": "kurage",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "5483782c3b851d5d525648d5",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
       "yoru:mallumv": {
         "providerId": "mallumv",
         "failureClass": "unknown_failure",
@@ -4401,67 +2699,11 @@
         "allowedProfiles": [],
         "plannerErrorClass": null
       },
-      "yoru:movieblast": {
-        "providerId": "movieblast",
-        "failureClass": "healthy",
-        "brainVersion": 4,
-        "signature": "4fac9ab4b2f72b0c36d8a260",
-        "action": "none",
-        "exitReason": null,
-        "hypotheses": [],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:moviebox": {
-        "providerId": "moviebox",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
       "yoru:mycima": {
         "providerId": "mycima",
         "failureClass": "unknown_failure",
         "brainVersion": 4,
         "signature": "adbc38a3a8023451aa5f7990",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:netmirror": {
-        "providerId": "netmirror",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
-      "yoru:showbox": {
-        "providerId": "showbox",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "043051f19dcce796e5f72209",
         "action": "collect-more-evidence",
         "exitReason": null,
         "hypotheses": [
@@ -4481,35 +2723,6 @@
           "collect-missing-evidence"
         ],
         "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:videasy": {
-        "providerId": "videasy",
-        "failureClass": "unknown_failure",
-        "brainVersion": 4,
-        "signature": "c1562206ae33056d8b7a0640",
-        "action": "collect-more-evidence",
-        "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
-        "allowedProfiles": [],
-        "plannerErrorClass": null
-      },
-      "yoru:vidlink": {
-        "providerId": "vidlink",
-        "failureClass": "playback_context_gap",
-        "brainVersion": 4,
-        "signature": "2cda5deb03cd37b1464efa51",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "preserve-playback-context",
-          "refresh-media-token"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
         "plannerErrorClass": null
       },
       "yoru:vidnest": {
@@ -4544,22 +2757,6 @@
         ],
         "plannerErrorClass": null
       },
-      "yoru:vixsrc": {
-        "providerId": "vixsrc",
-        "failureClass": "search_gap",
-        "brainVersion": 4,
-        "signature": "51f8aeda416a44e89e8c4d61",
-        "action": "probe-targeted-repair",
-        "exitReason": null,
-        "hypotheses": [
-          "rediscover-search-route",
-          "repair-search-parser"
-        ],
-        "allowedProfiles": [
-          "adaptive_runtime_recovery"
-        ],
-        "plannerErrorClass": null
-      },
       "yoru:yflix": {
         "providerId": "yflix",
         "failureClass": "search_gap",
@@ -4581,7 +2778,7 @@
       "1shows": {
         "mutationCount": 1,
         "generatedBytes": 12809,
-        "elapsedMs": 230027,
+        "elapsedMs": 237726,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -4589,19 +2786,19 @@
       "4khdhub": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230080,
+        "elapsedMs": 237671,
         "signatureCounts": {}
       },
       "4khdhubnew": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 222325,
+        "elapsedMs": 237614,
         "signatureCounts": {}
       },
       "allanime": {
         "mutationCount": 1,
         "generatedBytes": 14473,
-        "elapsedMs": 230134,
+        "elapsedMs": 237557,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 1
         }
@@ -4609,37 +2806,37 @@
       "allmovieland": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229573,
+        "elapsedMs": 237498,
         "signatureCounts": {}
       },
       "allwish": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229978,
+        "elapsedMs": 237437,
         "signatureCounts": {}
       },
       "anidb": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229828,
+        "elapsedMs": 237382,
         "signatureCounts": {}
       },
       "anikototv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229878,
+        "elapsedMs": 237330,
         "signatureCounts": {}
       },
       "anime-sama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 231194,
+        "elapsedMs": 237276,
         "signatureCounts": {}
       },
       "anime-ultime": {
         "mutationCount": 1,
         "generatedBytes": 0,
-        "elapsedMs": 231247,
+        "elapsedMs": 237226,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 1
         }
@@ -4647,31 +2844,31 @@
       "animekai": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229928,
+        "elapsedMs": 237173,
         "signatureCounts": {}
       },
       "animepahe": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229780,
+        "elapsedMs": 237124,
         "signatureCounts": {}
       },
       "animesalt": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229727,
+        "elapsedMs": 237075,
         "signatureCounts": {}
       },
       "animesama-co": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 231145,
+        "elapsedMs": 237018,
         "signatureCounts": {}
       },
       "animesultra": {
         "mutationCount": 1,
         "generatedBytes": 0,
-        "elapsedMs": 231093,
+        "elapsedMs": 236964,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 1
         }
@@ -4679,7 +2876,7 @@
       "animetsu": {
         "mutationCount": 1,
         "generatedBytes": 14389,
-        "elapsedMs": 229678,
+        "elapsedMs": 236913,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 1
         }
@@ -4687,7 +2884,7 @@
       "animevost-fr": {
         "mutationCount": 1,
         "generatedBytes": 14849,
-        "elapsedMs": 230182,
+        "elapsedMs": 236860,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 1
         }
@@ -4695,13 +2892,13 @@
       "animevostfr": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 231041,
+        "elapsedMs": 236811,
         "signatureCounts": {}
       },
       "animeworld": {
         "mutationCount": 1,
         "generatedBytes": 14504,
-        "elapsedMs": 229625,
+        "elapsedMs": 236762,
         "signatureCounts": {
           "9c5002c2f25fce9cea8338b6": 1
         }
@@ -4709,13 +2906,13 @@
       "animezey": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229524,
+        "elapsedMs": 236712,
         "signatureCounts": {}
       },
       "animoflix": {
         "mutationCount": 1,
         "generatedBytes": 0,
-        "elapsedMs": 230993,
+        "elapsedMs": 236657,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 1
         }
@@ -4723,49 +2920,51 @@
       "anizone": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 226259,
+        "elapsedMs": 236605,
         "signatureCounts": {}
       },
       "castle": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229424,
+        "elapsedMs": 236547,
         "signatureCounts": {}
       },
       "cineby": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229375,
+        "elapsedMs": 236496,
         "signatureCounts": {}
       },
       "cinefreak": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229324,
+        "elapsedMs": 236442,
         "signatureCounts": {}
       },
       "cinemacity": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229225,
+        "elapsedMs": 236382,
         "signatureCounts": {}
       },
       "cinemm": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 224744,
+        "elapsedMs": 236322,
         "signatureCounts": {}
       },
       "cinevibe": {
-        "mutationCount": 0,
-        "generatedBytes": 0,
-        "elapsedMs": 226774,
-        "signatureCounts": {}
+        "mutationCount": 1,
+        "generatedBytes": 8748,
+        "elapsedMs": 236263,
+        "signatureCounts": {
+          "407798151f15452ec1ccd098": 1
+        }
       },
       "coflix": {
         "mutationCount": 1,
         "generatedBytes": 0,
-        "elapsedMs": 230944,
+        "elapsedMs": 236207,
         "signatureCounts": {
           "9c5002c2f25fce9cea8338b6": 1
         }
@@ -4773,7 +2972,7 @@
       "ctgmovies": {
         "mutationCount": 1,
         "generatedBytes": 14496,
-        "elapsedMs": 229175,
+        "elapsedMs": 236156,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -4781,19 +2980,19 @@
       "desiflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229475,
+        "elapsedMs": 236100,
         "signatureCounts": {}
       },
       "dooflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229123,
+        "elapsedMs": 236044,
         "signatureCounts": {}
       },
       "dulourd": {
         "mutationCount": 1,
         "generatedBytes": 0,
-        "elapsedMs": 230881,
+        "elapsedMs": 235992,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 1
         }
@@ -4801,13 +3000,13 @@
       "dvdplay": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 227122,
+        "elapsedMs": 235938,
         "signatureCounts": {}
       },
       "einthusan": {
         "mutationCount": 1,
         "generatedBytes": 14608,
-        "elapsedMs": 229072,
+        "elapsedMs": 235887,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -4815,25 +3014,25 @@
       "fibwatch": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229020,
+        "elapsedMs": 235836,
         "signatureCounts": {}
       },
       "flemmix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230831,
+        "elapsedMs": 235783,
         "signatureCounts": {}
       },
       "french-manga": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230781,
+        "elapsedMs": 235729,
         "signatureCounts": {}
       },
       "frenchstream": {
         "mutationCount": 1,
         "generatedBytes": 15471,
-        "elapsedMs": 230681,
+        "elapsedMs": 235677,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 1
         }
@@ -4841,7 +3040,7 @@
       "fullanime": {
         "mutationCount": 1,
         "generatedBytes": 14810,
-        "elapsedMs": 230231,
+        "elapsedMs": 235624,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 1
         }
@@ -4849,13 +3048,13 @@
       "goatapi": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 222276,
+        "elapsedMs": 235571,
         "signatureCounts": {}
       },
       "goated": {
         "mutationCount": 1,
         "generatedBytes": 13929,
-        "elapsedMs": 228972,
+        "elapsedMs": 235520,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -4863,75 +3062,75 @@
       "gramcinema": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228919,
+        "elapsedMs": 235470,
         "signatureCounts": {}
       },
       "hdghartv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228869,
+        "elapsedMs": 235419,
         "signatureCounts": {}
       },
       "hdhub4u": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228818,
+        "elapsedMs": 235367,
         "signatureCounts": {}
       },
       "hianime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228761,
+        "elapsedMs": 235317,
         "signatureCounts": {}
       },
       "hindmoviez": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228700,
+        "elapsedMs": 235269,
         "signatureCounts": {}
       },
       "kisskh": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 227477,
+        "elapsedMs": 235217,
         "signatureCounts": {}
       },
       "kurage": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228647,
+        "elapsedMs": 235162,
         "signatureCounts": {}
       },
       "mallumv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 226971,
+        "elapsedMs": 235111,
         "signatureCounts": {}
       },
       "moonflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 229275,
+        "elapsedMs": 235056,
         "signatureCounts": {}
       },
       "movieblast": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228546,
+        "elapsedMs": 235007,
         "signatureCounts": {}
       },
       "moviebox": {
-        "mutationCount": 2,
-        "generatedBytes": 30882,
-        "elapsedMs": 228598,
+        "mutationCount": 1,
+        "generatedBytes": 15441,
+        "elapsedMs": 234957,
         "signatureCounts": {
-          "51f8aeda416a44e89e8c4d61": 2
+          "51f8aeda416a44e89e8c4d61": 1
         }
       },
       "movies4u": {
         "mutationCount": 1,
         "generatedBytes": 18726,
-        "elapsedMs": 224388,
+        "elapsedMs": 234907,
         "signatureCounts": {
           "9c5002c2f25fce9cea8338b6": 1
         }
@@ -4939,7 +3138,7 @@
       "moviesdrive": {
         "mutationCount": 1,
         "generatedBytes": 13960,
-        "elapsedMs": 228496,
+        "elapsedMs": 234855,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -4947,19 +3146,21 @@
       "movieshunt": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228445,
+        "elapsedMs": 234804,
         "signatureCounts": {}
       },
       "moviesmod": {
-        "mutationCount": 0,
-        "generatedBytes": 0,
-        "elapsedMs": 224289,
-        "signatureCounts": {}
+        "mutationCount": 1,
+        "generatedBytes": 18776,
+        "elapsedMs": 234755,
+        "signatureCounts": {
+          "51f8aeda416a44e89e8c4d61": 1
+        }
       },
       "movix": {
         "mutationCount": 1,
         "generatedBytes": 0,
-        "elapsedMs": 230632,
+        "elapsedMs": 234706,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 1
         }
@@ -4967,19 +3168,19 @@
       "mugiwarastream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230582,
+        "elapsedMs": 234657,
         "signatureCounts": {}
       },
       "mycima": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 226410,
+        "elapsedMs": 234610,
         "signatureCounts": {}
       },
       "nakios": {
         "mutationCount": 1,
         "generatedBytes": 14890,
-        "elapsedMs": 230430,
+        "elapsedMs": 234562,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -4987,113 +3188,117 @@
       "neko-sama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230280,
+        "elapsedMs": 234513,
         "signatureCounts": {}
       },
       "netmirror": {
-        "mutationCount": 2,
-        "generatedBytes": 30870,
-        "elapsedMs": 228392,
+        "mutationCount": 1,
+        "generatedBytes": 15435,
+        "elapsedMs": 234464,
         "signatureCounts": {
-          "51f8aeda416a44e89e8c4d61": 2
+          "51f8aeda416a44e89e8c4d61": 1
         }
       },
       "onlykdrama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 227525,
+        "elapsedMs": 234416,
         "signatureCounts": {}
       },
       "papadustream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230381,
+        "elapsedMs": 234367,
         "signatureCounts": {}
       },
       "peachify": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228289,
+        "elapsedMs": 234318,
         "signatureCounts": {}
       },
       "persianstremio": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228340,
+        "elapsedMs": 234263,
         "signatureCounts": {}
       },
       "playimdb": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228239,
+        "elapsedMs": 234202,
         "signatureCounts": {}
       },
       "purstream": {
         "mutationCount": 1,
         "generatedBytes": 14858,
-        "elapsedMs": 228191,
+        "elapsedMs": 234146,
         "signatureCounts": {
           "9c5002c2f25fce9cea8338b6": 1
         }
       },
       "sekai": {
-        "mutationCount": 0,
-        "generatedBytes": 0,
-        "elapsedMs": 223278,
-        "signatureCounts": {}
+        "mutationCount": 1,
+        "generatedBytes": 101827,
+        "elapsedMs": 234088,
+        "signatureCounts": {
+          "324ebdec180c9bda40b3a2b7": 1
+        }
       },
       "showbox": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228139,
+        "elapsedMs": 234034,
         "signatureCounts": {}
       },
       "streamflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 227273,
+        "elapsedMs": 233981,
         "signatureCounts": {}
       },
       "streamzo": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 224042,
+        "elapsedMs": 233927,
         "signatureCounts": {}
       },
       "toflix": {
-        "mutationCount": 0,
-        "generatedBytes": 0,
-        "elapsedMs": 223229,
-        "signatureCounts": {}
+        "mutationCount": 1,
+        "generatedBytes": 81121,
+        "elapsedMs": 233874,
+        "signatureCounts": {
+          "324ebdec180c9bda40b3a2b7": 1
+        }
       },
       "topcartoons": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228092,
+        "elapsedMs": 233823,
         "signatureCounts": {}
       },
       "uhdmovies": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 228042,
+        "elapsedMs": 233768,
         "signatureCounts": {}
       },
       "vegamovies": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 227992,
+        "elapsedMs": 233711,
         "signatureCounts": {}
       },
       "videasy": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 227888,
+        "elapsedMs": 233654,
         "signatureCounts": {}
       },
       "vidfast": {
         "mutationCount": 1,
         "generatedBytes": 15057,
-        "elapsedMs": 227738,
+        "elapsedMs": 233598,
         "signatureCounts": {
           "9c5002c2f25fce9cea8338b6": 1
         }
@@ -5101,7 +3306,7 @@
       "vidlink": {
         "mutationCount": 1,
         "generatedBytes": 14330,
-        "elapsedMs": 227942,
+        "elapsedMs": 233539,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -5109,7 +3314,7 @@
       "vidlove": {
         "mutationCount": 1,
         "generatedBytes": 14470,
-        "elapsedMs": 227686,
+        "elapsedMs": 233477,
         "signatureCounts": {
           "9c5002c2f25fce9cea8338b6": 1
         }
@@ -5117,7 +3322,7 @@
       "vidnest": {
         "mutationCount": 1,
         "generatedBytes": 5922,
-        "elapsedMs": 226871,
+        "elapsedMs": 233423,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -5125,94 +3330,86 @@
       "vidnest-anime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 226823,
+        "elapsedMs": 233365,
         "signatureCounts": {}
       },
       "vidrock": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 223031,
+        "elapsedMs": 233304,
         "signatureCounts": {}
       },
       "vidsrc": {
         "mutationCount": 1,
         "generatedBytes": 13952,
-        "elapsedMs": 227839,
+        "elapsedMs": 233250,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
       },
       "vixsrc": {
-        "mutationCount": 1,
-        "generatedBytes": 15433,
-        "elapsedMs": 227790,
-        "signatureCounts": {
-          "51f8aeda416a44e89e8c4d61": 1
-        }
+        "mutationCount": 0,
+        "generatedBytes": 0,
+        "elapsedMs": 233193,
+        "signatureCounts": {}
       },
       "voiranime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230532,
+        "elapsedMs": 233138,
         "signatureCounts": {}
       },
       "voiranime-homes": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230731,
+        "elapsedMs": 233082,
         "signatureCounts": {}
       },
       "voiranime-rip": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230478,
+        "elapsedMs": 233030,
         "signatureCounts": {}
       },
       "vostfree": {
         "mutationCount": 1,
         "generatedBytes": 18986,
-        "elapsedMs": 223785,
+        "elapsedMs": 232976,
         "signatureCounts": {
           "ac5f8426938872bee42dae1d": 1
         }
       },
       "waveanime": {
-        "mutationCount": 0,
-        "generatedBytes": 0,
-        "elapsedMs": 223182,
-        "signatureCounts": {}
+        "mutationCount": 1,
+        "generatedBytes": 18687,
+        "elapsedMs": 232924,
+        "signatureCounts": {
+          "ac5f8426938872bee42dae1d": 1
+        }
       },
       "wookafr": {
-        "mutationCount": 1,
+        "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 230332,
-        "signatureCounts": {
-          "51f8aeda416a44e89e8c4d61": 1
-        }
+        "elapsedMs": 232871,
+        "signatureCounts": {}
       },
       "xpass": {
-        "mutationCount": 1,
-        "generatedBytes": 14492,
-        "elapsedMs": 227630,
-        "signatureCounts": {
-          "9c5002c2f25fce9cea8338b6": 1
-        }
+        "mutationCount": 0,
+        "generatedBytes": 0,
+        "elapsedMs": 232817,
+        "signatureCounts": {}
       },
       "yflix": {
-        "mutationCount": 1,
-        "generatedBytes": 10759,
-        "elapsedMs": 227070,
-        "signatureCounts": {
-          "51f8aeda416a44e89e8c4d61": 1
-        }
+        "mutationCount": 0,
+        "generatedBytes": 0,
+        "elapsedMs": 232766,
+        "signatureCounts": {}
       },
       "zinkmovies": {
-        "mutationCount": 1,
-        "generatedBytes": 14547,
-        "elapsedMs": 227579,
-        "signatureCounts": {
-          "593232078bc8dc6560e0de79": 1
-        }
+        "mutationCount": 0,
+        "generatedBytes": 0,
+        "elapsedMs": 232715,
+        "signatureCounts": {}
       }
     },
     "learnedEvents": 0,
@@ -5227,7 +3424,6 @@
       "animesalt",
       "anizone",
       "cinefreak",
-      "cinemacity",
       "cinemm",
       "fibwatch",
       "flemmix",
@@ -5238,18 +3434,16 @@
       "kurage",
       "mallumv",
       "moonflix",
-      "moviesmod",
       "mugiwarastream",
       "mycima",
+      "neko-sama",
       "papadustream",
       "showbox",
       "streamflix",
       "streamzo",
       "uhdmovies",
       "vegamovies",
-      "videasy",
-      "vidrock",
-      "voiranime"
+      "vidrock"
     ],
     "privacy": "sanitized-no-raw-endpoints-tokens-header-values-private-notes"
   }

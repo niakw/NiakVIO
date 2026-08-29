@@ -14,11 +14,11 @@
   "manifestMeta": {
     "general": {
       "name": "NiakVIO",
-      "version": "5.21.10"
+      "version": "5.21.11"
     },
     "vf": {
       "name": "NiakVIO — VF uniquement",
-      "version": "5.21.10"
+      "version": "5.21.11"
     }
   },
   "manifestOrder": {
@@ -32,17 +32,19 @@
       "4khdhub",
       "persianstremio",
       "desiflix",
-      "neko-sama",
+      "voiranime",
       "french-manga",
       "voiranime-homes",
-      "animesama-co",
-      "cineby",
-      "mugiwarastream",
       "voiranime-rip",
-      "videasy",
+      "animesama-co",
+      "animevostfr",
+      "cineby",
       "playimdb",
+      "videasy",
       "anikototv",
       "castle",
+      "animezey",
+      "animekai",
       "movieblast",
       "allmovieland",
       "anidb",
@@ -50,7 +52,6 @@
       "animesalt",
       "animesultra",
       "animetsu",
-      "animevostfr",
       "animoflix",
       "anizone",
       "cinemacity",
@@ -65,43 +66,43 @@
       "moviesdrive",
       "moviesmod",
       "movix",
+      "mugiwarastream",
       "papadustream",
       "streamflix",
       "streamzo",
       "vidfast",
       "vidlink",
-      "voiranime",
       "vostfree",
       "wookafr",
       "yflix",
       "uhdmovies",
       "movieshunt",
       "anime-ultime",
+      "neko-sama",
       "animevost-fr",
       "fullanime",
       "nakios",
       "sekai",
       "toflix",
       "waveanime",
-      "animezey",
       "goated",
-      "einthusan",
       "vidrock",
+      "einthusan",
       "peachify",
       "gramcinema",
-      "animekai",
       "mallumv",
       "vidnest-anime",
+      "4khdhubnew",
       "animeworld",
+      "cinefreak",
       "cinevibe",
       "ctgmovies",
+      "goatapi",
       "hdghartv",
       "moonflix",
       "vidlove",
       "vidnest",
       "xpass",
-      "4khdhubnew",
-      "goatapi",
       "kisskh",
       "onlykdrama",
       "showbox",
@@ -110,7 +111,6 @@
       "mycima",
       "1shows",
       "allanime",
-      "cinefreak",
       "dvdplay",
       "frenchstream",
       "moviebox",
@@ -123,24 +123,24 @@
       "anime-sama",
       "purstream",
       "flemmix",
-      "neko-sama",
+      "voiranime",
       "french-manga",
       "voiranime-homes",
-      "animesama-co",
-      "mugiwarastream",
       "voiranime-rip",
-      "animesultra",
+      "animesama-co",
       "animevostfr",
+      "animesultra",
       "animoflix",
       "coflix",
       "dulourd",
       "movix",
+      "mugiwarastream",
       "papadustream",
       "streamzo",
-      "voiranime",
       "vostfree",
       "wookafr",
       "anime-ultime",
+      "neko-sama",
       "animevost-fr",
       "fullanime",
       "nakios",
@@ -157,7 +157,7 @@
         "id": "anime-sama",
         "name": "🐍 Anime-Sama",
         "description": "Un des plus gros catalogues français, très actif, sorties du jour.",
-        "version": "1.1.109",
+        "version": "1.1.111",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
@@ -316,7 +316,7 @@
         "id": "HINDMOVIEZ",
         "name": "🇮🇳 HindMoviez",
         "description": "HindMoviez - Hindi & English Movies and Series (480p / 720p / 1080p / 4K)",
-        "version": "1.0.48",
+        "version": "1.0.50",
         "author": "Sanchit (@S4NCHITT) — Murph's Streams",
         "supportedTypes": [
           "movie",
@@ -375,7 +375,7 @@
         "id": "persianstremio",
         "name": "🌸 PersianStremio",
         "description": "Persian Stremio plugin for movies, series,and Persian media content in Iranian & English.",
-        "version": "1.4.50",
+        "version": "1.4.52",
         "author": "Nuvio Team",
         "supportedTypes": [
           "tv"
@@ -431,24 +431,26 @@
       }
     },
     {
-      "canonicalId": "neko-sama",
+      "canonicalId": "voiranime",
       "scraper": {
-        "id": "NEKO-SAMA",
-        "name": "🐱 Neko-Sama",
-        "description": "Anime VF et VOSTFR en streaming sur animes-sama.su (via neko-sama.lol).",
-        "version": "0.0.7",
+        "id": "VOIRANIME",
+        "name": "👁️ VoirAnime",
+        "description": "Un des plus gros catalogues français d'animes.",
+        "version": "1.2.58",
         "author": "Gowaru",
         "supportedTypes": [
+          "movie",
           "anime"
         ],
-        "filename": "providers/neko-sama--nuvio--8896d3edddf8488d.js",
+        "filename": "providers/voiranime--nuvio--502d227b064f4d4f.js",
         "enabled": true,
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/neko-sama.webp",
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime.webp",
         "contentLanguage": [
           "fr"
         ],
         "formats": [
           "mp4",
+          "mkv",
           "m3u8"
         ],
         "limited": false,
@@ -466,7 +468,7 @@
         "id": "french-manga",
         "name": "🇫🇷 French-Manga",
         "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
-        "version": "1.0.67",
+        "version": "1.0.69",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
@@ -497,7 +499,7 @@
         "id": "VOIRANIME-HOMES",
         "name": "🏠 VoirAnime.homes",
         "description": "Animes VF et VOSTFR en streaming sur voiranime.homes (moteur DLE, miroir French-Manga).",
-        "version": "0.0.46",
+        "version": "0.0.48",
         "author": "Gowaru",
         "supportedTypes": [
           "anime",
@@ -523,12 +525,43 @@
       }
     },
     {
+      "canonicalId": "voiranime-rip",
+      "scraper": {
+        "id": "VOIRANIME-RIP",
+        "name": "👁️ VoirAnime.rip",
+        "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
+        "version": "1.0.54",
+        "author": "Gowaru",
+        "supportedTypes": [
+          "movie",
+          "anime"
+        ],
+        "filename": "providers/voiranime-rip--nuvio--74e21a64985fe851.js",
+        "enabled": true,
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime-rip.webp",
+        "contentLanguage": [
+          "fr"
+        ],
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "limited": false,
+        "disabledPlatforms": [],
+        "supportsExternalPlayer": false
+      },
+      "projections": {
+        "general": true,
+        "vf": true
+      }
+    },
+    {
       "canonicalId": "animesama-co",
       "scraper": {
         "id": "ANIMESAMA-CO",
         "name": "🐍 AnimeSama.co (DLE Mirror)",
         "description": "Animes VF et VOSTFR en streaming sur AnimeSama.co (miroir DLE).",
-        "version": "1.0.47",
+        "version": "1.0.49",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
@@ -554,12 +587,43 @@
       }
     },
     {
+      "canonicalId": "animevostfr",
+      "scraper": {
+        "id": "ANIMEVOSTFR",
+        "name": "🇫🇷 AnimeVOSTFR",
+        "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
+        "version": "1.1.80",
+        "author": "Gowaru",
+        "supportedTypes": [
+          "movie",
+          "anime"
+        ],
+        "filename": "providers/animevostfr--nuvio--c60d709aca77ac3d.js",
+        "enabled": true,
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animevostfr.webp",
+        "contentLanguage": [
+          "fr"
+        ],
+        "formats": [
+          "mp4",
+          "mkv"
+        ],
+        "limited": false,
+        "disabledPlatforms": [],
+        "supportsExternalPlayer": false
+      },
+      "projections": {
+        "general": true,
+        "vf": true
+      }
+    },
+    {
       "canonicalId": "cineby",
       "scraper": {
         "id": "cineby",
         "name": "🎞️ Cineby",
         "description": "Multi-server movie and TV streaming — 4K/1080p/720p from Videasy network without subtitles",
-        "version": "1.9.54",
+        "version": "1.9.56",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
@@ -583,104 +647,12 @@
       }
     },
     {
-      "canonicalId": "mugiwarastream",
-      "scraper": {
-        "id": "MUGIWARASTREAM",
-        "name": "👒 Mugiwara-no-Streaming",
-        "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-        "version": "1.0.66",
-        "author": "Gowaru",
-        "supportedTypes": [
-          "movie",
-          "anime"
-        ],
-        "filename": "providers/mugiwarastream--nuvio--5a40753288d49d5f.js",
-        "enabled": true,
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/mugiwarastream.webp",
-        "contentLanguage": [
-          "fr"
-        ],
-        "formats": [
-          "mp4",
-          "mkv",
-          "m3u8"
-        ],
-        "limited": false,
-        "disabledPlatforms": [],
-        "supportsExternalPlayer": false
-      },
-      "projections": {
-        "general": true,
-        "vf": true
-      }
-    },
-    {
-      "canonicalId": "voiranime-rip",
-      "scraper": {
-        "id": "VOIRANIME-RIP",
-        "name": "👁️ VoirAnime.rip",
-        "description": "Animes VF et VOSTFR en streaming sur VoirAnime.rip (site DLE).",
-        "version": "1.0.52",
-        "author": "Gowaru",
-        "supportedTypes": [
-          "movie",
-          "anime"
-        ],
-        "filename": "providers/voiranime-rip--nuvio--65d3b11422b74ee4.js",
-        "enabled": true,
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime-rip.webp",
-        "contentLanguage": [
-          "fr"
-        ],
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "limited": false,
-        "disabledPlatforms": [],
-        "supportsExternalPlayer": false
-      },
-      "projections": {
-        "general": true,
-        "vf": true
-      }
-    },
-    {
-      "canonicalId": "videasy",
-      "scraper": {
-        "id": "VIDEASY",
-        "name": "▶️ VidEasy",
-        "description": "Videasy streaming with encrypted TMDB ID support for movies and TV shows",
-        "version": "1.0.59",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/videasy--nuvio--9fbd0bda0f6f851a.js",
-        "enabled": true,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/videasy.webp",
-        "contentLanguage": [
-          "en"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "playimdb",
       "scraper": {
         "id": "PLAYIMDB",
         "name": "▶️ PlayIMDb",
         "description": "High-Speed Direct Streaming for Movies (IMDb ID Extract)",
-        "version": "2.0.58",
+        "version": "2.0.60",
         "author": "PirateZoro9",
         "supportedTypes": [
           "movie",
@@ -706,12 +678,40 @@
       }
     },
     {
+      "canonicalId": "videasy",
+      "scraper": {
+        "id": "VIDEASY",
+        "name": "▶️ VidEasy",
+        "description": "Videasy streaming with encrypted TMDB ID support for movies and TV shows",
+        "version": "1.0.61",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "tv"
+        ],
+        "filename": "providers/videasy--nuvio--9fbd0bda0f6f851a.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/videasy.webp",
+        "contentLanguage": [
+          "en"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
       "canonicalId": "anikototv",
       "scraper": {
         "id": "anikototv",
         "name": "📺 AnikotoTV",
         "description": "Anime provider for AnikotoTV.to via Mapper API + Native Extractor",
-        "version": "1.0.74",
+        "version": "1.0.76",
         "author": "piratezoro9",
         "supportedTypes": [
           "anime",
@@ -740,7 +740,7 @@
         "id": "CASTLE",
         "name": "🏰 Castle",
         "description": "Multi Lang provider",
-        "version": "2.0.53",
+        "version": "2.0.55",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
@@ -765,12 +765,73 @@
       }
     },
     {
+      "canonicalId": "animezey",
+      "scraper": {
+        "id": "animezey",
+        "name": "🌀 AnimeZeY",
+        "description": "Movies via AnimeZeY, indexed by TMDB",
+        "version": "1.0.41",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/animezey--nuvio--e5265789613cfdf5.js",
+        "enabled": true,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "mkv",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animezey.webp",
+        "contentLanguage": [
+          "en",
+          "pt"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "animekai",
+      "scraper": {
+        "id": "ANIMEKAI",
+        "name": "🐉 AnimeKai",
+        "description": "AnimeKai TV episodes via AnimeKai servers",
+        "version": "1.0.49",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/animekai--nuvio--4c301008fd3ae228.js",
+        "enabled": true,
+        "hasSettings": true,
+        "limited": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animekai.webp",
+        "contentLanguage": [
+          "en"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
       "canonicalId": "movieblast",
       "scraper": {
         "id": "movieblast",
         "name": "💥 MovieBlast",
         "description": "MovieBlast - Hindi, Tamil, Telugu & English Movies/Series with multi-quality streams",
-        "version": "1.0.51",
+        "version": "1.0.53",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
@@ -982,37 +1043,6 @@
       "projections": {
         "general": true,
         "vf": false
-      }
-    },
-    {
-      "canonicalId": "animevostfr",
-      "scraper": {
-        "id": "ANIMEVOSTFR",
-        "name": "🇫🇷 AnimeVOSTFR",
-        "description": "Animes VF et VOSTFR en streaming gratuit sur AnimeVOSTFR.",
-        "version": "1.1.78",
-        "author": "Gowaru",
-        "supportedTypes": [
-          "movie",
-          "anime"
-        ],
-        "filename": "providers/animevostfr--nuvio--3151a72ffe07aa76.js",
-        "enabled": true,
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animevostfr.webp",
-        "contentLanguage": [
-          "fr"
-        ],
-        "formats": [
-          "mp4",
-          "mkv"
-        ],
-        "limited": false,
-        "disabledPlatforms": [],
-        "supportsExternalPlayer": false
-      },
-      "projections": {
-        "general": true,
-        "vf": true
       }
     },
     {
@@ -1445,6 +1475,38 @@
       }
     },
     {
+      "canonicalId": "mugiwarastream",
+      "scraper": {
+        "id": "MUGIWARASTREAM",
+        "name": "👒 Mugiwara-no-Streaming",
+        "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
+        "version": "1.0.66",
+        "author": "Gowaru",
+        "supportedTypes": [
+          "movie",
+          "anime"
+        ],
+        "filename": "providers/mugiwarastream--nuvio--5a40753288d49d5f.js",
+        "enabled": true,
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/mugiwarastream.webp",
+        "contentLanguage": [
+          "fr"
+        ],
+        "formats": [
+          "mp4",
+          "mkv",
+          "m3u8"
+        ],
+        "limited": false,
+        "disabledPlatforms": [],
+        "supportsExternalPlayer": false
+      },
+      "projections": {
+        "general": true,
+        "vf": true
+      }
+    },
+    {
       "canonicalId": "papadustream",
       "scraper": {
         "id": "PAPADUSTREAM",
@@ -1596,38 +1658,6 @@
       }
     },
     {
-      "canonicalId": "voiranime",
-      "scraper": {
-        "id": "VOIRANIME",
-        "name": "👁️ VoirAnime",
-        "description": "Un des plus gros catalogues français d'animes.",
-        "version": "1.2.56",
-        "author": "Gowaru",
-        "supportedTypes": [
-          "movie",
-          "anime"
-        ],
-        "filename": "providers/voiranime--nuvio--5cde63b8c5953fe9.js",
-        "enabled": true,
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/voiranime.webp",
-        "contentLanguage": [
-          "fr"
-        ],
-        "formats": [
-          "mp4",
-          "mkv",
-          "m3u8"
-        ],
-        "limited": false,
-        "disabledPlatforms": [],
-        "supportsExternalPlayer": false
-      },
-      "projections": {
-        "general": true,
-        "vf": true
-      }
-    },
-    {
       "canonicalId": "vostfree",
       "scraper": {
         "id": "VOSTFREE",
@@ -1725,7 +1755,7 @@
         "id": "uhdmovies",
         "name": "📺 UHDMovies",
         "description": "UHD Movies streaming with multiple resolution",
-        "version": "1.0.35",
+        "version": "1.0.37",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
@@ -1783,14 +1813,14 @@
         "id": "anime-ultime",
         "name": "🔥 Anime-Ultime",
         "description": "Animes VOSTFR et VF en streaming sur v5.anime-ultime.net (séries licenciées exclues par le site).",
-        "version": "0.0.46",
+        "version": "0.0.48",
         "author": "Gowaru",
         "supportedTypes": [
           "anime",
           "movie",
           "tv"
         ],
-        "filename": "providers/anime-ultime--nuvio--62000010281b8fa2.js",
+        "filename": "providers/anime-ultime--nuvio--97e8468c57f7a01e.js",
         "enabled": false,
         "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/anime-ultime.webp",
         "contentLanguage": [
@@ -1809,12 +1839,42 @@
       }
     },
     {
+      "canonicalId": "neko-sama",
+      "scraper": {
+        "id": "NEKO-SAMA",
+        "name": "🐱 Neko-Sama",
+        "description": "Anime VF et VOSTFR en streaming sur animes-sama.su (via neko-sama.lol).",
+        "version": "0.0.7",
+        "author": "Gowaru",
+        "supportedTypes": [
+          "anime"
+        ],
+        "filename": "providers/neko-sama--nuvio--8896d3edddf8488d.js",
+        "enabled": true,
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/neko-sama.webp",
+        "contentLanguage": [
+          "fr"
+        ],
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "limited": false,
+        "disabledPlatforms": [],
+        "supportsExternalPlayer": false
+      },
+      "projections": {
+        "general": true,
+        "vf": true
+      }
+    },
+    {
       "canonicalId": "animevost-fr",
       "scraper": {
         "id": "animevost-fr",
         "name": "🇫🇷 AnimeVOST.fr",
         "description": "Anime VOSTFR 1080p en streaming via animevost.fr (API JSON, catalogue en croissance).",
-        "version": "0.0.13",
+        "version": "0.0.15",
         "author": "Gowaru",
         "supportedTypes": [
           "anime"
@@ -1844,7 +1904,7 @@
         "id": "fullanime",
         "name": "🍥 FullAnime",
         "description": "Anime VOSTFR en streaming sur fullanime.fr. Catalogue large avec 3 hébergeurs par épisode.",
-        "version": "0.0.13",
+        "version": "0.0.15",
         "author": "Gowaru",
         "supportedTypes": [
           "anime"
@@ -1874,14 +1934,14 @@
         "id": "NAKIOS",
         "name": "🇳 Nakios",
         "description": "Films et séries en streaming MP4 via Nakios (API REST, TMDB natif, CDN direct).",
-        "version": "3.8.48",
+        "version": "3.8.50",
         "author": "Gowaru",
         "supportedTypes": [
           "movie",
           "tv",
           "anime"
         ],
-        "filename": "providers/nakios--nuvio--b2bcfd6e2de4e837.js",
+        "filename": "providers/nakios--nuvio--37a51eadc3baf68c.js",
         "enabled": false,
         "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/nakios.webp",
         "contentLanguage": [
@@ -1970,7 +2030,7 @@
         "id": "waveanime",
         "name": "🌊 WaveAnime",
         "description": "Animes en DASH (MPD) via waveanime.fr — lecture native ExoPlayer/Media3 (Android), non supporté par AVPlayer (iOS).",
-        "version": "0.0.47",
+        "version": "0.0.49",
         "author": "Gowaru",
         "supportedTypes": [
           "anime"
@@ -1994,43 +2054,12 @@
       }
     },
     {
-      "canonicalId": "animezey",
-      "scraper": {
-        "id": "animezey",
-        "name": "🌀 AnimeZeY",
-        "description": "Movies via AnimeZeY, indexed by TMDB",
-        "version": "1.0.39",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/animezey--nuvio--e5265789613cfdf5.js",
-        "enabled": true,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "mkv",
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animezey.webp",
-        "contentLanguage": [
-          "en",
-          "pt"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "goated",
       "scraper": {
         "id": "GOATED",
         "name": "🐐 Goated",
         "description": "4K • 1080p Movies & Series in Multi Language",
-        "version": "1.0.44",
+        "version": "1.0.46",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
@@ -2060,44 +2089,12 @@
       }
     },
     {
-      "canonicalId": "einthusan",
-      "scraper": {
-        "id": "einthusan",
-        "name": "🎭 Einthustan",
-        "description": "1080p Movies in Multi-Lang",
-        "version": "1.0.39",
-        "author": "✮☆[D3ADLY]☆✮",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/einthusan--nuvio--d7dee9297eaa4fcb.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/einthusan.webp",
-        "contentLanguage": [
-          "hi",
-          "ta",
-          "te",
-          "ba"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "vidrock",
       "scraper": {
         "id": "VIDROCK",
         "name": "🪨 VidRock",
         "description": "VidRock - 1080p 480p and 360p",
-        "version": "1.0.42",
+        "version": "1.0.44",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
@@ -2122,12 +2119,44 @@
       }
     },
     {
+      "canonicalId": "einthusan",
+      "scraper": {
+        "id": "einthusan",
+        "name": "🎭 Einthustan",
+        "description": "1080p Movies in Multi-Lang",
+        "version": "1.0.41",
+        "author": "✮☆[D3ADLY]☆✮",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/einthusan--nuvio--051e9f794622963b.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/einthusan.webp",
+        "contentLanguage": [
+          "hi",
+          "ta",
+          "te",
+          "ba"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
       "canonicalId": "peachify",
       "scraper": {
         "id": "PEACHIFY",
         "name": "🍑 Peachify",
         "description": "Streams from peachify.top — 3 server sources (MovieBox/Holly/Air) via Cloudflare Workers with AES-256-GCM decryption",
-        "version": "1.0.42",
+        "version": "1.0.44",
         "author": "piratezoro9",
         "supportedTypes": [
           "movie",
@@ -2161,7 +2190,7 @@
         "id": "gramcinema",
         "name": "📸 GramCinema",
         "description": "Streams in Multi Lang from Bollywood.eu.org. Requires Cookie Token.",
-        "version": "1.0.45",
+        "version": "1.0.47",
         "author": "Xyr0nX • =[D3adly]=",
         "supportedTypes": [
           "movie",
@@ -2188,48 +2217,17 @@
       }
     },
     {
-      "canonicalId": "animekai",
-      "scraper": {
-        "id": "animekai",
-        "name": "🐉 AnimeKai",
-        "description": "AnimeKai TV episodes via AnimeKai servers",
-        "version": "1.0.46",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "anime",
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/animekai--nuvio--5209c5030c3f90ed.js",
-        "enabled": false,
-        "hasSettings": true,
-        "limited": true,
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animekai.webp",
-        "contentLanguage": [
-          "en"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
       "canonicalId": "mallumv",
       "scraper": {
         "id": "mallumv",
         "name": "🌴 MalluMV",
         "description": "MalluMV direct links with support for Tamil, Telugu, Hindi, Malayalam, and Kannada movies",
-        "version": "1.0.51",
+        "version": "1.0.53",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie"
         ],
-        "filename": "providers/mallumv--nuvio--34374c95b80d063c.js",
+        "filename": "providers/mallumv--nuvio--6e00651d9cd11b8c.js",
         "enabled": false,
         "formats": [
           "mkv",
@@ -2255,7 +2253,7 @@
         "id": "vidnest-anime",
         "name": "🪺 VidnestAnime",
         "description": "Vidnest anime streaming with TMDB→AniList mapping and 5 servers (hindi, satoru, miko, pahe, anya)",
-        "version": "1.0.45",
+        "version": "1.0.47",
         "author": "Nuvio Team",
         "supportedTypes": [
           "anime"
@@ -2273,245 +2271,6 @@
         ],
         "limited": true,
         "notes": "Automatically maps TMDB IDs to AniList. Supports sub/dub."
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "animeworld",
-      "scraper": {
-        "id": "animeworld",
-        "name": "🗡️ AnimeWorld",
-        "description": "Watch AnimeWorld India",
-        "version": "1.0.46",
-        "author": "piratezoro9",
-        "supportedTypes": [
-          "anime",
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/animeworld--nuvio--c37a8d4fe2b3e7bf.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animeworld.webp",
-        "contentLanguage": [
-          "hi",
-          "en",
-          "ja"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "cinevibe",
-      "scraper": {
-        "id": "cinevibe",
-        "name": "🎶 Cinevibe",
-        "description": "Cinevibe (Movies)",
-        "version": "1.0.44",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie"
-        ],
-        "filename": "providers/cinevibe--nuvio--5914898f5bca27f3.js",
-        "enabled": false,
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/cinevibe.webp",
-        "contentLanguage": [
-          "en"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "ctgmovies",
-      "scraper": {
-        "id": "ctgmovies",
-        "name": "🇨 CTGMovies",
-        "description": "English | Hindi Movies",
-        "version": "1.0.44",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/ctgmovies--nuvio--8f7498afb0cac470.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "m3u8",
-          "mp4",
-          "mkv"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/ctgmovies.webp",
-        "contentLanguage": [
-          "en",
-          "hi"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "hdghartv",
-      "scraper": {
-        "id": "HDGHARTV",
-        "name": "🏠 HDGharTV",
-        "description": "HDGhar TV allows users to watch movies, TV shows and web series in English & Hindi.",
-        "version": "1.0.52",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/hdghartv--nuvio--d70ad929c5f80827.js",
-        "enabled": false,
-        "hasSettings": false,
-        "formats": [
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/hdghartv.webp",
-        "contentLanguage": [
-          "en",
-          "hi"
-        ],
-        "limited": false,
-        "disabledPlatforms": []
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "moonflix",
-      "scraper": {
-        "id": "MOONFLIX",
-        "name": "🌙 MoonFlix",
-        "description": "Bollywood, Hollywood, South Indian Movies & Series",
-        "version": "1.0.37",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/moonflix--nuvio--634bfd3529eb673e.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "mkv"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/moonflix.webp",
-        "contentLanguage": [
-          "en",
-          "hi"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "vidlove",
-      "scraper": {
-        "id": "VIDLOVE",
-        "name": "❤️ VidLove",
-        "description": "Movie and TV show streams from MovieBox, LookMovie, VidnNest etc",
-        "version": "1.0.48",
-        "author": "Jeff",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/vidlove--nuvio--0e2ad2929afda012.js",
-        "enabled": false,
-        "hasSettings": false,
-        "formats": [
-          "mp4",
-          "m3u8",
-          "mkv"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/vidlove.webp",
-        "contentLanguage": [
-          "en"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "vidnest",
-      "scraper": {
-        "id": "vidnest",
-        "name": "🪺 Vidnest",
-        "description": "Vidnest streaming with encrypted AES-GCM sources",
-        "version": "1.0.45",
-        "author": "Nuvio Team",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/vidnest--nuvio--0c21d63a6e5204f5.js",
-        "enabled": false,
-        "formats": [
-          "mp4",
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/vidnest.webp",
-        "contentLanguage": [
-          "en"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "xpass",
-      "scraper": {
-        "id": "xpass",
-        "name": "🎫 XPass",
-        "description": "Play Movie/TV by TMDB ID or IMDb ID",
-        "version": "1.0.46",
-        "author": "Dustincos",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/xpass--nuvio--f0a87e09e2e9bfaa.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "mp4",
-          "mkv",
-          "m3u8"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/xpass.webp",
-        "contentLanguage": [
-          "en",
-          "hi"
-        ]
       },
       "projections": {
         "general": true,
@@ -2548,12 +2307,130 @@
       }
     },
     {
+      "canonicalId": "animeworld",
+      "scraper": {
+        "id": "animeworld",
+        "name": "🗡️ AnimeWorld",
+        "description": "Watch AnimeWorld India",
+        "version": "1.0.48",
+        "author": "piratezoro9",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/animeworld--nuvio--8a6bef867904fa2e.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/animeworld.webp",
+        "contentLanguage": [
+          "hi",
+          "en",
+          "ja"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "cinefreak",
+      "scraper": {
+        "id": "cinefreak",
+        "name": "🤪 CineFreak",
+        "description": "Direct MKV streams from cinefreak.nl",
+        "version": "1.0.19",
+        "author": "piratezoro9",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/cinefreak--nuvio-audit-quarantine--7947316d3cbed215.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "mkv",
+          "mp4"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/cinefreak.webp",
+        "contentLanguage": [
+          "en",
+          "hi"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "cinevibe",
+      "scraper": {
+        "id": "cinevibe",
+        "name": "🎶 Cinevibe",
+        "description": "Cinevibe (Movies)",
+        "version": "1.0.46",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie"
+        ],
+        "filename": "providers/cinevibe--nuvio--5914898f5bca27f3.js",
+        "enabled": false,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/cinevibe.webp",
+        "contentLanguage": [
+          "en"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "ctgmovies",
+      "scraper": {
+        "id": "ctgmovies",
+        "name": "🇨 CTGMovies",
+        "description": "English | Hindi Movies",
+        "version": "1.0.46",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/ctgmovies--nuvio--8f7498afb0cac470.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "m3u8",
+          "mp4",
+          "mkv"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/ctgmovies.webp",
+        "contentLanguage": [
+          "en",
+          "hi"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
       "canonicalId": "goatapi",
       "scraper": {
         "id": "goatapi",
         "name": "🐐 GoatAPI",
         "description": "Movies via GoatAPI, indexed by TMDB",
-        "version": "1.0.46",
+        "version": "1.0.48",
         "author": "Aeyshx",
         "supportedTypes": [
           "movie"
@@ -2577,12 +2454,162 @@
       }
     },
     {
+      "canonicalId": "hdghartv",
+      "scraper": {
+        "id": "HDGHARTV",
+        "name": "🏠 HDGharTV",
+        "description": "HDGhar TV allows users to watch movies, TV shows and web series in English & Hindi.",
+        "version": "1.0.54",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/hdghartv--nuvio--31349aad8299c72f.js",
+        "enabled": false,
+        "hasSettings": false,
+        "formats": [
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/hdghartv.webp",
+        "contentLanguage": [
+          "en",
+          "hi"
+        ],
+        "limited": false,
+        "disabledPlatforms": []
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "moonflix",
+      "scraper": {
+        "id": "MOONFLIX",
+        "name": "🌙 MoonFlix",
+        "description": "Bollywood, Hollywood, South Indian Movies & Series",
+        "version": "1.0.39",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/moonflix--nuvio--634bfd3529eb673e.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "mkv"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/moonflix.webp",
+        "contentLanguage": [
+          "en",
+          "hi"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "vidlove",
+      "scraper": {
+        "id": "VIDLOVE",
+        "name": "❤️ VidLove",
+        "description": "Movie and TV show streams from MovieBox, LookMovie, VidnNest etc",
+        "version": "1.0.50",
+        "author": "Jeff",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/vidlove--nuvio--0e2ad2929afda012.js",
+        "enabled": false,
+        "hasSettings": false,
+        "formats": [
+          "mp4",
+          "m3u8",
+          "mkv"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/vidlove.webp",
+        "contentLanguage": [
+          "en"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "vidnest",
+      "scraper": {
+        "id": "vidnest",
+        "name": "🪺 Vidnest",
+        "description": "Vidnest streaming with encrypted AES-GCM sources",
+        "version": "1.0.47",
+        "author": "Nuvio Team",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/vidnest--nuvio--6328d94f8028383d.js",
+        "enabled": false,
+        "formats": [
+          "mp4",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/vidnest.webp",
+        "contentLanguage": [
+          "en"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
+      "canonicalId": "xpass",
+      "scraper": {
+        "id": "xpass",
+        "name": "🎫 XPass",
+        "description": "Play Movie/TV by TMDB ID or IMDb ID",
+        "version": "1.0.48",
+        "author": "Dustincos",
+        "supportedTypes": [
+          "movie",
+          "tv"
+        ],
+        "filename": "providers/xpass--nuvio--f0a87e09e2e9bfaa.js",
+        "enabled": false,
+        "hasSettings": true,
+        "formats": [
+          "mp4",
+          "mkv",
+          "m3u8"
+        ],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/xpass.webp",
+        "contentLanguage": [
+          "en",
+          "hi"
+        ]
+      },
+      "projections": {
+        "general": true,
+        "vf": false
+      }
+    },
+    {
       "canonicalId": "kisskh",
       "scraper": {
         "id": "KISSKH",
         "name": "💋 Kisskh",
         "description": "Streams Korean dramas and movies from onlykdrama.top",
-        "version": "1.0.45",
+        "version": "1.0.47",
         "author": "Michat88",
         "supportedTypes": [
           "movie",
@@ -2614,7 +2641,7 @@
         "id": "onlykdrama",
         "name": "🫰 OnlyKDrama",
         "description": "Asian Drama",
-        "version": "1.0.45",
+        "version": "1.0.47",
         "author": "Moiz Ahmed + Codex",
         "supportedTypes": [
           "movie",
@@ -2644,7 +2671,7 @@
         "id": "showbox",
         "name": "📦 ShowBox",
         "description": "ShowBox streaming with multiple quality options and versions",
-        "version": "1.0.45",
+        "version": "1.0.47",
         "author": "Nuvio Team",
         "supportedTypes": [
           "movie",
@@ -2674,7 +2701,7 @@
         "id": "allwish",
         "name": "🌟 All-Wish",
         "description": "All-Wish TV episodes via All-Wish servers",
-        "version": "1.0.47",
+        "version": "1.0.49",
         "author": "Kabir",
         "supportedTypes": [
           "movie",
@@ -2705,7 +2732,7 @@
         "id": "fibwatch",
         "name": "👁️ FibWatch",
         "description": "Watch Movies, Series, Anime in English & Hindi",
-        "version": "1.0.45",
+        "version": "1.0.47",
         "author": "Nuvio Team",
         "supportedTypes": [
           "anime",
@@ -2736,14 +2763,14 @@
         "id": "mycima",
         "name": "🎞️ MyCima",
         "description": "Arabic streaming provider with movies, series and anime",
-        "version": "1.0.49",
+        "version": "1.0.51",
         "author": "Nuvio Team",
         "supportedTypes": [
           "anime",
           "movie",
           "tv"
         ],
-        "filename": "providers/mycima--nuvio--bf59908c0288d137.js",
+        "filename": "providers/mycima--nuvio--734947b5d31943ce.js",
         "enabled": false,
         "formats": [
           "mp4",
@@ -2813,36 +2840,6 @@
         "contentLanguage": [
           "en",
           "ja"
-        ]
-      },
-      "projections": {
-        "general": true,
-        "vf": false
-      }
-    },
-    {
-      "canonicalId": "cinefreak",
-      "scraper": {
-        "id": "cinefreak",
-        "name": "🤪 CineFreak",
-        "description": "Direct MKV streams from cinefreak.nl",
-        "version": "1.0.19",
-        "author": "piratezoro9",
-        "supportedTypes": [
-          "movie",
-          "tv"
-        ],
-        "filename": "providers/cinefreak--nuvio-audit-quarantine--7947316d3cbed215.js",
-        "enabled": false,
-        "hasSettings": true,
-        "formats": [
-          "mkv",
-          "mp4"
-        ],
-        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/cinefreak.webp",
-        "contentLanguage": [
-          "en",
-          "hi"
         ]
       },
       "projections": {
