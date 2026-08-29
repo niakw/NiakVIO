@@ -17,6 +17,12 @@ on:
     paths:
       - '.github/workflows/sync.yml'
       - 'provider_catalog.json'
+      - 'tests/global_media_type_resolution_test.py'
+      - 'tests/tmdb_media_type_resolution.test.mjs'
+      - 'tests/native_media_type_resolution_test.py'
+      - 'engine_v2/src/tmdb-metadata.mjs'
+      - 'scripts/provider_patches/global_media_type_resolution_v1.py'
+      - 'scripts/native_media_type_contract.py'
       - 'tests/provider_catalogue_breadth_test.py'
       - 'tests/vf_movie_recovery.test.cjs'
       - 'tests/sync_catalogue_audit_gate_test.py'
@@ -227,6 +233,9 @@ jobs:
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_tmdb_runtime_key_contract_test.py
+          python tests/native_media_type_resolution_test.py
+          python tests/global_media_type_resolution_test.py
+          node tests/tmdb_media_type_resolution.test.mjs
 
       - name: Validate ARCHI2 control plane
         shell: bash
