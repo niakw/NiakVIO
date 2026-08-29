@@ -308,7 +308,7 @@ def kotlin_fixture_list(rows: list[dict]) -> str:
                 episode=episode,
             )
         )
-    return "listOf(\\n    " + ",\\n    ".join(values) + "\\n)"
+    return "listOf(\n    " + ",\n    ".join(values) + "\n)"
 
 def main() -> int:
     # The workflow checks NiakVIO out as ./niakvio and NuvioMobile as

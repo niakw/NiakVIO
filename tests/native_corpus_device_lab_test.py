@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TV_READER = ROOT / ".github/workflows/native-tv-route-reader.yml"
 MOBILE_ANDROID = ROOT / ".github/workflows/native-mobile-android-reader.yml"
 MOBILE_IOS = ROOT / ".github/workflows/native-mobile-ios-reader.yml"
+PREPARE_IOS = ROOT / "scripts/prepare_native_ios_reader_acceptance.py"
 DESKTOP_READER = ROOT / ".github/workflows/native-desktop-reader-acceptance.yml"
 READER_LEARNING_SYNC = ROOT / ".github/workflows/native-reader-learning-sync.yml"
 BRAIN_LEARNING = ROOT / ".github/workflows/brain-learning-lab.yml"
@@ -42,6 +43,7 @@ for retired in (
 tv_reader = TV_READER.read_text(encoding="utf-8")
 mobile_android = MOBILE_ANDROID.read_text(encoding="utf-8")
 mobile_ios = MOBILE_IOS.read_text(encoding="utf-8")
+prepare_ios = PREPARE_IOS.read_text(encoding="utf-8")
 desktop_reader = DESKTOP_READER.read_text(encoding="utf-8")
 reader_learning = READER_LEARNING_SYNC.read_text(encoding="utf-8")
 brain_learning = BRAIN_LEARNING.read_text(encoding="utf-8")
@@ -93,6 +95,18 @@ assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
 assert "analyze_native_ios_results.py" in mobile_ios
 assert "native-mobile-ios-routes-${{ github.run_id }}" in mobile_ios
+
+prepare_ios_tree = ast.parse(prepare_ios)
+fixture_list_function = next(
+    node for node in ast.walk(prepare_ios_tree)
+    if isinstance(node, ast.FunctionDef) and node.name == "kotlin_fixture_list"
+)
+fixture_constants = [
+    node.value for node in ast.walk(fixture_list_function)
+    if isinstance(node, ast.Constant) and isinstance(node.value, str)
+]
+assert any("listOf(\n    " in value for value in fixture_constants), fixture_constants
+assert not any("listOf(\\n    " in value for value in fixture_constants), fixture_constants
 
 for workflow in (tv_reader, mobile_android, mobile_ios):
     assert "brain-reader-repair" not in workflow
