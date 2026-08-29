@@ -363,7 +363,18 @@
       "created": "initial_import_or_explicit_provider_source_change",
       "startsFromEmpty": false,
       "durableOwner": "provider_pipeline",
-      "coreMayReplaceProviderLogic": false
+      "coreMayReplaceProviderLogic": false,
+      "durableSourceNormalizationAllowed": [
+        "provider_security_hardening"
+      ],
+      "forbiddenDerivedLayers": [
+        "publication_quarantine",
+        "global_core_tail",
+        "runtime_domain_wrapper",
+        "adaptive_domain_wrapper",
+        "presentation_runtime_layers"
+      ],
+      "domainRoutingIsDerived": true
     },
     "coreFinalizer": {
       "mode": "verify_first",
