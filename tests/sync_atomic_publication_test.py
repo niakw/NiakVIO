@@ -18,6 +18,9 @@ assert workflow.count("python scripts/sync_release_versions.py") >= 2
 assert workflow.count("--manifest manifest.json") >= 2
 assert workflow.count('--previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"') >= 2
 assert "Capture published manifest baseline" in workflow
+assert workflow.count("      - 'scripts/activation_preservation_core_rehash.py'") == 2, (
+    "Sync must run on preservation-adapter changes for both PR and main push"
+)
 
 build = workflow.index("Build canonical publication transaction")
 first_version = workflow.index("python scripts/sync_release_versions.py", build)
