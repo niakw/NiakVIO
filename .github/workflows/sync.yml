@@ -509,7 +509,7 @@ jobs:
             --output "$RUNNER_TEMP/release-generation.json"
 
       - name: Audit content identity and media
-        if: needs.stage-and-test.outputs.validation_mode == 'deep'
+        if: steps.freshness.outputs.stale != 'true' && needs.stage-and-test.outputs.validation_mode == 'deep'
         shell: bash
         run: |
           set -euo pipefail
