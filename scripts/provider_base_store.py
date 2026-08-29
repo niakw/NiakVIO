@@ -231,6 +231,7 @@ def persist_base_from_seed(provider_id: str, seed_data: bytes) -> tuple[str, str
         seed_data,
         phase="discovery",
         excluded_patch_scripts=DERIVED_PATCH_SCRIPTS,
+        include_global_core=False,
     )
     return persist_base_from_published(provider_id, rebuilt)
 
