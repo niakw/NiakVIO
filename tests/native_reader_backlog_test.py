@@ -52,10 +52,10 @@ canonical_text = CANONICAL.read_text(encoding="utf-8")
 assert "workflow_dispatch:" in sync_text
 assert "Exact completed native reader run ID to import manually" in sync_text
 assert "workflow_run:" not in sync_text
-assert '"native-tv-route-*-$RUN_ID"' in sync_text
-assert '"native-mobile-android-*-$RUN_ID"' in sync_text
-assert '"native-mobile-ios-*-$RUN_ID"' in sync_text
-assert '"native-desktop-reader-*-$RUN_ID"' in sync_text
+assert '"native-tv-full-$RUN_ID"' in sync_text
+assert '"native-mobile-android-full-$RUN_ID"' in sync_text
+assert '"native-mobile-ios-full-$RUN_ID"' in sync_text
+assert '"native-desktop-full-*-$RUN_ID"' in sync_text
 assert "merge_native_reader_backlog.py" in sync_text
 assert "--previous-state reader-learning-input/latest.json" in sync_text
 assert "--state reader-learning-output/latest.json" in sync_text
