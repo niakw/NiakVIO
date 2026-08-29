@@ -69,6 +69,7 @@ def main() -> int:
     presentation_source = GLOBAL_PRESENTATION.read_text(encoding="utf-8")
     facts_source = GLOBAL_FACTS.read_text(encoding="utf-8")
     sandbox_source = RUN_SANDBOX.read_text(encoding="utf-8")
+    brain_runtime_source = (ROOT / "scripts" / "brain_repair_runtime.py").read_text(encoding="utf-8")
     quick_source = QUICK_REPAIR.read_text(encoding="utf-8")
     learning_source = LEARNING_LAB.read_text(encoding="utf-8")
     overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -106,6 +107,12 @@ def main() -> int:
     assert "explorationShare" in sandbox_source
     assert "learningExplorationApplied" in sandbox_source
     assert "_restore_positive_skills" in sandbox_source
+    assert '--max-rounds 1' in workflow, "Learning must execute exactly one repair round"
+    assert '"maxRepairAttemptsPerProvider": 1' in (ROOT / "engine_v2" / "config" / "brain-policy.json").read_text(encoding="utf-8")
+    assert 'repair_attempt_limit = max(1, int(lab.get("maxRepairAttemptsPerProvider") or 1))' in sandbox_source
+    assert 'return selected' in sandbox_source
+    assert 'mutation_limit = min(mutation_limit, max(1, int(learning_lab.get("maxRepairAttemptsPerProvider") or 1)))' in brain_runtime_source
+    assert '"scripts/brain_repair_runtime.py"' in workflow
     assert 'state.get("learnedSkills")' in sandbox_source
     assert "mergeLearnedSkills(previous.learnedSkills, currentSkills)" in learning_source
     assert "yandex.com/search/?text=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
