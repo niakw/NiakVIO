@@ -3,10 +3,10 @@
 """Safely publish a routine quick repair transaction.
 
 Routine refresh is allowed to recover an *existing* provider when the canonical
-promoter has current strict playable/identity proof for a healthy sibling. This
-prevents stale disabled baselines and publication-scoped audit quarantines from
-waiting for the next scheduled deep run even though a good upstream variant is
-already present.
+promoter has current strict playable/identity proof for the single canonical
+candidate selected at import. This prevents stale disabled states and
+publication-scoped audit quarantines from waiting for the next scheduled deep
+run even though current provider evidence is already healthy.
 
 Safety boundaries remain strict:
 
@@ -138,7 +138,7 @@ def _refresh_policy_overlay(
         else:
             # Historical administrative disables are advisory. Existing
             # providers may recover only if canonical current proof enables the
-            # selected sibling. No LKG/inconclusive result can do that.
+            # selected canonical candidate. No LKG/inconclusive result can do that.
             manifest_overrides.pop("enabled", None)
     return output
 
@@ -235,7 +235,7 @@ def _preserve_quick_manifest(
             if raw.get("enabled") is True:
                 # Existing disabled provider has fresh strict proof now. This
                 # includes a publication-scoped audit quarantine whose new
-                # sibling proved healthy; the final global audit remains the
+                # canonical candidate proved healthy; the final global audit remains the
                 # fail-closed safety fence before push.
                 row = copy.deepcopy(raw)
                 row["enabled"] = True
