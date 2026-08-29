@@ -26,24 +26,36 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
         "proposals": [],
     }
     lab = {
-        "status": "partial_failure",
+        "status": "multi_provider",
         "providerId": "demo",
-        "clients": {
-            "desktop": {
-                "runtimeStreams": 60,
-                "probedStreams": 40,
-                "playableProbes": 30,
-                "unplayableProbes": 10,
-                "inconclusiveProbes": 0,
-                "identityContradictions": 0,
-                "probeCoverageComplete": False,
+        "providers": [
+            {
+                "status": "unresolved",
+                "providerId": "demo",
+                "clients": {
+                    "desktop": {
+                        "runtimeStreams": 60,
+                        "probedStreams": 40,
+                        "playableProbes": 30,
+                        "unplayableProbes": 10,
+                        "inconclusiveProbes": 0,
+                        "identityContradictions": 0,
+                        "probeCoverageComplete": False,
+                        "hiddenFailure": True,
+                    }
+                },
             }
-        },
+        ],
     }
     selection = {
-        "provider": "demo",
-        "status": "healthy",
-        "needs_route_search": True,
+        "results": [
+            {
+                "provider": "demo",
+                "coreHypothesis": {"status": "healthy", "needs_route_search": True},
+                "routeSearch": {"routeEvidenceCount": 0, "fallbackApplied": 0},
+                "finalLab": {"status": "unresolved"},
+            }
+        ]
     }
 
     paths = {}
@@ -100,9 +112,9 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
     current = json.loads(POLICY.read_text(encoding="utf-8"))
     assert next_policy["learningLab"]["allStreamsSafetyCap"] > current["learningLab"]["allStreamsSafetyCap"]
     allow = json.loads(SELF.read_text(encoding="utf-8")).get("autoPatchAllowlist") or {}
-    assert "learningLab.maxExploratoryProfilesPerProvider" in allow
-    assert next_policy["learningLab"].get("targetProvidersPerRun") == 1
-    assert next_policy["learningLab"].get("maxRepairRounds") == 1
+    assert "learningLab.allStreamsSafetyCap" in allow
+    assert next_policy["learningLab"].get("targetProvidersPerRun") == "time_budgeted_queue"
+    assert "maxRepairRounds" not in next_policy["learningLab"]
     assert markdown.is_file()
     assert "NiakVIO Brain architecture evolution" in markdown.read_text(encoding="utf-8")
 
