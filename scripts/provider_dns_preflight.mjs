@@ -287,7 +287,8 @@ export function createGlobalpingDependencies(preflightConfig, injected = {}) {
           return dnsResult;
         } catch (error) {
           if (remoteConfig.fallback_to_direct === true) return resolveWithResolver(host, resolverConfig, options);
-          return { resolver: resolverConfig.name, servers: resolverConfig.servers || [], status: 'unavailable', addresses: [], errors: [{ family: 4, code: compactError(error) }], transport: 'globalping', error: compactError(error) };
+          const rateLimited = Number(error?.status) === 429;
+          return { resolver: resolverConfig.name, servers: resolverConfig.servers || [], status: 'unavailable', addresses: [], errors: [{ family: 4, code: compactError(error) }], transport: 'globalping', error: compactError(error), rate_limited: rateLimited };
         }
       })());
     }
@@ -704,6 +705,37 @@ function summarizeFailureKind(checks) {
   return 'error';
 }
 
+function checkRateLimited(check) {
+  return Boolean(
+    check?.dns?.rate_limited
+    || check?.http?.rate_limited
+    || /(?:^|\D)429(?:\D|$)/.test(String(check?.dns?.error || ''))
+    || /(?:^|\D)429(?:\D|$)/.test(String(check?.http?.error || ''))
+  );
+}
+
+function frenchCheckBlocked(check) {
+  return check?.dns?.status === 'negative' || check?.http?.status === 'blocked';
+}
+
+export function simpleDnsStatus(domainResults = []) {
+  const frenchChecks = (domainResults || []).flatMap((item) => item?.french_checks || []);
+  const neutralChecks = (domainResults || []).flatMap((item) => item?.neutral_checks || []);
+  if (!frenchChecks.length) return null;
+
+  // User-facing priority: a real French ISP block is the alert, even if
+  // another ISP still reaches the same provider.
+  if (frenchChecks.some(frenchCheckBlocked)) return 'DNS BLOCK';
+
+  // API quota is a measurement problem, never a provider failure.
+  if ([...frenchChecks, ...neutralChecks].some(checkRateLimited)) return 'DNS API LIMIT REACH';
+
+  // DNS OK means every French ISP probe that should have produced DNS
+  // evidence resolved successfully and none showed a block.
+  const allFrenchDnsResolved = frenchChecks.every((check) => check?.dns?.status === 'resolved');
+  return allFrenchDnsResolved ? 'DNS OK' : null;
+}
+
 export async function checkDomainAcrossResolvers(host, preflightConfig, dependencies = {}) {
   const resolverTable = preflightConfig.resolvers || {};
   const frenchOrder = [preflightConfig.primary_french_isp, ...(preflightConfig.fallback_french_isps || [])].filter(Boolean);
@@ -723,18 +755,26 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
     }
     const check = { isp: name, dns: dnsResult, http: httpResult };
     frenchChecks.push(check);
-    if (httpResult?.status === 'reachable') {
-      return {
-        host,
-        status: name === preflightConfig.primary_french_isp ? 'accessible_primary_french_isp' : 'accessible_french_fallback',
-        evidence_state: 'verified_french_reachable',
-        selected_resolver: name,
-        continue_runtime: true,
-        french_checks: frenchChecks,
-        neutral_checks: [],
-        migration_candidates: [],
-      };
-    }
+  }
+
+  const frenchReachable = frenchChecks.filter((item) => item.http?.status === 'reachable');
+  const explicitFrenchFailure = frenchChecks.some((item) => ['negative'].includes(item.dns?.status) || item.http?.status === 'blocked');
+  const allFrenchUnavailable = frenchChecks.length > 0 && frenchChecks.every((item) => item.dns?.status === 'unavailable');
+
+  // When every French ISP test is clean and at least one reaches the host,
+  // neutral probes add no blocking evidence and only waste API quota.
+  if (frenchReachable.length > 0 && !explicitFrenchFailure) {
+    const selected = frenchReachable[0];
+    return {
+      host,
+      status: selected.isp === preflightConfig.primary_french_isp ? 'accessible_primary_french_isp' : 'accessible_french_fallback',
+      evidence_state: 'verified_french_reachable',
+      selected_resolver: selected.isp,
+      continue_runtime: true,
+      french_checks: frenchChecks,
+      neutral_checks: [],
+      migration_candidates: [],
+    };
   }
 
   const neutralChecks = [];
@@ -753,13 +793,25 @@ export async function checkDomainAcrossResolvers(host, preflightConfig, dependen
   }
 
   const neutralReachable = neutralChecks.some((item) => item.http?.status === 'reachable');
-  const explicitFrenchFailure = frenchChecks.some((item) => ['negative'].includes(item.dns?.status) || item.http?.status === 'blocked');
-  const allFrenchUnavailable = frenchChecks.length > 0 && frenchChecks.every((item) => item.dns?.status === 'unavailable');
   const domainHints = dependencies.domainHints || [];
   const migrationCandidates = neutralReachable
     ? discoverMigrationCandidates(host, neutralChecks, domainHints)
     : [];
 
+  if (frenchReachable.length > 0 && explicitFrenchFailure) {
+    const selected = frenchReachable[0];
+    return {
+      host,
+      status: 'accessible_french_with_partial_block',
+      evidence_state: 'verified_partial_french_block',
+      selected_resolver: selected.isp,
+      continue_runtime: true,
+      french_failure_kind: summarizeFailureKind(frenchChecks),
+      french_checks: frenchChecks,
+      neutral_checks: neutralChecks,
+      migration_candidates: migrationCandidates.map((item) => ({ ...item, original_host: host })),
+    };
+  }
   if (neutralReachable && explicitFrenchFailure) {
     return {
       host,
@@ -848,7 +900,7 @@ function hostRole(host) {
 export function discoverPeerMigrationCandidates(domainResults, preflightConfig = {}) {
   const threshold = Number(preflightConfig?.migration_discovery?.minimum_confidence || 80);
   const reachable = (domainResults || []).filter((item) =>
-    ['accessible_primary_french_isp', 'accessible_french_fallback', 'accessible_neutral_only'].includes(item?.status));
+    ['accessible_primary_french_isp', 'accessible_french_fallback', 'accessible_french_with_partial_block', 'accessible_neutral_only'].includes(item?.status));
   const unreachable = (domainResults || []).filter((item) => item?.status === 'globally_unreachable');
   const candidates = [];
 
@@ -898,7 +950,7 @@ export function providerDecision(domainResults, preflightConfig) {
     .sort((left, right) => right.confidence - left.confidence);
   const migration = migrations[0] || null;
 
-  const frenchPass = domainResults.find((item) => ['accessible_primary_french_isp', 'accessible_french_fallback'].includes(item.status));
+  const frenchPass = domainResults.find((item) => ['accessible_primary_french_isp', 'accessible_french_fallback', 'accessible_french_with_partial_block'].includes(item.status));
   if (frenchPass) {
     return {
       status: 'pass',
@@ -1000,6 +1052,7 @@ async function runCli() {
           domainResults.push(await checkDomainAcrossResolvers(hint.host, preflightConfig, { domainHints, resolveFn: remoteDependencies.resolveFn, probeFn: remoteDependencies.probeFn }));
         }
         const decision = providerDecision(domainResults, preflightConfig);
+        const dnsStatus = simpleDnsStatus(domainResults);
         results[index] = {
           key: candidate.key,
           source: candidate.source,
@@ -1007,9 +1060,10 @@ async function runCli() {
           sha256: candidate.sha256,
           domain_hints: domainHints,
           domains: domainResults,
+          dns_status: dnsStatus,
           decision,
         };
-        process.stdout.write(`[DNS ${index + 1}/${candidates.length}] ${candidate.key}: ${decision.status}\n`);
+        process.stdout.write(`[DNS ${index + 1}/${candidates.length}] ${candidate.key}: ${dnsStatus || 'N/A'} (internal=${decision.status})\n`);
       } catch (error) {
         results[index] = {
           key: candidate.key,
@@ -1018,6 +1072,7 @@ async function runCli() {
           sha256: candidate.sha256,
           domain_hints: [],
           domains: [],
+          dns_status: Number(error?.status) === 429 ? 'DNS API LIMIT REACH' : null,
           decision: { status: 'preflight_error', evidence_state: 'probe_internal_error', continue_runtime: true, reason: compactError(error) },
         };
         process.stderr.write(`[DNS WARN] ${candidate.key}: ${compactError(error)}\n`);
@@ -1027,17 +1082,18 @@ async function runCli() {
   await Promise.all(Array.from({ length: Math.min(concurrency, candidates.length || 1) }, () => worker()));
   providers.push(...results.filter(Boolean));
   const counts = {};
-  for (const item of providers) counts[item.decision.status] = (counts[item.decision.status] || 0) + 1;
+  const internalCounts = {};
+  for (const item of providers) {
+    if (item.dns_status) counts[item.dns_status] = (counts[item.dns_status] || 0) + 1;
+    internalCounts[item.decision.status] = (internalCounts[item.decision.status] || 0) + 1;
+  }
   const report = {
     schema_version: 2,
     enabled: true,
     semantics: {
-      pass: 'French ISP reachability verified; runtime continues',
-      french_access_unverified: 'No French-access verdict; this is not a provider failure and runtime continues by policy',
-      confirmed_french_block: 'French ISP block verified against neutral reachability',
-      globally_unreachable: 'French and neutral probes verify the domain is unreachable',
-      no_provider_domain_detected: 'No provider-owned static domain was available to preflight',
-      preflight_error: 'The preflight subsystem itself errored; runtime continues fail-safe',
+      'DNS OK': 'All French ISP DNS probes completed without a block signal',
+      'DNS BLOCK': 'At least one tested French ISP produced a DNS/HTTP block signal',
+      'DNS API LIMIT REACH': 'Globalping API rate limit prevented a complete DNS measurement',
     },
     generated_at: new Date().toISOString(),
     candidate_count: providers.length,
@@ -1050,6 +1106,7 @@ async function runCli() {
     },
     neutral_resolvers: preflightConfig.neutral_resolvers || [],
     counts,
+    internal_counts: internalCounts,
     providers,
   };
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
