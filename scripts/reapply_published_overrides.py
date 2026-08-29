@@ -305,6 +305,7 @@ def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[An
 
 PUBLICATION_CONTRACT_SCHEMA = 1
 PUBLICATION_CONTRACT_FILES = (
+    "scripts/reapply_published_overrides.py",
     "scripts/apply_provider_overrides.py",
     "scripts/override_text_utils.py",
     "scripts/provider_engine_normalizer.py",
