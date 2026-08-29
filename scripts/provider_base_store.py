@@ -132,7 +132,7 @@ def validate_base(data: bytes, provider_id: str) -> None:
         temporary = Path(handle.name)
     try:
         result = subprocess.run(
-            ["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(temporary)],
+            ["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), "--provider-base", str(temporary)],
             text=True,
             capture_output=True,
             check=False,
