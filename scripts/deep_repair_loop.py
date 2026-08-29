@@ -56,6 +56,16 @@ def write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def learning_deadline_reached() -> bool:
+    raw = str(os.environ.get("NUVIO_BRAIN_DEADLINE_EPOCH_MS") or "").strip()
+    if not raw:
+        return False
+    try:
+        return int(time.time() * 1000) >= int(raw)
+    except ValueError:
+        return False
+
+
 def persist_runtime_profiles(config: dict[str, Any], assignments: dict[str, set[str]]) -> list[dict[str, Any]]:
     """Persist only profiles already accepted by a strict real deep retest."""
     provider_patches = config.setdefault("provider_patches", {})
@@ -129,7 +139,11 @@ def main() -> int:
 
     config = load_overrides()
     repair_config = config.get("runtime_repair") or {}
-    max_rounds = max(0, min(5, int(args.max_rounds if args.max_rounds is not None else repair_config.get("max_rounds", 3))))
+    requested_rounds = int(args.max_rounds if args.max_rounds is not None else repair_config.get("max_rounds", 3))
+    if str(os.environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
+        max_rounds = max(1, requested_rounds)
+    else:
+        max_rounds = max(0, min(5, requested_rounds))
     started = time.monotonic()
 
     registry = load_json(registry_path)
@@ -164,6 +178,9 @@ def main() -> int:
     accepted_profile_assignments: dict[str, set[str]] = {}
     attempted_fingerprints: set[tuple[str, str, str]] = set()
     for round_number in range(1, max_rounds + 1):
+        if learning_deadline_reached():
+            audit["exit_reason"] = "learning_global_time_budget_exhausted"
+            break
         attempts: list[dict[str, Any]] = []
         repair_candidates: list[dict[str, Any]] = []
 
