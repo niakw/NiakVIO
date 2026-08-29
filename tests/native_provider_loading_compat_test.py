@@ -69,6 +69,20 @@ with tempfile.TemporaryDirectory() as raw_tmp:
         assert expected in rewritten, client
         assert "executePlugin(" not in rewritten, client
 
+    # The production corpus wraps provider execution in a per-provider timeout.
+    # Rewriting must preserve that outer budget while swapping only the invocation.
+    wrapped = tmp / "tv-timeout.kt"
+    wrapped.write_text(
+        "val rows = kotlinx.coroutines.withTimeout(25000L) {\n"
+        + CASES["tv"][0].replace("val rows = ", "")
+        + "\n}",
+        encoding="utf-8",
+    )
+    wrapped_text = canonical.replace_official_execution(wrapped.read_text(encoding="utf-8"), "tv")
+    assert "kotlinx.coroutines.withTimeout(25000L)" in wrapped_text
+    assert CASES["tv"][1] in wrapped_text
+    assert "runtime.executePlugin(" not in wrapped_text
+
     # Acceptance-prepared sources can already be in canonical raw form. The
     # compatibility layer must remain safe and idempotent for that path.
     raw_path = tmp / "desktop-raw.kt"
