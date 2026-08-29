@@ -18,6 +18,7 @@ required = {
     "NUVIO_PROVIDER_QUARANTINE_V1",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+    "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
     "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
     "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
     "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
@@ -97,6 +98,8 @@ sync_workflow_source = (ROOT / ".github" / "workflows" / "sync.yml").read_text(e
 
 assert "excluded_patch_scripts: Iterable[str] | None = None" in apply_source
 assert "include_global_core: bool = True" in apply_source
+assert "GLOBAL_MEDIA_TYPE_RESOLUTION" in apply_source
+assert '"scope": "global_media_type_resolution"' in apply_source
 assert 'if phase == "discovery" and include_global_core:' in apply_source
 base_store_source = SCRIPT.read_text(encoding="utf-8")
 for forbidden_seed_path in (
