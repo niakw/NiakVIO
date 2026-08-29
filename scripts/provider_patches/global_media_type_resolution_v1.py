@@ -37,8 +37,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    if f"/* {marker} */" in text:
-        return text
+    # This resolver is the outermost request layer. Even when the exact marker
+    # already exists, strip and re-append it so any Core layer rebuilt during
+    # the same pass cannot move outside the canonical media-type boundary.
     text = _strip_existing(text)
 
     js = r'''
