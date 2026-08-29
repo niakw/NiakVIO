@@ -303,7 +303,7 @@ def merge_patch_records(existing: Any, records: list[dict[str, Any]]) -> list[An
     return merged
 
 
-PUBLICATION_CONTRACT_SCHEMA = 1
+PUBLICATION_CONTRACT_SCHEMA = 2
 PUBLICATION_CONTRACT_FILES = (
     "scripts/reapply_published_overrides.py",
     "scripts/apply_provider_overrides.py",
@@ -323,12 +323,36 @@ def _canonical_sha(value: Any) -> str:
     ).hexdigest()
 
 
+def _publication_file_sha(relative: str, path: Path) -> str:
+    """Hash build inputs while excluding release-only metadata.
+
+    package-lock.json participates because dependency/integrity drift can change
+    the build environment. Its root package version is synchronized to the Nuvio
+    release *after* provider reconstruction, however, and cannot affect provider
+    bytes. Excluding only those two release fields prevents a self-invalidating
+    publication fingerprint while keeping the entire dependency graph locked.
+    """
+    if relative != "package-lock.json":
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("package-lock.json must be an object")
+    normalized = json.loads(json.dumps(payload))
+    normalized.pop("version", None)
+    packages = normalized.get("packages")
+    if isinstance(packages, dict) and isinstance(packages.get(""), dict):
+        packages[""].pop("version", None)
+    return _canonical_sha(normalized)
+
+
 def publication_contract_sha(config: dict[str, Any]) -> str:
     """Hash every deterministic input that can change derived provider bytes.
 
     This deliberately includes the complete sanitized override/capability policy.
     A real policy change may rebuild more providers than strictly necessary, but a
     Core invocation with unchanged inputs performs no provider reconstruction at all.
+    Release-only version metadata is canonicalized out of package-lock.json so
+    version synchronization cannot invalidate the provider build it follows.
     """
     files: dict[str, str] = {}
     relatives = set(PUBLICATION_CONTRACT_FILES)
@@ -347,7 +371,7 @@ def publication_contract_sha(config: dict[str, Any]) -> str:
             raise ValueError(f"unsafe publication contract input: {relative}") from exc
         if not path.is_file():
             raise ValueError(f"missing publication contract input: {relative}")
-        files[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+        files[relative] = _publication_file_sha(relative, path)
     return _canonical_sha({
         "schema_version": PUBLICATION_CONTRACT_SCHEMA,
         "config": config,
