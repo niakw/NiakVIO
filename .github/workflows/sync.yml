@@ -462,6 +462,7 @@ jobs:
             dns-preflight-report.json provider-hub-report.json diagnostics-report.json \
             diagnostics-report.html route-regressions.json repair-report.json
           git add -A providers
+          git add -A provider-bases
 
           if git diff --cached --quiet; then
             echo 'No validated provider change.'
