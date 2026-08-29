@@ -48,6 +48,14 @@ retired_paths = (
     "scripts/run_final_native_android_lab.sh",
     "tests/native_pr_timeout_contract_test.py",
     "tests/native_reader_exhaustive_acceptance_test.py",
+    "automation/targeted-provider-contexts.json",
+    "automation/targeted-provider-findings.md",
+    "automation/nuvio-tv-target-diagnostics-v2.json",
+    "automation/provider-activation-diagnostic.json",
+    "automation/targeted-provider-routes.json",
+    "automation/targeted-vf-publication.json",
+    "scripts/targeted_provider_route_diagnostics.py",
+    "scripts/nuvio_tv_target_diagnostics_v2.py",
 )
 for rel in retired_paths:
     assert not (ROOT / rel).exists(), f"retired path resurrected: {rel}"
