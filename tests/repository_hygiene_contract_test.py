@@ -47,6 +47,7 @@ retired_paths = (
     "tests/purstream_core_presentation_pipeline_test.py",
     "scripts/run_final_native_android_lab.sh",
     "tests/native_pr_timeout_contract_test.py",
+    "tests/native_reader_exhaustive_acceptance_test.py",
 )
 for rel in retired_paths:
     assert not (ROOT / rel).exists(), f"retired path resurrected: {rel}"
