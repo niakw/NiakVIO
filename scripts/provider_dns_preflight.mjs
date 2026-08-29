@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: GPL-3.0-only
 /**
- * Resolve provider-owned domains through French ISP DNS servers before runtime
- * quality/scoring checks. HTTP requests are pinned to the IP returned by the
- * selected resolver while preserving the original Host header and TLS SNI.
+ * Daily diagnostic of provider-owned domains through French ISP DNS servers.
+ * This module is observation-only: it never decides provider activation and is
+ * intentionally kept outside the main Health/Repair publication pipeline.
  */
 
 import dns from 'node:dns';
@@ -997,14 +997,54 @@ export function providerDecision(domainResults, preflightConfig) {
   };
 }
 
+async function registryFromPublishedManifest(manifestPath) {
+  const manifest = JSON.parse(await fs.readFile(manifestPath, 'utf8'));
+  const rows = Array.isArray(manifest.scrapers) ? manifest.scrapers : [];
+  const seen = new Set();
+  const candidates = [];
+  for (const entry of rows) {
+    if (!entry || typeof entry !== 'object') continue;
+    const canonicalId = String(entry.id || entry.name || '').trim().toLowerCase();
+    const filename = String(entry.filename || '').trim();
+    if (!canonicalId || !filename) continue;
+    if (seen.has(canonicalId)) {
+      throw new Error(`duplicate canonical provider in published manifest: ${canonicalId}`);
+    }
+    const providerPath = path.resolve(ROOT, filename);
+    const providersRoot = path.resolve(ROOT, 'providers');
+    if (providerPath !== providersRoot && !providerPath.startsWith(`${providersRoot}${path.sep}`)) {
+      throw new Error(`provider artifact outside providers/: ${filename}`);
+    }
+    await fs.access(providerPath);
+    seen.add(canonicalId);
+    candidates.push({
+      key: `published:${canonicalId}`,
+      source: 'published-manifest',
+      canonical_id: canonicalId,
+      local_path: path.relative(ROOT, providerPath),
+      sha256: null,
+      metadata: entry,
+    });
+  }
+  return { schema_version: 1, source: 'published-manifest', candidates };
+}
+
+
 async function runCli() {
   const args = parseArgs(process.argv.slice(2));
-  const stage = path.resolve(args.stage || process.env.NUVIO_STAGE || path.join(ROOT, 'staging'));
-  const registryPath = path.resolve(args.registry || process.env.NUVIO_CANDIDATES_PATH || path.join(stage, 'candidates.json'));
+  const manifestPath = args.manifest ? path.resolve(String(args.manifest)) : null;
+  const stage = manifestPath
+    ? ROOT
+    : path.resolve(args.stage || process.env.NUVIO_STAGE || path.join(ROOT, 'staging'));
+  const registryPath = manifestPath
+    ? null
+    : path.resolve(args.registry || process.env.NUVIO_CANDIDATES_PATH || path.join(stage, 'candidates.json'));
   const configPath = path.resolve(args.config || process.env.NUVIO_HEALTH_CONFIG || path.join(ROOT, 'health-config.json'));
   const outputPath = path.resolve(args.output || process.env.NUVIO_DNS_PREFLIGHT_RESULTS || path.join(ROOT, 'health-output', 'dns-preflight-report.json'));
   const [registry, config, overrides] = await Promise.all([
-    fs.readFile(registryPath, 'utf8').then(JSON.parse),
+    manifestPath
+      ? registryFromPublishedManifest(manifestPath)
+      : fs.readFile(registryPath, 'utf8').then(JSON.parse),
     fs.readFile(configPath, 'utf8').then(JSON.parse),
     fs.readFile(path.join(ROOT, 'provider-overrides.json'), 'utf8').then(JSON.parse),
   ]);
@@ -1038,7 +1078,10 @@ async function runCli() {
       try {
         const providerPath = path.resolve(stage, String(candidate.local_path || ''));
         const sourceText = await fs.readFile(providerPath, 'utf8');
-        const domainHints = extractCandidateDomains(candidate, sourceText, overrides, preflightConfig.max_domains_per_provider || 4);
+        const domainLimit = args['all-domains']
+          ? Number.MAX_SAFE_INTEGER
+          : (preflightConfig.max_domains_per_provider || 4);
+        const domainHints = extractCandidateDomains(candidate, sourceText, overrides, domainLimit);
         const domainResults = [];
         for (const hint of domainHints) {
           domainResults.push(await checkDomainAcrossResolvers(hint.host, preflightConfig, { domainHints, resolveFn: remoteDependencies.resolveFn, probeFn: remoteDependencies.probeFn }));
@@ -1088,6 +1131,8 @@ async function runCli() {
       'DNS API LIMIT REACH': 'Globalping API rate limit prevented a complete DNS measurement',
     },
     generated_at: new Date().toISOString(),
+    source_mode: manifestPath ? 'published-manifest' : 'staging-registry',
+    observation_only: true,
     candidate_count: providers.length,
     resolver_order: frenchResolverNames,
     resolver_transport: {
