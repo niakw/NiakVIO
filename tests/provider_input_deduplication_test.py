@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,6 +16,7 @@ discovery = DISCOVERY.read_text(encoding="utf-8")
 quick = QUICK_REPAIR.read_text(encoding="utf-8")
 promoter = PROMOTER.read_text(encoding="utf-8")
 stage_gate = STAGE_GATE.read_text(encoding="utf-8")
+subprocess.run(["node", "--check", str(STAGE_GATE)], check=True)
 sources = json.loads(SOURCES.read_text(encoding="utf-8"))
 
 # Duplicate identity is decided at import, before any expensive provider fetch.
