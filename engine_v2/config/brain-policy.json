@@ -40,7 +40,7 @@
     "memoryMaxEntries": 1000,
     "historicalBaselineId": "excel-provider-audit-5.20.63",
     "consumeNativeClientFeedback": true,
-    "purpose": "time-budgeted adaptive investigation across the provider queue: challenge Core/native hypotheses, independently reproduce hidden failures, explore multiple routes and repair methods, use rotating fixtures and TV/Desktop/Mobile Labs across returned streams, persist progress across days, and propose Brain architecture evolution when its own tooling or workflow blocks diagnosis",
+    "purpose": "observe the full catalogue, choose one provider for independent adaptive investigation, challenge Core/native hypotheses, try multiple compatible repair methods in one repair pass, run one client Lab across every returned stream for one targeted work, retain failed and successful methods across days, and propose architecture evolution when its own tools or workflow block diagnosis",
     "directSkillPublication": false,
     "providerLocalMutation": "ephemeral_lab_proof_only",
     "knownTypeUnresolvedAction": "adapt_or_evolve_type",
@@ -55,13 +55,13 @@
     "allProvidersEventuallyDebugged": true,
     "healthyProviderDeepSampling": true,
     "streamSampling": "all_returned_streams_with_safety_cap",
-    "fixtureSelection": "rotate_across_declared_type_fixture_pool_using_cross_day_memory",
-    "targetProvidersPerRun": "time_budgeted_queue",
-    "clientSelection": "tv_desktop_mobile_for_scheduled_learning",
+    "fixtureSelection": "first_declared_type_then_cross_day_rotation_memory",
+    "targetProvidersPerRun": 1,
+    "clientSelection": "one_client_per_run_manual_or_rotating",
     "allStreamsSafetyCap": 40,
-    "retryPolicy": "continue_with_new_hypotheses_until_global_deadline_or_no_new_method",
+    "retryPolicy": "no_second_repair_round_same_run; persist evidence and try again on a later Learning run",
     "selfArchitectureAudit": true,
-    "selfArchitectureChanges": "proposal_pr_only",
+    "selfArchitectureChanges": "review_only_pr_with_allowlisted_policy_changes_and_structural_change_plan",
     "selfArchitectureAllowedTargets": [
       ".github/workflows/brain-learning-lab.yml",
       "engine_v2/config/brain-policy.json",
@@ -78,7 +78,8 @@
       "scripts/resolve_provider_hubs.py",
       "scripts/resolve_provider_hub_search_fallback.py",
       "tests/brain_*"
-    ]
+    ],
+    "maxRepairRounds": 1
   },
   "privacy": {
     "persistRawUrls": false,
@@ -100,7 +101,7 @@
       "scheduleUtc": "17 2 * * *",
       "timeBudgetMinutes": 60,
       "providerScheduling": "persistent anomaly-first queue with healthy-provider exploration and cross-day resume",
-      "purpose": "adaptive sandbox agent that may challenge Core evidence, try successive hypotheses, rotate fixtures/devices, inspect its own limits and create review-only architecture proposals",
+      "purpose": "full-catalogue observation plus one provider-focused adaptive investigation: optional route discovery, one multi-hypothesis repair pass, one client Lab across all returned streams, cross-day memory, and review-only self-architecture proposals when current tools are insufficient",
       "productionWritesAllowed": false,
       "publicationAllowed": false,
       "architectureEvolution": "PR-only"
