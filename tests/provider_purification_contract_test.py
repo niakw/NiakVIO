@@ -191,7 +191,7 @@ assert "The deep result therefore proves the exact optimized bytes" in deep
 # No provider/Core/runtime byte transform may happen between purification and the
 # content-addressed digest used by manifests/provenance.
 for required in (
-    "from provider_purification import purify_bytes",
+    "from provider_purification import TERSER_VERSION, purify_bytes",
     "purified, purification = purify_bytes(patched)",
     '"phase": "final-post-transform"',
     '"tool": "terser"',
