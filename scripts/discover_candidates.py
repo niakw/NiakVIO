@@ -205,6 +205,66 @@ def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: by
     }
 
 
+def clean_provider_model(
+    provider_id: str,
+    knowledge: dict[str, Any],
+    overrides: dict[str, Any],
+    known_site: str | None,
+) -> dict[str, Any]:
+    """Translate observed facts/configuration into a bounded NiakVIO provider model."""
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    capabilities = overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"), dict) else {}
+    patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
+    capability = capabilities.get(provider_id) if isinstance(capabilities.get(provider_id), dict) else {}
+    fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
+
+    origins: list[str] = []
+    for value in capability.get("observed_origins") or []:
+        value = str(value or "").strip()
+        if value and value not in origins:
+            origins.append(value)
+    for host in knowledge.get("hosts") or []:
+        value = str(host or "").strip()
+        if value:
+            origin = "https://" + value
+            if origin not in origins:
+                origins.append(origin)
+    for mapping_key in ("runtime_domain_replacements", "route_replacements", "replacements"):
+        mapping = patch.get(mapping_key) if isinstance(patch.get(mapping_key), dict) else {}
+        for raw in mapping.values():
+            value = str(raw or "").strip()
+            if not value:
+                continue
+            if not value.startswith(("http://", "https://")):
+                value = "https://" + value.lstrip("/")
+            try:
+                parsed = urllib.parse.urlparse(value)
+                origin = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else ""
+            except ValueError:
+                origin = ""
+            if origin and origin not in origins:
+                origins.append(origin)
+
+    return {
+        "knownSite": str(known_site or "").strip() or None,
+        "strategy": str(
+            patch.get("capability")
+            or capability.get("strategy")
+            or "unknown"
+        ).strip().casefold(),
+        "officialSite": str(patch.get("official_site") or "").strip() or None,
+        "officialHub": str(patch.get("official_hub") or "").strip() or None,
+        "officialApi": str(patch.get("official_api") or "").strip() or None,
+        "fixedApi": str(fixed.get("api") or "").strip() or None,
+        "origins": origins[:24],
+        "observedUrls": list(knowledge.get("observedUrls") or [])[:32],
+        "routes": list(knowledge.get("routes") or [])[:32],
+        "knowledgeRole": "structured-observation-only",
+        "legacyCodeEmbedded": False,
+        "legacyCodeExecuted": False,
+    }
+
+
 def executable_seed(
     provider_id: str,
     entry: dict[str, Any],
@@ -213,18 +273,27 @@ def executable_seed(
     overrides: dict[str, Any],
     *,
     clean_reconstruction: bool,
-) -> tuple[bytes, str, str | None, bool]:
+) -> tuple[bytes, str, str | None, bool, dict[str, Any], dict[str, Any]]:
     previous = provenance_rows.get(provider_id)
     previous_row = previous if isinstance(previous, dict) else {}
     site = known_site_for_provider(provider_id, raw_upstream, overrides)
+    knowledge = upstream_knowledge(provider_id, entry, raw_upstream)
+    provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
     reconstruction_required = requires_clean_reconstruction(previous_row)
 
     if reconstruction_required and clean_reconstruction:
         return (
-            build_clean_provider_seed(provider_id, entry, known_site=site),
+            build_clean_provider_seed(
+                provider_id,
+                entry,
+                known_site=site,
+                provider_model=provider_model,
+            ),
             "new-niakvio-clean-seed",
             site,
             True,
+            knowledge,
+            provider_model,
         )
 
     if isinstance(previous, dict):
@@ -239,13 +308,22 @@ def executable_seed(
                 ),
                 site,
                 reconstruction_required,
+                knowledge,
+                provider_model,
             )
 
     return (
-        build_clean_provider_seed(provider_id, entry, known_site=site),
+        build_clean_provider_seed(
+            provider_id,
+            entry,
+            known_site=site,
+            provider_model=provider_model,
+        ),
         "new-niakvio-clean-seed",
         site,
         True,
+        knowledge,
+        provider_model,
     )
 
 
@@ -397,7 +475,14 @@ def main() -> int:
                     continue
 
                 upstream_digest = hashlib.sha256(data).hexdigest()
-                seed, code_origin, observed_site, reconstruction_required = executable_seed(
+                (
+                    seed,
+                    code_origin,
+                    observed_site,
+                    reconstruction_required,
+                    knowledge,
+                    provider_model,
+                ) = executable_seed(
                     provider_id,
                     entry,
                     data,
@@ -432,7 +517,8 @@ def main() -> int:
                         "upstream_sha256": upstream_digest,
                         "upstream_code_role": "knowledge-only",
                         "upstream_code_executed": False,
-                        "upstream_knowledge": upstream_knowledge(provider_id, entry, data),
+                        "upstream_knowledge": knowledge,
+                        "clean_provider_model": provider_model,
                         "candidate_code_origin": code_origin,
                         "provider_base_reconstruction_required": bool(reconstruction_required),
                         "clean_reconstruction_mode": bool(args.clean_reconstruction),
