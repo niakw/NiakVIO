@@ -17,6 +17,10 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 
+class BudgetExhausted(RuntimeError):
+    """The bounded Learning work window ended; persist state and resume later."""
+
+
 ANOMALY_SCORES = {
     "provider_unreachable": 120,
     "unavailable": 110,
@@ -207,7 +211,24 @@ def remaining_seconds(deadline: float, reserve: float = 0.0) -> int:
 
 def run(cmd: list[str], *, env: dict[str, str] | None, deadline: float, cwd: Path = ROOT, allow_fail: bool = False) -> subprocess.CompletedProcess[str]:
     timeout = remaining_seconds(deadline, 1)
-    completed = subprocess.run(cmd, cwd=cwd, env=env, text=True, capture_output=True, timeout=timeout, check=False)
+    try:
+        completed = subprocess.run(
+            cmd,
+            cwd=cwd,
+            env=env,
+            text=True,
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        stdout = error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else str(error.stdout or "")
+        stderr = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else str(error.stderr or "")
+        sys.stdout.write(stdout)
+        sys.stderr.write(stderr)
+        raise BudgetExhausted(
+            f"Learning work budget exhausted while running: {' '.join(cmd[:4])}"
+        ) from error
     sys.stdout.write(completed.stdout)
     sys.stderr.write(completed.stderr)
     if completed.returncode != 0 and not allow_fail:
@@ -428,103 +449,125 @@ def main() -> int:
     combined_rounds: list[dict[str, Any]] = []
     combined_plans: dict[str, Any] = {}
 
-    for provider_id in order:
-        if time.time() >= work_deadline:
-            break
-        full_registry = load_json(full_registry_path, {})
-        if provider_id not in candidate_map(full_registry):
-            retry_next.append(provider_id)
-            continue
-
-        state = provider_state.setdefault(provider_id, {"attemptCount": 0, "fixtureCursor": {}})
-        run_dir = output / "providers" / provider_id
-        run_dir.mkdir(parents=True, exist_ok=True)
-        info = info_by_id.get(provider_id, {"provider": provider_id, "status": "", "needs_route_search": False})
-        route = None
-
-        if bool(info.get("needs_route_search")) and time.time() < work_deadline:
-            route = route_search(provider_id, run_dir, work_deadline)
-            refresh_stage_routes(stage, work_deadline)
-
-        provider_attempts: list[dict[str, Any]] = []
-        seen_method_sets: set[tuple[str, ...]] = set()
-        final_lab: dict[str, Any] | None = None
-        resolved = False
-
-        while time.time() < work_deadline:
-            full_registry = load_json(full_registry_path, {})
-            target_path = run_dir / "candidates.json"
-            write_json(target_path, targeted_registry(full_registry, provider_id))
-
-            attempt_no = int(state.get("attemptCount") or 0) + 1
-            attempt_dir = run_dir / f"attempt-{attempt_no}"
-            attempt_dir.mkdir(parents=True, exist_ok=True)
-            repair = repair_attempt(provider_id, stage, target_path, attempt_dir, args.previous_state.resolve(), work_deadline)
-            merge_target_candidate(full_registry_path, target_path, provider_id)
-            for key, value in ((repair["report"].get("brain") or {}).get("plans") or {}).items():
-                combined_plans[str(key)] = value
-            for row in repair["report"].get("rounds") or []:
-                if isinstance(row, dict):
-                    tagged = copy.deepcopy(row)
-                    tagged["providerId"] = provider_id
-                    combined_rounds.append(tagged)
-
-            full_registry = load_json(full_registry_path, {})
-            candidate = candidate_map(full_registry).get(provider_id) or {}
-            media_type = declared_type(candidate)
-            fixture = choose_fixture(health_config, state, media_type)
-            final_lab = run_lab(provider_id, target_path, stage, fixture, attempt_dir, work_deadline, args.stream_safety_cap)
-            method_set = tuple(repair["attemptedProfiles"])
-            provider_attempts.append({
-                "attempt": attempt_no,
-                "repairAccepted": repair["accepted"],
-                "attemptedProfiles": repair["attemptedProfiles"],
-                "lab": final_lab,
-            })
-            state["attemptCount"] = attempt_no
-            state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
-            state["lastStatus"] = final_lab.get("status")
-            state["lastFixture"] = final_lab.get("fixtureSlug")
-            state["lastClients"] = final_lab.get("clients")
-
-            if final_lab.get("status") == "playable":
-                resolved = True
+    interrupted_provider = ""
+    try:
+        for provider_id in order:
+            if time.time() >= work_deadline:
                 break
-
-            # If the Core did not initially suspect an access problem but the
-            # independent Lab cannot reach any runtime, challenge the diagnosis
-            # with a route search before abandoning the provider.
-            any_runtime = any(int(x.get("runtimeStreams") or 0) > 0 for x in (final_lab.get("clients") or {}).values())
-            if not any_runtime and route is None and time.time() < work_deadline:
+            full_registry = load_json(full_registry_path, {})
+            if provider_id not in candidate_map(full_registry):
+                retry_next.append(provider_id)
+                continue
+    
+            state = provider_state.setdefault(provider_id, {"attemptCount": 0, "fixtureCursor": {}})
+            run_dir = output / "providers" / provider_id
+            run_dir.mkdir(parents=True, exist_ok=True)
+            info = info_by_id.get(provider_id, {"provider": provider_id, "status": "", "needs_route_search": False})
+            route = None
+    
+            if bool(info.get("needs_route_search")) and time.time() < work_deadline:
                 route = route_search(provider_id, run_dir, work_deadline)
                 refresh_stage_routes(stage, work_deadline)
-                continue
-
-            # Continue only while the previous cycle found a genuinely new method
-            # or accepted progress. Repeating the exact same failed method is
-            # learning evidence, not a reason to burn the remaining hour.
-            if method_set in seen_method_sets or (not method_set and repair["accepted"] == 0):
-                break
-            seen_method_sets.add(method_set)
-            if repair["accepted"] == 0:
-                break
-
-        processed.append(provider_id)
-        if not resolved:
-            retry_next.append(provider_id)
-        run_results.append({
-            "provider": provider_id,
-            "coreHypothesis": info,
-            "routeSearch": route,
-            "resolved": resolved,
-            "attempts": provider_attempts,
-            "finalLab": final_lab,
-        })
-
-        pending = [x for x in queue.get("pendingProviders") or [] if x != provider_id]
-        queue["pendingProviders"] = pending
-        completed = unique([*(queue.get("completedInCycle") or []), provider_id])
-        queue["completedInCycle"] = completed
+    
+            provider_attempts: list[dict[str, Any]] = []
+            seen_method_sets: set[tuple[str, ...]] = set()
+            final_lab: dict[str, Any] | None = None
+            resolved = False
+    
+            while time.time() < work_deadline:
+                full_registry = load_json(full_registry_path, {})
+                target_path = run_dir / "candidates.json"
+                write_json(target_path, targeted_registry(full_registry, provider_id))
+    
+                attempt_no = int(state.get("attemptCount") or 0) + 1
+                attempt_dir = run_dir / f"attempt-{attempt_no}"
+                attempt_dir.mkdir(parents=True, exist_ok=True)
+                repair = repair_attempt(provider_id, stage, target_path, attempt_dir, args.previous_state.resolve(), work_deadline)
+                merge_target_candidate(full_registry_path, target_path, provider_id)
+                for key, value in ((repair["report"].get("brain") or {}).get("plans") or {}).items():
+                    combined_plans[str(key)] = value
+                for row in repair["report"].get("rounds") or []:
+                    if isinstance(row, dict):
+                        tagged = copy.deepcopy(row)
+                        tagged["providerId"] = provider_id
+                        combined_rounds.append(tagged)
+    
+                full_registry = load_json(full_registry_path, {})
+                candidate = candidate_map(full_registry).get(provider_id) or {}
+                media_type = declared_type(candidate)
+                fixture = choose_fixture(health_config, state, media_type)
+                final_lab = run_lab(provider_id, target_path, stage, fixture, attempt_dir, work_deadline, args.stream_safety_cap)
+                method_set = tuple(repair["attemptedProfiles"])
+                provider_attempts.append({
+                    "attempt": attempt_no,
+                    "repairAccepted": repair["accepted"],
+                    "attemptedProfiles": repair["attemptedProfiles"],
+                    "lab": final_lab,
+                })
+                state["attemptCount"] = attempt_no
+                state["lastAttemptAt"] = datetime.now(timezone.utc).isoformat()
+                state["lastStatus"] = final_lab.get("status")
+                state["lastFixture"] = final_lab.get("fixtureSlug")
+                state["lastClients"] = final_lab.get("clients")
+    
+                if final_lab.get("status") == "playable":
+                    resolved = True
+                    break
+    
+                # If the Core did not initially suspect an access problem but the
+                # independent Lab cannot reach any runtime, challenge the diagnosis
+                # with a route search before abandoning the provider.
+                any_runtime = any(int(x.get("runtimeStreams") or 0) > 0 for x in (final_lab.get("clients") or {}).values())
+                if not any_runtime and route is None and time.time() < work_deadline:
+                    route = route_search(provider_id, run_dir, work_deadline)
+                    refresh_stage_routes(stage, work_deadline)
+                    continue
+    
+                # Continue only while the previous cycle found a genuinely new method
+                # or accepted progress. Repeating the exact same failed method is
+                # learning evidence, not a reason to burn the remaining hour.
+                if method_set in seen_method_sets or (not method_set and repair["accepted"] == 0):
+                    break
+                seen_method_sets.add(method_set)
+                if repair["accepted"] == 0:
+                    break
+    
+            processed.append(provider_id)
+            if not resolved:
+                retry_next.append(provider_id)
+            run_results.append({
+                "provider": provider_id,
+                "coreHypothesis": info,
+                "routeSearch": route,
+                "resolved": resolved,
+                "attempts": provider_attempts,
+                "finalLab": final_lab,
+            })
+    
+            pending = [x for x in queue.get("pendingProviders") or [] if x != provider_id]
+            queue["pendingProviders"] = pending
+            completed = unique([*(queue.get("completedInCycle") or []), provider_id])
+            queue["completedInCycle"] = completed
+    
+    except BudgetExhausted as error:
+        interrupted_provider = provider_id
+        retry_next.append(provider_id)
+        combined_rounds = [
+            row for row in combined_rounds
+            if norm(row.get("providerId")) != interrupted_provider
+        ]
+        combined_plans = {
+            key: value for key, value in combined_plans.items()
+            if norm(key) != interrupted_provider
+            and not (
+                isinstance(value, dict)
+                and norm(value.get("provider") or value.get("providerId") or value.get("targetProvider")) == interrupted_provider
+            )
+        }
+        print(
+            "FIELD_BRAIN_QUEUE_BUDGET_EXHAUSTED "
+            f"provider={interrupted_provider} reason={error}"
+        )
 
     remaining_order = [pid for pid in order if pid not in processed]
     queue["retryProviders"] = unique(retry_next)
@@ -535,7 +578,8 @@ def main() -> int:
     queue["processedThisRun"] = processed
     queue["generatedAt"] = datetime.now(timezone.utc).isoformat()
     queue["budgetMinutes"] = args.budget_minutes
-    queue["timeBudgetExhausted"] = time.time() >= work_deadline
+    queue["timeBudgetExhausted"] = bool(interrupted_provider) or time.time() >= work_deadline
+    queue["budgetInterruptionProvider"] = interrupted_provider
     queue["remainingProviderCount"] = len(queue["pendingProviders"])
     queue["retryProviderCount"] = len(queue["retryProviders"])
 
@@ -586,6 +630,8 @@ def main() -> int:
         "budgetMinutes": args.budget_minutes,
         "processedProviders": processed,
         "processedProviderCount": len(processed),
+        "budgetInterruptionProvider": interrupted_provider,
+        "timeBudgetExhausted": queue["timeBudgetExhausted"],
         "retryProviders": queue["retryProviders"],
         "hiddenFailureProviders": hidden_core_failures,
         "results": run_results,
