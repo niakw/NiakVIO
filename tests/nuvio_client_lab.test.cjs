@@ -15,6 +15,7 @@ const {
   maxStreamsForProbe,
   parseWorkerOutput,
   resolveProvider,
+  selectStreamsForProbe,
   summarizeStream,
   summarizePolicy,
   streamIdentity,
