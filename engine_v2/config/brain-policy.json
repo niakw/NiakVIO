@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "controlPlaneVersion": 4,
   "identity": {
     "name": "NiakVIO Brain",
@@ -40,7 +40,7 @@
     "memoryMaxEntries": 1000,
     "historicalBaselineId": "excel-provider-audit-5.20.63",
     "consumeNativeClientFeedback": true,
-    "purpose": "discover new solutions, evolve existing Core repair types, or propose new repair types when evidence does not fit the current architecture",
+    "purpose": "diagnose each provider, test one best repair hypothesis, retain evidence, and learn or propose the solution without iterative repair loops",
     "directSkillPublication": false,
     "providerLocalMutation": "ephemeral_lab_proof_only",
     "knownTypeUnresolvedAction": "adapt_or_evolve_type",
@@ -49,7 +49,10 @@
     "dailyPublishedProviderObservationRequired": true,
     "dailyPublishedProviderCoverageTarget": 1,
     "anomaliesFirst": true,
-    "explorationAfterCoverage": true
+    "explorationAfterCoverage": true,
+    "maxRepairRounds": 1,
+    "maxRepairAttemptsPerProvider": 1,
+    "maxExploratoryProfilesPerProvider": 1
   },
   "privacy": {
     "persistRawUrls": false,
