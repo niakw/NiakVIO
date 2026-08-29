@@ -73,7 +73,8 @@ assert "scripts/provider_patches/adaptive_domain_recovery.py" in module.DERIVED_
 
 apply_source = (ROOT / "scripts" / "apply_provider_overrides.py").read_text(encoding="utf-8")
 promoter_source = (ROOT / "scripts" / "promote_candidates.py").read_text(encoding="utf-8")
-workflow_source = (ROOT / ".github" / "workflows" / "core-media-finalize-main.yml").read_text(encoding="utf-8")
+core_workflow_source = (ROOT / ".github" / "workflows" / "core-media-finalize-main.yml").read_text(encoding="utf-8")
+sync_workflow_source = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
 
 assert "excluded_patch_scripts: Iterable[str] | None = None" in apply_source
 assert "include_global_core: bool = True" in apply_source
@@ -83,8 +84,11 @@ assert "include_global_core=False" in base_store_source
 assert "if patch_script in excluded_scripts:" in apply_source
 assert "persist_base_from_seed" in promoter_source
 assert "previous_base_row" in promoter_source
-assert "python scripts/provider_base_store.py repair-legacy" in workflow_source
-assert workflow_source.index("python scripts/provider_base_store.py repair-legacy") < workflow_source.index(
+assert "python scripts/provider_base_store.py repair-legacy" not in core_workflow_source
+assert "python scripts/provider_base_store.py validate" in core_workflow_source
+assert "git diff --exit-code -- provider-bases" in core_workflow_source
+assert "python scripts/provider_base_store.py repair-legacy" in sync_workflow_source
+assert sync_workflow_source.index("python scripts/provider_base_store.py repair-legacy") < sync_workflow_source.index(
     "python scripts/provider_base_store.py validate"
 )
 
