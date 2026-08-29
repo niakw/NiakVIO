@@ -271,6 +271,11 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
     except ValueError as exc:
         if "contains derived publication layer(s)" not in str(exc):
             raise
+        if previous_requires_clean:
+            raise ValueError(
+                f"{candidate['canonical_id']}: clean reconstruction candidate could not be reduced "
+                "to a valid ProviderBase; refusing legacy ProviderBase fallback"
+            ) from exc
         previous = previous_base_row if isinstance(previous_base_row, dict) else {}
         previous_path, previous_sha = resolve_base(
             candidate["canonical_id"],
