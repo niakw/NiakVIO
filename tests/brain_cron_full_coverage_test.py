@@ -90,6 +90,11 @@ def main() -> int:
     assert "publish_proposal:" in workflow, "watchdog/manual proposal input disappeared"
     assert "publish-repair-proposal:" in workflow, "validated Brain PR job disappeared"
     assert "brain-repair/proposal" in workflow, "single Brain repair PR branch disappeared"
+    assert "publish-architecture-proposal:" in workflow, "Brain self-evolution PR job disappeared"
+    assert "brain-architecture/proposal" in workflow, "dedicated Brain architecture PR branch disappeared"
+    assert "scripts/build_brain_architecture_proposal.py" in workflow
+    assert "engine_v2/config/brain-self-evolution.json" in workflow
+    assert "brain-architecture-proposal.md" in workflow
     assert "github.event_name == 'schedule'" in workflow
     assert "github.event.inputs.publish_proposal == 'true'" in workflow
     assert "brain-learning-watchdog:" in availability_workflow
@@ -123,6 +128,9 @@ def main() -> int:
     assert 'NUVIO_BRAIN_TARGET_PROVIDER: ${{ steps.learning-target.outputs.provider }}' in workflow
     assert 'steps.learning-target.outputs.needs_route_search' in workflow
     assert 'coreIsAuthoritative:false' in workflow
+    policy_source = (ROOT / "engine_v2" / "config" / "brain-policy.json").read_text(encoding="utf-8")
+    assert '"selfArchitectureAudit": true' in policy_source
+    assert '"selfArchitectureChanges": "review_only_pr_with_allowlisted_policy_changes_and_structural_change_plan"' in policy_source
     assert 'state.get("learnedSkills")' in sandbox_source
     assert "mergeLearnedSkills(previous.learnedSkills, currentSkills)" in learning_source
     assert "yandex.com/search/?text=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
