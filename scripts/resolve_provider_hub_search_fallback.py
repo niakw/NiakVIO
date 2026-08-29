@@ -116,9 +116,24 @@ def main() -> int:
             continue
         if row.get("status") in {"validated", "site_validated"}:
             continue
-        cfg = registry.get(hub.canonical_provider_id(provider_id))
-        if isinstance(cfg, dict):
-            unresolved.append((hub.canonical_provider_id(provider_id), cfg))
+        canonical = hub.canonical_provider_id(provider_id)
+        cfg = registry.get(canonical)
+        if not isinstance(cfg, dict):
+            # Absence of a curated hub must not block Learning from discovering
+            # a new public route. Build the smallest safe same-brand search
+            # context from the canonical provider id.
+            cfg = {
+                "aliases": [canonical],
+                "terminal_aliases": [],
+                "search_queries": [
+                    f"{canonical} nouvelle adresse officielle",
+                    f"{canonical} official site telegram",
+                ],
+                "allowed_terminal_hosts": [],
+                "allowed_terminal_host_patterns": [],
+                "blocked_hosts": [],
+            }
+        unresolved.append((canonical, cfg))
     unresolved = unresolved[: max(0, int(args.max_providers))]
 
     summary: dict[str, Any] = {
@@ -131,7 +146,10 @@ def main() -> int:
     }
     for provider_id, cfg in unresolved:
         configured = [str(q).strip() for q in cfg.get("search_queries") or [] if str(q).strip()]
-        queries = configured[:1] or [f"{provider_id} nouvelle adresse officielle telegram"]
+        queries = configured[:2] or [
+            f"{provider_id} nouvelle adresse officielle",
+            f"{provider_id} official site telegram",
+        ]
         provider_row: dict[str, Any] = {"status": "inconclusive", "queries_attempted": len(queries), "observations": []}
         selected = None
         for query in queries:
