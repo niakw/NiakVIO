@@ -27,7 +27,7 @@ for required in (
     "CLEAN_RECONSTRUCTION_SOURCE",
     "thirdPartyProviderCodeExecuted",
     "activationRequiresCurrentTargetedProof",
-    "weeklyFullNativeLabsRemainIndependent",
+    "manualOnlyFullNativeLabsRemainIndependent",
 ):
     assert required in script, required
 

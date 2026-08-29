@@ -507,7 +507,7 @@ def finalize(intake: dict[str, Any], health_path: Path) -> dict[str, Any]:
             "cleanProviderBaseRequired": True,
             "activationRequiresCurrentTargetedProof": True,
             "fullNativeLabsRequiredForOnboarding": False,
-            "weeklyFullNativeLabsRemainIndependent": True,
+            "manualOnlyFullNativeLabsRemainIndependent": True,
         },
     }
     write_json(ONBOARDING_DIR / f"{pid}.json", summary)
