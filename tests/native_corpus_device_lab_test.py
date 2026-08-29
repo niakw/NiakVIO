@@ -75,7 +75,17 @@ actual_slugs = {
     if isinstance(row, dict)
 }
 assert actual_slugs == expected_slugs, (actual_slugs, expected_slugs)
-assert set((corpus.get("native_reader_acceptance") or {}).get("tv_priority_regressions") or []) == tv_wrong_media_regressions
+acceptance = corpus.get("native_reader_acceptance") or {}
+assert acceptance.get("tv_priority_regressions") == []
+assert acceptance.get("provider_scope") == "declared-type"
+assert acceptance.get("one_fixture_per_type_per_provider") is True
+assert acceptance.get("fixture_by_type") == {
+    "movie": "interstellar",
+    "tv": "breaking-bad-s01e01",
+    "anime": "jujutsu-kaisen-s01e01",
+}
+assert corpus.get("provider_timeout_ms") == 25000
+assert corpus.get("retry_provider_timeouts") is False
 
 # Manual targeted retries remain manual-only and must never reuse an AVD from a
 # different NiakVIO/client generation.
@@ -94,7 +104,7 @@ for required in (
 # Canonical Android proof still checks out the exact current official client SHA,
 # but the clean AVD snapshot itself is reusable across client revisions because it
 # depends only on emulator/system-image configuration. ADB is primed before boot.
-representative_fixtures = ("sinners-2025", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01")
+representative_fixtures = ("interstellar", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01")
 for fixture in representative_fixtures:
     assert fixture in android_reader, fixture
 for required in (
@@ -106,10 +116,10 @@ for required in (
     '      - "vf/manifest.json"',
     "NuvioMedia/NuvioTV.git",
     "NuvioMedia/NuvioMobile.git",
-    "NIAKVIO_TARGET_PROVIDER: all",
+    "NIAKVIO_TARGET_PROVIDER: declared-type",
     "NIAKVIO_PRIMARY_STREAM_SCOPE: all",
     "NIAKVIO_REGRESSION_STREAM_SCOPE: all",
-    "--provider all --streams all",
+    "--provider declared-type --streams all",
     'NIAKVIO_REQUIRE_READER_SUCCESS: "1"',
     "avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p",
     "avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2",
@@ -126,7 +136,7 @@ for required in (
     "Re-read mutated providers plus deterministic sentinels after Brain mutation",
 ):
     assert required in android_reader, required
-assert android_reader.count('NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"') >= 2
+assert android_reader.count('NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"') >= 2
 assert 'matrix: ${{ fromJSON(needs.resolve.outputs.tv_shards) }}' in android_reader
 assert 'NIAKVIO_TARGET_FIXTURES: ${{ matrix.fixtures }}' in android_reader
 assert 'NIAKVIO_TV_PRIORITY_APPEND: "0"' in android_reader
@@ -140,8 +150,11 @@ assert "native_tv_route_checkpoint.py" in tv_suite
 assert "timeout --signal=TERM --kill-after=2m" in tv_suite
 assert "FIELD_NATIVE_CORPUS_TV_RESUME" in tv_suite
 assert "FIELD_NATIVE_CORPUS_TV_ROUTE_TIMEOUT" in tv_suite
+# Historical wrong-media fixtures stay in the central list for targeted/manual
+# diagnosis, but canonical acceptance never appends a second work of the same type.
 for fixture in tv_wrong_media_regressions:
-    assert fixture in tv_suite or fixture in corpus["native_reader_acceptance"]["tv_priority_regressions"], fixture
+    assert fixture in actual_slugs, fixture
+assert 'TV_PRIORITY_APPEND="${NIAKVIO_TV_PRIORITY_APPEND:-0}"' in tv_suite
 assert "avd-v1-" not in android_reader
 assert "restore-keys:" not in android_reader
 assert "playback-hotfix" not in android_reader
@@ -153,9 +166,8 @@ for workflow in (android_reader, targeted_runtime):
     assert "force-avd-creation: false" in workflow
     assert "-no-snapshot-save" in workflow
 
-# Desktop proof remains real macOS/Windows native player evidence. macOS keeps
-# witnessing the established three wrong-media cases while Hell Mode is carried
-# by the TV priority regression corpus.
+# Desktop proof remains real macOS/Windows native player evidence and follows
+# the same one movie / one tv / one anime provider coverage contract.
 for required in (
     "macos-15",
     "windows-2022",
@@ -167,11 +179,11 @@ for required in (
     ":composeApp:buildMacosPlayerBridge",
     ":composeApp:buildWindowsPlayerBridge",
     "Microsoft.Web.WebView2",
-    "NIAKVIO_TARGET_PROVIDER: all",
+    "NIAKVIO_TARGET_PROVIDER: declared-type",
     "NIAKVIO_PRIMARY_STREAM_SCOPE: all",
     "NIAKVIO_REGRESSION_STREAM_SCOPE: all",
     "native-evidence/desktop/**",
-    "colony-2021 failure-frame-s01e01 hell-teacher-nube-2025-s01e01",
+    "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01",
 ):
     assert required in desktop_reader, required
 assert "official_nuvio_desktop_player_is_stub" in (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
@@ -198,7 +210,8 @@ assert "--native-summary brain-learning-input/native-reader-summary.json" in bra
 assert "--provider-portfolio" not in brain_learning
 assert "nativeReaderRepairMemory" in brain_learning
 
-# PR staging is bounded; trusted main/manual paths retain exhaustive intent.
+# Canonical staging is bounded by declared type: each provider is exercised once
+# for each declared movie/tv/anime type. Manual exact-provider runs remain available.
 for source, label in ((prepare_client, "prepare"), (restage_client, "restage")):
     assert "--provider" in source, (label, "target provider")
     assert "--player-probes" in source, (label, "target reader probe count")
@@ -214,6 +227,9 @@ hostname_guards = [
 ]
 assert hostname_guards, "prepare client must compare parsed hostname against raw.githubusercontent.com"
 assert "FIELD_NATIVE_CORPUS_STAGE_SELECTED" in prepare_client
+assert '"supportedTypes": [' in prepare_client
+assert "select_declared_type" in prepare_client
+assert 'mode == "declared-type"' in restage_client
 assert "GITHUB_EVENT_NAME" in restage_client
 assert "NIAKVIO_PR_PROVIDER_LIMIT" in restage_client
 assert "pr-bounded" in restage_client
@@ -351,8 +367,8 @@ assert len(stageable) >= 80, len(stageable)
 
 print(
     "native device lab contract passed: "
-    f"fixtures={len(expected_slugs)} providers={len(stageable)} android_exhaustive=true "
-    "desktop_native=true tv_wrong_media_regressions=4 macos_witness=true "
+    f"fixtures={len(expected_slugs)} providers={len(stageable)} type_bounded_1_1_1=true "
+    "desktop_native=true historical_wrong_media_fixtures=4 targeted_only=true "
     "brain_retest=movie-tv-anime cached_profiles=v5-emulator-signing targeted_manual=true "
     "reader_learning_idempotent=true trusted_main_learning=true missing_artifact_retriable=true "
     "pr_bounded=true production_player_only=true https_repository_acceptance=true repair_materialization_explicit=true"
