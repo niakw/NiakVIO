@@ -103,7 +103,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     provider_list = re.search(r"(    private val providers = listOf\(\n.*?\n    \)\n)", text, flags=re.S)
     if not provider_list:
         raise SystemExit("request-contract provider list anchor missing")
-    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String, val declared: Boolean)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        return listOf<String>(fixtureMediaType).filter {{ it in declared }}\n            .map {{ type -> ProviderRequestRoute(type, true) }}\n    }}\n'''
+    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        return listOf<String>(fixtureMediaType).filter {{ it in declared }}\n            .map {{ type -> ProviderRequestRoute(type) }}\n    }}\n'''
     text = text[: provider_list.end()] + helpers + text[provider_list.end() :]
 
     if client in {"tv", "mobile"}:
