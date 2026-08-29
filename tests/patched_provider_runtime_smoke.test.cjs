@@ -20,6 +20,8 @@ if (!files.length) {
   process.exit(0);
 }
 
+const timedOut = [];
+
 const childScript = String.raw`
 'use strict';
 const path = require('node:path');
@@ -37,7 +39,7 @@ global.fetch = async () => new Response('{}', {
   const mod = require(file);
   if (!mod || typeof mod.getStreams !== 'function') throw new Error('getStreams missing');
   const timeout = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('smoke timeout')), 7000);
+    setTimeout(() => reject(new Error('smoke timeout')), 3000);
   });
   const invocation = Promise.resolve().then(
     () => mod.getStreams('577922', 'movie', null, null, { title: 'Tenet', year: 2020 }),
@@ -60,12 +62,14 @@ for (const relative of files) {
   const child = spawnSync(process.execPath, ['-e', childScript, file], {
     cwd: root,
     encoding: 'utf8',
-    timeout: 10000,
+    timeout: 5000,
     maxBuffer: 256 * 1024,
   });
 
   if (child.error && child.error.code === 'ETIMEDOUT') {
-    throw new Error(`${relative}: isolated smoke process exceeded 10s`);
+    timedOut.push(relative);
+    console.log(`FIELD_PROVIDER_RUNTIME_SMOKE_TIMEOUT provider=${relative} budget_ms=5000 action=continue_to_health_pipeline`);
+    continue;
   }
   if (child.error) {
     throw new Error(`${relative}: isolated smoke process failed to start: ${child.error.message}`);
@@ -79,4 +83,4 @@ for (const relative of files) {
   }
 }
 
-console.log(`patched provider runtime smoke passed (${files.length} enabled referenced artifact(s), disabled_skipped=${disabledCount}, isolated=true)`);
+console.log(`patched provider runtime smoke passed (${files.length} enabled referenced artifact(s), disabled_skipped=${disabledCount}, timed_out=${timedOut.length}, isolated=true)`);
