@@ -74,6 +74,27 @@ function normalizeProviderId(value) {
   return String(value || '').trim().toLowerCase();
 }
 
+function metadataLooksAnime(metadata = {}) {
+  if (!metadata || typeof metadata !== 'object') return false;
+  if (String(metadata.canonicalMediaType || metadata.canonical_media_type || metadata.category || '').toLowerCase() === 'anime') return true;
+  const keywordRows = metadata.keywords?.results || metadata.keywords?.keywords || metadata.keywords || [];
+  if (Array.isArray(keywordRows) && keywordRows.some((row) => String(row?.name || '').toLowerCase() === 'anime')) return true;
+  const genres = Array.isArray(metadata.genres) ? metadata.genres : [];
+  const genreIds = [...(Array.isArray(metadata.genre_ids) ? metadata.genre_ids : []), ...genres.map((row) => row?.id)].map(Number);
+  const animation = genreIds.includes(16) || genres.some((row) => String(row?.name || '').toLowerCase() === 'animation');
+  const language = String(metadata.original_language || metadata.originalLanguage || '').toLowerCase();
+  const countries = Array.isArray(metadata.origin_country || metadata.originCountry) ? (metadata.origin_country || metadata.originCountry) : [];
+  return animation && (language === 'ja' || countries.map((value) => String(value).toUpperCase()).includes('JP'));
+}
+
+function canonicalFixtureMediaType(value, category, metadata = {}) {
+  const raw = String(value || 'movie').trim().toLowerCase();
+  if (String(category || '').trim().toLowerCase() === 'anime' || metadataLooksAnime(metadata)) return 'anime';
+  if (raw === 'anime') return 'anime';
+  if (raw === 'movie') return 'movie';
+  return 'tv';
+}
+
 async function mapLimit(values, requestedLimit, worker) {
   const input = Array.from(values || []);
   const limit = Math.max(1, Math.min(Number(requestedLimit || 1), input.length || 1));
@@ -552,13 +573,17 @@ async function runLab(root, config, options = {}) {
   const registryPath = config.registry ? path.resolve(root, config.registry) : null;
   const registry = registryPath ? readJson(registryPath) : null;
   const stageRoot = path.resolve(root, config.stage || 'staging');
+  const inputMediaType = String(config.fixture?.mediaType || config.mediaType || 'movie');
+  const inputCategory = config.fixture?.category || config.category || null;
+  const fixtureMetadata = config.fixture?.tmdbMetadata || config.fixture?.tmdb_metadata || config.fixture?.metadata || config.tmdbMetadata || {};
   const fixture = {
     tmdbId: String(config.fixture?.tmdbId || config.tmdbId || ''),
-    mediaType: String(config.fixture?.mediaType || config.mediaType || 'movie'),
+    mediaType: canonicalFixtureMediaType(inputMediaType, inputCategory, fixtureMetadata),
+    nuvioInputMediaType: inputMediaType,
     title: config.fixture?.title || config.title || null,
     year: config.fixture?.year ?? config.year ?? null,
     label: config.fixture?.label || null,
-    category: config.fixture?.category || config.fixture?.mediaType || config.mediaType || 'movie',
+    category: canonicalFixtureMediaType(inputMediaType, inputCategory, fixtureMetadata),
     season: config.fixture?.season ?? config.season ?? null,
     episode: config.fixture?.episode ?? config.episode ?? null,
     expectedDurationMinutes: config.fixture?.expectedDurationMinutes ?? config.expectedDurationMinutes ?? null,
