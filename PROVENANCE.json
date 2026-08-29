@@ -21,7 +21,27 @@
     "upstream_code_executed": false,
     "published_legacy_code_may_seed_new_base": false,
     "upstream_code_may_seed_new_base": false,
-    "git_history_code_may_seed_new_base": false
+    "git_history_code_may_seed_new_base": false,
+    "derived_layers_forbidden": [
+      "NUVIO_PROVIDER_QUARANTINE_V1",
+      "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+      "NUVIO_GLOBAL_STREAM_FACTS_V1",
+      "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+      "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
+      "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+      "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+      "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+      "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+      "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+      "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+      "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
+      "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+      "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
+      "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
+      "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
+      "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
+      "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1"
+    ]
   },
   "providers": {
     "1shows": {
@@ -384,7 +404,12 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "d31f6cdff76a7e732497ef1ff6dafe287031d43e07f99ea634f98edea38b1edc"
+      "build_input_sha256": "d31f6cdff76a7e732497ef1ff6dafe287031d43e07f99ea634f98edea38b1edc",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "4khdhub": {
       "id": "4khdhub",
@@ -1008,7 +1033,12 @@
         "mangle": false,
         "sha256": "43f7a6fe94c63e61655ca2a591ea0feda7423cc3712d9e171d20397c69f3d357"
       },
-      "build_input_sha256": "1010de81e23c80e84c75456ff13c484e40ba1ef967bb7c61972b0bf14fa3b38b"
+      "build_input_sha256": "1010de81e23c80e84c75456ff13c484e40ba1ef967bb7c61972b0bf14fa3b38b",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "allanime": {
       "id": "allanime",
@@ -1379,7 +1409,12 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "0001622deb8236a26ad46fd7d1943f85efcf4be3172fca3ac65f07e918068346"
+      "build_input_sha256": "0001622deb8236a26ad46fd7d1943f85efcf4be3172fca3ac65f07e918068346",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "allmovieland": {
       "id": "allmovieland",
@@ -1869,7 +1904,12 @@
         "mangle": false,
         "sha256": "8a385072a732205d9f25bd4eeb47ec1683bc6150651f7a76f0fd09c366dbb1b3"
       },
-      "build_input_sha256": "e74d277e6f6da2a6ef525de758515a992b7ed659d5abd2741a63bbcecaacf4b1"
+      "build_input_sha256": "e74d277e6f6da2a6ef525de758515a992b7ed659d5abd2741a63bbcecaacf4b1",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "allwish": {
       "id": "allwish",
@@ -2173,7 +2213,12 @@
         "sha256": "4f53a16d3e8ce2cf512d3383dd153c9d3c01330758dedc78b75c772fe5c364a9"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f3a4c99e941d1fa1d460f6ea4517fc5f00bcaf49fe599cc7c6e216a831c3154a"
+      "build_input_sha256": "f3a4c99e941d1fa1d460f6ea4517fc5f00bcaf49fe599cc7c6e216a831c3154a",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "anidb": {
       "id": "anidb",
@@ -2621,7 +2666,12 @@
         "mangle": false,
         "sha256": "e7df5f3cf1b2c71fa2abba40b9881a7491a4726f059b766157fb5ee3276c8e14"
       },
-      "build_input_sha256": "5483a076d18ef26d32b185275b7852a553f1d921a8d51e2155fbcedaa629bfa3"
+      "build_input_sha256": "5483a076d18ef26d32b185275b7852a553f1d921a8d51e2155fbcedaa629bfa3",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "anikototv": {
       "id": "anikototv",
@@ -2943,7 +2993,12 @@
         "sha256": "a46c966f59d503818d22ea52d55fcab083ba08b78fc10ebc7f8c9a92dfe0e8d7"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4e65c2ecdf468f88335a388e8577d0f679299aa78ed2a0d263b360dead48b78c"
+      "build_input_sha256": "4e65c2ecdf468f88335a388e8577d0f679299aa78ed2a0d263b360dead48b78c",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "anime-sama": {
       "id": "anime-sama",
@@ -3283,7 +3338,12 @@
         "sha256": "d4887c0c6602e0b774663c5d9b24f3d1c3d48282af70ea2b9712527db792f216"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "a57f2b295ee14847a754b1f9ac0f30064205294bed0e4b55300298e802652ab9"
+      "build_input_sha256": "a57f2b295ee14847a754b1f9ac0f30064205294bed0e4b55300298e802652ab9",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "anime-ultime": {
       "id": "anime-ultime",
@@ -3597,7 +3657,12 @@
         "sha256": "97e8468c57f7a01e5ac8ad318f285650884f84d8d8c3bde6655638012aa6e3c1"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5d9655eb772d91ee158797c72b22db45cee1e6c4f2c37a8566bafaff3b2adb47"
+      "build_input_sha256": "5d9655eb772d91ee158797c72b22db45cee1e6c4f2c37a8566bafaff3b2adb47",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animekai": {
       "id": "animekai",
@@ -3919,7 +3984,12 @@
         "sha256": "4c301008fd3ae2289b5d1cd14af1ef9c577c11965a4671e455a29c354e1e52e8"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "44dfa33be09e41c6064ee911e4e82fa754169eb37b18a8986cb80243df5d69ff"
+      "build_input_sha256": "44dfa33be09e41c6064ee911e4e82fa754169eb37b18a8986cb80243df5d69ff",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animepahe": {
       "id": "animepahe",
@@ -4369,7 +4439,12 @@
         "mangle": false,
         "sha256": "bf1fa486c3e9b6de798f9e9fc7c5c2c261c31a751d60de88090ba66fc9ddf101"
       },
-      "build_input_sha256": "8343a1b16de9d62344371608476dfe8100ee406ca8d80ee9edde7a196bb5b485"
+      "build_input_sha256": "8343a1b16de9d62344371608476dfe8100ee406ca8d80ee9edde7a196bb5b485",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animesalt": {
       "id": "animesalt",
@@ -4852,7 +4927,12 @@
         "mangle": false,
         "sha256": "951b6db3ea61da0ef3d272ba0a78bd719ef62613c850b88298e9104d007e8a5f"
       },
-      "build_input_sha256": "711213b3e2296a6bd4a312eeb44a637d03e12b4d6e6051f57e6a8b7770326b9d"
+      "build_input_sha256": "711213b3e2296a6bd4a312eeb44a637d03e12b4d6e6051f57e6a8b7770326b9d",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animesama-co": {
       "id": "animesama-co",
@@ -5178,7 +5258,12 @@
         "sha256": "2c05bea54ff026f54db6b1907d7a85d3a0cda64868a4eafe5e109cd1dc496360"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7599a1b7bbb41bf46c1bf3e8a0addbd785a440e693f93d3070c14c6ef1ba4436"
+      "build_input_sha256": "7599a1b7bbb41bf46c1bf3e8a0addbd785a440e693f93d3070c14c6ef1ba4436",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animesultra": {
       "id": "animesultra",
@@ -5670,7 +5755,12 @@
         "mangle": false,
         "sha256": "b264d174fcd3438bdf7553d3a8c9a60af0bddd319fb3b0d8d7c7a8d8be69d615"
       },
-      "build_input_sha256": "0f732daeaaab70a309769a0f3b85ec6e0cfb5cdf853f081437f363f7b87b9dc3"
+      "build_input_sha256": "0f732daeaaab70a309769a0f3b85ec6e0cfb5cdf853f081437f363f7b87b9dc3",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animetsu": {
       "id": "animetsu",
@@ -6093,7 +6183,12 @@
         "mangle": false,
         "sha256": "bcbd7c7af071e5c278d7f21ef63cb724bb687ba3b92048cc202cc8a6762f655e"
       },
-      "build_input_sha256": "42c6c13e2b80893905f10a43238241001d7ee7c7a52f0d7f8248d0ccd0eea6d2"
+      "build_input_sha256": "42c6c13e2b80893905f10a43238241001d7ee7c7a52f0d7f8248d0ccd0eea6d2",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animevost-fr": {
       "id": "animevost-fr",
@@ -6403,7 +6498,12 @@
         "sha256": "71e1b05105cdc9db65210b68596f9e9a74da23a4c0f62a099c9af6dae1529253"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9399a16a8b0c5688bdeaba6ba30d78503d4bbd577c5a028b57c153620db7f13a"
+      "build_input_sha256": "9399a16a8b0c5688bdeaba6ba30d78503d4bbd577c5a028b57c153620db7f13a",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animevostfr": {
       "id": "animevostfr",
@@ -6742,7 +6842,12 @@
         "gowaru"
       ],
       "preserved_candidate_key": "gowaru:animevostfr",
-      "preserved_candidate_sha256": "87a05654fccfa26901ad631f73879eba0434a0d917fa3c708f74ec93aee363f6"
+      "preserved_candidate_sha256": "87a05654fccfa26901ad631f73879eba0434a0d917fa3c708f74ec93aee363f6",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animeworld": {
       "id": "animeworld",
@@ -7052,7 +7157,12 @@
         "sha256": "8a6bef867904fa2e4afdc8a5278b5b755ebcf77f2bed7b36d1d0f64a9ed0cb28"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "e09136c7d71a72519fb26be05123e23b903a5e7f24021f426fec995f7676de96"
+      "build_input_sha256": "e09136c7d71a72519fb26be05123e23b903a5e7f24021f426fec995f7676de96",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animezey": {
       "id": "animezey",
@@ -7370,7 +7480,12 @@
         "sha256": "e5265789613cfdf594c4072856acc1ee3f73219cefc56c73ac2c0673c4e77886"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "fa3b6c60881b65ba08c9db3db4dc4cdd0b444b30a9cf62dd7be94e0757193721"
+      "build_input_sha256": "fa3b6c60881b65ba08c9db3db4dc4cdd0b444b30a9cf62dd7be94e0757193721",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "animoflix": {
       "id": "animoflix",
@@ -7696,7 +7811,12 @@
         "sha256": "054205321b920467ca10cf7b365d7e46eb690dd24db420fa591e37ed43a653b4"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4c031e05b8f47dbcc4824f24841b30249ca0b14801bb514d1a47765550eaaf3f"
+      "build_input_sha256": "4c031e05b8f47dbcc4824f24841b30249ca0b14801bb514d1a47765550eaaf3f",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "anizone": {
       "id": "anizone",
@@ -8146,7 +8266,12 @@
         "mangle": false,
         "sha256": "03b7a88f7a68734a542b5f03774bf7cbf93254c96774df7dfa34e14a3f924949"
       },
-      "build_input_sha256": "3c6fcb60b98a53d61e63f96a9b9162495828a6ca25f096bda4b011c0e6426e84"
+      "build_input_sha256": "3c6fcb60b98a53d61e63f96a9b9162495828a6ca25f096bda4b011c0e6426e84",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "castle": {
       "id": "castle",
@@ -8463,7 +8588,12 @@
         "sha256": "44ab45d8a35a13d72e8cfe22234298b1f0fef7fa65fcc8a89aeaa30ab1400ef5"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "41ce0afdfcdf7ae4e15bc33bf0016680efbbd1a4b23c8e6ee880f62df16a0447"
+      "build_input_sha256": "41ce0afdfcdf7ae4e15bc33bf0016680efbbd1a4b23c8e6ee880f62df16a0447",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "cineby": {
       "id": "cineby",
@@ -8832,7 +8962,12 @@
         "sha256": "7ba7f47f898cdc8936c0b23fd4c6989b7179e160ab6787187d70cfb57276978c"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "11b2236de9ef02348f10afe0f5539af8ccdc1f901227ac79d40aa027ec06a61b"
+      "build_input_sha256": "11b2236de9ef02348f10afe0f5539af8ccdc1f901227ac79d40aa027ec06a61b",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "cinefreak": {
       "id": "cinefreak",
@@ -9187,7 +9322,12 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "df16fa80e76975bfa9b9b6657702aa7b8359c6b5d43d54a740890c39a3d41696"
+      "build_input_sha256": "df16fa80e76975bfa9b9b6657702aa7b8359c6b5d43d54a740890c39a3d41696",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "cinemacity": {
       "id": "cinemacity",
@@ -9628,7 +9768,12 @@
         "mangle": false,
         "sha256": "5ed8de63d5d21e5291a0550bc247ec5bd0db68dba19619ad874257ef106e0eb4"
       },
-      "build_input_sha256": "e811c108e36fbfe05012753d10b92da8b79e9f9a2d8f3dd81ad13436f249a742"
+      "build_input_sha256": "e811c108e36fbfe05012753d10b92da8b79e9f9a2d8f3dd81ad13436f249a742",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "cinemm": {
       "id": "cinemm",
@@ -10075,7 +10220,12 @@
         "mangle": false,
         "sha256": "1c7413fefc20fb996d271ebbf995edb9ea1c486c669af4608d6aeedf96853b61"
       },
-      "build_input_sha256": "c8037f177b696922ebfb6d18506e4e16e2d3e3b306b4d8b64ba23783eb843c71"
+      "build_input_sha256": "c8037f177b696922ebfb6d18506e4e16e2d3e3b306b4d8b64ba23783eb843c71",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "cinevibe": {
       "id": "cinevibe",
@@ -10376,7 +10526,12 @@
         "sha256": "5914898f5bca27f3f8c826fda48cba63eb2767da574b53eb814a2d55ceeefdac"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "82e8fd16088cb5239c0342a07cdd4ef29856de0c6ece674d1ae25e5c9932b983"
+      "build_input_sha256": "82e8fd16088cb5239c0342a07cdd4ef29856de0c6ece674d1ae25e5c9932b983",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "coflix": {
       "id": "coflix",
@@ -11026,7 +11181,12 @@
         "mangle": false,
         "sha256": "f99ece24253fab01fb4fa9da6d314353639d07d06095db732518906d40233bc8"
       },
-      "build_input_sha256": "c4b66a48394c4eba110bb82165a89da5aa41c63a292db7b0c989526616054034"
+      "build_input_sha256": "c4b66a48394c4eba110bb82165a89da5aa41c63a292db7b0c989526616054034",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "ctgmovies": {
       "id": "ctgmovies",
@@ -11330,7 +11490,12 @@
         "sha256": "8f7498afb0cac470aafd5b822fffefd7575b00d0ee58a3ec3eadd4a366ec47c5"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "52f0ce36b7936d6b354701e4acafc7b3c5b5ad36cdac6eaaeba018365a357605"
+      "build_input_sha256": "52f0ce36b7936d6b354701e4acafc7b3c5b5ad36cdac6eaaeba018365a357605",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "desiflix": {
       "id": "desiflix",
@@ -11826,7 +11991,12 @@
         "mangle": false,
         "sha256": "1ddf347ce426fc503c2f34d0c298147e6e1acb944c01b78c34d454d4547daa71"
       },
-      "build_input_sha256": "589bbdd0c55ef0dd9082dc30bcd0386cf34305f2203908cefdf6d8a776aff76a"
+      "build_input_sha256": "589bbdd0c55ef0dd9082dc30bcd0386cf34305f2203908cefdf6d8a776aff76a",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "dooflix": {
       "id": "dooflix",
@@ -12258,7 +12428,12 @@
         "mangle": false,
         "sha256": "5aa3069c1d13af2942e37c0af8589f15ab5e9cdfa064c23fa73d14facffea8cf"
       },
-      "build_input_sha256": "5deb543ffd4f45d051f97c0a2a64f191264aecc8c129fd1dd92173832bce1295"
+      "build_input_sha256": "5deb543ffd4f45d051f97c0a2a64f191264aecc8c129fd1dd92173832bce1295",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "dulourd": {
       "id": "dulourd",
@@ -12735,7 +12910,12 @@
         "mangle": false,
         "sha256": "0015aa337150fc78ed21ad9b365f64edc8bd3c9bb6510a052551d2e8181d9ed1"
       },
-      "build_input_sha256": "070239803587edc2912d65f83a42084047366db0afddddf9466c0aa9d7c79757"
+      "build_input_sha256": "070239803587edc2912d65f83a42084047366db0afddddf9466c0aa9d7c79757",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "dvdplay": {
       "id": "dvdplay",
@@ -13125,7 +13305,12 @@
         "mangle": false,
         "sha256": "503854129dd5892f5385b52f0ce870ff05089000e98148e850b4ada4d9f1d530"
       },
-      "build_input_sha256": "391ef0abeee584cd21c8e8abdf4a039a5b89414c4e3d00836b04b1f2906b04a2"
+      "build_input_sha256": "391ef0abeee584cd21c8e8abdf4a039a5b89414c4e3d00836b04b1f2906b04a2",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "einthusan": {
       "id": "einthusan",
@@ -13432,7 +13617,12 @@
         "sha256": "051e9f794622963ba2fc11bd57eab57bfd8a18e96f5be539ebb7b0cebf7ea717"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "2edf36466f628cee252c0ee12514d258880e4a95ce2c23ae63498821178c2f67"
+      "build_input_sha256": "2edf36466f628cee252c0ee12514d258880e4a95ce2c23ae63498821178c2f67",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "fibwatch": {
       "id": "fibwatch",
@@ -13738,7 +13928,12 @@
         "sha256": "8d4b1eb988b12b2d3d08b90622cfd831db46182a5ea582dc4fc494bad674947c"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "8fdcbb63d5bfa5549014400339a75528cd9fedd81c34229b57c51491bf74432a"
+      "build_input_sha256": "8fdcbb63d5bfa5549014400339a75528cd9fedd81c34229b57c51491bf74432a",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "flemmix": {
       "id": "flemmix",
@@ -14312,7 +14507,12 @@
         "mangle": false,
         "sha256": "9cb0c8089ff7975b5fbad8ba453ac009d45e16c860edc0791f3e39ce4bf736cb"
       },
-      "build_input_sha256": "4d4d4f6c7dbb17ad2c242ad625d372e9e608ed6c88d3057c8177c585ba4a0a9f"
+      "build_input_sha256": "4d4d4f6c7dbb17ad2c242ad625d372e9e608ed6c88d3057c8177c585ba4a0a9f",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "french-manga": {
       "id": "french-manga",
@@ -14665,7 +14865,12 @@
         "sha256": "7d4b2e291171ff4656cb8560dbbedabfc74492daf9606b737421ef58047799bb"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "888c18a9598e4a3b68b8ac23b6d7f5335968bcf64f6f08413b305fd5cca5701a"
+      "build_input_sha256": "888c18a9598e4a3b68b8ac23b6d7f5335968bcf64f6f08413b305fd5cca5701a",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "frenchstream": {
       "id": "frenchstream",
@@ -15125,7 +15330,12 @@
         "mangle": false,
         "sha256": "b09e31b3c7c74d31acef9bb5c040e3f52acc0f43147705fab0f767e6aab0ce85"
       },
-      "build_input_sha256": "a839230fd77248dbb5624002e4799ce4c7d66757a99777de32f9947a810e24c3"
+      "build_input_sha256": "a839230fd77248dbb5624002e4799ce4c7d66757a99777de32f9947a810e24c3",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "fullanime": {
       "id": "fullanime",
@@ -15434,7 +15644,12 @@
         "sha256": "18040e03ccb3a0d4c05b6f274af04d5f8246e37a598f318cf49890d7298b6453"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "a8adaa9fb5b0be249c32e68fc9c58a3a41ae6cf38ecdd40b36646f8a67089d0e"
+      "build_input_sha256": "a8adaa9fb5b0be249c32e68fc9c58a3a41ae6cf38ecdd40b36646f8a67089d0e",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "goatapi": {
       "id": "goatapi",
@@ -15748,7 +15963,12 @@
         "sha256": "bfb9af785afec4c224c12f5f4ee0ee34faf6bde0658b40ee26313a61818b9438"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "6650f4249e2eadb7d885af60e2e834b66618a6c1da600baa8e95e3e5712e38e8"
+      "build_input_sha256": "6650f4249e2eadb7d885af60e2e834b66618a6c1da600baa8e95e3e5712e38e8",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "goated": {
       "id": "goated",
@@ -16071,7 +16291,12 @@
         "sha256": "d119c03d976b5907e2f6165ff9ff707d9ccf7e3ac6f0d1d9b93530b793eb695c"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7f2b8b3b749c830f24a7b2940df37234f16289925dca2ac7ba859e0e657f9a4b"
+      "build_input_sha256": "7f2b8b3b749c830f24a7b2940df37234f16289925dca2ac7ba859e0e657f9a4b",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "gramcinema": {
       "id": "gramcinema",
@@ -16379,7 +16604,12 @@
         "sha256": "10c45cb247b9fd39570eeba91851858a4df13b54b52b52c12ed44ba977dc2ab6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "688c788eb34263193f63cf0ec57b575abce8313b7b17ea2fb629f5af12e5966d"
+      "build_input_sha256": "688c788eb34263193f63cf0ec57b575abce8313b7b17ea2fb629f5af12e5966d",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "hdghartv": {
       "id": "hdghartv",
@@ -16699,7 +16929,12 @@
         "sha256": "31349aad8299c72f8db9ada4ad105012cbb9d95f13b2c6fd5d723a2038717ca0"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9c936b6bb3e90a24c5dc70f32aceaf2c704b6e2539162a0b5156eef9edb878eb"
+      "build_input_sha256": "9c936b6bb3e90a24c5dc70f32aceaf2c704b6e2539162a0b5156eef9edb878eb",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "hdhub4u": {
       "id": "hdhub4u",
@@ -17210,7 +17445,12 @@
         "mangle": false,
         "sha256": "221e80ed4fa139393c76e00f4492f5abb249ac7886068ab4b06dc67e81984966"
       },
-      "build_input_sha256": "bf8602a37e4ddbb3b3021666c73cfa7773d23980b47ab0709f5ae23e034709a3"
+      "build_input_sha256": "bf8602a37e4ddbb3b3021666c73cfa7773d23980b47ab0709f5ae23e034709a3",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "hianime": {
       "id": "hianime",
@@ -17699,7 +17939,12 @@
         "mangle": false,
         "sha256": "68ec2b812ca81ad022e03d644301dbabe56b6b2a83fb37c690f5b87dd1830528"
       },
-      "build_input_sha256": "89fb35b7b49bedecd8a2cf4a23f8557cea51e4332366943011b74b76036f71f8"
+      "build_input_sha256": "89fb35b7b49bedecd8a2cf4a23f8557cea51e4332366943011b74b76036f71f8",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "hindmoviez": {
       "id": "hindmoviez",
@@ -18066,7 +18311,12 @@
         "aio"
       ],
       "preserved_candidate_key": "aio:hindmoviez",
-      "preserved_candidate_sha256": "80b656bc61a0a226d5491f7e51879a47f38eac0990df22cb636cbc70e1fb3702"
+      "preserved_candidate_sha256": "80b656bc61a0a226d5491f7e51879a47f38eac0990df22cb636cbc70e1fb3702",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "kisskh": {
       "id": "kisskh",
@@ -18370,7 +18620,12 @@
         "sha256": "888c7cb823b1671e723319b053dc9e636a0aa084433499125d790757ca086734"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9fca90b3ae606703ad52bc048c968ad530f939f69a2e0f9cd9c82796aa69be36"
+      "build_input_sha256": "9fca90b3ae606703ad52bc048c968ad530f939f69a2e0f9cd9c82796aa69be36",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "kurage": {
       "id": "kurage",
@@ -18766,7 +19021,12 @@
         "mangle": false,
         "sha256": "ad412050abaacee667285e72d039ca69f7d2bbb3ae8e1b3bb383ca7a80526751"
       },
-      "build_input_sha256": "15d9be811621e6cb75b8f55e455716010d16fb4b56d5970ae102120200d0904c"
+      "build_input_sha256": "15d9be811621e6cb75b8f55e455716010d16fb4b56d5970ae102120200d0904c",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "mallumv": {
       "id": "mallumv",
@@ -19097,7 +19357,12 @@
         "sha256": "6e00651d9cd11b8c3dda466f1d1530516111e656b8e00ecab32f72afd72fb218"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "2a8801549ba3afd21551fa3f415d3ec17ae5e0f20d264a106cdd514cd736e3fe"
+      "build_input_sha256": "2a8801549ba3afd21551fa3f415d3ec17ae5e0f20d264a106cdd514cd736e3fe",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "moonflix": {
       "id": "moonflix",
@@ -19403,7 +19668,12 @@
         "sha256": "634bfd3529eb673e359dda21c30900e2d93184811ea9d43c2d31e9aff99d189d"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5716ea809ba29788b97f1dcccb9191482757aaef84ffb0b435b9d2333fcc7dc8"
+      "build_input_sha256": "5716ea809ba29788b97f1dcccb9191482757aaef84ffb0b435b9d2333fcc7dc8",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "movieblast": {
       "id": "movieblast",
@@ -19722,7 +19992,12 @@
         "sha256": "e78bf44d6259b214c6b2c959459c196d0a1d5b8778e652ba3642dfd99d062930"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "58a36c33aaf354614d25d5b7746fbcb0b23155e3ac68a217f9c06f71cb52a1fb"
+      "build_input_sha256": "58a36c33aaf354614d25d5b7746fbcb0b23155e3ac68a217f9c06f71cb52a1fb",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "moviebox": {
       "id": "moviebox",
@@ -20121,7 +20396,12 @@
         "mangle": false,
         "sha256": "87f216de1ef35038ea3e66e8cff4d9f892472ef1885cf251b5bc3fa341c4f8c3"
       },
-      "build_input_sha256": "2bdd6cf1981c67b53b00648bb8be63e9bcc1ba74d4e6cdba23fdbf5c19aaefdb"
+      "build_input_sha256": "2bdd6cf1981c67b53b00648bb8be63e9bcc1ba74d4e6cdba23fdbf5c19aaefdb",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "movies4u": {
       "id": "movies4u",
@@ -20671,7 +20951,12 @@
         "mangle": false,
         "sha256": "1599bbb127fed738979e7327e56bb152a16713fa87b35125323ef4b45dd67f5d"
       },
-      "build_input_sha256": "b15a9ed727acf8dc1c003d2bb321cd98c9e1a569aa193c23e4c523580e52315c"
+      "build_input_sha256": "b15a9ed727acf8dc1c003d2bb321cd98c9e1a569aa193c23e4c523580e52315c",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "moviesdrive": {
       "id": "moviesdrive",
@@ -21227,7 +21512,12 @@
         "mangle": false,
         "sha256": "25d8e84fa7ad0c8f4d940f9748469b9b6d280042014448f25f4299b5dd5ca4b7"
       },
-      "build_input_sha256": "783d8bb1fa1ba9c5e727168b3e38d679882317d6e4becc0cca6822041e39d504"
+      "build_input_sha256": "783d8bb1fa1ba9c5e727168b3e38d679882317d6e4becc0cca6822041e39d504",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "movieshunt": {
       "id": "movieshunt",
@@ -21524,7 +21814,12 @@
         "sha256": "8f08fa4f3d7ab8f013562f0357863c4c849a3291024ba12f26c60679264b941c"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "6907da6dcebfb18f83d0ff8987f30d586dd310ac446df5d65a1b9e17245ba897"
+      "build_input_sha256": "6907da6dcebfb18f83d0ff8987f30d586dd310ac446df5d65a1b9e17245ba897",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "moviesmod": {
       "id": "moviesmod",
@@ -22015,7 +22310,12 @@
         "mangle": false,
         "sha256": "704b853982f972ff3099b468964eb14cf36b6449339dd2b817cbc70f466eeaa7"
       },
-      "build_input_sha256": "94f1a33dd8d8a476feb599fa780b152e058ed3e7e026625b95c8aa38e463439a"
+      "build_input_sha256": "94f1a33dd8d8a476feb599fa780b152e058ed3e7e026625b95c8aa38e463439a",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "movix": {
       "id": "movix",
@@ -22584,7 +22884,12 @@
         "mangle": false,
         "sha256": "ee3307b772e79c34bcd0c8eb1d870388350b99e3f4221fbd2f9b2d6b2921a8ed"
       },
-      "build_input_sha256": "e3362b46f93739656f67dbf07a6a54af2a61d567c633a28f2340e2a4aaabcd25"
+      "build_input_sha256": "e3362b46f93739656f67dbf07a6a54af2a61d567c633a28f2340e2a4aaabcd25",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
@@ -22945,7 +23250,12 @@
         "gowaru"
       ],
       "preserved_candidate_key": "gowaru:mugiwarastream",
-      "preserved_candidate_sha256": "aa7da7703c7417b92aaa0097a2597f622a4446559c9cd638200c310a1f32b046"
+      "preserved_candidate_sha256": "aa7da7703c7417b92aaa0097a2597f622a4446559c9cd638200c310a1f32b046",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "mycima": {
       "id": "mycima",
@@ -23269,7 +23579,12 @@
         "sha256": "734947b5d31943ce477611111003b8a6a99597d89b220cc1c06789f8ba85f57f"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "3679a87231e3460cbbf3434c98701e52c42eaa92b16aa6c4a738e8b7f6263dd1"
+      "build_input_sha256": "3679a87231e3460cbbf3434c98701e52c42eaa92b16aa6c4a738e8b7f6263dd1",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "nakios": {
       "id": "nakios",
@@ -23597,7 +23912,12 @@
         "sha256": "37a51eadc3baf68c6c1e26d05b10af3b233466b20a541102b068bd0f304ac9f5"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ea624799b284d8b552c9f056359af0bfd47c2ee23a7d1aac8aa1825b4c3df578"
+      "build_input_sha256": "ea624799b284d8b552c9f056359af0bfd47c2ee23a7d1aac8aa1825b4c3df578",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "neko-sama": {
       "id": "neko-sama",
@@ -23912,7 +24232,12 @@
         "sha256": "8896d3edddf8488d8183ee76cb3010dbb92d1bb1f64329503d97df5e4a079d93"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "a9799a2882e0e894a5eb18b22cce37cd6d0903fc940fd378e01e4fc0b6d47092"
+      "build_input_sha256": "a9799a2882e0e894a5eb18b22cce37cd6d0903fc940fd378e01e4fc0b6d47092",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "netmirror": {
       "id": "netmirror",
@@ -24313,7 +24638,12 @@
         "mangle": false,
         "sha256": "aa6763733f715e8aa8d7019c955f4776cf6f27ba2505e8b6ce1193d9bfbe9567"
       },
-      "build_input_sha256": "7055422f9fda1beb82e9adc8ddc4064b6b8c7a2d537c9f3b2709ee93528b4621"
+      "build_input_sha256": "7055422f9fda1beb82e9adc8ddc4064b6b8c7a2d537c9f3b2709ee93528b4621",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "onlykdrama": {
       "id": "onlykdrama",
@@ -24623,7 +24953,12 @@
         "sha256": "2ecd7ef59a56181c1d59c2ab1395d44ca221b7918b1528215664bf4153c6951b"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "42d2b229120ae9e007018508c1b2554e54fa82a5405f5cf84dcf112e98f6b103"
+      "build_input_sha256": "42d2b229120ae9e007018508c1b2554e54fa82a5405f5cf84dcf112e98f6b103",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "papadustream": {
       "id": "papadustream",
@@ -25166,7 +25501,12 @@
         "mangle": false,
         "sha256": "410999d9533f63efda1218612a56735b862024ea39a6c241046a76348147057d"
       },
-      "build_input_sha256": "43e72a60ec2b4baa4db32e18797149de52fc7b15921e4ac547b140e9336a0f08"
+      "build_input_sha256": "43e72a60ec2b4baa4db32e18797149de52fc7b15921e4ac547b140e9336a0f08",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "peachify": {
       "id": "peachify",
@@ -25480,7 +25820,12 @@
         "sha256": "06ebce6d235f77438b35ee75c81f68427f373087f427fd9a5326c9fca731c392"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "061f232773438fff6d781c89b40b07f1f2c923af29d8e634374701281f9ef09e"
+      "build_input_sha256": "061f232773438fff6d781c89b40b07f1f2c923af29d8e634374701281f9ef09e",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "persianstremio": {
       "id": "persianstremio",
@@ -25807,7 +26152,12 @@
         "aio"
       ],
       "preserved_candidate_key": "aio:persianstremio",
-      "preserved_candidate_sha256": "0b7f159c8818f4ae3cc5f52ef6934a3612c8fdc87eec38b85bc5f507e415aa61"
+      "preserved_candidate_sha256": "0b7f159c8818f4ae3cc5f52ef6934a3612c8fdc87eec38b85bc5f507e415aa61",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "playimdb": {
       "id": "playimdb",
@@ -26119,7 +26469,12 @@
         "sha256": "ae54be3df3cb17188718d2284b72b1c4d4149a5836ab599aac39a8693c2ff406"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "dbb61fec2079b42c5b953746d372d6877f80e0235cba98db274d87e8535267bf"
+      "build_input_sha256": "dbb61fec2079b42c5b953746d372d6877f80e0235cba98db274d87e8535267bf",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "purstream": {
       "id": "purstream",
@@ -26470,7 +26825,12 @@
         "aio"
       ],
       "preserved_candidate_key": "aio:purstream",
-      "preserved_candidate_sha256": "423fbb08af7f33a9e10f5d8bcc1dcf0f2ee6c3d8f0f4bf51d6c859d33c3d3b31"
+      "preserved_candidate_sha256": "423fbb08af7f33a9e10f5d8bcc1dcf0f2ee6c3d8f0f4bf51d6c859d33c3d3b31",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "showbox": {
       "id": "showbox",
@@ -26776,7 +27136,12 @@
         "sha256": "541dba07e0f626b70337c4526d10f79901b1c8e65af2bdd68ec34bd4ea932fdd"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "119c6b8504fec0eb8f190c94eedbe391ebab099ca682e0fa059f6ceed02821da"
+      "build_input_sha256": "119c6b8504fec0eb8f190c94eedbe391ebab099ca682e0fa059f6ceed02821da",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "streamflix": {
       "id": "streamflix",
@@ -27225,7 +27590,12 @@
         "mangle": false,
         "sha256": "58b928521566b6cc552411d3580f3c772532ee79a93c07957da0bff3a434bbd7"
       },
-      "build_input_sha256": "bd41409b45824d6d21d8913737c3045b38aa422a63c6b5dd1fe1cd69d8d5b497"
+      "build_input_sha256": "bd41409b45824d6d21d8913737c3045b38aa422a63c6b5dd1fe1cd69d8d5b497",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "streamzo": {
       "id": "streamzo",
@@ -27638,7 +28008,12 @@
         "mangle": false,
         "sha256": "681fcc412606777d161c3c94f62adf20b7b070c097693a9facef3eb183010485"
       },
-      "build_input_sha256": "24cbc7e02cf5bddc7b8ec55e8f36d4e76ad63b69c8a22cff92fd7f00a4423afe"
+      "build_input_sha256": "24cbc7e02cf5bddc7b8ec55e8f36d4e76ad63b69c8a22cff92fd7f00a4423afe",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "topcartoons": {
       "id": "topcartoons",
@@ -28027,7 +28402,12 @@
         "mangle": false,
         "sha256": "906ddd56175fd89c5e5c92d748ba5db309749e68f8760473cc86ea410d833671"
       },
-      "build_input_sha256": "fc9f39f50bb6175ba8667468620facb224194ab9bdc452bae77fc2482f0bc308"
+      "build_input_sha256": "fc9f39f50bb6175ba8667468620facb224194ab9bdc452bae77fc2482f0bc308",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "uhdmovies": {
       "id": "uhdmovies",
@@ -28356,7 +28736,12 @@
         "sha256": "5195e1ac50ab8e9e7f16df7b6b3d5471f2757cd0436449b9f3953a3b58ec56c6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "3395e1de8045d4713c37524ee90ddbb56393ed53e3fa65e4cd96b0f17d74a7fe"
+      "build_input_sha256": "3395e1de8045d4713c37524ee90ddbb56393ed53e3fa65e4cd96b0f17d74a7fe",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vegamovies": {
       "id": "vegamovies",
@@ -28854,7 +29239,12 @@
         "mangle": false,
         "sha256": "28a4443890c0dbc8d9bde4ed09f0bcfd6982476087184abc8f090c41f14fd9a0"
       },
-      "build_input_sha256": "256c5180f81e6e06ab569e9cb8a27672d2f4a32a635c152bc22d8c2fd75b662f"
+      "build_input_sha256": "256c5180f81e6e06ab569e9cb8a27672d2f4a32a635c152bc22d8c2fd75b662f",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "videasy": {
       "id": "videasy",
@@ -29185,7 +29575,12 @@
         "sha256": "9fbd0bda0f6f851a20e122c4ba871f0fea2e213736a0c9e0316b22fd5a0b1e59"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "71f7cb6d642d6e64fb03dd70cd41e20873aeb221c0cdc2660af856d350fcddd2"
+      "build_input_sha256": "71f7cb6d642d6e64fb03dd70cd41e20873aeb221c0cdc2660af856d350fcddd2",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vidfast": {
       "id": "vidfast",
@@ -29624,7 +30019,12 @@
         "mangle": false,
         "sha256": "03581b3113d37dfdc8a8989eeaabb31c49862c3b7b91c9945a2a95f7e145bbf3"
       },
-      "build_input_sha256": "50841f848ca5f5ce5e4c9695db51961b19ca2a4d5bd3fce8dcda427d3ac2a555"
+      "build_input_sha256": "50841f848ca5f5ce5e4c9695db51961b19ca2a4d5bd3fce8dcda427d3ac2a555",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vidlink": {
       "id": "vidlink",
@@ -30073,7 +30473,12 @@
         "mangle": false,
         "sha256": "0af625b2bf5b499678ae44f653aa04787cb4159d71bc2c407ede9488c1d6815b"
       },
-      "build_input_sha256": "9afc125da9fe6b9abdfc8efbf2c817c2c8d8b446e8c41926b1faa4854541cb8c"
+      "build_input_sha256": "9afc125da9fe6b9abdfc8efbf2c817c2c8d8b446e8c41926b1faa4854541cb8c",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vidlove": {
       "id": "vidlove",
@@ -30383,7 +30788,12 @@
         "sha256": "0e2ad2929afda012f4ffcf6d92028ac83d45124d84d4f293c00e68bc9d04efc8"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "a32ebb6e5e37df0e7bd23b74d1ed6e4c1cbddc41fbe1003d02540ce711dfd3c1"
+      "build_input_sha256": "a32ebb6e5e37df0e7bd23b74d1ed6e4c1cbddc41fbe1003d02540ce711dfd3c1",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vidnest": {
       "id": "vidnest",
@@ -30686,7 +31096,12 @@
         "sha256": "6328d94f8028383d9c0605104687c68bd5882f431709c4b2e3b75cb4b7184310"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "3eef63207764346dc8ae636eadcd4e2e5fc156b4de02fe5619b9b31494f1f1c8"
+      "build_input_sha256": "3eef63207764346dc8ae636eadcd4e2e5fc156b4de02fe5619b9b31494f1f1c8",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vidnest-anime": {
       "id": "vidnest-anime",
@@ -30996,7 +31411,12 @@
         "sha256": "b67ece05f8b749042ee22e6decbd69b2f4efd2c6944397dbf95fac501b1809fa"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7d003f81d8996ccf9ede58ead9664348200e90c6008d897499407aeaba336ca4"
+      "build_input_sha256": "7d003f81d8996ccf9ede58ead9664348200e90c6008d897499407aeaba336ca4",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vidrock": {
       "id": "vidrock",
@@ -31314,7 +31734,12 @@
         "sha256": "4a83ff04c1160c9f90ba2c31d706bdfe2318b3e743409dcfa1dfee8a61e3f010"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7d3666e9ff45352f3e7ffc1cd9d983db8c9951e4c6164432c71056950152d3a5"
+      "build_input_sha256": "7d3666e9ff45352f3e7ffc1cd9d983db8c9951e4c6164432c71056950152d3a5",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vidsrc": {
       "id": "vidsrc",
@@ -31722,7 +32147,12 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "ec9781f6e219066861f00cee16eedae0a220513d52493722cb41bd92e3e6e8f5"
+      "build_input_sha256": "ec9781f6e219066861f00cee16eedae0a220513d52493722cb41bd92e3e6e8f5",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vixsrc": {
       "id": "vixsrc",
@@ -32149,7 +32579,12 @@
         "mangle": false,
         "sha256": "80a618d8c79b10ed9f3a8910a5b10f18756d3e794bd556c4e4de401c5a66755d"
       },
-      "build_input_sha256": "68411a02f1916cdbd2cb941bcc27020a31fd4bfc966592fb72bc5449fdbb743b"
+      "build_input_sha256": "68411a02f1916cdbd2cb941bcc27020a31fd4bfc966592fb72bc5449fdbb743b",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "voiranime": {
       "id": "voiranime",
@@ -32474,7 +32909,12 @@
         "sha256": "502d227b064f4d4f09774b3883dddb0069cf99056eb6f319a2adb324e4ccd9a6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "cd0868f82e923795f61aa595a85fe31482362fc51d7aa839cae91ce52f5ab598"
+      "build_input_sha256": "cd0868f82e923795f61aa595a85fe31482362fc51d7aa839cae91ce52f5ab598",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "voiranime-homes": {
       "id": "voiranime-homes",
@@ -32799,7 +33239,12 @@
         "sha256": "b6dc7c96fca4365d5d3a1fae091e9bf1a1e86e9e57f60d4af3342b98ee4b978a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "d928910578a3e7238acba117f177a9e10dd8ecc5fa136506ae57933701397697"
+      "build_input_sha256": "d928910578a3e7238acba117f177a9e10dd8ecc5fa136506ae57933701397697",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
@@ -33121,7 +33566,12 @@
         "sha256": "74e21a64985fe851e93aa678c49abb29565c9e326c575a48c6ae76cc624b1e89"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "eced378ec67107c39a9530767f30c72aba48610ebb55c76c0a914891523a4eb4"
+      "build_input_sha256": "eced378ec67107c39a9530767f30c72aba48610ebb55c76c0a914891523a4eb4",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "vostfree": {
       "id": "vostfree",
@@ -33573,7 +34023,12 @@
         "mangle": false,
         "sha256": "7df8accd87e7bd5ec0c9e6138dc493fc11109a007c637d2d9c0f1ac43b52b50b"
       },
-      "build_input_sha256": "1fe995b8fe0552518be3f5f29741cf1bbb24756f1a9efcb58c76a87867d972fc"
+      "build_input_sha256": "1fe995b8fe0552518be3f5f29741cf1bbb24756f1a9efcb58c76a87867d972fc",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "waveanime": {
       "id": "waveanime",
@@ -33889,7 +34344,12 @@
         "sha256": "680810c31467782723f64f2325e555b069486dc3fbec0200d3a75e3035f1de5f"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "21db94ee4c8e7ffe5bc0de37d580b8e9c65fc3638bde5469117a13e6de2cc035"
+      "build_input_sha256": "21db94ee4c8e7ffe5bc0de37d580b8e9c65fc3638bde5469117a13e6de2cc035",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "wookafr": {
       "id": "wookafr",
@@ -34454,7 +34914,12 @@
         "mangle": false,
         "sha256": "53dfaf12f3adad82b08584ddba5849ad4f96832189c9958222a67171dfedf127"
       },
-      "build_input_sha256": "9b6486e70439f15ad95c7534b301a10da1e94d23684c94b55b6800e3a918f1c4"
+      "build_input_sha256": "9b6486e70439f15ad95c7534b301a10da1e94d23684c94b55b6800e3a918f1c4",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "xpass": {
       "id": "xpass",
@@ -34765,7 +35230,12 @@
         "sha256": "f0a87e09e2e9bfaa7e491593939b8317f9f5984992c2683937f7e87ca5a37bb6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "37f4287cf4fe41cd625a37220193c7c5a43307fa829fe8d27cce081f2e7655f6"
+      "build_input_sha256": "37f4287cf4fe41cd625a37220193c7c5a43307fa829fe8d27cce081f2e7655f6",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "yflix": {
       "id": "yflix",
@@ -35195,7 +35665,12 @@
         "mangle": false,
         "sha256": "2dc0033a5572d5dbae98fe51c2592a43527854e0c4062608a2194363c40304ff"
       },
-      "build_input_sha256": "65cf89e6e7bf74df6a61e198f5c92ed9bf9422c48eea55724cc9bd5e1b638adb"
+      "build_input_sha256": "65cf89e6e7bf74df6a61e198f5c92ed9bf9422c48eea55724cc9bd5e1b638adb",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "zinkmovies": {
       "id": "zinkmovies",
@@ -35647,7 +36122,12 @@
         "mangle": false,
         "sha256": "1e8cb00561982779035772fe4aa8c271ad35ad7fc09ae6a6a9b8035ddb97cb07"
       },
-      "build_input_sha256": "59c35eecac94092f002596a683db037070973a7b3510e5b2155dbee763da7ccd"
+      "build_input_sha256": "59c35eecac94092f002596a683db037070973a7b3510e5b2155dbee763da7ccd",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "4khdhubnew": {
       "id": "4khdhubnew",
@@ -35979,7 +36459,12 @@
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "33961c46a339aaef7dd723a3c0142cb574e9a2b3be53e352b55f6a9b776d467c"
+      "build_input_sha256": "33961c46a339aaef7dd723a3c0142cb574e9a2b3be53e352b55f6a9b776d467c",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "sekai": {
       "id": "sekai",
@@ -36353,7 +36838,12 @@
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ab9e0ae045a901a387ed8805b39d1c88dba772b72a16618d5c6fb63dbd04489b"
+      "build_input_sha256": "ab9e0ae045a901a387ed8805b39d1c88dba772b72a16618d5c6fb63dbd04489b",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     },
     "toflix": {
       "id": "toflix",
@@ -36679,7 +37169,12 @@
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0d13b3b2953cd815849ed122e476e8a3f353c02c6ddac456bd0fcc0e5a61f869"
+      "build_input_sha256": "0d13b3b2953cd815849ed122e476e8a3f353c02c6ddac456bd0fcc0e5a61f869",
+      "clean_reconstruction_required": true,
+      "legacy_provider_base_role": "compatibility-lkg-only",
+      "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+      "legacy_provider_js_executed_for_reconstruction": false,
+      "clean_reconstruction_marked_at": "2026-08-29T17:52:00+00:00"
     }
   },
   "validation_mode": "quick",
