@@ -38,6 +38,8 @@ on:
       - "scripts/merge_native_reader_learning_failures.py"
       - "scripts/classify_native_reader_ownership.py"
       - "scripts/discover_candidates.py"
+      - "scripts/provider_base_store.py"
+      - "tests/provider_clean_reconstruction_contract_test.py"
       - "scripts/apply_provider_overrides.py"
       - "scripts/provider_patches/**"
       - "tests/brain_cron_full_coverage_test.py"
@@ -98,6 +100,7 @@ jobs:
           python tests/brain_self_architecture_test.py
           python tests/native_reader_provider_retention_policy_test.py
           python tests/native_reader_ownership_policy_test.py
+          python tests/provider_clean_reconstruction_contract_test.py
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
             scripts/run_brain_learning_queue.py \
@@ -181,6 +184,37 @@ jobs:
             --health brain-sandbox/full-health/health-results.json \
             --output brain-sandbox/daily-learning-coverage.json
 
+      - name: Build clean ProviderBase reconstruction stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf staging-reconstruction
+          python scripts/discover_candidates.py \
+            --stage staging-reconstruction \
+            --require-all-upstreams \
+            --clean-reconstruction
+          node engine_v2/scripts/validate-stage-against-catalog.mjs \
+            --catalog provider_catalog.json \
+            --stage staging-reconstruction/candidates.json
+          python scripts/build_provider_runtime_profiles.py \
+            --stage staging-reconstruction \
+            --apply-stage
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging-reconstruction
+          python scripts/validate_override_pipeline.py --stage staging-reconstruction
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('staging-reconstruction/candidates.json','utf8'));
+          const rows=(x.candidates||[]).filter(r=>r && r.provider_base_reconstruction_required===true);
+          if(rows.length!==95) throw new Error('clean reconstruction stage must initially cover all 95 providers, got '+rows.length);
+          if(rows.some(r=>r.candidate_code_origin!=='new-niakvio-clean-seed')) {
+            throw new Error('clean reconstruction stage contains a legacy executable seed');
+          }
+          if(rows.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
+            throw new Error('legacy/upstream JS execution escaped into clean reconstruction stage');
+          }
+          console.log('FIELD_CLEAN_RECONSTRUCTION_STAGE required='+rows.length);
+          NODE
+
       - name: Run adaptive Learning provider queue
         shell: bash
         env:
@@ -188,7 +222,7 @@ jobs:
         run: |
           set -euo pipefail
           args=(python scripts/run_brain_learning_queue.py
-            --stage staging
+            --stage staging-reconstruction
             --health brain-sandbox/full-health/health-results.json
             --previous-state brain-learning-input/previous.json
             --output-dir brain-sandbox/health-output
@@ -264,7 +298,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/build_brain_repair_proposal.py \
-            --stage staging/candidates.json \
+            --stage staging-reconstruction/candidates.json \
             --repair-report brain-sandbox/health-output/repair-report.json \
             --overrides provider-overrides.json \
             --output brain-learning-output/provider-overrides.proposed.json \
