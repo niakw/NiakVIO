@@ -33,7 +33,7 @@ concurrency_block = workflow[workflow.index("concurrency:"):workflow.index("\njo
 assert "github.run_id" not in concurrency_block, (
     "manual provider runs must not escape the shared main-writer concurrency lane"
 )
-assert "group: nuvio-provider-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}" in concurrency_block
+assert "group: nuvio-provider-publish-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}" in concurrency_block
 assert "cancel-in-progress: ${{ github.event_name == 'pull_request' }}" in concurrency_block
 publish_block = workflow[workflow.index("\n  publish:\n"):]
 assert "if: github.event_name != 'pull_request'" in publish_block, (

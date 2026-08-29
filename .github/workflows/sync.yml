@@ -120,7 +120,7 @@ permissions:
 concurrency:
   # Any execution that can publish to main shares the same writer lane.
   # PRs never publish and may supersede only an older run for the same PR.
-  group: nuvio-provider-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+  group: nuvio-provider-publish-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
