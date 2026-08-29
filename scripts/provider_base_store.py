@@ -124,6 +124,34 @@ def assert_base_layering(data: bytes, provider_id: str) -> None:
         )
 
 
+def strip_adaptive_runtime_wrappers(text: str) -> tuple[str, int]:
+    """Remove only owned adaptive runtime wrappers from legacy provider bytes."""
+    markers = (
+        "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
+        "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5:",
+    )
+    call = '})(typeof globalThis!=="undefined"?globalThis:this,'
+    removed = 0
+    while True:
+        starts = [text.find(marker) for marker in markers]
+        starts = [value for value in starts if value >= 0]
+        if not starts:
+            break
+        start = min(starts)
+        call_at = text.find(call, start)
+        end = text.find(");", call_at) if call_at >= 0 else -1
+        if call_at < 0 or end < 0:
+            raise ValueError("unterminated adaptive runtime recovery wrapper in ProviderBase")
+        end += 2
+        if text[end:end + 2] == "\r\n":
+            end += 2
+        elif text[end:end + 1] in ("\r", "\n"):
+            end += 1
+        text = text[:start] + text[end:]
+        removed += 1
+    return text.rstrip(), removed
+
+
 def validate_base(data: bytes, provider_id: str) -> None:
     # A ProviderBase must remain an independently valid provider implementation.
     assert_base_layering(data, provider_id)
@@ -174,12 +202,13 @@ def clean_base_from_published(provider_id: str, published_data: bytes) -> tuple[
     """Remove every owned derived layer while preserving durable provider logic."""
     published_text = published_data.decode("utf-8", errors="strict")
     base_text, stripped_core = _strip_generated_core_tail(published_text)
+    base_text, stripped_adaptive = strip_adaptive_runtime_wrappers(base_text)
     base_data = base_text.encode("utf-8")
     prefix, body = split_owned_prefix_bootstraps(base_data)
     if prefix:
         base_data = body
     assert_base_layering(base_data, provider_id)
-    return base_data, bool(stripped_core or prefix)
+    return base_data, bool(stripped_core or stripped_adaptive or prefix)
 
 
 def persist_base_from_published(provider_id: str, published_data: bytes) -> tuple[str, str, bool]:
