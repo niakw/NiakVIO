@@ -7,8 +7,8 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-TV_READER = ROOT / ".github/workflows/native-tv-route-reader.yml"
-MOBILE_ANDROID = ROOT / ".github/workflows/native-mobile-android-reader.yml"
+TV_READER = ROOT / ".github/workflows/native-mobile-android-reader.yml"
+MOBILE_ANDROID = TV_READER
 MOBILE_IOS = ROOT / ".github/workflows/native-mobile-ios-reader.yml"
 PREPARE_IOS = ROOT / "scripts/prepare_native_ios_reader_acceptance.py"
 DESKTOP_READER = ROOT / ".github/workflows/native-desktop-reader-acceptance.yml"
@@ -30,6 +30,7 @@ MANIFEST = ROOT / "manifest.json"
 
 for retired in (
     ".github/workflows/native-android-route-reader.yml",
+    ".github/workflows/native-tv-route-reader.yml",
     ".github/workflows/native-corpus-device-lab.yml",
     ".github/workflows/native-corpus-visual-sublab.yml",
     ".github/workflows/permanent-android-real-client.yml",
@@ -93,7 +94,22 @@ assert 'NIAKVIO_REGRESSION_STREAM_SCOPE: "2"' in tv_reader
 assert "--streams all" not in tv_reader
 assert "native-tv-route-representative-${{ github.run_id }}" in tv_reader
 
+def artifact_block(workflow: str, marker: str) -> str:
+    start = workflow.index(marker)
+    end = workflow.find("\n      - name:", start + len(marker))
+    return workflow[start:] if end < 0 else workflow[start:end]
+
+for workflow, marker in (
+    (tv_reader, 'name: native-tv-route-representative-${{ github.run_id }}'),
+    (mobile_android, 'name: native-mobile-android-routes-${{ github.run_id }}'),
+    (mobile_ios, 'name: native-mobile-ios-routes-${{ github.run_id }}'),
+    (desktop_reader, 'name: native-desktop-reader-${{ matrix.os_name }}-routes-${{ github.run_id }}'),
+):
+    assert "retention-days: 8" in artifact_block(workflow, marker), marker
+
 assert "mobile-android-reader:" in mobile_android
+assert "name: Native Android TV + Mobile reader acceptance" in mobile_android
+assert "resolve_tv:" in mobile_android and "resolve_mobile:" in mobile_android
 assert "NuvioMedia/NuvioMobile.git" in mobile_android
 assert "native-mobile-android-routes-${{ github.run_id }}" in mobile_android
 
@@ -103,6 +119,8 @@ assert "DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer" in mobil
 assert "Build official unsigned device IPA before Lab instrumentation" in mobile_ios
 assert "./scripts/build-ios-ipa.sh" in mobile_ios
 assert "NIAKVIO_IOS_LAB_MODE" in mobile_ios
+assert "workflow_dispatch:\n    inputs:" in mobile_ios
+assert 'schedule:\n    - cron: "15 18 * * 6"' in mobile_ios
 assert "NIAKVIO_IOS_TARGET_PROVIDER" in mobile_ios
 assert "NIAKVIO_IOS_SESSION_STATE" in mobile_ios
 assert "inputs.mode != 'learning'" in mobile_ios
@@ -201,6 +219,6 @@ assert len(stageable) >= 80
 print(
     "native device lab contract passed: "
     f"providers={len(stageable)} type_bounded_1_1_1=true "
-    "tv_single_job=true mobile_android_separate=true mobile_ios_separate=true "
+    "tv_single_job=true android_tv_mobile_combined=true mobile_ios_separate=true "
     "brain_decoupled=true desktop_native=true targeted_manual=true"
 )

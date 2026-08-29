@@ -2,8 +2,8 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-TV = (ROOT / ".github/workflows/native-tv-route-reader.yml").read_text(encoding="utf-8")
 ANDROID = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
+TV = ANDROID
 IOS = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
 prime = (ROOT / "scripts/prime_android_lab_adb.sh").read_text(encoding="utf-8")
 prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(encoding="utf-8")
@@ -45,4 +45,4 @@ assert "iphonesimulator" in (ROOT / "scripts/run_native_corpus_ios_suite.sh").re
 assert "NuvioPlayerBridgeFactory" in (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")
 assert "PluginRepository.executeScraper" in (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")
 
-print("native platform persistence contract passed: tv_single_boot=true android_single_boot=true ios_simulator=true")
+print("native platform persistence contract passed: android_tv_mobile_one_workflow=true tv_single_boot=true android_single_boot=true ios_simulator=true")

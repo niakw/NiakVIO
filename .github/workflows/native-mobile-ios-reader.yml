@@ -2,8 +2,6 @@ name: Native Mobile iOS reader acceptance
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "15 18 * * 6"
     inputs:
       mode:
         description: Full acceptance or quick provider Learning probe
@@ -18,6 +16,13 @@ on:
         required: false
         default: ""
         type: string
+  schedule:
+    - cron: "15 18 * * 6"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/triggers/full-native-lab-validation.json"
 
 permissions:
   contents: read
@@ -169,5 +174,5 @@ jobs:
           path: |
             mobile-ios-native-corpus*.log
             mobile-ios-diagnostics/mobile-ios-route-*-brain.json
-          retention-days: 1
+          retention-days: 8
           if-no-files-found: warn
