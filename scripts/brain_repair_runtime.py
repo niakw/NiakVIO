@@ -286,8 +286,13 @@ def wrap_matching_profiles(base_matching: Callable[..., list[str]]) -> Callable[
 
 def _budget_error(candidate: dict[str, Any], plan_key: str, plan: dict[str, Any]) -> str | None:
     state = _public_state(candidate, plan_key)
-    production = policy().get("production") if isinstance(policy().get("production"), dict) else {}
-    if state["mutationCount"] >= int(production.get("maxMutationsPerProvider") or 2):
+    current_policy = policy()
+    production = current_policy.get("production") if isinstance(current_policy.get("production"), dict) else {}
+    mutation_limit = int(production.get("maxMutationsPerProvider") or 2)
+    if str(__import__("os").environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning":
+        learning_lab = current_policy.get("learningLab") if isinstance(current_policy.get("learningLab"), dict) else {}
+        mutation_limit = min(mutation_limit, max(1, int(learning_lab.get("maxRepairAttemptsPerProvider") or 1)))
+    if state["mutationCount"] >= mutation_limit:
         return "brain_mutation_budget_exhausted"
     signature = str(plan.get("signature") or "")
     repeats = int((state.get("signatureCounts") or {}).get(signature) or 0) if signature else 0
