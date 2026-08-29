@@ -4,11 +4,12 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import sys
 from pathlib import Path
 
-from native_media_type_contract import fixture_media_type
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from native_media_type_contract import fixture_media_type  # noqa: E402
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 
 
