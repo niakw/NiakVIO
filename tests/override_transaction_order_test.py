@@ -35,12 +35,16 @@ def main() -> int:
     cleanup = source.index(CLEANUP_LINE, apply_start)
     profiles = source.index('profiles = config.get("patch_profiles") or {}', apply_start)
     per_provider = source.index("for patch_script in patch_scripts if phase == \"discovery\" else []:", apply_start)
-    global_integrity = source.index("if phase == \"discovery\":", per_provider)
+    global_integrity_guard = 'if phase == "discovery" and include_global_core:'
+    global_integrity = source.index(global_integrity_guard, per_provider)
     assert cleanup < profiles < per_provider < global_integrity, (
         cleanup,
         profiles,
         per_provider,
         global_integrity,
+    )
+    assert "include_global_core: bool = True" in source[apply_start:global_integrity], (
+        "ProviderBase/Core boundary must stay explicit in apply_overrides"
     )
 
     module = load_module()
