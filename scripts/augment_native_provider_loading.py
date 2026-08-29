@@ -9,8 +9,8 @@ code must first travel through the same repository/manager path used by the clie
 
 Manifest-disabled providers are still loaded and executed individually. Providers
 that the official client rejects for the current platform are recorded as platform
-skips. The request-contract postprocessor runs first and owns declared/capability
-probe routes; this postprocessor preserves those routes unchanged.
+skips. The request-contract postprocessor runs first and owns the declared media route;
+this postprocessor preserves that route unchanged.
 
 Normal evidence accepts only an exact 40-hex raw.githubusercontent.com revision.
 Repair sandboxes may explicitly opt into a loopback-only HTTP repository so the
@@ -280,9 +280,13 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
 
 
 def replace_official_execution(text: str, client: str) -> str:
+    # Replace only the provider invocation itself. The native corpus may wrap that
+    # invocation in withTimeout(...); keeping the outer wrapper preserves the
+    # per-provider runtime budget while still routing execution through the
+    # official Nuvio repository layer.
     if client == "tv":
         pattern = re.compile(
-            r"val rows = runtime\.executePlugin\(\s*"
+            r"runtime\.executePlugin\(\s*"
             r"code = code\(provider\.asset\),\s*"
             r"tmdbId = tmdbId,\s*"
             r"mediaType = requestMediaType,\s*"
@@ -292,11 +296,11 @@ def replace_official_execution(text: str, client: str) -> str:
             r"\)",
             flags=re.S,
         )
-        replacement = "val rows = officialPluginManager.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode)"
+        replacement = "officialPluginManager.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode)"
     else:
         code_expr = r"File\(root, provider\.asset\)\.readText\(\)" if client == "desktop" else r"code\(provider\.asset\)"
         pattern = re.compile(
-            r"val rows = PluginRuntime\.executePlugin\(\s*"
+            r"PluginRuntime\.executePlugin\(\s*"
             rf"code = {code_expr},\s*"
             r"tmdbId = tmdbId,\s*"
             r"mediaType = requestMediaType,\s*"
@@ -306,7 +310,7 @@ def replace_official_execution(text: str, client: str) -> str:
             r"\)",
             flags=re.S,
         )
-        replacement = "val rows = PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()"
+        replacement = "PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()"
     text, count = pattern.subn(replacement, text, count=1)
     if count != 1:
         raise SystemExit(f"provider-loading official execution rewrite client={client} count={count}")
