@@ -23,6 +23,7 @@ import hashlib
 import json
 import os
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +66,28 @@ def _git_bytes(path: str) -> bytes:
         capture_output=True,
     )
     return result.stdout
+
+
+def _baseline_matches_checked_out_head(baseline_path: Path) -> bool:
+    """A preservation baseline is valid only for the HEAD it was captured from."""
+    try:
+        current_head_manifest = _git_bytes("manifest.json")
+    except subprocess.CalledProcessError:
+        return False
+    return baseline_path.read_bytes() == current_head_manifest
+
+
+def _rematerialize_current_core_after_restore() -> None:
+    """Rebuild deterministic publication state after provider-state restore."""
+    commands = (
+        [sys.executable, "scripts/build_provider_runtime_profiles.py"],
+        [sys.executable, "scripts/reapply_published_overrides.py"],
+        [sys.executable, "scripts/generate_language_manifests.py"],
+        [sys.executable, "scripts/prune_unreferenced_providers.py"],
+        [sys.executable, "scripts/reapply_published_overrides.py", "--check"],
+    )
+    for command in commands:
+        subprocess.run(command, cwd=legacy.ROOT, check=True)
 
 
 def _write_json(path: Path, value: dict[str, Any]) -> None:
@@ -188,6 +211,12 @@ def restore_inconclusive_previous_state() -> list[str]:
     baseline_path = Path(baseline_path_raw)
     if not baseline_path.is_file():
         raise RuntimeError(f"{_BASELINE_ENV} does not point to a file: {baseline_path}")
+    if not _baseline_matches_checked_out_head(baseline_path):
+        print(
+            "FIELD_ACTIVATION_PRESERVATION_BASELINE_STALE "
+            "action=validate_current_head_without_restore"
+        )
+        return []
 
     baseline_main = _load_json(baseline_path)
     current_main = _load_json(legacy.MAIN)
@@ -250,6 +279,7 @@ def restore_inconclusive_previous_state() -> list[str]:
         _write_json(legacy.OVERRIDES, current_overrides)
         _write_json(legacy.PROVENANCE, current_provenance)
         print("FIELD_ACTIVATION_INCONCLUSIVE_STATE_RESTORED count=" + str(len(restored)) + " values=" + ",".join(restored))
+        _rematerialize_current_core_after_restore()
     return restored
 
 
