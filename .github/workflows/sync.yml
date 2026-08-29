@@ -49,6 +49,7 @@ on:
       - 'package-lock.json'
       - 'tests/override_transaction_order_test.py'
       - 'tests/provider_base_layering_contract_test.py'
+      - 'tests/provider_clean_reconstruction_contract_test.py'
       - 'tests/publication_contract_fingerprint_test.py'
       - 'tests/scoped_playback_context_regression_test.py'
       - 'tests/core_repair_type_architecture_test.py'
@@ -102,6 +103,7 @@ on:
       - 'package-lock.json'
       - 'tests/override_transaction_order_test.py'
       - 'tests/provider_base_layering_contract_test.py'
+      - 'tests/provider_clean_reconstruction_contract_test.py'
       - 'tests/publication_contract_fingerprint_test.py'
       - 'tests/scoped_playback_context_regression_test.py'
       - 'tests/core_repair_type_architecture_test.py'
@@ -180,12 +182,13 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Normalize legacy ProviderBases in provider pipeline
+      - name: Mark ProviderBases requiring clean reconstruction
         shell: bash
         run: |
           set -euo pipefail
           python scripts/provider_base_store.py repair-legacy
           python scripts/provider_base_store.py validate
+          python tests/provider_clean_reconstruction_contract_test.py
 
       - name: Validate ARCHI2 control plane
         shell: bash
