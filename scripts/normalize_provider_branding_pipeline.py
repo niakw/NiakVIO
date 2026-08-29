@@ -22,7 +22,7 @@ CONST = 'GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_br
 PRESENTATION_CONST = 'GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"'
 BRANDING_MARKER = '    "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",\n'
 PRESENTATION_MARKER = '    "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",\n'
-TAIL_DECLARATION = "GENERATED_CORE_TAIL_MARKERS = (\\n"
+TAIL_DECLARATION = "GENERATED_CORE_TAIL_MARKERS = (\n"
 ANCHOR = '''        if text != before:
             applied.append({
                 "type": "patch_script",
@@ -64,7 +64,7 @@ def _generated_tail_block(text: str) -> tuple[int, int, str]:
     if start < 0:
         raise ValueError("generated Core tail marker tuple missing")
     body_start = start + len(TAIL_DECLARATION)
-    end = text.find(")\\n", body_start)
+    end = text.find(")\n", body_start)
     if end < 0:
         raise ValueError("generated Core tail marker tuple unterminated")
     return body_start, end, text[body_start:end]

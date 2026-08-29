@@ -732,8 +732,8 @@ def harden_generated_apply(text: str) -> str:
     if "terminal_core_markers = (" not in text or "NUVIO_TV_PLAYABLE_FIRST_V1" not in text:
         raise ValueError("owned generated export-boundary markers are missing")
     required_terminal_order = (
-        '        "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",\\n'
-        '        "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",\\n'
+        '        "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",\n'
+        '        "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",\n'
     )
     if required_terminal_order not in text:
         raise ValueError("canonical media-type resolver is missing from generated export-boundary markers")
