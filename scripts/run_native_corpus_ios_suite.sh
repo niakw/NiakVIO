@@ -55,36 +55,22 @@ xcrun simctl install "$UDID" "$APP"
 
 rm -f "$LOG"
 set +e
-SIMCTL_CHILD_NIAKVIO_IOS_LAB=1 SIMCTL_CHILD_NIAKVIO_MANIFEST_URL="$MANIFEST_URL"   xcrun simctl launch --console-pty "$UDID" "$BUNDLE_ID" >"$LOG" 2>&1 &
-LAUNCH_PID=$!
+# --console is intentionally foreground/non-PTY in CI. On macOS 26 the PTY
+# variant can return after launch while the simulator app is still running,
+# which made the Lab kill its own evidence collection after the first marker.
+SIMCTL_CHILD_NIAKVIO_IOS_LAB=1 SIMCTL_CHILD_NIAKVIO_MANIFEST_URL="$MANIFEST_URL" \
+  xcrun simctl launch --console "$UDID" "$BUNDLE_ID" >"$LOG" 2>&1
+LAUNCH_STATUS=$?
 set -e
 
-STATUS=0
-DONE=0
-for _ in $(seq 1 7200); do
-  if grep -q 'FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=completed' "$LOG" 2>/dev/null; then
-    DONE=1
-    STATUS=0
-    break
-  fi
-  if grep -q 'FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error' "$LOG" 2>/dev/null; then
-    DONE=1
-    STATUS=2
-    break
-  fi
-  if ! kill -0 "$LAUNCH_PID" 2>/dev/null; then
-    wait "$LAUNCH_PID" || STATUS=$?
-    break
-  fi
-  sleep 1
-done
-
-kill "$LAUNCH_PID" >/dev/null 2>&1 || true
-wait "$LAUNCH_PID" >/dev/null 2>&1 || true
 cat "$LOG"
 
-if [[ "$DONE" -ne 1 ]]; then
-  echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=no_terminal_marker" >&2
-  STATUS=2
+if grep -q 'FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=completed' "$LOG"; then
+  exit 0
 fi
-exit "$STATUS"
+if grep -q 'FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error' "$LOG"; then
+  exit 2
+fi
+
+echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=app_exited_without_terminal_marker launch_status=$LAUNCH_STATUS" | tee -a "$LOG" >&2
+exit 2

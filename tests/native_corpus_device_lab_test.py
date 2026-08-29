@@ -22,6 +22,7 @@ RESOLVE_REPOSITORY = ROOT / "scripts/resolve_native_repository.sh"
 READER_CODEGEN = ROOT / "scripts/native_player_diagnostics_codegen.py"
 READER_GATE = ROOT / "scripts/gate_native_reader_result.cjs"
 MOBILE_SUITE = ROOT / "scripts/run_native_corpus_mobile_suite.sh"
+IOS_SUITE = ROOT / "scripts/run_native_corpus_ios_suite.sh"
 TV_SUITE = ROOT / "scripts/run_native_corpus_tv_suite.sh"
 COLLECTION_ANALYZER = ROOT / "scripts/analyze_native_corpus_collection.cjs"
 SUMMARIZER = ROOT / "scripts/summarize_native_corpus_suite.cjs"
@@ -55,6 +56,7 @@ resolve_repository = RESOLVE_REPOSITORY.read_text(encoding="utf-8")
 reader_codegen = READER_CODEGEN.read_text(encoding="utf-8")
 reader_gate = READER_GATE.read_text(encoding="utf-8")
 mobile_suite = MOBILE_SUITE.read_text(encoding="utf-8")
+ios_suite = IOS_SUITE.read_text(encoding="utf-8")
 tv_suite = TV_SUITE.read_text(encoding="utf-8")
 collection_analyzer = COLLECTION_ANALYZER.read_text(encoding="utf-8")
 summarizer = SUMMARIZER.read_text(encoding="utf-8")
@@ -80,7 +82,7 @@ for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
     assert "\n  pull_request:" not in workflow
     assert "\n  push:" not in workflow
     assert "workflow_dispatch:" in workflow
-    assert "\n  schedule:" in workflow and "cron:" in workflow
+    assert "\n  schedule:" not in workflow
 
 assert "matrix:" not in tv_reader
 assert tv_reader.count("tv-route-reader:") == 1
@@ -99,6 +101,9 @@ assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
 assert "analyze_native_ios_results.py" in mobile_ios
 assert "native-mobile-ios-routes-${{ github.run_id }}" in mobile_ios
+assert "simctl launch --console " in ios_suite
+assert "simctl launch --console-pty" not in ios_suite
+assert "app_exited_without_terminal_marker" in ios_suite
 
 prepare_ios_tree = ast.parse(prepare_ios)
 fixture_list_function = next(
