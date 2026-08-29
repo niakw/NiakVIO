@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Stage every non-P2P provider declared by the configured upstream manifests.
+"""Stage every non-P2P provider declared by configured upstream manifests.
 
-The published manifest and provider directory are never modified by this script.
-All downloaded candidates live under staging/ until a separate read-only test job
-has completed and the promotion policy accepts them.
+Upstream JavaScript is knowledge input only: it may reveal metadata, routes,
+domains and exclusion signals, but it is never executed, patched into a runtime
+candidate, persisted as ProviderBase, or published. Executable candidates are
+always built from an existing NiakVIO ProviderBase or a fresh NiakVIO-owned
+clean seed.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides
+from provider_base_store import build_clean_provider_seed, resolve_base
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
     record_pending_source, validate_manifest_quality, write_pending,
@@ -34,7 +37,15 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCES_PATH = ROOT / "sources.json"
 DEFAULT_STAGE = ROOT / "staging"
 LKG_PATH = ROOT / "provider-lkg.json"
-USER_AGENT = "Nuvio-Curated-Discovery/5.12 (+GitHub Actions)"
+PROVENANCE_PATH = ROOT / "PROVENANCE.json"
+OVERRIDES_PATH = ROOT / "provider-overrides.json"
+USER_AGENT = "Nuvio-Curated-Discovery/5.13 (+GitHub Actions)"
+URL_RE = re.compile(r"https?://[^\\s\"'\`<>\\)]+", re.I)
+INFRASTRUCTURE_HOSTS = {
+    "api.themoviedb.org", "image.tmdb.org", "api.jikan.moe",
+    "graphql.anilist.co", "api.tvmaze.com", "api.github.com",
+    "raw.githubusercontent.com", "github.com",
+}
 
 
 def fetch_bytes(url: str, attempts: int = 3, timeout: int = 35) -> bytes:
@@ -110,6 +121,66 @@ def exclusion_reason(entry: dict[str, Any], data: bytes | None, exclusions: dict
     return None
 
 
+def observed_site_from_upstream(data: bytes, provider_id: str) -> str | None:
+    """Extract a provider-looking site hint without importing upstream code."""
+    text = data[:2_000_000].decode("utf-8", errors="ignore")
+    token = re.sub(r"[^a-z0-9]", "", provider_id.casefold())
+    candidates: list[tuple[int, str]] = []
+    for raw in URL_RE.findall(text):
+        raw = raw.rstrip(".,;")
+        try:
+            parsed = urllib.parse.urlparse(raw)
+        except ValueError:
+            continue
+        host = (parsed.hostname or "").casefold()
+        if not host or host in INFRASTRUCTURE_HOSTS:
+            continue
+        normalized = re.sub(r"[^a-z0-9]", "", host)
+        score = 2 if token and len(token) >= 4 and token in normalized else 1
+        origin = f"{parsed.scheme}://{host}"
+        candidates.append((score, origin))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda row: (-row[0], row[1]))
+    return candidates[0][1]
+
+
+def known_site_for_provider(
+    provider_id: str,
+    raw_upstream: bytes,
+    overrides: dict[str, Any],
+) -> str | None:
+    patch = (overrides.get("provider_patches") or {}).get(provider_id, {})
+    if isinstance(patch, dict):
+        for key in ("official_site", "official_api", "official_hub"):
+            value = str(patch.get(key) or "").strip()
+            if value:
+                return value
+    return observed_site_from_upstream(raw_upstream, provider_id)
+
+
+def executable_seed(
+    provider_id: str,
+    entry: dict[str, Any],
+    raw_upstream: bytes,
+    provenance_rows: dict[str, Any],
+    overrides: dict[str, Any],
+) -> tuple[bytes, str, str | None]:
+    previous = provenance_rows.get(provider_id)
+    if isinstance(previous, dict):
+        path, _digest = resolve_base(provider_id, previous, require=False)
+        if path is not None:
+            return path.read_bytes(), "existing-niakvio-provider-base", known_site_for_provider(
+                provider_id, raw_upstream, overrides
+            )
+    site = known_site_for_provider(provider_id, raw_upstream, overrides)
+    return (
+        build_clean_provider_seed(provider_id, entry, known_site=site),
+        "new-niakvio-clean-seed",
+        site,
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, default=DEFAULT_STAGE)
@@ -122,6 +193,14 @@ def main() -> int:
 
     config = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
     exclusions = config.get("exclusions", {})
+    overrides = json.loads(OVERRIDES_PATH.read_text(encoding="utf-8"))
+    try:
+        provenance = json.loads(PROVENANCE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        provenance = {"providers": {}}
+    provenance_rows = provenance.get("providers") if isinstance(provenance, dict) else {}
+    if not isinstance(provenance_rows, dict):
+        provenance_rows = {}
     stage = args.stage.resolve()
     if stage.exists():
         shutil.rmtree(stage)
@@ -245,13 +324,20 @@ def main() -> int:
                     continue
 
                 upstream_digest = hashlib.sha256(data).hexdigest()
-                data, applied_patches = apply_overrides(provider_id, data)
-                validate_javascript(data, provider_url)
-                local_path.write_bytes(data)
+                seed, code_origin, observed_site = executable_seed(
+                    provider_id,
+                    entry,
+                    data,
+                    provenance_rows,
+                    overrides,
+                )
+                candidate_data, applied_patches = apply_overrides(provider_id, seed)
+                validate_javascript(candidate_data, f"niakvio:{provider_id}")
+                local_path.write_bytes(candidate_data)
                 subprocess.run([
                     "node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(local_path)
                 ], check=True, capture_output=True, text=True)
-                digest = hashlib.sha256(data).hexdigest()
+                digest = hashlib.sha256(candidate_data).hexdigest()
                 candidates.append(
                     {
                         "key": f"{source_key}:{upstream_id}",
@@ -266,11 +352,15 @@ def main() -> int:
                         "upstream_id": upstream_id,
                         "canonical_id": provider_id,
                         "provider_url": provider_url,
+                        "observed_upstream_site": observed_site,
                         "local_path": str(local_path.relative_to(stage)),
                         "sha256": digest,
                         "upstream_sha256": upstream_digest,
+                        "upstream_code_role": "knowledge-only",
+                        "upstream_code_executed": False,
+                        "candidate_code_origin": code_origin,
                         "local_patches": applied_patches,
-                        "bytes": len(data),
+                        "bytes": len(candidate_data),
                         "metadata": entry,
                     }
                 )
