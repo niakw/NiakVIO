@@ -91,6 +91,8 @@ def provider_literal(providers: list[dict]) -> str:
 def common_fixture_values(fixture: dict) -> dict[str, str]:
     season = fixture.get("season")
     episode = fixture.get("episode")
+    config = load_json(CORPUS)
+    provider_timeout_ms = max(5_000, min(int(config.get("provider_timeout_ms") or 25_000), 120_000))
     return {
         "slug": kotlin_string(fixture["slug"]),
         "tmdb": kotlin_string(fixture.get("tmdbId") or ""),
@@ -98,6 +100,7 @@ def common_fixture_values(fixture: dict) -> dict[str, str]:
         "title": kotlin_string(fixture.get("title") or fixture["slug"]),
         "season": "null" if season in (None, "") else str(int(season)),
         "episode": "null" if episode in (None, "") else str(int(episode)),
+        "provider_timeout_ms": str(provider_timeout_ms),
     }
 
 
@@ -303,14 +306,16 @@ class NiakvioNativeCorpusDesktopTest {{
         for (provider in providers) {{
             val started = System.currentTimeMillis()
             try {{
-                val rows = PluginRuntime.executePlugin(
-                    code = File(root, provider.asset).readText(),
-                    tmdbId = tmdbId,
-                    mediaType = mediaType,
-                    season = season,
-                    episode = episode,
-                    scraperId = provider.id,
-                )
+                val rows = kotlinx.coroutines.withTimeout(undefinedL) {
+                    PluginRuntime.executePlugin(
+                        code = File(root, provider.asset).readText(),
+                        tmdbId = tmdbId,
+                        mediaType = mediaType,
+                        season = season,
+                        episode = episode,
+                        scraperId = provider.id,
+                    )
+                }
                 emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
                     val hint = humanMediaHint(row.url)
@@ -387,14 +392,16 @@ class {klass} {{
         for (provider in providers) {{
             val started = System.currentTimeMillis()
             try {{
-                val rows = {execute}(
-                    code = code(provider.asset),
-                    tmdbId = tmdbId,
-                    mediaType = mediaType,
-                    season = season,
-                    episode = episode,
-                    scraperId = provider.id,
-                )
+                val rows = kotlinx.coroutines.withTimeout(undefinedL) {{
+                    {execute}(
+                        code = code(provider.asset),
+                        tmdbId = tmdbId,
+                        mediaType = mediaType,
+                        season = season,
+                        episode = episode,
+                        scraperId = provider.id,
+                    )
+                }}
                 emit("FIELD_NATIVE_RESULT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
                     val hint = humanMediaHint(row.url)
