@@ -18,7 +18,6 @@ import json
 from typing import Any
 
 MARKER = "NUVIO_GLOBAL_STREAM_IDENTITY_V1"
-TMDB_KEY = "1865f43a0549ca50d341dd9ab8b29f49"
 
 
 def _strip_existing(text: str) -> str:
