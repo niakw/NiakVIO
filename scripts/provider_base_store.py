@@ -236,6 +236,59 @@ def persist_base_from_seed(provider_id: str, seed_data: bytes) -> tuple[str, str
     return persist_base_from_published(provider_id, rebuilt)
 
 
+def build_clean_provider_seed(
+    provider_id: str,
+    manifest_entry: dict[str, Any] | None = None,
+    *,
+    known_site: str | None = None,
+) -> bytes:
+    """Create NiakVIO-owned provider code without importing upstream JavaScript.
+
+    Upstream manifests/code may contribute metadata and route knowledge, but
+    executable ProviderBase bytes always start from NiakVIO-owned source.
+    A brand-new provider is intentionally inert until Learning/Deep reconstructs
+    and proves a provider-specific resolver.
+    """
+    entry = manifest_entry if isinstance(manifest_entry, dict) else {}
+    supported = [
+        str(value).strip().casefold()
+        for value in entry.get("supportedTypes") or []
+        if str(value).strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    supported = list(dict.fromkeys(supported))
+    display_name = str(entry.get("name") or provider_id).strip() or provider_id
+    metadata = {
+        "providerId": canonical_id(provider_id),
+        "displayName": display_name,
+        "knownSite": str(known_site or "").strip() or None,
+        "supportedTypes": supported,
+        "reconstructionState": "needs-learning-repair",
+        "authoring": "niakvio-owned",
+        "upstreamCodeEmbedded": False,
+    }
+    payload = json.dumps(metadata, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    source = (
+        '"use strict";\n\n'
+        '/* NIAKVIO_PROVIDER_BASE_OWNED_V1 */\n'
+        f'const NIAKVIO_PROVIDER_META = Object.freeze({payload});\n'
+        'async function getStreams(_tmdbId, _mediaType, _season, _episode) { return []; }\n'
+        'module.exports = { getStreams, __niakvioProviderBase: NIAKVIO_PROVIDER_META };\n'
+    )
+    return source.encode("utf-8")
+
+
+def persist_clean_provider_seed(
+    provider_id: str,
+    manifest_entry: dict[str, Any] | None = None,
+    *,
+    known_site: str | None = None,
+) -> tuple[str, str, bool]:
+    return persist_base_from_seed(
+        provider_id,
+        build_clean_provider_seed(provider_id, manifest_entry, known_site=known_site),
+    )
+
+
 def _snapshot_seed(
     registry: dict[str, Any],
     provider_id: str,
