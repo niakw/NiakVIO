@@ -214,6 +214,23 @@ def run(cmd: list[str], *, env: dict[str, str] | None, deadline: float, cwd: Pat
         raise RuntimeError(f"command failed ({completed.returncode}): {' '.join(cmd[:4])}")
     return completed
 
+def route_evidence_count(value: Any) -> int:
+    if isinstance(value, list):
+        return sum(route_evidence_count(item) for item in value)
+    if not isinstance(value, dict):
+        return 0
+    count = 0
+    for key, child in value.items():
+        lowered = str(key).casefold()
+        if lowered in {"official_site", "site_final_url", "validated_api", "terminal_url", "resolved_domain"} and child:
+            count += 1
+        elif lowered in {"site_candidates", "api_candidates", "terminal_candidates"} and isinstance(child, list):
+            count += len(child)
+        if isinstance(child, (dict, list)):
+            count += route_evidence_count(child)
+    return count
+
+
 def route_search(provider_id: str, run_dir: Path, deadline: float) -> dict[str, Any]:
     hub_report = run_dir / "provider-hub-report.json"
     fallback_report = run_dir / "provider-hub-search-fallback.json"
@@ -230,10 +247,12 @@ def route_search(provider_id: str, run_dir: Path, deadline: float) -> dict[str, 
         "--apply", "--max-providers", "1", "--timeout", "8",
     ], env=os.environ.copy(), deadline=deadline, allow_fail=True)
     payload = load_json(fallback_report, {})
+    hub_payload = load_json(hub_report, {})
     return {
         "resolverStatus": first.returncode,
         "fallbackStatus": fallback.returncode,
         "fallbackApplied": int(payload.get("applied") or 0),
+        "routeEvidenceCount": route_evidence_count(hub_payload) + route_evidence_count(payload),
     }
 
 def refresh_stage_routes(stage: Path, deadline: float) -> None:
