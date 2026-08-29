@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "dns_preflight": {
+    "enabled": true,
+    "concurrency": 3,
+    "max_domains_per_provider": 12,
+    "query_timeout_ms": 1800,
+    "dns_tries": 1,
+    "http_timeout_ms": 6500,
+    "max_redirects": 3,
+    "max_body_bytes": 131072,
+    "primary_french_isp": "sfr",
+    "fallback_french_isps": [
+      "orange",
+      "free"
+    ],
+    "neutral_resolvers": [
+      "cloudflare",
+      "google"
+    ],
+    "migration_discovery": {
+      "enabled": true,
+      "minimum_confidence": 80,
+      "same_brand_required": true,
+      "automatic_override": false
+    },
+    "resolvers": {
+      "sfr": {
+        "kind": "french_isp",
+        "servers": [
+          "109.0.66.10",
+          "109.0.66.20"
+        ]
+      },
+      "orange": {
+        "kind": "french_isp",
+        "servers": [
+          "80.10.246.2",
+          "80.10.246.129"
+        ]
+      },
+      "free": {
+        "kind": "french_isp",
+        "servers": [
+          "212.27.40.240",
+          "212.27.40.241"
+        ]
+      },
+      "cloudflare": {
+        "kind": "neutral",
+        "servers": [
+          "1.1.1.1",
+          "1.0.0.1"
+        ]
+      },
+      "google": {
+        "kind": "neutral",
+        "servers": [
+          "8.8.8.8",
+          "8.8.4.4"
+        ]
+      }
+    },
+    "remote_probe": {
+      "enabled": true,
+      "provider": "globalping",
+      "api_base": "https://api.globalping.io/v1",
+      "token_env": "GLOBALPING_API_TOKEN",
+      "request_timeout_ms": 15000,
+      "measurement_timeout_ms": 30000,
+      "poll_interval_ms": 1200,
+      "fallback_to_direct": false,
+      "location_magic": {
+        "sfr": [
+          "France+SFR+eyeball",
+          "France+SFR"
+        ],
+        "orange": [
+          "France+Orange+eyeball",
+          "France+Orange"
+        ],
+        "free": [
+          "France+Free+eyeball",
+          "France+Free"
+        ]
+      },
+      "neutral_location_magic": [
+        "France+eyeball",
+        "France"
+      ]
+    }
+  }
+}
