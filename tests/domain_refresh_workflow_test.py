@@ -7,6 +7,12 @@ text = (ROOT / ".github" / "workflows" / "domain-refresh.yml").read_text(encodin
 assert "permissions:\n  contents: read" in text
 assert "persist-credentials: false" in text
 assert "python scripts/resolve_provider_hubs.py" in text
+assert "node scripts/provider_dns_preflight.mjs" in text
+assert "--manifest manifest.json" in text
+assert "--hub-report health-output/provider-hub-report.json" in text
+assert "--all-domains" in text
+assert "health-output/dns-preflight-report.json" in text
+assert "DNS is diagnostic-only and never blocks Health/Repair or publication." in text
 assert "--apply" not in text, "domain observer must never apply migrations"
 assert "git push" not in text and "git commit" not in text, (
     "domain observer must never publish provider state"
@@ -15,6 +21,7 @@ assert "provider_catalog.json" in text and "git diff --exit-code" in text, (
     "domain observation must prove that catalog/manifests/provider state remains unchanged"
 )
 assert "actions/upload-artifact" in text, "domain observations must be exported as CI evidence"
+assert "provider-hub-report.json" in text and "dns-preflight-report.json" in text
 assert ".github/workflows/sync.yml" not in text, (
     "domain observation must not implement or proxy a second publication orchestrator"
 )
