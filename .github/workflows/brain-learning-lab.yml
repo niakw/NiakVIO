@@ -197,7 +197,7 @@ jobs:
           set -euo pipefail
           args=(python scripts/run_brain_learning_queue.py
             --stage staging
-            --health health-report.json
+            --health brain-sandbox/full-health/health-results.json
             --previous-state brain-learning-input/previous.json
             --output-dir brain-sandbox/health-output
             --budget-minutes 60
@@ -239,7 +239,7 @@ jobs:
             --historical-training brain-sandbox/historical-training.json \
             --native-summary brain-learning-input/native-reader-summary.json \
             --targeted-lab-summary brain-sandbox/health-output/targeted-lab-summary.json \
-            --scheduler-state brain-sandbox/health-output/learning-queue-state.json \
+            --learning-queue-state brain-sandbox/health-output/learning-queue-state.json \
             --previous-state brain-learning-input/previous.json \
             --overrides provider-overrides.json
           node engine_v2/tests/repair-brain.test.mjs
@@ -288,10 +288,9 @@ jobs:
             --policy engine_v2/config/brain-policy.json \
             --self-config engine_v2/config/brain-self-evolution.json \
             --workflow .github/workflows/brain-learning-lab.yml \
-            --targeted-lab brain-sandbox/targeted-lab-summary.json \
-            --target-selection brain-sandbox/learning-target-selection.json \
-            --route-report brain-sandbox/health-output/targeted-provider-hub-report.json \
-            --route-fallback brain-sandbox/health-output/targeted-provider-search-fallback.json \
+            --targeted-lab brain-sandbox/health-output/targeted-lab-summary.json \
+            --queue-summary brain-sandbox/health-output/learning-queue-summary.json \
+            --queue-state brain-sandbox/health-output/learning-queue-state.json \
             --output-policy brain-learning-output/brain-policy.proposed.json \
             --summary brain-learning-output/brain-architecture-proposal.json \
             --markdown brain-learning-output/brain-architecture-proposal.md
