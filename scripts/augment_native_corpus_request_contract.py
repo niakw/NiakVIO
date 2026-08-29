@@ -14,13 +14,15 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 CANONICAL = {"movie", "tv", "anime"}
 
-from native_media_type_contract import canonical_media_type, fixture_media_type
+from native_media_type_contract import canonical_media_type, fixture_media_type  # noqa: E402
 
 
 def canonical_type(value: object) -> str:
