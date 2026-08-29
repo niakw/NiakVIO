@@ -130,11 +130,17 @@ minimal_candidate = brain._planner_candidate({
     "metadata": {"supportedTypes": ["movie", "tv"], "rawHomepage": "DROP"},
     "source": "DROP",
 })
-assert minimal_candidate == {
-    "canonical_id": "demo",
-    "upstream_id": "demo-upstream",
-    "metadata": {"supportedTypes": ["movie", "tv"]},
-}
+assert minimal_candidate["canonical_id"] == "demo"
+assert minimal_candidate["upstream_id"] == "demo-upstream"
+assert minimal_candidate["metadata"] == {"supportedTypes": ["movie", "tv"]}
+assert minimal_candidate["provider_base_reconstruction_required"] is False
+assert minimal_candidate["clean_reconstruction_mode"] is False
+assert minimal_candidate["candidate_code_origin"] == ""
+assert minimal_candidate["upstream_code_role"] == "knowledge-only"
+assert minimal_candidate["upstream_code_executed"] is False
+assert minimal_candidate["clean_provider_model"]["knowledgeRole"] == "structured-observation-only"
+assert minimal_candidate["clean_provider_model"]["legacyCodeExecuted"] is False
+assert "DROP" not in json.dumps(minimal_candidate, ensure_ascii=True)
 minimal_result = brain._planner_result({
     "status": "blocked",
     "raw_html": "DROP",
