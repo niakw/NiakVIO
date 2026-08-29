@@ -198,7 +198,7 @@ jobs:
             --output-dir brain-sandbox/health-output
             --budget-minutes 60
             --reserve-minutes 5
-            --stream-safety-cap 40)
+            --stream-safety-cap 2)
           if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi
           "${args[@]}"
           test -s brain-sandbox/health-output/repair-report.json

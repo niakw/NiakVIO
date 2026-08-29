@@ -787,6 +787,7 @@ module.exports = {
   summarizeStream,
   tailText,
   verifyRuntimeContract,
+  runLab,
 };
 
 if (require.main === module) {

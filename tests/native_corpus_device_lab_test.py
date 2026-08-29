@@ -98,6 +98,15 @@ assert "runs-on: macos-26" in mobile_ios
 assert "DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer" in mobile_ios
 assert "Build official unsigned device IPA before Lab instrumentation" in mobile_ios
 assert "./scripts/build-ios-ipa.sh" in mobile_ios
+assert "NIAKVIO_IOS_LAB_MODE" in mobile_ios
+assert "NIAKVIO_IOS_TARGET_PROVIDER" in mobile_ios
+assert "NIAKVIO_IOS_SESSION_STATE" in mobile_ios
+assert "inputs.mode != 'learning'" in mobile_ios
+ios_suite = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
+assert "FIELD_NATIVE_IOS_SESSION state=warm-created" in ios_suite
+assert "FIELD_NATIVE_IOS_SESSION state=warm-reused" in ios_suite
+assert 'MODE="${NIAKVIO_IOS_LAB_MODE:-full}"' in ios_suite
+assert 'mode == "learning" || mode == "quick"' in prepare_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
 assert "analyze_native_ios_results.py" in mobile_ios

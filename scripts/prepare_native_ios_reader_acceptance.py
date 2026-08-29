@@ -39,8 +39,10 @@ import platform.posix.exit
 import platform.posix.getenv
 import kotlin.time.TimeSource
 
-private const val PROVIDER_TIMEOUT_MS = __PROVIDER_TIMEOUT_MS__L
-private const val PLAYER_TIMEOUT_MS = 22000L
+private const val FULL_PROVIDER_TIMEOUT_MS = __PROVIDER_TIMEOUT_MS__L
+private const val FULL_PLAYER_TIMEOUT_MS = 22000L
+private const val LEARNING_PROVIDER_TIMEOUT_MS = 8000L
+private const val LEARNING_PLAYER_TIMEOUT_MS = 6000L
 private val json = Json { encodeDefaults = true }
 
 @Serializable
@@ -79,6 +81,13 @@ private val fixtures = __FIXTURES__
 private var started = false
 
 private fun env(name: String): String = getenv(name)?.toKString().orEmpty()
+private fun envLong(name: String, fallback: Long, min: Long, max: Long): Long =
+    env(name).toLongOrNull()?.coerceIn(min, max) ?: fallback
+
+private fun normalizedType(value: String): String = when (value.lowercase()) {
+    "series", "show", "other" -> "tv"
+    else -> value.lowercase()
+}
 
 private fun emit(marker: String, payload: Any) {
     val encoded = when (payload) {
@@ -103,7 +112,7 @@ private fun codeUrl(manifestUrl: String, filename: String): String {
 
 private fun hostOnly(url: String): String = NSURL.URLWithString(url)?.host.orEmpty()
 
-private suspend fun probeProductionPlayer(row: PluginRuntimeResult): Triple<String, Double, String> =
+private suspend fun probeProductionPlayer(row: PluginRuntimeResult, playerTimeoutMs: Long): Triple<String, Double, String> =
     withContext(Dispatchers.Main) {
         val bridge = NuvioPlayerBridgeFactory.create()
             ?: return@withContext Triple("bridge_unavailable", 0.0, "")
@@ -128,7 +137,7 @@ private suspend fun probeProductionPlayer(row: PluginRuntimeResult): Triple<Stri
             bridge.play()
             var state = "timeout"
             var duration = 0.0
-            for (attempt in 0 until (PLAYER_TIMEOUT_MS / 250L).toInt()) {
+            for (attempt in 0 until (playerTimeoutMs / 250L).toInt()) {
                 delay(250L)
                 duration = bridge.getDurationMs().toDouble() / 1000.0
                 val error = bridge.getErrorMessage().trim()
@@ -153,26 +162,49 @@ private suspend fun probeProductionPlayer(row: PluginRuntimeResult): Triple<Stri
 private suspend fun runLab(manifestUrl: String) {
     val manifestPayload = httpGetText(manifestUrl)
     val manifest = PluginManifestParser.parse(manifestPayload)
-    val iosProviders = manifest.scrapers.filter {
+    val mode = env("NIAKVIO_IOS_LAB_MODE").lowercase().ifBlank { "full" }
+    val targetProvider = env("NIAKVIO_IOS_TARGET_PROVIDER").lowercase()
+    val learning = mode == "learning" || mode == "quick"
+    val providerTimeoutMs = envLong(
+        "NIAKVIO_IOS_PROVIDER_TIMEOUT_MS",
+        if (learning) LEARNING_PROVIDER_TIMEOUT_MS else FULL_PROVIDER_TIMEOUT_MS,
+        3000L,
+        60000L,
+    )
+    val playerTimeoutMs = envLong(
+        "NIAKVIO_IOS_PLAYER_TIMEOUT_MS",
+        if (learning) LEARNING_PLAYER_TIMEOUT_MS else FULL_PLAYER_TIMEOUT_MS,
+        3000L,
+        30000L,
+    )
+    val allIosProviders = manifest.scrapers.filter {
         supportsIos(it.supportedPlatforms, it.disabledPlatforms)
     }
-    println("FIELD_NATIVE_CORPUS_IOS_BEGIN fixtures=${fixtures.size} providers=${iosProviders.size}")
+    val iosProviders = if (learning) {
+        if (targetProvider.isBlank()) error("learning iOS Lab requires NIAKVIO_IOS_TARGET_PROVIDER")
+        allIosProviders.filter { it.id.lowercase() == targetProvider }
+            .also { if (it.size != 1) error("learning iOS Lab target provider not found: $targetProvider") }
+    } else allIosProviders
+    val fixturesForRun = if (learning) {
+        val firstType = iosProviders.first().supportedTypes
+            .map(::normalizedType)
+            .firstOrNull { it in setOf("movie", "tv", "anime") }
+            ?: "movie"
+        listOf(fixtures.first { it.mediaType == firstType })
+    } else fixtures
+    println("FIELD_NATIVE_CORPUS_IOS_BEGIN mode=$mode fixtures=${fixturesForRun.size} providers=${iosProviders.size} target=$targetProvider provider_timeout_ms=$providerTimeoutMs player_timeout_ms=$playerTimeoutMs")
 
-    fixtures.forEach { fixture ->
+    fixturesForRun.forEach { fixture ->
         val selected = iosProviders.filter { provider ->
             provider.supportedTypes.any { type ->
-                val normalized = when (type.lowercase()) {
-                    "series", "show", "other" -> "tv"
-                    else -> type.lowercase()
-                }
-                normalized == fixture.mediaType
+                normalizedType(type) == fixture.mediaType
             }
         }
         println("FIELD_NATIVE_IOS_FIXTURE_BEGIN fixture=${fixture.slug} type=${fixture.mediaType} providers=${selected.size}")
         selected.forEach { info ->
             val startedAt = TimeSource.Monotonic.markNow()
             try {
-                val code = withTimeout(PROVIDER_TIMEOUT_MS) {
+                val code = withTimeout(providerTimeoutMs) {
                     httpGetText(codeUrl(manifestUrl, info.filename))
                 }
                 val scraper = PluginScraper(
@@ -191,7 +223,7 @@ private suspend fun runLab(manifestUrl: String) {
                     formats = info.formats ?: info.supportedFormats,
                     code = code,
                 )
-                val rows = withTimeout(PROVIDER_TIMEOUT_MS) {
+                val rows = withTimeout(providerTimeoutMs) {
                     PluginRepository.executeScraper(
                         scraper = scraper,
                         tmdbId = fixture.tmdbId,
@@ -213,7 +245,7 @@ private suspend fun runLab(manifestUrl: String) {
                     ),
                 )
                 rows.firstOrNull()?.let { row ->
-                    val (playerState, durationSeconds, host) = probeProductionPlayer(row)
+                    val (playerState, durationSeconds, host) = probeProductionPlayer(row, playerTimeoutMs)
                     emit(
                         "FIELD_NATIVE_IOS_PLAYER",
                         PlayerObservation(
@@ -245,7 +277,7 @@ private suspend fun runLab(manifestUrl: String) {
         }
         println("FIELD_NATIVE_IOS_FIXTURE_END fixture=${fixture.slug} type=${fixture.mediaType} providers=${selected.size}")
     }
-    println("FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=completed fixtures=${fixtures.size}")
+    println("FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=completed mode=$mode fixtures=${fixturesForRun.size} target=$targetProvider")
 }
 
 fun startNiakvioIosLabIfRequested() {

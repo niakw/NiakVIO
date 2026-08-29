@@ -10,6 +10,7 @@ import shutil
 import subprocess
 import sys
 import time
+import select
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -19,6 +20,62 @@ SCRIPTS = ROOT / "scripts"
 
 class BudgetExhausted(RuntimeError):
     """The bounded Learning work window ended; persist state and resume later."""
+
+
+class LearningLabSession:
+    """One warm Node Lab process reused for every provider in a Learning window."""
+
+    PREFIX = "NUVIO_LAB_SESSION_RESULT="
+
+    def __init__(self, deadline: float) -> None:
+        self.deadline = deadline
+        self.process = subprocess.Popen(
+            ["node", str(SCRIPTS / "nuvio_client_lab_session.cjs")],
+            cwd=ROOT,
+            env=os.environ.copy(),
+            text=True,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=None,
+            bufsize=1,
+        )
+        self.request({"action": "ping"}, deadline=deadline)
+
+    def request(self, payload: dict[str, Any], *, deadline: float) -> dict[str, Any]:
+        if self.process.poll() is not None:
+            raise RuntimeError(f"Learning Lab session exited early: {self.process.returncode}")
+        assert self.process.stdin is not None and self.process.stdout is not None
+        self.process.stdin.write(json.dumps(payload, ensure_ascii=False) + "\n")
+        self.process.stdin.flush()
+        timeout = remaining_seconds(deadline, 1)
+        ready, _, _ = select.select([self.process.stdout], [], [], timeout)
+        if not ready:
+            self.close()
+            raise BudgetExhausted("Learning Lab session exceeded remaining global budget")
+        line = self.process.stdout.readline()
+        if not line:
+            raise RuntimeError("Learning Lab session closed without a response")
+        if not line.startswith(self.PREFIX):
+            raise RuntimeError(f"unexpected Learning Lab session output: {line[:160]!r}")
+        response = json.loads(line[len(self.PREFIX):])
+        if response.get("ok") is not True:
+            raise RuntimeError(f"Learning Lab session request failed: {response.get('error') or 'unknown'}")
+        return response
+
+    def close(self) -> None:
+        if self.process.poll() is not None:
+            return
+        try:
+            if self.process.stdin is not None:
+                self.process.stdin.write('{"action":"close"}\n')
+                self.process.stdin.flush()
+        except Exception:
+            pass
+        try:
+            self.process.wait(timeout=3)
+        except subprocess.TimeoutExpired:
+            self.process.kill()
+            self.process.wait(timeout=3)
 
 
 ANOMALY_SCORES = {
@@ -348,6 +405,7 @@ def summarize_lab(report: dict[str, Any], provider_id: str, fixture: dict[str, A
     }
 
 def run_lab(
+    session: LearningLabSession,
     provider_id: str,
     registry_path: Path,
     stage: Path,
@@ -356,31 +414,44 @@ def run_lab(
     deadline: float,
     stream_cap: int,
 ) -> dict[str, Any]:
-    report = run_dir / "targeted-lab.json"
-    markdown = run_dir / "targeted-lab.md"
-    args = [
-        "node", str(SCRIPTS / "nuvio_client_lab.cjs"),
-        "--providers", provider_id,
-        "--clients", "tv,desktop,mobile",
-        "--stage", str(stage),
-        "--registry", str(registry_path),
-        "--tmdb-id", str(fixture.get("tmdbId") or ""),
-        "--media-type", str(fixture.get("mediaType") or "movie"),
-        "--title", str(fixture.get("title") or fixture.get("label") or ""),
-        "--year", str(fixture.get("year") or ""),
-        "--all-streams", "--stream-safety-cap", str(stream_cap),
-        "--playback-timeout-ms", "8000",
-        "--stream-sampling", "spread",
-        "--out", str(report), "--markdown", str(markdown),
-    ]
-    if fixture.get("season") is not None:
-        args += ["--season", str(fixture.get("season"))]
-    if fixture.get("episode") is not None:
-        args += ["--episode", str(fixture.get("episode"))]
-    completed = run(args, env=os.environ.copy(), deadline=deadline, allow_fail=True)
-    payload = load_json(report, {"providers": []})
+    report_path = run_dir / "targeted-lab.json"
+    markdown_path = run_dir / "targeted-lab.md"
+    config: dict[str, Any] = {
+        "providers": provider_id,
+        "clients": ["tv", "desktop", "mobile"],
+        "stage": str(stage),
+        "registry": str(registry_path),
+        "fixture": {
+            "tmdbId": str(fixture.get("tmdbId") or ""),
+            "mediaType": str(fixture.get("mediaType") or "movie"),
+            "title": str(fixture.get("title") or fixture.get("label") or ""),
+            "year": fixture.get("year"),
+            "season": fixture.get("season"),
+            "episode": fixture.get("episode"),
+        },
+        "provider_timeout_ms": 12000,
+        "retry_provider_timeouts": False,
+        "max_settings_profiles": 1,
+        "max_streams_per_runtime": max(1, min(int(stream_cap), 2)),
+        "probe_all_streams": False,
+        "playback_timeout_ms": 5000,
+        "stream_sampling": "spread",
+        "provider_concurrency": 1,
+        "max_fetches": 18,
+        "max_distinct_hosts": 12,
+        "max_redirects": 4,
+    }
+    response = session.request({"action": "run", "config": config}, deadline=deadline)
+    payload = response.get("report") if isinstance(response.get("report"), dict) else {"providers": []}
+    write_json(report_path, payload)
+    markdown_path.write_text(str(response.get("markdown") or ""), encoding="utf-8")
     summary = summarize_lab(payload, provider_id, fixture)
-    summary["commandStatus"] = completed.returncode
+    summary["commandStatus"] = 0
+    summary["labMode"] = "learning-quick"
+    summary["warmSession"] = True
+    summary["providerTimeoutMs"] = 12000
+    summary["playbackTimeoutMs"] = 5000
+    summary["streamProbeCap"] = max(1, min(int(stream_cap), 2))
     return summary
 
 def repair_attempt(
@@ -427,7 +498,7 @@ def main() -> int:
     p.add_argument("--provider", default="")
     p.add_argument("--budget-minutes", type=int, default=60)
     p.add_argument("--reserve-minutes", type=int, default=5)
-    p.add_argument("--stream-safety-cap", type=int, default=40)
+    p.add_argument("--stream-safety-cap", type=int, default=2)
     args = p.parse_args()
 
     stage = args.stage.resolve()
@@ -476,6 +547,7 @@ def main() -> int:
     combined_plans: dict[str, Any] = {}
 
     interrupted_provider = ""
+    lab_session = LearningLabSession(work_deadline)
     try:
         for provider_id in order:
             if time.time() >= work_deadline:
@@ -522,7 +594,7 @@ def main() -> int:
                 candidate = candidate_map(full_registry).get(provider_id) or {}
                 media_type = declared_type(candidate)
                 fixture = choose_fixture(health_config, state, media_type)
-                final_lab = run_lab(provider_id, target_path, stage, fixture, attempt_dir, work_deadline, args.stream_safety_cap)
+                final_lab = run_lab(lab_session, provider_id, target_path, stage, fixture, attempt_dir, work_deadline, args.stream_safety_cap)
                 method_set = tuple(repair["attemptedProfiles"])
                 provider_attempts.append({
                     "attempt": attempt_no,
@@ -594,6 +666,8 @@ def main() -> int:
             "FIELD_BRAIN_QUEUE_BUDGET_EXHAUSTED "
             f"provider={interrupted_provider} reason={error}"
         )
+    finally:
+        lab_session.close()
 
     remaining_order = [pid for pid in order if pid not in processed]
     queue["retryProviders"] = unique(retry_next)

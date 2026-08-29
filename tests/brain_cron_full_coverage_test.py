@@ -88,7 +88,7 @@ def main() -> int:
         "Brain job timeout must cover full-catalogue observation plus the independent one-hour Learning queue"
     )
     assert "--reserve-minutes 5" in workflow, "Learning finalization reserve disappeared"
-    assert "--stream-safety-cap 40" in workflow, "bounded all-stream Lab safety cap disappeared"
+    assert "--stream-safety-cap 2" in workflow, "bounded quick Learning stream cap disappeared"
     assert "TARGET_PROVIDER: ${{ inputs.target_provider || '' }}" in workflow, "manual provider override disappeared"
     assert 'args+=(--provider "$TARGET_PROVIDER")' in workflow, "manual provider override is not delegated to the canonical queue"
     assert "provider_dns_preflight.mjs" not in workflow, "DNS diagnostics belong to the daily domain observer, not Learning"
@@ -132,10 +132,16 @@ def main() -> int:
     assert "seen_method_sets" in queue_source, "Learning must stop repeating an exhausted method set"
     assert "retryProviders" in queue_source and "pendingProviders" in queue_source, "cross-day queue persistence disappeared"
     assert "interleave(" in queue_source, "retry work must not starve unseen providers"
-    assert '"tv,desktop,mobile"' in queue_source, "scheduled Learning must test TV, Desktop and Mobile"
-    assert '"--all-streams"' in queue_source, "Learning Lab must inspect all returned streams subject to the safety cap"
-    assert '"--stream-safety-cap"' in queue_source
-    assert '"--playback-timeout-ms", "8000"' in queue_source
+    assert '"tv,desktop,mobile"' not in queue_source, "legacy per-command Lab CLI returned"
+    assert "nuvio_client_lab_session.cjs" in queue_source, "Learning warm Lab session disappeared"
+    assert "subprocess.Popen(" in queue_source, "Learning must keep one Lab process alive"
+    assert '"clients": ["tv", "desktop", "mobile"]' in queue_source
+    assert '"provider_timeout_ms": 12000' in queue_source
+    assert '"retry_provider_timeouts": False' in queue_source
+    assert '"max_settings_profiles": 1' in queue_source
+    assert '"max_streams_per_runtime": max(1, min(int(stream_cap), 2))' in queue_source
+    assert '"playback_timeout_ms": 5000' in queue_source
+    assert 'summary["warmSession"] = True' in queue_source
     assert '"coreIsAuthoritative": False' in queue_source, "Core evidence must remain a hypothesis in Learning"
     assert "hiddenFailureProviders" in queue_source, "Core/Lab contradictions must be persisted"
     assert "routeEvidenceCount" in queue_source, "route discovery must emit evidence depth"
