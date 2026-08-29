@@ -325,10 +325,12 @@ def _discard_generated_candidate(stage: Path, repaired: dict[str, Any] | None) -
 
 
 def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any] | None, str | None]]) -> Callable[..., tuple[dict[str, Any] | None, str | None]]:
-    """Enforce production Brain budgets around actual code mutation attempts.
+    """Enforce strict production budgets while keeping Learning time-budgeted.
 
-    Production budgets remain strict. Learning instead follows the global
-    workflow deadline and may test successive hypotheses in its isolated sandbox.
+    Production remains bounded by mutation/size/time limits. Learning ignores
+    those per-provider production limits and instead follows the global sandbox
+    deadline, while duplicate/repeated experiments are still suppressed by
+    cross-day negative memory.
     """
     def _create(stage: Path, candidate: dict[str, Any], profile_name: str, round_number: int):
         parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
@@ -355,13 +357,15 @@ def wrap_create_repair_candidate(base_create: Callable[..., tuple[dict[str, Any]
         generated_delta = max(0, repaired_bytes - parent_bytes)
         state["generatedBytes"] = int(state.get("generatedBytes") or 0) + generated_delta
 
-        production = policy().get("production") if isinstance(policy().get("production"), dict) else {}
-        if int(state["generatedBytes"]) > int(production.get("maxGeneratedBytesPerProvider") or 180000):
-            _discard_generated_candidate(stage, repaired)
-            return None, "brain_generated_code_budget_exhausted"
-        if _public_state(candidate, plan_key)["elapsedMs"] > int(production.get("maxElapsedMsPerProvider") or 45000):
-            _discard_generated_candidate(stage, repaired)
-            return None, "brain_time_budget_exhausted"
+        learning_mode = str(__import__("os").environ.get("NUVIO_BRAIN_PLANNER_MODE") or "").strip().casefold() == "learning"
+        if not learning_mode:
+            production = policy().get("production") if isinstance(policy().get("production"), dict) else {}
+            if int(state["generatedBytes"]) > int(production.get("maxGeneratedBytesPerProvider") or 180000):
+                _discard_generated_candidate(stage, repaired)
+                return None, "brain_generated_code_budget_exhausted"
+            if _public_state(candidate, plan_key)["elapsedMs"] > int(production.get("maxElapsedMsPerProvider") or 45000):
+                _discard_generated_candidate(stage, repaired)
+                return None, "brain_time_budget_exhausted"
         return repaired, create_error
     return _create
 
