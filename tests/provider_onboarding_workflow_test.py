@@ -86,4 +86,5 @@ for path in (
     if "\n  push:" in workflow:
         assert ".github/triggers/full-native-lab-validation.json" in workflow, path
 
-assert not (ROOT / ".github/workflows/native-tv-route-reader.yml").exists()\nprint("provider onboarding/Learning Lab architecture contract passed")
+assert not (ROOT / ".github/workflows/native-tv-route-reader.yml").exists()
+print("provider onboarding/Learning Lab architecture contract passed")
