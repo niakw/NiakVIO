@@ -34,10 +34,11 @@ GENERATED_CORE_TAIL_MARKERS = (
 )
 
 
-def load_overrides() -> dict[str, Any]:
-    if not CONFIG.exists():
+def load_overrides(path: Path | None = None) -> dict[str, Any]:
+    config_path = (path or CONFIG).resolve()
+    if not config_path.exists():
         return {}
-    value = json.loads(CONFIG.read_text(encoding="utf-8"))
+    value = json.loads(config_path.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
         raise ValueError("provider-overrides.json must be an object")
     from provider_engine_normalizer import sanitize_provider_hooks
@@ -918,9 +919,10 @@ def apply_overrides(
     profile_names: Iterable[str] | None = None,
     excluded_patch_scripts: Iterable[str] | None = None,
     include_global_core: bool = True,
+    config_path: Path | None = None,
 ) -> tuple[bytes, list[dict[str, Any]]]:
     """Apply stable replacements and profiles allowed for the selected phase."""
-    config = load_overrides()
+    config = load_overrides(config_path)
     text = data.decode("utf-8")
     original_text = text
     applied: list[dict[str, Any]] = []
