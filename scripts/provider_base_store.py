@@ -352,6 +352,84 @@ def _pre_hardening_git_seed(provider_id: str) -> tuple[bytes, str] | None:
     return result.stdout, f"git-pre-hardening:{PRE_HARDENING_MANIFEST_COMMIT[:12]}:{relative}"
 
 
+def _latest_snapshot_seed(
+    registry: dict[str, Any],
+    provider_id: str,
+    row: dict[str, Any],
+) -> tuple[bytes, str] | None:
+    """Return the newest retained raw upstream only as quarantine recovery input."""
+    upstream_id = str(row.get("upstream_id") or provider_id).strip()
+    sources = registry.get("sources") or {}
+    if not isinstance(sources, dict):
+        return None
+    preferred = str(row.get("source") or "").strip()
+    order = []
+    if preferred in sources:
+        order.append(preferred)
+    order.extend(key for key in sources if key not in order)
+    for source_key in order:
+        source_row = sources.get(source_key)
+        if not isinstance(source_row, dict):
+            continue
+        for generation in source_row.get("generations") or []:
+            if not isinstance(generation, dict):
+                continue
+            providers = generation.get("providers") or {}
+            if not isinstance(providers, dict):
+                continue
+            record = providers.get(upstream_id)
+            if not isinstance(record, dict):
+                record = next(
+                    (
+                        value
+                        for raw_id, value in providers.items()
+                        if canonical_id(str(raw_id)) == provider_id and isinstance(value, dict)
+                    ),
+                    None,
+                )
+            if not isinstance(record, dict):
+                continue
+            filename = str(record.get("file") or "").strip()
+            digest = str(record.get("sha256") or "").strip().casefold()
+            path = (ROOT / "upstream-lkg" / "providers" / filename).resolve()
+            try:
+                path.relative_to((ROOT / "upstream-lkg" / "providers").resolve())
+            except ValueError:
+                continue
+            if not path.is_file():
+                continue
+            data = path.read_bytes()
+            if not digest or sha256(data) != digest:
+                continue
+            return data, f"upstream-lkg-latest-quarantine-recovery:{source_key}:{digest[:16]}"
+    return None
+
+
+def _persist_recovery_fallback(
+    registry: dict[str, Any],
+    provider_id: str,
+    row: dict[str, Any],
+) -> tuple[str, str, bool, str]:
+    """Recover destroyed legacy logic without changing the public quarantine state."""
+    candidates = [
+        _git_seed(provider_id),
+        _pre_hardening_git_seed(provider_id),
+        _latest_snapshot_seed(registry, provider_id, row),
+    ]
+    errors: list[str] = []
+    for candidate in candidates:
+        if candidate is None:
+            continue
+        seed_data, seed_source = candidate
+        try:
+            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
+            return base_file, base_sha, stripped, seed_source
+        except ValueError as exc:
+            errors.append(f"{seed_source}:{exc}")
+    detail = " | ".join(errors[-3:]) if errors else "no recovery candidates"
+    raise ValueError(f"{provider_id}: no clean recovery seed for legacy ProviderBase ({detail})")
+
+
 def repair_legacy_bases() -> dict[str, Any]:
     """Replace one-shot/public-derived bases with provider-pipeline bases.
 
@@ -412,21 +490,13 @@ def repair_legacy_bases() -> dict[str, Any]:
                 base_file, base_sha = write_base(provider_id, clean_data)
                 seed_source = "legacy-current-provider-logic"
             except ValueError:
-                fallback = _git_seed(provider_id) or _pre_hardening_git_seed(provider_id)
-                if fallback is None:
-                    raise ValueError(
-                        f"{provider_id}: unrecoverable legacy ProviderBase and no approved historical provider seed"
-                    )
-                seed_data, seed_source = fallback
-                base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
-        else:
-            fallback = _git_seed(provider_id) or _pre_hardening_git_seed(provider_id)
-            if fallback is None:
-                raise ValueError(
-                    f"{provider_id}: missing legacy ProviderBase and no exact upstream or approved historical seed"
+                base_file, base_sha, stripped, seed_source = _persist_recovery_fallback(
+                    registry, provider_id, row
                 )
-            seed_data, seed_source = fallback
-            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
+        else:
+            base_file, base_sha, stripped, seed_source = _persist_recovery_fallback(
+                registry, provider_id, row
+            )
 
         if existing_path is not None:
             old_paths.add(existing_path)
