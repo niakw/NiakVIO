@@ -112,10 +112,10 @@ def main() -> int:
     assert 'gh run list --workflow "$workflow" --event schedule --status completed' in workflow
     assert "merge_native_reader_backlog.py" in workflow
     assert "merge_native_reader_learning_failures.py" in workflow
-    assert "native-tv-route-representative-*" in workflow
-    assert "native-mobile-android-routes-*" in workflow
-    assert "native-mobile-ios-routes-*" in workflow
-    assert "native-desktop-reader-*-routes-*" in workflow
+    assert "native-tv-full-*" in workflow
+    assert "native-mobile-android-full-*" in workflow
+    assert "native-mobile-ios-full-*" in workflow
+    assert "native-desktop-full-*-*" in workflow
     assert "gh workflow run native-mobile-android-reader.yml" not in workflow
     assert "gh workflow run native-mobile-ios-reader.yml" not in workflow
     assert "gh workflow run native-desktop-reader-acceptance.yml" not in workflow
