@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
-from provider_purification import purify_bytes
+from provider_purification import TERSER_VERSION, purify_bytes
 from provider_security_hardening import assert_hardened, harden_bytes
 from provider_engine_normalizer import (
     _host,
@@ -444,6 +444,15 @@ def fast_fixed_point_check(
         actual_public_sha = hashlib.sha256(public_path.read_bytes()).hexdigest()
         if actual_public_sha != str(row.get("sha256") or "").casefold():
             return False, f"public-sha-drift:{provider_id}"
+        proof = row.get("final_fixed_point")
+        if not isinstance(proof, dict):
+            return False, f"missing-fixed-point-proof:{provider_id}"
+        if proof.get("verified") is not True or proof.get("mangle") is not False:
+            return False, f"invalid-fixed-point-proof:{provider_id}"
+        if str(proof.get("tool_version") or "") != TERSER_VERSION:
+            return False, f"fixed-point-tool-changed:{provider_id}"
+        if str(proof.get("sha256") or "").casefold() != actual_public_sha:
+            return False, f"fixed-point-proof-sha-drift:{provider_id}"
 
         authoritative_types = configured_authoritative_types(config, provider_id)
         if authoritative_types and entry.get("supportedTypes") != authoritative_types:
@@ -697,6 +706,14 @@ def main() -> int:
             "new": new_relative,
             "sha256": digest,
             "base_sha256": provider_base_sha,
+            "final_fixed_point": {
+                "schema_version": 1,
+                "verified": bool(purification.get("fixedPointVerified", True)),
+                "tool": "terser",
+                "tool_version": str(purification.get("toolVersion") or TERSER_VERSION),
+                "mangle": False,
+                "sha256": digest,
+            },
             "records": records,
             "terminal_quarantine": terminal_quarantine,
             "audit_terminal_quarantine": audit_terminal_quarantine,
@@ -737,6 +754,7 @@ def main() -> int:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
                 row["local_patches"] = merge_patch_records(row.get("local_patches"), update["records"])
+            row["final_fixed_point"] = dict(update["final_fixed_point"])
             row["build_contract_schema"] = PUBLICATION_CONTRACT_SCHEMA
             row["build_input_sha256"] = provider_build_input_sha(
                 provider_id,
