@@ -2,6 +2,8 @@ name: Native Desktop reader acceptance
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "20 18 * * 6"
 
 permissions:
   contents: read
