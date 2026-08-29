@@ -117,7 +117,8 @@ def main() -> None:
                 "source": item.get("source"),
                 "status": item.get("status"),
                 "score": item.get("score"),
-                "dns_preflight_status": decision.get("status"),
+                "dns_preflight_status": preflight.get("dns_status"),
+                "dns_preflight_internal_status": decision.get("status"),
                 "dns_resolver": decision.get("selected_resolver"),
                 "dns_migration_candidate": (decision.get("migration_candidate") or {}).get("host")
                 if isinstance(decision.get("migration_candidate"), dict)
