@@ -24,13 +24,15 @@ START = "<!-- NIAKVIO_PROVIDER_RESULTS_START -->"
 END = "<!-- NIAKVIO_PROVIDER_RESULTS_END -->"
 DEVICES = (
     ("tv", "TV"),
-    ("mobile", "Mobile"),
+    ("mobile_android", "Mobile Android"),
+    ("mobile_ios", "Mobile iOS"),
     ("desktop_macos", "Desktop macOS"),
     ("desktop_windows", "Desktop Windows"),
 )
 DEVICE_ICONS = {
     "tv": "📺",
-    "mobile": "📱",
+    "mobile_android": "🤖",
+    "mobile_ios": "🍎",
     "desktop_macos": "🖥️",
     "desktop_windows": "🪟",
 }
@@ -63,8 +65,10 @@ def normalize_device(client: str) -> str | None:
         return None
     if "tv" in value:
         return "tv"
-    if "mobile" in value:
-        return "mobile"
+    if "mobile-ios" in value or value in {"ios", "iphone", "ipad"}:
+        return "mobile_ios"
+    if "mobile-android" in value or value == "mobile" or "android" in value:
+        return "mobile_android"
     if "mac" in value:
         return "desktop_macos"
     if "windows" in value or value.endswith("-win") or value == "win":
@@ -369,7 +373,7 @@ def render(results: dict[str, Any]) -> str:
         "",
         "### 📡 Couverture des lecteurs officiels",
         "",
-        "Cette vue distingue **support du lecteur** et **preuve positive conservée** : les quatre familles sont suivies en permanence, même lorsqu'aucune preuve saine n'a encore été retenue pour l'une d'elles.",
+        "Cette vue distingue **support du lecteur** et **preuve positive conservée** : les cinq cibles natives sont suivies en permanence, même lorsqu'aucune preuve saine n'a encore été retenue pour l'une d'elles.",
         "",
         "| Lecteur officiel | Preuves positives conservées | Providers avec preuve | Dernière preuve | État |",
         "|---|---:|---:|---:|---|",
@@ -456,7 +460,7 @@ def render(results: dict[str, Any]) -> str:
             "| Provider présent dans un manifest | ✅ | ✅ |",
             "| Plusieurs upstreams comparés avant promotion | ✅ | Variable |",
             "| Média final réellement atteint | ✅ | Non garanti |",
-            "| Lecteur officiel vérifié par plateforme | ✅ TV / Mobile / macOS / Windows | Non garanti |",
+            "| Lecteur officiel vérifié par plateforme | ✅ TV / Android / iOS / macOS / Windows | Non garanti |",
             "| Identité œuvre / année / saison / épisode contrôlée | ✅ | Non garanti |",
             "| HLS / DASH / média direct validé au-delà de l'extension URL | ✅ | Non garanti |",
             "| Mauvais média jouable classé comme échec | ✅ | Non garanti |",
