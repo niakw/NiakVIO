@@ -45,6 +45,8 @@ retired_paths = (
     "scripts/provider_patches/purstream_bridge.py",
     "scripts/migrate_tv_hardening_5_20_39.py",
     "tests/purstream_core_presentation_pipeline_test.py",
+    "scripts/run_final_native_android_lab.sh",
+    "tests/native_pr_timeout_contract_test.py",
 )
 for rel in retired_paths:
     assert not (ROOT / rel).exists(), f"retired path resurrected: {rel}"
@@ -188,6 +190,11 @@ assert "`main` : unique branche de code" in readme_fr
 assert "## 22. Labs natifs sur `main`" in architecture
 assert "brain-learning/proposals" in readme
 assert "brain-learning/proposals" in architecture
+assert "healthy sibling selection" not in architecture
+assert "compare to parent/sibling" not in architecture
+assert "## 10. Healthy sibling first" not in architecture
+assert "1/1/1 per provider by declared type" in readme
+assert "1/1/1 par provider selon les types déclarés" in readme_fr
 
 # Living documentation must track the current workflow/storage architecture.
 validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
