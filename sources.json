@@ -1,5 +1,5 @@
 {
-  "schema_version": 65,
+  "schema_version": 66,
   "repository": {
     "name": "NiakVIO",
     "manifest_version": "5.21.10",
@@ -37,13 +37,7 @@
   },
   "selection_policy": {
     "discover_every_declared_provider": true,
-    "deduplicate_only_after_checks": true,
-    "duplicate_key": "case-insensitive provider id",
-    "variant_ranking": [
-      "functional status",
-      "health score",
-      "upstream priority"
-    ],
+    "duplicate_key": "case-insensitive canonical provider id",
     "preserve_complete_upstream_manifest_entry": "preserve all upstream fields, then replace supportedTypes with the canonical union inferred from all three manifests",
     "include_unconfirmed_providers_disabled": true,
     "require_all_upstream_manifests_before_publication": false,
@@ -107,7 +101,13 @@
     "provider_domain_resolution": "Official hubs and public Telegram first; redirects and curated candidates next; bounded Yandex/DuckDuckGo fallback only in deep mode; search-only changes require two consecutive validations.",
     "provider_domain_refresh_schedule": "Daily lightweight validated refresh; strict code and stream promotion remains deep-only twice weekly.",
     "last_known_good_domain_retention": true,
-    "published_provider_functional_fallback": true
+    "published_provider_functional_fallback": true,
+    "deduplicate_at_input": true,
+    "duplicate_selection": [
+      "live upstream declaration",
+      "configured upstream priority",
+      "published/LKG fallback only when no live upstream declaration is available"
+    ]
   },
   "exclusions": {
     "provider_ids": [
