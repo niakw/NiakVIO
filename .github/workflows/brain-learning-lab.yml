@@ -9,7 +9,7 @@ on:
         default: false
         type: boolean
       target_provider:
-        description: Optional exact provider id for one quick targeted Brain lab probe
+        description: Optional exact provider id to run through the canonical Learning queue
         required: false
         default: ""
         type: string
@@ -26,12 +26,9 @@ on:
       - "scripts/deep_repair_loop.py"
       - "scripts/run_adaptive_quick_repair.py"
       - "scripts/run_brain_learning_queue.py"
-      - "scripts/select_brain_learning_target.py"
-      - "tests/brain_learning_target_selector_test.py"
       - "scripts/resolve_provider_hub_search_fallback.py"
       - "scripts/resolve_provider_hubs.py"
       - "scripts/brain_repair_runtime.py"
-      - "scripts/select_brain_targeted_probe.py"
       - "scripts/build_brain_repair_proposal.py"
       - "scripts/build_brain_architecture_proposal.py"
       - "tests/brain_self_architecture_test.py"
@@ -44,7 +41,6 @@ on:
       - "scripts/apply_provider_overrides.py"
       - "scripts/provider_patches/**"
       - "tests/brain_cron_full_coverage_test.py"
-      - "tests/brain_targeted_probe_test.py"
       - "tests/native_reader_ownership_policy_test.py"
       - "engine_v2/scripts/learning-lab.mjs"
       - "engine_v2/scripts/build-historical-learning.mjs"
@@ -97,8 +93,6 @@ jobs:
           set -euo pipefail
           python tests/brain_cron_full_coverage_test.py
           python tests/daily_learning_coverage_test.py
-          python tests/brain_targeted_probe_test.py
-          python tests/brain_learning_target_selector_test.py
           python tests/brain_self_architecture_test.py
           python tests/native_reader_provider_retention_policy_test.py
           python tests/native_reader_ownership_policy_test.py
@@ -107,7 +101,6 @@ jobs:
             scripts/run_brain_learning_queue.py \
             scripts/build_brain_repair_proposal.py \
             scripts/build_brain_architecture_proposal.py \
-            scripts/select_brain_learning_target.py \
             scripts/build_native_reader_brain_repair.py \
             scripts/build_native_reader_learning_summary.py \
             scripts/merge_native_reader_learning_failures.py \
