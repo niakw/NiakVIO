@@ -1555,10 +1555,13 @@ def activation_decision(
 ) -> dict[str, Any]:
     """Enable only a provider proven functional by the current deep run.
 
-    Publication follows three ordered gates:
-      1. DNS/access preflight succeeded;
-      2. provider-specific runtime access succeeded;
-      3. at least one playable stream passed the quality gates.
+    Publication follows two ordered runtime gates before the remaining
+    media/identity gates:
+      1. provider-specific runtime access succeeded;
+      2. at least one playable stream passed the quality gates.
+
+    DNS is observed independently by the daily domain job and never participates
+    in activation or publication decisions.
 
     Historical state, an old SHA, manual runtime evidence, or an inconclusive
     result can never enable a provider. They remain diagnostic data only.
@@ -1570,13 +1573,6 @@ def activation_decision(
     upstream_enabled = bool(item.get("metadata", {}).get("enabled", True))
     respect_upstream = bool(activation.get("respect_upstream_disabled_state", True))
 
-    dns = item.get("health", {}).get("dns_preflight") or {}
-    dns_decision = dns.get("decision") if isinstance(dns, dict) else {}
-    dns_status = str((dns_decision or {}).get("status") or "unknown")
-    dns_pass = dns_status not in {
-        "confirmed_french_block", "dns_failed", "unresolved", "unreachable"
-    } and not bool(proof.get("runtime_skipped_by_dns_preflight", False))
-
     access_pass = bool(proof.get("provider_server_successful_response", False))
     stream_pass = (
         status == "healthy"
@@ -1584,11 +1580,6 @@ def activation_decision(
         and int(proof.get("healthy_fixtures", 0)) > 0
     )
 
-    gates["00_dns_or_alternative_domain"] = gate(
-        dns_pass,
-        {"dns_status": dns_status},
-        {"required": "DNS resolution or validated alternative domain"},
-    )
     gates["00_provider_specific_access"] = gate(
         access_pass,
         {
@@ -1609,12 +1600,12 @@ def activation_decision(
         {"required": "at least one currently playable stream"},
     )
 
-    current_pass = dns_pass and access_pass and stream_pass and all_gates_pass(gates)
+    current_pass = access_pass and stream_pass and all_gates_pass(gates)
     # ``enabled:false`` in an upstream manifest is advisory when this exact JS
     # has just passed Niakvio's own strict current deep proof. Treating the flag
     # as a hard veto caused proven-working providers (for example Desiflix) to
     # disappear with no failed activation gate. Hard P2P evidence and every
-    # current DNS/access/media/quality gate above remain authoritative.
+    # current access/media/quality gate above remain authoritative.
     upstream_disabled_overridden_by_current_strict_proof = bool(
         respect_upstream and not upstream_enabled and current_pass
     )
@@ -1627,9 +1618,7 @@ def activation_decision(
         blockers.append("availability_auto_disabled")
 
     disabled_reason = None
-    if not dns_pass:
-        disabled_reason = "dns_or_alternative_domain_failed"
-    elif not access_pass:
+    if not access_pass:
         disabled_reason = "provider_specific_access_failed"
     elif not stream_pass:
         disabled_reason = "no_current_playable_stream"
