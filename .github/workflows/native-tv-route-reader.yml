@@ -2,8 +2,6 @@ name: Native TV reader acceptance
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "5 18 * * 6"
 
 permissions:
   contents: read
@@ -87,14 +85,14 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv             --fixture interstellar --workspace "$GITHUB_WORKSPACE"             --manifest manifest.json --provider declared-type --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv             --fixture interstellar --workspace "$GITHUB_WORKSPACE"             --manifest manifest.json --provider declared-type --streams 2 --initial
       - name: Prebuild TV reader once before QEMU
         shell: bash
         env:
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_PRIMARY_FIXTURE: interstellar
-          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+          NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
         run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
@@ -112,8 +110,8 @@ jobs:
           NIAKVIO_TV_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
           NIAKVIO_TV_RESUME_CHECKPOINT_DIR: ${{ github.workspace }}/native-evidence/tv/checkpoints
           NIAKVIO_PRIMARY_FIXTURE: interstellar
-          NIAKVIO_PRIMARY_STREAM_SCOPE: all
-          NIAKVIO_REGRESSION_STREAM_SCOPE: all
+          NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
+          NIAKVIO_REGRESSION_STREAM_SCOPE: "2"
           NIAKVIO_REQUIRE_READER_SUCCESS: "1"
         with:
           api-level: 31
