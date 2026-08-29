@@ -2243,6 +2243,30 @@
     },
     "TOFLIX": {
       "capability": "api_stream_resolver"
+    },
+    "kehflix": {
+      "notes": [
+        "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
+        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "route_replacements": {},
+      "profiles": [],
+      "capability": "html_scraper",
+      "official_hub": "https://kehflix.wiki/",
+      "official_site": "https://kehflix.com",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "manifest_overrides": {
+        "enabled": false,
+        "disabledPlatforms": []
+      },
+      "patch_script_options": {},
+      "required_values": []
     }
   },
   "route_override_defaults": {
@@ -5047,6 +5071,24 @@
         "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
+    },
+    "kehflix": {
+      "strategy": "html_scraper",
+      "validation": "onboarding_pending_learning",
+      "allow_html_url": true,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://kehflix.com",
+        "https://kehflix.wiki",
+        "https://old.invalid"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
     }
   },
   "official_domain_hubs": {
@@ -5460,11 +5502,48 @@
         "aucun résultat trouvé",
         "tendances du jour"
       ]
+    },
+    "kehflix": {
+      "hub": "https://kehflix.wiki/",
+      "aliases": [
+        "kehflix"
+      ],
+      "resolver": "official_outbound",
+      "official_link_labels": [
+        "Entrer",
+        "Accéder",
+        "Accedez",
+        "site officiel",
+        "adresse officielle",
+        "ouvrir",
+        "website",
+        "click here"
+      ],
+      "old_site_hosts": [],
+      "old_api_hosts": [],
+      "api_templates": [],
+      "api_probe_routes": [
+        "/",
+        "/health",
+        "/api"
+      ],
+      "api_success_statuses": [
+        200,
+        400,
+        401,
+        403,
+        404,
+        405,
+        429
+      ],
+      "require_api_validation": false,
+      "persist_official_site_without_api": true,
+      "direct_fallback": "https://kehflix.com/"
     }
   },
   "provider_profile_generation": {
     "schema_version": 4,
-    "provider_count": 95,
+    "provider_count": 96,
     "staged_provider_count": 0,
     "source": "manifest_published_bundles_and_current_staging",
     "same_deep_new_provider_support": true,

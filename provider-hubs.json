@@ -2816,6 +2816,52 @@
         }
       ],
       "search_confirmation_runs": 2
+    },
+    "kehflix": {
+      "id": "kehflix",
+      "name": "Kehflix",
+      "manifest_status": "Onboarding",
+      "category": "Francophone",
+      "hub": "https://kehflix.wiki/",
+      "direct": "https://kehflix.com/",
+      "telegram": null,
+      "api": null,
+      "source": "provider_onboarding_workflow",
+      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
+      "aliases": [
+        "kehflix"
+      ],
+      "direct_candidates": [
+        "https://kehflix.com/"
+      ],
+      "allowed_terminal_hosts": [
+        "kehflix.com"
+      ],
+      "search_queries": [
+        "\"Kehflix\" adresse officielle",
+        "site:kehflix.wiki Kehflix"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://kehflix.wiki/",
+          "priority": 100,
+          "purpose": "Authoritative address reference"
+        },
+        {
+          "type": "search",
+          "query": "\"Kehflix\" adresse officielle",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        },
+        {
+          "type": "search",
+          "query": "site:kehflix.wiki Kehflix",
+          "priority": 35,
+          "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
     }
   },
   "resolution_policy": {

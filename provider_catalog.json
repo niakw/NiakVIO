@@ -7,9 +7,9 @@
     "quickRefreshMayRepairAndPublish": true,
     "deepRefreshRebuildsKnowledge": true,
     "committedProviderNames": true,
-    "committedProviderNameCount": 95,
+    "committedProviderNameCount": 96,
     "committedProviderLogos": true,
-    "committedProviderLogoCount": 95
+    "committedProviderLogoCount": 96
   },
   "manifestMeta": {
     "general": {
@@ -117,7 +117,8 @@
       "vidsrc",
       "vixsrc",
       "waveanime",
-      "xpass"
+      "xpass",
+      "kehflix"
     ],
     "vf": [
       "anime-sama",
@@ -147,7 +148,8 @@
       "nakios",
       "sekai",
       "toflix",
-      "waveanime"
+      "waveanime",
+      "kehflix"
     ]
   },
   "providers": [
@@ -3064,6 +3066,34 @@
       "projections": {
         "general": true,
         "vf": false
+      }
+    },
+    {
+      "canonicalId": "kehflix",
+      "scraper": {
+        "id": "kehflix",
+        "name": "🎬 Kehflix",
+        "description": "Kehflix provider géré par NiakVIO via son hub officiel et son domaine terminal.",
+        "version": "1.0.2",
+        "author": "NiakVIO",
+        "supportedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "filename": "providers/kehflix--nuvio--01087d3c75c1ffc5.js",
+        "enabled": false,
+        "hasSettings": false,
+        "formats": [],
+        "contentLanguage": [
+          "fr"
+        ],
+        "disabledPlatforms": [],
+        "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/kehflix.webp"
+      },
+      "projections": {
+        "general": true,
+        "vf": true
       }
     }
   ]
