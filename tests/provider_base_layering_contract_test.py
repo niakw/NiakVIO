@@ -76,6 +76,10 @@ promoter_source = (ROOT / "scripts" / "promote_candidates.py").read_text(encodin
 workflow_source = (ROOT / ".github" / "workflows" / "core-media-finalize-main.yml").read_text(encoding="utf-8")
 
 assert "excluded_patch_scripts: Iterable[str] | None = None" in apply_source
+assert "include_global_core: bool = True" in apply_source
+assert 'if phase == "discovery" and include_global_core:' in apply_source
+base_store_source = SCRIPT.read_text(encoding="utf-8")
+assert "include_global_core=False" in base_store_source
 assert "if patch_script in excluded_scripts:" in apply_source
 assert "persist_base_from_seed" in promoter_source
 assert "previous_base_row" in promoter_source
