@@ -204,15 +204,17 @@ jobs:
           node - <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('staging-reconstruction/candidates.json','utf8'));
-          const rows=(x.candidates||[]).filter(r=>r && r.provider_base_reconstruction_required===true);
-          if(rows.length!==95) throw new Error('clean reconstruction stage must initially cover all 95 providers, got '+rows.length);
+          const candidates=(x.candidates||[]).filter(Boolean);
+          const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase(),r]));
+          if(byId.size!==95) throw new Error('clean reconstruction stage must cover the canonical 95 providers, got '+byId.size);
+          const rows=[...byId.values()].filter(r=>r.provider_base_reconstruction_required===true);
           if(rows.some(r=>r.candidate_code_origin!=='new-niakvio-clean-seed')) {
             throw new Error('clean reconstruction stage contains a legacy executable seed');
           }
-          if(rows.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
+          if(candidates.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
             throw new Error('legacy/upstream JS execution escaped into clean reconstruction stage');
           }
-          console.log('FIELD_CLEAN_RECONSTRUCTION_STAGE required='+rows.length);
+          console.log('FIELD_CLEAN_RECONSTRUCTION_STAGE total='+byId.size+' required='+rows.length);
           NODE
 
       - name: Run adaptive Learning provider queue
