@@ -172,12 +172,26 @@ def stage(request_path: Path) -> dict[str, Any]:
     vf = bool_value(request.get("vf"), any(value.startswith("fr") for value in languages))
     if vf and not any(value.startswith("fr") for value in languages):
         languages.insert(0, "fr")
-    description = str(request.get("description") or f"{name} provider managed by NiakVIO.").strip()
-    author = str(request.get("author") or "NiakVIO").strip()
-    version = str(request.get("version") or "1.0.0").strip()
+    existing_entry = existing_entry if isinstance(existing_entry, dict) else {}
+    description = str(
+        request.get("description")
+        or existing_entry.get("description")
+        or f"{name} provider managed by NiakVIO."
+    ).strip()
+    author = str(request.get("author") or existing_entry.get("author") or "NiakVIO").strip()
+    version = str(request.get("version") or existing_entry.get("version") or "1.0.0").strip()
 
     manifest = load_json(MANIFEST, {})
-    ensure_absent(manifest, provider_id)
+    replace_existing = bool_value(request.get("replace_existing"), False)
+    existing_entry = next(
+        (
+            row for row in manifest.get("scrapers") or []
+            if isinstance(row, dict) and norm_id(row.get("id")) == provider_id
+        ),
+        None,
+    )
+    if isinstance(existing_entry, dict) and not replace_existing:
+        raise ValueError(f"provider already exists: {provider_id}")
 
     overrides = load_json(OVERRIDES, {})
     overrides.setdefault("provider_patches", {})
@@ -311,11 +325,25 @@ def stage(request_path: Path) -> dict[str, Any]:
     published_path.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(base_path, published_path)
     entry["filename"] = published_relative
-    manifest.setdefault("scrapers", []).append(entry)
+    scrapers = manifest.setdefault("scrapers", [])
+    if replace_existing:
+        replaced = False
+        for index, row in enumerate(scrapers):
+            if isinstance(row, dict) and norm_id(row.get("id")) == provider_id:
+                scrapers[index] = entry
+                replaced = True
+                break
+        if not replaced:
+            raise ValueError(f"{provider_id}: replace_existing requested but manifest row disappeared")
+    else:
+        scrapers.append(entry)
     write_json(MANIFEST, manifest)
 
     provenance = load_json(PROVENANCE, {})
-    provenance.setdefault("providers", {})[provider_id] = {
+    providers = provenance.setdefault("providers", {})
+    previous_provenance = providers.get(provider_id) if isinstance(providers.get(provider_id), dict) else {}
+    providers[provider_id] = {
+        **previous_provenance,
         "id": provider_id,
         "published_filename": published_relative,
         "sha256": base_sha,
@@ -344,6 +372,7 @@ def stage(request_path: Path) -> dict[str, Any]:
         "runtime_evidence_eligible": False,
         "activation_mode": "onboarding_pending",
         "activation_blockers": ["onboarding_quick_lab_pending"],
+        "onboarding_rebuild": bool(replace_existing),
     }
     write_json(PROVENANCE, provenance)
     base_store.repair_legacy_bases()
@@ -394,6 +423,7 @@ def stage(request_path: Path) -> dict[str, Any]:
         "strategy": strategy,
         "routes": routes,
         "fixture": lab_config["fixture"],
+        "replace_existing": bool(replace_existing),
     }
     WORK.mkdir(parents=True, exist_ok=True)
     write_json(WORK / "current.json", normalized)
@@ -401,6 +431,7 @@ def stage(request_path: Path) -> dict[str, Any]:
     print(
         "FIELD_PROVIDER_ONBOARDING_STAGE "
         f"id={provider_id} types={','.join(types)} vf={str(vf).lower()} "
+        f"replace_existing={str(replace_existing).lower()} "
         f"base={base_relative} published={published_relative}"
     )
     return normalized
