@@ -18,21 +18,21 @@ La suite couvre notamment :
 - versions synchronisées, provenance JSON, périmètre et empreintes de release ;
 - contrats des Labs natifs et du corpus multi-œuvres.
 
-## Validation native et corpus multi-œuvres
+## Validation native et corpus borné par type
 
-Le corpus canonique est versionné dans [`.github/triggers/nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json). Il contient actuellement **10 fixtures** couvrant films, séries et anime, avec des cas de désambiguïsation d'année, de saison/épisode, de durée et de mauvaise identité média.
+Le corpus canonique est versionné dans [`.github/triggers/nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json). La liste peut contenir plusieurs œuvres de diagnostic, mais la preuve native standard en sélectionne **une seule par type déclaré et par provider** : au maximum 1 film + 1 série + 1 anime.
 
 La preuve native est répartie entre trois workflows complémentaires :
 
-- [`native-android-route-reader.yml`](.github/workflows/native-android-route-reader.yml) : Nuvio Mobile + NuvioTV/Android TV sur les fixtures représentatives et les régressions TV prioritaires ;
+- [`native-android-route-reader.yml`](.github/workflows/native-android-route-reader.yml) : Nuvio Mobile + NuvioTV/Android TV sur la fixture représentative de chaque type déclaré ;
 - [`native-desktop-reader-acceptance.yml`](.github/workflows/native-desktop-reader-acceptance.yml) : lecteurs officiels Desktop macOS et Windows ;
 - [`native-corpus-device-targeted.yml`](.github/workflows/native-corpus-device-targeted.yml) : retest manuel borné d'un device, d'un provider ou du corpus natif ciblé.
 
-Les preuves sont **indépendantes par client et par device** : une réussite Desktop ne vaut pas automatiquement réussite Mobile ou TV. Les Labs peuvent inclure des providers `enabled:false` afin de diagnostiquer ou revalider un provider sans le réactiver implicitement.
+Les preuves sont **indépendantes par client et par device** : une réussite Desktop ne vaut pas automatiquement réussite Mobile ou TV. Les Labs peuvent inclure des providers `enabled:false` afin de diagnostiquer ou revalider un provider sans le réactiver implicitement. Les workflows natifs lourds s'exécutent sur `main` ou manuellement, pas sur chaque PR : ils enrichissent la preuve sans bloquer la publication normale.
 
 La politique du corpus conserve une cible de couverture de **10 providers dont 3 VF**, mais cette cible n'est pas un seuil automatique de publication (`blocking:false`, `enforce_policy:false`). En revanche, une contradiction d'identité, de saison, d'épisode ou de média final reste un signal bloquant pour la preuve concernée et ne doit jamais être transformée en succès de couverture.
 
-Les timeouts isolés peuvent être retentés de manière bornée. Les artifacts natifs temporaires sont conservés **1 jour** et les preuves persistées restent sanitizées : pas d'URL de lecture complète, de token, de cookie ou de valeur d'en-tête sensible.
+Chaque exécution provider est bornée individuellement. Un timeout natif n'est pas rejoué en boucle dans le même Lab : il devient une preuve exploitable par Learning/Deep, qui décide d'un éventuel repair/retest borné. Les artifacts natifs temporaires sont conservés **1 jour** et les preuves persistées restent sanitizées : pas d'URL de lecture complète, de token, de cookie ou de valeur d'en-tête sensible.
 
 ## Cycle de réparation et publication
 
