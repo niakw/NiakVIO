@@ -134,4 +134,23 @@ apply_mod.apply_overrides('cineby', b'module.exports={getStreams:async()=>[]};\n
 ordinary_media = [opts for pid,path,opts in captured if pid == 'cineby' and path.endswith('global_media_enrichment_v1.py')]
 assert ordinary_media, captured
 assert not ordinary_media[-1].get('default_user_agent'), ordinary_media[-1]
-# media policy must propagate provider-scoped options
+
+captured.clear()
+apply_mod.apply_overrides('moviebox', b'module.exports={getStreams:async()=>[]};\n', phase='discovery')
+moviebox_safety = [
+    opts for pid,path,opts in captured
+    if pid == 'moviebox' and path.endswith('runtime_capability_media_safety_v4.py')
+]
+assert moviebox_safety, captured
+assert moviebox_safety[-1].get('strict_playback') is True, moviebox_safety[-1]
+assert moviebox_safety[-1].get('duration_identity') is True, moviebox_safety[-1]
+
+captured.clear()
+apply_mod.apply_overrides('cineby', b'module.exports={getStreams:async()=>[]};\n', phase='discovery')
+cineby_safety = [
+    opts for pid,path,opts in captured
+    if pid == 'cineby' and path.endswith('runtime_capability_media_safety_v4.py')
+]
+assert cineby_safety, captured
+assert cineby_safety[-1].get('strict_playback') is not True, cineby_safety[-1]
+# media/safety policy must propagate declarative capability options without provider-id logic
