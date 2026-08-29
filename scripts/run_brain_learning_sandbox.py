@@ -3,13 +3,10 @@
 
 Routine provider workflows stay conservative and reuse known, validated skills.
 The Learning window is intentionally broader: it restores sanitized positive and
-negative cross-day memory, rotates bounded exploratory profiles across the whole
-catalogue, learns from accepted/rejected experiments, and never publishes directly.
-
-After the bounded repair pass, Learning may run one lightweight targeted Nuvio
-client-runtime Lab for a single provider. The fixture is chosen from the first
-media type declared by that provider. Only a sanitized summary is attached to
-the repair report and may enter persistent learning state.
+negative cross-day memory, observes the whole catalogue, but concentrates
+experimental repair hypotheses on one selected provider. The Core diagnosis is
+evidence, never authority: Learning may contradict it with independent Lab and
+route evidence. This sandbox never publishes directly.
 """
 from __future__ import annotations
 
@@ -17,7 +14,6 @@ import hashlib
 import json
 import os
 import re
-import subprocess
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -26,8 +22,6 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = ROOT / "scripts"
 OVERRIDES = ROOT / "provider-overrides.json"
-MANIFEST = ROOT / "manifest.json"
-FIXTURES = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
 sys.path.insert(0, str(SCRIPTS))
 
 import run_adaptive_quick_repair as quick  # noqa: E402
@@ -214,186 +208,6 @@ def _arg_value(name: str, default: str = "") -> str:
     return str(args[index + 1])
 
 
-def _load_json_file(path: Path) -> dict[str, Any]:
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return {}
-    return value if isinstance(value, dict) else {}
-
-
-def _provider_from_parent_key(value: Any) -> str:
-    raw = str(value or "").strip()
-    if ":" in raw:
-        return raw.split(":", 1)[1].split("::", 1)[0].strip()
-    return raw.split("::", 1)[0].strip()
-
-
-def _select_targeted_provider(repair: dict[str, Any], manifest: dict[str, Any]) -> dict[str, Any] | None:
-    rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
-    by_id: dict[str, dict[str, Any]] = {}
-    for row in rows:
-        for value in (row.get("id"), row.get("name")):
-            if _norm(value):
-                by_id[_norm(value)] = row
-
-    forced = _norm(os.environ.get("NUVIO_BRAIN_TARGET_PROVIDER"))
-    if forced:
-        return by_id.get(forced)
-
-    candidates: list[str] = []
-    for round_row in repair.get("rounds") or []:
-        if not isinstance(round_row, dict):
-            continue
-        for bucket in ("accepted", "rejected", "attempts"):
-            for row in round_row.get(bucket) or []:
-                if not isinstance(row, dict):
-                    continue
-                candidate = _provider_from_parent_key(row.get("parent_key"))
-                if candidate:
-                    candidates.append(candidate)
-    plans = repair.get("brain", {}).get("plans", {}) if isinstance(repair.get("brain"), dict) else {}
-    if isinstance(plans, dict):
-        for row in plans.values():
-            if isinstance(row, dict) and row.get("providerId"):
-                candidates.append(str(row.get("providerId")))
-    for candidate in candidates:
-        match = by_id.get(_norm(candidate))
-        if match is not None:
-            return match
-    return None
-
-
-def _first_declared_type(provider: dict[str, Any]) -> str:
-    raw = provider.get("supportedTypes") or []
-    if isinstance(raw, str):
-        raw = [raw]
-    for value in raw if isinstance(raw, list) else []:
-        normalized = _norm(value)
-        if normalized in {"movie", "tv", "anime"}:
-            return normalized
-        if normalized in {"series", "show"}:
-            return "tv"
-    return "movie"
-
-
-def _fixture_for_type(media_type: str) -> tuple[str, dict[str, Any]] | None:
-    preferred = {
-        "movie": "sinners-2025",
-        "tv": "breaking-bad-s01e01",
-        "anime": "jujutsu-kaisen-s01e01",
-    }
-    data = _load_json_file(FIXTURES)
-    target = preferred.get(media_type, "sinners-2025")
-    for row in data.get("fixtures") or []:
-        if isinstance(row, dict) and str(row.get("slug") or "") == target and isinstance(row.get("fixture"), dict):
-            return target, dict(row["fixture"])
-    return None
-
-
-def _run_targeted_client_lab() -> None:
-    output_dir = Path(_arg_value("--output", str(ROOT / "health-output"))).resolve()
-    repair_path = output_dir / "repair-report.json"
-    repair = _load_json_file(repair_path)
-    manifest = _load_json_file(MANIFEST)
-    provider = _select_targeted_provider(repair, manifest)
-    if provider is None:
-        print("FIELD_BRAIN_TARGETED_LAB status=skipped reason=no_provider_target", file=sys.stderr)
-        return
-
-    media_type = _first_declared_type(provider)
-    selected_fixture = _fixture_for_type(media_type)
-    if selected_fixture is None:
-        print("FIELD_BRAIN_TARGETED_LAB status=skipped reason=no_fixture", file=sys.stderr)
-        return
-    fixture_slug, fixture = selected_fixture
-    provider_id = str(provider.get("id") or provider.get("name") or "").strip()
-    clients_raw = str(os.environ.get("NUVIO_BRAIN_TARGET_CLIENTS") or "tv,desktop,mobile")
-    clients = [value.strip().casefold() for value in clients_raw.split(",") if value.strip()]
-    clients = [value for value in clients if value in {"tv", "desktop", "mobile"}] or ["tv", "desktop", "mobile"]
-
-    config = {
-        "providers": [provider_id],
-        "fixture": fixture,
-        "clients": clients,
-        "manifest": "manifest.json",
-        "provider_concurrency": 1,
-        "provider_timeout_ms": 25000,
-        "retry_provider_timeouts": False,
-        "playback_timeout_ms": 8000,
-        "max_streams_per_runtime": 1,
-        "enforce_policy": False,
-    }
-    config_path = output_dir / "brain-targeted-lab-config.json"
-    report_path = output_dir / "brain-targeted-lab.json"
-    markdown_path = output_dir / "brain-targeted-lab.md"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-
-    status = "inconclusive"
-    error = ""
-    try:
-        completed = subprocess.run(
-            [
-                "node",
-                str(ROOT / "scripts" / "nuvio_client_lab.cjs"),
-                "--config",
-                str(config_path),
-                "--out",
-                str(report_path),
-                "--markdown",
-                str(markdown_path),
-            ],
-            cwd=ROOT,
-            text=True,
-            capture_output=True,
-            timeout=90,
-            check=False,
-        )
-        status = "completed" if report_path.is_file() else "inconclusive"
-        if completed.returncode not in {0, 2}:
-            error = _safe_text(completed.stderr or completed.stdout, 240)
-    except (OSError, subprocess.TimeoutExpired) as exc:
-        error = _safe_text(exc, 240)
-
-    lab = _load_json_file(report_path)
-    provider_report = next(
-        (row for row in lab.get("providers") or [] if isinstance(row, dict)),
-        {},
-    )
-    client_summary: dict[str, Any] = {}
-    for client in clients:
-        row = provider_report.get("clients", {}).get(client, {}) if isinstance(provider_report.get("clients"), dict) else {}
-        if not isinstance(row, dict):
-            row = {}
-        client_summary[client] = {
-            "verdict": _safe_text(row.get("verdict") or "unknown", 40),
-            "identityStatus": _safe_text(row.get("identity_status") or "unknown", 40),
-            "runtimeStreams": max(0, int(row.get("runtime_stream_count") or 0)),
-            "playableProbes": max(0, int(row.get("playable_probe_count") or 0)),
-        }
-    policy = lab.get("policy") if isinstance(lab.get("policy"), dict) else {}
-    repair["targetedLab"] = {
-        "status": status,
-        "providerId": _norm(provider_id),
-        "firstDeclaredType": media_type,
-        "fixtureSlug": fixture_slug,
-        "clients": client_summary,
-        "safetyStatus": _safe_text(policy.get("safety_status") or "unknown", 40),
-        "error": error or None,
-        "bounded": True,
-        "maxProviders": 1,
-        "maxStreamsPerRuntime": 1,
-    }
-    repair_path.write_text(json.dumps(repair, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(
-        "FIELD_BRAIN_TARGETED_LAB "
-        f"status={status} provider={_norm(provider_id)} first_type={media_type} fixture={fixture_slug} "
-        f"clients={','.join(clients)}",
-        file=sys.stderr,
-    )
-
-
 def main() -> int:
     state = _load_state()
     negative = _negative_entries(state)
@@ -404,6 +218,7 @@ def main() -> int:
     exploration_share = max(0.0, min(1.0, float(lab.get("explorationShare") or 0.35)))
     exploration_limit = max(1, min(3, int(lab.get("maxExploratoryProfilesPerProvider") or 1)))
     day = datetime.now(timezone.utc).date().isoformat()
+    target_provider = _norm(os.environ.get("NUVIO_BRAIN_TARGET_PROVIDER"))
     routine_matcher = quick._brain_matching_profiles
     broad_matcher = quick._base_matching_profiles
     counters = {"exploredProviders": 0, "exploratoryProfiles": 0, "suppressedProfiles": 0}
@@ -416,6 +231,9 @@ def main() -> int:
         plan_key = parent_key or key
         plan = quick.brain.PLANS.get(plan_key) or {}
         provider_id = _norm(plan.get("providerId") or candidate.get("canonical_id") or candidate.get("upstream_id"))
+        if target_provider and provider_id != target_provider:
+            plan["learningTargetSkipped"] = True
+            return []
         provider_version = _version(candidate)
         signature = str(plan.get("signature") or plan.get("failureClass") or "unknown_failure")
         failure_class = str(plan.get("failureClass") or "unknown_failure")
@@ -447,7 +265,10 @@ def main() -> int:
         can_explore = (
             failure_class not in FORBIDDEN_EXPLORATION_FAILURES
             and bool(exploratory_pool)
-            and _exploration_gate(day, provider_id, signature, exploration_share)
+            and (
+                (target_provider and provider_id == target_provider)
+                or _exploration_gate(day, provider_id, signature, exploration_share)
+            )
         )
         if can_explore:
             chosen = _choose_exploratory_profiles(
@@ -475,7 +296,8 @@ def main() -> int:
     print(
         "FIELD_BRAIN_LEARNING_MODE "
         f"negative_entries={len(negative)} restored_skills={restored_skills} "
-        f"exploration_share={exploration_share:.2f} exploration_limit={exploration_limit} day={day}",
+        f"target_provider={target_provider or 'none'} exploration_share={exploration_share:.2f} "
+        f"exploration_limit={exploration_limit} day={day}",
         file=sys.stderr,
     )
     try:
@@ -488,8 +310,6 @@ def main() -> int:
         f"suppressed={counters['suppressedProfiles']}",
         file=sys.stderr,
     )
-    if rc == 0:
-        _run_targeted_client_lab()
     return rc
 
 
