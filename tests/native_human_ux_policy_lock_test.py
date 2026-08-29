@@ -5,8 +5,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 POLICY = json.loads((ROOT / "automation/native-human-ux-policy.json").read_text(encoding="utf-8"))
-TV_WORKFLOW = (ROOT / ".github/workflows/native-tv-route-reader.yml").read_text(encoding="utf-8")
-MOBILE_ANDROID_WORKFLOW = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
+ANDROID_WORKFLOW = (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
+TV_WORKFLOW = ANDROID_WORKFLOW.split("\n  tv-route-reader:", 1)[1].split("\n  mobile-android-reader:", 1)[0]
+MOBILE_ANDROID_WORKFLOW = ANDROID_WORKFLOW.split("\n  mobile-android-reader:", 1)[1]
 ANDROID_WORKFLOWS = (TV_WORKFLOW, MOBILE_ANDROID_WORKFLOW)
 
 assert POLICY["version"] >= 6
