@@ -125,6 +125,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, default=ROOT / "staging")
     parser.add_argument("--output", type=Path, default=ROOT / "health-output")
+    parser.add_argument("--registry", type=Path, default=None)
     parser.add_argument("--mode", choices=["deep"], default="deep")
     parser.add_argument("--max-rounds", type=int)
     parser.add_argument("--health-check", type=Path, default=HEALTH_CHECK, help=argparse.SUPPRESS)
@@ -132,7 +133,7 @@ def main() -> int:
 
     stage = args.stage.resolve()
     output = args.output.resolve()
-    registry_path = stage / "candidates.json"
+    registry_path = args.registry.resolve() if args.registry is not None else stage / "candidates.json"
     if not registry_path.exists():
         raise SystemExit(f"missing candidate registry: {registry_path}")
     output.mkdir(parents=True, exist_ok=True)
