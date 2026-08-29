@@ -74,6 +74,41 @@ def language(test: dict[str, Any]) -> dict[str, Any]:
     return {"group": "unknown", "confidence": "none", "evidence": []}
 
 
+def dns_detail_summary(preflight: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    domains: list[dict[str, Any]] = []
+    french_isps: list[dict[str, Any]] = []
+    for domain in preflight.get("domains") or []:
+        if not isinstance(domain, dict):
+            continue
+        host = str(domain.get("host") or "")
+        domains.append(
+            {
+                "domain": host,
+                "status": domain.get("status"),
+                "evidence_state": domain.get("evidence_state"),
+                "failure_kind": domain.get("french_failure_kind"),
+            }
+        )
+        for check in domain.get("french_checks") or []:
+            if not isinstance(check, dict):
+                continue
+            dns = check.get("dns") if isinstance(check.get("dns"), dict) else {}
+            http = check.get("http") if isinstance(check.get("http"), dict) else {}
+            french_isps.append(
+                {
+                    "domain": host,
+                    "isp": check.get("isp"),
+                    "dns": dns.get("status"),
+                    "http": http.get("status"),
+                    "dns_rate_limited": bool(dns.get("rate_limited")),
+                    "http_rate_limited": bool(http.get("rate_limited")),
+                    "dns_error": dns.get("error"),
+                    "http_error": http.get("error"),
+                }
+            )
+    return domains, french_isps
+
+
 def error_summary(test: dict[str, Any]) -> dict[str, Any] | None:
     detail = test.get("error_details") or {}
     if not detail and not test.get("error"):
@@ -108,6 +143,7 @@ def main() -> None:
         global_statuses.update([str(item.get("status") or "unknown")])
         preflight = item.get("dns_preflight") or {}
         decision = preflight.get("decision") or {}
+        dns_domains, dns_french_isps = dns_detail_summary(preflight)
         errors = [summary for test in tests if (summary := error_summary(test))]
         status_counts = Counter(str(test.get("status") or "unknown") for test in tests)
         providers.append(
@@ -120,6 +156,8 @@ def main() -> None:
                 "dns_preflight_status": preflight.get("dns_status"),
                 "dns_preflight_internal_status": decision.get("status"),
                 "dns_resolver": decision.get("selected_resolver"),
+                "dns_domain_results": dns_domains,
+                "dns_french_isp_results": dns_french_isps,
                 "dns_migration_candidate": (decision.get("migration_candidate") or {}).get("host")
                 if isinstance(decision.get("migration_candidate"), dict)
                 else None,
@@ -143,7 +181,7 @@ def main() -> None:
         )
 
     report = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "source_health_schema_version": payload.get("schema_version"),
         "provider_count": len(providers),
