@@ -23,6 +23,9 @@ on:
       - "scripts/run_brain_learning_sandbox.py"
       - "health-config.json"
       - "scripts/nuvio_client_lab.cjs"
+      - "engine_v2/src/tmdb-metadata.mjs"
+      - "scripts/provider_patches/global_media_type_resolution_v1.py"
+      - "scripts/native_media_type_contract.py"
       - "scripts/deep_repair_loop.py"
       - "scripts/run_adaptive_quick_repair.py"
       - "scripts/run_brain_learning_queue.py"
@@ -30,6 +33,7 @@ on:
       - "scripts/resolve_provider_hubs.py"
       - "scripts/brain_repair_runtime.py"
       - "scripts/build_brain_repair_proposal.py"
+      - "scripts/materialize_clean_provider_reconstruction.py"
       - "scripts/build_brain_architecture_proposal.py"
       - "tests/brain_self_architecture_test.py"
       - "engine_v2/config/brain-self-evolution.json"
@@ -38,6 +42,8 @@ on:
       - "scripts/merge_native_reader_learning_failures.py"
       - "scripts/classify_native_reader_ownership.py"
       - "scripts/discover_candidates.py"
+      - "scripts/provider_base_store.py"
+      - "tests/provider_clean_reconstruction_contract_test.py"
       - "scripts/apply_provider_overrides.py"
       - "scripts/provider_patches/**"
       - "tests/brain_cron_full_coverage_test.py"
@@ -60,6 +66,9 @@ jobs:
   experiment:
     name: LEARNING - Sandbox repair and evidence
     runs-on: ubuntu-latest
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     # Full-catalogue observation runs before the independent 60-minute adaptive queue.
     # Keep enough job headroom for setup, observation, queue reserve and sanitized finalization.
     timeout-minutes: 120
@@ -98,10 +107,12 @@ jobs:
           python tests/brain_self_architecture_test.py
           python tests/native_reader_provider_retention_policy_test.py
           python tests/native_reader_ownership_policy_test.py
+          python tests/provider_clean_reconstruction_contract_test.py
           python -m py_compile \
             scripts/run_brain_learning_sandbox.py \
             scripts/run_brain_learning_queue.py \
             scripts/build_brain_repair_proposal.py \
+            scripts/materialize_clean_provider_reconstruction.py \
             scripts/build_brain_architecture_proposal.py \
             scripts/build_native_reader_brain_repair.py \
             scripts/build_native_reader_learning_summary.py \
@@ -181,6 +192,39 @@ jobs:
             --health brain-sandbox/full-health/health-results.json \
             --output brain-sandbox/daily-learning-coverage.json
 
+      - name: Build clean ProviderBase reconstruction stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf staging-reconstruction
+          python scripts/discover_candidates.py \
+            --stage staging-reconstruction \
+            --require-all-upstreams \
+            --clean-reconstruction
+          node engine_v2/scripts/validate-stage-against-catalog.mjs \
+            --catalog provider_catalog.json \
+            --stage staging-reconstruction/candidates.json
+          python scripts/build_provider_runtime_profiles.py \
+            --stage staging-reconstruction \
+            --apply-stage
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging-reconstruction
+          python scripts/validate_override_pipeline.py --stage staging-reconstruction
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('staging-reconstruction/candidates.json','utf8'));
+          const candidates=(x.candidates||[]).filter(Boolean);
+          const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase(),r]));
+          if(byId.size!==95) throw new Error('clean reconstruction stage must cover the canonical 95 providers, got '+byId.size);
+          const rows=[...byId.values()].filter(r=>r.provider_base_reconstruction_required===true);
+          if(rows.some(r=>r.candidate_code_origin!=='new-niakvio-clean-seed')) {
+            throw new Error('clean reconstruction stage contains a legacy executable seed');
+          }
+          if(candidates.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
+            throw new Error('legacy/upstream JS execution escaped into clean reconstruction stage');
+          }
+          console.log('FIELD_CLEAN_RECONSTRUCTION_STAGE total='+byId.size+' required='+rows.length);
+          NODE
+
       - name: Run adaptive Learning provider queue
         shell: bash
         env:
@@ -188,7 +232,7 @@ jobs:
         run: |
           set -euo pipefail
           args=(python scripts/run_brain_learning_queue.py
-            --stage staging
+            --stage staging-reconstruction
             --health brain-sandbox/full-health/health-results.json
             --previous-state brain-learning-input/previous.json
             --output-dir brain-sandbox/health-output
@@ -264,12 +308,21 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/build_brain_repair_proposal.py \
-            --stage staging/candidates.json \
+            --stage staging-reconstruction/candidates.json \
             --repair-report brain-sandbox/health-output/repair-report.json \
             --overrides provider-overrides.json \
             --output brain-learning-output/provider-overrides.proposed.json \
             --summary brain-learning-output/repair-proposal.json
           node -e "const x=require('./brain-learning-output/repair-proposal.json'); if(x.policy?.publicationAllowed!==false||x.policy?.productionWritesAllowed!==false||x.policy?.pullRequestOnly!==true||x.policy?.requiresHumanMerge!==true) process.exit(1)"
+          mkdir -p brain-learning-output/provider-bases
+          python scripts/materialize_clean_provider_reconstruction.py \
+            --stage staging-reconstruction/candidates.json \
+            --queue-summary brain-sandbox/health-output/learning-queue-summary.json \
+            --overrides brain-learning-output/provider-overrides.proposed.json \
+            --output-dir brain-learning-output/provider-bases \
+            --proposed-provenance brain-learning-output/PROVENANCE.proposed.json \
+            --summary brain-learning-output/provider-reconstruction-proposal.json
+          node -e "const x=require('./brain-learning-output/provider-reconstruction-proposal.json'); if(x.policy?.publicationAllowed!==false||x.policy?.productionWritesAllowed!==false||x.policy?.pullRequestOnly!==true||x.policy?.requiresHumanMerge!==true||x.policy?.canonicalPipelineProofRequired!==true) process.exit(1)"
 
       - name: Materialize Brain self-architecture proposal
         shell: bash
@@ -297,6 +350,9 @@ jobs:
             brain-learning-output/latest.md
             brain-learning-output/provider-overrides.proposed.json
             brain-learning-output/repair-proposal.json
+            brain-learning-output/PROVENANCE.proposed.json
+            brain-learning-output/provider-reconstruction-proposal.json
+            brain-learning-output/provider-bases/
             brain-learning-output/brain-policy.proposed.json
             brain-learning-output/brain-architecture-proposal.json
             brain-learning-output/brain-architecture-proposal.md
@@ -392,20 +448,29 @@ jobs:
           set -euo pipefail
           test -s brain-learning-output/provider-overrides.proposed.json
           test -s brain-learning-output/repair-proposal.json
+          test -s brain-learning-output/PROVENANCE.proposed.json
+          test -s brain-learning-output/provider-reconstruction-proposal.json
           python -m json.tool brain-learning-output/provider-overrides.proposed.json >/dev/null
+          python -m json.tool brain-learning-output/PROVENANCE.proposed.json >/dev/null
           node - <<'NODE'
           const fs=require('fs');
           const x=JSON.parse(fs.readFileSync('brain-learning-output/repair-proposal.json','utf8'));
+          const reconstruction=JSON.parse(fs.readFileSync('brain-learning-output/provider-reconstruction-proposal.json','utf8'));
           if (x.policy?.publicationAllowed !== false ||
               x.policy?.productionWritesAllowed !== false ||
               x.policy?.pullRequestOnly !== true ||
-              x.policy?.requiresHumanMerge !== true) {
+              x.policy?.requiresHumanMerge !== true ||
+              reconstruction.policy?.publicationAllowed !== false ||
+              reconstruction.policy?.canonicalPipelineProofRequired !== true) {
             throw new Error('unsafe Brain proposal policy');
           }
           const count=Number(x.proposalCount||0);
-          console.log('FIELD_BRAIN_PR_CANDIDATE proposals='+count+' provider='+Number(x.providerProposalCount||0)+' skills='+Number(x.learnedSkillProposalCount||0));
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'proposal_count='+count+'\n');
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_changes='+(count>0?'true':'false')+'\n');
+          const reconstructionCount=Number(reconstruction.candidateCount||0);
+          const total=count+reconstructionCount;
+          console.log('FIELD_BRAIN_PR_CANDIDATE proposals='+count+' reconstructions='+reconstructionCount+' provider='+Number(x.providerProposalCount||0)+' skills='+Number(x.learnedSkillProposalCount||0));
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'proposal_count='+total+'\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'reconstruction_count='+reconstructionCount+'\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'has_changes='+(total>0?'true':'false')+'\n');
           NODE
 
       - name: Materialize only the validated configuration diff
@@ -416,13 +481,20 @@ jobs:
           set -euo pipefail
           cp brain-learning-output/provider-overrides.proposed.json provider-overrides.json
           python -m json.tool provider-overrides.json >/dev/null
+          if [ "${{ steps.proposal.outputs.reconstruction_count }}" != "0" ]; then
+            cp brain-learning-output/PROVENANCE.proposed.json PROVENANCE.json
+            mkdir -p provider-bases
+            cp brain-learning-output/provider-bases/*.js provider-bases/
+          fi
           python tests/brain_repair_proposal_test.py
           python tests/overrides_test.py
+          python tests/provider_base_layering_contract_test.py
+          python tests/provider_clean_reconstruction_contract_test.py
           node engine_v2/tests/repair-brain.test.mjs
           node engine_v2/tests/recipe-memory.test.mjs
-          if git diff --quiet -- provider-overrides.json; then
+          if git diff --quiet -- provider-overrides.json PROVENANCE.json provider-bases; then
             echo "has_diff=false" >> "$GITHUB_OUTPUT"
-            echo "Brain produced proposal metadata but no production configuration diff."
+            echo "Brain produced proposal metadata but no reviewable configuration/base diff."
           else
             echo "has_diff=true" >> "$GITHUB_OUTPUT"
           fi
@@ -440,17 +512,19 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
           git switch -C "$BRANCH" main
-          git add provider-overrides.json
+          git add provider-overrides.json PROVENANCE.json provider-bases
           git commit -m "brain: propose validated learning repairs"
           git push --force-with-lease origin HEAD:"$BRANCH"
 
           PROVIDER_COUNT="$(node -e "const x=require('./$SUMMARY');process.stdout.write(String(x.providerProposalCount||0))")"
+          RECONSTRUCTION_COUNT="$(node -e "const x=require('./brain-learning-output/provider-reconstruction-proposal.json');process.stdout.write(String(x.candidateCount||0))")"
           SKILL_COUNT="$(node -e "const x=require('./$SUMMARY');process.stdout.write(String(x.learnedSkillProposalCount||0))")"
           PROVIDERS="$(node -e "const x=require('./$SUMMARY');process.stdout.write((x.providers||[]).join(', ')||'none')")"
           BODY="$(cat <<EOF
           Automated NiakVIO Brain learning proposal from the daily full-catalogue observation plus one targeted experimental provider.
 
           - Concrete provider repairs: ${PROVIDER_COUNT}
+          - Clean ProviderBase v2 candidates: ${RECONSTRUCTION_COUNT}
           - Validated learned-skill promotions: ${SKILL_COUNT}
           - Providers with concrete override changes: ${PROVIDERS}
           - Production writes from the Brain: disabled

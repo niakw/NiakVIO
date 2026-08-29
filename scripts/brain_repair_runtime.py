@@ -71,10 +71,31 @@ def _planner_candidate(candidate: dict[str, Any]) -> dict[str, Any]:
         supported_types = [_clip_text(supported, 64)]
     else:
         supported_types = []
+
+    raw_model = candidate.get("clean_provider_model") if isinstance(candidate.get("clean_provider_model"), dict) else {}
+    model = {
+        "strategy": _clip_text(raw_model.get("strategy"), 80),
+        "knownSite": _clip_text(raw_model.get("knownSite"), 240),
+        "officialSite": _clip_text(raw_model.get("officialSite"), 240),
+        "officialHub": _clip_text(raw_model.get("officialHub"), 240),
+        "officialApi": _clip_text(raw_model.get("officialApi"), 240),
+        "fixedApi": _clip_text(raw_model.get("fixedApi"), 240),
+        "origins": [_clip_text(value, 240) for value in (raw_model.get("origins") or [])[:24]],
+        "routes": [_clip_text(value, 240) for value in (raw_model.get("routes") or [])[:32]],
+        "observedUrls": [_clip_text(value, 320) for value in (raw_model.get("observedUrls") or [])[:32]],
+        "knowledgeRole": "structured-observation-only",
+        "legacyCodeExecuted": False,
+    }
     return {
         "canonical_id": _clip_text(candidate.get("canonical_id"), 160),
         "upstream_id": _clip_text(candidate.get("upstream_id"), 160),
         "metadata": {"supportedTypes": supported_types},
+        "provider_base_reconstruction_required": candidate.get("provider_base_reconstruction_required") is True,
+        "clean_reconstruction_mode": candidate.get("clean_reconstruction_mode") is True,
+        "candidate_code_origin": _clip_text(candidate.get("candidate_code_origin"), 120),
+        "clean_provider_model": model,
+        "upstream_code_role": "knowledge-only",
+        "upstream_code_executed": False,
     }
 
 

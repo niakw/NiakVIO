@@ -48,15 +48,17 @@ results = {
 
 rendered = module.render(results)
 
-for label in ("TV", "Mobile", "Desktop macOS", "Desktop Windows"):
+for label in ("TV", "Mobile Android", "Mobile iOS", "Desktop macOS", "Desktop Windows"):
     assert f"**{label}**" in rendered, label
 
 assert "| 📺 **TV** | **1** | **1** | `2026-08-27` | ✅ Couvert par une preuve native |" in rendered
-assert "| 📱 **Mobile** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |" in rendered
+assert "| 🤖 **Mobile Android** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |" in rendered
+assert "| 🍎 **Mobile iOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |" in rendered
 assert "| 🖥️ **Desktop macOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |" in rendered
 assert "| 🪟 **Desktop Windows** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |" in rendered
 assert "📺 **TV** ✅" in rendered
-assert "📱 **Mobile** ✅" not in rendered
+assert "🤖 **Mobile Android** ✅" not in rendered
+assert "🍎 **Mobile iOS** ✅" not in rendered
 assert "fixtures de test" in rendered
 assert "TESTING_NOTICE.md" in rendered
 assert "DISCLAIMER.md" in rendered

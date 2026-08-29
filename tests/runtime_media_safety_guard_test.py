@@ -66,6 +66,7 @@ def run_node(source: str, fetch_impl: str, expression: str) -> object:
         runner = root / "runner.cjs"
         provider.write_text(source, encoding="utf-8")
         runner.write_text(
+            "global.TMDB_API_KEY=String(1);\n"
             "global.fetch=" + fetch_impl + ";\n"
             "const p=require(" + json.dumps(str(provider)) + ");\n"
             + expression

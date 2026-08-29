@@ -57,7 +57,9 @@ Le pipeline régénère également les versions, projections de langue, provenan
 
 Une modification du chemin de playback partagé doit être suivie des preuves natives appropriées :
 
-- Nuvio Mobile et NuvioTV / Android TV : `.github/workflows/native-android-route-reader.yml` ;
+- NuvioTV / Android TV : `.github/workflows/native-tv-route-reader.yml` ;
+- Nuvio Mobile Android : `.github/workflows/native-mobile-android-reader.yml` ;
+- Nuvio Mobile iOS : `.github/workflows/native-mobile-ios-reader.yml` ;
 - Nuvio Desktop macOS/Windows : `.github/workflows/native-desktop-reader-acceptance.yml` ;
 - corpus natif ciblé : `.github/workflows/native-corpus-device-targeted.yml`.
 

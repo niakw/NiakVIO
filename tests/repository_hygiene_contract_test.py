@@ -181,8 +181,14 @@ assert """  cleanup:
 
 install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
 assert "final-native-client-validation-v2.yml" not in install
-assert "native-android-route-reader.yml" in install
-assert "native-desktop-reader-acceptance.yml" in install
+for native_workflow in (
+    "native-tv-route-reader.yml",
+    "native-mobile-android-reader.yml",
+    "native-mobile-ios-reader.yml",
+    "native-desktop-reader-acceptance.yml",
+):
+    assert native_workflow in install
+assert "native-android-route-reader.yml" not in install
 
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 readme_fr = (ROOT / "README.fr.md").read_text(encoding="utf-8")
@@ -212,7 +218,9 @@ validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
 assert "provider-engine-v2.yml" not in architecture
 assert "nuvio-client-lab.yml" not in validation
 for current_workflow in (
-    "native-android-route-reader.yml",
+    "native-tv-route-reader.yml",
+    "native-mobile-android-reader.yml",
+    "native-mobile-ios-reader.yml",
     "native-desktop-reader-acceptance.yml",
     "native-corpus-device-targeted.yml",
 ):

@@ -4,9 +4,12 @@ from __future__ import annotations
 import argparse
 import json
 import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from native_media_type_contract import fixture_media_type  # noqa: E402
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 
 
@@ -96,7 +99,7 @@ def common_fixture_values(fixture: dict) -> dict[str, str]:
     return {
         "slug": kotlin_string(fixture["slug"]),
         "tmdb": kotlin_string(fixture.get("tmdbId") or ""),
-        "media_type": kotlin_string(fixture.get("mediaType") or "movie"),
+        "media_type": kotlin_string(fixture_media_type(fixture)),
         "title": kotlin_string(fixture.get("title") or fixture["slug"]),
         "season": "null" if season in (None, "") else str(int(season)),
         "episode": "null" if episode in (None, "") else str(int(episode)),

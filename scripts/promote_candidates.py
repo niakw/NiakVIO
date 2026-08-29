@@ -38,7 +38,14 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
-from provider_base_store import persist_base_from_published, persist_base_from_seed, resolve_base
+from provider_base_store import (
+    CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+    CLEAN_RECONSTRUCTION_SOURCE,
+    persist_base_from_published,
+    persist_clean_provider_seed,
+    requires_clean_reconstruction,
+    resolve_base,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 STAGE = Path(os.environ.get("NUVIO_STAGE", ROOT / "staging")).resolve()
@@ -195,6 +202,30 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
     if staged_digest != candidate["sha256"]:
         raise ValueError(f"hash mismatch for {candidate['key']}")
 
+    previous_requires_clean = requires_clean_reconstruction(previous_base_row)
+    origin = str(candidate.get("candidate_code_origin") or "")
+    source = str(candidate.get("source") or "")
+    if previous_requires_clean and source in {"published-baseline", "local-lkg"}:
+        raise ValueError(
+            f"{candidate['canonical_id']}: compatibility/LKG JavaScript cannot seed or replace ProviderBase; clean reconstruction required"
+        )
+    if bool(candidate.get("provider_base_reconstruction_required")) and origin == "legacy-providerbase-compatibility-only":
+        raise ValueError(
+            f"{candidate['canonical_id']}: legacy ProviderBase is compatibility-only; publication frozen until clean reconstruction"
+        )
+
+    if candidate.get("source") not in {"published-baseline", "local-lkg"}:
+        if candidate.get("upstream_code_role") != "knowledge-only":
+            raise ValueError(f"{candidate['canonical_id']}: upstream code role must be knowledge-only")
+        if candidate.get("upstream_code_executed") is not False:
+            raise ValueError(f"{candidate['canonical_id']}: upstream JavaScript must never be executable candidate input")
+        if str(candidate.get("candidate_code_origin") or "") not in {
+            "existing-niakvio-provider-base-v2",
+            "pending-niakvio-clean-reconstruction-v2",
+            "new-niakvio-clean-seed",
+        }:
+            raise ValueError(f"{candidate['canonical_id']}: candidate is not NiakVIO-owned")
+
     # Defence in depth: reapply provider overrides in the write-enabled
     # promotion job. The operation is idempotent, so a correctly patched
     # staging artifact remains byte-identical. This prevents an unpatched
@@ -240,6 +271,11 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
     except ValueError as exc:
         if "contains derived publication layer(s)" not in str(exc):
             raise
+        if previous_requires_clean:
+            raise ValueError(
+                f"{candidate['canonical_id']}: clean reconstruction candidate could not be reduced "
+                "to a valid ProviderBase; refusing legacy ProviderBase fallback"
+            ) from exc
         previous = previous_base_row if isinstance(previous_base_row, dict) else {}
         previous_path, previous_sha = resolve_base(
             candidate["canonical_id"],
@@ -251,15 +287,10 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
             base_sha256 = previous_sha
             base_stripped_generated_core = False
         else:
-            upstream_sha = str(candidate.get("upstream_sha256") or "").strip().casefold()
-            raw_seed = STAGE / "upstream-lkg-pending" / "providers" / f"{upstream_sha}.js"
-            if not upstream_sha or not raw_seed.is_file():
-                raise ValueError(
-                    f"{candidate['canonical_id']}: derived candidate cannot seed ProviderBase and no clean prior/raw seed exists"
-                ) from exc
-            base_filename, base_sha256, base_stripped_generated_core = persist_base_from_seed(
+            base_filename, base_sha256, base_stripped_generated_core = persist_clean_provider_seed(
                 candidate["canonical_id"],
-                raw_seed.read_bytes(),
+                candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {},
+                known_site=str(candidate.get("observed_upstream_site") or "").strip() or None,
             )
     candidate["provider_base_filename"] = base_filename
     candidate["provider_base_sha256"] = base_sha256
@@ -2055,13 +2086,23 @@ def main() -> int:
                     previous_provenance.get("providers", {}).get(cid, {}),
                 )
             except (ValueError, OSError, subprocess.SubprocessError) as exc:
-                # A generated candidate may still be invalid after all upstream
-                # checks. Reject only that candidate, retain the last published
-                # local artifact when it is safe, and continue promoting the
-                # remaining providers. The validator diagnostic is surfaced in
-                # the Actions log instead of being hidden by capture_output.
+                message = str(exc)
+                reconstruction_pending = (
+                    "clean reconstruction required" in message
+                    or "publication frozen until clean reconstruction" in message
+                )
+                # A pre-v2 ProviderBase is intentionally frozen, not broken.
+                # Keep the exact published SHA until a NiakVIO-owned v2 candidate
+                # has passed Learning and the canonical pipeline. Other validator
+                # failures remain real errors.
+                annotation = "notice" if reconstruction_pending else "error"
+                title = (
+                    "Provider clean reconstruction pending"
+                    if reconstruction_pending
+                    else "Provider candidate rejected"
+                )
                 print(
-                    f"::error title=Provider candidate rejected::{cid}: {exc}",
+                    f"::{annotation} title={title}::{cid}: {exc}",
                     file=sys.stderr,
                 )
                 old_entry = existing.get(cid)
@@ -2078,39 +2119,77 @@ def main() -> int:
                     retained["enabled"] = bool(old_entry.get("enabled", False))
                     entries[cid] = retained
                     old_provenance = previous_provenance.get("providers", {}).get(cid, {})
-                    provenance[cid] = {
-                        **old_provenance,
-                        "id": cid,
-                        "published_filename": filename,
-                        "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
-                        "activation_eligible": False,
-                        "activation_blockers": ["generated_candidate_validation_failed"],
-                        "promotion_error": str(exc),
-                    }
-                    report_items.append(
-                        {
+                    if reconstruction_pending:
+                        provenance[cid] = {
+                            **old_provenance,
                             "id": cid,
-                            "action": "retained-local-copy-generated-candidate-invalid",
-                            "enabled": bool(retained.get("enabled", False)),
-                            "activation_eligible": False,
-                            "failed_gates": [],
-                            "activation_blockers": ["generated_candidate_validation_failed"],
-                            "activation_gates": {},
-                            "promotion_error": str(exc),
-                            "variant_count": len(variants),
+                            "published_filename": filename,
+                            "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+                            "clean_reconstruction_required": True,
+                            "legacy_provider_base_role": "compatibility-lkg-only",
+                            "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+                            "legacy_provider_js_executed_for_reconstruction": False,
+                            "activation_blockers": list(
+                                dict.fromkeys(
+                                    list(old_provenance.get("activation_blockers") or [])
+                                    + ["clean_reconstruction_pending"]
+                                )
+                            ),
                         }
-                    )
+                        report_items.append(
+                            {
+                                "id": cid,
+                                "action": "preserved-current-clean-reconstruction-pending",
+                                "enabled": bool(retained.get("enabled", False)),
+                                "activation_eligible": False,
+                                "failed_gates": [],
+                                "activation_blockers": ["clean_reconstruction_pending"],
+                                "activation_gates": {},
+                                "variant_count": len(variants),
+                            }
+                        )
+                    else:
+                        provenance[cid] = {
+                            **old_provenance,
+                            "id": cid,
+                            "published_filename": filename,
+                            "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+                            "activation_eligible": False,
+                            "activation_blockers": ["generated_candidate_validation_failed"],
+                            "promotion_error": message,
+                        }
+                        report_items.append(
+                            {
+                                "id": cid,
+                                "action": "retained-local-copy-generated-candidate-invalid",
+                                "enabled": bool(retained.get("enabled", False)),
+                                "activation_eligible": False,
+                                "failed_gates": [],
+                                "activation_blockers": ["generated_candidate_validation_failed"],
+                                "activation_gates": {},
+                                "promotion_error": message,
+                                "variant_count": len(variants),
+                            }
+                        )
                 else:
                     report_items.append(
                         {
                             "id": cid,
-                            "action": "omitted-generated-candidate-invalid-no-local-copy",
+                            "action": (
+                                "omitted-clean-reconstruction-pending-no-local-copy"
+                                if reconstruction_pending
+                                else "omitted-generated-candidate-invalid-no-local-copy"
+                            ),
                             "enabled": False,
                             "activation_eligible": False,
                             "failed_gates": [],
-                            "activation_blockers": ["generated_candidate_validation_failed"],
+                            "activation_blockers": [
+                                "clean_reconstruction_pending"
+                                if reconstruction_pending
+                                else "generated_candidate_validation_failed"
+                            ],
                             "activation_gates": {},
-                            "promotion_error": str(exc),
+                            **({} if reconstruction_pending else {"promotion_error": message}),
                             "variant_count": len(variants),
                         }
                     )
@@ -2179,7 +2258,14 @@ def main() -> int:
                 "patched_sha256": digest,
                 "base_filename": base_filename,
                 "base_sha256": base_sha256,
-                "base_source": "selected_candidate_post_provider_overrides_pre_core",
+                "base_source": CLEAN_RECONSTRUCTION_SOURCE,
+                "clean_reconstruction_verified": True,
+                "clean_reconstruction_authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+                "clean_reconstruction_required": False,
+                "clean_reconstruction_candidate_origin": selected.get("candidate_code_origin"),
+                "legacy_provider_js_executed_for_reconstruction": False,
+                "upstream_code_role": "knowledge-only",
+                "upstream_code_executed": False,
                 "base_migration_stripped_generated_core": bool(selected.get("provider_base_stripped_generated_core")),
                 "upstream_sha256": selected.get("upstream_sha256"),
                 "local_patches": selected.get("local_patches", []),

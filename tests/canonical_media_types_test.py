@@ -140,9 +140,10 @@ fixtures = {
 for slug in ("jujutsu-kaisen-s01e01", "mushoku-tensei-s01e01"):
     fixture = fixtures[slug]
     assert str(fixture.get("category") or "").lower() == "anime", (slug, fixture)
-    # A catalogue may surface episodic anime through tv/series. The device lab then
-    # probes anime and tv routes separately and labels undeclared routes as capability probes.
-    assert str(fixture.get("mediaType") or "").lower() in {"tv", "anime"}, (slug, fixture)
+    # Nuvio may surface episodic anime as tv/series, but trusted metadata owns
+    # the canonical identity. The provider route must resolve to anime, never
+    # duplicate the same work through both tv and anime.
+    assert str(fixture.get("mediaType") or "").lower() == "anime", (slug, fixture)
 
 print(
     "canonical media type tests passed: "

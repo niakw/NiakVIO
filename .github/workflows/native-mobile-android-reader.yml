@@ -1,0 +1,181 @@
+name: Native Mobile Android reader acceptance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider_catalog.json"
+      - "provider-overrides.json"
+      - "providers/**"
+      - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/nuvio-client-compatibility-matrix.json"
+      - "automation/platform-runtime-contracts.json"
+      - "engine_v2/**"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
+      - "scripts/prepare_native_reader_acceptance.py"
+      - "scripts/augment_native_corpus_request_contract.py"
+      - "scripts/augment_native_provider_loading.py"
+      - "scripts/augment_native_provider_loading_compat.py"
+      - "scripts/resolve_native_repository.sh"
+      - "scripts/prepare_native_candidate_repository.py"
+      - "scripts/instrument_native_client_evidence.py"
+      - "scripts/instrument_native_repository_http_evidence.py"
+      - "scripts/capture_native_device_frontend.sh"
+      - "scripts/watch_native_device_frontend.sh"
+      - "scripts/native_player_diagnostics_codegen.py"
+      - "scripts/native_player_diagnostics.cjs"
+      - "scripts/native_evidence_completeness.cjs"
+      - "scripts/run_native_corpus_mobile_suite.sh"
+      - "scripts/gate_native_reader_coverage.cjs"
+      - "scripts/gate_native_reader_result.cjs"
+      - "scripts/gate_native_player_reached.cjs"
+      - "scripts/prime_android_lab_adb.sh"
+      - "scripts/prebuild_native_android_reader_suite.sh"
+      - ".github/workflows/native-mobile-android-reader.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-mobile-android-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+env:
+  NIAKVIO_REPRESENTATIVE_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+  NIAKVIO_SKIP_ANDROID_PREBUILD: "1"
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    outputs:
+      mobile_sha: ${{ steps.refs.outputs.mobile_sha }}
+      mobile_drift_status: ${{ steps.refs.outputs.mobile_drift_status }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Inspect official NuvioMobile drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_nuvio_client_upstreams.py --no-fail             --clients nuvio-mobile             --output health-output/nuvio-client-upstream-status.json
+      - id: refs
+        name: Resolve exact official NuvioMobile HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/resolve_nuvio_lab_heads.py             --report health-output/nuvio-client-upstream-status.json             --clients nuvio-mobile             --github-output "$GITHUB_OUTPUT"             --output health-output/nuvio-mobile-android-lab-head.json
+      - name: Publish Mobile Android runtime context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-mobile-android-lab-head-${{ github.run_id }}
+          path: |
+            health-output/nuvio-client-upstream-status.json
+            health-output/nuvio-mobile-android-lab-head.json
+          retention-days: 1
+          if-no-files-found: error
+
+  mobile-android-reader:
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 220
+    steps:
+      - name: Checkout NiakVIO candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+        with:
+          cache-disabled: true
+      - name: Restore Mobile Android AVD snapshot and matching debug signing key
+        id: avd-cache
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+            ~/.android/debug.keystore
+          key: avd-v5-${{ runner.os }}-mobile-api35-google_apis-x86_64-pixel_2
+      - name: Checkout latest official NuvioMobile HEAD and stage first route
+        shell: bash
+        env:
+          NUVIO_MOBILE_SHA: ${{ needs.resolve.outputs.mobile_sha }}
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+          touch nuvio-mobile/local.properties
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile             --fixture interstellar --workspace "$GITHUB_WORKSPACE"             --manifest manifest.json --provider declared-type --streams all --initial
+          python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
+      - name: Prebuild Mobile Android reader once before QEMU
+        shell: bash
+        env:
+          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_TARGET_PROVIDER: declared-type
+          NIAKVIO_PRIMARY_FIXTURE: interstellar
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+        run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh mobile
+      - name: Enable KVM
+        run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
+      - name: Prime Android adb server
+        run: bash niakvio/scripts/prime_android_lab_adb.sh
+      - name: Execute movie TV anime in one Mobile Android boot
+        uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
+        env:
+          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+          NIAKVIO_TARGET_PROVIDER: declared-type
+          NIAKVIO_TARGET_MANIFEST: manifest.json
+          NIAKVIO_READER_ACCEPTANCE: "1"
+          NIAKVIO_PRIMARY_FIXTURE: interstellar
+          NIAKVIO_PRIMARY_STREAM_SCOPE: all
+          NIAKVIO_REGRESSION_STREAM_SCOPE: all
+          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_2
+          cores: 2
+          ram-size: 2048M
+          force-avd-creation: false
+          emulator-boot-timeout: 600
+          emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
+      - name: Diagnose complete Mobile Android evidence
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
+            LOG="$GITHUB_WORKSPACE/mobile-native-corpus-${fixture}.log"
+            test -s "$LOG"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs               --output "$GITHUB_WORKSPACE/mobile-android-route-${fixture}-brain.json" "$LOG"
+          done
+      - name: Upload Mobile Android route evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-mobile-android-routes-${{ github.run_id }}
+          path: |
+            mobile-native-corpus-*.log
+            mobile-native-frontend-*.log
+            mobile-android-route-*-brain.json
+            native-evidence/mobile/**
+          retention-days: 1
+          if-no-files-found: warn

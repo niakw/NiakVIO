@@ -5,8 +5,18 @@ const TMDB_BASE = "https://api.themoviedb.org/3";
 
 export function createTmdbMetadataResolver(options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
-  const accessToken = String(options.accessToken ?? process.env.TMDB_ACCESS_TOKEN ?? "").trim();
-  const apiKey = String(options.apiKey ?? process.env.TMDB_API_KEY ?? "").trim();
+  const explicitAccessToken = Object.prototype.hasOwnProperty.call(options, "accessToken");
+  const explicitApiKey = Object.prototype.hasOwnProperty.call(options, "apiKey");
+  const accessToken = String(
+    explicitAccessToken
+      ? (options.accessToken ?? "")
+      : (explicitApiKey ? "" : (process.env.TMDB_ACCESS_TOKEN ?? ""))
+  ).trim();
+  const apiKey = String(
+    explicitApiKey
+      ? (options.apiKey ?? "")
+      : (explicitAccessToken ? "" : (process.env.TMDB_API_KEY ?? ""))
+  ).trim();
   const language = String(options.language ?? "fr-FR").trim() || "fr-FR";
   const timeoutMs = Math.max(1000, Math.min(15000, Number(options.timeoutMs ?? 6000)));
   if (!accessToken && !apiKey) {
@@ -18,7 +28,9 @@ export function createTmdbMetadataResolver(options = {}) {
     if (!/^\d+$/.test(tmdbId)) return requestFallback(request);
     const mediaType = normalizeMediaType(request.mediaType ?? request.type);
     const kind = mediaType === "movie" ? "movie" : "tv";
-    const append = kind === "movie" ? "release_dates,alternative_titles" : "content_ratings,alternative_titles";
+    const append = kind === "movie"
+      ? "release_dates,alternative_titles,keywords"
+      : "content_ratings,alternative_titles,keywords";
     const url = new URL(`${TMDB_BASE}/${kind}/${tmdbId}`);
     if (!accessToken) url.searchParams.set("api_key", apiKey);
     url.searchParams.set("language", language);
@@ -53,8 +65,13 @@ export function normalizeTmdbPayload(payload = {}, context = {}) {
     ? movieCertification(payload.release_dates?.results)
     : tvCertification(payload.content_ratings?.results);
 
+  const resolvedMediaType = resolveCanonicalMediaType(mediaType, payload, request);
+
   return {
     tmdbId: String(payload.id ?? request.tmdbId ?? "").trim() || null,
+    mediaType: resolvedMediaType,
+    canonicalMediaType: resolvedMediaType,
+    tmdbKind: movie ? "movie" : "tv",
     title,
     originalTitle,
     aliases: unique([title, originalTitle, ...aliases, clean(request.title)].filter(Boolean)),
@@ -64,13 +81,61 @@ export function normalizeTmdbPayload(payload = {}, context = {}) {
     durationMinutes: runtime,
     certification,
     ageRating: certification,
+    genres: Array.isArray(payload.genres)
+      ? payload.genres.map((row) => ({ id: Number(row?.id) || null, name: clean(row?.name) })).filter((row) => row.id || row.name)
+      : [],
+    originalLanguage: clean(payload.original_language),
+    originCountry: Array.isArray(payload.origin_country) ? payload.origin_country.map(clean).filter(Boolean) : [],
+    animeEvidence: animeEvidence(payload),
     source: "tmdb",
   };
 }
 
+function keywordNames(payload = {}) {
+  const raw = payload.keywords?.results ?? payload.keywords?.keywords ?? [];
+  return Array.isArray(raw)
+    ? raw.map((row) => clean(row?.name)?.toLowerCase()).filter(Boolean)
+    : [];
+}
+
+export function animeEvidence(payload = {}) {
+  const keywords = keywordNames(payload);
+  const genres = Array.isArray(payload.genres) ? payload.genres : [];
+  const animation = genres.some((row) => Number(row?.id) === 16 || clean(row?.name)?.toLowerCase() === "animation");
+  const originalLanguage = clean(payload.original_language)?.toLowerCase();
+  const originCountry = Array.isArray(payload.origin_country)
+    ? payload.origin_country.map((value) => clean(value)?.toUpperCase()).filter(Boolean)
+    : [];
+  const productionCountries = Array.isArray(payload.production_countries)
+    ? payload.production_countries.map((row) => clean(row?.iso_3166_1)?.toUpperCase()).filter(Boolean)
+    : [];
+  const keywordAnime = keywords.includes("anime");
+  const japaneseOrigin = originalLanguage === "ja" || originCountry.includes("JP") || productionCountries.includes("JP");
+  return {
+    isAnime: keywordAnime || (animation && japaneseOrigin),
+    keywordAnime,
+    animation,
+    japaneseOrigin,
+  };
+}
+
+export function resolveCanonicalMediaType(inputType, payload = {}, request = {}) {
+  const raw = String(inputType ?? request.mediaType ?? request.type ?? "movie").trim().toLowerCase();
+  const category = String(request.category ?? "").trim().toLowerCase();
+  if (category === "anime") return "anime";
+  if (raw === "anime") return "anime";
+  const aliased = ["series", "show", "other"].includes(raw) ? "tv" : raw;
+  if (aliased === "tv" && animeEvidence(payload).isAnime) return "anime";
+  return aliased === "movie" ? "movie" : "tv";
+}
+
 function requestFallback(request = {}) {
+  const mediaType = resolveCanonicalMediaType(request.mediaType ?? request.type, {}, request);
   return {
     tmdbId: clean(request.tmdbId),
+    mediaType,
+    canonicalMediaType: mediaType,
+    tmdbKind: mediaType === "movie" ? "movie" : "tv",
     title: clean(request.title),
     originalTitle: null,
     aliases: unique([clean(request.title)].filter(Boolean)),
@@ -80,6 +145,10 @@ function requestFallback(request = {}) {
     durationMinutes: null,
     certification: null,
     ageRating: null,
+    genres: [],
+    originalLanguage: null,
+    originCountry: [],
+    animeEvidence: { isAnime: mediaType === "anime", keywordAnime: false, animation: false, japaneseOrigin: false },
     source: "request",
   };
 }
@@ -108,7 +177,10 @@ function collectAlternativeTitles(rows, key) {
 
 function normalizeMediaType(value) {
   const raw = String(value ?? "movie").trim().toLowerCase();
-  return raw === "movie" ? "movie" : "tv";
+  if (raw === "movie") return "movie";
+  if (raw === "anime") return "anime";
+  if (["series", "show", "other", "tv"].includes(raw)) return "tv";
+  return "tv";
 }
 
 function firstPositive(value) {

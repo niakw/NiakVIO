@@ -23,6 +23,7 @@ assert patched.count("NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:") == 1
 runner = r'''
 const assert=require('assert');
 function response(body,status=200,type='application/json',url=''){return {ok:status>=200&&status<400,status,url,headers:{get(n){return String(n).toLowerCase()==='content-type'?type:null}},async json(){return JSON.parse(body)},async text(){return body}}}
+global.TMDB_API_KEY=String(1);
 global.fetch=async function(url){url=String(url);
  if(url.includes('/movie/424242?')&&url.includes('language=fr-FR'))return response(JSON.stringify({id:424242,title:'Mon ninja et moi 3',original_title:'Ternet Ninja 3',release_date:'2025-08-21'}),200,'application/json',url);
  if(url.includes('/movie/424242?')&&url.includes('language=en-US'))return response(JSON.stringify({id:424242,title:'Checkered Ninja 3',original_title:'Ternet Ninja 3',release_date:'2025-08-21'}),200,'application/json',url);

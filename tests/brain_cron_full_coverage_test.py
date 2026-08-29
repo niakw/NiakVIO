@@ -159,9 +159,21 @@ def main() -> int:
     assert "yandex.com/search/?text=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
     assert "html.duckduckgo.com/html/?q=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
     assert "learnedSkills," in learning_source
-    assert "apply_overrides(provider_id, data)" in discovery
+    # Upstream JavaScript is discovery knowledge only. The old pipeline applied
+    # overrides directly to downloaded upstream bytes; that would recreate the
+    # legacy architecture we are deliberately migrating all 95 providers away from.
+    assert "apply_overrides(provider_id, data)" not in discovery
+    assert '"upstream_code_role": "knowledge-only"' in discovery
+    assert '"upstream_code_executed": False' in discovery
+    assert '"legacy_provider_js_executed_for_reconstruction": False' in discovery
+    assert '"new-niakvio-clean-seed"' in discovery
+    assert "build_clean_provider_seed(" in discovery
+    assert "clean_provider_model(" in discovery
     assert "GLOBAL_STREAM_PRESENTATION" in apply_source
     assert '"scope": "global_stream_presentation"' in apply_source
+    assert "GLOBAL_MEDIA_TYPE_RESOLUTION" in apply_source
+    assert '"scope": "global_media_type_resolution"' in apply_source
+    assert "global_media_type_resolution_v1.py" in apply_source
 
     # Stream facts/badges are a Core-wide contract. No provider-specific facts
     # adapter may be required for Purstream or any other provider.

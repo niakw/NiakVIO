@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Stage every non-P2P provider declared by the configured upstream manifests.
+"""Stage every non-P2P provider declared by configured upstream manifests.
 
-The published manifest and provider directory are never modified by this script.
-All downloaded candidates live under staging/ until a separate read-only test job
-has completed and the promotion policy accepts them.
+Upstream JavaScript is knowledge input only: it may reveal metadata, routes,
+domains and exclusion signals, but it is never executed, patched into a runtime
+candidate, persisted as ProviderBase, or published. Executable candidates are
+always built from an existing NiakVIO ProviderBase or a fresh NiakVIO-owned
+clean seed.
 """
 
 from __future__ import annotations
@@ -25,6 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides
+from provider_base_store import build_clean_provider_seed, is_clean_reconstruction_candidate, requires_clean_reconstruction, resolve_base
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
     record_pending_source, validate_manifest_quality, write_pending,
@@ -34,7 +37,15 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCES_PATH = ROOT / "sources.json"
 DEFAULT_STAGE = ROOT / "staging"
 LKG_PATH = ROOT / "provider-lkg.json"
-USER_AGENT = "Nuvio-Curated-Discovery/5.12 (+GitHub Actions)"
+PROVENANCE_PATH = ROOT / "PROVENANCE.json"
+OVERRIDES_PATH = ROOT / "provider-overrides.json"
+USER_AGENT = "Nuvio-Curated-Discovery/5.13 (+GitHub Actions)"
+URL_RE = re.compile(r"https?://[^\\s\"'\`<>\\)]+", re.I)
+INFRASTRUCTURE_HOSTS = {
+    "api.themoviedb.org", "image.tmdb.org", "api.jikan.moe",
+    "graphql.anilist.co", "api.tvmaze.com", "api.github.com",
+    "raw.githubusercontent.com", "github.com",
+}
 
 
 def fetch_bytes(url: str, attempts: int = 3, timeout: int = 35) -> bytes:
@@ -110,6 +121,226 @@ def exclusion_reason(entry: dict[str, Any], data: bytes | None, exclusions: dict
     return None
 
 
+def observed_site_from_upstream(data: bytes, provider_id: str) -> str | None:
+    """Extract a provider-looking site hint without importing upstream code."""
+    text = data[:2_000_000].decode("utf-8", errors="ignore")
+    token = re.sub(r"[^a-z0-9]", "", provider_id.casefold())
+    candidates: list[tuple[int, str]] = []
+    for raw in URL_RE.findall(text):
+        raw = raw.rstrip(".,;")
+        try:
+            parsed = urllib.parse.urlparse(raw)
+        except ValueError:
+            continue
+        host = (parsed.hostname or "").casefold()
+        if not host or host in INFRASTRUCTURE_HOSTS:
+            continue
+        normalized = re.sub(r"[^a-z0-9]", "", host)
+        score = 2 if token and len(token) >= 4 and token in normalized else 1
+        origin = f"{parsed.scheme}://{host}"
+        candidates.append((score, origin))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda row: (-row[0], row[1]))
+    return candidates[0][1]
+
+
+def known_site_for_provider(
+    provider_id: str,
+    raw_upstream: bytes,
+    overrides: dict[str, Any],
+) -> str | None:
+    patch = (overrides.get("provider_patches") or {}).get(provider_id, {})
+    if isinstance(patch, dict):
+        for key in ("official_site", "official_api", "official_hub"):
+            value = str(patch.get(key) or "").strip()
+            if value:
+                return value
+    return observed_site_from_upstream(raw_upstream, provider_id)
+
+
+def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: bytes) -> dict[str, Any]:
+    """Extract bounded route knowledge without importing or executing upstream code."""
+    text = raw_upstream[:2_000_000].decode("utf-8", errors="ignore")
+    urls: list[str] = []
+    hosts: list[str] = []
+    routes: list[str] = []
+    for raw in URL_RE.findall(text):
+        raw = raw.rstrip(".,;")
+        try:
+            parsed = urllib.parse.urlparse(raw)
+        except ValueError:
+            continue
+        host = (parsed.hostname or "").casefold()
+        if not host or host in INFRASTRUCTURE_HOSTS:
+            continue
+        safe_url = urllib.parse.urlunparse((
+            parsed.scheme if parsed.scheme in {"http", "https"} else "https",
+            host,
+            parsed.path or "/",
+            "",
+            "",
+            "",
+        ))
+        if safe_url not in urls:
+            urls.append(safe_url)
+        if host not in hosts:
+            hosts.append(host)
+        route = parsed.path or "/"
+        if route not in routes:
+            routes.append(route)
+        if len(urls) >= 32:
+            break
+    supported = entry.get("supportedTypes") if isinstance(entry, dict) else []
+    if isinstance(supported, str):
+        supported = [supported]
+    return {
+        "providerId": provider_id,
+        "supportedTypes": [str(value) for value in supported or []][:8],
+        "hosts": hosts[:24],
+        "routes": routes[:32],
+        "observedUrls": urls[:32],
+        "codeRole": "knowledge-only",
+        "codeExecuted": False,
+    }
+
+
+def clean_provider_model(
+    provider_id: str,
+    knowledge: dict[str, Any],
+    overrides: dict[str, Any],
+    known_site: str | None,
+) -> dict[str, Any]:
+    """Translate observed facts/configuration into a bounded NiakVIO provider model."""
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    capabilities = overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"), dict) else {}
+    patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
+    capability = capabilities.get(provider_id) if isinstance(capabilities.get(provider_id), dict) else {}
+    fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
+
+    origins: list[str] = []
+    for value in capability.get("observed_origins") or []:
+        value = str(value or "").strip()
+        if value and value not in origins:
+            origins.append(value)
+    for host in knowledge.get("hosts") or []:
+        value = str(host or "").strip()
+        if value:
+            origin = "https://" + value
+            if origin not in origins:
+                origins.append(origin)
+    for mapping_key in ("runtime_domain_replacements", "route_replacements", "replacements"):
+        mapping = patch.get(mapping_key) if isinstance(patch.get(mapping_key), dict) else {}
+        for raw in mapping.values():
+            value = str(raw or "").strip()
+            if not value:
+                continue
+            if not value.startswith(("http://", "https://")):
+                value = "https://" + value.lstrip("/")
+            try:
+                parsed = urllib.parse.urlparse(value)
+                origin = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else ""
+            except ValueError:
+                origin = ""
+            if origin and origin not in origins:
+                origins.append(origin)
+
+    return {
+        "knownSite": str(known_site or "").strip() or None,
+        "strategy": str(
+            patch.get("capability")
+            or capability.get("strategy")
+            or "unknown"
+        ).strip().casefold(),
+        "officialSite": str(patch.get("official_site") or "").strip() or None,
+        "officialHub": str(patch.get("official_hub") or "").strip() or None,
+        "officialApi": str(patch.get("official_api") or "").strip() or None,
+        "fixedApi": str(fixed.get("api") or "").strip() or None,
+        "origins": origins[:24],
+        "observedUrls": list(knowledge.get("observedUrls") or [])[:32],
+        "routes": list(knowledge.get("routes") or [])[:32],
+        "knowledgeRole": "structured-observation-only",
+        "legacyCodeEmbedded": False,
+        "legacyCodeExecuted": False,
+    }
+
+
+def executable_seed(
+    provider_id: str,
+    entry: dict[str, Any],
+    raw_upstream: bytes,
+    provenance_rows: dict[str, Any],
+    overrides: dict[str, Any],
+    *,
+    clean_reconstruction: bool,
+) -> tuple[bytes, str, str | None, bool, dict[str, Any], dict[str, Any]]:
+    previous = provenance_rows.get(provider_id)
+    previous_row = previous if isinstance(previous, dict) else {}
+    site = known_site_for_provider(provider_id, raw_upstream, overrides)
+    knowledge = upstream_knowledge(provider_id, entry, raw_upstream)
+    provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
+    reconstruction_required = requires_clean_reconstruction(previous_row)
+
+    pending_clean = is_clean_reconstruction_candidate(previous_row)
+
+    if pending_clean:
+        path, _digest = resolve_base(provider_id, previous_row, require=True)
+        assert path is not None
+        return (
+            path.read_bytes(),
+            "pending-niakvio-clean-reconstruction-v2",
+            site,
+            True,
+            knowledge,
+            provider_model,
+        )
+
+    if reconstruction_required and clean_reconstruction:
+        return (
+            build_clean_provider_seed(
+                provider_id,
+                entry,
+                known_site=site,
+                provider_model=provider_model,
+            ),
+            "new-niakvio-clean-seed",
+            site,
+            True,
+            knowledge,
+            provider_model,
+        )
+
+    if isinstance(previous, dict):
+        path, _digest = resolve_base(provider_id, previous, require=False)
+        if path is not None:
+            return (
+                path.read_bytes(),
+                (
+                    "legacy-providerbase-compatibility-only"
+                    if reconstruction_required
+                    else "existing-niakvio-provider-base-v2"
+                ),
+                site,
+                reconstruction_required,
+                knowledge,
+                provider_model,
+            )
+
+    return (
+        build_clean_provider_seed(
+            provider_id,
+            entry,
+            known_site=site,
+            provider_model=provider_model,
+        ),
+        "new-niakvio-clean-seed",
+        site,
+        True,
+        knowledge,
+        provider_model,
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--stage", type=Path, default=DEFAULT_STAGE)
@@ -118,10 +349,23 @@ def main() -> int:
         action="store_true",
         help="Fail if any upstream manifest cannot be loaded.",
     )
+    parser.add_argument(
+        "--clean-reconstruction",
+        action="store_true",
+        help="Build reconstruction-required providers from a fresh NiakVIO seed instead of compatibility LKG bytes.",
+    )
     args = parser.parse_args()
 
     config = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
     exclusions = config.get("exclusions", {})
+    overrides = json.loads(OVERRIDES_PATH.read_text(encoding="utf-8"))
+    try:
+        provenance = json.loads(PROVENANCE_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        provenance = {"providers": {}}
+    provenance_rows = provenance.get("providers") if isinstance(provenance, dict) else {}
+    if not isinstance(provenance_rows, dict):
+        provenance_rows = {}
     stage = args.stage.resolve()
     if stage.exists():
         shutil.rmtree(stage)
@@ -245,13 +489,28 @@ def main() -> int:
                     continue
 
                 upstream_digest = hashlib.sha256(data).hexdigest()
-                data, applied_patches = apply_overrides(provider_id, data)
-                validate_javascript(data, provider_url)
-                local_path.write_bytes(data)
+                (
+                    seed,
+                    code_origin,
+                    observed_site,
+                    reconstruction_required,
+                    knowledge,
+                    provider_model,
+                ) = executable_seed(
+                    provider_id,
+                    entry,
+                    data,
+                    provenance_rows,
+                    overrides,
+                    clean_reconstruction=bool(args.clean_reconstruction),
+                )
+                candidate_data, applied_patches = apply_overrides(provider_id, seed)
+                validate_javascript(candidate_data, f"niakvio:{provider_id}")
+                local_path.write_bytes(candidate_data)
                 subprocess.run([
                     "node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(local_path)
                 ], check=True, capture_output=True, text=True)
-                digest = hashlib.sha256(data).hexdigest()
+                digest = hashlib.sha256(candidate_data).hexdigest()
                 candidates.append(
                     {
                         "key": f"{source_key}:{upstream_id}",
@@ -266,11 +525,20 @@ def main() -> int:
                         "upstream_id": upstream_id,
                         "canonical_id": provider_id,
                         "provider_url": provider_url,
+                        "observed_upstream_site": observed_site,
                         "local_path": str(local_path.relative_to(stage)),
                         "sha256": digest,
                         "upstream_sha256": upstream_digest,
+                        "upstream_code_role": "knowledge-only",
+                        "upstream_code_executed": False,
+                        "upstream_knowledge": knowledge,
+                        "clean_provider_model": provider_model,
+                        "candidate_code_origin": code_origin,
+                        "provider_base_reconstruction_required": bool(reconstruction_required),
+                        "clean_reconstruction_mode": bool(args.clean_reconstruction),
+                        "legacy_provider_js_executed_for_reconstruction": False,
                         "local_patches": applied_patches,
-                        "bytes": len(data),
+                        "bytes": len(candidate_data),
                         "metadata": entry,
                     }
                 )

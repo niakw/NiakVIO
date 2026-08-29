@@ -480,8 +480,8 @@ Aucun nouveau comportement architectural ne doit être ajouté dans cette couche
 
 `sync.yml` reste **l'unique pipeline de publication complète Quick/Deep**. Les autres workflows durables ont des responsabilités bornées et ne doivent pas recréer une seconde boucle de publication.
 
-- **Publication / contrôle ARCHI 2** : `sync.yml`, `core-media-finalize-main.yml`, `provider-overrides-gate.yml`, `archi2-change-dispatch.yml` ;
-- **preuves natives** : `native-android-route-reader.yml`, `native-desktop-reader-acceptance.yml`, `native-corpus-device-targeted.yml`, `native-reader-learning-sync.yml` ;
+- **Publication / contrôle ARCHI 2** : `sync.yml`, `core-media-finalize-main.yml`, `provider-overrides-gate.yml` ;
+- **preuves natives** : `native-tv-route-reader.yml`, `native-mobile-android-reader.yml`, `native-mobile-ios-reader.yml`, `native-desktop-reader-acceptance.yml`, `native-corpus-device-targeted.yml`, `native-reader-learning-sync.yml` ;
 - **Brain / connaissance / reporting** : `brain-learning-lab.yml`, `brain-branch-maintenance.yml`, `canonical-media-types.yml`, `provider-catalogue-breadth-lab.yml`, `provider-status-export.yml`, `provider-results-readme-sync.yml` ;
 - **observabilité / découverte** : `availability.yml`, `domain-refresh.yml`, `weekly-upstream-provider-discovery.yml` ;
 - **sécurité / qualité** : `github-actions-gate.yml`, `codeql.yml`, `security-final-gate.yml`, `repository-hygiene.yml`, `external-code-audit.yml`, `badge-light-contrast.yml` ;
@@ -497,7 +497,7 @@ Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent
 
 ## 22. Labs natifs sur `main`
 
-Les Labs ne reposent pas sur des branches de code permanentes. Les preuves NuvioTV, Mobile et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule et résolus à leur HEAD courant après contrôle de drift.
+Les Labs ne reposent pas sur des branches de code permanentes. Les preuves NuvioTV, Mobile Android, Mobile iOS et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule et résolus à leur HEAD courant après contrôle de drift. TV, Android et iOS sont des workflows autonomes ; le Lab TV exécute les trois fixtures canoniques dans un seul job/boot. Aucun de ces Labs n'appelle le Brain.
 
 Une anomalie réelle devient une non-régression durable par la chaîne :
 
@@ -565,7 +565,7 @@ Niakvio/
 9. Un média jouable avec mauvaise identité est un échec bloquant.
 10. Aucun provider ne peut réussir grâce à la route ou au résultat d'un autre.
 11. `Unknown/Inconnue` de présentation n'est pas une contradiction d'identité.
-12. Les preuves Mobile/Desktop/TV sont indépendantes.
+12. Les preuves Mobile Android/Mobile iOS/Desktop/TV sont indépendantes.
 13. Quick peut réparer/publier sans attendre Deep.
 14. Deep ne doit pas être relancé inutilement à chaque modification.
 15. Les manifests sont rendus depuis le catalogue avant publication.

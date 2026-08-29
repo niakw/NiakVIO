@@ -34,17 +34,19 @@ diagnosis = text("engine_v2/scripts/diagnose-native-reader.mjs")
 reader_gate = text("scripts/gate_native_reader_result.cjs")
 coverage_gate = text("scripts/gate_native_reader_coverage.cjs")
 player_reach_gate = text("scripts/gate_native_player_reached.cjs")
-android_workflow = text(".github/workflows/native-android-route-reader.yml")
+tv_workflow = text(".github/workflows/native-tv-route-reader.yml")
+mobile_android_workflow = text(".github/workflows/native-mobile-android-reader.yml")
+mobile_ios_workflow = text(".github/workflows/native-mobile-ios-reader.yml")
 desktop_workflow = text(".github/workflows/native-desktop-reader-acceptance.yml")
 learning_sync = text(".github/workflows/native-reader-learning-sync.yml")
 
-# Canonical media route traversal remains explicit; capability probes are evidence,
-# never permission for a Lab-side provider/player rewrite.
+# Canonical media route traversal remains explicit. Native acceptance runs only
+# the declared fixture route; cross-type capability discovery belongs to Learning/Deep.
 for required in (
     'CANONICAL = {"movie", "tv", "anime"}',
     "ProviderRequestRoute",
-    'listOf("anime", "tv").map',
-    '"capability_probe"',
+    'listOf<String>(fixtureMediaType).filter {{ it in declared }}',
+    'ProviderRequestRoute(type)',
     "FIELD_NATIVE_PROVIDER_BEGIN",
     "FIELD_NATIVE_PLAYER_BEGIN",
     "request_type=$requestMediaType route_mode=$routeMode",
@@ -108,12 +110,17 @@ for required in (
     "latest-official-head-for-labs",
 ):
     assert required in client_head_resolver, required
-for workflow in (android_workflow, desktop_workflow):
+for workflow in (tv_workflow, mobile_android_workflow, mobile_ios_workflow, desktop_workflow):
     assert "check_nuvio_client_upstreams.py" in workflow
     assert "resolve_nuvio_lab_heads.py" in workflow
-    assert "Checkout latest official" in workflow
-assert "get('accepted_ref') or '')" not in android_workflow
-assert "get('accepted_ref') or '')" not in desktop_workflow
+    assert "workflow_dispatch:" in workflow
+    assert "\n  push:" in workflow
+    assert "\n  pull_request:" not in workflow
+    assert "get('accepted_ref') or '')" not in workflow
+assert "Checkout latest official NuvioTV HEAD" in tv_workflow
+assert "Checkout latest official NuvioMobile HEAD" in mobile_android_workflow
+assert "Checkout exact official NuvioMobile HEAD" in mobile_ios_workflow
+assert "Checkout latest official NuvioDesktop HEAD" in desktop_workflow
 
 # Reader repair memory is historical but only influences the exact client revision
 # fingerprint that produced it. Legacy/unscoped memory is never recycled after drift.
@@ -124,12 +131,20 @@ for required in (
     "entry_fingerprint(row) == fingerprint",
 ):
     assert required in reader_runtime_scope, required
-assert "scope_native_reader_learning_runtime.py filter" in android_workflow
-assert "representative-cross-client-brain.json" in android_workflow
-assert "tv-reader-repair-comparison-${fixture}.json" in android_workflow
-assert 'NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"' in android_workflow
-assert 'needs: [resolve, tv-route-reader, mobile-route-reader]' in android_workflow
-assert "scope_native_reader_learning_runtime.py merge" in learning_sync
+# Native Labs are independent evidence producers. They do not run Brain repair,
+# merge cross-client state, or mutate provider code. Learning imports one exact
+# completed run only when explicitly dispatched.
+for workflow in (tv_workflow, mobile_android_workflow, mobile_ios_workflow, desktop_workflow):
+    assert "brain-reader-repair" not in workflow
+    assert "build_native_reader_brain_repair.py" not in workflow
+    assert "compare_native_reader_brain_repair.py" not in workflow
+assert "workflow_run:" not in learning_sync
+assert "workflow_dispatch:" in learning_sync
+assert "Exact completed native reader run ID to import manually" in learning_sync
+assert '"native-tv-route-*-$RUN_ID"' in learning_sync
+assert '"native-mobile-android-*-$RUN_ID"' in learning_sync
+assert '"native-mobile-ios-*-$RUN_ID"' in learning_sync
+assert '"native-desktop-reader-*-$RUN_ID"' in learning_sync
 
 # Android may not gain a test-only transport capability.
 assert "validate_manifest" in android_transport
@@ -228,10 +243,11 @@ assert "DEFAULT_PR_STREAM_LIMIT = 2" in coverage_gate
 assert "streamCoverageSatisfied" in coverage_gate
 assert "return observed >= expected && observed <= returned;" in coverage_gate
 assert "return observed === expected;" in coverage_gate
-for workflow in (android_workflow, desktop_workflow):
+for workflow in (tv_workflow, mobile_android_workflow, desktop_workflow):
     assert "NIAKVIO_PRIMARY_STREAM_SCOPE: all" in workflow
-assert "NIAKVIO_TARGET_PROVIDER: all" in android_workflow
-assert "NIAKVIO_TARGET_PROVIDER: all" in desktop_workflow
+assert 'NIAKVIO_TARGET_PROVIDER: declared-type' in tv_workflow
+assert 'NIAKVIO_TARGET_PROVIDER: declared-type' in mobile_android_workflow
+assert 'NIAKVIO_TARGET_PROVIDER: declared-type' in desktop_workflow
 
 # Evidence completeness and Brain learning remain fail-closed outside the smoke. The
 # native-reader smoke may suppress the diagnostic process exit only; it does not turn

@@ -193,7 +193,7 @@ Les commits clients audités sont suivis dans [`automation/nuvio-client-upstream
 
 | Client | Repository | Preuve native retenue |
 |---|---|---|
-| Nuvio Mobile | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | chemin Android officiel et stack de lecture du client |
+| Nuvio Mobile Android | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | chemin Android officiel et stack de lecture du client |\n| Nuvio Mobile iOS | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | runtime plugin iOS Full + simulateur iOS + bridge lecteur MPV officiel |
 | Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | bridges/lecteurs natifs **macOS et Windows** ; le stub Linux n'est pas une preuve lecteur |
 | NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | Android TV officiel avec Media3/ExoPlayer |
 
@@ -201,7 +201,7 @@ Le contrat logique ARCHI 2 est commun, mais **une preuve Desktop ne vaut jamais 
 
 Les labs natifs parcourent les providers compatibles avec la plateforme, **y compris les providers `enabled:false`**. La couverture standard est désormais **1/1/1 par provider selon les types déclarés** : au maximum une œuvre film, une œuvre série et une œuvre anime, chacune choisie dans la liste centrale de fixtures. Un provider n'est jamais rejoué sur une seconde œuvre du même type dans le Lab standard. Les routes non déclarées ne sont plus ajoutées comme probes automatiques ; leur découverte appartient au Learning/Deep ciblé. Ces Labs produisent des preuves health/lecteur mais ne bloquent pas le fonctionnement ni la publication normale.
 
-Les snapshots AVD TV/Mobile restent réutilisables lorsqu'ils évitent une reconstruction coûteuse. Le **cache Gradle est désactivé sur les Labs natifs** pour préserver le quota de cache GitHub Actions, et leurs artifacts temporaires sont conservés **1 jour**. Les retests ciblés par device restent disponibles manuellement.
+Les snapshots AVD TV/Mobile Android restent réutilisables lorsqu'ils évitent une reconstruction coûteuse. Le **cache Gradle est désactivé sur les Labs natifs** pour préserver le quota de cache GitHub Actions, et leurs artifacts temporaires sont conservés **1 jour**. Les retests ciblés par device restent disponibles manuellement.
 
 ---
 
@@ -225,12 +225,13 @@ Les snapshots AVD TV/Mobile restent réutilisables lorsqu'ils évitent une recon
 
 ### 📡 Couverture des lecteurs officiels
 
-Cette vue distingue **support du lecteur** et **preuve positive conservée** : les quatre familles sont suivies en permanence, même lorsqu'aucune preuve saine n'a encore été retenue pour l'une d'elles.
+Cette vue distingue **support du lecteur** et **preuve positive conservée** : les cinq cibles natives sont suivies en permanence, même lorsqu'aucune preuve saine n'a encore été retenue pour l'une d'elles.
 
 | Lecteur officiel | Preuves positives conservées | Providers avec preuve | Dernière preuve | État |
 |---|---:|---:|---:|---|
 | 📺 **TV** | **30** | **13** | `2026-08-23` | ✅ Couvert par une preuve native |
-| 📱 **Mobile** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
+| 🤖 **Mobile Android** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
+| 🍎 **Mobile iOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
 | 🖥️ **Desktop macOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
 | 🪟 **Desktop Windows** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
 
@@ -323,7 +324,7 @@ La liste ci-dessous décrit **l'état de publication**, pas une supposition sur 
 | Provider présent dans un manifest | ✅ | ✅ |
 | Plusieurs upstreams comparés avant promotion | ✅ | Variable |
 | Média final réellement atteint | ✅ | Non garanti |
-| Lecteur officiel vérifié par plateforme | ✅ TV / Mobile / macOS / Windows | Non garanti |
+| Lecteur officiel vérifié par plateforme | ✅ TV / Android / iOS / macOS / Windows | Non garanti |
 | Identité œuvre / année / saison / épisode contrôlée | ✅ | Non garanti |
 | HLS / DASH / média direct validé au-delà de l'extension URL | ✅ | Non garanti |
 | Mauvais média jouable classé comme échec | ✅ | Non garanti |
@@ -474,7 +475,7 @@ Cette cible n'autorise aucun faux positif : mauvaise œuvre, mauvais épisode, d
 Le dispositif comprend :
 
 - un lab **NuvioTV Android TV** officiel sur des routes film/TV/anime, tous providers compatibles — actifs ou inactifs — et tous les streams retournés ;
-- un lab **Nuvio Mobile Android** officiel avec le même contrat de traversal et de lecture ;
+- un lab **Nuvio Mobile Android** officiel avec le même contrat de traversal et de lecture ;\n- un lab **Nuvio Mobile iOS** autonome sur `macos-15`, avec build Full, simulateur iPhone, runtime plugin iOS officiel et bridge lecteur MPV officiel ;
 - un lab **Nuvio Desktop natif macOS/Windows**, Linux étant explicitement exclu comme preuve lecteur ;
 - une preuve repository → provider → HTTP → stream → lecteur, plus des phases frontend capturées ;
 - des retests ciblés par device disponibles **manuellement** sans relancer toute la matrice ;
@@ -519,7 +520,7 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 | `sync.yml` | discovery → repair → validation → publication Quick/Deep |
 | `canonical-media-types.yml` | contrats media, evidence native, cache et mémoire Brain |
 | `github-actions-gate.yml` | sécurité et invariants des workflows |
-| `native-android-route-reader.yml` | preuve native NuvioTV + Mobile et retest Brain représentatif |
+| `native-tv-route-reader.yml` | preuve native NuvioTV — 1 job, 1 boot, 3 fixtures |\n| `native-mobile-android-reader.yml` | preuve native Nuvio Mobile Android autonome |\n| `native-mobile-ios-reader.yml` | preuve native Nuvio Mobile iOS autonome |
 | `native-desktop-reader-acceptance.yml` | preuve lecteur officielle Desktop macOS/Windows |
 | `native-corpus-device-targeted.yml` | retests device à la demande uniquement |
 | `native-reader-learning-sync.yml` | import idempotent des résultats lecteur validés de `main` |
@@ -590,7 +591,7 @@ Les tests locaux ne remplacent pas la validation native lorsqu'un changement tou
 
 - `main` : unique branche de code, état stable et publiable ;
 - `brain-learning/proposals` : mémoire sanitizée persistante du Brain, sans code de production ni publication autonome ;
-- les Labs TV/Mobile/Desktop utilisent directement le SHA de `main` et les dépôts clients Nuvio officiels comme baselines en lecture seule ;
+- les Labs TV/Mobile Android/Mobile iOS/Desktop utilisent directement le SHA de `main` et les dépôts clients Nuvio officiels comme baselines en lecture seule ;
 - aucune branche `lab/*`, `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*`, `refactor/*` ou `brain-repair/*` n'est conservée comme branche de travail.
 
 Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoire Brain séparée reste non publiable et ne peut pas contourner les gates de production.

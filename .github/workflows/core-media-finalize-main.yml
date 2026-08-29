@@ -6,17 +6,11 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/core-media-finalize-main.yml'
-      - '.github/workflows/sync.yml'
-      - 'README.md'
       - 'package.json'
       - 'package-lock.json'
-      - 'automation/nuvio-client-upstreams.json'
-      - 'assets/providers/**'
       - 'engine_v2/src/**'
       - 'engine_v2/scripts/**'
-      - 'engine_v2/tests/**'
       - 'scripts/**'
-      - 'tests/**'
 
 permissions:
   actions: write
@@ -24,7 +18,7 @@ permissions:
   issues: write
 
 # Push generations are latest-wins so obsolete Core work cannot pile up. Explicit
-# Desktop recovery seal: publish the already-landed identity v5 / presentation v14 fixed point.
+# Core fixed-point publisher: runtime TMDB identity v6 / presentation v16 and current shared media policy.
 # workflow_dispatch runs keep an isolated group because the final orchestrator may
 # watch one exact dispatch as authoritative evidence.
 concurrency:

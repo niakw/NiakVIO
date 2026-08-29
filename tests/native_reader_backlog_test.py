@@ -46,10 +46,16 @@ def run_merge(
 
 sync_text = SYNC.read_text(encoding="utf-8")
 canonical_text = CANONICAL.read_text(encoding="utf-8")
-assert "Native Android route reader acceptance" in sync_text
-assert "Native Desktop reader acceptance" in sync_text
-assert "github.event.workflow_run.event == 'push'" in sync_text
-assert "github.event.workflow_run.head_branch == 'main'" in sync_text
+# Reader evidence import is explicit and exact-run scoped. Native TV, Mobile
+# Android, Mobile iOS and Desktop publish independent artifacts; the sync job
+# imports one selected completed run instead of coupling Labs through workflow_run.
+assert "workflow_dispatch:" in sync_text
+assert "Exact completed native reader run ID to import manually" in sync_text
+assert "workflow_run:" not in sync_text
+assert '"native-tv-route-*-$RUN_ID"' in sync_text
+assert '"native-mobile-android-*-$RUN_ID"' in sync_text
+assert '"native-mobile-ios-*-$RUN_ID"' in sync_text
+assert '"native-desktop-reader-*-$RUN_ID"' in sync_text
 assert "merge_native_reader_backlog.py" in sync_text
 assert "--previous-state reader-learning-input/latest.json" in sync_text
 assert "--state reader-learning-output/latest.json" in sync_text

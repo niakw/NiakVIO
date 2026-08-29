@@ -28,6 +28,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import prepare_native_corpus_validation as corpus  # noqa: E402
 import native_player_diagnostics_codegen as reader_diag  # noqa: E402
 from audit_native_client_checkout import audit_checkout  # noqa: E402
+from native_media_type_contract import fixture_media_type
 from native_client_test_bootstrap import (  # noqa: E402
     enable_mobile_device_tests,
     enable_tv_tests,
@@ -203,13 +204,6 @@ def _isolate_tv_android_test_sources(tv: Path) -> int:
                 removed += 1
     print(f"FIELD_NATIVE_CORPUS_TV_TEST_SOURCES_ISOLATED removed={removed}")
     return removed
-
-
-def fixture_media_type(fixture: dict) -> str:
-    media_type = str(fixture.get("mediaType") or fixture.get("category") or "movie").strip().casefold()
-    if media_type not in {"movie", "tv", "anime"}:
-        raise SystemExit(f"unsupported native fixture media type: {media_type!r}")
-    return media_type
 
 
 def select_declared_type(providers: list[dict], fixture: dict) -> list[dict]:

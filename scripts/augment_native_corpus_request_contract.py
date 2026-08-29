@@ -14,20 +14,22 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 CANONICAL = {"movie", "tv", "anime"}
-ALIASES = {"series": "tv", "show": "tv", "other": "tv"}
+
+from native_media_type_contract import canonical_media_type, fixture_media_type  # noqa: E402
 
 
 def canonical_type(value: object) -> str:
-    raw = str(value or "").strip().lower()
-    raw = ALIASES.get(raw, raw)
-    if raw not in CANONICAL:
-        raise SystemExit(f"unsupported native corpus media type: {raw!r}")
-    return raw
+    try:
+        return canonical_media_type(value)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
 
 
 def fixture(slug: str) -> dict:
@@ -97,7 +99,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         return
 
     f = fixture(slug)
-    fixture_media_type = canonical_type(f.get("mediaType") or "movie")
+    resolved_fixture_media_type = fixture_media_type(f)
     types = manifest_types(manifest)
 
     provider_list = re.search(r"(    private val providers = listOf\(\n.*?\n    \)\n)", text, flags=re.S)
@@ -150,7 +152,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
 
     path.write_text(text, encoding="utf-8")
     print(
-        f"FIELD_NATIVE_REQUEST_CONTRACT client={client} fixture={slug} media_type={fixture_media_type} "
+        f"FIELD_NATIVE_REQUEST_CONTRACT client={client} fixture={slug} media_type={resolved_fixture_media_type} "
         f"one_route_per_declared_type=true providers={len(types)} path={path}"
     )
 

@@ -137,7 +137,7 @@ The main provider pipeline is [`.github/workflows/sync.yml`](.github/workflows/s
 NiakVIO validates real paths on official Nuvio clients:
 
 - NuvioTV on Android TV;
-- Nuvio Mobile on Android;
+- Nuvio Mobile on Android;\n- Nuvio Mobile on iOS simulator through the official iOS plugin runtime and production MPV bridge;
 - Nuvio Desktop on native macOS and Windows.
 
 The Labs distinguish provider extraction problems, runtime errors, player/client incompatibility, transport failures, missing media and wrong-media identity.
@@ -181,7 +181,7 @@ Inconsistent generations must not silently replace a previously healthy publishe
 | Workflow | Purpose |
 |---|---|
 | `sync.yml` | discovery → repair → validation → Quick/Deep publication |
-| `native-android-route-reader.yml` | official NuvioTV + Mobile native evidence |
+| `native-tv-route-reader.yml` | official NuvioTV evidence — one job / one boot / movie+TV+anime |\n| `native-mobile-android-reader.yml` | official Nuvio Mobile Android evidence |\n| `native-mobile-ios-reader.yml` | official Nuvio Mobile iOS simulator evidence |
 | `native-desktop-reader-acceptance.yml` | official macOS/Windows Desktop evidence |
 | `core-media-finalize-main.yml` | Core fixed point and publication integrity |
 | `brain-learning-lab.yml` | sandbox Repair Brain learning |

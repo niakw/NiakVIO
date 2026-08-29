@@ -24,11 +24,11 @@ Le corpus canonique est versionné dans [`.github/triggers/nuvio-client-lab.json
 
 La preuve native est répartie entre trois workflows complémentaires :
 
-- [`native-android-route-reader.yml`](.github/workflows/native-android-route-reader.yml) : Nuvio Mobile + NuvioTV/Android TV sur la fixture représentative de chaque type déclaré ;
+- [`native-tv-route-reader.yml`](.github/workflows/native-tv-route-reader.yml) : NuvioTV/Android TV, **un seul job et un seul boot** pour les trois fixtures canoniques ;\n- [`native-mobile-android-reader.yml`](.github/workflows/native-mobile-android-reader.yml) : Nuvio Mobile Android, workflow autonome et un seul boot pour les trois fixtures ;\n- [`native-mobile-ios-reader.yml`](.github/workflows/native-mobile-ios-reader.yml) : Nuvio Mobile iOS, workflow autonome sur simulateur iOS avec runtime plugin et lecteur iOS officiels ;
 - [`native-desktop-reader-acceptance.yml`](.github/workflows/native-desktop-reader-acceptance.yml) : lecteurs officiels Desktop macOS et Windows ;
 - [`native-corpus-device-targeted.yml`](.github/workflows/native-corpus-device-targeted.yml) : retest manuel borné d'un device, d'un provider ou du corpus natif ciblé.
 
-Les preuves sont **indépendantes par client et par device** : une réussite Desktop ne vaut pas automatiquement réussite Mobile ou TV. Les Labs peuvent inclure des providers `enabled:false` afin de diagnostiquer ou revalider un provider sans le réactiver implicitement. Les workflows natifs lourds s'exécutent sur `main` ou manuellement, pas sur chaque PR : ils enrichissent la preuve sans bloquer la publication normale.
+Les preuves sont **indépendantes par client et par device** : une réussite Desktop, TV, Mobile Android ou Mobile iOS ne vaut jamais automatiquement réussite sur une autre cible. Les Labs peuvent inclure des providers `enabled:false` afin de diagnostiquer ou revalider un provider sans le réactiver implicitement. Les workflows natifs lourds s'exécutent sur `main` ou manuellement, pas sur chaque PR : ils enrichissent la preuve sans bloquer la publication normale.
 
 La politique du corpus conserve une cible de couverture de **10 providers dont 3 VF**, mais cette cible n'est pas un seuil automatique de publication (`blocking:false`, `enforce_policy:false`). En revanche, une contradiction d'identité, de saison, d'épisode ou de média final reste un signal bloquant pour la preuve concernée et ne doit jamais être transformée en succès de couverture.
 

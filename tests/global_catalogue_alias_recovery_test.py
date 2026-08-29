@@ -65,6 +65,7 @@ function response(body, status=200, type='application/json', url='') {
     async text() { return body; },
   };
 }
+global.TMDB_API_KEY = String(1);
 global.fetch = async function(url) {
   url = String(url);
   calls.push(url);

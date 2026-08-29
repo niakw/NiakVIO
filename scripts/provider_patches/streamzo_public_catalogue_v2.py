@@ -33,7 +33,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     javascript = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
-var TMDB_KEY="8265bd1679663a7ea12ac168da84d2e8";
+var TMDB_KEY=(g&&g.TMDB_API_KEY)||"";
 function s(v){return String(v==null?"":v).replace(/&amp;/gi,"&").replace(/\\\//g,"/").trim()}
 function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_){return s(v).toLowerCase()}}
 function slug(v){return norm(v).replace(/\s+/g,"-")}
@@ -44,7 +44,7 @@ function mediaCandidate(v,base,page){var u=abs(v,base),h=host(u);if(!u||!h||SOCI
 function unique(values){var out=[],seen={};(values||[]).forEach(function(v){v=s(v);var k=norm(v);if(v&&k&&!seen[k]){seen[k]=1;out.push(v)}});return out}
 function args(a){var q=a[0]&&typeof a[0]==="object"?Object.assign({},a[0]):{tmdbId:a[0],mediaType:a[1],season:a[2],episode:a[3],settings:a[4]||{}};q.tmdbId=s(q.tmdbId||q.id);q.mediaType=s(q.mediaType||q.type||"movie").toLowerCase();return q}
 async function request(url,kind,referer,extra){var headers=Object.assign({Accept:kind==="json"?"application/json,text/plain,*/*":"text/html,application/xhtml+xml,application/json,*/*","Accept-Language":"fr-FR,fr;q=0.9,en;q=0.5"},extra||{});if(referer){headers.Referer=referer;try{headers.Origin=new URL(referer).origin}catch(_){}}try{var r=await g.fetch(url,{headers:headers,redirect:"follow"});if(!r||!r.ok)return null;return {url:s(r.url||url),body:kind==="json"?await r.json():await r.text(),type:r.headers&&r.headers.get?r.headers.get("content-type"):""}}catch(_){return null}}
-async function meta(q){var requested=s(q.title||q.name||q.label).replace(/\s*\(\d{4}\)\s*$/,"");var titles=unique([requested]),year=Number(q.year)||0;if(q.tmdbId){var type=q.mediaType==="tv"||q.mediaType==="anime"?"tv":"movie",r=await request("https://api.themoviedb.org/3/"+type+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR","json");if(r&&r.body){var d=r.body;titles=unique(titles.concat([d.title,d.name,d.original_title,d.original_name]));year=year||Number(s(d.release_date||d.first_air_date).slice(0,4))||0}}
+async function meta(q){var requested=s(q.title||q.name||q.label).replace(/\s*\(\d{4}\)\s*$/,"");var titles=unique([requested]),year=Number(q.year)||0;if(q.tmdbId&&TMDB_KEY){var type=q.mediaType==="tv"||q.mediaType==="anime"?"tv":"movie",r=await request("https://api.themoviedb.org/3/"+type+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR","json");if(r&&r.body){var d=r.body;titles=unique(titles.concat([d.title,d.name,d.original_title,d.original_name]));year=year||Number(s(d.release_date||d.first_air_date).slice(0,4))||0}}
 return {title:titles[0]||"",titles:titles.slice(0,c.maxAliases),year:year}}
 function scoreOne(text,title){var n=norm(text),t=norm(title),score=0;if(t&&n.indexOf(t)>=0)score+=100;t.split(" ").filter(function(x){return x.length>2}).forEach(function(x){if(n.indexOf(x)>=0)score+=8});return score}
 function scoreText(text,m){var best=0;(m.titles||[m.title]).forEach(function(t){best=Math.max(best,scoreOne(text,t))});var n=norm(text);if(m.year&&n.indexOf(String(m.year))>=0)best+=20;return best}

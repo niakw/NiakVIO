@@ -45,7 +45,11 @@ def _strip_existing(text: str) -> str:
     end = text.find(");", call) if call >= 0 else -1
     if call < 0 or end < 0:
         raise ValueError("unterminated global provider branding wrapper")
-    return (text[:start] + text[end + 2 :]).rstrip()
+    before = text[:start].rstrip()
+    after = text[end + 2 :].lstrip()
+    if before and after:
+        return before + "\n" + after
+    return before or after
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:

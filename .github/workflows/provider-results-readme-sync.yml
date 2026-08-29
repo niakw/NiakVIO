@@ -3,7 +3,9 @@ name: Provider results README sync
 on:
   workflow_run:
     workflows:
-      - Native Android route reader acceptance
+      - Native TV reader acceptance
+      - Native Mobile Android reader acceptance
+      - Native Mobile iOS reader acceptance
       - Native Desktop reader acceptance
       - Niakvio provider pipeline
       - Emergency publish corrected providers
@@ -73,7 +75,7 @@ jobs:
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download exact positive-evidence diagnostics
-        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'Native Android route reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance')) }}
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'Native TV reader acceptance' || github.event.workflow_run.name == 'Native Mobile Android reader acceptance' || github.event.workflow_run.name == 'Native Mobile iOS reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance')) }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
@@ -84,7 +86,8 @@ jobs:
           mkdir -p provider-results-input
           for pattern in \
             "native-tv-route-*-$RUN_ID" \
-            "native-mobile-route-*-$RUN_ID" \
+            "native-mobile-android-*-$RUN_ID" \
+            "native-mobile-ios-*-$RUN_ID" \
             "native-desktop-reader-*-$RUN_ID"; do
             gh run download "$RUN_ID" --pattern "$pattern" --dir provider-results-input || true
           done

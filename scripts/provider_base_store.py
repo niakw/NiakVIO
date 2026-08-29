@@ -13,7 +13,6 @@ from typing import Any
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
 from provider_purification import split_owned_prefix_bootstraps
-from upstream_lkg import load_registry
 
 ROOT = Path(__file__).resolve().parents[1]
 BASES = ROOT / "provider-bases"
@@ -40,6 +39,7 @@ DERIVED_BASE_MARKERS = (
     "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
     "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+    "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
     "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
     "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
     "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
@@ -53,34 +53,34 @@ DERIVED_BASE_MARKERS = (
     "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1",
 )
 
-# Five providers are retained locally but are no longer present in the retained
-# upstream snapshots. These commits predate the global Core/security finalizers
-# and contain the last clean provider implementation from which current durable
-# provider-specific overrides can be replayed.
-PRE_HARDENING_MANIFEST_COMMIT = "775d35d586e2e0bafe0bb54b0ecd30527b99f51c"
+CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v2"
+CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE = "niakvio-clean-reconstruction-v2-candidate"
+CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 2
 
-LEGACY_LOCAL_SEEDS: dict[str, tuple[str, str]] = {
-    "cineby": (
-        "6f5c13750049ca5227d44eda192d2670c819bfea",
-        "providers/cineby--nuvio--d96e163f6372cafd.js",
-    ),
-    "cinemm": (
-        "6f5c13750049ca5227d44eda192d2670c819bfea",
-        "providers/cinemm--published-baseline--c298a89c18a2efb5.js",
-    ),
-    "goatapi": (
-        "6f5c13750049ca5227d44eda192d2670c819bfea",
-        "providers/goatapi--published-baseline--1db196320e8c7bf2.js",
-    ),
-    "toflix": (
-        "0c16cc5a4fe009c9585017b3fc74653749615790",
-        "providers/toflix--published-baseline--dd2dbb2d068dae21.js",
-    ),
-    "4khdhubnew": (
-        "4ac0002d48d725bb35e14f2948875cf80c0b3443",
-        "providers/4khdhubnew--published-baseline--e64aea603b3c3786.js",
-    ),
-}
+
+def is_clean_reconstructed(provenance_row: dict[str, Any] | None) -> bool:
+    row = provenance_row if isinstance(provenance_row, dict) else {}
+    return (
+        str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_SOURCE
+        and row.get("clean_reconstruction_verified") is True
+        and int(row.get("clean_reconstruction_authoring_version") or 0)
+        >= CLEAN_RECONSTRUCTION_AUTHORING_VERSION
+    )
+
+
+def requires_clean_reconstruction(provenance_row: dict[str, Any] | None) -> bool:
+    return not is_clean_reconstructed(provenance_row)
+
+
+def is_clean_reconstruction_candidate(provenance_row: dict[str, Any] | None) -> bool:
+    row = provenance_row if isinstance(provenance_row, dict) else {}
+    return (
+        str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE
+        and row.get("clean_reconstruction_candidate") is True
+        and row.get("clean_reconstruction_verified") is not True
+        and int(row.get("clean_reconstruction_authoring_version") or 0)
+        >= CLEAN_RECONSTRUCTION_AUTHORING_VERSION
+    )
 
 
 def safe_fragment(value: str) -> str:
@@ -219,241 +219,372 @@ def persist_base_from_published(provider_id: str, published_data: bytes) -> tupl
     return relative, digest, stripped
 
 
-def persist_base_from_seed(provider_id: str, seed_data: bytes) -> tuple[str, str, bool]:
-    """Rebuild durable provider logic from a clean provider seed.
-
-    Publication-only quarantine, dynamic domain materialization and adaptive
-    runtime/domain recovery are deliberately excluded. They remain derived state
-    and are regenerated later by the finalizer from current policy/evidence.
-    """
+def build_base_from_seed(
+    provider_id: str,
+    seed_data: bytes,
+    *,
+    overrides_path: Path | None = None,
+) -> tuple[bytes, bool]:
+    """Return clean ProviderBase bytes without writing repository state."""
     rebuilt, _records = apply_overrides(
         provider_id,
         seed_data,
         phase="discovery",
         excluded_patch_scripts=DERIVED_PATCH_SCRIPTS,
         include_global_core=False,
+        config_path=overrides_path,
     )
-    return persist_base_from_published(provider_id, rebuilt)
+    base_data, stripped = clean_base_from_published(provider_id, rebuilt)
+    validate_base(base_data, provider_id)
+    return base_data, stripped
 
 
-def _snapshot_seed(
-    registry: dict[str, Any],
+def persist_base_from_seed(
     provider_id: str,
-    row: dict[str, Any],
-) -> tuple[bytes, str] | None:
-    expected = str(row.get("upstream_sha256") or "").strip().casefold()
-    upstream_id = str(row.get("upstream_id") or provider_id).strip()
-    preferred = str(row.get("source") or "").strip()
-    sources = registry.get("sources") or {}
-    if not isinstance(sources, dict):
-        return None
+    seed_data: bytes,
+    *,
+    overrides_path: Path | None = None,
+) -> tuple[str, str, bool]:
+    """Rebuild durable provider logic from a clean provider seed.
 
-    ordered_sources = []
-    if preferred in sources:
-        ordered_sources.append(preferred)
-    ordered_sources.extend(key for key in sources if key not in ordered_sources)
-
-    matches: list[tuple[str, dict[str, Any]]] = []
-    for source_key in ordered_sources:
-        source_row = sources.get(source_key)
-        if not isinstance(source_row, dict):
-            continue
-        for generation in source_row.get("generations") or []:
-            if not isinstance(generation, dict):
-                continue
-            providers = generation.get("providers") or {}
-            if not isinstance(providers, dict):
-                continue
-            record = providers.get(upstream_id)
-            if not isinstance(record, dict):
-                record = next(
-                    (
-                        value
-                        for raw_id, value in providers.items()
-                        if canonical_id(str(raw_id)) == provider_id and isinstance(value, dict)
-                    ),
-                    None,
-                )
-            if not isinstance(record, dict):
-                continue
-            record_sha = str(record.get("sha256") or "").strip().casefold()
-            if expected and record_sha != expected:
-                continue
-            matches.append((source_key, record))
-
-    if not matches:
-        return None
-    source_key, record = matches[0]
-    filename = str(record.get("file") or "").strip()
-    record_sha = str(record.get("sha256") or "").strip().casefold()
-    path = (ROOT / "upstream-lkg" / "providers" / filename).resolve()
-    try:
-        path.relative_to((ROOT / "upstream-lkg" / "providers").resolve())
-    except ValueError:
-        return None
-    if not path.is_file():
-        return None
-    data = path.read_bytes()
-    if not record_sha or sha256(data) != record_sha:
-        return None
-    return data, f"upstream-lkg:{source_key}:{record_sha[:16]}"
-
-
-def _git_seed(provider_id: str) -> tuple[bytes, str] | None:
-    seed = LEGACY_LOCAL_SEEDS.get(provider_id)
-    if seed is None:
-        return None
-    commit, path = seed
-    result = subprocess.run(
-        ["git", "show", f"{commit}:{path}"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
+    Publication-only quarantine, dynamic domain materialization and adaptive
+    runtime/domain recovery are deliberately excluded. They remain derived state
+    and are regenerated later by the finalizer from current policy/evidence.
+    """
+    base_data, stripped = build_base_from_seed(
+        provider_id,
+        seed_data,
+        overrides_path=overrides_path,
     )
-    if result.returncode or not result.stdout:
-        return None
-    return result.stdout, f"git:{commit[:12]}:{path}"
+    relative, digest = write_base(provider_id, base_data)
+    return relative, digest, stripped
 
 
-def _pre_hardening_git_seed(provider_id: str) -> tuple[bytes, str] | None:
-    """Recover only when current legacy bytes are unrecoverable (for example quarantine)."""
-    manifest_result = subprocess.run(
-        ["git", "show", f"{PRE_HARDENING_MANIFEST_COMMIT}:manifest.json"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    if manifest_result.returncode or not manifest_result.stdout:
-        return None
-    try:
-        manifest = json.loads(manifest_result.stdout.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError):
-        return None
-    entry = next(
-        (
-            row
-            for row in manifest.get("scrapers") or []
-            if isinstance(row, dict) and canonical_id(str(row.get("id") or "")) == provider_id
-        ),
-        None,
-    )
-    if not isinstance(entry, dict):
-        return None
-    relative = str(entry.get("filename") or "").strip()
-    if not relative.startswith("providers/"):
-        return None
-    result = subprocess.run(
-        ["git", "show", f"{PRE_HARDENING_MANIFEST_COMMIT}:{relative}"],
-        cwd=ROOT,
-        capture_output=True,
-        check=False,
-    )
-    if result.returncode or not result.stdout:
-        return None
-    return result.stdout, f"git-pre-hardening:{PRE_HARDENING_MANIFEST_COMMIT[:12]}:{relative}"
-
-
-def _latest_snapshot_seed(
-    registry: dict[str, Any],
+def build_clean_provider_seed(
     provider_id: str,
-    row: dict[str, Any],
-) -> tuple[bytes, str] | None:
-    """Return the newest retained raw upstream only as quarantine recovery input."""
-    upstream_id = str(row.get("upstream_id") or provider_id).strip()
-    sources = registry.get("sources") or {}
-    if not isinstance(sources, dict):
-        return None
-    preferred = str(row.get("source") or "").strip()
-    order = []
-    if preferred in sources:
-        order.append(preferred)
-    order.extend(key for key in sources if key not in order)
-    for source_key in order:
-        source_row = sources.get(source_key)
-        if not isinstance(source_row, dict):
-            continue
-        for generation in source_row.get("generations") or []:
-            if not isinstance(generation, dict):
-                continue
-            providers = generation.get("providers") or {}
-            if not isinstance(providers, dict):
-                continue
-            record = providers.get(upstream_id)
-            if not isinstance(record, dict):
-                record = next(
-                    (
-                        value
-                        for raw_id, value in providers.items()
-                        if canonical_id(str(raw_id)) == provider_id and isinstance(value, dict)
-                    ),
-                    None,
-                )
-            if not isinstance(record, dict):
-                continue
-            filename = str(record.get("file") or "").strip()
-            digest = str(record.get("sha256") or "").strip().casefold()
-            path = (ROOT / "upstream-lkg" / "providers" / filename).resolve()
-            try:
-                path.relative_to((ROOT / "upstream-lkg" / "providers").resolve())
-            except ValueError:
-                continue
-            if not path.is_file():
-                continue
-            data = path.read_bytes()
-            if not digest or sha256(data) != digest:
-                continue
-            return data, f"upstream-lkg-latest-quarantine-recovery:{source_key}:{digest[:16]}"
-    return None
+    manifest_entry: dict[str, Any] | None = None,
+    *,
+    known_site: str | None = None,
+    provider_model: dict[str, Any] | None = None,
+) -> bytes:
+    """Build a fresh NiakVIO-owned provider implementation from structured knowledge.
 
-
-def _persist_recovery_fallback(
-    registry: dict[str, Any],
-    provider_id: str,
-    row: dict[str, Any],
-) -> tuple[str, str, bool, str]:
-    """Recover destroyed legacy logic without changing the public quarantine state."""
-    candidates = [
-        _git_seed(provider_id),
-        _pre_hardening_git_seed(provider_id),
-        _latest_snapshot_seed(registry, provider_id, row),
+    The structured model may contain observed routes/domains/capability metadata,
+    but never executable upstream source. The generated JavaScript is authored by
+    NiakVIO and uses one common deterministic resolver skeleton. Learning may then
+    specialize the model/runtime and must prove the resulting ProviderBase before
+    publication.
+    """
+    entry = manifest_entry if isinstance(manifest_entry, dict) else {}
+    supported = [
+        str(value).strip().casefold()
+        for value in entry.get("supportedTypes") or []
+        if str(value).strip().casefold() in {"movie", "tv", "anime"}
     ]
-    errors: list[str] = []
-    for candidate in candidates:
-        if candidate is None:
-            continue
-        seed_data, seed_source = candidate
-        try:
-            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
-            return base_file, base_sha, stripped, seed_source
-        except ValueError as exc:
-            errors.append(f"{seed_source}:{exc}")
-    detail = " | ".join(errors[-3:]) if errors else "no recovery candidates"
-    raise ValueError(f"{provider_id}: no clean recovery seed for legacy ProviderBase ({detail})")
+    supported = list(dict.fromkeys(supported))
+    display_name = str(entry.get("name") or provider_id).strip() or provider_id
+    incoming_model = provider_model if isinstance(provider_model, dict) else {}
+    model = {
+        "providerId": canonical_id(provider_id),
+        "displayName": display_name,
+        "knownSite": str(known_site or incoming_model.get("knownSite") or "").strip() or None,
+        "supportedTypes": supported,
+        "strategy": str(incoming_model.get("strategy") or "unknown").strip().casefold(),
+        "officialSite": str(incoming_model.get("officialSite") or "").strip() or None,
+        "officialHub": str(incoming_model.get("officialHub") or "").strip() or None,
+        "officialApi": str(incoming_model.get("officialApi") or "").strip() or None,
+        "fixedApi": str(incoming_model.get("fixedApi") or "").strip() or None,
+        "origins": [
+            str(value).strip()
+            for value in incoming_model.get("origins") or []
+            if str(value).strip()
+        ][:24],
+        "observedUrls": [
+            str(value).strip()
+            for value in incoming_model.get("observedUrls") or []
+            if str(value).strip()
+        ][:32],
+        "routes": [
+            str(value).strip()
+            for value in incoming_model.get("routes") or []
+            if str(value).strip()
+        ][:32],
+        "reconstructionState": "learning-clean-seed",
+        "authoring": "niakvio-owned-v2",
+        "upstreamCodeEmbedded": False,
+        "upstreamCodeExecuted": False,
+    }
+    payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    template = r'''"use strict";
+
+/* NIAKVIO_PROVIDER_BASE_OWNED_V2 */
+const NIAKVIO_PROVIDER_MODEL = Object.freeze(__MODEL_JSON__);
+
+function _uniq(values) {
+  return [...new Set((values || []).filter(Boolean))];
+}
+function _origin(value) {
+  try { return new URL(value).origin; } catch (_) { return ""; }
+}
+function _absolute(value, base) {
+  try { return new URL(value, base).toString(); } catch (_) { return ""; }
+}
+function _text(value) {
+  return String(value == null ? "" : value);
+}
+function _directMedia(url) {
+  return /\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)|\/(?:hls|dash|stream)(?:\/|[?#]|$)/i.test(_text(url));
+}
+function _extractUrls(text, base) {
+  const out = [];
+  const patterns = [
+    /(?:src|href|file|url)\s*[:=]\s*["']([^"'<>\s]+)["']/gi,
+    /https?:\\?\/\\?\/[^"'<>\s]+/gi
+  ];
+  for (const pattern of patterns) {
+    let match;
+    while ((match = pattern.exec(text || ""))) {
+      const raw = (match[1] || match[0] || "").replace(/\\\//g, "/").replace(/&amp;/g, "&");
+      const absolute = _absolute(raw, base);
+      if (absolute && /^https?:/i.test(absolute)) out.push(absolute);
+      if (out.length >= 160) break;
+    }
+  }
+  return _uniq(out);
+}
+async function _fetch(url, options) {
+  const response = await fetch(url, {
+    redirect: "follow",
+    headers: Object.assign({
+      "Accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+      "User-Agent": "Mozilla/5.0 NiakVIO/2"
+    }, (options && options.headers) || {})
+  });
+  if (!response.ok) throw new Error("provider_http_" + response.status);
+  return response;
+}
+async function _tmdb(tmdbId, mediaType) {
+  const key = typeof globalThis !== "undefined" ? globalThis.TMDB_API_KEY : null;
+  if (!key || !tmdbId) return null;
+  const type = String(mediaType || "movie").toLowerCase() === "movie" ? "movie" : "tv";
+  try {
+    const response = await _fetch(
+      "https://api.themoviedb.org/3/" + type + "/" + encodeURIComponent(tmdbId) +
+      "?api_key=" + encodeURIComponent(key) + "&language=en-US"
+    );
+    const row = await response.json();
+    return {
+      title: row.title || row.name || row.original_title || row.original_name || "",
+      year: String(row.release_date || row.first_air_date || "").slice(0, 4)
+    };
+  } catch (_) {
+    return null;
+  }
+}
+function _searchBases() {
+  return _uniq([
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite,
+    NIAKVIO_PROVIDER_MODEL.officialHub,
+    ...(NIAKVIO_PROVIDER_MODEL.origins || [])
+  ]).filter(value => /^https?:/i.test(value));
+}
+function _searchUrls(title) {
+  const query = encodeURIComponent(title || "");
+  const out = [];
+  for (const base of _searchBases()) {
+    out.push(_absolute("/?s=" + query, base));
+    out.push(_absolute("/search?q=" + query, base));
+    out.push(_absolute("/search/" + query, base));
+  }
+  return _uniq(out);
+}
+function _apiUrls(tmdbId, mediaType, season, episode) {
+  const bases = _uniq([
+    NIAKVIO_PROVIDER_MODEL.fixedApi,
+    NIAKVIO_PROVIDER_MODEL.officialApi,
+    ...(NIAKVIO_PROVIDER_MODEL.observedUrls || []).filter(value => /api|stream|source|embed|player/i.test(value))
+  ]);
+  const out = [];
+  for (const base of bases) {
+    if (!/^https?:/i.test(base)) continue;
+    let url = base
+      .replace(/\{(?:tmdb_?id|id)\}/gi, encodeURIComponent(tmdbId || ""))
+      .replace(/\{(?:media_?type|type)\}/gi, encodeURIComponent(mediaType || "movie"))
+      .replace(/\{season\}/gi, encodeURIComponent(season == null ? "" : season))
+      .replace(/\{episode\}/gi, encodeURIComponent(episode == null ? "" : episode));
+    out.push(url);
+    try {
+      const parsed = new URL(url);
+      if (!parsed.searchParams.size) {
+        parsed.searchParams.set("tmdbId", tmdbId || "");
+        parsed.searchParams.set("type", mediaType || "movie");
+        if (season != null) parsed.searchParams.set("season", String(season));
+        if (episode != null) parsed.searchParams.set("episode", String(episode));
+        out.push(parsed.toString());
+      }
+    } catch (_) {}
+  }
+  return _uniq(out);
+}
+function _jsonUrls(value, out) {
+  out = out || [];
+  if (typeof value === "string") {
+    if (/^https?:/i.test(value)) out.push(value);
+    return out;
+  }
+  if (Array.isArray(value)) {
+    for (const child of value) _jsonUrls(child, out);
+    return out;
+  }
+  if (value && typeof value === "object") {
+    for (const child of Object.values(value)) _jsonUrls(child, out);
+  }
+  return out;
+}
+function _streams(urls, referer) {
+  return _uniq(urls).slice(0, 40).map((url, index) => ({
+    name: NIAKVIO_PROVIDER_MODEL.displayName,
+    title: NIAKVIO_PROVIDER_MODEL.displayName + (index ? " #" + (index + 1) : ""),
+    url,
+    headers: referer ? { Referer: referer } : undefined
+  }));
+}
+async function _resolveApi(tmdbId, mediaType, season, episode) {
+  const streams = [];
+  for (const url of _apiUrls(tmdbId, mediaType, season, episode).slice(0, 12)) {
+    try {
+      const response = await _fetch(url);
+      const type = _text(response.headers.get("content-type")).toLowerCase();
+      if (type.includes("json")) {
+        const value = await response.json();
+        streams.push(..._jsonUrls(value).filter(_directMedia));
+      } else {
+        const text = await response.text();
+        streams.push(..._extractUrls(text, response.url || url).filter(_directMedia));
+      }
+    } catch (_) {}
+    if (streams.length) break;
+  }
+  return _streams(streams, _searchBases()[0] || "");
+}
+async function _resolveHtml(meta, mediaType, season, episode) {
+  if (!meta || !meta.title) return [];
+  const candidates = [];
+  for (const searchUrl of _searchUrls(meta.title).slice(0, 9)) {
+    try {
+      const response = await _fetch(searchUrl);
+      const html = await response.text();
+      const urls = _extractUrls(html, response.url || searchUrl);
+      candidates.push(...urls.filter(value => {
+        const host = _origin(value);
+        return host && _searchBases().some(base => _origin(base) === host);
+      }));
+    } catch (_) {}
+    if (candidates.length) break;
+  }
+  const streams = [];
+  for (const detailUrl of _uniq(candidates).slice(0, 8)) {
+    try {
+      const response = await _fetch(detailUrl);
+      const html = await response.text();
+      let urls = _extractUrls(html, response.url || detailUrl);
+      if (mediaType !== "movie" && season != null && episode != null) {
+        const token = new RegExp("(?:s(?:eason)?\\s*0*" + Number(season) + "[^\\n]{0,80}e(?:pisode)?\\s*0*" + Number(episode) + "|0*" + Number(season) + "x0*" + Number(episode) + ")", "i");
+        const episodeLinks = urls.filter(value => token.test(value));
+        if (episodeLinks.length) {
+          for (const episodeUrl of episodeLinks.slice(0, 4)) {
+            try {
+              const episodeResponse = await _fetch(episodeUrl);
+              const episodeHtml = await episodeResponse.text();
+              urls = urls.concat(_extractUrls(episodeHtml, episodeResponse.url || episodeUrl));
+            } catch (_) {}
+          }
+        }
+      }
+      const direct = urls.filter(_directMedia);
+      if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
+      if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
+        const embeds = urls.filter(value => /embed|player|watch|iframe/i.test(value));
+        streams.push(..._streams(embeds, response.url || detailUrl));
+      }
+    } catch (_) {}
+    if (streams.length >= 12) break;
+  }
+  return streams.slice(0, 40);
+}
+async function getStreams(tmdbId, mediaType, season, episode) {
+  const type = String(mediaType || "movie").toLowerCase();
+  if (NIAKVIO_PROVIDER_MODEL.supportedTypes.length &&
+      !NIAKVIO_PROVIDER_MODEL.supportedTypes.includes(type) &&
+      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
+    return [];
+  }
+  const strategy = NIAKVIO_PROVIDER_MODEL.strategy;
+  if (/api_stream_resolver|direct_media/i.test(strategy)) {
+    const api = await _resolveApi(tmdbId, type, season, episode);
+    if (api.length) return api;
+  }
+  const meta = await _tmdb(tmdbId, type);
+  const html = await _resolveHtml(meta, type, season, episode);
+  if (html.length) return html;
+  if (!/api_stream_resolver|direct_media/i.test(strategy)) {
+    return _resolveApi(tmdbId, type, season, episode);
+  }
+  return [];
+}
+module.exports = { getStreams, __niakvioProviderBase: NIAKVIO_PROVIDER_MODEL };
+'''
+    source = template.replace("__MODEL_JSON__", payload)
+    return source.encode("utf-8")
+
+def persist_clean_provider_seed(
+    provider_id: str,
+    manifest_entry: dict[str, Any] | None = None,
+    *,
+    known_site: str | None = None,
+    provider_model: dict[str, Any] | None = None,
+    overrides_path: Path | None = None,
+) -> tuple[str, str, bool]:
+    return persist_base_from_seed(
+        provider_id,
+        build_clean_provider_seed(
+            provider_id,
+            manifest_entry,
+            known_site=known_site,
+            provider_model=provider_model,
+        ),
+        overrides_path=overrides_path,
+    )
 
 
 def repair_legacy_bases() -> dict[str, Any]:
-    """Replace one-shot/public-derived bases with provider-pipeline bases.
+    """Mark every pre-v2 ProviderBase as compatibility-only legacy state.
 
-    Exact upstream SHA is required whenever provenance has one. This prevents the
-    migration from silently advancing provider logic without validation.
+    This command deliberately does *not* reconstruct ProviderBase bytes. The
+    currently published implementation may remain available to existing clients
+    and may be observed as LKG evidence, but it is never an executable seed for
+    the new NiakVIO-owned ProviderBase.
+
+    A provider leaves this queue only after a clean NiakVIO seed has been
+    reconstructed independently, validated in Learning/Lab, materialized as a
+    ProviderBase, and recorded with CLEAN_RECONSTRUCTION_SOURCE.
     """
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
     provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
     rows = provenance.get("providers")
     if not isinstance(rows, dict):
         raise ValueError("PROVENANCE.providers must be an object")
-    registry = load_registry(ROOT)
 
-    repaired = 0
-    reused = 0
-    old_paths: set[Path] = set()
     provider_count = 0
-    repair_sources: dict[str, str] = {}
+    reconstruction_required = 0
+    clean_reconstructed = 0
+    marked_at = datetime.now(timezone.utc).isoformat()
 
     for entry in manifest.get("scrapers") or []:
         if not isinstance(entry, dict):
             continue
-        provider_id = str(entry.get("id") or "").strip().casefold()
+        provider_id = canonical_id(str(entry.get("id") or ""))
         if not provider_id:
             continue
         provider_count += 1
@@ -461,149 +592,75 @@ def repair_legacy_bases() -> dict[str, Any]:
         if not isinstance(row, dict):
             raise ValueError(f"{provider_id}: missing provenance row")
 
-        existing_path, _existing_sha = resolve_base(provider_id, row, require=False)
-        existing_data = existing_path.read_bytes() if existing_path is not None else None
-        legacy_source = str(row.get("base_source") or "") == "one-shot-public-core-tail-extraction"
-        contaminated = bool(existing_data and forbidden_base_markers(existing_data))
-        if existing_data is not None and not legacy_source and not contaminated:
-            assert_base_layering(existing_data, provider_id)
-            reused += 1
-            continue
+        path, _digest = resolve_base(provider_id, row, require=True)
+        assert path is not None
+        assert_base_layering(path.read_bytes(), provider_id)
 
-        seed = _snapshot_seed(registry, provider_id, row)
-        base_file: str
-        base_sha: str
-        stripped: bool
-        seed_source: str
-
-        if seed is not None:
-            seed_data, seed_source = seed
-            base_file, base_sha, stripped = persist_base_from_seed(provider_id, seed_data)
-        elif existing_data is not None:
-            # Preserve the exact current provider implementation whenever the
-            # one-shot base is recoverable. This retains later provider repairs
-            # without trusting a newer upstream variant. Security-normalized
-            # source is allowed here because it is idempotent provider code, not
-            # a Core/routing/quarantine layer.
-            try:
-                clean_data, stripped = clean_base_from_published(provider_id, existing_data)
-                validate_base(clean_data, provider_id)
-                base_file, base_sha = write_base(provider_id, clean_data)
-                seed_source = "legacy-current-provider-logic"
-            except ValueError:
-                base_file, base_sha, stripped, seed_source = _persist_recovery_fallback(
-                    registry, provider_id, row
-                )
+        if requires_clean_reconstruction(row):
+            reconstruction_required += 1
+            row["clean_reconstruction_required"] = True
+            if is_clean_reconstruction_candidate(row):
+                row["legacy_provider_base_role"] = "superseded-by-clean-candidate"
+                row["clean_reconstruction_candidate_role"] = "pending-pipeline-proof"
+            else:
+                row["legacy_provider_base_role"] = "compatibility-lkg-only"
+                row.pop("clean_reconstruction_candidate_role", None)
+            row["legacy_provider_js_role"] = "knowledge-only-for-reconstruction"
+            row["legacy_provider_js_executed_for_reconstruction"] = False
+            row.setdefault("clean_reconstruction_marked_at", marked_at)
         else:
-            base_file, base_sha, stripped, seed_source = _persist_recovery_fallback(
-                registry, provider_id, row
-            )
+            clean_reconstructed += 1
+            row["clean_reconstruction_required"] = False
+            row.pop("legacy_provider_base_role", None)
+            row.pop("legacy_provider_js_role", None)
+            row.pop("legacy_provider_js_executed_for_reconstruction", None)
+            row.pop("clean_reconstruction_candidate_role", None)
 
-        if existing_path is not None:
-            old_paths.add(existing_path)
-        row["base_filename"] = base_file
-        row["base_sha256"] = base_sha
-        row["base_source"] = "provider-pipeline-legacy-rebase"
-        row["base_seed_source"] = seed_source
-        row["base_rebased_at"] = datetime.now(timezone.utc).isoformat()
-        row["base_migration_stripped_generated_core"] = bool(stripped)
-        row.pop("build_input_sha256", None)
-        row.pop("final_fixed_point", None)
-        repair_sources[provider_id] = seed_source
-        repaired += 1
-
-    referenced = {
-        str(row.get("base_filename") or "")
-        for row in rows.values()
-        if isinstance(row, dict) and str(row.get("base_filename") or "")
-    }
-    removed = 0
-    for path in old_paths:
-        relative = path.relative_to(ROOT).as_posix()
-        if relative not in referenced and path.is_file():
-            path.unlink()
-            removed += 1
-
-    provenance["provider_base_store"] = {
-        "schema_version": 2,
+    store = provenance.get("provider_base_store")
+    if not isinstance(store, dict):
+        store = {}
+        provenance["provider_base_store"] = store
+    store.update({
+        "schema_version": max(4, int(store.get("schema_version") or 0)),
         "provider_count": provider_count,
-        "legacy_rebased": repaired,
-        "reused": reused,
-        "migration": "provider-pipeline-source-rebase",
+        "unique_base_count": provider_count,
+        "initial_reconstruction_scope": int(store.get("initial_reconstruction_scope") or provider_count),
+        "migration_scope": "all-current-providers",
+        "owner": "provider_pipeline",
         "future_source": "provider_pipeline_only",
+        "clean_reconstructed": clean_reconstructed,
+        "reconstruction_required": reconstruction_required,
+        "authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+        "authoring_policy": "niakvio-owned-clean-reconstruction-only",
+        "clean_source": CLEAN_RECONSTRUCTION_SOURCE,
+        "legacy_provider_role": "compatibility-lkg-and-knowledge-only",
+        "upstream_code_role": "knowledge-only",
+        "upstream_code_executed": False,
+        "published_legacy_code_may_seed_new_base": False,
+        "upstream_code_may_seed_new_base": False,
+        "git_history_code_may_seed_new_base": False,
         "core_may_create_or_mutate_base": False,
+        "semantic_validation": "on_base_creation_or_change",
+        "core_integrity_validation": "coverage_and_sha_only",
         "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
-        "dynamic_domain_layers_derived": True,
-        "legacy_security_normalization_may_be_preserved": True,
-        "removed_legacy_base_files": removed,
-    }
+    })
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return {
         "providers": provider_count,
-        "repaired": repaired,
-        "reused": reused,
-        "removed": removed,
-        "sources": repair_sources,
+        "clean_reconstructed": clean_reconstructed,
+        "reconstruction_required": reconstruction_required,
     }
-
 
 def migrate_existing() -> dict[str, Any]:
-    """Legacy entry point retained for old workflows; new runs use repair-legacy."""
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
-    rows = provenance.get("providers")
-    if not isinstance(rows, dict):
-        raise ValueError("PROVENANCE.providers must be an object")
+    """Disabled legacy migration entry point.
 
-    migrated = 0
-    reused = 0
-    provider_count = 0
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
-        provider_id = str(entry.get("id") or "").strip().casefold()
-        relative = str(entry.get("filename") or "").strip()
-        if not provider_id or not relative.startswith("providers/"):
-            continue
-        provider_count += 1
-        row = rows.get(provider_id)
-        if not isinstance(row, dict):
-            raise ValueError(f"{provider_id}: missing provenance row")
-
-        existing_path, _existing_sha = resolve_base(provider_id, row, require=False)
-        if existing_path is not None:
-            assert_base_layering(existing_path.read_bytes(), provider_id)
-            reused += 1
-            continue
-
-        public_path = (ROOT / relative).resolve()
-        try:
-            public_path.relative_to((ROOT / "providers").resolve())
-        except ValueError as exc:
-            raise ValueError(f"{provider_id}: unsafe public provider path") from exc
-        if not public_path.is_file():
-            raise ValueError(f"{provider_id}: missing public provider artifact {relative}")
-
-        base_file, base_sha, stripped = persist_base_from_published(provider_id, public_path.read_bytes())
-        row["base_filename"] = base_file
-        row["base_sha256"] = base_sha
-        row["base_source"] = "one-shot-public-core-tail-extraction"
-        row["base_migrated_at"] = datetime.now(timezone.utc).isoformat()
-        row["base_migration_stripped_generated_core"] = bool(stripped)
-        migrated += 1
-
-    provenance["provider_base_store"] = {
-        "schema_version": 1,
-        "provider_count": provider_count,
-        "migrated": migrated,
-        "reused": reused,
-        "migration": "one-shot",
-        "future_source": "provider_pipeline_only",
-        "core_may_create_or_mutate_base": False,
-    }
-    PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return {"providers": provider_count, "migrated": migrated, "reused": reused}
-
+    Published, upstream, snapshot and Git-history JavaScript are knowledge only;
+    none of them may be transformed into a durable ProviderBase.
+    """
+    raise ValueError(
+        "migrate-existing is disabled: legacy/upstream/public JavaScript may not seed ProviderBase; "
+        "use NiakVIO clean reconstruction through Learning"
+    )
 
 def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -630,10 +687,18 @@ def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
         checked += 1
     if checked != len(manifest.get("scrapers") or []):
         raise ValueError(f"ProviderBase coverage mismatch checked={checked} manifest={len(manifest.get('scrapers') or [])}")
+    clean_reconstructed = sum(
+        1
+        for entry in manifest.get("scrapers") or []
+        if isinstance(entry, dict)
+        and is_clean_reconstructed(rows.get(canonical_id(str(entry.get("id") or ""))))
+    )
     return {
         "checked": checked,
         "unique_bases": len(bases),
         "artifact_validation": bool(validate_artifacts),
+        "clean_reconstructed": clean_reconstructed,
+        "reconstruction_required": checked - clean_reconstructed,
     }
 
 
@@ -659,13 +724,14 @@ def main() -> int:
         result = repair_legacy_bases()
         print(
             f"FIELD_PROVIDER_BASE_REPAIR providers={result['providers']} "
-            f"repaired={result['repaired']} reused={result['reused']} removed={result['removed']}"
+            f"clean={result['clean_reconstructed']} required={result['reconstruction_required']}"
         )
     else:
         result = validate_all(validate_artifacts=bool(args.artifacts))
         print(
             f"FIELD_PROVIDER_BASE_COVERAGE checked={result['checked']} "
             f"unique_bases={result['unique_bases']} "
+            f"clean={result['clean_reconstructed']} required={result['reconstruction_required']} "
             f"artifact_validation={str(result['artifact_validation']).lower()}"
         )
     return 0
