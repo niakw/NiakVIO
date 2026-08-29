@@ -2081,13 +2081,23 @@ def main() -> int:
                     previous_provenance.get("providers", {}).get(cid, {}),
                 )
             except (ValueError, OSError, subprocess.SubprocessError) as exc:
-                # A generated candidate may still be invalid after all upstream
-                # checks. Reject only that candidate, retain the last published
-                # local artifact when it is safe, and continue promoting the
-                # remaining providers. The validator diagnostic is surfaced in
-                # the Actions log instead of being hidden by capture_output.
+                message = str(exc)
+                reconstruction_pending = (
+                    "clean reconstruction required" in message
+                    or "publication frozen until clean reconstruction" in message
+                )
+                # A pre-v2 ProviderBase is intentionally frozen, not broken.
+                # Keep the exact published SHA until a NiakVIO-owned v2 candidate
+                # has passed Learning and the canonical pipeline. Other validator
+                # failures remain real errors.
+                annotation = "notice" if reconstruction_pending else "error"
+                title = (
+                    "Provider clean reconstruction pending"
+                    if reconstruction_pending
+                    else "Provider candidate rejected"
+                )
                 print(
-                    f"::error title=Provider candidate rejected::{cid}: {exc}",
+                    f"::{annotation} title={title}::{cid}: {exc}",
                     file=sys.stderr,
                 )
                 old_entry = existing.get(cid)
@@ -2104,39 +2114,77 @@ def main() -> int:
                     retained["enabled"] = bool(old_entry.get("enabled", False))
                     entries[cid] = retained
                     old_provenance = previous_provenance.get("providers", {}).get(cid, {})
-                    provenance[cid] = {
-                        **old_provenance,
-                        "id": cid,
-                        "published_filename": filename,
-                        "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
-                        "activation_eligible": False,
-                        "activation_blockers": ["generated_candidate_validation_failed"],
-                        "promotion_error": str(exc),
-                    }
-                    report_items.append(
-                        {
+                    if reconstruction_pending:
+                        provenance[cid] = {
+                            **old_provenance,
                             "id": cid,
-                            "action": "retained-local-copy-generated-candidate-invalid",
-                            "enabled": bool(retained.get("enabled", False)),
-                            "activation_eligible": False,
-                            "failed_gates": [],
-                            "activation_blockers": ["generated_candidate_validation_failed"],
-                            "activation_gates": {},
-                            "promotion_error": str(exc),
-                            "variant_count": len(variants),
+                            "published_filename": filename,
+                            "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+                            "clean_reconstruction_required": True,
+                            "legacy_provider_base_role": "compatibility-lkg-only",
+                            "legacy_provider_js_role": "knowledge-only-for-reconstruction",
+                            "legacy_provider_js_executed_for_reconstruction": False,
+                            "activation_blockers": list(
+                                dict.fromkeys(
+                                    list(old_provenance.get("activation_blockers") or [])
+                                    + ["clean_reconstruction_pending"]
+                                )
+                            ),
                         }
-                    )
+                        report_items.append(
+                            {
+                                "id": cid,
+                                "action": "preserved-current-clean-reconstruction-pending",
+                                "enabled": bool(retained.get("enabled", False)),
+                                "activation_eligible": False,
+                                "failed_gates": [],
+                                "activation_blockers": ["clean_reconstruction_pending"],
+                                "activation_gates": {},
+                                "variant_count": len(variants),
+                            }
+                        )
+                    else:
+                        provenance[cid] = {
+                            **old_provenance,
+                            "id": cid,
+                            "published_filename": filename,
+                            "sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
+                            "activation_eligible": False,
+                            "activation_blockers": ["generated_candidate_validation_failed"],
+                            "promotion_error": message,
+                        }
+                        report_items.append(
+                            {
+                                "id": cid,
+                                "action": "retained-local-copy-generated-candidate-invalid",
+                                "enabled": bool(retained.get("enabled", False)),
+                                "activation_eligible": False,
+                                "failed_gates": [],
+                                "activation_blockers": ["generated_candidate_validation_failed"],
+                                "activation_gates": {},
+                                "promotion_error": message,
+                                "variant_count": len(variants),
+                            }
+                        )
                 else:
                     report_items.append(
                         {
                             "id": cid,
-                            "action": "omitted-generated-candidate-invalid-no-local-copy",
+                            "action": (
+                                "omitted-clean-reconstruction-pending-no-local-copy"
+                                if reconstruction_pending
+                                else "omitted-generated-candidate-invalid-no-local-copy"
+                            ),
                             "enabled": False,
                             "activation_eligible": False,
                             "failed_gates": [],
-                            "activation_blockers": ["generated_candidate_validation_failed"],
+                            "activation_blockers": [
+                                "clean_reconstruction_pending"
+                                if reconstruction_pending
+                                else "generated_candidate_validation_failed"
+                            ],
                             "activation_gates": {},
-                            "promotion_error": str(exc),
+                            **({} if reconstruction_pending else {"promotion_error": message}),
                             "variant_count": len(variants),
                         }
                     )
