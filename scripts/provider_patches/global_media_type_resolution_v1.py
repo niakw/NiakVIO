@@ -66,7 +66,7 @@ function animeMeta(m){
 function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
 async function tmdb(tvId){
   var key=s(g&&g.TMDB_API_KEY),token=s(g&&g.TMDB_ACCESS_TOKEN);
-  if(!/^\\d+$/.test(s(tvId))||(!key&&!token)||!g||typeof g.fetch!=="function")return null;
+  if(!/^\d+$/.test(s(tvId))||(!key&&!token)||!g||typeof g.fetch!=="function")return null;
   try{
     var u="https://api.themoviedb.org/3/tv/"+encodeURIComponent(s(tvId))+"?append_to_response=keywords&language=en-US";
     if(key)u+="&api_key="+encodeURIComponent(key);
@@ -85,7 +85,7 @@ async function resolve(a){
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
   if(category==="anime"||animeMeta(metadata))type="anime";
   var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
-  if(type==="tv"&&/^\\d+$/.test(id)){
+  if(type==="tv"&&/^\d+$/.test(id)){
     var m=await tmdb(id);if(animeMeta(m))type="anime";
   }
   if(obj){
