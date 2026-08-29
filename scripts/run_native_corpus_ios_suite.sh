@@ -12,6 +12,7 @@ SESSION_STATE="${NIAKVIO_IOS_SESSION_STATE:-$WORKSPACE/ios-learning-session.env}
 PROVIDER_TIMEOUT_MS="${NIAKVIO_IOS_PROVIDER_TIMEOUT_MS:-}"
 PLAYER_TIMEOUT_MS="${NIAKVIO_IOS_PLAYER_TIMEOUT_MS:-}"
 WAIT_SECONDS="${NIAKVIO_IOS_WAIT_SECONDS:-}"
+LAUNCH_RETRY_TIMEOUT_SECONDS="${NIAKVIO_IOS_LAUNCH_RETRY_TIMEOUT_SECONDS:-}"
 
 case "$MODE" in
   full) ;;
@@ -29,6 +30,9 @@ esac
 
 if [[ -z "$WAIT_SECONDS" ]]; then
   if [[ "$MODE" = "full" ]]; then WAIT_SECONDS=7200; else WAIT_SECONDS=120; fi
+fi
+if [[ -z "$LAUNCH_RETRY_TIMEOUT_SECONDS" ]]; then
+  if [[ "$MODE" = "full" ]]; then LAUNCH_RETRY_TIMEOUT_SECONDS=600; else LAUNCH_RETRY_TIMEOUT_SECONDS=300; fi
 fi
 if [[ "$MODE" = "full" ]]; then
   LOG="${NIAKVIO_IOS_LOG:-$WORKSPACE/mobile-ios-native-corpus.log}"
@@ -102,6 +106,15 @@ PY
   xcrun simctl bootstatus "$UDID" -b
   xcrun simctl install "$UDID" "$APP"
 
+  # CoreSimulatorBridge defaults to a 120s launch retry window. On fresh
+  # macOS runners the first iOS boot can spend longer than that in app/runtime
+  # initialization even after bootstatus is terminal, causing simctl to detach
+  # just as the Lab begins. Keep this launch-only allowance separate from the
+  # provider/player probe budgets.
+  defaults write com.apple.CoreSimulatorBridge LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS" || true
+  xcrun simctl spawn "$UDID" defaults write com.apple.CoreSimulatorBridge LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS" || true
+  echo "FIELD_NATIVE_IOS_SIM_LAUNCH_TIMEOUT seconds=$LAUNCH_RETRY_TIMEOUT_SECONDS mode=$MODE"
+
   if [[ "$MODE" != "full" ]]; then
     mkdir -p "$(dirname "$SESSION_STATE")"
     {
@@ -116,6 +129,9 @@ PY
 if [[ "$MODE" != "full" ]] && load_session; then
   xcrun simctl boot "$UDID" >/dev/null 2>&1 || true
   xcrun simctl bootstatus "$UDID" -b
+  defaults write com.apple.CoreSimulatorBridge LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS" || true
+  xcrun simctl spawn "$UDID" defaults write com.apple.CoreSimulatorBridge LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS" || true
+  echo "FIELD_NATIVE_IOS_SIM_LAUNCH_TIMEOUT seconds=$LAUNCH_RETRY_TIMEOUT_SECONDS mode=$MODE"
   echo "FIELD_NATIVE_IOS_SESSION state=warm-reused mode=$MODE udid=$UDID bundle=$BUNDLE_ID"
 else
   if [[ "$MODE" != "full" ]]; then rm -f "$SESSION_STATE"; fi
