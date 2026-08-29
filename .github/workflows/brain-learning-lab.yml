@@ -174,7 +174,11 @@ jobs:
           const x=JSON.parse(fs.readFileSync('staging-reconstruction/candidates.json','utf8'));
           const candidates=(x.candidates||[]).filter(Boolean);
           const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase(),r]));
-          if(byId.size!==95) throw new Error('clean reconstruction stage must cover the canonical 95 providers, got '+byId.size);
+          const catalog=JSON.parse(fs.readFileSync('provider_catalog.json','utf8'));
+          const expected=new Set((catalog.providers||[]).map(r=>String(r.canonicalId||'').toLowerCase()).filter(Boolean));
+          if(byId.size!==expected.size || [...expected].some(id=>!byId.has(id))) {
+            throw new Error('clean reconstruction stage must cover the complete provider catalogue, got '+byId.size+' expected '+expected.size);
+          }
           const rows=[...byId.values()].filter(r=>r.provider_base_reconstruction_required===true);
           if(rows.some(r=>r.candidate_code_origin!=='new-niakvio-clean-seed')) {
             throw new Error('clean reconstruction stage contains a legacy executable seed');

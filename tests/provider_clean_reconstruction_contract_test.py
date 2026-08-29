@@ -30,12 +30,14 @@ provider_ids = [
     if isinstance(row, dict) and str(row.get("id") or "").strip()
 ]
 assert len(provider_ids) == len(set(provider_ids)), "manifest provider ids must be unique"
-assert len(provider_ids) == 95, f"expected the canonical 95-provider catalogue, got {len(provider_ids)}"
+provider_count = len(provider_ids)
+assert provider_count > 0, "canonical provider catalogue must not be empty"
 
 store = provenance.get("provider_base_store")
 assert isinstance(store, dict)
-assert store.get("provider_count") == 95
-assert store.get("initial_reconstruction_scope") == 95
+assert store.get("provider_count") == provider_count
+initial_scope = int(store.get("initial_reconstruction_scope") or 0)
+assert 0 < initial_scope <= provider_count
 assert store.get("migration_scope") == "all-current-providers"
 assert store.get("published_legacy_code_may_seed_new_base") is False
 assert store.get("upstream_code_may_seed_new_base") is False
@@ -70,15 +72,15 @@ current_v2 = [
     if base_store.is_clean_reconstructed(rows.get(provider_id))
 ]
 assert set(clean) == set(current_v2)
-assert len(required) + len(clean) == 95
+assert len(required) + len(clean) == provider_count
 assert store.get("reconstruction_required") == len(required)
 assert store.get("clean_reconstructed") == len(clean)
 
-# At the introduction of v2, all 95 historical bases are untrusted for seeding.
-# Once genuine v2 reconstructions land, this exact initial-state assertion may
-# be removed; the invariant above remains permanent.
+# At the introduction of v2 every provider that existed at that time was
+# untrusted for seeding. Future providers may be born directly as clean v2
+# reconstructions, so current catalogue size must never be frozen here.
 if not current_v2:
-    assert len(required) == 95
+    assert len(required) == provider_count
 
 pending_row = {
     "base_source": base_store.CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,

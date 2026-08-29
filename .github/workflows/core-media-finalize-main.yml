@@ -22,8 +22,10 @@ permissions:
 # workflow_dispatch runs keep an isolated group because the final orchestrator may
 # watch one exact dispatch as authoritative evidence.
 concurrency:
-  group: niakvio-core-media-finalize-main-v2-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main-push' }}
-  cancel-in-progress: ${{ github.event_name == 'push' }}
+  # Core, provider pipeline and full-auto onboarding all publish to main.
+  # One shared writer lane prevents stale provider/Core trees racing each other.
+  group: nuvio-provider-publish-main
+  cancel-in-progress: false
 
 jobs:
   finalize-main:
