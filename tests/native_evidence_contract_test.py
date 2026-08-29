@@ -114,7 +114,8 @@ for workflow in (tv_workflow, mobile_android_workflow, mobile_ios_workflow, desk
     assert "check_nuvio_client_upstreams.py" in workflow
     assert "resolve_nuvio_lab_heads.py" in workflow
     assert "workflow_dispatch:" in workflow
-    assert "\n  push:" in workflow
+    assert "\n  schedule:" in workflow and "cron:" in workflow
+    assert "\n  push:" not in workflow
     assert "\n  pull_request:" not in workflow
     assert "get('accepted_ref') or '')" not in workflow
 assert "Checkout latest official NuvioTV HEAD" in tv_workflow
