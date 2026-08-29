@@ -28,7 +28,7 @@ def safety_then_hls(source, provider_id, options=None):
     return hls_apply(output, options=opts, context={"provider_id":provider_id})
 
 ordinary = safety_then_hls(base, "ordinary")
-assert '"implementationRevision":"field-safety-v5-native-identity-collisions-all-rows"' in ordinary
+assert '"implementationRevision":"field-safety-v6-core-repair-types"' in ordinary
 assert "c.strictPlayback||tv" in ordinary
 assert "c.strictPlayback||c.failClosedUnknown" not in ordinary
 assert '"defaultUserAgent"' not in ordinary
