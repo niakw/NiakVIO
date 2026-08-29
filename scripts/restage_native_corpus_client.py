@@ -106,10 +106,15 @@ def _fixture_provider_ids(slug: str) -> list[str]:
 
 def staged_providers(manifest_path: str, provider: str | None = None, fixture: str | None = None) -> list[dict]:
     staged = selected_manifest.staged_manifest_providers(manifest_path)
+    mode = str(provider or "").strip().casefold()
+    if mode == "declared-type":
+        if not fixture:
+            raise SystemExit("declared-type provider selection requires a fixture")
+        return selected_manifest.select_declared_type(staged, corpus.fixture_by_slug(fixture))
     if _is_pull_request() and not provider and fixture:
-        # The fixture list is an ordered canary contract. Preserve that order
-        # before applying the PR budget; filtering through a set and then keeping
-        # manifest order silently changes which providers the native reader tests.
+        # Manual/legacy fixture canaries stay bounded on PRs. Canonical acceptance
+        # now uses declared-type and therefore never repeats a provider on a second
+        # work of the same media type.
         wanted = _fixture_provider_ids(fixture)
         by_id = {str(row.get("id") or "").strip().casefold(): row for row in staged}
         filtered = [by_id[key] for value in wanted if (key := value.casefold()) in by_id]
@@ -158,7 +163,7 @@ def main() -> int:
     parser.add_argument("target", choices=("desktop", "mobile", "tv"))
     parser.add_argument("--fixture", required=True)
     parser.add_argument("--workspace", required=True)
-    parser.add_argument("--provider", default="", help="optional exact provider id for a targeted human-style run")
+    parser.add_argument("--provider", default="", help="exact provider id, or declared-type for canonical one-fixture-per-type coverage")
     parser.add_argument("--player-probes", type=int, default=1, help="number of returned streams played by the native reader (1-4)")
     parser.add_argument("--manifest", default="manifest.json", help="same in-repository manifest used during initial preparation")
     args = parser.parse_args()
