@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "enabled": true,
+  "branch": "brain-architecture/proposal",
+  "reviewOnly": true,
+  "requiresHumanMerge": true,
+  "productionWritesAllowed": false,
+  "publicationAllowed": false,
+  "principle": "The Brain may challenge its own architecture when repeated evidence shows a self-imposed limitation. Self-evolution is proposal-only and must remain reproducible, bounded, reviewable and covered by CI.",
+  "evidenceInputs": [
+    "sanitized cross-day learning memory",
+    "targeted Lab summary",
+    "repair report",
+    "Learning target selection",
+    "targeted route discovery summary",
+    "current Brain policy and workflow contracts"
+  ],
+  "autoPatchAllowlist": {
+    "learningLab.allStreamsSafetyCap": {
+      "min": 20,
+      "max": 200,
+      "step": 20
+    },
+    "learningLab.maxExploratoryProfilesPerProvider": {
+      "min": 1,
+      "max": 5,
+      "step": 1
+    },
+    "production.maxHypotheses": {
+      "min": 1,
+      "max": 6,
+      "step": 1
+    },
+    "learningLab.memoryMaxEntries": {
+      "min": 500,
+      "max": 5000,
+      "step": 500
+    }
+  },
+  "structuralProposalSurfaces": [
+    ".github/workflows/brain-learning-lab.yml",
+    "scripts/run_brain_learning_sandbox.py",
+    "scripts/select_brain_learning_target.py",
+    "scripts/resolve_provider_hubs.py",
+    "scripts/resolve_provider_hub_search_fallback.py",
+    "scripts/nuvio_client_lab.cjs",
+    "engine_v2/scripts/learning-lab.mjs",
+    "engine_v2/src/repair-brain.mjs",
+    "engine_v2/config/brain-policy.json"
+  ],
+  "thresholds": {
+    "repeatedUnknownFailures": 2,
+    "repeatedProfileFailures": 2,
+    "coreLabContradictionMinimumStreams": 2,
+    "routeDiscoveryEmptyEvidence": 1
+  },
+  "forbiddenDirectChanges": [
+    "manifest.json",
+    "vf/manifest.json",
+    "providers/",
+    "provider-bases/",
+    "PROVENANCE.json"
+  ]
+}
