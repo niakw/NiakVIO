@@ -126,7 +126,7 @@ See [`ARCHITECTURE.md`](ARCHITECTURE.md) and [`engine_v2/README.md`](engine_v2/R
 
 The main provider pipeline is [`.github/workflows/sync.yml`](.github/workflows/sync.yml).
 
-**Quick** handles routine maintenance such as hub/domain refresh, sibling comparison and bounded repairs.
+**Quick** handles routine maintenance such as hub/domain refresh, canonical provider validation and bounded repairs.
 
 **Deep** is reserved for broader reconstruction, new provider knowledge, larger evidence scopes and stronger identity/transport validation.
 
@@ -141,6 +141,8 @@ NiakVIO validates real paths on official Nuvio clients:
 - Nuvio Desktop on native macOS and Windows.
 
 The Labs distinguish provider extraction problems, runtime errors, player/client incompatibility, transport failures, missing media and wrong-media identity.
+
+Canonical native coverage is **1/1/1 per provider by declared type**: at most one movie fixture, one TV fixture and one anime fixture, each selected from the central fixture list. A provider is never replayed on a second work of the same type during the standard Lab. These evidence Labs are observational and do not block the normal provider publication path.
 
 Named movies, series and anime in Lab configurations are **test fixtures**, not catalogue entries. Public evidence is intentionally minimized and sanitized. See [`TESTING_NOTICE.md`](TESTING_NOTICE.md).
 
