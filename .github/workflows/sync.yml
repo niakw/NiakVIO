@@ -66,6 +66,7 @@ on:
       - 'tests/override_transaction_order_test.py'
       - 'tests/provider_base_layering_contract_test.py'
       - 'tests/provider_clean_reconstruction_contract_test.py'
+      - 'tests/provider_tmdb_runtime_key_contract_test.py'
       - 'tests/native_evidence_contract_test.py'
       - 'tests/native_reader_backlog_test.py'
       - 'tests/publication_contract_fingerprint_test.py'
@@ -225,6 +226,7 @@ jobs:
           python scripts/provider_base_store.py repair-legacy
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
+          python tests/provider_tmdb_runtime_key_contract_test.py
 
       - name: Validate ARCHI2 control plane
         shell: bash
