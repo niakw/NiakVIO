@@ -20,6 +20,7 @@ required = {
     "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
     "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
     "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
+    "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1",
 }
 assert required <= set(module.DERIVED_BASE_MARKERS)
 
@@ -38,6 +39,11 @@ for marker in sorted(required):
 assert set(module.LEGACY_LOCAL_SEEDS) == {
     "cineby", "cinemm", "goatapi", "toflix", "4khdhubnew"
 }
+
+assert module.QUARANTINE_PATCH in module.DERIVED_PATCH_SCRIPTS
+assert module.DYNAMIC_DOMAIN_PATCH in module.DERIVED_PATCH_SCRIPTS
+assert "scripts/provider_patches/adaptive_runtime_recovery_v5.py" in module.DERIVED_PATCH_SCRIPTS
+assert "scripts/provider_patches/adaptive_domain_recovery.py" in module.DERIVED_PATCH_SCRIPTS
 
 apply_source = (ROOT / "scripts" / "apply_provider_overrides.py").read_text(encoding="utf-8")
 promoter_source = (ROOT / "scripts" / "promote_candidates.py").read_text(encoding="utf-8")
