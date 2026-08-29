@@ -227,7 +227,9 @@ function syntheticTmdbResponse(input, fixture = {}) {
     const raw = typeof input === 'string' ? input : input?.url;
     const url = new URL(raw);
     if (url.hostname.toLowerCase() !== 'api.themoviedb.org') return null;
-    const type = String(fixture.mediaType || fixture.type || 'movie').toLowerCase() === 'tv' ? 'tv' : 'movie';
+    const fixtureType = String(fixture.mediaType || fixture.type || 'movie').toLowerCase();
+    const type = fixtureType === 'movie' ? 'movie' : 'tv';
+    const fixtureAnime = fixtureType === 'anime' || String(fixture.category || '').toLowerCase() === 'anime';
     const id = String(fixture.tmdbId || fixture.id || '');
     if (!id || !url.pathname.includes(`/${type}/${id}`)) return null;
     const title = String(fixture.title || fixture.label || '').replace(/\s*\(\d{4}\)\s*$/, '').trim();
@@ -245,7 +247,16 @@ function syntheticTmdbResponse(input, fixture = {}) {
       ] };
     } else {
       payload = type === 'tv'
-        ? { id: Number(id), name: title, original_name: title, first_air_date: year ? `${year}-01-01` : '', origin_country: ['US'], original_language: 'en' }
+        ? {
+            id: Number(id),
+            name: title,
+            original_name: title,
+            first_air_date: year ? `${year}-01-01` : '',
+            origin_country: fixtureAnime ? ['JP'] : ['US'],
+            original_language: fixtureAnime ? 'ja' : 'en',
+            genres: fixtureAnime ? [{ id: 16, name: 'Animation' }] : [],
+            keywords: fixtureAnime ? { results: [{ name: 'anime' }] } : { results: [] },
+          }
         : { id: Number(id), title, original_title: title, release_date: year ? `${year}-01-01` : '', original_language: 'en' };
     }
     return new Response(JSON.stringify(payload), {
@@ -259,6 +270,10 @@ function syntheticTmdbResponse(input, fixture = {}) {
 
 function installPolyfills(context = {}) {
   if (!globalThis.crypto) defineGlobal('crypto', webcrypto);
+  const tmdbApiKey = String(context.TMDB_API_KEY || context.tmdbApiKey || process.env.TMDB_API_KEY || '').trim();
+  const tmdbAccessToken = String(context.TMDB_ACCESS_TOKEN || context.tmdbAccessToken || process.env.TMDB_ACCESS_TOKEN || '').trim();
+  if (tmdbApiKey) defineGlobal('TMDB_API_KEY', tmdbApiKey);
+  if (tmdbAccessToken) defineGlobal('TMDB_ACCESS_TOKEN', tmdbAccessToken);
   if (!globalThis.atob) defineGlobal('atob', (value) => Buffer.from(String(value), 'base64').toString('binary'));
   if (!globalThis.btoa) defineGlobal('btoa', (value) => Buffer.from(String(value), 'binary').toString('base64'));
 
