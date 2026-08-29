@@ -4,15 +4,15 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Full acceptance or quick provider Learning probe
+        description: Full acceptance or targeted ONLY provider Learning probe
         required: false
         default: full
         type: choice
         options:
           - full
-          - learning
+          - only
       provider:
-        description: Exact provider id for learning mode
+        description: Exact provider id for ONLY mode
         required: false
         default: ""
         type: string
@@ -108,7 +108,7 @@ jobs:
           xcrun --sdk iphoneos --show-sdk-version
           test "$DEVELOPER_DIR" = "/Applications/Xcode_26.6.app/Contents/Developer"
       - name: Build official unsigned device IPA before Lab instrumentation
-        if: ${{ github.event_name == 'schedule' || inputs.mode != 'learning' }}
+        if: ${{ github.event_name == 'schedule' || inputs.mode != 'only' }}
         shell: bash
         env:
           IOS_CONFIGURATION: Debug
@@ -123,12 +123,12 @@ jobs:
           unzip -tq "$ipa_path"
           echo "FIELD_NATIVE_IOS_IPA path=$(basename "$ipa_path") sha256=$(shasum -a 256 "$ipa_path" | awk '{print $1}')"
       - name: Upload official unsigned device IPA
-        if: ${{ inputs.mode != 'learning' }}
+        if: ${{ inputs.mode != 'only' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-mobile-ios-device-ipa-${{ github.run_id }}
+          name: native-mobile-ios-device-ipa-full-${{ github.run_id }}
           path: nuvio-mobile/build/ios-ipa/*.ipa
-          retention-days: 1
+          retention-days: 8
           if-no-files-found: error
       - name: Inject CI-only iOS provider and player harness
         shell: bash
@@ -147,20 +147,20 @@ jobs:
       - name: Execute iOS native Lab session
         shell: bash
         env:
-          NIAKVIO_IOS_LAB_MODE: ${{ github.event_name == 'schedule' && 'full' || inputs.mode || 'full' }}
+          NIAKVIO_IOS_LAB_MODE: ${{ inputs.mode == 'only' && 'learning' || 'full' }}
           NIAKVIO_IOS_TARGET_PROVIDER: ${{ inputs.provider || '' }}
-          NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'learning' && '8000' || '25000' }}
-          NIAKVIO_IOS_PLAYER_TIMEOUT_MS: ${{ inputs.mode == 'learning' && '6000' || '22000' }}
+          NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '25000' }}
+          NIAKVIO_IOS_PLAYER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '6000' || '22000' }}
           NIAKVIO_IOS_SESSION_STATE: ${{ github.workspace }}/ios-learning-session.env
         run: |
           set -euo pipefail
           if [ "$NIAKVIO_IOS_LAB_MODE" = "learning" ] && [ -z "$NIAKVIO_IOS_TARGET_PROVIDER" ]; then
-            echo "learning mode requires an exact provider id" >&2
+            echo "ONLY mode requires an exact provider id" >&2
             exit 2
           fi
           bash niakvio/scripts/run_native_corpus_ios_suite.sh
       - name: Build sanitized iOS reader diagnoses
-        if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'learning') }}
+        if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'only') }}
         shell: bash
         run: |
           set -euo pipefail
@@ -170,7 +170,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-mobile-ios-routes-${{ github.run_id }}
+          name: native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}
           path: |
             mobile-ios-native-corpus*.log
             mobile-ios-diagnostics/mobile-ios-route-*-brain.json
