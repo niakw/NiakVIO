@@ -13,7 +13,7 @@ const previousPath = optionalArg('--previous-state');
 const nativeSummaryPath = optionalArg('--native-summary');
 const targetedLabPath = optionalArg('--targeted-lab-summary');
 const portfolioPath = optionalArg('--provider-portfolio');
-const schedulerPath = optionalArg('--scheduler-state');
+const queueStatePath = optionalArg('--learning-queue-state');
 const overridesPath = resolveArg('--overrides', path.join(root, 'provider-overrides.json'));
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -33,7 +33,7 @@ const previousNativeFeedback = isRecord(previous.nativeFeedback) ? previous.nati
 const historical = historicalPath ? readJson(historicalPath, {}) : {};
 const nativeSummary = nativeSummaryPath ? readJson(nativeSummaryPath, {}) : {};
 const portfolio = portfolioPath ? readJson(portfolioPath, {}) : {};
-const schedulerState = schedulerPath ? readJson(schedulerPath, {}) : {};
+const queueState = queueStatePath ? readJson(queueStatePath, {}) : {};
 const currentSkills = overrides.runtime_repair?.learned_skills ?? {};
 const learnedSkills = mergeLearnedSkills(previous.learnedSkills, currentSkills);
 const plans = repair.brain?.plans ?? {};
@@ -54,7 +54,7 @@ for (const skill of Object.values(learnedSkills)) {
 }
 
 const experimentMemory = mergeExperimentMemory(previous.experimentMemory, repair, plans, maxMemory);
-const learningScheduler = mergeLearningScheduler(previous.learningScheduler, schedulerState);
+const learningQueue = mergeLearningQueue(previous.learningQueue, queueState);
 const proposals = [];
 for (const [failureClass, count] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
   const recipes = REPAIR_RECIPES[failureClass] ?? REPAIR_RECIPES.unknown_failure;
@@ -201,7 +201,7 @@ if (unknown >= 3) proposals.push({
   reason: `${unknown} unresolved observations still lack a causal stage classification.`,
   proposal: 'Add stage evidence before adding another repair mutation; never use a generic provider fallback as diagnosis.',
 });
-for (const providerId of learningScheduler.hiddenFailureProviders || []) {
+for (const providerId of learningQueue.hiddenFailureProviders || []) {
   proposals.push({
     type: 'hidden_failure_discovered_by_learning',
     priority: 'high',
@@ -219,7 +219,7 @@ if (drift > 0) proposals.push({
 });
 
 const payload = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   generatedAt: new Date().toISOString(),
   brain: policy.identity ?? { name: 'NiakVIO Brain' },
   mode: 'learning_lab',
@@ -232,7 +232,7 @@ const payload = {
   unresolvedFailureCounts: Object.fromEntries(counts),
   diagnosticsAvailable: Boolean(Object.keys(diagnostics).length),
   experimentMemory,
-  learningScheduler,
+  learningQueue,
   nativeReaderRepairMemory: previousReaderMemory,
   historicalTraining: { baseline: historical.baseline ?? null, stats: historical.stats ?? {}, targets: historicalTargets },
   nativeFeedback: {
@@ -322,43 +322,72 @@ function sanitizeLearnedSkill(raw) {
   };
 }
 
-function mergeLearningScheduler(previousScheduler, current) {
-  const previousValue = isRecord(previousScheduler) ? previousScheduler : {};
-  const currentValue = isRecord(current) ? current : {};
-  const previousHistory = isRecord(previousValue.fixtureHistory) ? previousValue.fixtureHistory : {};
-  const updates = isRecord(currentValue.fixtureHistoryUpdates) ? currentValue.fixtureHistoryUpdates : {};
-  const fixtureHistory = { ...previousHistory };
-  for (const [provider, rows] of Object.entries(updates)) {
-    const merged = [...(Array.isArray(fixtureHistory[provider]) ? fixtureHistory[provider] : []), ...(Array.isArray(rows) ? rows : [])]
-      .map((value) => String(value || '').slice(0, 96))
-      .filter(Boolean);
-    fixtureHistory[String(provider).toLowerCase().slice(0, 128)] = [...new Set(merged)].slice(-12);
+function mergeLearningQueue(previousQueue, currentQueue) {
+  const previousValue = isRecord(previousQueue) ? previousQueue : {};
+  const currentValue = isRecord(currentQueue) ? currentQueue : {};
+  const sanitizeIds = (rows) => [...new Set(
+    (Array.isArray(rows) ? rows : [])
+      .map((value) => String(value || '').toLowerCase().slice(0, 128))
+      .filter(Boolean)
+  )].slice(0, 256);
+
+  const providerState = {};
+  const sourceState = isRecord(currentValue.providerState)
+    ? currentValue.providerState
+    : (isRecord(previousValue.providerState) ? previousValue.providerState : {});
+  for (const [provider, raw] of Object.entries(sourceState)) {
+    if (!isRecord(raw)) continue;
+    const fixtureCursor = isRecord(raw.fixtureCursor) ? Object.fromEntries(
+      Object.entries(raw.fixtureCursor)
+        .slice(0, 8)
+        .map(([key, value]) => [String(key).slice(0, 32), nonNegative(value)])
+    ) : {};
+    const lastClients = isRecord(raw.lastClients) ? Object.fromEntries(
+      Object.entries(raw.lastClients).slice(0, 8).map(([name, row]) => {
+        const value = isRecord(row) ? row : {};
+        return [String(name).slice(0, 32), {
+          verdict: String(value.verdict || '').slice(0, 32),
+          runtimeStreams: nonNegative(value.runtimeStreams),
+          probedStreams: nonNegative(value.probedStreams),
+          playableProbes: nonNegative(value.playableProbes),
+          unplayableProbes: nonNegative(value.unplayableProbes),
+          inconclusiveProbes: nonNegative(value.inconclusiveProbes),
+          identityContradictions: nonNegative(value.identityContradictions),
+          identityStatus: String(value.identityStatus || '').slice(0, 32),
+          probeCoverageComplete: value.probeCoverageComplete === true,
+          hiddenFailure: value.hiddenFailure === true,
+        }];
+      })
+    ) : {};
+    providerState[String(provider).toLowerCase().slice(0, 128)] = {
+      attemptCount: nonNegative(raw.attemptCount),
+      fixtureCursor,
+      lastAttemptAt: String(raw.lastAttemptAt || '').slice(0, 64),
+      lastStatus: String(raw.lastStatus || '').slice(0, 40),
+      lastFixture: String(raw.lastFixture || '').slice(0, 128),
+      lastClients,
+    };
   }
-  const pendingProviders = [...new Set(
-    (Array.isArray(currentValue.pendingProviders) ? currentValue.pendingProviders : (previousValue.pendingProviders || []))
-      .map((value) => String(value || '').toLowerCase().slice(0, 128))
-      .filter(Boolean)
-  )].slice(0, 256);
-  const completedProviders = [...new Set(
-    (currentValue.completedProviders || [])
-      .map((value) => String(value || '').toLowerCase().slice(0, 128))
-      .filter(Boolean)
-  )].slice(0, 256);
-  const hiddenFailureProviders = [...new Set(
-    [...(previousValue.hiddenFailureProviders || []), ...(currentValue.hiddenFailureProviders || [])]
-      .map((value) => String(value || '').toLowerCase().slice(0, 128))
-      .filter(Boolean)
-  )].slice(0, 256);
+
   return {
-    schemaVersion: 1,
-    cycle: nonNegative(previousValue.cycle) + 1,
+    schemaVersion: 2,
+    cycle: nonNegative(currentValue.cycle || previousValue.cycle || 1),
     resumeAcrossDays: true,
-    coreIsAuthoritative: false,
-    pendingProviders,
-    completedProviders,
-    hiddenFailureProviders,
-    fixtureHistory,
-    lastCompletedProvider: completedProviders.at(-1) || String(previousValue.lastCompletedProvider || '').slice(0, 128) || null,
+    coreEvidenceAuthority: 'hypothesis_only',
+    pendingProviders: sanitizeIds(currentValue.pendingProviders ?? previousValue.pendingProviders),
+    retryProviders: sanitizeIds(currentValue.retryProviders ?? previousValue.retryProviders),
+    completedInCycle: sanitizeIds(currentValue.completedInCycle ?? previousValue.completedInCycle),
+    processedThisRun: sanitizeIds(currentValue.processedThisRun),
+    hiddenFailureProviders: sanitizeIds([
+      ...(previousValue.hiddenFailureProviders || []),
+      ...(currentValue.hiddenFailureProviders || []),
+    ]),
+    providerState,
+    timeBudgetExhausted: currentValue.timeBudgetExhausted === true,
+    remainingProviderCount: nonNegative(currentValue.remainingProviderCount),
+    retryProviderCount: nonNegative(currentValue.retryProviderCount),
+    budgetMinutes: nonNegative(currentValue.budgetMinutes),
+    generatedAt: String(currentValue.generatedAt || '').slice(0, 64),
   };
 }
 
