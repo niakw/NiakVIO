@@ -9,7 +9,6 @@ CONFIG = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
 PROVIDER_TIMEOUT_MS = 25_000
 NUVIO_MOBILE = Path("nuvio-mobile")
 IOS_KOTLIN_TARGET = Path("nuvio-mobile/composeApp/src/iosFull/kotlin/com/nuvio/app/NiakvioIosLab.kt")
-IOS_SWIFT_TARGET = Path("nuvio-mobile/iosApp/iosApp/iOSApp.swift")
 
 KOTLIN_TEMPLATE = r'''@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 
@@ -311,25 +310,6 @@ def kotlin_fixture_list(rows: list[dict]) -> str:
         )
     return "listOf(\\n    " + ",\\n    ".join(values) + "\\n)"
 
-def patch_swift() -> None:
-    source = IOS_SWIFT_TARGET.read_text(encoding="utf-8")
-    marker = "NiakvioIosLabKt.startNiakvioIosLabIfRequested()"
-    if marker in source:
-        return
-    anchor = """            ContentView()
-                .preferredColorScheme(.dark)
-"""
-    replacement = """            ContentView()
-                .preferredColorScheme(.dark)
-                .onAppear {
-                    NuvioPlayerRegistration.register()
-                    NiakvioIosLabKt.startNiakvioIosLabIfRequested()
-                }
-"""
-    if anchor not in source:
-        raise SystemExit("NuvioMobile iOSApp.swift instrumentation anchor drifted")
-    IOS_SWIFT_TARGET.write_text(source.replace(anchor, replacement, 1), encoding="utf-8")
-
 def main() -> int:
     # The workflow checks NiakVIO out as ./niakvio and NuvioMobile as
     # ./nuvio-mobile. Validate that fixed layout before touching the sibling
@@ -344,7 +324,6 @@ def main() -> int:
     source = source.replace("__FIXTURES__", kotlin_fixture_list(rows))
     IOS_KOTLIN_TARGET.parent.mkdir(parents=True, exist_ok=True)
     IOS_KOTLIN_TARGET.write_text(source, encoding="utf-8")
-    patch_swift()
     print("FIELD_NATIVE_IOS_PREPARED fixtures=" + ",".join(row["slug"] for row in rows))
     return 0
 

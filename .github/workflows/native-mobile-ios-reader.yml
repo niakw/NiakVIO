@@ -100,6 +100,15 @@ jobs:
         run: |
           set -euo pipefail
           python3 niakvio/scripts/prepare_native_ios_reader_acceptance.py
+          SWIFT_APP='nuvio-mobile/iosApp/iosApp/iOSApp.swift'
+          MARKER='NiakvioIosLabKt.startNiakvioIosLabIfRequested()'
+          if ! grep -Fq "$MARKER" "$SWIFT_APP"; then
+            perl -0pi -e 's/            ContentView\(\)\n                \.preferredColorScheme\(\.dark\)\n/            ContentView()\n                .preferredColorScheme(.dark)\n                .onAppear {\n                    NuvioPlayerRegistration.register()\n                    NiakvioIosLabKt.startNiakvioIosLabIfRequested()\n                }\n/' "$SWIFT_APP"
+          fi
+          grep -Fq "$MARKER" "$SWIFT_APP" || {
+            echo 'NuvioMobile iOSApp.swift instrumentation anchor drifted' >&2
+            exit 42
+          }
       - name: Execute movie TV anime in one iOS simulator session
         shell: bash
         run: |
