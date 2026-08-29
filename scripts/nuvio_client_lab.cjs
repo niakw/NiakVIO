@@ -90,6 +90,18 @@ async function mapLimit(values, requestedLimit, worker) {
   return output;
 }
 
+function resolveProviderCandidate(registry, providerId) {
+  const needle = String(providerId || '').trim().toLowerCase();
+  if (!needle) throw new Error('empty provider id');
+  const rows = Array.isArray(registry?.candidates) ? registry.candidates : [];
+  const row = rows.find((item) => [item?.canonical_id, item?.upstream_id, item?.metadata?.id, item?.metadata?.name]
+    .filter(Boolean)
+    .some((value) => String(value).trim().toLowerCase() === needle));
+  if (!row) throw new Error(`provider not found in staged registry: ${providerId}`);
+  if (!row.local_path) throw new Error(`staged provider has no local_path: ${providerId}`);
+  return row;
+}
+
 function resolveProvider(manifest, providerId) {
   const needle = String(providerId || '').trim().toLowerCase();
   if (!needle) throw new Error('empty provider id');
@@ -537,6 +549,9 @@ function markdown(report) {
 async function runLab(root, config, options = {}) {
   const manifestPath = path.resolve(root, config.manifest || 'manifest.json');
   const manifest = readJson(manifestPath);
+  const registryPath = config.registry ? path.resolve(root, config.registry) : null;
+  const registry = registryPath ? readJson(registryPath) : null;
+  const stageRoot = path.resolve(root, config.stage || 'staging');
   const fixture = {
     tmdbId: String(config.fixture?.tmdbId || config.tmdbId || ''),
     mediaType: String(config.fixture?.mediaType || config.mediaType || 'movie'),
@@ -574,15 +589,21 @@ async function runLab(root, config, options = {}) {
       .map((row) => normalizeProviderId(row.id || row.name)))
     : new Set();
   const providers = await mapLimit(providerIds, config.provider_concurrency || 4, async (providerId) => {
-    const manifestRow = resolveProvider(manifest, providerId);
-    const providerPath = path.resolve(root, manifestRow.filename);
-    if (!fs.existsSync(providerPath)) throw new Error(`provider file missing: ${manifestRow.filename}`);
+    const stagedRow = registry ? resolveProviderCandidate(registry, providerId) : null;
+    const manifestRow = stagedRow ? (stagedRow.metadata || {}) : resolveProvider(manifest, providerId);
+    const providerPath = stagedRow
+      ? path.resolve(stageRoot, stagedRow.local_path)
+      : path.resolve(root, manifestRow.filename);
+    const displayFilename = stagedRow ? stagedRow.local_path : manifestRow.filename;
+    if (!fs.existsSync(providerPath)) throw new Error(`provider file missing: ${displayFilename}`);
     const providerRecord = {
-      id: String(manifestRow.id || providerId),
-      name: String(manifestRow.name || manifestRow.id || providerId),
-      filename: manifestRow.filename,
-      manifest_enabled: manifestRow.enabled !== false,
-      is_vf: vfProviderIds.has(normalizeProviderId(manifestRow.id || manifestRow.name || providerId)),
+      id: String(stagedRow?.canonical_id || manifestRow.id || providerId),
+      name: String(manifestRow.name || manifestRow.id || stagedRow?.canonical_id || providerId),
+      filename: displayFilename,
+      source: stagedRow?.source || 'published-manifest',
+      sandbox_candidate: Boolean(stagedRow),
+      manifest_enabled: stagedRow ? manifestRow.enabled !== false : manifestRow.enabled !== false,
+      is_vf: vfProviderIds.has(normalizeProviderId(stagedRow?.canonical_id || manifestRow.id || manifestRow.name || providerId)),
       source_sha256: sha256(fs.readFileSync(providerPath)),
       runtime_groups: {},
       clients: {},
@@ -686,6 +707,8 @@ async function main() {
   else {
     config = {
       providers: args.providers || args.provider_id,
+      registry: args.registry,
+      stage: args.stage,
       fixture: {
         tmdbId: args.tmdb_id,
         mediaType: args.media_type || 'movie',
