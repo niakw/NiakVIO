@@ -87,6 +87,11 @@ on:
         required: false
         default: false
         type: boolean
+      replace_existing:
+        description: Explicitly rebuild an existing provider from structured NiakVIO knowledge
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -149,6 +154,7 @@ jobs:
           INPUT_CATEGORY: ${{ inputs.category || '' }}
           INPUT_DESCRIPTION: ${{ inputs.description || '' }}
           INPUT_VF: "${{ inputs.vf || false }}"
+          INPUT_REPLACE_EXISTING: "${{ inputs.replace_existing || false }}"
         run: |
           set -euo pipefail
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
@@ -173,6 +179,7 @@ jobs:
               "category": os.environ["INPUT_CATEGORY"],
               "description": os.environ["INPUT_DESCRIPTION"],
               "vf": os.environ["INPUT_VF"],
+              "replace_existing": os.environ["INPUT_REPLACE_EXISTING"],
           }
           Path(".provider-onboarding/manual-request.json").write_text(
               json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
