@@ -916,6 +916,7 @@ def apply_overrides(
     *,
     phase: str = "discovery",
     profile_names: Iterable[str] | None = None,
+    excluded_patch_scripts: Iterable[str] | None = None,
 ) -> tuple[bytes, list[dict[str, Any]]]:
     """Apply stable replacements and profiles allowed for the selected phase."""
     config = load_overrides()
@@ -1006,6 +1007,7 @@ def apply_overrides(
             })
 
     patch_scripts: list[str] = []
+    excluded_scripts = {str(value) for value in (excluded_patch_scripts or []) if str(value).strip()}
     configured_scripts = specific.get("patch_scripts")
     if configured_scripts is not None:
         if not isinstance(configured_scripts, list):
@@ -1025,6 +1027,8 @@ def apply_overrides(
             f"provider_patches.{provider_id}.patch_scripts contains Core-global modules: " + ", ".join(leaked_core_scripts)
         )
     for patch_script in patch_scripts if phase == "discovery" else []:
+        if patch_script in excluded_scripts:
+            continue
         per_script_options = script_options.get(patch_script)
         if per_script_options is None:
             per_script_options = specific.get("patch_options") or {}
