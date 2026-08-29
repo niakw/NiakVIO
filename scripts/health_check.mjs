@@ -1553,9 +1553,9 @@ function preflightOnlyResult(candidate, preflight) {
 
 async function testCandidate(candidate) {
   const dnsPreflight = dnsPreflightForCandidate(candidate);
-  if (dnsPreflight && dnsPreflight.decision?.continue_runtime === false) {
-    return preflightOnlyResult(candidate, dnsPreflight);
-  }
+  // DNS preflight is diagnostic-only. Even a confirmed French ISP block or a
+  // globally unreachable domain must still reach the runtime lane so NiakVIO
+  // records the complete cause chain (DNS, HTTP, provider runtime, streams).
   const fixtureResults = [];
   const { profile, fixtures, fallbackFixtures } = fixturesForCandidate(candidate);
 
