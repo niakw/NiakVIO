@@ -33,7 +33,14 @@ assert "c.strictPlayback||tv" in ordinary
 assert "c.strictPlayback||c.failClosedUnknown" not in ordinary
 assert '"defaultUserAgent"' not in ordinary
 assert '"failClosedUnknown"' not in ordinary
-assert '"strictPlayback":true' in safety_then_hls(base, "moviebox")
+# Strict playback is a declarative capability option supplied by Core, never an
+# implicit provider-id exception inside the global safety implementation.
+assert '"strictPlayback":false' in safety_then_hls(base, "moviebox")
+assert '"strictPlayback":true' in safety_then_hls(
+    base,
+    "ordinary",
+    {"strict_playback": True},
+)
 streamzo_safety = safety_then_hls(base, "streamzo", {"default_user_agent":"UA-STREAMZO"})
 assert '"defaultUserAgent"' not in streamzo_safety
 enriched = media_apply(base, options={})
