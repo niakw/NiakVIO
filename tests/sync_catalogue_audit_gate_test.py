@@ -79,7 +79,7 @@ def main() -> int:
     assert 'path: /tmp/catalogue-media-audit.json' in text
 
     audit_block = text[audit:upload]
-    assert "if: needs.stage-and-test.outputs.validation_mode == 'deep'" in audit_block
+    assert "if: steps.freshness.outputs.stale != 'true' && needs.stage-and-test.outputs.validation_mode == 'deep'" in audit_block
     assert "quarantine_catalogue_audit_failures.py" in audit_block
     assert audit_block.count("sync_release_versions.py") == 1
     assert "activation_preservation_core_rehash.py" in audit_block
