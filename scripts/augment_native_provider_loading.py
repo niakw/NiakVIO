@@ -361,8 +361,8 @@ def augment(
     text = text[:line_start] + load_line + text[line_start:]
 
     # The request-contract owns requestRoutes/requestMediaType/routeMode. Insert
-    # official loading checks before route construction, then leave both declared
-    # and capability_probe routes intact.
+    # official loading checks before route construction and preserve the single
+    # declared route unchanged.
     # Anchor on route construction rather than the loop opener so other
     # evidence layers (for example sanitized addon-logo diagnostics) may be
     # inserted between the provider loop and request routing without breaking
