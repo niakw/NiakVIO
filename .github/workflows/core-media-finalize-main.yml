@@ -116,6 +116,7 @@ jobs:
           python tests/global_playback_integrity_policy_test.py
           python tests/global_stream_identity_test.py
           python tests/provider_purification_contract_test.py
+          python tests/provider_base_layering_contract_test.py
           python tests/prune_unreferenced_providers_test.py
           python scripts/normalize_repository_docs.py --check
           python scripts/normalize_runtime_repository_dependencies.py --check
@@ -127,6 +128,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/provider_base_store.py repair-legacy
           python scripts/provider_base_store.py validate
           python scripts/normalize_core_media_policy.py --apply
           python scripts/apply_runtime_capability_upgrade_v4.py
