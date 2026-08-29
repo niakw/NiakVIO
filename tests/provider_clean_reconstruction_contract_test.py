@@ -59,6 +59,15 @@ assert len(required) + len(clean) == 95
 if not current_v2:
     assert len(required) == 95
 
+pending_row = {
+    "base_source": base_store.CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
+    "clean_reconstruction_candidate": True,
+    "clean_reconstruction_verified": False,
+    "clean_reconstruction_authoring_version": 2,
+}
+assert base_store.is_clean_reconstruction_candidate(pending_row) is True
+assert base_store.requires_clean_reconstruction(pending_row) is True
+
 discover = (SCRIPTS / "discover_candidates.py").read_text(encoding="utf-8")
 promoter = (SCRIPTS / "promote_candidates.py").read_text(encoding="utf-8")
 assert "--clean-reconstruction" in discover
@@ -66,6 +75,7 @@ assert '"upstream_code_role": "knowledge-only"' in discover
 assert '"upstream_code_executed": False' in discover
 assert '"legacy_provider_js_executed_for_reconstruction": False' in discover
 assert '"new-niakvio-clean-seed"' in discover
+assert '"pending-niakvio-clean-reconstruction-v2"' in discover
 assert '"legacy-providerbase-compatibility-only"' in discover
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
