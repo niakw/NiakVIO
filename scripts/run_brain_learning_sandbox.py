@@ -402,7 +402,8 @@ def main() -> int:
     lab = policy.get("learningLab") if isinstance(policy.get("learningLab"), dict) else {}
     threshold = max(1, int(lab.get("maxRepeatedFailedProfile") or 2))
     exploration_share = max(0.0, min(1.0, float(lab.get("explorationShare") or 0.35)))
-    exploration_limit = max(1, min(3, int(lab.get("maxExploratoryProfilesPerProvider") or 1)))
+    repair_attempt_limit = max(1, int(lab.get("maxRepairAttemptsPerProvider") or 1))
+    exploration_limit = min(repair_attempt_limit, max(1, int(lab.get("maxExploratoryProfilesPerProvider") or 1)))
     day = datetime.now(timezone.utc).date().isoformat()
     routine_matcher = quick._brain_matching_profiles
     broad_matcher = quick._sibling_aware_matching_profiles
@@ -445,7 +446,8 @@ def main() -> int:
             if profile not in set(routine) and profile not in suppressed
         ]
         can_explore = (
-            failure_class not in FORBIDDEN_EXPLORATION_FAILURES
+            not kept
+            and failure_class not in FORBIDDEN_EXPLORATION_FAILURES
             and bool(exploratory_pool)
             and _exploration_gate(day, provider_id, signature, exploration_share)
         )
@@ -465,17 +467,22 @@ def main() -> int:
                 plan["learningExploratoryProfiles"] = chosen
                 plan["learningExplorationDay"] = day
 
-        if routine and not kept:
+        selected = list(dict.fromkeys(kept))[:repair_attempt_limit]
+        if selected:
+            plan["learningRepairAttemptLimit"] = repair_attempt_limit
+            plan["learningSelectedRepairProfile"] = selected[0]
+        elif routine:
             plan["action"] = "collect-more-evidence"
             plan["exitReason"] = "sandbox_repeated_failed_profile"
-        return list(dict.fromkeys(kept))
+        return selected
 
     quick._brain_matching_profiles = learning_matching
     os.environ["NUVIO_BRAIN_PLANNER_MODE"] = "learning"
     print(
         "FIELD_BRAIN_LEARNING_MODE "
         f"negative_entries={len(negative)} restored_skills={restored_skills} "
-        f"exploration_share={exploration_share:.2f} exploration_limit={exploration_limit} day={day}",
+        f"repair_attempt_limit={repair_attempt_limit} exploration_share={exploration_share:.2f} "
+        f"exploration_limit={exploration_limit} day={day}",
         file=sys.stderr,
     )
     try:
