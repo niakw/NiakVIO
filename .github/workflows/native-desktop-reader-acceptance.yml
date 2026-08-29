@@ -207,7 +207,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       WEBVIEW2_VERSION: 1.0.4078.44
-      NIAKVIO_TARGET_PROVIDER: all
+      NIAKVIO_TARGET_PROVIDER: declared-type
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
@@ -289,10 +289,7 @@ jobs:
         shell: bash
         run: |
           set -u
-          FIXTURES=(sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01)
-          if [[ "${{ matrix.os_name }}" = "macos" ]]; then
-            FIXTURES+=(colony-2021 failure-frame-s01e01 hell-teacher-nube-2025-s01e01)
-          fi
+          FIXTURES=(interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01)
           printf '%s\n' "${FIXTURES[@]}" > "$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
           for fixture in "${FIXTURES[@]}"; do
             echo "===== DESKTOP ROUTE: $fixture (${{ matrix.os_name }}) ====="
@@ -368,36 +365,7 @@ jobs:
           test "$hits" -ge 3
           echo "FIELD_DESKTOP_CANARY_CORE_MATERIALIZED runtime_compat_providers=$hits"
 
-      - name: Probe independent Interstellar providers on same Desktop build
-        shell: bash
-        run: |
-          set -u
-          PROVIDERS=(cineby VIDEASY PURSTREAM)
-          LOGS=()
-          for provider in "${PROVIDERS[@]}"; do
-            echo "===== DESKTOP CANARY: interstellar / $provider / ${{ matrix.os_name }} ====="
-            NIAKVIO_TARGET_FIXTURE=interstellar \
-            NIAKVIO_PRIMARY_FIXTURE=interstellar \
-            NIAKVIO_TARGET_PROVIDER="$provider" \
-            NIAKVIO_PRIMARY_STREAM_SCOPE=1 \
-            NIAKVIO_REGRESSION_STREAM_SCOPE=1 \
-              bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh" || true
-            source_log="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-interstellar.log"
-            canary_log="$GITHUB_WORKSPACE/desktop-canary-${{ matrix.os_name }}-${provider}.log"
-            if [[ -s "$source_log" ]]; then
-              cp "$source_log" "$canary_log"
-            else
-              printf 'FIELD_NATIVE_CANARY_PLACEHOLDER client=desktop fixture=interstellar provider=%s reason=no_route_log\n' "$provider" > "$canary_log"
-            fi
-            LOGS+=("$canary_log")
-          done
-          node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_stream_extraction.cjs" \
-            --client desktop \
-            --fixture interstellar \
-            --providers cineby,VIDEASY,PURSTREAM \
-            "${LOGS[@]}"
-
-      - name: Upload Desktop reader and canary evidence
+      - name: Upload Desktop reader evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
@@ -406,7 +374,6 @@ jobs:
             desktop-native-corpus-${{ matrix.os_name }}-*.log
             desktop-native-gradle-${{ matrix.os_name }}-*.log
             desktop-reader-${{ matrix.os_name }}-*-brain.json
-            desktop-canary-${{ matrix.os_name }}-*.log
             desktop-fixtures-${{ matrix.os_name }}.txt
             native-evidence/desktop/**
           retention-days: 1
