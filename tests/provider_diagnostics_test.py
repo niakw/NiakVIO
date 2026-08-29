@@ -17,24 +17,22 @@ assert 'synthetic_fixture_fallback' in worker
 for patch in overrides.get('provider_patches',{}).values():
     assert 'diagnostic_origins' not in patch
 
-preflight=config.get('dns_preflight') or {}
-assert preflight.get('enabled') is True
-assert preflight.get('primary_french_isp') == 'sfr'
-assert preflight.get('fallback_french_isps') == ['orange', 'free']
-assert preflight.get('skip_runtime_on_confirmed_french_block') is True
-assert 'dnsPreflightForCandidate' in health
-assert 'runtime_skipped_by_dns_preflight' in health
-
-# ARCHI2 keeps DNS/domain evidence before runtime repair. Assert semantic
-# stage ordering rather than obsolete human-facing step names.
-dns_stage = 'Resolve DNS and validated domain migrations'
+# ARCHI2 now resolves provider routes centrally before discovery/repair rather
+# than coupling a French-ISP DNS preflight to every health runtime. Keep the
+# route/LKG stage ordered ahead of provider mutation and diagnostics.
+assert 'dns_preflight' not in config
+assert 'dnsPreflightForCandidate' not in health
+assert 'runtime_skipped_by_dns_preflight' not in health
+route_stage = 'Resolve official hubs and retain last-known-good routes'
+discovery_stage = 'Discover all non-P2P candidates before triage'
 profile_stage = 'Apply known runtime profiles before repair'
 repair_stage = 'Repair unresolved provider structures'
 diagnostics_stage = 'Generate diagnostics after repair'
-assert dns_stage in workflow and profile_stage in workflow and repair_stage in workflow and diagnostics_stage in workflow
-assert workflow.index(dns_stage) < workflow.index(profile_stage) < workflow.index(repair_stage) < workflow.index(diagnostics_stage)
-assert 'provider_dns_preflight.mjs' in workflow
-assert 'apply_dns_migration_overrides.py' in workflow
+assert route_stage in workflow and discovery_stage in workflow and profile_stage in workflow and repair_stage in workflow and diagnostics_stage in workflow
+assert workflow.index(route_stage) < workflow.index(discovery_stage) < workflow.index(profile_stage) < workflow.index(repair_stage) < workflow.index(diagnostics_stage)
+assert 'resolve_provider_hubs.py --apply' in workflow
+assert '--include-disabled' in workflow
+assert '--output health-output/provider-hub-report.json' in workflow
 assert 'run_adaptive_quick_repair.py' in workflow
 assert 'run_adaptive_deep_repair.py' in workflow
 
