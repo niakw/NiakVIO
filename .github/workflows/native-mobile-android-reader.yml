@@ -53,7 +53,7 @@ jobs:
           path: |
             health-output/nuvio-client-upstream-status.json
             health-output/nuvio-tv-lab-head.json
-          retention-days: 1
+          retention-days: 8
           if-no-files-found: error
   resolve_mobile:
     runs-on: ubuntu-latest
@@ -86,7 +86,7 @@ jobs:
           path: |
             health-output/nuvio-client-upstream-status.json
             health-output/nuvio-mobile-android-lab-head.json
-          retention-days: 1
+          retention-days: 8
           if-no-files-found: error
   tv-route-reader:
     needs: resolve_tv
