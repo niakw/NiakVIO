@@ -27,7 +27,7 @@ permissions:
 # workflow_dispatch runs keep an isolated group because the final orchestrator may
 # watch one exact dispatch as authoritative evidence.
 concurrency:
-  group: niakvio-core-media-finalize-main-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main-push' }}
+  group: niakvio-core-media-finalize-main-v2-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main-push' }}
   cancel-in-progress: ${{ github.event_name == 'push' }}
 
 jobs:
