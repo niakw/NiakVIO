@@ -218,6 +218,26 @@ def persist_base_from_published(provider_id: str, published_data: bytes) -> tupl
     return relative, digest, stripped
 
 
+def build_base_from_seed(
+    provider_id: str,
+    seed_data: bytes,
+    *,
+    overrides_path: Path | None = None,
+) -> tuple[bytes, bool]:
+    """Return clean ProviderBase bytes without writing repository state."""
+    rebuilt, _records = apply_overrides(
+        provider_id,
+        seed_data,
+        phase="discovery",
+        excluded_patch_scripts=DERIVED_PATCH_SCRIPTS,
+        include_global_core=False,
+        config_path=overrides_path,
+    )
+    base_data, stripped = clean_base_from_published(provider_id, rebuilt)
+    validate_base(base_data, provider_id)
+    return base_data, stripped
+
+
 def persist_base_from_seed(
     provider_id: str,
     seed_data: bytes,
@@ -230,15 +250,13 @@ def persist_base_from_seed(
     runtime/domain recovery are deliberately excluded. They remain derived state
     and are regenerated later by the finalizer from current policy/evidence.
     """
-    rebuilt, _records = apply_overrides(
+    base_data, stripped = build_base_from_seed(
         provider_id,
         seed_data,
-        phase="discovery",
-        excluded_patch_scripts=DERIVED_PATCH_SCRIPTS,
-        include_global_core=False,
-        config_path=overrides_path,
+        overrides_path=overrides_path,
     )
-    return persist_base_from_published(provider_id, rebuilt)
+    relative, digest = write_base(provider_id, base_data)
+    return relative, digest, stripped
 
 
 def build_clean_provider_seed(
