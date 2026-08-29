@@ -13,6 +13,7 @@ const previousPath = optionalArg('--previous-state');
 const nativeSummaryPath = optionalArg('--native-summary');
 const targetedLabPath = optionalArg('--targeted-lab-summary');
 const portfolioPath = optionalArg('--provider-portfolio');
+const schedulerPath = optionalArg('--scheduler-state');
 const overridesPath = resolveArg('--overrides', path.join(root, 'provider-overrides.json'));
 fs.mkdirSync(outputDir, { recursive: true });
 
@@ -29,6 +30,7 @@ const previousNativeFeedback = isRecord(previous.nativeFeedback) ? previous.nati
 const historical = historicalPath ? readJson(historicalPath, {}) : {};
 const nativeSummary = nativeSummaryPath ? readJson(nativeSummaryPath, {}) : {};
 const portfolio = portfolioPath ? readJson(portfolioPath, {}) : {};
+const schedulerState = schedulerPath ? readJson(schedulerPath, {}) : {};
 const currentSkills = overrides.runtime_repair?.learned_skills ?? {};
 const learnedSkills = mergeLearnedSkills(previous.learnedSkills, currentSkills);
 const plans = repair.brain?.plans ?? {};
@@ -49,6 +51,7 @@ for (const skill of Object.values(learnedSkills)) {
 }
 
 const experimentMemory = mergeExperimentMemory(previous.experimentMemory, repair, plans, maxMemory);
+const learningScheduler = mergeLearningScheduler(previous.learningScheduler, schedulerState);
 const proposals = [];
 for (const [failureClass, count] of [...counts.entries()].sort((a, b) => b[1] - a[1])) {
   const recipes = REPAIR_RECIPES[failureClass] ?? REPAIR_RECIPES.unknown_failure;
@@ -192,6 +195,16 @@ if (unknown >= 3) proposals.push({
   reason: `${unknown} unresolved observations still lack a causal stage classification.`,
   proposal: 'Add stage evidence before adding another repair mutation; never use a generic provider fallback as diagnosis.',
 });
+for (const providerId of learningScheduler.hiddenFailureProviders || []) {
+  proposals.push({
+    type: 'hidden_failure_discovered_by_learning',
+    priority: 'high',
+    providerId,
+    reason: 'Learning Lab found a stream/device failure that was not visible in the Core provider status.',
+    proposal: 'Treat Core status as a hypothesis, retain this provider in the Learning queue, rotate fixture/device evidence and investigate the causal layer before proposing a production change.',
+  });
+}
+
 const drift = counts.get('runtime_contract_drift') ?? 0;
 if (drift > 0) proposals.push({
   type: 'core_proposal', priority: 'high', target: 'runtime contract adapter',
@@ -200,7 +213,7 @@ if (drift > 0) proposals.push({
 });
 
 const payload = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   generatedAt: new Date().toISOString(),
   brain: policy.identity ?? { name: 'NiakVIO Brain' },
   mode: 'learning_lab',
@@ -213,6 +226,7 @@ const payload = {
   unresolvedFailureCounts: Object.fromEntries(counts),
   diagnosticsAvailable: Boolean(Object.keys(diagnostics).length),
   experimentMemory,
+  learningScheduler,
   nativeReaderRepairMemory: previousReaderMemory,
   historicalTraining: { baseline: historical.baseline ?? null, stats: historical.stats ?? {}, targets: historicalTargets },
   nativeFeedback: {
@@ -306,6 +320,47 @@ function sanitizeLearnedSkill(raw) {
     lastValidatedMode: sanitizeReason(raw.lastValidatedMode || '').slice(0, 32),
   };
 }
+
+function mergeLearningScheduler(previousScheduler, current) {
+  const previousValue = isRecord(previousScheduler) ? previousScheduler : {};
+  const currentValue = isRecord(current) ? current : {};
+  const previousHistory = isRecord(previousValue.fixtureHistory) ? previousValue.fixtureHistory : {};
+  const updates = isRecord(currentValue.fixtureHistoryUpdates) ? currentValue.fixtureHistoryUpdates : {};
+  const fixtureHistory = { ...previousHistory };
+  for (const [provider, rows] of Object.entries(updates)) {
+    const merged = [...(Array.isArray(fixtureHistory[provider]) ? fixtureHistory[provider] : []), ...(Array.isArray(rows) ? rows : [])]
+      .map((value) => String(value || '').slice(0, 96))
+      .filter(Boolean);
+    fixtureHistory[String(provider).toLowerCase().slice(0, 128)] = [...new Set(merged)].slice(-12);
+  }
+  const pendingProviders = [...new Set(
+    (Array.isArray(currentValue.pendingProviders) ? currentValue.pendingProviders : (previousValue.pendingProviders || []))
+      .map((value) => String(value || '').toLowerCase().slice(0, 128))
+      .filter(Boolean)
+  )].slice(0, 256);
+  const completedProviders = [...new Set(
+    (currentValue.completedProviders || [])
+      .map((value) => String(value || '').toLowerCase().slice(0, 128))
+      .filter(Boolean)
+  )].slice(0, 256);
+  const hiddenFailureProviders = [...new Set(
+    [...(previousValue.hiddenFailureProviders || []), ...(currentValue.hiddenFailureProviders || [])]
+      .map((value) => String(value || '').toLowerCase().slice(0, 128))
+      .filter(Boolean)
+  )].slice(0, 256);
+  return {
+    schemaVersion: 1,
+    cycle: nonNegative(previousValue.cycle) + 1,
+    resumeAcrossDays: true,
+    coreIsAuthoritative: false,
+    pendingProviders,
+    completedProviders,
+    hiddenFailureProviders,
+    fixtureHistory,
+    lastCompletedProvider: completedProviders.at(-1) || String(previousValue.lastCompletedProvider || '').slice(0, 128) || null,
+  };
+}
+
 
 function mergeExperimentMemory(previousMemory, report, planMap, limit) {
   const map = new Map();
