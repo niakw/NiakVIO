@@ -154,14 +154,40 @@ La provenance finale reste inscrite dans `PROVENANCE.json`.
 
 ## 6. Intelligence de domaine
 
+L'identité d'un provider et son domaine courant sont **deux états différents**. Une URL fournie ou actuellement résolue n'est jamais gravée comme identité définitive du provider : elle reste un état terminal validé, remplaçable lorsque le site change de domaine.
+
+La chaîne durable de résolution est :
+
+```text
+ProviderBase / identité provider
+        ↓
+Hub officiel / wiki
+        ↓
+Telegram public / redirects / candidats directs / historique LKG
+        ↓
+Yandex en Deep → DuckDuckGo fallback
+        ↓
+validation même marque / allowlist
+        ↓
+DNS → HTTP/redirect → rôle terminal site/API
+        ↓
+official_site / official_api courants
+```
+
 Avant de conclure qu'un provider est cassé, le système distingue :
 
 - hub officiel ;
-- domaine terminal ;
+- canal Telegram public d'adresse ;
+- domaine terminal courant ;
 - redirection ;
 - ancien domaine ;
 - peer historique encore valide ;
+- candidat issu de recherche publique ;
 - domaine détourné ou appartenant à une autre famille.
+
+Une découverte provenant uniquement d'un moteur de recherche doit être confirmée sur **deux runs consécutifs**. Une découverte issue d'un hub, Telegram ou d'une source curatée peut être promue immédiatement après validation terminale. Une observation inconclusive conserve le **last-known-good** au lieu d'écraser la route.
+
+Le changement `site.tld → nouveau-site.tld` peut donc modifier les couches de routage et reconstruire le bundle public dérivé, mais **ne remplace jamais la logique durable du ProviderBase**.
 
 Une réponse HTTP seule ne suffit jamais pour promouvoir une adresse. Le domaine doit rester cohérent avec l'identité du provider et avec la route attendue.
 
