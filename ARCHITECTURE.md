@@ -480,8 +480,8 @@ Aucun nouveau comportement architectural ne doit être ajouté dans cette couche
 
 `sync.yml` reste **l'unique pipeline de publication complète Quick/Deep**. Les autres workflows durables ont des responsabilités bornées et ne doivent pas recréer une seconde boucle de publication.
 
-- **Publication / contrôle ARCHI 2** : `sync.yml`, `core-media-finalize-main.yml`, `provider-overrides-gate.yml`, `archi2-change-dispatch.yml` ;
-- **preuves natives** : `native-android-route-reader.yml`, `native-desktop-reader-acceptance.yml`, `native-corpus-device-targeted.yml`, `native-reader-learning-sync.yml` ;
+- **Publication / contrôle ARCHI 2** : `sync.yml`, `core-media-finalize-main.yml`, `provider-overrides-gate.yml` ;
+- **preuves natives** : `native-tv-route-reader.yml`, `native-mobile-android-reader.yml`, `native-mobile-ios-reader.yml`, `native-desktop-reader-acceptance.yml`, `native-corpus-device-targeted.yml`, `native-reader-learning-sync.yml` ;
 - **Brain / connaissance / reporting** : `brain-learning-lab.yml`, `brain-branch-maintenance.yml`, `canonical-media-types.yml`, `provider-catalogue-breadth-lab.yml`, `provider-status-export.yml`, `provider-results-readme-sync.yml` ;
 - **observabilité / découverte** : `availability.yml`, `domain-refresh.yml`, `weekly-upstream-provider-discovery.yml` ;
 - **sécurité / qualité** : `github-actions-gate.yml`, `codeql.yml`, `security-final-gate.yml`, `repository-hygiene.yml`, `external-code-audit.yml`, `badge-light-contrast.yml` ;
