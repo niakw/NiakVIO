@@ -333,12 +333,9 @@ def main() -> int:
     parser.add_argument("--provider-timeout-ms", type=int, default=25_000)
     args = parser.parse_args()
 
-    # The harness may only patch the checkout created inside the current Actions
-    # workspace. Never construct a writable path from the CLI-provided workspace.
+    # The harness is CI-only: all writable paths are rooted in the current
+    # GitHub Actions workspace, never in a CLI-controlled filesystem path.
     workspace = Path.cwd().resolve(strict=True)
-    supplied_workspace = args.workspace.resolve(strict=False)
-    if supplied_workspace != workspace:
-        raise SystemExit(f"--workspace must match the current Actions workspace: {workspace}")
     repo = workspace / "nuvio-mobile"
     if not repo.is_dir():
         raise SystemExit(f"missing NuvioMobile checkout: {repo}")

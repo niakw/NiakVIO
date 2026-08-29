@@ -99,7 +99,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 niakvio/scripts/prepare_native_ios_reader_acceptance.py             --workspace "$GITHUB_WORKSPACE"             --provider-timeout-ms 25000
+          python3 niakvio/scripts/prepare_native_ios_reader_acceptance.py             --provider-timeout-ms 25000
       - name: Execute movie TV anime in one iOS simulator session
         shell: bash
         run: |
