@@ -20,7 +20,7 @@ on:
       - "scripts/resolve_provider_hubs.py"
       - "scripts/provider_dns_preflight.mjs"
       - "provider-hubs.json"
-      - "health-config.json"
+      - "domain-observation-config.json"
       - "tests/provider_hub_registry_test.py"
       - "tests/dns_preflight.test.mjs"
       - "tests/domain_refresh_workflow_test.py"
@@ -83,6 +83,7 @@ jobs:
           node scripts/provider_dns_preflight.mjs \
             --manifest manifest.json \
             --hub-report health-output/provider-hub-report.json \
+            --config domain-observation-config.json \
             --all-domains \
             --output health-output/dns-preflight-report.json
 
