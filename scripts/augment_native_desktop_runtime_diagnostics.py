@@ -19,15 +19,17 @@ Production provider files and upstream Nuvio runtime sources are never modified.
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 ERROR_SENTINEL = "__NIAKVIO_RUNTIME_ERROR__"
 DIAGNOSTIC_SENTINEL = "__NIAKVIO_RUNTIME_DIAGNOSTIC__"
 MARKER = "FIELD_NATIVE_RUNTIME_DIAGNOSTIC"
 
-OFFICIAL_CALL = (
-    "val rows = PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()"
+OFFICIAL_INVOKE = (
+    "PluginRepository.executeScraper(loadedScraper, tmdbId, requestMediaType, season, episode).getOrThrow()"
 )
+OFFICIAL_CALL = "val rows = " + OFFICIAL_INVOKE
 
 CONSOLE_HELPER = r'''
     private fun captureRuntimeConsole(code: String): String {
@@ -296,9 +298,26 @@ def augment(path: Path) -> bool:
     text = text.replace(helper_anchor, CONSOLE_HELPER + "\n" + helper_anchor, 1)
 
     count = text.count(OFFICIAL_CALL)
-    if count != 1:
-        raise SystemExit(f"desktop runtime diagnostics official-call anchor count={count}")
-    path.write_text(text.replace(OFFICIAL_CALL, DIAGNOSTIC_CALL, 1), encoding="utf-8")
+    if count == 1:
+        text = text.replace(OFFICIAL_CALL, DIAGNOSTIC_CALL, 1)
+    else:
+        # The canonical corpus now wraps each provider invocation in a bounded
+        # withTimeout(...). Preserve that outer budget and append diagnostics
+        # after the complete assignment rather than stripping the timeout.
+        wrapped = re.compile(
+            r"val rows = kotlinx\.coroutines\.withTimeout\(\d+L\)\s*\{\s*"
+            + re.escape(OFFICIAL_INVOKE)
+            + r"\s*\}",
+            flags=re.S,
+        )
+        matches = list(wrapped.finditer(text))
+        if len(matches) != 1:
+            raise SystemExit(
+                f"desktop runtime diagnostics official-call anchor count={count} wrapped_count={len(matches)}"
+            )
+        diagnostic_suffix = DIAGNOSTIC_CALL[len(OFFICIAL_CALL):]
+        text = wrapped.sub(lambda match: match.group(0) + diagnostic_suffix, text, count=1)
+    path.write_text(text, encoding="utf-8")
     print(f"FIELD_NATIVE_DESKTOP_RUNTIME_DIAGNOSTICS added=true console_capture=true fetch_capture=true source={path}")
     return True
 
