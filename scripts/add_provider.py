@@ -142,12 +142,10 @@ def request_sources(
     rows: list[dict[str, Any]] = []
     if hub:
         rows.append({"type": "hub", "url": hub, "priority": 100, "purpose": "Authoritative address reference"})
-    if direct:
-        rows.append({"type": "direct", "url": direct, "priority": 95, "purpose": "Known terminal provider address"})
+    # Direct terminal URLs and API origins live in direct_candidates/api_templates.
+    # They are validated as terminal/API knowledge, never misclassified as hubs.
     if telegram:
-        rows.append({"type": "telegram", "url": telegram, "priority": 80, "purpose": "Known public provider Telegram address feed"})
-    if api:
-        rows.append({"type": "api", "url": api, "priority": 70, "purpose": "Known provider API or resolver endpoint"})
+        rows.append({"type": "telegram_public", "url": telegram, "priority": 80, "purpose": "Known public provider Telegram address feed"})
     for query in search_queries:
         rows.append({"type": "search", "query": query, "priority": 35, "purpose": "Fallback route discovery"})
     return rows

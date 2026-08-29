@@ -35,9 +35,11 @@ assert "npm test" in ADD
 assert "persist_clean_provider_seed(" in ONBOARD
 assert "CLEAN_RECONSTRUCTION_SOURCE" in ONBOARD
 assert '"type": "hub"' in ONBOARD
-assert '"type": "direct"' in ONBOARD
-assert '"type": "telegram"' in ONBOARD
-assert '"type": "api"' in ONBOARD
+assert '"type": "direct"' not in ONBOARD
+assert '"type": "telegram_public"' in ONBOARD
+assert '"type": "api"' not in ONBOARD
+assert '"direct_candidates"' in ONBOARD
+assert '"api_templates"' in ONBOARD
 assert '"type": "search"' in ONBOARD
 assert "upstream" not in ONBOARD.casefold() or "upstream_id" in ONBOARD
 assert "clean_reconstruction_verified" in ONBOARD
@@ -74,7 +76,6 @@ assert 'xcrun simctl launch --terminate-running-process' in IOS_SUITE
 
 # Full native platform Labs remain weekly + manual, never push-triggered.
 for path in (
-    ".github/workflows/native-tv-route-reader.yml",
     ".github/workflows/native-mobile-android-reader.yml",
     ".github/workflows/native-mobile-ios-reader.yml",
     ".github/workflows/native-desktop-reader-acceptance.yml",
@@ -82,6 +83,7 @@ for path in (
     workflow = (ROOT / path).read_text(encoding="utf-8")
     assert "workflow_dispatch:" in workflow, path
     assert "\n  schedule:" in workflow, path
-    assert "\n  push:" not in workflow, path
+    if "\n  push:" in workflow:
+        assert ".github/triggers/full-native-lab-validation.json" in workflow, path
 
-print("provider onboarding/Learning Lab architecture contract passed")
+assert not (ROOT / ".github/workflows/native-tv-route-reader.yml").exists()\nprint("provider onboarding/Learning Lab architecture contract passed")
