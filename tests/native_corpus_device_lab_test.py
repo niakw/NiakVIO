@@ -107,8 +107,11 @@ for required in (
 representative_fixtures = ("interstellar", "breaking-bad-s01e01", "jujutsu-kaisen-s01e01")
 for fixture in representative_fixtures:
     assert fixture in android_reader, fixture
+assert "\n  pull_request:" not in android_reader
+assert "\n  pull_request:" not in desktop_reader
+assert "workflow_dispatch:" in android_reader and "\n  push:" in android_reader
+assert "workflow_dispatch:" in desktop_reader and "\n  push:" in desktop_reader
 for required in (
-    "pull_request:",
     "push:",
     '      - "providers/**"',
     '      - "provider_catalog.json"',
