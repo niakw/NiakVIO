@@ -220,7 +220,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     incomplete = run_merge(second_out, evidence, "101", incomplete_out, second_md, incomplete_md, previous=second_out)
     incomplete_backlog = backlog_of(incomplete)
     assert incomplete_backlog["openCount"] == 1, incomplete_backlog
-    assert incomplete_backlog["importedRunIds"] == ["100"], incomplete_backlog
+    assert incomplete_backlog["importedRunIds"] == ["100", "102"], incomplete_backlog
     assert incomplete_backlog["skippedIncompleteThisRun"] == 1, incomplete_backlog
     assert len(incomplete_backlog["importedEvidenceIds"]) == 2, incomplete_backlog
 
