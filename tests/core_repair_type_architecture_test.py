@@ -74,6 +74,10 @@ assert lifecycle["model"] == "stable_provider_base_plus_derived_public_bundle"
 assert lifecycle["providerBase"]["startsFromEmpty"] is False
 assert lifecycle["providerBase"]["durableOwner"] == "provider_pipeline"
 assert lifecycle["providerBase"]["coreMayReplaceProviderLogic"] is False
+assert lifecycle["providerBase"]["durableSourceNormalizationAllowed"] == ["provider_security_hardening"]
+assert lifecycle["providerBase"]["domainRoutingIsDerived"] is True
+assert "publication_quarantine" in lifecycle["providerBase"]["forbiddenDerivedLayers"]
+assert "runtime_domain_wrapper" in lifecycle["providerBase"]["forbiddenDerivedLayers"]
 assert lifecycle["coreFinalizer"]["mode"] == "verify_first"
 assert lifecycle["coreFinalizer"]["materializeOnlyWhenStale"] is True
 assert lifecycle["coreFinalizer"]["noOpWhenFixedPoint"] is True
