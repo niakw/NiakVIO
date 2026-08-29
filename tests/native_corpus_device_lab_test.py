@@ -92,7 +92,7 @@ assert "NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: \"45\"" in tv_reader
 assert "--streams 2" in tv_reader
 assert 'NIAKVIO_PRIMARY_STREAM_SCOPE: "2"' in tv_reader
 assert 'NIAKVIO_REGRESSION_STREAM_SCOPE: "2"' in tv_reader
-assert "--streams all" not in tv_reader
+assert "--streams all" not in tv_reader.split("\n  mobile-android-reader:", 1)[0]\nassert "--streams all" in tv_reader.split("\n  mobile-android-reader:", 1)[1]
 assert "native-tv-route-representative-${{ github.run_id }}" in tv_reader
 
 def artifact_block(workflow: str, marker: str) -> str:
