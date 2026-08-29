@@ -18,115 +18,113 @@ assert WORKFLOW.rfind("python scripts/prune_unreferenced_providers.py") < WORKFL
 )
 assert "provider_catalog.json" in WORKFLOW, "provider pruning must publish with the canonical catalog transaction"
 
+
+def generation(root: Path, number: int) -> Path:
+    digest = f"{number:016x}"
+    path = root / "providers" / f"movix--nuvio--{digest}.js"
+    path.write_text(f"module.exports = {{ generation: {number} }};\n", encoding="utf-8")
+    return path
+
+
+def relative(path: Path, root: Path) -> str:
+    return path.relative_to(root).as_posix()
+
+
+def write_current(root: Path, path: Path) -> None:
+    rel = relative(path, root)
+    (root / "manifest.json").write_text(
+        json.dumps({"scrapers": [{"url": rel}]}),
+        encoding="utf-8",
+    )
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers": {"movix": {"published_filename": rel}}}),
+        encoding="utf-8",
+    )
+
+
+def run_pruner(root: Path) -> None:
+    subprocess.run(
+        ["python3", str(SCRIPT), "--root", str(root), "--retention-generations", "10"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     providers = root / "providers"
     providers.mkdir()
-    lkg = providers / "movix--nuvio--1111111111111111.js"
-    published = providers / "movix--nuvio--2222222222222222.js"
-    pending = providers / "movix--nuvio--3333333333333333.js"
-    stale = providers / "movix--nuvio--4444444444444444.js"
-    historical = providers / "movix--nuvio--5555555555555555.js"
     source = providers / "movix.js"
-    for path in (lkg, published, pending, stale, historical, source):
-        path.write_text("module.exports = {};\n", encoding="utf-8")
+    source.write_text("module.exports = {};\n", encoding="utf-8")
 
-    (root / "manifest.json").write_text(
-        json.dumps({"scrapers": [{"url": "providers/movix--nuvio--2222222222222222.js"}]}),
+    gens: dict[int, Path] = {}
+    for number in range(1, 11):
+        gens[number] = generation(root, number)
+        write_current(root, gens[number])
+        run_pruner(root)
+        existing = sorted(providers.glob("movix--nuvio--*.js"))
+        assert len(existing) == number, f"generation {number} must not prune inside the 10-generation window"
+
+    # The 11th occurrence removes exactly the oldest generation, not every file
+    # that happened to be unreferenced for ten maintenance runs.
+    gens[11] = generation(root, 11)
+    write_current(root, gens[11])
+    run_pruner(root)
+    assert not gens[1].exists(), "generation 11 must evict only generation 1"
+    assert all(gens[n].exists() for n in range(2, 12))
+    assert len(list(providers.glob("movix--nuvio--*.js"))) == 10
+
+    # The rolling window advances one oldest occurrence at a time.
+    gens[12] = generation(root, 12)
+    write_current(root, gens[12])
+    run_pruner(root)
+    assert not gens[2].exists(), "generation 12 must evict generation 2"
+    assert all(gens[n].exists() for n in range(3, 13))
+    assert len(list(providers.glob("movix--nuvio--*.js"))) == 10
+
+    # Re-referencing an older SHA is a fresh occurrence (rollback/LKG recovery),
+    # so it moves to the newest end of the retention order.
+    write_current(root, gens[5])
+    run_pruner(root)
+    gens[13] = generation(root, 13)
+    write_current(root, gens[13])
+    run_pruner(root)
+    assert not gens[3].exists(), "rollback to generation 5 must not make generation 5 the next eviction"
+    assert gens[5].exists()
+    assert gens[4].exists()
+
+    # LKG protection is absolute even when the protected SHA is the oldest.
+    (root / "provider-lkg.json").write_text(
+        json.dumps({"providers": {"movix": {"filename": relative(gens[4], root)}}}),
         encoding="utf-8",
     )
+    gens[14] = generation(root, 14)
+    write_current(root, gens[14])
+    run_pruner(root)
+    assert gens[4].exists(), "LKG generation must never be pruned"
+    assert not gens[6].exists(), "the oldest unprotected generation must be evicted instead"
+
+    # manifest.next.json receives the same transaction protection.
     (root / "manifest.next.json").write_text(
-        json.dumps({"scrapers": [{"url": "https://example.invalid/providers/movix--nuvio--3333333333333333.js?x=1"}]}),
+        json.dumps({"scrapers": [{"url": relative(gens[7], root)}]}),
         encoding="utf-8",
     )
-    (root / "provider-lkg.json").write_text(
-        json.dumps({"providers": {"movix": {"filename": "providers/movix--nuvio--1111111111111111.js"}}}),
-        encoding="utf-8",
-    )
-    (root / "PROVENANCE.json").write_text(
-        json.dumps({"providers": {"movix": {
-            "published_filename": "providers/movix--nuvio--2222222222222222.js",
-            "canonical_source_filename": "providers/movix--nuvio--5555555555555555.js"
-        }}}),
-        encoding="utf-8",
-    )
-
-    # First publication cycle: unreferenced hashed generations are deliberately
-    # retained for clients that may still hold an older manifest.
-    result = subprocess.run(
-        ["python3", str(SCRIPT), "--root", str(root), "--retention-cycles", "10"],
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    assert lkg.exists(), result.stdout
-    assert published.exists(), result.stdout
-    assert pending.exists(), result.stdout
-    assert stale.exists(), "first stale cycle must not delete an old client generation"
-    assert historical.exists(), "historical hashed generation must receive the same grace"
-    assert source.exists(), result.stdout
-    ledger = json.loads((providers / ".generation-retention.json").read_text(encoding="utf-8"))
-    assert ledger["stale_cycles"]["providers/movix--nuvio--4444444444444444.js"] == 1
-    assert ledger["stale_cycles"]["providers/movix--nuvio--5555555555555555.js"] == 1
-
-    # Active transaction finishes. Former published/pending bundles become stale,
-    # but must also receive the complete grace period.
-    (root / "manifest.json").write_text(
-        json.dumps({"scrapers": [{"url": "providers/movix--nuvio--3333333333333333.js"}]}),
-        encoding="utf-8",
-    )
-    (root / "manifest.next.json").unlink()
-    (root / "PROVENANCE.json").write_text(
-        json.dumps({"providers": {"movix": {
-            "published_filename": "providers/movix--nuvio--3333333333333333.js"
-        }}}),
-        encoding="utf-8",
-    )
-
-    for cycle in range(2, 10):
-        result = subprocess.run(
-            ["python3", str(SCRIPT), "--root", str(root), "--retention-cycles", "10"],
-            text=True,
-            capture_output=True,
-            check=True,
-        )
-        assert stale.exists(), f"stale bundle deleted too early at cycle {cycle}: {result.stdout}"
-        assert historical.exists(), f"historical bundle deleted too early at cycle {cycle}: {result.stdout}"
-
-    # A stale generation that becomes referenced again resets its age to zero.
-    (root / "provider-lkg.json").write_text(
-        json.dumps({"providers": {
-            "movix": {"filename": "providers/movix--nuvio--1111111111111111.js"},
-            "old-client": {"filename": "providers/movix--nuvio--5555555555555555.js"},
-        }}),
-        encoding="utf-8",
-    )
-    subprocess.run(
-        ["python3", str(SCRIPT), "--root", str(root), "--retention-cycles", "10"],
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    ledger = json.loads((providers / ".generation-retention.json").read_text(encoding="utf-8"))
-    assert ledger["stale_cycles"]["providers/movix--nuvio--5555555555555555.js"] == 0
-    assert historical.exists()
-
-    # Remove that renewed reference. The other stale file reaches cycle 10 and
-    # may now be removed; the reset generation begins a fresh grace period.
-    (root / "provider-lkg.json").write_text(
-        json.dumps({"providers": {"movix": {"filename": "providers/movix--nuvio--1111111111111111.js"}}}),
-        encoding="utf-8",
-    )
-    result = subprocess.run(
-        ["python3", str(SCRIPT), "--root", str(root), "--retention-cycles", "10"],
-        text=True,
-        capture_output=True,
-        check=True,
-    )
-    assert not stale.exists(), "bundle must age out only after ten consecutive stale publication cycles"
-    assert historical.exists(), "re-referenced generation must get a fresh ten-cycle grace"
-    assert published.exists(), "former published generation has not yet accumulated ten stale cycles"
-    assert pending.exists(), result.stdout
+    gens[15] = generation(root, 15)
+    write_current(root, gens[15])
+    run_pruner(root)
+    assert gens[7].exists(), "pending manifest generation must be protected"
+    assert not gens[8].exists(), "rolling eviction must skip protected pending/LKG generations"
     assert source.exists(), "plain provider source files are never pruned"
 
-print("ARCHI2 cyclic provider generation retention test passed")
+    ledger = json.loads((providers / ".generation-retention.json").read_text(encoding="utf-8"))
+    assert ledger["schema_version"] == 2
+    assert ledger["retention_generations"] == 10
+    assert ledger["policy"] == "rolling-content-addressed-provider-generations"
+    order = ledger["order"]["movix"]
+    assert len(order) == 10
+    assert relative(gens[5], root) in order
+    assert relative(gens[4], root) in order
+    assert relative(gens[15], root) in order
+
+print("ARCHI2 rolling provider generation retention test passed")
