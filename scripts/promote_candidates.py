@@ -6,7 +6,7 @@ Automatic activation requires current playback/identity safety gates; quality an
 evidence record may activate a provider only when CI is explicitly inconclusive
 while the same file has been confirmed working in the real Nuvio application.
 Confirmed failures and P2P output can never be overridden. An upstream-disabled
-flag is advisory only when the exact current JS passes the complete strict deep proof. Duplicate variants are resolved after every check.
+flag is advisory only when the exact current JS passes the complete strict deep proof. Duplicate provider declarations are rejected during discovery before Health/Repair.
 
 The eleven gates are:
 1. no P2P/torrent evidence;
@@ -1713,43 +1713,6 @@ def previous_state_is_safety_quarantine(
     )
 
 
-def choose_variant_with_baseline_protection(
-    variants: list[dict[str, Any]],
-    rank,
-    lkg_record: dict[str, Any] | None = None,
-) -> dict[str, Any] | None:
-    if not variants:
-        return None
-    ranked = sorted(variants, key=rank, reverse=True)
-    baselines = [variant for variant in ranked if bool(variant.get("baseline"))]
-    record = lkg_record if isinstance(lkg_record, dict) else {}
-    required_categories = {str(value) for value in (record.get("verified_categories") or []) if value}
-    if not required_categories and baselines:
-        metadata = baselines[0].get("metadata", {}) if isinstance(baselines[0].get("metadata"), dict) else {}
-        required_categories = {
-            str(value) for value in (metadata.get("supportedTypes") or [])
-            if value in {"movie", "tv", "anime"}
-        }
-    replacements = [
-        variant for variant in ranked
-        if not bool(variant.get("baseline"))
-        and has_conclusive_stream_proof(variant)
-        and (not required_categories or required_categories.issubset(healthy_categories(variant)))
-    ]
-    if replacements:
-        candidates = [
-            *replacements,
-            *[variant for variant in baselines if has_conclusive_stream_proof(variant)],
-        ]
-        return max(candidates, key=rank)
-    if baselines:
-        return max(
-            baselines,
-            key=lambda variant: (1 if variant.get("lkg") else 0, rank(variant)),
-        )
-    return ranked[0]
-
-
 def main() -> int:
     sources = load_json(SOURCES_PATH, {})
     config = load_json(CONFIG_PATH, {})
@@ -1839,16 +1802,17 @@ def main() -> int:
     )
     history_variants = history.get("variants", {})
 
-    by_cid: dict[str, list[dict[str, Any]]] = {}
+    by_cid: dict[str, dict[str, Any]] = {}
     dynamic_excluded: set[str] = set()
     for candidate in candidates:
         result = result_by_key[candidate["key"]]
         if result.get("status") == "excluded":
             dynamic_excluded.add(candidate["canonical_id"])
             continue
-        by_cid.setdefault(candidate["canonical_id"], []).append(
-            {**candidate, "health": result}
-        )
+        cid = str(candidate["canonical_id"])
+        if cid in by_cid:
+            raise RuntimeError(f"duplicate canonical candidate reached promotion: {cid}")
+        by_cid[cid] = {**candidate, "health": result}
 
     existing = {
         canonical_id(str(entry.get("id", ""))): dict(entry)
@@ -1897,7 +1861,8 @@ def main() -> int:
             )
             continue
 
-        variants = by_cid.get(cid, [])
+        canonical_candidate = by_cid.get(cid)
+        variants = [canonical_candidate] if canonical_candidate is not None else []
         auto_disabled = bool(
             availability_states.get(cid, {}).get("auto_disabled", False)
         )
@@ -1925,27 +1890,7 @@ def main() -> int:
                     decision["activation_blockers"].append("configured_safety_quarantine")
                 decision["disabled_reason"] = "configured_safety_quarantine"
 
-        def rank(variant: dict[str, Any]) -> tuple[int, int, int, int, int, int, int]:
-            decision = decisions[variant["key"]]
-            gates = decision["activation_gates"]
-            proof = decision["proof"]
-            mode_priority = {
-                "strict_current": 3,
-                "disabled": 0,
-            }.get(decision["activation_mode"], 0)
-            passed_gates = sum(1 for value in gates.values() if value.get("passed"))
-            return (
-                1 if decision["activation_eligible"] else 0,
-                mode_priority,
-                passed_gates,
-                int(variant["health"].get("score", 0)),
-                int(proof.get("healthy_fixtures", 0)),
-                int(proof.get("distinct_reachable_hosts", 0)),
-                -int(variant.get("source_priority", 999)),
-            )
-
-        lkg_record = lkg_records.get(cid, {}) if isinstance(lkg_records, dict) else {}
-        selected = choose_variant_with_baseline_protection(variants, rank, lkg_record)
+        selected = variants[0] if variants else None
 
         if selected is not None:
             decision = decisions[selected["key"]]
