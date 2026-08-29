@@ -248,7 +248,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
-            python scripts/run_adaptive_deep_repair.py --stage staging --output health-output
+            python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --max-rounds 1
           else
             python scripts/run_adaptive_quick_repair.py --stage staging --output health-output --max-rounds 1
           fi
