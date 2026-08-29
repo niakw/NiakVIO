@@ -164,8 +164,6 @@ def stage(request_path: Path) -> dict[str, Any]:
     direct = normalized_url(request.get("direct") or request.get("direct_url"))
     telegram = normalized_url(request.get("telegram") or request.get("telegram_url"))
     api = normalized_url(request.get("api") or request.get("api_url"))
-    logo_url = normalized_url(request.get("logo_url")) if request.get("logo_url") else ""
-    emoji = str(request.get("emoji") or "").strip()
     category = str(request.get("category") or ("VF" if any(value.startswith("fr") for value in languages) else "International")).strip()
     strategy = str(request.get("strategy") or "html_scraper").strip().casefold()
     routes = parse_list(request.get("routes"))
@@ -394,8 +392,6 @@ def stage(request_path: Path) -> dict[str, Any]:
         "telegram": telegram,
         "api": api,
         "site": direct or hub or telegram,
-        "logo_url": logo_url,
-        "emoji": emoji,
         "vf": vf,
         "strategy": strategy,
         "routes": routes,
