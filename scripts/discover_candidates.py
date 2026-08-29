@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides
-from provider_base_store import build_clean_provider_seed, resolve_base
+from provider_base_store import build_clean_provider_seed, requires_clean_reconstruction, resolve_base
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
     record_pending_source, validate_manifest_quality, write_pending,
@@ -159,25 +159,93 @@ def known_site_for_provider(
     return observed_site_from_upstream(raw_upstream, provider_id)
 
 
+def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: bytes) -> dict[str, Any]:
+    """Extract bounded route knowledge without importing or executing upstream code."""
+    text = raw_upstream[:2_000_000].decode("utf-8", errors="ignore")
+    urls: list[str] = []
+    hosts: list[str] = []
+    routes: list[str] = []
+    for raw in URL_RE.findall(text):
+        raw = raw.rstrip(".,;")
+        try:
+            parsed = urllib.parse.urlparse(raw)
+        except ValueError:
+            continue
+        host = (parsed.hostname or "").casefold()
+        if not host or host in INFRASTRUCTURE_HOSTS:
+            continue
+        safe_url = urllib.parse.urlunparse((
+            parsed.scheme if parsed.scheme in {"http", "https"} else "https",
+            host,
+            parsed.path or "/",
+            "",
+            "",
+            "",
+        ))
+        if safe_url not in urls:
+            urls.append(safe_url)
+        if host not in hosts:
+            hosts.append(host)
+        route = parsed.path or "/"
+        if route not in routes:
+            routes.append(route)
+        if len(urls) >= 32:
+            break
+    supported = entry.get("supportedTypes") if isinstance(entry, dict) else []
+    if isinstance(supported, str):
+        supported = [supported]
+    return {
+        "providerId": provider_id,
+        "supportedTypes": [str(value) for value in supported or []][:8],
+        "hosts": hosts[:24],
+        "routes": routes[:32],
+        "observedUrls": urls[:32],
+        "codeRole": "knowledge-only",
+        "codeExecuted": False,
+    }
+
+
 def executable_seed(
     provider_id: str,
     entry: dict[str, Any],
     raw_upstream: bytes,
     provenance_rows: dict[str, Any],
     overrides: dict[str, Any],
-) -> tuple[bytes, str, str | None]:
+    *,
+    clean_reconstruction: bool,
+) -> tuple[bytes, str, str | None, bool]:
     previous = provenance_rows.get(provider_id)
+    previous_row = previous if isinstance(previous, dict) else {}
+    site = known_site_for_provider(provider_id, raw_upstream, overrides)
+    reconstruction_required = requires_clean_reconstruction(previous_row)
+
+    if reconstruction_required and clean_reconstruction:
+        return (
+            build_clean_provider_seed(provider_id, entry, known_site=site),
+            "new-niakvio-clean-seed",
+            site,
+            True,
+        )
+
     if isinstance(previous, dict):
         path, _digest = resolve_base(provider_id, previous, require=False)
         if path is not None:
-            return path.read_bytes(), "existing-niakvio-provider-base", known_site_for_provider(
-                provider_id, raw_upstream, overrides
+            return (
+                path.read_bytes(),
+                (
+                    "legacy-providerbase-compatibility-only"
+                    if reconstruction_required
+                    else "existing-niakvio-provider-base-v2"
+                ),
+                site,
+                reconstruction_required,
             )
-    site = known_site_for_provider(provider_id, raw_upstream, overrides)
+
     return (
         build_clean_provider_seed(provider_id, entry, known_site=site),
         "new-niakvio-clean-seed",
         site,
+        True,
     )
 
 
@@ -188,6 +256,11 @@ def main() -> int:
         "--require-all-upstreams",
         action="store_true",
         help="Fail if any upstream manifest cannot be loaded.",
+    )
+    parser.add_argument(
+        "--clean-reconstruction",
+        action="store_true",
+        help="Build reconstruction-required providers from a fresh NiakVIO seed instead of compatibility LKG bytes.",
     )
     args = parser.parse_args()
 
@@ -324,12 +397,13 @@ def main() -> int:
                     continue
 
                 upstream_digest = hashlib.sha256(data).hexdigest()
-                seed, code_origin, observed_site = executable_seed(
+                seed, code_origin, observed_site, reconstruction_required = executable_seed(
                     provider_id,
                     entry,
                     data,
                     provenance_rows,
                     overrides,
+                    clean_reconstruction=bool(args.clean_reconstruction),
                 )
                 candidate_data, applied_patches = apply_overrides(provider_id, seed)
                 validate_javascript(candidate_data, f"niakvio:{provider_id}")
@@ -358,7 +432,11 @@ def main() -> int:
                         "upstream_sha256": upstream_digest,
                         "upstream_code_role": "knowledge-only",
                         "upstream_code_executed": False,
+                        "upstream_knowledge": upstream_knowledge(provider_id, entry, data),
                         "candidate_code_origin": code_origin,
+                        "provider_base_reconstruction_required": bool(reconstruction_required),
+                        "clean_reconstruction_mode": bool(args.clean_reconstruction),
+                        "legacy_provider_js_executed_for_reconstruction": False,
                         "local_patches": applied_patches,
                         "bytes": len(candidate_data),
                         "metadata": entry,
