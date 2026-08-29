@@ -192,3 +192,15 @@ Torrent, magnet, Acestream et autres chemins P2P interdits sont filtrés à plus
 - Un succès à un instant donné ne garantit pas la disponibilité future.
 
 Ces limites produisent de l'**inconclusif**, pas des conclusions arbitraires.
+
+### DNS preflight evidence semantics
+
+DNS preflight distinguishes provider/network evidence from probe-system failures:
+
+- `pass`: French ISP reachability is verified.
+- `french_access_unverified`: the available probes do not prove French access; this is **not** a provider failure, and runtime validation continues.
+- `confirmed_french_block`: a French ISP block is verified while a neutral probe can reach the domain.
+- `globally_unreachable`: both French and neutral probes verify unreachability.
+- `preflight_error`: the DNS/HTTP preflight subsystem itself failed; runtime validation continues fail-safe.
+
+Domain-level states use the same principle (for example `network_probe_unverified` or `resolver_probes_unavailable`) and never turn missing probe evidence into a provider failure. Runtime health/Quick/Deep/Labs remain authoritative for provider functionality.
