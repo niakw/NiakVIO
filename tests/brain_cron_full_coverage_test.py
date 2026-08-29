@@ -78,7 +78,7 @@ def main() -> int:
     # The Brain cron must always reconstruct the complete catalogue, including
     # disabled providers which still need repair/re-evaluation evidence.
     assert "schedule:" in workflow and "cron:" in workflow, "Brain learning cron disappeared"
-    assert "python scripts/select_brain_access_recovery.py" in workflow
+    assert "python scripts/select_brain_learning_target.py" in workflow
     assert '--provider "$PROVIDER"' in workflow, "Learning route discovery must be targeted to one provider"
     assert "python scripts/resolve_provider_hub_search_fallback.py" in workflow
     assert "--max-providers 1" in workflow
@@ -114,10 +114,15 @@ def main() -> int:
     assert '"maxRepairRounds": 1' in (ROOT / "engine_v2" / "config" / "brain-policy.json").read_text(encoding="utf-8")
     assert 'return list(dict.fromkeys(kept))' in sandbox_source, "one pass may evaluate multiple compatible fix profiles"
     assert '"scripts/brain_repair_runtime.py"' in workflow
-    assert "Run one quick targeted Nuvio command lab" in workflow
-    assert 'TARGET_PROVIDER: ${{ inputs.target_provider || steps.access-target.outputs.provider || \'\' }}' in workflow
+    assert "Run one deep targeted Nuvio command lab" in workflow
+    assert 'TARGET_PROVIDER: ${{ inputs.target_provider || steps.learning-target.outputs.provider || \'\' }}' in workflow
     assert '--providers "$PROVIDER"' in workflow
-    assert '--max-streams 1' in workflow
+    assert '--all-streams' in workflow
+    assert '--stream-safety-cap 40' in workflow
+    assert '--playback-timeout-ms 8000' in workflow
+    assert 'NUVIO_BRAIN_TARGET_PROVIDER: ${{ steps.learning-target.outputs.provider }}' in workflow
+    assert 'steps.learning-target.outputs.needs_route_search' in workflow
+    assert 'coreIsAuthoritative:false' in workflow
     assert 'state.get("learnedSkills")' in sandbox_source
     assert "mergeLearnedSkills(previous.learnedSkills, currentSkills)" in learning_source
     assert "yandex.com/search/?text=" in (ROOT / "scripts" / "resolve_provider_hubs.py").read_text(encoding="utf-8")
