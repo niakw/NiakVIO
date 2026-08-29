@@ -35,6 +35,8 @@ from provider_engine_normalizer import (
     strip_foreign_provider_wrappers,
 )
 from provider_base_store import resolve_base
+from quarantine_catalogue_audit_failures import scoped_quarantine_source
+from provider_patches.quarantine_provider_v1 import apply as apply_terminal_quarantine
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIMARY = ROOT / "manifest.json"
@@ -271,6 +273,48 @@ def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any],
     return config, removed
 
 
+def publication_audit_quarantine(
+    data: bytes,
+    provider_id: str,
+    relative: str,
+    provenance_row: dict[str, Any],
+) -> tuple[bytes, str | None]:
+    """Replay live publication-scoped audit quarantine from durable provenance.
+
+    The current public bundle is evidence/output only; it is never an input.
+    Quick recovery replaces the audit filename/provenance after fresh strict
+    proof, so this preservation layer disappears automatically on recovery.
+    """
+    mode = str(provenance_row.get("activation_mode") or "").strip().casefold()
+    blockers = {str(value) for value in (provenance_row.get("activation_blockers") or []) if str(value)}
+    scopes = provenance_row.get("catalogue_audit_quarantine_scopes")
+    live = (
+        "--nuvio-audit-quarantine--" in relative
+        and (
+            mode.startswith("catalogue_audit_")
+            or AUDIT_QUARANTINE_BLOCKER in blockers
+            or (isinstance(scopes, list) and bool(scopes))
+        )
+    )
+    if not live:
+        return data, None
+
+    if isinstance(scopes, list) and scopes:
+        text = scoped_quarantine_source(
+            data.decode("utf-8", errors="strict"),
+            provider_id,
+            scopes,
+        )
+        return text.encode("utf-8"), "scoped"
+
+    text = apply_terminal_quarantine(
+        data.decode("utf-8", errors="strict"),
+        options={"reason": AUDIT_QUARANTINE_BLOCKER},
+        context={"provider_id": provider_id},
+    )
+    return text.encode("utf-8"), "terminal"
+
+
 def validate_artifact(data: bytes, provider_id: str) -> None:
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as handle:
         handle.write(data)
@@ -410,6 +454,7 @@ def provider_build_input_sha(
         "preservation": {
             "activation_mode": provenance_row.get("activation_mode"),
             "preserved_reason": provenance_row.get("preserved_reason"),
+            "catalogue_audit_quarantine_scopes": provenance_row.get("catalogue_audit_quarantine_scopes"),
         },
     })
 
@@ -622,46 +667,52 @@ def main() -> int:
         )
         assert provider_base_path is not None and provider_base_sha is not None
         provider_base = provider_base_path.read_bytes()
-        terminal_quarantine = (
-            AUDIT_QUARANTINE_MARKER.encode("utf-8") in original
+        isolated_text, removed_wrappers = strip_foreign_provider_wrappers(
+            provider_base.decode("utf-8", errors="strict"), provider_id, override_config
         )
-        audit_terminal_quarantine = (
-            terminal_quarantine
-            and "--nuvio-audit-quarantine--" in relative
+        removed_wrappers_total += len(removed_wrappers)
+        isolated = isolated_text.encode("utf-8")
+        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
+        migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
+        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+        if removed_wrappers:
+            records = [{
+                "type": "migration",
+                "name": "cross_provider_wrapper_isolation",
+                "count": len(removed_wrappers),
+                "phase": "discovery",
+                "scope": "provider_isolation",
+            }] + list(records)
+        if domain_revision_records:
+            records = list(records) + domain_revision_records
+        patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
+        if runtime_revision_records:
+            records = list(records) + runtime_revision_records
+        if adaptive_language_repairs:
+            records = [{
+                "type": "migration",
+                "name": "adaptive_language_integrity_v1",
+                "count": adaptive_language_repairs,
+                "phase": "discovery",
+                "scope": "language_integrity",
+            }] + list(records)
+
+        patched, audit_quarantine_kind = publication_audit_quarantine(
+            patched,
+            provider_id,
+            relative,
+            provider_provenance,
         )
-        if terminal_quarantine:
-            patched = original
-            records = []
-        else:
-            isolated_text, removed_wrappers = strip_foreign_provider_wrappers(
-                provider_base.decode("utf-8", errors="strict"), provider_id, override_config
-            )
-            removed_wrappers_total += len(removed_wrappers)
-            isolated = isolated_text.encode("utf-8")
-            migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
-            migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
-            patched, records = apply_overrides(provider_id, migrated, phase="discovery")
-            if removed_wrappers:
-                records = [{
-                    "type": "migration",
-                    "name": "cross_provider_wrapper_isolation",
-                    "count": len(removed_wrappers),
-                    "phase": "discovery",
-                    "scope": "provider_isolation",
-                }] + list(records)
-            if domain_revision_records:
-                records = list(records) + domain_revision_records
-            patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
-            if runtime_revision_records:
-                records = list(records) + runtime_revision_records
-            if adaptive_language_repairs:
-                records = [{
-                    "type": "migration",
-                    "name": "adaptive_language_integrity_v1",
-                    "count": adaptive_language_repairs,
-                    "phase": "discovery",
-                    "scope": "language_integrity",
-                }] + list(records)
+        if audit_quarantine_kind:
+            records = list(records) + [{
+                "type": "publication_quarantine_replay",
+                "phase": "final-pre-security",
+                "source": "provenance",
+                "scope": audit_quarantine_kind,
+                "reason": AUDIT_QUARANTINE_BLOCKER,
+            }]
+        terminal_quarantine = AUDIT_QUARANTINE_MARKER.encode("utf-8") in patched
+        audit_terminal_quarantine = audit_quarantine_kind == "terminal"
         # all-published-provider-security-finalization-v1
         # Security is independent from activation/quarantine state. Run this after
         # either branch above so disabled and terminal-quarantined bundles receive
