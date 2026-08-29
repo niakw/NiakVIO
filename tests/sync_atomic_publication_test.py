@@ -35,7 +35,9 @@ verify = workflow.index("Verify exact published main", push)
 
 assert build < first_version < first_activation < audit < final_version < final_activation < final_catalog < hashes < commit < rebase < post_rebase_hashes < post_rebase_integrity < push < verify
 assert "git add -A providers" in workflow
+assert "git add -A provider-bases" in workflow
 assert workflow.index("git add -A providers", hashes) < commit
+assert workflow.index("git add -A provider-bases", hashes) < commit
 assert workflow.index("git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json", rebase) < push
 assert workflow.index("git commit --amend --no-edit", rebase) < push
 
