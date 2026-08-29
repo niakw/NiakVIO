@@ -5,12 +5,9 @@ The manifest vocabulary is strictly movie|tv|anime. Catalogue/user aliases are a
 client input concern. The lab still traverses every staged provider (including
 manifest-disabled rows), but executes only meaningful media routes.
 
-For episodic anime, Nuvio catalogues may surface the same title through a series/tv
-route or an anime route. A provider that already declares either tv or anime is
-therefore exercised on BOTH routes. The declared route is normal validation; the
-other route is explicitly tagged ``capability_probe``. A failed capability probe is
-never a provider failure or Brain repair signal. A successful end-to-end probe can
-justify a later supportedTypes expansion.
+Canonical native acceptance executes exactly the fixture media type when that type
+is declared by the provider. Cross-type capability discovery belongs to Learning/Deep,
+not to this acceptance layer; this prevents duplicate anime/tv execution for one work.
 """
 from __future__ import annotations
 
@@ -101,14 +98,12 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
 
     f = fixture(slug)
     fixture_media_type = canonical_type(f.get("mediaType") or "movie")
-    fixture_category = str(f.get("category") or fixture_media_type).strip().lower()
-    is_anime = fixture_category == "anime" or fixture_media_type == "anime"
     types = manifest_types(manifest)
 
     provider_list = re.search(r"(    private val providers = listOf\(\n.*?\n    \)\n)", text, flags=re.S)
     if not provider_list:
         raise SystemExit("request-contract provider list anchor missing")
-    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String, val declared: Boolean)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        return if ({str(is_anime).lower()}) {{\n            // Episodic anime can enter Nuvio through either anime or series/tv.\n            // If a provider participates in either ecosystem, test both. The\n            // undeclared side is discovery evidence only and cannot fail the provider.\n            if ("anime" !in declared && "tv" !in declared) emptyList<ProviderRequestRoute>()\n            else listOf("anime", "tv").map {{ type: String -> ProviderRequestRoute(type, type in declared) }}\n        }} else {{\n            listOf<String>(fixtureMediaType).filter {{ it in declared }}\n                .map {{ type -> ProviderRequestRoute(type, true) }}\n        }}\n    }}\n'''
+    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String, val declared: Boolean)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        return listOf<String>(fixtureMediaType).filter {{ it in declared }}\n            .map {{ type -> ProviderRequestRoute(type, true) }}\n    }}\n'''
     text = text[: provider_list.end()] + helpers + text[provider_list.end() :]
 
     if client in {"tv", "mobile"}:
@@ -156,7 +151,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     path.write_text(text, encoding="utf-8")
     print(
         f"FIELD_NATIVE_REQUEST_CONTRACT client={client} fixture={slug} media_type={fixture_media_type} "
-        f"anime_dual_route={str(is_anime).lower()} providers={len(types)} path={path}"
+        f"one_route_per_declared_type=true providers={len(types)} path={path}"
     )
 
 
