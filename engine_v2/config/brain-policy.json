@@ -1,10 +1,10 @@
 {
-  "schemaVersion": 6,
-  "controlPlaneVersion": 4,
+  "schemaVersion": 7,
+  "controlPlaneVersion": 5,
   "identity": {
     "name": "NiakVIO Brain",
     "role": "architecture learning and adaptive provider repair orchestrator",
-    "principle": "Core/native results are fallible hypotheses; Learning independently reproduces, challenges, experiments, records failed methods, and only proposes changes after independent evidence"
+    "principle": "Core/native results are fallible hypotheses; Learning independently reproduces, challenges, experiments, questions its own tooling and architecture, records failed methods, and only proposes production or self-architecture changes through reviewable PR evidence"
   },
   "production": {
     "learningOnValidatedRepair": false,
@@ -40,7 +40,7 @@
     "memoryMaxEntries": 1000,
     "historicalBaselineId": "excel-provider-audit-5.20.63",
     "consumeNativeClientFeedback": true,
-    "purpose": "observe the full catalogue, choose one provider (visible anomaly first, otherwise healthy exploration), challenge Core evidence independently, try multiple repair hypotheses in one bounded pass, then run one client Lab across all streams returned for one fixture and retain both failed and successful hypotheses",
+    "purpose": "time-budgeted adaptive investigation across the provider queue: challenge Core/native hypotheses, independently reproduce hidden failures, explore multiple routes and repair methods, use rotating fixtures and TV/Desktop/Mobile Labs across returned streams, persist progress across days, and propose Brain architecture evolution when its own tooling or workflow blocks diagnosis",
     "directSkillPublication": false,
     "providerLocalMutation": "ephemeral_lab_proof_only",
     "knownTypeUnresolvedAction": "adapt_or_evolve_type",
@@ -54,13 +54,23 @@
     "resumeAcrossDays": true,
     "allProvidersEventuallyDebugged": true,
     "healthyProviderDeepSampling": true,
-    "streamSampling": "all_returned_streams_for_target_fixture",
-    "fixtureSelection": "first_declared_type_with_rotation_memory",
-    "targetProvidersPerRun": 1,
-    "maxRepairRounds": 1,
-    "maxExploratoryProfilesPerProvider": 3,
-    "clientSelection": "one_client_per_run_manual_or_rotating",
-    "allStreamsSafetyCap": 40
+    "streamSampling": "all_returned_streams_with_safety_cap",
+    "fixtureSelection": "rotate_across_declared_type_fixture_pool_using_cross_day_memory",
+    "targetProvidersPerRun": "time_budgeted_queue",
+    "clientSelection": "tv_desktop_mobile_for_scheduled_learning",
+    "allStreamsSafetyCap": 40,
+    "retryPolicy": "continue_with_new_hypotheses_until_global_deadline_or_no_new_method",
+    "selfArchitectureAudit": true,
+    "selfArchitectureChanges": "proposal_pr_only",
+    "selfArchitectureAllowedTargets": [
+      ".github/workflows/brain-learning-lab.yml",
+      "engine_v2/config/brain-policy.json",
+      "engine_v2/scripts/learning-lab.mjs",
+      "scripts/run_brain_learning_sandbox.py",
+      "scripts/select_brain_learning_target.py",
+      "scripts/select_brain_targeted_probe.py",
+      "tests/brain_*"
+    ]
   },
   "privacy": {
     "persistRawUrls": false,
@@ -80,10 +90,12 @@
     "dailyLearning": {
       "independent": true,
       "scheduleUtc": "17 2 * * *",
-      "publishedProviderObservationCoverage": 1,
-      "purpose": "full-catalogue observation plus one targeted adaptive investigation: optional route discovery, one multi-hypothesis repair pass, one client Lab across all returned streams, then sanitized cross-day learning",
+      "timeBudgetMinutes": 60,
+      "providerScheduling": "persistent anomaly-first queue with healthy-provider exploration and cross-day resume",
+      "purpose": "adaptive sandbox agent that may challenge Core evidence, try successive hypotheses, rotate fixtures/devices, inspect its own limits and create review-only architecture proposals",
       "productionWritesAllowed": false,
-      "publicationAllowed": false
+      "publicationAllowed": false,
+      "architectureEvolution": "PR-only"
     }
   }
 }
