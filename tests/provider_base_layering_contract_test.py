@@ -13,7 +13,6 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 required = {
-    "NUVIO_PROVIDER_SECURITY_HARDENING_V1",
     "NUVIO_PROVIDER_QUARANTINE_V1",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
@@ -26,6 +25,12 @@ assert required <= set(module.DERIVED_BASE_MARKERS)
 
 valid = b"module.exports={getStreams:async()=>[]};\n"
 module.assert_base_layering(valid, "synthetic")
+# Legacy current provider logic may already contain idempotent source-level
+# security normalization. It is not a Core/routing/quarantine layer.
+module.assert_base_layering(
+    b"/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:legacy */\n" + valid,
+    "synthetic-security-normalized",
+)
 
 for marker in sorted(required):
     contaminated = (f"/* {marker} */\n").encode() + valid
