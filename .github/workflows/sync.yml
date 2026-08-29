@@ -172,10 +172,13 @@ concurrency:
   # Any execution that can publish to main shares the same writer lane.
   # PRs never publish and may supersede only an older run for the same PR.
   group: nuvio-provider-publish-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  # A newer main tree supersedes an older repair transaction. This prevents
+  # stale 60-90 minute runs from blocking current provider work.
+  cancel-in-progress: true
 
 jobs:
   stage-and-test:
+    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[sync-control-only]') }}
     name: Discover, repair and validate providers
     runs-on: ubuntu-latest
     timeout-minutes: 90
