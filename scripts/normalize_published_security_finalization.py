@@ -53,11 +53,12 @@ def assert_contract(text: str) -> None:
     for value in required:
         if value not in text:
             raise AssertionError(f"missing published security finalization contract: {value}")
-    terminal = text.index("        if terminal_quarantine:")
+    quarantine_replay = text.index("patched, audit_quarantine_kind = publication_audit_quarantine(")
+    terminal_state = text.index('terminal_quarantine = AUDIT_QUARANTINE_MARKER.encode("utf-8") in patched')
     hardening = text.index("security_hardened, security_report = harden_bytes(patched)")
     purification = text.index("purified, purification = purify_bytes(patched)")
     digest = text.index("digest = hashlib.sha256(patched).hexdigest()")
-    if not (terminal < hardening < purification < digest):
+    if not (quarantine_replay < terminal_state < hardening < purification < digest):
         raise AssertionError("published security finalization order is not provider-state independent")
 
 
