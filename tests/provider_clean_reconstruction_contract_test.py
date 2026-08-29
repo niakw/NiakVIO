@@ -35,8 +35,8 @@ assert len(provider_ids) == 95, f"expected the canonical 95-provider catalogue, 
 store = provenance.get("provider_base_store")
 assert isinstance(store, dict)
 assert store.get("provider_count") == 95
-assert store.get("reconstruction_required") == 95
-assert store.get("clean_reconstructed") == 0
+assert store.get("initial_reconstruction_scope") == 95
+assert store.get("migration_scope") == "all-current-providers"
 assert store.get("published_legacy_code_may_seed_new_base") is False
 assert store.get("upstream_code_may_seed_new_base") is False
 assert store.get("git_history_code_may_seed_new_base") is False
@@ -46,17 +46,20 @@ clean = []
 for provider_id in provider_ids:
     row = rows.get(provider_id)
     assert isinstance(row, dict), f"{provider_id}: missing provenance"
-    assert row.get("clean_reconstruction_required") is True, f"{provider_id}: v2 reconstruction flag missing"
-    assert row.get("legacy_provider_base_role") in {
-        "compatibility-lkg-only",
-        "superseded-by-clean-candidate",
-    }, f"{provider_id}: invalid legacy base role"
-    assert row.get("legacy_provider_js_role") == "knowledge-only-for-reconstruction"
-    assert row.get("legacy_provider_js_executed_for_reconstruction") is False
     if base_store.requires_clean_reconstruction(row):
         required.append(provider_id)
+        assert row.get("clean_reconstruction_required") is True, f"{provider_id}: v2 reconstruction flag missing"
+        assert row.get("legacy_provider_base_role") in {
+            "compatibility-lkg-only",
+            "superseded-by-clean-candidate",
+        }, f"{provider_id}: invalid legacy base role"
+        assert row.get("legacy_provider_js_role") == "knowledge-only-for-reconstruction"
+        assert row.get("legacy_provider_js_executed_for_reconstruction") is False
     else:
         clean.append(provider_id)
+        assert row.get("clean_reconstruction_required") is False
+        assert row.get("clean_reconstruction_verified") is True
+        assert row.get("clean_reconstruction_authoring_version", 0) >= 2
 
 # This migration intentionally resets trust for every pre-v2 base, including
 # AniZone/DVDPlay. The assertion should shrink only as providers acquire an
@@ -68,6 +71,8 @@ current_v2 = [
 ]
 assert set(clean) == set(current_v2)
 assert len(required) + len(clean) == 95
+assert store.get("reconstruction_required") == len(required)
+assert store.get("clean_reconstructed") == len(clean)
 
 # At the introduction of v2, all 95 historical bases are untrusted for seeding.
 # Once genuine v2 reconstructions land, this exact initial-state assertion may
