@@ -64,6 +64,7 @@ jobs:
           provenance = canonical_map(load('PROVENANCE.json', {}).get('providers', {}))
           diagnostics = load('diagnostics-report.json', {})
           repair = load('repair-report.json', {})
+          dns_report = load('dns-preflight-report.json', {})
           lkg = canonical_map(load('provider-lkg.json', {}).get('providers', {}))
 
           diag_by_id = defaultdict(list)
@@ -73,6 +74,17 @@ jobs:
               pid = str(row.get('id') or row.get('canonical_id') or '').strip().casefold()
               if pid:
                   diag_by_id[pid].append(row)
+
+          dns_by_id = defaultdict(list)
+          for row in dns_report.get('providers', []) if isinstance(dns_report, dict) else []:
+              if not isinstance(row, dict):
+                  continue
+              pid = str(row.get('canonical_id') or '').strip().casefold()
+              status = str(row.get('dns_status') or '').strip()
+              if pid and status:
+                  dns_by_id[pid].append(status)
+
+          dns_priority = {'DNS OK': 1, 'DNS API LIMIT REACH': 2, 'DNS BLOCK': 3}
 
           sibling_resolved = {str(x).strip().casefold() for x in repair.get('sibling_resolved_provider_ids', [])}
           rows = []
@@ -88,6 +100,7 @@ jobs:
               failures = sorted({str(v) for x in variants for v in (x.get('failure_classes') or []) if v})
               prov = provenance.get(pid, {}) if isinstance(provenance.get(pid, {}), dict) else {}
               lkg_row = lkg.get(pid, {}) if isinstance(lkg.get(pid, {}), dict) else {}
+              dns_status = max(dns_by_id.get(pid, []), key=lambda value: dns_priority.get(value, 0), default='')
               rows.append({
                   'provider_id': pid,
                   'name': scraper.get('name') or '',
@@ -99,6 +112,7 @@ jobs:
                   'languages': csv_values(scraper.get('contentLanguage')),
                   'filename': scraper.get('filename') or '',
                   'diagnostic_statuses': ','.join(statuses),
+                  'dns_status': dns_status,
                   'streams_returned': streams_returned,
                   'streams_playable': streams_playable,
                   'failure_classes': ','.join(failures),
@@ -109,7 +123,7 @@ jobs:
               })
 
           payload = {
-              'schemaVersion': 2,
+              'schemaVersion': 3,
               'generatedAt': datetime.now(timezone.utc).isoformat(),
               'catalogSchemaVersion': catalog.get('schemaVersion'),
               'providerCount': len(rows),
