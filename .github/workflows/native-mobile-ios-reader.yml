@@ -2,8 +2,6 @@ name: Native Mobile iOS reader acceptance
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "15 18 * * 6"
 
 permissions:
   contents: read
@@ -56,6 +54,10 @@ jobs:
     timeout-minutes: 240
     env:
       NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/manifest.json
+      DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      GRADLE_OPTS: -Dfile.encoding=UTF-8
+      NUVIO_GRADLE_JVMARGS: -Xmx4608M -Dfile.encoding=UTF-8 -XX:MaxMetaspaceSize=768M
+      NUVIO_KOTLIN_NATIVE_JVMARGS: -Xmx4608M
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -77,6 +79,34 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
+      - name: Verify official iOS 26 toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+          test "$DEVELOPER_DIR" = "/Applications/Xcode_26.6.app/Contents/Developer"
+      - name: Build official unsigned device IPA before Lab instrumentation
+        shell: bash
+        env:
+          IOS_CONFIGURATION: Debug
+          IOS_IPA_OUTPUT_DIR: ${{ github.workspace }}/nuvio-mobile/build/ios-ipa
+        run: |
+          set -euo pipefail
+          cd nuvio-mobile
+          ./scripts/prepare-ios-dependencies.sh
+          ./scripts/build-ios-ipa.sh
+          ipa_path="$(find build/ios-ipa -maxdepth 1 -type f -name '*-full-debug.ipa' -print -quit)"
+          test -n "$ipa_path"
+          unzip -tq "$ipa_path"
+          echo "FIELD_NATIVE_IOS_IPA path=$(basename "$ipa_path") sha256=$(shasum -a 256 "$ipa_path" | awk '{print $1}')"
+      - name: Upload official unsigned device IPA
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-mobile-ios-device-ipa-${{ github.run_id }}
+          path: nuvio-mobile/build/ios-ipa/*.ipa
+          retention-days: 1
+          if-no-files-found: error
       - name: Inject CI-only iOS provider and player harness
         shell: bash
         run: |

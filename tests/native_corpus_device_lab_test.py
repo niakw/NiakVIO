@@ -95,6 +95,9 @@ assert "native-mobile-android-routes-${{ github.run_id }}" in mobile_android
 
 assert "mobile-ios-reader:" in mobile_ios
 assert "runs-on: macos-26" in mobile_ios
+assert "DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer" in mobile_ios
+assert "Build official unsigned device IPA before Lab instrumentation" in mobile_ios
+assert "./scripts/build-ios-ipa.sh" in mobile_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
 assert "analyze_native_ios_results.py" in mobile_ios
