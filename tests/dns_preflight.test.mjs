@@ -14,9 +14,6 @@ const baseConfig = {
   primary_french_isp: 'sfr',
   fallback_french_isps: ['orange', 'free'],
   neutral_resolvers: ['cloudflare'],
-  continue_on_unverified_network_evidence: true,
-  continue_on_global_unreachable: false,
-  skip_runtime_on_confirmed_french_block: true,
   migration_discovery: { minimum_confidence: 80 },
   resolvers: {
     sfr: { servers: ['109.0.66.10'] },
