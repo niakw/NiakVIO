@@ -121,7 +121,8 @@ assert "DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer" in mobil
 assert "Build official unsigned device IPA before Lab instrumentation" in mobile_ios
 assert "./scripts/build-ios-ipa.sh" in mobile_ios
 assert "NIAKVIO_IOS_LAB_MODE" in mobile_ios
-assert "workflow_dispatch:\n    inputs:" in mobile_ios\nassert "          - full\n          - only" in mobile_ios
+assert "workflow_dispatch:\n    inputs:" in mobile_ios
+assert "          - full\n          - only" in mobile_ios
 assert 'schedule:\n    - cron: "15 18 * * 6"' in mobile_ios
 assert "NIAKVIO_IOS_TARGET_PROVIDER" in mobile_ios
 assert "NIAKVIO_IOS_SESSION_STATE" in mobile_ios
