@@ -29,6 +29,17 @@ assert workflow.count("      - 'tests/sync_atomic_publication_test.py'") == 2, (
     "Sync must run on its publication contract test changes for both PR and main push"
 )
 
+for required_trigger_path in [
+    "scripts/provider_dns_preflight.mjs",
+    "scripts/apply_dns_migration_overrides.py",
+    "scripts/health_check.mjs",
+    "scripts/network_guard.cjs",
+    "health-config.json",
+    "tests/dns_preflight.test.mjs",
+    "tests/network_guard.test.cjs",
+]:
+    assert workflow.count(f"      - '{required_trigger_path}'") == 2, required_trigger_path
+
 build = workflow.index("Build canonical publication transaction")
 first_version = workflow.index("python scripts/sync_release_versions.py", build)
 first_activation = workflow.index("python scripts/activation_preservation_core_rehash.py", first_version)
