@@ -29,16 +29,13 @@ assert workflow.count("      - 'tests/sync_atomic_publication_test.py'") == 2, (
     "Sync must run on its publication contract test changes for both PR and main push"
 )
 
-for required_trigger_path in [
+for forbidden_dns_coupling in [
     "scripts/provider_dns_preflight.mjs",
     "scripts/apply_dns_migration_overrides.py",
-    "scripts/health_check.mjs",
-    "scripts/network_guard.cjs",
-    "health-config.json",
-    "tests/dns_preflight.test.mjs",
-    "tests/network_guard.test.cjs",
+    "NUVIO_DNS_PREFLIGHT_RESULTS",
+    "dns-preflight-report.json",
 ]:
-    assert workflow.count(f"      - '{required_trigger_path}'") == 2, required_trigger_path
+    assert forbidden_dns_coupling not in workflow, forbidden_dns_coupling
 
 build = workflow.index("Build canonical publication transaction")
 first_version = workflow.index("python scripts/sync_release_versions.py", build)
