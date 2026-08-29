@@ -99,7 +99,8 @@ with tempfile.TemporaryDirectory(prefix="brain-self-arch-") as tmp:
 
     current = json.loads(POLICY.read_text(encoding="utf-8"))
     assert next_policy["learningLab"]["allStreamsSafetyCap"] > current["learningLab"]["allStreamsSafetyCap"]
-    assert next_policy["learningLab"]["maxExploratoryProfilesPerProvider"] >= current["learningLab"]["maxExploratoryProfilesPerProvider"]
+    assert "maxExploratoryProfilesPerProvider" not in (json.loads(SELF.read_text(encoding="utf-8")).get("autoPatchAllowlist") or {})
+    assert next_policy["learningLab"].get("targetProvidersPerRun") == "time_budgeted_queue"
     assert markdown.is_file() and "self" not in ""
     assert "NiakVIO Brain architecture evolution" in markdown.read_text(encoding="utf-8")
 
