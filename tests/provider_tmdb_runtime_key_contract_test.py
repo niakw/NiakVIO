@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCAN_ROOTS = (
     ROOT / "scripts" / "provider_patches",
     ROOT / "provider-bases",
+    ROOT / "providers",
 )
 KNOWN_RETIRED_KEYS = {
     "1865f43a0549ca50d341dd9ab8b29f49",
