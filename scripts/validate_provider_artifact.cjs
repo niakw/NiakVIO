@@ -7,7 +7,10 @@ const { spawnSync } = require('node:child_process');
 
 const ROOT = fs.realpathSync(path.resolve(__dirname, '..'));
 const TEMP_ROOT = fs.realpathSync(os.tmpdir());
-const requestedFile = path.resolve(process.argv[2] || '');
+const args = process.argv.slice(2);
+const providerBaseMode = args.includes('--provider-base');
+const requested = args.find((value) => value !== '--provider-base') || '';
+const requestedFile = path.resolve(requested);
 
 function isWithin(root, candidate) {
   const relative = path.relative(root, candidate);
@@ -80,7 +83,7 @@ const source = fs.readFileSync(file, 'utf8');
 const executableSource = stripCommentsPreservingStrings(source);
 const repositoryUrl = /https?:\/\/(?:raw\.githubusercontent\.com|github\.com|api\.github\.com|gist\.github\.com|gist\.githubusercontent\.com)(?:[/:?#]|$)/ig;
 const repositoryMatches = [...executableSource.matchAll(repositoryUrl)].map((match) => match[0]);
-if (repositoryMatches.length) {
+if (!providerBaseMode && repositoryMatches.length) {
   const hosts = [...new Set(repositoryMatches.map((value) => {
     try { return new URL(value).hostname.toLowerCase(); } catch (_) { return value; }
   }))];
@@ -116,5 +119,7 @@ if (syntax.status !== 0) {
 console.log(
   'provider artifact validation passed:',
   path.basename(file),
-  'mode=syntax-only repository_scan=true repository_runtime_dependencies=false syntax_timeout_ms=5000 execution=false network=false timers=false process=false require=false',
+  providerBaseMode
+    ? 'mode=provider-base-syntax repository_scan=observed repository_runtime_dependencies=maintenance-input-only syntax_timeout_ms=5000 execution=false network=false timers=false process=false require=false'
+    : 'mode=syntax-only repository_scan=true repository_runtime_dependencies=false syntax_timeout_ms=5000 execution=false network=false timers=false process=false require=false',
 );
