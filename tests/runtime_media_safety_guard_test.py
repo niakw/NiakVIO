@@ -33,16 +33,30 @@ future = patched("future-provider")
 assert future.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
 assert '"implementationRevision":"field-safety-v6-core-repair-types"' in future
 assert '"implementationRevision":"scoped-playback-context-v4"' not in future
-assert '"durationIdentity":false' in future
+assert '"durationIdentity":true' in future
 assert '"strictPlayback":false' in future
 
 netmirror = patched("netmirror")
 assert '"durationIdentity":true' in netmirror
 assert '"strictPlayback":false' in netmirror
 
+# Provider identity never changes global safety defaults. Core may pass a
+# declarative strict_playback capability option for a provider strategy.
 moviebox = patched("moviebox")
-assert '"durationIdentity":false' in moviebox
-assert '"strictPlayback":true' in moviebox
+assert '"durationIdentity":true' in moviebox
+assert '"strictPlayback":false' in moviebox
+moviebox_strict = safety_module.apply(
+    BASE,
+    options={"strict_playback": True, "duration_identity": True},
+    context={"provider_id": "moviebox"},
+)
+moviebox_strict = hls_module.apply(
+    moviebox_strict,
+    options={"strict_playback": True, "duration_identity": True},
+    context={"provider_id": "moviebox"},
+)
+assert '"durationIdentity":true' in moviebox_strict
+assert '"strictPlayback":true' in moviebox_strict
 
 
 def run_node(source: str, fetch_impl: str, expression: str) -> object:
@@ -97,9 +111,16 @@ assert len(value) == 1, value
 
 # MovieBox field regression: returned rows that answer 403 must not create a
 # clickable stream that spins forever. Its runtime guard fails closed.
-moviebox_direct = patched(
-    "moviebox",
-    "module.exports={getStreams:async()=>[{name:'moviebox',url:'https://media.example/video.mp4',type:'mp4'}]};\n",
+moviebox_direct_source = "module.exports={getStreams:async()=>[{name:'moviebox',url:'https://media.example/video.mp4',type:'mp4'}]};\n"
+moviebox_direct = safety_module.apply(
+    moviebox_direct_source,
+    options={"strict_playback": True, "duration_identity": True},
+    context={"provider_id": "moviebox"},
+)
+moviebox_direct = hls_module.apply(
+    moviebox_direct,
+    options={"strict_playback": True, "duration_identity": True},
+    context={"provider_id": "moviebox"},
 )
 forbidden_fetch = r"""async function(url){
   return {ok:false,status:403,url:String(url),text:async()=>'',headers:{get:()=> 'text/plain'}};
