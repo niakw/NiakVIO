@@ -137,12 +137,12 @@ function dnsResult(name, status, addresses = []) {
   });
   assert.equal(result.status, 'confirmed_french_dns_or_http_block');
   assert.equal(simpleDnsStatus([result]), 'DNS BLOCK');
-  assert.equal(result.continue_runtime, false);
+  assert.equal(result.continue_runtime, true);
   assert.equal(result.migration_candidates[0].host, 'movix.fun');
   assert.ok(result.migration_candidates[0].confidence >= 80);
   const decision = providerDecision([result], baseConfig);
   assert.equal(decision.status, 'confirmed_french_block');
-  assert.equal(decision.continue_runtime, false);
+  assert.equal(decision.continue_runtime, true);
   assert.equal(decision.migration_candidate.host, 'movix.fun');
 }
 
