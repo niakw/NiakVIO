@@ -606,7 +606,7 @@ def repair_legacy_bases() -> dict[str, Any]:
                 row.pop("clean_reconstruction_candidate_role", None)
             row["legacy_provider_js_role"] = "knowledge-only-for-reconstruction"
             row["legacy_provider_js_executed_for_reconstruction"] = False
-            row["clean_reconstruction_marked_at"] = marked_at
+            row.setdefault("clean_reconstruction_marked_at", marked_at)
         else:
             clean_reconstructed += 1
             row["clean_reconstruction_required"] = False
@@ -615,9 +615,16 @@ def repair_legacy_bases() -> dict[str, Any]:
             row.pop("legacy_provider_js_executed_for_reconstruction", None)
             row.pop("clean_reconstruction_candidate_role", None)
 
-    provenance["provider_base_store"] = {
-        "schema_version": 4,
+    store = provenance.get("provider_base_store")
+    if not isinstance(store, dict):
+        store = {}
+        provenance["provider_base_store"] = store
+    store.update({
+        "schema_version": max(4, int(store.get("schema_version") or 0)),
         "provider_count": provider_count,
+        "unique_base_count": provider_count,
+        "owner": "provider_pipeline",
+        "future_source": "provider_pipeline_only",
         "clean_reconstructed": clean_reconstructed,
         "reconstruction_required": reconstruction_required,
         "authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
@@ -630,8 +637,10 @@ def repair_legacy_bases() -> dict[str, Any]:
         "upstream_code_may_seed_new_base": False,
         "git_history_code_may_seed_new_base": False,
         "core_may_create_or_mutate_base": False,
+        "semantic_validation": "on_base_creation_or_change",
+        "core_integrity_validation": "coverage_and_sha_only",
         "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
-    }
+    })
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return {
         "providers": provider_count,
