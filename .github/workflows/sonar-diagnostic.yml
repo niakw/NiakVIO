@@ -21,25 +21,14 @@ jobs:
           set -euo pipefail
           test -n "${SONAR_KEY:-}" || { echo 'SONAR_KEY is unavailable'; exit 1; }
           URL='https://sonarcloud.io/api/issues/search'
-          if ! curl --fail --silent --show-error \
-            --user "${SONAR_KEY}:" \
+          curl --fail --silent --show-error \
             --get "$URL" \
             --data-urlencode 'componentKeys=niakw_NiakVIO' \
             --data-urlencode 'pullRequest=76' \
             --data-urlencode 'resolved=false' \
             --data-urlencode 'types=VULNERABILITY' \
             --data-urlencode 'ps=500' \
-            --output /tmp/issues.json; then
-            curl --fail --silent --show-error \
-              --header "Authorization: Bearer ${SONAR_KEY}" \
-              --get "$URL" \
-              --data-urlencode 'componentKeys=niakw_NiakVIO' \
-              --data-urlencode 'pullRequest=76' \
-              --data-urlencode 'resolved=false' \
-              --data-urlencode 'types=VULNERABILITY' \
-              --data-urlencode 'ps=500' \
-              --output /tmp/issues.json
-          fi
+            --output /tmp/issues.json
           python3 - <<'PY'
           import json
           from pathlib import Path
