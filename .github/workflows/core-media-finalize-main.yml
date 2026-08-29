@@ -131,7 +131,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/provider_base_store.py repair-legacy
           python scripts/provider_base_store.py validate
           python scripts/normalize_core_media_policy.py --apply
           python scripts/apply_runtime_capability_upgrade_v4.py
@@ -158,6 +157,9 @@ jobs:
           fi
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
+          # ProviderBase is owned exclusively by the provider pipeline. Core may
+          # derive public artifacts from it, but must never rewrite the base layer.
+          git diff --exit-code -- provider-bases
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
           node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
           node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
