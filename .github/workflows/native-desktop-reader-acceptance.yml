@@ -69,7 +69,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: nuvio-desktop-lab-head-${{ github.run_id }}
+          name: nuvio-desktop-lab-head-full-${{ github.run_id }}
           path: |
             health-output/nuvio-client-upstream-status.json
             health-output/nuvio-desktop-lab-head.json
@@ -251,7 +251,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-desktop-reader-${{ matrix.os_name }}-routes-${{ github.run_id }}
+          name: native-desktop-full-${{ matrix.os_name }}-${{ github.run_id }}
           path: |
             desktop-native-corpus-${{ matrix.os_name }}-*.log
             desktop-native-gradle-${{ matrix.os_name }}-*.log
