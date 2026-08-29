@@ -106,6 +106,7 @@ jobs:
             scripts/provider_base_store.py \
             scripts/provider_compiler.py \
             scripts/promote_candidates.py \
+            scripts/verify_provider_publication_fixed_point.py \
             scripts/provider_patches/runtime_repository_domain_materializer_v1.py \
             scripts/provider_patches/global_provider_branding_v1.py \
             scripts/provider_patches/stream_output_sanitizer_v6.py
@@ -202,36 +203,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          from scripts.provider_purification import TERSER_VERSION, purify_bytes
-
-          root = Path('.')
-          manifest = json.loads((root / 'manifest.json').read_text(encoding='utf-8'))
-          checked = 0
-          for row in manifest.get('scrapers') or []:
-              if not isinstance(row, dict):
-                  continue
-              relative = str(row.get('filename') or '')
-              if not relative.startswith('providers/'):
-                  continue
-              path = root / relative
-              data = path.read_bytes()
-              chosen, report = purify_bytes(data)
-              if chosen != data:
-                  raise SystemExit(
-                      f"published provider is not final Terser fixed-point: "
-                      f"{row.get('id')} {relative} bytes_saved={report.get('bytesSaved')}"
-                  )
-              checked += 1
-          if checked < 1:
-              raise SystemExit('no published provider was checked')
-          print(
-              f'FIELD_FINAL_TERSER_FIXED_POINT providers={checked} '
-              f'tool=terser version={TERSER_VERSION} mangle=false'
-          )
-          PY
+          python scripts/verify_provider_publication_fixed_point.py
 
       - name: Validate complete repository suite
         run: npm test
