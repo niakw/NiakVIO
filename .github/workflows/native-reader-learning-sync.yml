@@ -71,7 +71,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p reader-learning-input/diagnostics
-          for pattern in             "native-tv-route-*-$RUN_ID"             "native-mobile-android-*-$RUN_ID"             "native-mobile-ios-*-$RUN_ID"             "native-desktop-reader-*-$RUN_ID"; do
+          for pattern in             "native-tv-full-$RUN_ID"             "native-mobile-android-full-$RUN_ID"             "native-mobile-ios-full-$RUN_ID"             "native-desktop-full-*-$RUN_ID"; do
             gh run download "$RUN_ID" --pattern "$pattern" --dir reader-learning-input/diagnostics || true
           done
           if find reader-learning-input/diagnostics -type f -name '*brain.json' -print -quit | grep -q .; then
