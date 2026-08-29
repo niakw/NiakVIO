@@ -49,7 +49,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: nuvio-tv-lab-head-${{ github.run_id }}
+          name: nuvio-tv-lab-head-full-${{ github.run_id }}
           path: |
             health-output/nuvio-client-upstream-status.json
             health-output/nuvio-tv-lab-head.json
@@ -82,7 +82,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: nuvio-mobile-android-lab-head-${{ github.run_id }}
+          name: nuvio-mobile-android-lab-head-full-${{ github.run_id }}
           path: |
             health-output/nuvio-client-upstream-status.json
             health-output/nuvio-mobile-android-lab-head.json
@@ -177,7 +177,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-tv-route-representative-${{ github.run_id }}
+          name: native-tv-full-${{ github.run_id }}
           path: |
             tv-native-corpus-*.log
             tv-native-frontend-*.log
@@ -271,7 +271,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: native-mobile-android-routes-${{ github.run_id }}
+          name: native-mobile-android-full-${{ github.run_id }}
           path: |
             mobile-native-corpus-*.log
             mobile-native-frontend-*.log
