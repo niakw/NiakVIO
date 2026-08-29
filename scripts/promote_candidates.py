@@ -221,6 +221,7 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
             raise ValueError(f"{candidate['canonical_id']}: upstream JavaScript must never be executable candidate input")
         if str(candidate.get("candidate_code_origin") or "") not in {
             "existing-niakvio-provider-base-v2",
+            "pending-niakvio-clean-reconstruction-v2",
             "new-niakvio-clean-seed",
         }:
             raise ValueError(f"{candidate['canonical_id']}: candidate is not NiakVIO-owned")
