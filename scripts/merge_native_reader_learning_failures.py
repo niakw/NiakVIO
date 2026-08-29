@@ -83,6 +83,12 @@ def main() -> int:
         state["nativeReaderRepairMemory"] = memory
     learning = memory.get("readerLearningFailures") if isinstance(memory.get("readerLearningFailures"), dict) else {}
     previous = [row for row in learning.get("entries") or [] if isinstance(row, dict)]
+    imported_runs = [clean(v, 32) for v in learning.get("importedRunIds") or [] if clean(v, 32).isdigit()]
+    if run_id in imported_runs:
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(json.dumps(state, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"FIELD_NATIVE_READER_LEARNING_MERGE run={run_id} duplicate=true observations=0 blocking=false mutation_allowed=false")
+        return 0
     by_key: dict[tuple[str, str, str], dict[str, Any]] = {}
     for row in previous:
         provider = clean(row.get("providerId"), 128).casefold()
@@ -190,7 +196,8 @@ def main() -> int:
         key=lambda row: (-count(row.get("occurrences")), str(row.get("providerId")), str(row.get("failureClass")), str(row.get("owner"))),
     )[: max(1, int(args.max_entries))]
     imported_runs = [clean(v, 32) for v in learning.get("importedRunIds") or [] if clean(v, 32).isdigit()]
-    imported_runs = [v for v in imported_runs if v != run_id] + [run_id]
+    if imported_files:
+        imported_runs = [v for v in imported_runs if v != run_id] + [run_id]
     memory["readerLearningFailures"] = {
         "schemaVersion": 2,
         "updatedAt": now,
