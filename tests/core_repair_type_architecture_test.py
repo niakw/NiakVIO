@@ -109,7 +109,7 @@ for failure in ("search_gap", "episode_gap", "player_gap", "media_extraction_gap
 assert classes["unknown_failure"]["scope"] == "learning"
 assert classes["unknown_failure"]["repairType"] == "architecture_gap"
 
-assert brain_policy["controlPlaneVersion"] == 4
+assert brain_policy["controlPlaneVersion"] == 5
 assert brain_policy["production"]["durableProviderSkillApplication"] is False
 assert brain_policy["production"]["learningDuringCoreRepair"] is False
 assert brain_policy["production"]["learnedSkillInputAllowed"] is False
