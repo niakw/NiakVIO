@@ -62,9 +62,28 @@ assert v5_count == 1
 assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" not in v5_clean
 assert "const keep=true;" in v5_clean
 
-assert set(module.LEGACY_LOCAL_SEEDS) == {
-    "cineby", "cinemm", "goatapi", "toflix", "4khdhubnew"
+assert module.CLEAN_RECONSTRUCTION_SOURCE == "niakvio-clean-reconstruction-v2"
+assert module.CLEAN_RECONSTRUCTION_AUTHORING_VERSION == 2
+assert module.requires_clean_reconstruction({}) is True
+for old_source in (
+    "one-shot-public-core-tail-extraction",
+    "provider-pipeline-legacy-rebase",
+    "selected_candidate_post_provider_overrides_pre_core",
+    "niakvio-clean-reconstruction",
+):
+    assert module.requires_clean_reconstruction({
+        "base_source": old_source,
+        "clean_reconstruction_verified": True,
+        "clean_reconstruction_authoring_version": 1,
+    }) is True
+
+clean_row = {
+    "base_source": "niakvio-clean-reconstruction-v2",
+    "clean_reconstruction_verified": True,
+    "clean_reconstruction_authoring_version": 2,
 }
+assert module.is_clean_reconstructed(clean_row) is True
+assert module.requires_clean_reconstruction(clean_row) is False
 
 assert module.QUARANTINE_PATCH in module.DERIVED_PATCH_SCRIPTS
 assert module.DYNAMIC_DOMAIN_PATCH in module.DERIVED_PATCH_SCRIPTS
@@ -80,10 +99,24 @@ assert "excluded_patch_scripts: Iterable[str] | None = None" in apply_source
 assert "include_global_core: bool = True" in apply_source
 assert 'if phase == "discovery" and include_global_core:' in apply_source
 base_store_source = SCRIPT.read_text(encoding="utf-8")
+for forbidden_seed_path in (
+    "def _snapshot_seed(",
+    "def _git_seed(",
+    "def _pre_hardening_git_seed(",
+    "def _latest_snapshot_seed(",
+    "def _persist_recovery_fallback(",
+):
+    assert forbidden_seed_path not in base_store_source, forbidden_seed_path
+assert "migrate-existing is disabled" in base_store_source
+assert "published_legacy_code_may_seed_new_base" in base_store_source
+assert '"published_legacy_code_may_seed_new_base": False' in base_store_source
+assert '"upstream_code_may_seed_new_base": False' in base_store_source
+assert '"git_history_code_may_seed_new_base": False' in base_store_source
 assert "include_global_core=False" in base_store_source
 assert "if patch_script in excluded_scripts:" in apply_source
-assert "persist_base_from_seed" in promoter_source
 assert "previous_base_row" in promoter_source
+assert "legacy-providerbase-compatibility-only" in promoter_source
+assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter_source
 assert "python scripts/provider_base_store.py repair-legacy" not in core_workflow_source
 assert "python scripts/provider_base_store.py validate" in core_workflow_source
 assert "git diff --exit-code -- provider-bases" in core_workflow_source
