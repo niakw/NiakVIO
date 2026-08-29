@@ -917,6 +917,7 @@ def apply_overrides(
     phase: str = "discovery",
     profile_names: Iterable[str] | None = None,
     excluded_patch_scripts: Iterable[str] | None = None,
+    include_global_core: bool = True,
 ) -> tuple[bytes, list[dict[str, Any]]]:
     """Apply stable replacements and profiles allowed for the selected phase."""
     config = load_overrides()
@@ -1041,7 +1042,7 @@ def apply_overrides(
         if text != before:
             applied.append({"type": "patch_script", "path": patch_script, "phase": phase})
 
-    if phase == "discovery":
+    if phase == "discovery" and include_global_core:
         playback_policy = config.get("playback_integrity_policy") or {}
         if not isinstance(playback_policy, dict):
             raise ValueError("playback_integrity_policy must be an object")
