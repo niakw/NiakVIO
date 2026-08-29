@@ -392,6 +392,7 @@ def main() -> int:
     processed: list[str] = []
     run_results: list[dict[str, Any]] = []
     combined_rounds: list[dict[str, Any]] = []
+    combined_plans: dict[str, Any] = {}
 
     for provider_id in order:
         if time.time() >= work_deadline:
@@ -426,6 +427,8 @@ def main() -> int:
             attempt_dir.mkdir(parents=True, exist_ok=True)
             repair = repair_attempt(provider_id, stage, target_path, attempt_dir, args.previous_state.resolve(), work_deadline)
             merge_target_candidate(full_registry_path, target_path, provider_id)
+            for key, value in ((repair["report"].get("brain") or {}).get("plans") or {}).items():
+                combined_plans[str(key)] = value
             for row in repair["report"].get("rounds") or []:
                 if isinstance(row, dict):
                     tagged = copy.deepcopy(row)
@@ -523,7 +526,10 @@ def main() -> int:
         "mode": "learning_queue",
         "rounds": combined_rounds,
         "queue": queue,
-        "brain": {"plans": {}},
+        "accepted_repairs": sum(
+            len(row.get("accepted") or []) for row in combined_rounds if isinstance(row, dict)
+        ),
+        "brain": {"plans": combined_plans},
     })
     write_json(output / "targeted-lab-summary.json", {
         "schemaVersion": 2,
