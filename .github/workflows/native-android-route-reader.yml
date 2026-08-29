@@ -334,7 +334,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
       - name: Prebuild Mobile reader before QEMU
         shell: bash
@@ -351,7 +351,7 @@ jobs:
       - name: Execute representative routes in one Mobile boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: manifest.json
           NIAKVIO_READER_ACCEPTANCE: "1"
@@ -495,7 +495,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
           touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest native-reader-repair/retest-manifest.json --provider declared-type --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest native-reader-repair/retest-manifest.json --provider declared-type --streams all --initial
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
         with:
           cache-disabled: true
@@ -519,7 +519,7 @@ jobs:
         if: steps.repair.outputs.proposals != '0'
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
         env:
-          NIAKVIO_TARGET_FIXTURES: "sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+          NIAKVIO_TARGET_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_TARGET_MANIFEST: native-reader-repair/retest-manifest.json
           NIAKVIO_TV_PRIORITY_APPEND: "0"
