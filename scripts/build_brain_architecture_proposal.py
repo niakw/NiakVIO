@@ -216,20 +216,12 @@ def main() -> int:
         and int(row.get("consecutiveFailures") or 0) >= int(thresholds.get("repeatedProfileFailures") or 2)
         and str(row.get("profile") or "")
     }
-    current_profiles = int(lab.get("maxExploratoryProfilesPerProvider") or 3)
-    if len(repeated_profiles) >= current_profiles:
-        rule = patch_allow.get("learningLab.maxExploratoryProfilesPerProvider") if isinstance(patch_allow.get("learningLab.maxExploratoryProfilesPerProvider"), dict) else {}
-        step = max(1, int(rule.get("step") or 1))
-        patch_number(
-            "learningLab.maxExploratoryProfilesPerProvider",
-            current_profiles + step,
-            "The selected provider exhausted all currently available exploratory profiles without a successful method.",
-        )
+    if repeated_profiles:
         add(
             "method_exhaustion",
-            f"{len(repeated_profiles)} repeatedly failing repair profiles exhausted the current exploration width.",
-            ["scripts/run_brain_learning_sandbox.py", "engine_v2/src/repair-brain.mjs", "engine_v2/config/brain-policy.json", "tests/brain_*"],
-            "Allow one more bounded hypothesis family or define a new repair capability; do not start a second repair round in the same run.",
+            f"{len(repeated_profiles)} repeatedly failing repair profile(s) show that known methods are not solving the provider.",
+            ["scripts/run_brain_learning_sandbox.py", "engine_v2/src/repair-brain.mjs", "tests/brain_*"],
+            "Propose a genuinely different repair/evidence capability or compose existing capabilities differently; do not widen an arbitrary retry counter.",
             evidence={"providerId": target_provider, "failedProfiles": sorted(repeated_profiles)},
         )
     elif len(repeated) >= 2:
@@ -254,13 +246,13 @@ def main() -> int:
 
     architecture_checks = {
         "coreEvidenceIsHypothesis": lab.get("coreEvidenceAuthority") == "hypothesis_only",
-        "singleTargetProvider": lab.get("targetProvidersPerRun") == 1,
-        "singleRepairRound": int(lab.get("maxRepairRounds") or 0) == 1,
-        "oneClientLab": str(lab.get("clientSelection") or "").startswith("one_client"),
-        "allStreamsLab": "--all-streams" in workflow,
-        "targetedMutation": "NUVIO_BRAIN_TARGET_PROVIDER" in workflow,
-        "conditionalRouteSearch": "needs_route_search" in workflow,
-        "externalLabMemory": "--targeted-lab-summary" in workflow,
+        "timeBudgetedProviderQueue": lab.get("targetProvidersPerRun") == "time_budgeted_queue",
+        "deadlineDrivenRepair": "maxRepairRounds" not in lab and "deadline" in str(lab.get("retryPolicy") or ""),
+        "multiDeviceLab": "tv_desktop_mobile" in str(lab.get("clientSelection") or ""),
+        "allStreamsLab": "--all-streams" in workflow or "run_brain_learning_lab_queue.py" in workflow,
+        "persistentQueue": "build_brain_learning_queue.py" in workflow,
+        "crossDayScheduler": "--scheduler-state" in workflow,
+        "conditionalRouteSearch": "run_brain_route_recovery_queue.py" in workflow or "needs_route_search" in workflow,
         "selfArchitecturePr": "publish-architecture-proposal:" in workflow,
     }
     missing = sorted(key for key, ok in architecture_checks.items() if not ok)
