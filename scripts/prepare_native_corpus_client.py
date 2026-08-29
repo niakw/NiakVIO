@@ -144,6 +144,11 @@ def manifest_providers(manifest_path: str | Path) -> list[dict]:
                 "enabled": bool(row.get("enabled")),
                 "filename": filename,
                 "logo": str(row.get("logo") or "").strip(),
+                "supportedTypes": [
+                    str(value).strip().casefold()
+                    for value in (row.get("supportedTypes") or [])
+                    if str(value).strip()
+                ],
                 "source": _provider_source(filename),
                 "manifest": str(manifest_file.relative_to(ROOT)),
             }
@@ -200,7 +205,34 @@ def _isolate_tv_android_test_sources(tv: Path) -> int:
     return removed
 
 
-def _selected(providers: list[dict], provider: str | None) -> list[dict]:
+def fixture_media_type(fixture: dict) -> str:
+    media_type = str(fixture.get("mediaType") or fixture.get("category") or "movie").strip().casefold()
+    if media_type not in {"movie", "tv", "anime"}:
+        raise SystemExit(f"unsupported native fixture media type: {media_type!r}")
+    return media_type
+
+
+def select_declared_type(providers: list[dict], fixture: dict) -> list[dict]:
+    media_type = fixture_media_type(fixture)
+    selected = [
+        row for row in providers
+        if media_type in {
+            str(value).strip().casefold()
+            for value in (row.get("supportedTypes") or [])
+            if str(value).strip()
+        }
+    ]
+    if not selected:
+        raise SystemExit(f"no providers declare native fixture type {media_type}")
+    return selected
+
+
+def _selected(providers: list[dict], provider: str | None, fixture: dict | None = None) -> list[dict]:
+    mode = str(provider or "").strip().casefold()
+    if mode == "declared-type":
+        if not isinstance(fixture, dict):
+            raise SystemExit("declared-type provider selection requires a fixture")
+        return select_declared_type(providers, fixture)
     try:
         return reader_diag.filter_staged_providers(providers, provider)
     except ValueError as error:
@@ -209,7 +241,7 @@ def _selected(providers: list[dict], provider: str | None) -> list[dict]:
 
 def prepare_desktop(workspace: Path, fixture: dict, provider: str | None, manifest_path: str | Path) -> None:
     staged = stage_manifest_providers(ROOT / "native-corpus-stage", manifest_path)
-    providers = _selected(staged, provider)
+    providers = _selected(staged, provider, fixture)
     repo = workspace / "nuvio-desktop"
     target = repo / "composeApp/src/desktopTest/kotlin/com/nuvio/app/features/plugins/NiakvioNativeCorpusDesktopTest.kt"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -222,7 +254,7 @@ def prepare_mobile(workspace: Path, fixture: dict, provider: str | None, player_
     enable_mobile_device_tests(mobile)
     assets = mobile / "composeApp/src/androidDeviceTest/assets/niakvio"
     staged = stage_manifest_providers(assets, manifest_path)
-    providers = _selected(staged, provider)
+    providers = _selected(staged, provider, fixture)
     source = corpus.android_test(fixture, providers, "mobile")
     source = reader_diag.augment_android_test(
         source,
@@ -242,7 +274,7 @@ def prepare_tv(workspace: Path, fixture: dict, provider: str | None, player_prob
     _isolate_tv_android_test_sources(tv)
     assets = tv / "app/src/androidTest/assets/niakvio"
     staged = stage_manifest_providers(assets, manifest_path)
-    providers = _selected(staged, provider)
+    providers = _selected(staged, provider, fixture)
     source = corpus.android_test(fixture, providers, "tv")
     source = reader_diag.augment_android_test(
         source,
@@ -261,7 +293,7 @@ def main() -> int:
     parser.add_argument("target", choices=("desktop", "mobile", "tv"))
     parser.add_argument("--fixture", required=True)
     parser.add_argument("--workspace", required=True)
-    parser.add_argument("--provider", default="", help="optional exact provider id for a targeted human-style run")
+    parser.add_argument("--provider", default="", help="exact provider id, or declared-type to test only providers declaring the fixture type")
     parser.add_argument("--player-probes", type=int, default=1, help="number of returned streams played by the native reader (1-4)")
     parser.add_argument("--manifest", default="manifest.json", help="in-repository manifest whose exact provider bundles are staged")
     args = parser.parse_args()
