@@ -374,7 +374,9 @@
         "adaptive_domain_wrapper",
         "presentation_runtime_layers"
       ],
-      "domainRoutingIsDerived": true
+      "domainRoutingIsDerived": true,
+      "maintenanceRepositoryInputsAllowed": true,
+      "maintenanceRepositoryInputsExecuted": false
     },
     "coreFinalizer": {
       "mode": "verify_first",
@@ -392,7 +394,9 @@
     "publicBundle": {
       "derivation": "provider_base_plus_known_core_and_capability_layers",
       "contentAddressed": true,
-      "rebuildOnlyOnInputChange": true
+      "rebuildOnlyOnInputChange": true,
+      "repositoryRuntimeDependenciesAllowed": false,
+      "domainRoutingMaterializedFromCurrentValidatedState": true
     },
     "domainIntelligence": {
       "independentFromProviderBase": true,
