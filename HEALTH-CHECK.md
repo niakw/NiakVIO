@@ -193,14 +193,14 @@ Torrent, magnet, Acestream et autres chemins P2P interdits sont filtrés à plus
 
 Ces limites produisent de l'**inconclusif**, pas des conclusions arbitraires.
 
-### DNS preflight evidence semantics
+### Résultat DNS NiakVIO
 
-DNS preflight distinguishes provider/network evidence from probe-system failures:
+Le résultat DNS visible est volontairement limité à trois états :
 
-- `pass`: French ISP reachability is verified.
-- `french_access_unverified`: the available probes do not prove French access; this is **not** a provider failure, and runtime validation continues.
-- `confirmed_french_block`: a French ISP block is verified while a neutral probe can reach the domain.
-- `globally_unreachable`: both French and neutral probes verify unreachability.
-- `preflight_error`: the DNS/HTTP preflight subsystem itself failed; runtime validation continues fail-safe.
+- `DNS OK` : SFR, Orange et Free ont été testés et aucun blocage n'a été observé.
+- `DNS BLOCK` : au moins un des FAI français testés présente un signal de blocage. C'est l'alerte DNS visible, même si un autre FAI reste accessible.
+- `DNS API LIMIT REACH` : la limite de l'API de mesure a été atteinte ; ce n'est jamais interprété comme une panne du provider.
 
-Domain-level states use the same principle (for example `network_probe_unverified` or `resolver_probes_unavailable`) and never turn missing probe evidence into a provider failure. Runtime health/Quick/Deep/Labs remain authoritative for provider functionality.
+S'il n'existe aucun domaine à tester ou si aucune mesure exploitable n'a pu être produite pour une raison autre qu'une limite API, aucun faux `DNS OK` n'est inventé : le résultat visible reste non applicable.
+
+Les preuves détaillées (FAI, résolveur, HTTP, migration, état interne) restent conservées dans le rapport pour le moteur et le debug, mais ne remplacent pas ces trois statuts dans l'affichage NiakVIO. Un `DNS BLOCK` est une alerte ; il ne désactive pas automatiquement un provider encore joignable via un autre FAI. La décision runtime reste validée par Health/Quick/Deep/Labs.
