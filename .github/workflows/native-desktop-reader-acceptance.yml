@@ -245,7 +245,7 @@ jobs:
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
           touch nuvio-desktop/local.properties
-          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture sinners-2025 --workspace "$GITHUB_WORKSPACE" --manifest manifest.json
+          python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
 
       - name: Install official Windows WebView2 build dependency
         if: matrix.os_name == 'windows'
@@ -315,7 +315,7 @@ jobs:
           set -u
           FIXTURE_FILE="$GITHUB_WORKSPACE/desktop-fixtures-${{ matrix.os_name }}.txt"
           if [[ ! -s "$FIXTURE_FILE" ]]; then
-            printf '%s\n' sinners-2025 breaking-bad-s01e01 jujutsu-kaisen-s01e01 > "$FIXTURE_FILE"
+            printf '%s\n' interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01 > "$FIXTURE_FILE"
           fi
           while IFS= read -r fixture; do
             [[ -n "$fixture" ]] || continue
