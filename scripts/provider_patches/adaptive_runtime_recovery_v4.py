@@ -49,7 +49,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     javascript = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
-var K="8265bd1679663a7ea12ac168da84d2e8";
+var K=(g&&g.TMDB_API_KEY)?String(g.TMDB_API_KEY).trim():"";
 var J={},C={},U={};
 function s(v){return String(v==null?"":v).replace(/&amp;|&#038;/gi,"&").replace(/\\\//g,"/").trim()}
 function n(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_){return s(v).toLowerCase()}}
