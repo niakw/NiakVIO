@@ -7,7 +7,7 @@
 - Repository issue rules exported: **3**
 - Concrete issue occurrences exported: **172**
 - Dependency vulnerabilities exported: **0**
-- Analysis runs exported: **287**
+- Analysis runs exported: **604**
 - Autofix-capable occurrences: **0**
 - AI-autofix-capable occurrences: **0**
 - Severity: `MINOR` 126, `CRITICAL` 46
