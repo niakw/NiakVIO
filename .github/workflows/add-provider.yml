@@ -82,16 +82,6 @@ on:
         required: false
         default: ""
         type: string
-      logo_url:
-        description: Optional explicit public logo URL
-        required: false
-        default: ""
-        type: string
-      emoji:
-        description: Optional explicit provider emoji
-        required: false
-        default: ""
-        type: string
       vf:
         description: Force inclusion in VF projection
         required: false
@@ -158,8 +148,6 @@ jobs:
           INPUT_STRATEGY: ${{ inputs.strategy || 'html_scraper' }}
           INPUT_CATEGORY: ${{ inputs.category || '' }}
           INPUT_DESCRIPTION: ${{ inputs.description || '' }}
-          INPUT_LOGO: ${{ inputs.logo_url || '' }}
-          INPUT_EMOJI: ${{ inputs.emoji || '' }}
           INPUT_VF: "${{ inputs.vf || false }}"
         run: |
           set -euo pipefail
@@ -184,8 +172,6 @@ jobs:
               "strategy": os.environ["INPUT_STRATEGY"],
               "category": os.environ["INPUT_CATEGORY"],
               "description": os.environ["INPUT_DESCRIPTION"],
-              "logo_url": os.environ["INPUT_LOGO"],
-              "emoji": os.environ["INPUT_EMOJI"],
               "vf": os.environ["INPUT_VF"],
           }
           Path(".provider-onboarding/manual-request.json").write_text(
@@ -213,7 +199,7 @@ jobs:
           python - <<'PY' >> "$GITHUB_OUTPUT"
           import json
           row=json.load(open(".provider-onboarding/current.json", encoding="utf-8"))
-          for key in ("id","name","site","logo_url","emoji"):
+          for key in ("id","name","site"):
               value=str(row.get(key) or "").replace("\n"," ")
               print(f"{key}={value}")
           PY
@@ -229,17 +215,19 @@ jobs:
           python scripts/resolve_provider_hub_search_fallback.py             --report .provider-onboarding/routes/provider-hub-report.json             --output .provider-onboarding/routes/provider-hub-search-fallback.json             --apply --max-providers 1 --timeout 8 || true
           python scripts/add_provider.py refresh --provider "$PROVIDER_ID"
 
-      - name: Acquire only this provider logo and emoji
+      - name: Delegate automatic defaults to Provider branding assets engine
         shell: bash
         env:
           PROVIDER_ID: ${{ steps.provider.outputs.id }}
           DISPLAY_NAME: ${{ steps.provider.outputs.name }}
-          LOGO_URL: ${{ steps.provider.outputs.logo_url }}
-          EMOJI: ${{ steps.provider.outputs.emoji }}
         run: |
           set -euo pipefail
+          # Explicit logo/emoji overrides belong to the dedicated
+          # "Provider branding assets" workflow. Onboarding only requests
+          # automatic defaults from the shared branding engine so publication
+          # remains atomic.
           SITE="$(python -c 'import json; print(json.load(open(".provider-onboarding/current.json")).get("site") or "")')"
-          python scripts/provider_branding_assets.py             --mode only             --provider "$PROVIDER_ID"             --name "$DISPLAY_NAME"             --site "$SITE"             --logo-url "$LOGO_URL"             --emoji "$EMOJI"
+          python scripts/provider_branding_assets.py             --mode only             --provider "$PROVIDER_ID"             --name "$DISPLAY_NAME"             --site "$SITE"
 
       - name: Derive public provider bundle and manifest projections
         shell: bash
@@ -283,6 +271,7 @@ jobs:
           python -m py_compile             scripts/add_provider.py             scripts/provider_branding_assets.py             scripts/run_brain_learning_queue.py             scripts/prepare_native_ios_reader_acceptance.py
           node --check scripts/nuvio_client_lab.cjs
           node --check scripts/nuvio_client_lab_session.cjs
+          python tests/add_provider_workflow_test.py
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_logo_asset_contract_test.py
           python tests/provider_branding_contract_test.py
