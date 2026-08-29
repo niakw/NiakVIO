@@ -80,8 +80,7 @@ for workflow in (tv_reader, mobile_android, mobile_ios, desktop_reader):
     assert "\n  pull_request:" not in workflow
     assert "\n  push:" not in workflow
     assert "workflow_dispatch:" in workflow
-    assert "\n  schedule:" not in workflow
-    assert "cron:" not in workflow
+    assert "\n  schedule:" in workflow and "cron:" in workflow
 
 assert "matrix:" not in tv_reader
 assert tv_reader.count("tv-route-reader:") == 1
