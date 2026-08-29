@@ -4,6 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
+activation_adapter = (ROOT / "scripts" / "activation_preservation_core_rehash.py").read_text(encoding="utf-8")
 
 assert workflow.count("git push origin HEAD:main") == 1, (
     "ARCHI2 must have exactly one main push after all publication gates"
@@ -40,5 +41,10 @@ assert workflow.index("git add -A providers", hashes) < commit
 assert workflow.index("git add -A provider-bases", hashes) < commit
 assert workflow.index("git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json", rebase) < push
 assert workflow.index("git commit --amend --no-edit", rebase) < push
+
+assert "_baseline_matches_checked_out_head" in activation_adapter
+assert "FIELD_ACTIVATION_PRESERVATION_BASELINE_STALE" in activation_adapter
+assert "_rematerialize_current_core_after_restore()" in activation_adapter
+assert '[sys.executable, "scripts/reapply_published_overrides.py", "--check"]' in activation_adapter
 
 print("atomic ARCHI2 publication workflow test passed")
