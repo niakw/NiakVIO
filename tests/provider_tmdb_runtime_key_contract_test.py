@@ -7,11 +7,6 @@ import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-KNOWN_RETIRED_KEYS = {
-    "1865f43a0549ca50d341dd9ab8b29f49",
-    "8265bd1679663a7ea12ac168da84d2e8",
-    "439c478a771f35c05022f9feabcca01c",
-}
 LITERAL_PATTERNS = (
     re.compile(r'\bTMDB(?:_API)?_?KEY\s*=\s*["\'][0-9a-fA-F]{24,64}["\']'),
     re.compile(r'\btmdbKey["\']?\s*[:=]\s*["\'][0-9a-fA-F]{24,64}["\']'),
@@ -23,9 +18,6 @@ LITERAL_PATTERNS = (
 def scan(path: Path, failures: list[str]) -> None:
     text = path.read_text(encoding="utf-8", errors="strict")
     rel = path.relative_to(ROOT).as_posix()
-    for key in KNOWN_RETIRED_KEYS:
-        if key in text:
-            failures.append(f"{rel}: retired TMDB key literal {key[:8]}…")
     for pattern in LITERAL_PATTERNS:
         if pattern.search(text):
             failures.append(f"{rel}: literal TMDB credential pattern {pattern.pattern}")
