@@ -6,7 +6,7 @@ ADD = (ROOT / ".github/workflows/add-provider.yml").read_text(encoding="utf-8")
 BRANDING = (ROOT / ".github/workflows/provider-branding-assets.yml").read_text(encoding="utf-8")
 SCRIPT = (ROOT / "scripts/add_provider.py").read_text(encoding="utf-8")
 
-for token in ("provider_id:", "hub:", "direct:", "telegram:", "api:", "search_queries:", "routes:", "types:"):
+for token in ("provider_id:", "hub:", "direct:", "telegram:", "api:", "search_queries:", "routes:", "types:", "replace_existing:"):
     assert token in ADD, token
 
 dispatch_inputs = ADD.split("permissions:", 1)[0]
@@ -14,6 +14,9 @@ assert "logo_url:" not in dispatch_inputs
 assert "emoji:" not in dispatch_inputs
 assert "logo_url = normalized_url" not in SCRIPT
 assert 'request.get("emoji")' not in SCRIPT
+assert 'request.get("replace_existing")' in SCRIPT
+assert "provider already exists" in SCRIPT
+assert "and not replace_existing" in SCRIPT
 
 assert "Delegate automatic defaults to Provider branding assets engine" in ADD
 assert "scripts/provider_branding_assets.py" in ADD
