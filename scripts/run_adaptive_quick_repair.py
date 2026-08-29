@@ -43,9 +43,6 @@ if _loaded != _expected:
 _base_run_health = loop.run_health
 _base_matching_profiles = loop.matching_profiles
 _base_create_repair_candidate = loop.create_repair_candidate
-_sibling_resolutions: dict[str, str] = {}
-
-
 def _purified_create_repair_candidate(stage, candidate, profile_name, round_number):
     repaired, error = _base_create_repair_candidate(stage, candidate, profile_name, round_number)
     if not isinstance(repaired, dict):
@@ -85,60 +82,8 @@ def _declared_categories(candidate: dict[str, Any]) -> set[str]:
     }
 
 
-def _discover_sibling_resolutions(registry_path: Path, report: dict[str, Any]) -> dict[str, str]:
-    registry = json.loads(registry_path.read_text(encoding="utf-8"))
-    candidates = {
-        str(row.get("key")): row
-        for row in registry.get("candidates") or []
-        if isinstance(row, dict) and row.get("key")
-    }
-    target_categories: dict[str, set[str]] = {}
-    for candidate in candidates.values():
-        cid = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
-        if cid:
-            target_categories.setdefault(cid, set()).update(_declared_categories(candidate))
-
-    choices: dict[str, tuple[tuple[int, int, int], str]] = {}
-    for result in report.get("results") or []:
-        if not isinstance(result, dict) or str(result.get("status") or "") != "healthy":
-            continue
-        key = str(result.get("key") or "")
-        candidate = candidates.get(key)
-        if candidate is None:
-            continue
-        cid = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
-        evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
-        healthy_categories = {
-            str(value).casefold()
-            for value in evidence.get("healthy_fixture_categories") or []
-            if str(value).casefold() in {"movie", "tv", "anime"}
-        }
-        required = target_categories.get(cid, set())
-        playable = int(evidence.get("streams_playable") or 0)
-        payloads = int(evidence.get("payload_verified_streams") or 0)
-        contradictions = int(evidence.get("identity_contradiction_count") or 0)
-        duration_mismatches = int(evidence.get("duration_identity_mismatch_count") or 0)
-        if playable <= 0 or payloads <= 0 or contradictions or duration_mismatches:
-            continue
-        if required and not required.issubset(healthy_categories):
-            continue
-        score = (int(result.get("score") or 0), playable, payloads)
-        current = choices.get(cid)
-        if current is None or score > current[0]:
-            choices[cid] = (score, key)
-    return {cid: key for cid, (_score, key) in choices.items()}
-
-
-def _sibling_aware_matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
-    cid = str(candidate.get("canonical_id") or candidate.get("upstream_id") or "").casefold()
-    winner = _sibling_resolutions.get(cid)
-    if winner and str(candidate.get("key") or "") != winner:
-        return []
-    return _base_matching_profiles(candidate, result, source_text, config)
-
-
 def _brain_matching_profiles(candidate: dict[str, Any], result: dict[str, Any], source_text: str, config: dict[str, Any] | None = None) -> list[str]:
-    base = _sibling_aware_matching_profiles(candidate, result, source_text, config)
+    base = _base_matching_profiles(candidate, result, source_text, config)
     key = str(candidate.get("key") or "")
     parent_key = str((candidate.get("runtime_repair") or {}).get("parent_key") or "")
     plan = brain.PLANS.get(parent_key or key) or {}
@@ -288,8 +233,6 @@ def _quick_run_health(*, stage: Path, registry_path: Path, output_dir: Path, mod
         mode="quick",
         health_check=health_check,
     )
-    if not _sibling_resolutions and registry_path.name == "candidates.json":
-        _sibling_resolutions.update(_discover_sibling_resolutions(registry_path, report))
     _plan_quick_results(registry_path, report)
     return report
 
@@ -309,7 +252,6 @@ def _strengthen_quick_probe(config: dict[str, Any]) -> None:
 
 
 def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
-    sibling_ids = sorted(_sibling_resolutions)
     for path in (stage / "candidates.json", output / "health-results.json", output / "repair-report.json"):
         if not path.exists():
             continue
@@ -320,9 +262,7 @@ def _rewrite_mode_metadata(stage: Path, output: Path) -> None:
         planner_mode = _planner_mode()
         runtime["profile_persistence"] = "learning_memory" if planner_mode == "learning" else "none_core_repair_only"
         runtime["learning_executed"] = planner_mode == "learning"
-        runtime["acceptance_policy"] = "healthy_sibling_then_core_type_repair"
-        runtime["sibling_resolved_provider_count"] = len(sibling_ids)
-        runtime["sibling_resolved_provider_ids"] = sibling_ids
+        runtime["acceptance_policy"] = "canonical_input_then_core_type_repair"
         path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
@@ -363,7 +303,6 @@ def main() -> int:
     original_create = loop.create_repair_candidate
     try:
         brain.reset_runtime_state()
-        _sibling_resolutions.clear()
         config = json.loads(original_health_config.decode("utf-8"))
         _strengthen_quick_probe(config)
         HEALTH_CONFIG.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
