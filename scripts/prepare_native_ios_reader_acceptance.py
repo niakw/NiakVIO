@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
-WORKSPACE = ROOT.parent
-NUVIO_MOBILE = WORKSPACE / "nuvio-mobile"
-IOS_KOTLIN_TARGET = NUVIO_MOBILE / "composeApp/src/iosFull/kotlin/com/nuvio/app/NiakvioIosLab.kt"
-IOS_SWIFT_TARGET = NUVIO_MOBILE / "iosApp/iosApp/iOSApp.swift"
+PROVIDER_TIMEOUT_MS = 25_000
+NUVIO_MOBILE = Path("nuvio-mobile")
+IOS_KOTLIN_TARGET = Path("nuvio-mobile/composeApp/src/iosFull/kotlin/com/nuvio/app/NiakvioIosLab.kt")
+IOS_SWIFT_TARGET = Path("nuvio-mobile/iosApp/iosApp/iOSApp.swift")
 
 KOTLIN_TEMPLATE = r'''@file:OptIn(kotlinx.cinterop.ExperimentalForeignApi::class)
 
@@ -332,18 +331,16 @@ def patch_swift() -> None:
     IOS_SWIFT_TARGET.write_text(source.replace(anchor, replacement, 1), encoding="utf-8")
 
 def main() -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--workspace", type=Path, required=True)
-    parser.add_argument("--provider-timeout-ms", type=int, default=25_000)
-    args = parser.parse_args()
-
-    # The harness is CI-only: its checkout target is derived solely from this
-    # script's own repository location, never from cwd, env, or CLI input.
+    # The workflow checks NiakVIO out as ./niakvio and NuvioMobile as
+    # ./nuvio-mobile. Validate that fixed layout before touching the sibling
+    # checkout; all write targets below are literal relative paths.
+    if (Path("niakvio").resolve(strict=True)) != ROOT:
+        raise SystemExit("unexpected workspace layout for the iOS native Lab")
     repo = NUVIO_MOBILE
     if not repo.is_dir():
         raise SystemExit(f"missing NuvioMobile checkout: {repo}")
     rows = fixture_rows()
-    source = KOTLIN_TEMPLATE.replace("__PROVIDER_TIMEOUT_MS__", str(args.provider_timeout_ms))
+    source = KOTLIN_TEMPLATE.replace("__PROVIDER_TIMEOUT_MS__", str(PROVIDER_TIMEOUT_MS))
     source = source.replace("__FIXTURES__", kotlin_fixture_list(rows))
     IOS_KOTLIN_TARGET.parent.mkdir(parents=True, exist_ok=True)
     IOS_KOTLIN_TARGET.write_text(source, encoding="utf-8")
