@@ -3,7 +3,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 prepare = (ROOT / "scripts/prepare_native_client_validation.py").read_text(encoding="utf-8")
-runner = (ROOT / "scripts/run_final_native_android_lab.sh").read_text(encoding="utf-8")
+tv_suite = (ROOT / "scripts/run_native_corpus_tv_suite.sh").read_text(encoding="utf-8")
+targeted_workflow = (ROOT / ".github/workflows/native-corpus-device-targeted.yml").read_text(encoding="utf-8")
 target_media_entry = (ROOT / "scripts/provider_patches/nuvio_tv_target_media_v4.py").read_text(encoding="utf-8")
 target_media = (ROOT / "scripts/provider_patches/nuvio_tv_target_media_v5.py").read_text(encoding="utf-8")
 
@@ -12,15 +13,16 @@ target_media = (ROOT / "scripts/provider_patches/nuvio_tv_target_media_v5.py").r
 assert "StreamZo must keep resolving Mon ninja et moi 3 on Desktop" in prepare
 assert "StreamZo Desktop must expose HLS" in prepare
 
-# Android TV is now a hard publication target. The Kotlin fixture still emits
-# raw observations, while the native runner turns an empty/non-HLS StreamZo
-# result into a blocking failure.
-assert "TV_STREAMZO_COUNT" in runner
-assert "TV_STREAMZO_HLS" in runner
-assert "FIELD_TV_STREAMZO_SENTINEL status=failed expected=resolved path=site_player_media" in runner
-assert "FIELD_TV_STREAMZO_SENTINEL status=resolved expected=resolved path=site_player_media" in runner
-assert "StreamZo must resolve Mon ninja et moi 3 through site -> player -> media on Android TV" in runner
-assert "TV_STATUS=96" in runner
+# Android TV remains independently observable, but the old one-shot final runner
+# is retired. The standard Lab is nonblocking and type-bounded; exact StreamZo /
+# Mon Ninja regression evidence remains available through the targeted corpus lane.
+assert "FIELD_TV_STREAMZO_COMPATIBILITY status=empty expected=known_gap" in prepare
+assert "FIELD_TV_STREAMZO_COMPATIBILITY status=resolved expected=known_gap_improved" in prepare
+assert "mon-ninja-et-moi-3" in targeted_workflow
+assert 'TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"' in tv_suite
+assert 'TARGET_FIXTURE="${NIAKVIO_TARGET_FIXTURE:-}"' in tv_suite
+assert 'PROVIDER_ARGS=(--provider "$TARGET_PROVIDER")' in tv_suite
+assert "NIAKVIO_REQUIRE_READER_SUCCESS" in tv_suite
 
 # Provider overrides intentionally retain the stable V4 patch path, but V4 is
 # now a compatibility facade over V5. Static contract validation must inspect
@@ -44,8 +46,8 @@ assert "cookieHeader" in target_media
 assert 'setHeader(out,"Referer",ref)' in target_media
 assert 'setHeader(out,"Origin",o)' in target_media
 
-# Mobile remains independently observed; this TV gate must not silently make
-# Mobile failures equivalent to TV compatibility failures.
+# Mobile remains independently observed; targeted TV evidence must not silently
+# make Mobile failures equivalent to TV compatibility failures.
 assert "FIELD_MOBILE_STREAMZO_COMPATIBILITY status=empty expected=diagnostic" in prepare
 
 print("StreamZo native platform contract tests passed")
