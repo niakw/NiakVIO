@@ -212,7 +212,9 @@ validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
 assert "provider-engine-v2.yml" not in architecture
 assert "nuvio-client-lab.yml" not in validation
 for current_workflow in (
-    "native-android-route-reader.yml",
+    "native-tv-route-reader.yml",
+    "native-mobile-android-reader.yml",
+    "native-mobile-ios-reader.yml",
     "native-desktop-reader-acceptance.yml",
     "native-corpus-device-targeted.yml",
 ):
