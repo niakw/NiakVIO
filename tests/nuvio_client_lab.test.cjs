@@ -12,6 +12,7 @@ const {
   classify,
   executionGroups,
   mapLimit,
+  maxStreamsForProbe,
   parseWorkerOutput,
   resolveProvider,
   summarizeStream,
@@ -104,6 +105,13 @@ assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: true, identity
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: false, transport_playable: true, identity: { status: 'contradiction', reason: 'fixture_duration_mismatch' } }]), 'wrong_content');
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: false, inconclusive: true }]), 'playback_inconclusive');
 assert.equal(classify({ ok: true, stream_count: 1 }, [{ playable: false, inconclusive: false }]), 'media_unplayable');
+
+assert.equal(maxStreamsForProbe({}), 3);
+assert.equal(maxStreamsForProbe({ max_streams_per_runtime: 1 }), 1);
+assert.equal(maxStreamsForProbe({ probe_all_streams: true, all_streams_safety_cap: 40 }), 40);
+assert.equal(maxStreamsForProbe({ probe_all_streams: true, all_streams_safety_cap: 500 }), 200);
+const allTargetStreams = Array.from({ length: 8 }, (_, index) => ({ url: `https://cdn.example/${index}.m3u8` }));
+assert.equal(selectStreamsForProbe(allTargetStreams, maxStreamsForProbe({ probe_all_streams: true, all_streams_safety_cap: 40 })).length, 8);
 
 const policyProviders = [
   { id: 'vf-good', manifest_enabled: true, is_vf: true, clients: { tv: { verdict: 'playable', identity_status: 'verified' }, desktop: { verdict: 'playable', identity_status: 'verified' } } },
