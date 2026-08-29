@@ -126,6 +126,12 @@ def main() -> int:
         loop.run_health = _brain_run_health
         loop.matching_profiles = _brain_matching
         sys.argv[0] = str(SCRIPTS / "deep_repair_loop.py")
+        if "--max-rounds" in sys.argv:
+            index = sys.argv.index("--max-rounds")
+            if index + 1 < len(sys.argv):
+                sys.argv[index + 1] = "1"
+        else:
+            sys.argv.extend(["--max-rounds", "1"])
         rc = loop.main()
         brain.annotate_and_learn(output, "deep")
         return int(rc)
