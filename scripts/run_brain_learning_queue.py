@@ -440,6 +440,32 @@ def main() -> int:
     output.mkdir(parents=True, exist_ok=True)
 
     order, info_by_id, queue = build_queue(health, previous, args.provider)
+
+    staged_candidates = candidate_map(full_registry)
+    reconstruction_required = sorted(
+        provider_id
+        for provider_id, candidate in staged_candidates.items()
+        if candidate.get("provider_base_reconstruction_required") is True
+    )
+    reconstruction_required_set = set(reconstruction_required)
+    if not args.provider:
+        # Clean reconstruction debt outranks routine healthy re-observation.
+        # Preserve the existing anomaly/retry ordering *inside* each partition.
+        order = [
+            *[provider_id for provider_id in order if provider_id in reconstruction_required_set],
+            *[provider_id for provider_id in order if provider_id not in reconstruction_required_set],
+        ]
+        missing_required = [
+            provider_id
+            for provider_id in reconstruction_required
+            if provider_id not in order
+        ]
+        order = [*missing_required, *order]
+
+    queue["cleanReconstructionRequiredProviders"] = reconstruction_required
+    queue["cleanReconstructionRequiredCount"] = len(reconstruction_required)
+    queue["cleanReconstructionAuthoringPolicy"] = "niakvio-owned-v2"
+    queue["legacyExecutableSeedAllowed"] = False
     provider_state = queue.setdefault("providerState", {})
     deadline = time.time() + max(1, args.budget_minutes) * 60
     work_deadline = deadline - max(0, args.reserve_minutes) * 60
@@ -628,6 +654,9 @@ def main() -> int:
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "coreEvidenceAuthority": "hypothesis_only",
         "budgetMinutes": args.budget_minutes,
+        "cleanReconstructionRequiredProviders": reconstruction_required,
+        "cleanReconstructionRequiredCount": len(reconstruction_required),
+        "legacyExecutableSeedAllowed": False,
         "processedProviders": processed,
         "processedProviderCount": len(processed),
         "budgetInterruptionProvider": interrupted_provider,
