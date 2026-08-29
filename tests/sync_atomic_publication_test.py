@@ -40,6 +40,14 @@ assert "if: github.event_name != 'pull_request'" in publish_block, (
     "PR validation must never publish provider transactions to main"
 )
 
+stage_block = workflow[workflow.index("  stage-and-test:"):workflow.index("\n  publish:\n")]
+assert "ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}" in stage_block, (
+    "serialized main runs must validate the current main tree when they actually start"
+)
+assert "fetch-depth: 0" in stage_block, (
+    "full history is required so delayed push runs can still resolve github.event.before for Deep detection"
+)
+
 for forbidden_dns_coupling in [
     "scripts/provider_dns_preflight.mjs",
     "scripts/apply_dns_migration_overrides.py",

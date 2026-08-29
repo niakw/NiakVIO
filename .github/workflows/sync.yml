@@ -137,7 +137,11 @@ jobs:
       - name: Checkout without persisted credentials
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          fetch-depth: 2
+          # Queued main writers must validate the main tree that exists when
+          # execution actually starts, not a stale event SHA from before a
+          # previous serialized publication. PRs still validate their own head.
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Resolve validation mode
