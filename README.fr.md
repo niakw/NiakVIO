@@ -96,7 +96,7 @@ Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/provi
 
 ### Repositories providers suivis
 
-NiakVIO agrège et compare plusieurs upstreams au lieu de dépendre d'une seule copie d'un provider :
+NiakVIO consulte plusieurs upstreams au lieu de dépendre d'une seule source ; les doublons canoniques sont éliminés avant Health/Repair :
 
 - [Gowaru — `Gowaru/gowaru-nuvio-providers`](https://github.com/Gowaru/gowaru-nuvio-providers)
 - [Yoru — `yoruix/nuvio-providers`](https://github.com/yoruix/nuvio-providers)
@@ -113,7 +113,7 @@ Un provider peut fonctionner aujourd'hui puis casser demain à cause d'un domain
 NiakVIO ajoute une couche de maintenance entre les repositories providers et Nuvio :
 
 - **un point d'installation unique** plutôt qu'une collection de manifests à gérer séparément ;
-- **plusieurs variantes comparées** avant de modifier du code ;
+- **plusieurs upstreams observés**, puis une seule entrée canonique déterministe retenue avant Health/Repair ;
 - **réparation automatique bornée** lorsque la meilleure variante connue ne fonctionne plus ;
 - **contrôle réel du média**, pas seulement de l'URL retournée ;
 - **vérification de l'œuvre, de la saison et de l'épisode** pour éviter les faux positifs ;
