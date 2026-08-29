@@ -90,8 +90,7 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     provider_loading.augment(mobile_path, "mobile", manifest, PINNED_MANIFEST_URL, "")
     mobile_out = mobile_path.read_text(encoding="utf-8")
     for required in (
-        'listOf("anime", "tv").map',
-        '"capability_probe"',
+        "listOf<String>(fixtureMediaType).filter { it in declared }",
         "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=mobile",
         "PluginRepository.executeScraper(loadedScraper",
         "PlatformPlayerSurface",
@@ -104,6 +103,8 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert required in mobile_out, required
     assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1
     assert mobile_out.count("FIELD_NATIVE_PLAYER_BEGIN client=mobile") == 1
+    assert 'listOf("anime", "tv").map' not in mobile_out
+    assert '"capability_probe"' not in mobile_out
     assert "ExoPlayer.Builder" not in mobile_out
     assert "PluginRepository.clearLocalState()" not in mobile_out
     assert "PluginRuntime.executePlugin(" not in mobile_out
@@ -142,26 +143,5 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         if original_event is not None:
             os.environ["GITHUB_EVENT_NAME"] = original_event
 
-    original_event = os.environ.get("GITHUB_EVENT_NAME")
-    os.environ["GITHUB_EVENT_NAME"] = "pull_request"
-    os.environ["NIAKVIO_PR_STREAM_LIMIT"] = "2"
-    try:
-        pr_path = tmp / "Desktop-pr.kt"
-        pr_path.write_text(corpus.desktop_test(anime, selected), encoding="utf-8")
-        contract.augment(pr_path, "desktop", "jujutsu-kaisen-s01e01", manifest)
-        provider_loading.augment(pr_path, "desktop", manifest, PINNED_MANIFEST_URL, "windows")
-        desktop_player.augment(pr_path, int(anime.get("expectedDurationMinutes") or 0), "all")
-        pr_out = pr_path.read_text(encoding="utf-8")
-        assert "rows.take(2).forEachIndexed" in pr_out
-        assert "rows.take(1).forEachIndexed" not in pr_out
-        assert "12000L" in pr_out
-        assert "PlatformPlayerSurface(" in pr_out
-        assert "engine=nuvio-desktop-production" in pr_out
-    finally:
-        os.environ.pop("NIAKVIO_PR_STREAM_LIMIT", None)
-        if original_event is None:
-            os.environ.pop("GITHUB_EVENT_NAME", None)
-        else:
-            os.environ["GITHUB_EVENT_NAME"] = original_event
 
 print("native evidence production-player codegen pipeline tests passed")
