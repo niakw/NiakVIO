@@ -22,6 +22,7 @@ CONST = 'GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_br
 PRESENTATION_CONST = 'GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"'
 BRANDING_MARKER = '    "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",\n'
 PRESENTATION_MARKER = '    "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",\n'
+TAIL_DECLARATION = "GENERATED_CORE_TAIL_MARKERS = (\\n"
 ANCHOR = '''        if text != before:
             applied.append({
                 "type": "patch_script",
@@ -58,6 +59,17 @@ REPLACEMENT = '''        if text != before:
 '''
 
 
+def _generated_tail_block(text: str) -> tuple[int, int, str]:
+    start = text.find(TAIL_DECLARATION)
+    if start < 0:
+        raise ValueError("generated Core tail marker tuple missing")
+    body_start = start + len(TAIL_DECLARATION)
+    end = text.find(")\\n", body_start)
+    if end < 0:
+        raise ValueError("generated Core tail marker tuple unterminated")
+    return body_start, end, text[body_start:end]
+
+
 def normalize(text: str) -> tuple[str, list[str]]:
     text, runtime_changes = normalize_runtime_apply(text)
     changed: list[str] = [f"runtime:{item}" for item in runtime_changes]
@@ -68,10 +80,12 @@ def normalize(text: str) -> tuple[str, list[str]]:
         text = text.replace(PRESENTATION_CONST, PRESENTATION_CONST + "\n" + CONST, 1)
         changed.append("branding_constant")
 
-    if BRANDING_MARKER not in text:
-        if PRESENTATION_MARKER not in text:
+    tail_start, tail_end, tail = _generated_tail_block(text)
+    if BRANDING_MARKER not in tail:
+        if PRESENTATION_MARKER not in tail:
             raise ValueError("generated Core tail presentation marker anchor missing")
-        text = text.replace(PRESENTATION_MARKER, PRESENTATION_MARKER + BRANDING_MARKER, 1)
+        tail = tail.replace(PRESENTATION_MARKER, PRESENTATION_MARKER + BRANDING_MARKER, 1)
+        text = text[:tail_start] + tail + text[tail_end:]
         changed.append("branding_tail_marker")
 
     if '"scope": "global_provider_branding"' not in text:
@@ -94,7 +108,10 @@ def assert_contract(text: str) -> None:
     final_return = text.find("    if text == original_text:", branding)
     if min(runtime, presentation, branding, final_return) < 0 or not (runtime < presentation < branding < final_return):
         raise ValueError("Core order must be runtime compatibility -> stream presentation -> provider branding -> return")
-    if text.count(BRANDING_MARKER) != 1:
+    _, _, tail = _generated_tail_block(text)
+    if tail.count(PRESENTATION_MARKER) != 1:
+        raise ValueError("stream presentation generated-tail marker must exist exactly once")
+    if tail.count(BRANDING_MARKER) != 1:
         raise ValueError("provider branding generated-tail marker must exist exactly once")
 
 

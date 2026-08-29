@@ -17,9 +17,20 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
+from normalize_core_fixed_point_contract import normalize_apply as normalize_fixed_point_apply
+from normalize_provider_branding_pipeline import assert_contract as assert_branding_pipeline_contract
+from normalize_provider_branding_pipeline import normalize as normalize_branding_pipeline
+
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 normalized, changed = module.normalize(cfg)
 source_changes = module.normalize_source_files(apply=False)
+
+apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
+fixed_point_source = normalize_fixed_point_apply(apply_source)
+assert fixed_point_source == apply_source, "Core fixed-point template drifted from committed apply_provider_overrides.py"
+branding_source, branding_changes = normalize_branding_pipeline(fixed_point_source)
+assert branding_changes == [], branding_changes
+assert_branding_pipeline_contract(branding_source)
 
 # Once main has been normalized this must remain a pure assertion, not a repair.
 assert changed == [], changed

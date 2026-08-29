@@ -636,6 +636,7 @@ def _provider_export_floor(text: str) -> int:
         "NUVIO_GLOBAL_STREAM_FACTS_V1",
         "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
         "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+        "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
         "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
         "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
         "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V",
@@ -730,6 +731,12 @@ def harden_generated_apply(text: str) -> str:
         raise ValueError("proven provider export bridge is missing")
     if "terminal_core_markers = (" not in text or "NUVIO_TV_PLAYABLE_FIRST_V1" not in text:
         raise ValueError("owned generated export-boundary markers are missing")
+    required_terminal_order = (
+        '        "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",\\n'
+        '        "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",\\n'
+    )
+    if required_terminal_order not in text:
+        raise ValueError("canonical media-type resolver is missing from generated export-boundary markers")
     if 'for match in re.finditer(re.escape(f"/* {marker}"), text)' not in text:
         raise ValueError("floated Core markers are not filtered by post-export ownership")
     if "unowned runtime-domain reserved key" not in text:
