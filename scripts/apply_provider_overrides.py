@@ -25,12 +25,14 @@ GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentatio
 GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
+GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
 GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
     "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+    "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
 )
 
 
@@ -825,6 +827,7 @@ def _provider_export_floor(text: str) -> int:
         "NUVIO_GLOBAL_STREAM_FACTS_V1",
         "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
         "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+        "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
         "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
         "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
         "NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V",
@@ -1023,7 +1026,7 @@ def apply_overrides(
     script_options = specific.get("patch_script_options") or {}
     if not isinstance(script_options, dict):
         raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
-    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING}
+    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_MEDIA_TYPE_RESOLUTION}
     leaked_core_scripts = sorted(set(patch_scripts) & reserved_core_scripts)
     if leaked_core_scripts:
         raise ValueError(
@@ -1226,6 +1229,19 @@ def apply_overrides(
                 "path": GLOBAL_PROVIDER_BRANDING,
                 "phase": phase,
                 "scope": "global_provider_branding",
+            })
+
+        # Media-type resolution must be the outermost request wrapper so every
+        # inner Core/provider layer receives the same canonical movie|tv|anime
+        # identity. Client aliases remain input-only.
+        before = text
+        text = _apply_patch_script(text, provider_id, GLOBAL_MEDIA_TYPE_RESOLUTION, {}, None)
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_MEDIA_TYPE_RESOLUTION,
+                "phase": phase,
+                "scope": "global_media_type_resolution",
             })
 
     if text == original_text:
