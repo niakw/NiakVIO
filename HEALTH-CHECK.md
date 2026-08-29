@@ -203,4 +203,4 @@ Le résultat DNS visible est volontairement limité à trois états :
 
 S'il n'existe aucun domaine à tester ou si aucune mesure exploitable n'a pu être produite pour une raison autre qu'une limite API, aucun faux `DNS OK` n'est inventé : le résultat visible reste non applicable.
 
-Les preuves détaillées (FAI, résolveur, HTTP, migration, état interne) restent conservées dans le rapport pour le moteur et le debug, mais ne remplacent pas ces trois statuts dans l'affichage NiakVIO. Un `DNS BLOCK` est une alerte ; il ne désactive pas automatiquement un provider encore joignable via un autre FAI. La décision runtime reste validée par Health/Quick/Deep/Labs.
+Les preuves détaillées (FAI, résolveur, HTTP, migration, état interne) restent conservées dans le rapport pour le moteur et le debug, mais ne remplacent pas ces trois statuts dans l'affichage NiakVIO. Un `DNS BLOCK` est une alerte uniquement. Le préflight DNS ne bloque jamais l'exécution runtime, même si le domaine semble bloqué chez un FAI ou globalement injoignable : Health/Quick/Deep/Labs continuent afin de conserver la chaîne de diagnostic complète (DNS, domaine, HTTP, runtime, erreurs et flux).
