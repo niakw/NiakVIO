@@ -117,6 +117,7 @@ assert "if patch_script in excluded_scripts:" in apply_source
 assert "previous_base_row" in promoter_source
 assert "legacy-providerbase-compatibility-only" in promoter_source
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter_source
+assert "refusing legacy ProviderBase fallback" in promoter_source
 assert "python scripts/provider_base_store.py repair-legacy" not in core_workflow_source
 assert "python scripts/provider_base_store.py validate" in core_workflow_source
 assert "git diff --exit-code -- provider-bases" in core_workflow_source
