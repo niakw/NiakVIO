@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
-"""Delete stale content-hashed provider bundles not referenced by published state.
+"""Age out stale content-hashed provider bundles without breaking old clients.
 
-When manifest.next.json exists, pruning retains the union of the pending manifest
-and every currently published manifest. This is required by the two-phase
-publication transaction: phase one may publish new provider bundles before the
-new manifest is committed, so bundles referenced by the still-live manifest
-must remain available until phase two succeeds.
+Provider JS filenames are immutable/content-addressed and older Nuvio clients may
+keep an older manifest for several publication cycles. Therefore an unreferenced
+bundle is never deleted immediately.
 
-Once manifest.next.json has been consumed, the published manifests become
-solely authoritative and old bundles can be pruned normally. Content-addressed
-last-known-good artifacts remain protected because they can still be selected by
-the publication transaction. ``canonical_source_filename`` in provenance is
-historical metadata only: it is not a client/runtime dependency and is therefore
-not allowed to keep an otherwise stale JavaScript alias executable/scannable in
-``providers/``. Desktop compatibility already falls back to the current published
-bundle when that historical source is absent. Plain source files (for example
-providers/foo.js) are never removed; only generated bundles ending in
-``--<16 hex>.js`` are eligible.
+Retention model:
+- every bundle referenced by a current/pending manifest, LKG or published
+  provenance is protected indefinitely and its stale counter is reset;
+- every other hashed bundle accumulates one stale publication cycle;
+- deletion is allowed only after the configured number of consecutive stale
+  publication cycles (10 by default);
+- plain source files are never removed.
+
+The cycle ledger lives inside providers/.generation-retention.json so the same
+atomic git add -A providers transaction persists both bundles and retention state.
 """
 from __future__ import annotations
 
@@ -28,6 +26,8 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS_DIR = ROOT / "providers"
+RETENTION_LEDGER = ".generation-retention.json"
+DEFAULT_RETENTION_CYCLES = 10
 HASHED_PROVIDER_RE = re.compile(r"--[0-9a-f]{16}\.js$", re.IGNORECASE)
 PROVIDER_PATH_RE = re.compile(r"(?:^|/)(providers/[^?#\"'\\]+\.js)(?:[?#].*)?$", re.IGNORECASE)
 
@@ -59,17 +59,10 @@ def normalize_provider_path(value: str) -> str | None:
 
 
 def choose_manifests(root: Path) -> list[Path]:
-    """Return every manifest whose references must survive this transaction.
-
-    A pending manifest is additive here rather than exclusive. Until it is
-    promoted, clients can still fetch the currently published manifest and all
-    bundles referenced by that manifest therefore remain live dependencies.
-    """
     manifests: list[Path] = []
     pending = root / "manifest.next.json"
     if pending.is_file():
         manifests.append(pending)
-
     main = root / "manifest.json"
     if main.is_file():
         manifests.append(main)
@@ -98,11 +91,41 @@ def retain_recorded_provider_path(referenced: set[str], value: object) -> None:
         referenced.add(normalized)
 
 
+def load_ledger(path: Path) -> dict[str, int]:
+    if not path.is_file():
+        return {}
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Invalid provider retention ledger; refusing to prune: {exc}")
+    rows = raw.get("stale_cycles") if isinstance(raw, dict) else {}
+    if not isinstance(rows, dict):
+        return {}
+    out: dict[str, int] = {}
+    for key, value in rows.items():
+        if isinstance(key, str) and isinstance(value, int) and value >= 0:
+            out[key] = value
+    return out
+
+
+def write_ledger(path: Path, ledger: dict[str, int], retention_cycles: int) -> None:
+    payload = {
+        "schema_version": 1,
+        "policy": "content-addressed-provider-generation-grace",
+        "retention_cycles": retention_cycles,
+        "stale_cycles": dict(sorted(ledger.items())),
+    }
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--retention-cycles", type=int, default=DEFAULT_RETENTION_CYCLES)
     parser.add_argument("--root", type=Path, default=ROOT, help=argparse.SUPPRESS)
     args = parser.parse_args()
+    if args.retention_cycles < 1:
+        raise SystemExit("--retention-cycles must be >= 1")
 
     root = args.root.resolve()
     providers_dir = root / "providers"
@@ -128,12 +151,8 @@ def main() -> int:
             provenance = json.loads(provenance_path.read_text(encoding="utf-8"))
             records = provenance.get("providers", {}) if isinstance(provenance, dict) else {}
             for record in records.values():
-                if not isinstance(record, dict):
-                    continue
-                # published_filename can still be part of the active transaction.
-                # canonical_source_filename is deliberately *not* retained: it is
-                # historical provenance, not a client-visible executable artifact.
-                retain_recorded_provider_path(referenced, record.get("published_filename"))
+                if isinstance(record, dict):
+                    retain_recorded_provider_path(referenced, record.get("published_filename"))
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid PROVENANCE.json; refusing to prune: {exc}")
 
@@ -145,22 +164,45 @@ def main() -> int:
         preview = "\n- ".join(missing[:20])
         raise SystemExit(f"Referenced provider files are missing; refusing to prune:\n- {preview}")
 
+    ledger_path = providers_dir / RETENTION_LEDGER
+    previous = load_ledger(ledger_path)
+    ledger: dict[str, int] = {}
     removed: list[str] = []
+    retained_by_grace: list[str] = []
+
     if providers_dir.is_dir():
         for path in sorted(providers_dir.glob("*.js")):
             relative = path.relative_to(root).as_posix()
             if not HASHED_PROVIDER_RE.search(path.name):
                 continue
             if relative in referenced:
+                ledger[relative] = 0
                 continue
-            removed.append(relative)
-            if not args.dry_run:
-                path.unlink()
+            stale_cycles = previous.get(relative, 0) + 1
+            if stale_cycles >= args.retention_cycles:
+                removed.append(relative)
+                if not args.dry_run:
+                    path.unlink()
+                continue
+            ledger[relative] = stale_cycles
+            retained_by_grace.append(relative)
+
+    existing = {
+        path.relative_to(root).as_posix()
+        for path in providers_dir.glob("*.js")
+        if path.is_file() and HASHED_PROVIDER_RE.search(path.name)
+    }
+    ledger = {key: value for key, value in ledger.items() if key in existing}
+
+    if not args.dry_run:
+        write_ledger(ledger_path, ledger, args.retention_cycles)
 
     mode = "would remove" if args.dry_run else "removed"
     print(
-        f"provider prune complete: manifests={','.join(p.relative_to(root).as_posix() for p in manifests)}, "
-        f"referenced={len(referenced)}, {mode}={len(removed)}"
+        "provider prune complete: "
+        f"manifests={','.join(p.relative_to(root).as_posix() for p in manifests)}, "
+        f"referenced={len(referenced)}, grace={len(retained_by_grace)}, "
+        f"retention_cycles={args.retention_cycles}, {mode}={len(removed)}"
     )
     for relative in removed:
         print(f"- {relative}")
