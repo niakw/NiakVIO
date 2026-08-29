@@ -39,11 +39,8 @@ on:
       - 'provider-overrides.json'
       - 'provider-type-policy.json'
       - 'tests/network_guard.test.cjs'
-      - 'tests/dns_preflight.test.mjs'
       - 'scripts/network_guard.cjs'
       - 'scripts/health_check.mjs'
-      - 'scripts/apply_dns_migration_overrides.py'
-      - 'scripts/provider_dns_preflight.mjs'
       - 'health-config.json'
       - 'package.json'
       - 'package-lock.json'
@@ -90,11 +87,8 @@ on:
       - 'provider-overrides.json'
       - 'provider-type-policy.json'
       - 'tests/network_guard.test.cjs'
-      - 'tests/dns_preflight.test.mjs'
       - 'scripts/network_guard.cjs'
       - 'scripts/health_check.mjs'
-      - 'scripts/apply_dns_migration_overrides.py'
-      - 'scripts/provider_dns_preflight.mjs'
       - 'health-config.json'
       - 'package.json'
       - 'package-lock.json'
@@ -223,13 +217,6 @@ jobs:
           set -euo pipefail
           node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
 
-      - name: Resolve DNS and validated domain migrations
-        shell: bash
-        run: |
-          set -euo pipefail
-          node scripts/provider_dns_preflight.mjs --stage staging --output health-output/dns-preflight-report.json
-          python scripts/apply_dns_migration_overrides.py --stage staging --report health-output/dns-preflight-report.json
-
       - name: Apply known runtime profiles before repair
         shell: bash
         run: |
@@ -242,7 +229,6 @@ jobs:
 
       - name: Repair unresolved provider structures
         env:
-          NUVIO_DNS_PREFLIGHT_RESULTS: health-output/dns-preflight-report.json
           NUVIO_WORKER_MEMORY_MB: "1024"
         shell: bash
         run: |
@@ -369,7 +355,6 @@ jobs:
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          cp checked-artifact/health-output/dns-preflight-report.json dns-preflight-report.json
           cp checked-artifact/health-output/provider-hub-report.json provider-hub-report.json
           cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
           cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
@@ -494,7 +479,7 @@ jobs:
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
             PROVENANCE.json provider-overrides.json provider-domain-history.json \
             upstream-lkg.json upstream-lkg/ health-report.json health-history.json \
-            dns-preflight-report.json provider-hub-report.json diagnostics-report.json \
+            provider-hub-report.json diagnostics-report.json \
             diagnostics-report.html route-regressions.json repair-report.json
           git add -A providers
           git add -A provider-bases
