@@ -1,12 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "enabled": true,
   "branch": "brain-architecture/proposal",
   "reviewOnly": true,
   "requiresHumanMerge": true,
   "productionWritesAllowed": false,
   "publicationAllowed": false,
-  "principle": "The Brain may challenge Core evidence and its own architecture when experiments show a self-imposed limitation. Self-evolution is proposal-only, time-budgeted, reviewable, reproducible and covered by CI; method exhaustion should create a new capability hypothesis rather than merely increasing retry counters.",
+  "principle": "The Brain may challenge Core evidence and its own architecture when experiments show a self-imposed limitation. Learning is deadline-driven rather than retry-count-driven; self-evolution is proposal-only, reviewable, reproducible and covered by CI.",
   "evidenceInputs": [
     "sanitized cross-day learning memory and persistent provider queue",
     "multi-device all-stream Learning Lab summaries",
@@ -33,15 +33,20 @@
   },
   "structuralProposalSurfaces": [
     ".github/workflows/brain-learning-lab.yml",
+    "scripts/run_brain_learning_queue.py",
     "scripts/run_brain_learning_sandbox.py",
-    "scripts/select_brain_learning_target.py",
+    "scripts/deep_repair_loop.py",
+    "scripts/run_adaptive_quick_repair.py",
+    "scripts/brain_repair_runtime.py",
     "scripts/resolve_provider_hubs.py",
     "scripts/resolve_provider_hub_search_fallback.py",
     "scripts/nuvio_client_lab.cjs",
+    "scripts/generate_diagnostics.py",
     "engine_v2/scripts/learning-lab.mjs",
     "engine_v2/src/repair-brain.mjs",
     "engine_v2/config/brain-policy.json",
-    "scripts/run_brain_learning_queue.py"
+    "scripts/build_brain_architecture_proposal.py",
+    "tests/brain_*"
   ],
   "thresholds": {
     "repeatedUnknownFailures": 2,
