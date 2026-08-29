@@ -40,7 +40,7 @@
     "memoryMaxEntries": 1000,
     "historicalBaselineId": "excel-provider-audit-5.20.63",
     "consumeNativeClientFeedback": true,
-    "purpose": "diagnose each provider, test one best repair hypothesis, retain evidence, and learn or propose the solution without iterative repair loops",
+    "purpose": "diagnose each provider, run one bounded repair pass that may evaluate all compatible Core fix types, retain evidence, and learn or propose improvements for later runs",
     "directSkillPublication": false,
     "providerLocalMutation": "ephemeral_lab_proof_only",
     "knownTypeUnresolvedAction": "adapt_or_evolve_type",
@@ -51,7 +51,6 @@
     "anomaliesFirst": true,
     "explorationAfterCoverage": true,
     "maxRepairRounds": 1,
-    "maxRepairAttemptsPerProvider": 1,
     "maxExploratoryProfilesPerProvider": 1
   },
   "privacy": {
