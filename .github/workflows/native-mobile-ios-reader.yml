@@ -1,0 +1,124 @@
+name: Native Mobile iOS reader acceptance
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/triggers/nuvio-client-lab.json"
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "provider_catalog.json"
+      - "provider-overrides.json"
+      - "providers/**"
+      - "sources.json"
+      - "automation/nuvio-client-upstreams.json"
+      - "automation/nuvio-client-compatibility-matrix.json"
+      - "automation/platform-runtime-contracts.json"
+      - "engine_v2/**"
+      - "scripts/check_nuvio_client_upstreams.py"
+      - "scripts/resolve_nuvio_lab_heads.py"
+      - "scripts/prepare_native_ios_reader_acceptance.py"
+      - "scripts/run_native_corpus_ios_suite.sh"
+      - "scripts/analyze_native_ios_results.py"
+      - ".github/workflows/native-mobile-ios-reader.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: native-mobile-ios-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
+
+env:
+  NIAKVIO_REPRESENTATIVE_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    outputs:
+      mobile_sha: ${{ steps.refs.outputs.mobile_sha }}
+      mobile_drift_status: ${{ steps.refs.outputs.mobile_drift_status }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - name: Inspect official NuvioMobile drift
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/check_nuvio_client_upstreams.py --no-fail             --clients nuvio-mobile             --output health-output/nuvio-client-upstream-status.json
+      - id: refs
+        name: Resolve exact official NuvioMobile HEAD
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/resolve_nuvio_lab_heads.py             --report health-output/nuvio-client-upstream-status.json             --clients nuvio-mobile             --github-output "$GITHUB_OUTPUT"             --output health-output/nuvio-mobile-ios-lab-head.json
+      - name: Publish Mobile iOS runtime context
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: nuvio-mobile-ios-lab-head-${{ github.run_id }}
+          path: |
+            health-output/nuvio-client-upstream-status.json
+            health-output/nuvio-mobile-ios-lab-head.json
+          retention-days: 1
+          if-no-files-found: error
+
+  mobile-ios-reader:
+    needs: resolve
+    runs-on: macos-15
+    timeout-minutes: 240
+    env:
+      NIAKVIO_MANIFEST_URL: https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/manifest.json
+    steps:
+      - name: Checkout NiakVIO candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+        with:
+          cache-disabled: true
+      - name: Checkout exact official NuvioMobile HEAD
+        shell: bash
+        env:
+          NUVIO_MOBILE_SHA: ${{ needs.resolve.outputs.mobile_sha }}
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
+          git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
+          touch nuvio-mobile/local.properties
+      - name: Inject CI-only iOS provider and player harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/prepare_native_ios_reader_acceptance.py             --workspace "$GITHUB_WORKSPACE"             --provider-timeout-ms 25000
+      - name: Execute movie TV anime in one iOS simulator session
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash niakvio/scripts/run_native_corpus_ios_suite.sh
+      - name: Build sanitized iOS reader diagnoses
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
+          python3 niakvio/scripts/analyze_native_ios_results.py             --log "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"             --output-dir "$GITHUB_WORKSPACE/mobile-ios-diagnostics"
+      - name: Upload Mobile iOS route evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-mobile-ios-routes-${{ github.run_id }}
+          path: |
+            mobile-ios-native-corpus.log
+            mobile-ios-diagnostics/mobile-ios-route-*-brain.json
+          retention-days: 1
+          if-no-files-found: warn
