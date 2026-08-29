@@ -28,7 +28,18 @@ def main() -> int:
     parser.add_argument("--output-dir", type=Path, required=True)
     args = parser.parse_args()
 
-    text = args.log.read_text(encoding="utf-8", errors="replace")
+    # This script is CI-only and intentionally accepts only the two fixed paths
+    # owned by the current GitHub Actions workspace. CLI arguments are retained
+    # as an explicit workflow contract, but never become filesystem authority.
+    workspace = Path.cwd().resolve(strict=True)
+    log_path = workspace / "mobile-ios-native-corpus.log"
+    output_dir = workspace / "mobile-ios-diagnostics"
+    if args.log.resolve(strict=False) != log_path:
+        raise SystemExit(f"--log must be the workspace-owned iOS corpus log: {log_path}")
+    if args.output_dir.resolve(strict=False) != output_dir:
+        raise SystemExit(f"--output-dir must be the workspace-owned diagnosis directory: {output_dir}")
+
+    text = log_path.read_text(encoding="utf-8", errors="replace")
     suite_lines = [line for line in text.splitlines() if SUITE in line]
     if not suite_lines or "status=completed" not in suite_lines[-1]:
         raise SystemExit("iOS native Lab did not emit a completed suite marker")
@@ -58,7 +69,7 @@ def main() -> int:
         )
 
     now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    args.output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     for fixture in sorted(EXPECTED):
         observations = []
         for row in players:
@@ -96,7 +107,7 @@ def main() -> int:
             "fixture": fixture,
             "observations": observations,
         }
-        (args.output_dir / f"mobile-ios-route-{fixture}-brain.json").write_text(
+        (output_dir / f"mobile-ios-route-{fixture}-brain.json").write_text(
             json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
         )

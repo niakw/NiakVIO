@@ -332,7 +332,14 @@ def main() -> int:
     parser.add_argument("--workspace", type=Path, required=True)
     parser.add_argument("--provider-timeout-ms", type=int, default=25_000)
     args = parser.parse_args()
-    repo = args.workspace / "nuvio-mobile"
+
+    # The harness may only patch the checkout created inside the current Actions
+    # workspace. Never construct a writable path from the CLI-provided workspace.
+    workspace = Path.cwd().resolve(strict=True)
+    supplied_workspace = args.workspace.resolve(strict=False)
+    if supplied_workspace != workspace:
+        raise SystemExit(f"--workspace must match the current Actions workspace: {workspace}")
+    repo = workspace / "nuvio-mobile"
     if not repo.is_dir():
         raise SystemExit(f"missing NuvioMobile checkout: {repo}")
     rows = fixture_rows()
