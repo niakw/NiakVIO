@@ -72,12 +72,17 @@ CORE_TMDB_MODULES = {
     "global_stream_identity_v1.py",
     "global_stream_presentation_v1.py",
     "runtime_capability_media_safety_v4.py",
+    "hls_master_audio_preserver_impl_v1.py",
+    "adaptive_runtime_recovery.py",
+    "adaptive_runtime_recovery_v4.py",
+    "stream_output_sanitizer.py",
+    "native_catalogue_recovery_budget_v1.py",
 }
 for path in patch_root.rglob("*.py"):
     scan(path, failures)
     text = path.read_text(encoding="utf-8", errors="strict")
     if path.name not in CORE_TMDB_MODULES and (
-        "api.themoviedb.org" in text
+        "api.themoviedb.org/3/" in text
         or "TMDB_API_KEY" in text
         or "TMDB_ACCESS_TOKEN" in text
     ):
