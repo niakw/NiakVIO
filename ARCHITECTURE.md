@@ -4,7 +4,7 @@
 
 Ce document décrit **l'architecture réellement attendue en production** : un seul catalogue provider, des ProviderBases propres et durables, un seul orchestrateur Quick/Deep, un Learning quotidien indépendant, un moteur de décision partagé et des preuves runtime séparées.
 
-> NiakVIO n'héberge ni ne transcode les médias. Les providers/sites tiers restent les sources ; NiakVIO collecte leurs implémentations publiques, construit des candidats, répare les structures cassées, valide les résultats et publie des bundles Nuvio.
+> NiakVIO n'héberge ni ne transcode les médias. Les providers/sites tiers restent les sources d'observation ; NiakVIO collecte leurs métadonnées, routes et structures publiques utiles, reconstruit ses ProviderBases propres, valide les résultats et publie des bundles Nuvio dérivés.
 
 ## 1. Invariant principal : une seule vérité
 
@@ -139,7 +139,7 @@ Deep utilise une profondeur/corpus plus large pour la **validation/repair déter
 
 ## 5. Discovery et provenance
 
-NiakVIO collecte les providers depuis plusieurs upstreams et ajoute le dernier état publié/LKG comme fallback de faible priorité.
+NiakVIO collecte depuis plusieurs upstreams les **déclarations, métadonnées, capacités et indices de structure** nécessaires à la découverte. Ces upstreams sont des sources de connaissance/provenance, pas des seeds exécutables canoniques. Le dernier état publié/LKG reste un fallback de faible priorité.
 
 La discovery :
 
