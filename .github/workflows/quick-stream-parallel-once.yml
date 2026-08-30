@@ -1,0 +1,62 @@
+name: Quick stream parallel diagnostic (one-shot)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/quick-stream-parallel-once.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  quick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Parallel worker diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/parallel.cjs" <<'NODE'
+          const fs=require('fs');
+          const path=require('path');
+          const cp=require('child_process');
+          const root=process.cwd();
+          const worker=path.join(root,'scripts/provider_worker.cjs');
+          const curManifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const oldManifest=JSON.parse(cp.execFileSync('git',['show','5.21.0:manifest.json'],{encoding:'utf8'}));
+          const specs=[
+            {c:'Interstellar',id:'HINDMOVIEZ',tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014,season:null,episode:null},
+            {c:'Interstellar',id:'COFLIX',tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014,season:null,episode:null},
+            {c:'Hell Mode S01E11',id:'HIANIME',tmdbId:'280049',mediaType:'series',title:'Hell Mode',year:2025,season:1,episode:11},
+            {c:'Hell Mode S01E11',id:'COFLIX',tmdbId:'280049',mediaType:'series',title:'Hell Mode',year:2025,season:1,episode:11},
+            {c:'Dark Matter S02E01',id:'PAPADUSTREAM',tmdbId:'62425',mediaType:'series',title:'Dark Matter',year:2015,season:2,episode:1},
+            {c:'Dark Matter S02E01',id:'COFLIX',tmdbId:'62425',mediaType:'series',title:'Dark Matter',year:2015,season:2,episode:1},
+          ];
+          const find=(m,id)=>(m.scrapers||[]).find(x=>String(x.id||'').toLowerCase()===id.toLowerCase()&&x.enabled!==false)||null;
+          function materializeOld(row,id){if(!row)return null;const rel=String(row.filename||'');if(!rel.startsWith('providers/'))return null;const dest=path.join(process.env.RUNNER_TEMP,'old-'+id+'-'+path.basename(rel));try{fs.writeFileSync(dest,cp.execFileSync('git',['show','5.21.0:'+rel],{encoding:null,maxBuffer:25*1024*1024}));return dest}catch{return null}}
+          function run(file,fixture){return new Promise(resolve=>{if(!file)return resolve({state:'missing'});const ctx={locale:'fr-FR',languages:['fr-FR','fr'],platform:'android',maxSettingsProfiles:2,TMDB_API_KEY:process.env.TMDB_API_KEY||'',TMDB_ACCESS_TOKEN:process.env.TMDB_ACCESS_TOKEN||'',fixtureMetadata:fixture,networkLimits:{maxFetches:16,maxRedirects:4,maxResponseBytes:2097152,maxTotalResponseBytes:6291456,maxDistinctHosts:12}};const child=cp.spawn(process.execPath,[worker,file,JSON.stringify(fixture),JSON.stringify(ctx)],{cwd:root,stdio:['ignore','pipe','pipe']});let out='',err='';child.stdout.on('data',d=>out+=d);child.stderr.on('data',d=>err+=d);const timer=setTimeout(()=>{child.kill('SIGKILL')},10000);child.on('close',(code,signal)=>{clearTimeout(timer);const lines=out.split(/\r?\n/).filter(x=>x.startsWith('NUVIO_HEALTH_RESULT='));if(!lines.length)return resolve({state:signal?'timeout':'no-result',code,error:err.slice(0,160)});const r=JSON.parse(lines[lines.length-1].slice('NUVIO_HEALTH_RESULT='.length));const s=(r.streams||[])[0]||null;resolve({state:r.ok?'ok':'error',streams:r.stream_count||0,ms:r.duration_ms||0,accessible:r.provider_server_accessible===true,success:r.provider_server_successful_response===true,statuses:r.provider_server_http_statuses||[],sample:s?{title:s.title||s.name||null,quality:s.quality||null,language:s.language||null,size:s.size||null,url:!!s.url}:null,error:(r.error_details&&r.error_details.code)||r.error||null})})})}
+          (async()=>{
+            const jobs=[];
+            for(const s of specs){
+              const fixture={tmdbId:s.tmdbId,mediaType:s.mediaType,title:s.title,year:s.year,season:s.season,episode:s.episode,category:s.mediaType};
+              const cr=find(curManifest,s.id),or=find(oldManifest,s.id);
+              jobs.push(Promise.all([run(cr?path.join(root,cr.filename):null,fixture),run(materializeOld(or,s.id),fixture)]).then(([current,old])=>({case:s.c,provider:s.id,current,old})));
+            }
+            const rows=await Promise.all(jobs);
+            for(const row of rows)console.log('FIELD_QUICK_PARALLEL '+JSON.stringify(row));
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+          node "$RUNNER_TEMP/parallel.cjs"
