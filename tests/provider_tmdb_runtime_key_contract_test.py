@@ -57,7 +57,8 @@ assert re.fullmatch(r"[0-9a-fA-F]{32}", runtime_plain_key), (
 assert not runtime_plain_key.startswith("\\"), "runtime TMDB key must not carry an escaped-secret prefix"
 
 resolver_source = (ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
-assert "tmdbKeyCipher" in resolver_source\nassert "normalizeKey" in resolver_source
+assert "tmdbKeyCipher" in resolver_source
+assert "normalizeKey" in resolver_source
 assert "api.themoviedb.org/3/" in resolver_source
 assert "www.themoviedb.org/" not in resolver_source
 
