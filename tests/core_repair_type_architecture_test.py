@@ -40,7 +40,8 @@ assert "scripts.append(RUNTIME_PATCH)" not in runtime_upgrade_source
 assert '"scope": "all_published_providers"' in runtime_upgrade_source
 assert 'runtime_safety.pop("targets", None)' in runtime_upgrade_source
 assert "core_global_safety=true" in runtime_upgrade_source
-assert "from provider_base_store import resolve_base" in reapply_source
+assert "from provider_base_store import (" in reapply_source
+assert "    resolve_base," in reapply_source
 assert "provider_base = provider_base_path.read_bytes()" in reapply_source
 assert 'provider_base.decode("utf-8", errors="strict")' in reapply_source
 assert "from provider_base_store import resolve_base" in compiler_source
