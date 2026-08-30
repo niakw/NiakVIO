@@ -290,14 +290,34 @@ def catalogue_audit_safety_quarantine(
         and row.get("type") == "safety_quarantine"
         and row.get("source") == CATALOGUE_AUDIT_SOURCE
     ]
+    conclusive = False
     if records:
         record = records[-1]
         if str(record.get("reason") or "") != CATALOGUE_AUDIT_BLOCKER:
             return False, "catalogue_audit_quarantine_reason_mismatch"
         contradictions = int(record.get("identity_contradictions") or 0)
         playable = int(record.get("playable_streams") or 0)
-        if contradictions <= 0 or playable <= 0:
-            return False, "catalogue_audit_quarantine_record_not_conclusive"
+        if contradictions > 0 and playable > 0:
+            conclusive = True
+
+    # Older transactions may not have retained the verbose quarantine record,
+    # but they must still carry current activation-gate evidence. A stale
+    # filename/blocker is never enough by itself to keep a provider disabled.
+    gates = provenance.get("activation_gates")
+    if not conclusive and isinstance(gates, dict):
+        identity = gates.get("10_content_identity_integrity")
+        playable_gate = gates.get("00_current_playable_stream")
+        if isinstance(identity, dict) and isinstance(playable_gate, dict):
+            identity_evidence = identity.get("evidence")
+            playable_evidence = playable_gate.get("evidence")
+            if isinstance(identity_evidence, dict) and isinstance(playable_evidence, dict):
+                contradictions = int(identity_evidence.get("identity_contradiction_count") or 0)
+                duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
+                playable = int(playable_evidence.get("streams_playable") or 0)
+                conclusive = playable > 0 and (contradictions > 0 or duration_mismatches > 0)
+
+    if not conclusive:
+        return False, "catalogue_audit_quarantine_has_no_current_conclusive_contradiction"
     return True, f"catalogue_audit_safety_quarantine:{CATALOGUE_AUDIT_BLOCKER}"
 
 
