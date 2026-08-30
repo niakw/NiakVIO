@@ -39578,16 +39578,16 @@
     },
     "kehflix": {
       "id": "kehflix",
-      "published_filename": "providers/kehflix--nuvio--01087d3c75c1ffc5.js",
-      "sha256": "01087d3c75c1ffc597fc2b01a751604a3ae8aecb3abd347e4ca3b1bd0ad5bdc7",
-      "patched_sha256": "01087d3c75c1ffc597fc2b01a751604a3ae8aecb3abd347e4ca3b1bd0ad5bdc7",
-      "base_filename": "provider-bases/kehflix--base--15155b2e4d63af38.js",
-      "base_sha256": "15155b2e4d63af38c99fd6a800ec5727fcc48a9054c66eae79b414e233dc2cc0",
+      "published_filename": "providers/kehflix--nuvio--2c2a7525e62fe515.js",
+      "sha256": "2c2a7525e62fe515150a28eba4748488642b160c8e05d1a814e35954770c385a",
+      "patched_sha256": "2c2a7525e62fe515150a28eba4748488642b160c8e05d1a814e35954770c385a",
+      "base_filename": "provider-bases/kehflix--base--f2c9905ea85712fa.js",
+      "base_sha256": "f2c9905ea85712fa46d416080d98fc433c1baf33bb0e4dd26785f24d74b423b3",
       "base_source": "niakvio-clean-reconstruction-v2",
       "clean_reconstruction_required": false,
       "clean_reconstruction_verified": true,
       "clean_reconstruction_authoring_version": 2,
-      "clean_reconstruction_verified_at": "2026-08-29T23:30:35.083773+00:00",
+      "clean_reconstruction_verified_at": "2026-08-30T00:02:04.004757+00:00",
       "local_patches": [
         {
           "type": "patch_script",
@@ -39662,28 +39662,10 @@
           "risk_flags": [
             "function_source_introspection"
           ],
-          "source_sha256": "63864e4ceebcd3a468c986d697900fe97a282fb733b49a7e18909121abcbb0bc",
-          "output_sha256": "d5e0a78b8c11ffee98d6cf205c10bca6c31f5ed5546a942c3f5782a8d9058fb8",
-          "bytes_before": 99715,
-          "bytes_after": 94194
-        },
-        {
-          "type": "provider_purification",
-          "phase": "final-post-transform",
-          "revision": 2,
-          "tool": "terser",
-          "tool_version": "5.50.0",
-          "mode": "risk-format-only",
-          "mangle": false,
-          "fixed_point_verified": true,
-          "conservative_compression": false,
-          "risk_flags": [
-            "function_source_introspection"
-          ],
-          "source_sha256": "a994c3107242cd8c46c9b636e9e175983a62e288b7e54bc54b9203c5bcb4c086",
-          "output_sha256": "01087d3c75c1ffc597fc2b01a751604a3ae8aecb3abd347e4ca3b1bd0ad5bdc7",
-          "bytes_before": 99715,
-          "bytes_after": 94194
+          "source_sha256": "e36761a6fba37543bb3cb4766363d8c0410ad74691f3edbf99c2fd43da9944c2",
+          "output_sha256": "2c2a7525e62fe515150a28eba4748488642b160c8e05d1a814e35954770c385a",
+          "bytes_before": 102096,
+          "bytes_after": 96143
         }
       ],
       "source": "niakvio-onboarding",
@@ -39693,7 +39675,7 @@
       "source_license_evidence": "LICENSE",
       "upstream_id": "kehflix",
       "upstream_filename": null,
-      "checked_at": "2026-08-29T23:33:04.936604+00:00",
+      "checked_at": "2026-08-30T00:04:05.982953+00:00",
       "check_mode": "onboarding_quick",
       "check_status": "pending_learning",
       "health_score": 0,
@@ -39717,10 +39699,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "01087d3c75c1ffc597fc2b01a751604a3ae8aecb3abd347e4ca3b1bd0ad5bdc7"
+        "sha256": "2c2a7525e62fe515150a28eba4748488642b160c8e05d1a814e35954770c385a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "64fb3e778d6fdb2f4154572f3f36d9abe60da6d369ebb631c6cd7950f3272829",
+      "build_input_sha256": "1f54b1db5a4e42c00e93ed4dd2651adf01177078b1a80347173ae2b12df72720",
       "strict_grace_eligible": false,
       "historical_quality_grace_eligible": false,
       "onboarding_quick_lab": {
@@ -39736,7 +39718,8 @@
           "desktop": "runtime_empty",
           "mobile": "runtime_empty"
         }
-      }
+      },
+      "onboarding_rebuild": true
     }
   },
   "validation_mode": "quick",
