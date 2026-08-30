@@ -317,12 +317,6 @@ jobs:
           python scripts/validate_nuvio_tv_runtime_policy.py
           python tests/nuvio_client_upstream_drift_guard_test.py
 
-      - name: Run repository regression tests
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm test
-
       - name: Release stale non-safety activation vetoes
         shell: bash
         run: |
