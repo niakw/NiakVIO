@@ -222,7 +222,7 @@ jobs:
     name: Discover, repair and validate providers
     concurrency:
       # Scheduled Quick/Deep observation must never cancel an explicit push/deep
-      # validation already rebuilding ProviderBases. Publication remains
+      # validation already checking ProviderBase state. Publication remains
       # serialized below and rejects stale validated SHAs before applying.
       group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || 'main') }}
       cancel-in-progress: true
@@ -289,7 +289,7 @@ jobs:
         run: |
           npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Mark ProviderBases requiring clean reconstruction
+      - name: Validate ProviderBase migration state (no routine rebuild)
         shell: bash
         run: |
           set -euo pipefail
@@ -634,6 +634,18 @@ jobs:
         run: |
           python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary
 
+      - name: Consume successful one-shot reconstruction requests
+        if: steps.freshness.outputs.stale != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/consume_force_reconstruction_trigger.py \
+            --trigger .github/triggers/force-clean-provider-reconstruction.json \
+            --stage-registry checked-artifact/staging/candidates.json \
+            --provenance PROVENANCE.json \
+            --overrides provider-overrides.json \
+            --root .
+
       - name: Finalize upstream last-known-good snapshots
         if: steps.freshness.outputs.stale != 'true'
         run: |
@@ -786,6 +798,10 @@ jobs:
             diagnostics-report.html route-regressions.json repair-report.json
           git add -A providers
           git add -A provider-bases
+          if git ls-files --error-unmatch .github/triggers/force-clean-provider-reconstruction.json >/dev/null 2>&1 \
+             || [ -e .github/triggers/force-clean-provider-reconstruction.json ]; then
+            git add -A -- .github/triggers/force-clean-provider-reconstruction.json
+          fi
 
           if git diff --cached --quiet; then
             echo 'No validated provider change.'
