@@ -179,7 +179,10 @@ jobs:
     if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[sync-control-only]') }}
     name: Discover, repair and validate providers
     concurrency:
-      group: nuvio-provider-stage-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}
+      # Scheduled Quick/Deep observation must never cancel an explicit push/deep
+      # validation already rebuilding ProviderBases. Publication remains
+      # serialized below and rejects stale validated SHAs before applying.
+      group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || 'main') }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 90
