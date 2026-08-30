@@ -60,12 +60,14 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 function s(v){return String(v==null?"":v).trim()}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
-function namespaceCandidates(v,season,episode){
-  var raw=s(v||"movie").toLowerCase();
+function namespaceCandidates(v,season,episode,semantic){
+  var raw=s(v||"movie").toLowerCase(),types=rows(semantic);
   if(raw==="movie")return["movie"];
   if(raw==="anime"){
     if(season!=null||episode!=null)return["tv"];
-    return["tv","movie"];
+    var out=["tv"];
+    if(types.indexOf("movie")>=0)out.push("movie");
+    return out;
   }
   return["tv"];
 }
@@ -158,8 +160,8 @@ async function tmdb(namespaceValue,tmdbId){
   mediaCache[cacheKey]=value;
   return value;
 }
-async function canonicalResolution(id,input,metadata,season,episode){
-  var candidates=namespaceCandidates(input,season,episode),raw=s(input||"movie").toLowerCase();
+async function canonicalResolution(id,input,metadata,season,episode,semantic){
+  var candidates=namespaceCandidates(input,season,episode,semantic),raw=s(input||"movie").toLowerCase();
   if(hasTmdbMetadata(metadata)){
     var declared=s(metadata&&metadata.__nuvioTmdbNamespace).toLowerCase();
     var namespace=declared==="movie"?"movie":candidates[0];
@@ -184,13 +186,13 @@ async function resolve(a){
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   if(semantic.length){
     if(raw==="anime"&&semantic.indexOf("anime")<0)return null;
-    if(raw!=="anime"&&namespace==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")<0)return null;
+    if(raw==="movie"&&semantic.indexOf("movie")<0)return null;
     if(raw!=="anime"&&namespace==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
   }
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
   var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
   var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
-  var resolved=await canonicalResolution(id,input,metadata,season,episode);
+  var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
   if(!resolved)return null;
   var type=resolved.type;namespace=resolved.namespace;
   if(semantic.length&&semantic.indexOf(type)<0)return null;
