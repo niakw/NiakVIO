@@ -37,7 +37,11 @@ assert "resolve_provider_hubs.py" in ADD
 assert "resolve_provider_hub_search_fallback.py" in ADD
 assert "probe_provider_site_structure.py" in ADD
 assert "provider_branding_assets.py" in ADD and "--mode only" in ADD
-assert "nuvio_client_lab.cjs" in ADD
+assert ADD.count("nuvio_client_lab.cjs") >= 2
+assert "final-lab-report.json" in ADD
+assert "FIELD_PROVIDER_ONBOARDING_FINAL_LAB" in ADD
+assert ADD.index("Rebuild exact publication after activation decision") < ADD.index("Verify exact rebuilt provider on first declared type")
+assert ADD.index("Verify exact rebuilt provider on first declared type") < ADD.index("Rebuild publication after exact verification")
 assert "npm test" in ADD
 
 assert "persist_clean_provider_seed(" in ONBOARD

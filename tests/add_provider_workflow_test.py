@@ -38,7 +38,12 @@ for full_lab in (
 ):
     assert full_lab not in ADD, full_lab
 assert "Run bounded onboarding Lab on first declared type" in ADD
-assert "nuvio_client_lab.cjs" in ADD
+assert "Verify exact rebuilt provider on first declared type" in ADD
+assert "Rebuild publication after exact verification" in ADD
+assert ADD.count("nuvio_client_lab.cjs") >= 2
+assert ADD.index("Rebuild exact publication after activation decision") < ADD.index("Verify exact rebuilt provider on first declared type")
+assert ADD.index("Verify exact rebuilt provider on first declared type") < ADD.index("Rebuild publication after exact verification")
+assert ADD.index("Rebuild publication after exact verification") < ADD.index("Validate onboarding contracts")
 assert "group: nuvio-provider-onboarding-stage-main" in ADD
 assert "group: nuvio-provider-publish-main" in ADD
 assert "Package validated provider transaction" in ADD

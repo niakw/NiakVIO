@@ -273,6 +273,32 @@ jobs:
           node engine_v2/scripts/render-manifests-from-catalog.mjs
           python scripts/provider_base_store.py repair-legacy
 
+      - name: Verify exact rebuilt provider on first declared type
+        shell: bash
+        env:
+          PROVIDER_ID: ${{ steps.provider.outputs.id }}
+        run: |
+          set -euo pipefail
+          set +e
+          node scripts/nuvio_client_lab.cjs             --config .provider-onboarding/lab-config.json             --out .provider-onboarding/final-lab-report.json             --markdown .provider-onboarding/final-lab-report.md
+          FINAL_LAB_STATUS=$?
+          set -e
+          if [ ! -s .provider-onboarding/final-lab-report.json ]; then
+            printf '{"schema_version":2,"clients":["tv","desktop","mobile"],"providers":[],"policy":{"safety_blocking_pass":false}}\n'               > .provider-onboarding/final-lab-report.json
+          fi
+          echo "FIELD_PROVIDER_ONBOARDING_FINAL_LAB command_status=$FINAL_LAB_STATUS provider=$PROVIDER_ID"
+          python scripts/add_provider.py finalize             --provider "$PROVIDER_ID"             --report .provider-onboarding/final-lab-report.json
+
+      - name: Rebuild publication after exact verification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          node engine_v2/scripts/bootstrap-provider-catalog.mjs
+          node engine_v2/scripts/render-manifests-from-catalog.mjs
+          python scripts/provider_base_store.py repair-legacy
+
       - name: Validate onboarding contracts
         shell: bash
         run: |
@@ -322,6 +348,8 @@ jobs:
             .provider-onboarding/current.json
             .provider-onboarding/lab-report.json
             .provider-onboarding/lab-report.md
+            .provider-onboarding/final-lab-report.json
+            .provider-onboarding/final-lab-report.md
             .provider-onboarding/routes/*.json
           retention-days: 7
           if-no-files-found: warn
