@@ -661,24 +661,26 @@ async function _resolveRuntimeApi(playerUrls, mediaType, tmdbId, season, episode
   return streams.slice(0, 40);
 }
 async function _resolveHtml(meta, mediaType, season, episode) {
-  if (!meta || !meta.title) return [];
+  if (!meta || (!meta.title && !meta.tmdbId)) return [];
   const candidates = [];
-  for (const searchUrl of _searchUrls(meta.title).slice(0, 9)) {
-    try {
-      const response = await _fetch(searchUrl);
-      const html = await response.text();
-      const urls = _extractUrls(html, response.url || searchUrl)
-        .filter(value => {
-          const host = _origin(value);
-          return host && _searchBases().some(base => _origin(base) === host);
-        })
-        .map(value => ({ url: value, score: _candidateScore(value, meta) }))
-        .filter(row => row.score >= 18)
-        .sort((a, b) => b.score - a.score)
-        .map(row => row.url);
-      candidates.push(...urls);
-    } catch (_) {}
-    if (candidates.length) break;
+  if (meta.title) {
+    for (const searchUrl of _searchUrls(meta.title).slice(0, 9)) {
+      try {
+        const response = await _fetch(searchUrl);
+        const html = await response.text();
+        const urls = _extractUrls(html, response.url || searchUrl)
+          .filter(value => {
+            const host = _origin(value);
+            return host && _searchBases().some(base => _origin(base) === host);
+          })
+          .map(value => ({ url: value, score: _candidateScore(value, meta) }))
+          .filter(row => row.score >= 18)
+          .sort((a, b) => b.score - a.score)
+          .map(row => row.url);
+        candidates.push(...urls);
+      } catch (_) {}
+      if (candidates.length) break;
+    }
   }
   candidates.push(..._detailGuesses(meta, mediaType));
   const streams = [];
@@ -733,7 +735,11 @@ async function getStreams(tmdbId, mediaType, season, episode) {
     const api = await _resolveApi(tmdbId, type, season, episode);
     if (api.length) return api;
   }
-  const meta = await _tmdb(tmdbId, type);
+  const meta = await _tmdb(tmdbId, type) || {
+    title: "",
+    year: "",
+    tmdbId: String(tmdbId || "")
+  };
   const html = await _resolveHtml(meta, type, season, episode);
   if (html.length) return html;
   if (!/api_stream_resolver|direct_media/i.test(strategy)) {
