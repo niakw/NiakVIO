@@ -267,6 +267,7 @@ def main() -> int:
     ap.add_argument("--output", type=Path, default=DEFAULT_OUTPUT)
     ap.add_argument("--timeout", type=int, default=10)
     ap.add_argument("--max-chunks", type=int, default=12)
+    ap.add_argument("--max-runtime-chunks", type=int, default=18)
     args = ap.parse_args()
 
     current = load_json(args.current)
@@ -365,7 +366,7 @@ def main() -> int:
             runtime_route_hints: list[str] = []
             runtime_api_routes: list[str] = []
             runtime_direct_hosts: list[str] = direct_media_hosts(text)
-            for chunk in list(dict.fromkeys(runtime_chunks))[: min(max(0, args.max_chunks), 18)]:
+            for chunk in list(dict.fromkeys(runtime_chunks))[: min(max(0, args.max_runtime_chunks), 24)]:
                 chunk_pattern = sanitized_url_pattern(chunk)
                 try:
                     chunk_status, chunk_final, chunk_ctype, chunk_text = fetch_text(
