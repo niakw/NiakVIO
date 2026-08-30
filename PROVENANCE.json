@@ -13477,9 +13477,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--582a006a3d6a2d52.js",
-      "sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa",
-      "patched_sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa",
+      "published_filename": "providers/coflix--nuvio--43c2cb94bb198cf2.js",
+      "sha256": "43c2cb94bb198cf2f710d38dd7cf207938bf9ff304f22ee8a0402cc629081a72",
+      "patched_sha256": "43c2cb94bb198cf2f710d38dd7cf207938bf9ff304f22ee8a0402cc629081a72",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -13953,6 +13953,24 @@
           "output_sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa",
           "bytes_before": 184634,
           "bytes_after": 170680
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "163f03c07006e3d971931f03738a90dbed1de92434acb07f91afe4c02b123f7f",
+          "output_sha256": "43c2cb94bb198cf2f710d38dd7cf207938bf9ff304f22ee8a0402cc629081a72",
+          "bytes_before": 184628,
+          "bytes_after": 170678
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -14231,8 +14249,8 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/coflix--base--cf7d147f1bea602d.js",
-      "base_sha256": "cf7d147f1bea602de8b2159d5838c4b55be07b1ef500aa2fbbc7043475d3a1cb",
+      "base_filename": "provider-bases/coflix--base--f4ada2fe476337c4.js",
+      "base_sha256": "f4ada2fe476337c49e7982793c419f4f6b52da7140a027bdeb9540c25a4b909c",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migrated_at": "2026-08-28T23:38:51.944186+00:00",
       "base_migration_stripped_generated_core": true,
@@ -14245,9 +14263,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa"
+        "sha256": "43c2cb94bb198cf2f710d38dd7cf207938bf9ff304f22ee8a0402cc629081a72"
       },
-      "build_input_sha256": "fec8eded9fdc93c5d910e1b53a1603754e2746b62515fbb1963757fd581aed55",
+      "build_input_sha256": "166e05ff77197b2c5fd2990d9a999db2dcfa1ad6226dc267ef682ba4d63e9394",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -18445,11 +18463,11 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--nuvio--ed4defe582d237ca.js",
-      "sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed",
-      "patched_sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed",
-      "base_filename": "provider-bases/french-manga--base--68b10db033a8cc90.js",
-      "base_sha256": "68b10db033a8cc900d5fc1aa653783b31b472b0326856bd0c8d646154ac5298e",
+      "published_filename": "providers/french-manga--nuvio--1d79836937990fbd.js",
+      "sha256": "1d79836937990fbdb175a60ecb800d3a1f734718639c6de4c7b6df835641b218",
+      "patched_sha256": "1d79836937990fbdb175a60ecb800d3a1f734718639c6de4c7b6df835641b218",
+      "base_filename": "provider-bases/french-manga--base--1e7c13b1590c7d16.js",
+      "base_sha256": "1e7c13b1590c7d16e1ba0e02addfc15a1e559c18e1057d06c2ea6633fa8e01d5",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "fb23979ac0089b09eb706a4b0649ced3b76595ce04258e513b3599bc0ad60860",
@@ -18653,6 +18671,24 @@
           "output_sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed",
           "bytes_before": 161931,
           "bytes_after": 149728
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "56a98c407e2de3f84b5bc499a8cc5278b8169c062fdacc47aaae57a7641ea85f",
+          "output_sha256": "1d79836937990fbdb175a60ecb800d3a1f734718639c6de4c7b6df835641b218",
+          "bytes_before": 161925,
+          "bytes_after": 149726
         }
       ],
       "source": "gowaru",
@@ -18898,10 +18934,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed"
+        "sha256": "1d79836937990fbdb175a60ecb800d3a1f734718639c6de4c7b6df835641b218"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "44befe21b12e7b80431045ca212b009487799452f835418c3e2aeda046b61ae9",
+      "build_input_sha256": "3bb0f53c56a1a75589236dfec41fd3bf64c1cff6ecb9eb640b6d2046d7f925f3",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -19453,8 +19489,8 @@
       ],
       "preserved_candidate_key": "gowaru:frenchstream",
       "preserved_candidate_sha256": "21215d1a41dccd4b25da2cea38237bc8a57c57a54b6934fb07ec8e9c045a6542",
-      "base_filename": "provider-bases/frenchstream--base--9bb80297a98749ff.js",
-      "base_sha256": "9bb80297a98749fff3baa254309b3eb35aad39facd85af72a4868bc1f1c39296",
+      "base_filename": "provider-bases/frenchstream--base--559161e13e172e09.js",
+      "base_sha256": "559161e13e172e091e41e1835add7fd3c6a1c7c7bafb35993c93791328140c47",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migrated_at": "2026-08-28T23:38:55.864906+00:00",
       "base_migration_stripped_generated_core": false,
@@ -19469,7 +19505,7 @@
         "mangle": false,
         "sha256": "4651c83c32fff55253414b94a5bc36a9cb2eff242d88873297840a7ffb2a20a6"
       },
-      "build_input_sha256": "c4a4e8e249e3e0d341cd064b446037dbe451aba76dd2d76459497edd1f856100",
+      "build_input_sha256": "19eb110079df0a4920f7c8a40463fa258e1fdda6407c1f9e025206a60464f2d9",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -35829,9 +35865,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--cc91ecb55e5028e9.js",
-      "sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d",
-      "patched_sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d",
+      "published_filename": "providers/streamzo--nuvio--8a780a0f9a933ca6.js",
+      "sha256": "8a780a0f9a933ca6934d9b324657db9faa3fc889b75d5b1024eb9c5d07cba1e3",
+      "patched_sha256": "8a780a0f9a933ca6934d9b324657db9faa3fc889b75d5b1024eb9c5d07cba1e3",
       "upstream_sha256": "0e0695a6398a6732b2ec39a15c94ec6fd8070cc120527fd7bc9dece9bddd8685",
       "local_patches": [
         {
@@ -36094,6 +36130,24 @@
           "output_sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d",
           "bytes_before": 191912,
           "bytes_after": 177817
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "8194a5299f24f8b6c15a0fbbb2b4b729fafffcb370d4ef134c92583ca0d901c6",
+          "output_sha256": "8a780a0f9a933ca6934d9b324657db9faa3fc889b75d5b1024eb9c5d07cba1e3",
+          "bytes_before": 191906,
+          "bytes_after": 177815
         }
       ],
       "source": "published-baseline",
@@ -36353,8 +36407,8 @@
       "preserved_candidate_key": "gowaru:streamzo",
       "preserved_candidate_sha256": "66d117b45ca62f8d3e32505da7264e25d5c2e1aeea7cdba2f1306c3b31c21098",
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/streamzo--base--5ca1f39cfab86d6c.js",
-      "base_sha256": "5ca1f39cfab86d6c4554b32f28f0ab53fa7578cf59d8ada6b93f6e9413a13cdb",
+      "base_filename": "provider-bases/streamzo--base--3aca32c2a9f75c89.js",
+      "base_sha256": "3aca32c2a9f75c8959709ac54e90aaafd6ff490add35d404a4f571347c580993",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migrated_at": "2026-08-28T23:38:52.906948+00:00",
       "base_migration_stripped_generated_core": false,
@@ -36367,9 +36421,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d"
+        "sha256": "8a780a0f9a933ca6934d9b324657db9faa3fc889b75d5b1024eb9c5d07cba1e3"
       },
-      "build_input_sha256": "2d5cfbecac6a4014c1572e3177d014ed4f9ba8b5d07d04a4e2b1fae666a8fc7a",
+      "build_input_sha256": "57f3e4555d6318238ec989dd2f6c82f6ad04492c09fc82ada5e7819af5aaadc3",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",

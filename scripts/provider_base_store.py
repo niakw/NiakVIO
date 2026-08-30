@@ -348,11 +348,11 @@ function _text(value) {
   return String(value == null ? "" : value);
 }
 function _embeddedText(value) {
-  return _text(value).replace(
-    /\\u002[fF]|\\u003[aA]|\\u0026|\\u003[dD]|\\\/|\\"|&quot;|&#34;|&amp;/gi,
+  return _text(value).split("\\/").join("/").replace(
+    /\\u002[fF]|\\u003[aA]|\\u0026|\\u003[dD]|\\"|&quot;|&#34;|&amp;/gi,
     token => {
       const normalized = token.toLowerCase();
-      if (normalized === "\\u002f" || normalized === "\\/") return "/";
+      if (normalized === "\\u002f") return "/";
       if (normalized === "\\u003a") return ":";
       if (normalized === "\\u0026" || normalized === "&amp;") return "&";
       if (normalized === "\\u003d") return "=";
