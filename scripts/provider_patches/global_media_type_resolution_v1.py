@@ -77,7 +77,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-api-authoritative-global-first-v9-core-identity",
+        "revision": "tmdb-api-first-every-provider-v10-core-identity",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -268,11 +268,9 @@ async function resolve(a){
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
   var transport=alias(input),namespace=namespaceOf(input),raw=s(input).toLowerCase();
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
-  if(semantic.length){
-    if(raw==="anime"&&semantic.indexOf("anime")<0)return null;
-    if(raw==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")<0)return null;
-    if(raw!=="anime"&&namespace==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
-  }
+  // TMDB identity/type resolution is the first provider gate for every request.
+  // Provider capability filtering happens only after canonical movie|tv|anime
+  // classification so transport aliases can never suppress a valid anime match.
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
   var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
