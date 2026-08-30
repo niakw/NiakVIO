@@ -19,7 +19,6 @@ ROUTE_HINT = re.compile(
     r"""(?P<q>["'])(?P<route>/(?:api|search|watch|movie|movies|film|films|series|tv|show|title|media|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|manifest|action)[^"'\\\s<>]{0,220})(?P=q)""",
     re.I,
 )
-TMDB_HINT = re.compile(r"""(?P<q>["'])(?P<value>[^"'\\\s<>]{0,100}tmdb[^"'\\\s<>]{0,140})(?P=q)""", re.I)
 ATTR_URL = re.compile(r"""(?:href|src)\s*=\s*["']([^"'<>\s]+)["']""", re.I)
 ABS_URL = re.compile(r"""https?://[^"'<>\s\\]+""", re.I)
 
