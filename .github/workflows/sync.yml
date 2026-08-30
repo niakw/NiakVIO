@@ -425,10 +425,10 @@ jobs:
   resolve-publish-source:
     name: Resolve validated P1 artifact
     needs: stage-and-test
-    if: ${{ always() && github.event_name != 'pull_request' }}
+    if: ${{ github.event_name != 'pull_request' && (needs.stage-and-test.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.phase == 'publish-only') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-only]'))) }}
     concurrency:
-      # A publish-only resume supersedes an accidentally restarted P1.
-      group: nuvio-provider-stage-main
+      # Publication-source resolution must never cancel provider validation.
+      group: nuvio-provider-publish-source-main
       cancel-in-progress: true
     runs-on: ubuntu-latest
     permissions:
@@ -458,7 +458,7 @@ jobs:
           DISPATCH_SOURCE_MODE: ${{ inputs.source_mode || 'deep' }}
           STAGE_RUN_ID: ${{ github.run_id }}
           STAGE_VALIDATED_SHA: ${{ needs.stage-and-test.outputs.validated_sha }}
-          STAGE_VALIDATION_MODE: ${{ needs.resolve-publish-source.outputs.validation_mode }}
+          STAGE_VALIDATION_MODE: ${{ needs.stage-and-test.outputs.validation_mode }}
         run: |
           set -euo pipefail
           publish_only=false
