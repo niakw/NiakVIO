@@ -11,6 +11,30 @@ on:
         options:
           - quick
           - deep
+      phase:
+        description: Pipeline phase
+        required: true
+        default: full
+        type: choice
+        options:
+          - full
+          - publish-only
+      source_run_id:
+        description: Successful P1 run id to reuse for publish-only
+        required: false
+        type: string
+      source_sha:
+        description: SHA validated by the successful P1 run
+        required: false
+        type: string
+      source_mode:
+        description: Validation mode of the reused P1 artifact
+        required: false
+        default: deep
+        type: choice
+        options:
+          - quick
+          - deep
   pull_request:
     branches:
       - main
@@ -112,6 +136,7 @@ on:
       - 'tests/vf_catalogue_identity_hardening_test.py'
       - 'tests/desktop_runtime_compat_test.py'
       - '.github/triggers/deep-provider-repair'
+      - '.github/triggers/publish-provider-transaction.json'
       - '.github/workflows/sync.yml'
       - 'provider_catalog.json'
       - 'tests/provider_catalogue_breadth_test.py'
@@ -190,7 +215,7 @@ permissions:
 
 jobs:
   stage-and-test:
-    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[sync-control-only]') }}
+    if: ${{ (github.event_name != 'push' || (!contains(github.event.head_commit.message, '[sync-control-only]') && !contains(github.event.head_commit.message, '[publish-only]'))) && (github.event_name != 'workflow_dispatch' || inputs.phase != 'publish-only') }}
     name: Discover, repair and validate providers
     concurrency:
       # Scheduled Quick/Deep observation must never cancel an explicit push/deep
@@ -375,10 +400,84 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
+  resolve-publish-source:
+    name: Resolve validated P1 artifact
+    needs: stage-and-test
+    if: ${{ always() && github.event_name != 'pull_request' }}
+    concurrency:
+      # A publish-only resume supersedes an accidentally restarted P1.
+      group: nuvio-provider-stage-main
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      publish_only: ${{ steps.source.outputs.publish_only }}
+      artifact_run_id: ${{ steps.source.outputs.artifact_run_id }}
+      validated_sha: ${{ steps.source.outputs.validated_sha }}
+      validation_mode: ${{ steps.source.outputs.validation_mode }}
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Resolve publication source
+        id: source
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
+          DISPATCH_PHASE: ${{ inputs.phase || 'full' }}
+          DISPATCH_SOURCE_RUN_ID: ${{ inputs.source_run_id || '' }}
+          DISPATCH_SOURCE_SHA: ${{ inputs.source_sha || '' }}
+          DISPATCH_SOURCE_MODE: ${{ inputs.source_mode || 'deep' }}
+          STAGE_RUN_ID: ${{ github.run_id }}
+          STAGE_VALIDATED_SHA: ${{ needs.stage-and-test.outputs.validated_sha }}
+          STAGE_VALIDATION_MODE: ${{ needs.resolve-publish-source.outputs.validation_mode }}
+        run: |
+          set -euo pipefail
+          publish_only=false
+          artifact_run_id="$STAGE_RUN_ID"
+          validated_sha="$STAGE_VALIDATED_SHA"
+          validation_mode="$STAGE_VALIDATION_MODE"
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$DISPATCH_PHASE" = "publish-only" ]; then
+            publish_only=true
+            artifact_run_id="$DISPATCH_SOURCE_RUN_ID"
+            validated_sha="$DISPATCH_SOURCE_SHA"
+            validation_mode="$DISPATCH_SOURCE_MODE"
+          elif [ "$EVENT_NAME" = "push" ] && [[ "$COMMIT_MESSAGE" == *"[publish-only]"* ]]; then
+            publish_only=true
+            test -s .github/triggers/publish-provider-transaction.json
+            artifact_run_id="$(python -c 'import json; print(json.load(open(".github/triggers/publish-provider-transaction.json"))["source_run_id"])')"
+            validated_sha="$(python -c 'import json; print(json.load(open(".github/triggers/publish-provider-transaction.json"))["source_sha"])')"
+            validation_mode="$(python -c 'import json; print(json.load(open(".github/triggers/publish-provider-transaction.json")).get("mode","deep"))')"
+          fi
+
+          if [ "$publish_only" = true ]; then
+            [[ "$artifact_run_id" =~ ^[0-9]+$ ]]
+            [[ "$validated_sha" =~ ^[0-9a-f]{40}$ ]]
+            [[ "$validation_mode" = "quick" || "$validation_mode" = "deep" ]]
+          else
+            test -n "$validated_sha"
+            test -n "$validation_mode"
+          fi
+
+          echo "publish_only=$publish_only" >> "$GITHUB_OUTPUT"
+          echo "artifact_run_id=$artifact_run_id" >> "$GITHUB_OUTPUT"
+          echo "validated_sha=$validated_sha" >> "$GITHUB_OUTPUT"
+          echo "validation_mode=$validation_mode" >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_PUBLISH_SOURCE publish_only=$publish_only artifact_run_id=$artifact_run_id validated_sha=$validated_sha mode=$validation_mode"
+
   publish:
     name: Publish validated provider transaction
-    needs: stage-and-test
-    if: github.event_name != 'pull_request'
+    needs:
+      - stage-and-test
+      - resolve-publish-source
+    if: ${{ always() && github.event_name != 'pull_request' && needs.resolve-publish-source.result == 'success' && (needs.resolve-publish-source.outputs.publish_only == 'true' || needs.stage-and-test.result == 'success') }}
     concurrency:
       group: nuvio-provider-publish-main
       cancel-in-progress: false
@@ -386,8 +485,9 @@ jobs:
     timeout-minutes: 90
     permissions:
       contents: write
+      actions: read
     env:
-      NUVIO_VALIDATION_MODE: ${{ needs.stage-and-test.outputs.validation_mode }}
+      NUVIO_VALIDATION_MODE: ${{ needs.resolve-publish-source.outputs.validation_mode }}
     steps:
       - name: Checkout current published repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -399,16 +499,48 @@ jobs:
         id: freshness
         shell: bash
         env:
-          VALIDATED_SHA: ${{ needs.stage-and-test.outputs.validated_sha }}
+          VALIDATED_SHA: ${{ needs.resolve-publish-source.outputs.validated_sha }}
+          PUBLISH_ONLY: ${{ needs.resolve-publish-source.outputs.publish_only }}
         run: |
           set -euo pipefail
           CURRENT_SHA="$(git rev-parse HEAD)"
-          if [ "$CURRENT_SHA" != "$VALIDATED_SHA" ]; then
+          if [ "$CURRENT_SHA" = "$VALIDATED_SHA" ]; then
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if [ "$PUBLISH_ONLY" != "true" ]; then
             echo "stale=true" >> "$GITHUB_OUTPUT"
             echo "FIELD_PROVIDER_PUBLICATION_SKIPPED reason=main_advanced validated=$VALIDATED_SHA current=$CURRENT_SHA"
-          else
-            echo "stale=false" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
+
+          git merge-base --is-ancestor "$VALIDATED_SHA" "$CURRENT_SHA"
+          git diff --name-only "$VALIDATED_SHA..$CURRENT_SHA" > "$RUNNER_TEMP/publish-only-diff.txt"
+          python - <<'PY'
+          from pathlib import Path
+          allowed = {
+              "scripts/promote_candidates.py",
+              "scripts/reapply_published_overrides.py",
+              "scripts/activation_preservation_core_rehash.py",
+              "tests/provider_clean_reconstruction_contract_test.py",
+              "tests/core_repair_type_architecture_test.py",
+              ".github/workflows/sync.yml",
+              ".github/triggers/deep-provider-repair",
+              ".github/triggers/publish-provider-transaction.json",
+          }
+          changed = [
+              line.strip()
+              for line in Path(__import__("os").environ["RUNNER_TEMP"], "publish-only-diff.txt").read_text().splitlines()
+              if line.strip()
+          ]
+          unexpected = sorted(set(changed) - allowed)
+          print("FIELD_PROVIDER_PUBLISH_ONLY_DIFF changed=" + ",".join(changed))
+          if unexpected:
+              raise SystemExit("publish-only source invalidated by P1-sensitive changes: " + ",".join(unexpected))
+          PY
+          echo "stale=false" >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_PUBLICATION_RESUME validated=$VALIDATED_SHA current=$CURRENT_SHA"
 
       - name: Capture published manifest baseline
         if: steps.freshness.outputs.stale != 'true'
@@ -440,8 +572,11 @@ jobs:
         if: steps.freshness.outputs.stale != 'true'
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          name: nuvio-validation-stage-${{ github.run_id }}
+          name: nuvio-validation-stage-${{ needs.resolve-publish-source.outputs.artifact_run_id }}
           path: checked-artifact
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ needs.resolve-publish-source.outputs.artifact_run_id }}
 
       - name: Restore validated routing state
         if: steps.freshness.outputs.stale != 'true'
@@ -458,7 +593,7 @@ jobs:
           NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
         shell: bash
         run: |
-          if [ "${{ needs.stage-and-test.outputs.validation_mode }}" = "quick" ]; then
+          if [ "${{ needs.resolve-publish-source.outputs.validation_mode }}" = "quick" ]; then
             python scripts/promote_refresh_candidates.py
           else
             python scripts/promote_candidates.py
