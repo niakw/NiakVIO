@@ -432,7 +432,7 @@ def main() -> int:
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
     print(
         f"provider activation preservation passed ({active_count} enabled; "
-        f"deferred_to_learning={len(deferred_to_learning)}; evidence-backed shrink guarded)"
+        "Learning-deferred drift allowed; evidence-backed shrink guarded)"
     )
     return 0
 
