@@ -594,6 +594,7 @@ function _searchUrls(meta, mediaType, season, episode) {
   return _learnedUrls("search", meta, mediaType, season, episode);
 }
 function _runtimePlanAvailable() {
+  if (NIAKVIO_PROVIDER_MODEL.apiRecipe) return true;
   if (NIAKVIO_PROVIDER_MODEL.fixedApi || NIAKVIO_PROVIDER_MODEL.officialApi) return true;
   if ((NIAKVIO_PROVIDER_MODEL.observedUrls || []).some(value => /api|stream|source|embed|player/i.test(_text(value)))) return true;
   return (NIAKVIO_PROVIDER_MODEL.routes || []).some(route => ["search","detail","player","api"].includes(_routeKind(route)));
