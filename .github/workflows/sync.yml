@@ -40,6 +40,7 @@ on:
       - main
     paths:
       - '.github/workflows/sync.yml'
+      - '.github/triggers/force-clean-provider-reconstruction.json'
       - 'provider_catalog.json'
       - 'tests/global_media_type_resolution_test.py'
       - 'tests/tmdb_media_type_resolution.test.mjs'
@@ -338,11 +339,33 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Publication validates the currently executable NiakVIO/LKG ProviderBase.
-          # Clean-v2 reconstruction is a separate Learning/Lab proposal flow; forcing
-          # fresh clean seeds here would replace 95 working LKG runtimes with
-          # intentionally incomplete readers and create systemic false negatives.
-          python scripts/discover_candidates.py --require-all-upstreams
+          # Routine publication never reconstructs an existing clean candidate.
+          # An explicit one-shot trigger may name a bounded provider set for corrective
+          # reconstruction; the trigger is removed after the new candidates are materialized.
+          args=(--require-all-upstreams)
+          FORCE_TRIGGER=".github/triggers/force-clean-provider-reconstruction.json"
+          if [ -s "$FORCE_TRIGGER" ]; then
+            while IFS= read -r provider; do
+              [ -n "$provider" ] && args+=(--force-clean-reconstruction "$provider")
+            done < <(python - "$FORCE_TRIGGER" <<'PY'
+          import json, sys
+          payload = json.load(open(sys.argv[1], encoding="utf-8"))
+          if payload.get("mode") != "explicit-one-shot":
+              raise SystemExit("invalid force reconstruction trigger mode")
+          providers = payload.get("providers")
+          if not isinstance(providers, list) or not providers:
+              raise SystemExit("force reconstruction trigger requires providers")
+          seen = set()
+          for raw in providers:
+              value = str(raw or "").strip().casefold()
+              if not value or value in seen:
+                  continue
+              seen.add(value)
+              print(value)
+          PY
+            )
+          fi
+          python scripts/discover_candidates.py "${args[@]}"
 
       - name: Enforce canonical catalog preservation
         shell: bash
