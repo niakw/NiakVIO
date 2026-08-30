@@ -731,29 +731,32 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
         const discoveredNested = _uniq(urls.filter(_playerLike));
         if (discoveredNested.length) {
-          // Learned runtime routes are enrichment, not a replacement for a
-          // player crawl that already works. Crawl the actual links first so
-          // route discovery can never regress an existing provider.
-          const crawled = await _crawlDirectMedia(
-            discoveredNested,
-            response.url || detailUrl,
-            2
+          const runtimeCandidates = _uniq([
+            ...discoveredNested,
+            ..._directPlayerUrls(meta.tmdbId, mediaType)
+          ]);
+          // A signed player URL can carry short-lived keys required by a
+          // learned runtime API. Consume that exact route before recursively
+          // crawling third-party embeds, otherwise an unrelated player-like
+          // URL can steal the bounded crawl budget and the signed key is lost.
+          const runtime = await _resolveRuntimeApi(
+            runtimeCandidates,
+            mediaType,
+            meta.tmdbId,
+            season,
+            episode
           );
-          if (crawled.length) {
-            streams.push(...crawled);
+          if (runtime.length) {
+            streams.push(...runtime);
           } else {
-            const runtimeCandidates = _uniq([
-              ...discoveredNested,
-              ..._directPlayerUrls(meta.tmdbId, mediaType)
-            ]);
-            const runtime = await _resolveRuntimeApi(
-              runtimeCandidates,
-              mediaType,
-              meta.tmdbId,
-              season,
-              episode
+            // Runtime-route enrichment remains fail-open: providers without a
+            // usable learned API continue through the generic player crawl.
+            const crawled = await _crawlDirectMedia(
+              discoveredNested,
+              response.url || detailUrl,
+              2
             );
-            if (runtime.length) streams.push(...runtime);
+            if (crawled.length) streams.push(...crawled);
           }
         } else {
           const runtimeCandidates = _directPlayerUrls(meta.tmdbId, mediaType);
