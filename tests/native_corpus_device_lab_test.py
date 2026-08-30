@@ -116,7 +116,7 @@ for workflow, marker in (
     assert "retention-days: 8" in artifact_block(workflow, marker), marker
 
 assert "mobile-android-reader:" in mobile_android
-assert "name: Native Android TV + Mobile reader acceptance" in mobile_android
+assert "name: NATIVE - Android Reader" in mobile_android
 assert "resolve_tv:" in mobile_android and "resolve_mobile:" in mobile_android
 assert "NuvioMedia/NuvioMobile.git" in mobile_android
 assert "native-mobile-android-full-${{ github.run_id }}" in mobile_android
