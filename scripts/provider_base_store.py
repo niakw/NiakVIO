@@ -716,12 +716,15 @@ function _sourceUrls(value, base, out) {
   }
   return out;
 }
-function _streams(urls, referer) {
+function _streams(urls, referer, extraHeaders) {
+  const headers = Object.assign({}, extraHeaders || {});
+  if (referer) headers.Referer = referer;
+  const hasHeaders = Object.keys(headers).length > 0;
   return _uniq(urls).slice(0, 40).map((url, index) => ({
     name: NIAKVIO_PROVIDER_MODEL.displayName,
     title: NIAKVIO_PROVIDER_MODEL.displayName + (index ? " #" + (index + 1) : ""),
     url,
-    headers: referer ? { Referer: referer } : undefined
+    headers: hasHeaders ? Object.assign({}, headers) : undefined
   }));
 }
 function _recipeValue(row, fields) {
@@ -799,7 +802,7 @@ function _recipeUrl(pattern, values, base) {
   }
 }
 async function _recipePayload(url, recipe, body) {
-  const headers = {};
+  const headers = Object.assign({}, recipe.requestHeaders || {});
   if (recipe.referer) headers.Referer = recipe.referer;
   if (recipe.origin) headers.Origin = recipe.origin;
   const options = { headers };
@@ -847,9 +850,17 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
         try {
           const payload = await _recipePayload(url, recipe, null);
           if (typeof payload.value === "string") {
-            streams.push(..._streams(_extractUrls(payload.value, payload.base).filter(_directMedia), recipe.referer || base));
+            streams.push(..._streams(
+              _extractUrls(payload.value, payload.base).filter(_directMedia),
+              recipe.referer || base,
+              Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+            ));
           } else {
-            streams.push(..._streams(_sourceUrls(payload.value, payload.base), recipe.referer || base));
+            streams.push(..._streams(
+              _sourceUrls(payload.value, payload.base),
+              recipe.referer || base,
+              Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+            ));
           }
         } catch (_) {}
         if (streams.length >= 20) break;
@@ -887,10 +898,18 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
       const payload = await _recipePayload(url, recipe, null);
       if (typeof payload.value === "string") {
         const urls = _extractUrls(payload.value, payload.base).filter(_directMedia);
-        if (urls.length) return _streams(urls, recipe.referer || base);
+        if (urls.length) return _streams(
+          urls,
+          recipe.referer || base,
+          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+        );
       } else {
         const urls = _sourceUrls(payload.value, payload.base);
-        if (urls.length) return _streams(urls, recipe.referer || base);
+        if (urls.length) return _streams(
+          urls,
+          recipe.referer || base,
+          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+        );
       }
     } catch (_) {}
   }
