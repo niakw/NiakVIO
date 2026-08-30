@@ -495,9 +495,22 @@ async function _fetch(url, options) {
   return response;
 }
 async function _tmdb(tmdbId, mediaType) {
-  const key = typeof globalThis !== "undefined" ? globalThis.TMDB_API_KEY : null;
-  if (!key || !tmdbId) return null;
+  if (!tmdbId) return null;
   const type = String(mediaType || "movie").toLowerCase() === "movie" ? "movie" : "tv";
+  const identity = type + ":" + String(tmdbId || "");
+  try {
+    const cache = typeof globalThis !== "undefined" ? globalThis.__nuvioTmdbMetadataCacheV1 : null;
+    const cached = cache && cache[identity];
+    if (cached && typeof cached.then !== "function") {
+      return {
+        title: cached.title || cached.name || cached.original_title || cached.original_name || "",
+        year: String(cached.release_date || cached.first_air_date || "").slice(0, 4),
+        tmdbId: String(tmdbId || "")
+      };
+    }
+  } catch (_) {}
+  const key = typeof globalThis !== "undefined" ? globalThis.TMDB_API_KEY : null;
+  if (!key) return null;
   try {
     const response = await _fetch(
       "https://api.themoviedb.org/3/" + type + "/" + encodeURIComponent(tmdbId) +

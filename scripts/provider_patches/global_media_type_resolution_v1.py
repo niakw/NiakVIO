@@ -97,6 +97,23 @@ function localToken(){
   return "";
 }
 var mediaCache=Object.create(null);
+try{if(g)g.__nuvioTmdbMetadataCacheV1=mediaCache}catch(_){}
+function htmlDecode(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&amp;/gi,"&").replace(/&lt;/gi,"<").replace(/&gt;/gi,">")}
+function publicMeta(html,namespace,id){
+  var h=s(html),title="",year="";
+  var m=h.match(/<meta[^>]+(?:property|name)=["'](?:og:title|twitter:title|title)["'][^>]+content=["']([^"']+)["']/i)
+    ||h.match(/<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["'](?:og:title|twitter:title|title)["']/i)
+    ||h.match(/<title[^>]*>([^<]+)<\/title>/i);
+  if(m)title=htmlDecode(m[1]).replace(/\s*[—|-]\s*The Movie Database.*$/i,"").replace(/\s*\((?:TV Series|Movie)?\s*(\d{4})[^)]*\)\s*$/i,function(_x,y){if(!year)year=y;return""}).trim();
+  var y=h.match(/(?:datePublished|release_date|first_air_date)["'\s:=]+(?:content=["'])?(\d{4})[-/]/i)
+    ||h.match(/(?:release_date|first_air_date)[\s\S]{0,160}?(19\d{2}|20\d{2})/i)
+    ||h.match(/class=["'][^"']*release_date[^"']*["'][^>]*>[^(<]*\(?(19\d{2}|20\d{2})/i);
+  if(y&&!year)year=y[1];
+  var out={__nuvioPublicHtml:h,__nuvioTmdbNamespace:namespace,__nuvioTmdbId:id};
+  if(namespace==="movie"){out.title=title;out.original_title=title;if(year)out.release_date=year+"-01-01"}
+  else{out.name=title;out.original_name=title;if(year)out.first_air_date=year+"-01-01"}
+  return out;
+}
 function hasTmdbMetadata(m){
   return !!(m&&typeof m==="object"&&(
     Array.isArray(m.genres)||Array.isArray(m.genre_ids)||Array.isArray(m.genreIds)||
@@ -124,7 +141,7 @@ async function tmdb(namespaceValue,tmdbId){
         signal:timeout()
       });
       if(!page||!page.ok||typeof page.text!=="function")return null;
-      return {__nuvioPublicHtml:await page.text()};
+      return publicMeta(await page.text(),namespace,id);
     }catch(_){return null}
   })();
   mediaCache[cacheKey]=pending;

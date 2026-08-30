@@ -106,10 +106,14 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function metadata(req){
     var title=clean(req.title||req.name||req.label||req.settings&&req.settings.title),year=Number(req.year||req.settings&&req.settings.year)||0,original="";
     if(title)title=title.replace(/\s*\(\d{4}\)\s*$/,"");
-    if(req.tmdbId&&TMDB_KEY){
-      var kind=req.mediaType==="tv"?"tv":"movie",data=await request("https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(req.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR",true);
-      if(data){title=clean(data.title||data.name)||title;original=clean(data.original_title||data.original_name);var date=clean(data.release_date||data.first_air_date);year=Number(date.slice(0,4))||year}
-    }
+    var kind=req.mediaType==="movie"?"movie":"tv",data=null;
+    try{
+      var cache=g&&g.__nuvioTmdbMetadataCacheV1,identity=kind+":"+String(req.tmdbId||"");
+      var cached=cache&&cache[identity];
+      if(cached&&typeof cached.then!=="function")data=cached;
+    }catch(_e){}
+    if(!data&&req.tmdbId&&TMDB_KEY)data=await request("https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(req.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR",true);
+    if(data){title=clean(data.title||data.name)||title;original=clean(data.original_title||data.original_name);var date=clean(data.release_date||data.first_air_date);year=Number(date.slice(0,4))||year}
     return {title:title,original:original,year:year};
   }
   function significant(v){
