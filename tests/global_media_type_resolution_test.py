@@ -94,6 +94,13 @@ with tempfile.TemporaryDirectory() as tmp:
     subprocess.run(["node", str(test), str(provider)], check=True)
 
     object_runner = r'''
+global.fetch = async (url) => {
+  if (!String(url).includes("/tv/46260")) throw new Error("anime hint must resolve in TMDB tv namespace");
+  return {
+    ok: true,
+    text: async () => "<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"
+  };
+};
 const provider = require(process.argv[2]);
 (async () => {
   const value = await provider.getStreams({
@@ -103,8 +110,10 @@ const provider = require(process.argv[2]);
     season: 1,
     episode: 1
   });
-  if (value[0].mediaType !== "anime") throw new Error("trusted anime category was lost");
+  if (value[0].mediaType !== "anime") throw new Error("TMDB-verified anime category was lost");
   if (value[0].nuvioInputMediaType !== "series") throw new Error("input alias evidence was lost");
+  if (value[0].tmdbNamespace !== "tv") throw new Error("anime series did not preserve TMDB tv namespace");
+  if (value[0].tmdbIdentity !== "tv:46260") throw new Error("composite TMDB identity missing");
 })().catch((error) => { console.error(error); process.exit(1); });
 '''
     test.write_text(object_runner, encoding="utf-8")
