@@ -52,14 +52,6 @@ const provider = require(process.argv[2]);
   const ordinarySeries = await provider.getStreams("1396", "series", 1, 1);
   if (ordinarySeries[0].mediaType !== "tv") throw new Error("series alias did not default to tv");
 
-  const objectAnime = await provider.getStreams({
-    tmdbId: "46260",
-    mediaType: "series",
-    category: "anime",
-    season: 1,
-    episode: 1
-  });
-  if (objectAnime[0].mediaType !== "anime") throw new Error("trusted anime category was lost");
 })().catch((error) => { console.error(error); process.exit(1); });
 '''
 # Object-form validation needs a provider that accepts the object contract.
@@ -78,19 +70,8 @@ with tempfile.TemporaryDirectory() as tmp:
     provider.write_text(patched, encoding="utf-8")
     object_provider.write_text(object_patched, encoding="utf-8")
 
-    # positional tests
-    positional_runner = runner.replace(
-        "  const objectAnime = await provider.getStreams({\n"
-        "    tmdbId: \"46260\",\n"
-        "    mediaType: \"series\",\n"
-        "    category: \"anime\",\n"
-        "    season: 1,\n"
-        "    episode: 1\n"
-        "  });\n"
-        "  if (objectAnime[0].mediaType !== \"anime\") throw new Error(\"trusted anime category was lost\");\n",
-        ""
-    )
-    test.write_text(positional_runner, encoding="utf-8")
+    # Positional Nuvio contract is tested independently from the object compatibility contract.
+    test.write_text(runner, encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
 
     object_runner = r'''

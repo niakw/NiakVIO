@@ -111,7 +111,7 @@ with tempfile.NamedTemporaryFile("wb", suffix=".js", delete=False) as handle:
     handle.write(
         b'\nvar __nuvioTestPlaylist="#EXTM3U\\n#EXT-X-VERSION:3\\n#EXTINF:120,\\nsegment-1.ts\\n#EXTINF:120,\\nsegment-2.ts\\n#EXT-X-ENDLIST\\n";'
         b'globalThis.fetch=async function(url){return{ok:true,status:200,url:String(url),headers:{get:function(name){return String(name).toLowerCase()==="content-type"?"application/vnd.apple.mpegurl":null}},text:async function(){return __nuvioTestPlaylist}}};'
-        b'Promise.resolve(globalThis.getStreams()).then(function(rows){var r=rows[0];'
+        b'Promise.resolve(globalThis.getStreams("603","movie")).then(function(rows){var r=rows[0];'
         b'if(!r||r.name!=="\xf0\x9f\x8d\x91 Peachify"||r.title!=="\xf0\x9f\x8d\x91 Peachify - 1080p"||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")'
         b'{console.error(JSON.stringify(r));process.exit(4)}console.log(JSON.stringify(r))'
         b'}).catch(function(e){console.error(e);process.exit(5)});\n'
