@@ -75,16 +75,19 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
 
     expected_cap = floor.get("capability")
     current_cap = caps.get(provider_id)
-    if isinstance(expected_cap, dict) and isinstance(current_cap, dict):
-        for field in ("strategy", "validation", "allow_html_url", "requires_direct_media"):
-            expected = expected_cap.get(field)
-            if expected is None:
-                continue
-            if current_cap.get(field) != expected:
-                errors.append(
-                    f"{provider_id}: capability regression {field} "
-                    f"expected={expected!r} current={current_cap.get(field)!r}"
-                )
+    if isinstance(expected_cap, dict):
+        if not isinstance(current_cap, dict):
+            errors.append(f"{provider_id}: provider capability contract disappeared")
+        else:
+            for field in ("strategy", "validation", "allow_html_url", "requires_direct_media"):
+                expected = expected_cap.get(field)
+                if expected is None:
+                    continue
+                if current_cap.get(field) != expected:
+                    errors.append(
+                        f"{provider_id}: capability regression {field} "
+                        f"expected={expected!r} current={current_cap.get(field)!r}"
+                    )
 
 playback = OVERRIDES.get("playback_integrity_policy") or {}
 pre = [str(value) for value in playback.get("pre_media_discovery_hooks") or []]
