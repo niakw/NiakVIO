@@ -66,6 +66,9 @@ conclusive_disable_actions = {
     'published-disabled-probation-or-performance',
     'disabled-sustained-outage',
 }
+learning_deferred_actions = {
+    'preserved-published-state-clean-candidate-pending',
+}
 for provider_id in sorted(expected_vf_movie):
     row = by_id[provider_id]
     assert 'movie' in row['supportedTypes'], provider_id
@@ -91,6 +94,13 @@ for provider_id in sorted(expected_vf_movie):
     action = str(report.get('action') or '')
     assert report.get('enabled') is False, provider_id
     assert action != 'published-disabled-ci-inconclusive-no-valid-runtime-evidence', provider_id
+    if action in learning_deferred_actions:
+        provenance = provenance_rows.get(provider_id) or {}
+        assert provenance.get('clean_reconstruction_candidate') is True, provider_id
+        assert provenance.get('clean_reconstruction_verified') is not True, provider_id
+        assert provenance.get('clean_reconstruction_candidate_role') == 'pending-canonical-deep-proof', provider_id
+        assert report.get('published_filename') == row.get('filename'), provider_id
+        continue
     assert action in conclusive_disable_actions, (provider_id, action)
     if action != 'disabled-sustained-outage':
         assert report.get('failed_gates'), provider_id
