@@ -55,7 +55,7 @@ INFRASTRUCTURE_HOSTS = {
 CUSTOM_B64_ALPHABET_RE = re.compile(r"""["']([A-Za-z]{52}0123456789+/=)["']""")
 CUSTOM_B64_TOKEN_RE = re.compile(r"""["']([A-Za-z0-9+/=]{4,256})["']""")
 ROUTE_LITERAL_RE = re.compile(
-    r"""(?:^|["'])(/(?:api|search|recherche|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|movie|movies|film|films|tv|series|show|episode|season|wp-json|wp-admin|index\.php)[^"'<>\\\s]{0,500})""",
+    r"""(?:^|["'])(/(?:api|search|recherche|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|movie|movies|media|sheet|film|films|tv|series|show|episode|season|wp-json|wp-admin|index\.php)[^"'<>\\\s]{0,500})""",
     re.I,
 )
 RESERVED_HOST_SUFFIXES = {".invalid", ".example", ".test", ".localhost"}
@@ -194,26 +194,34 @@ def infer_api_recipe(
     fragments = [str(value) for value in knowledge.get("routeFragments") or []]
     search = next((value for value in fragments if "search" in value.casefold()), None)
     stream = next((value for value in fragments if re.search(r"/stream/?$", value, re.I)), None)
-    season = next((value for value in fragments if re.search(r"/season/?$", value, re.I)), None)
+    media = next((value for value in fragments if re.search(r"/media/?$", value, re.I)), None)
+    sheet = next((value for value in fragments if re.search(r"/sheet/?$", value, re.I)), None)
     episode = next((value for value in fragments if re.search(r"/episode/?$", value, re.I)), None)
     if not fixed.get("api") or not search or not stream:
         return None
     search_route = normalize_route_literal(search) or search
     if "{query}" not in search_route:
         search_route = search_route.rstrip("/") + "/{query}"
+
+    # Common API providers expose one provider-internal id from search, then
+    # separate movie and episodic source routes. Keep those route fragments as
+    # data instead of collapsing them to the first "/stream/" token seen.
+    movie_route = stream.rstrip("/") + "/{id}"
+    if media and sheet:
+        movie_route = media.rstrip("/") + "/{id}" + sheet
     recipe: dict[str, Any] = {
         "base": str(fixed.get("api") or "").strip(),
         "referer": str(fixed.get("referer") or "").strip() or None,
         "searchRoute": search_route,
-        "movieRoute": stream.rstrip("/") + "/{id}",
+        "movieRoute": movie_route,
         "idFields": ["id", "_id", "media_id", "post_id"],
         "titleFields": ["title", "name", "original_title", "post_title"],
         "yearFields": ["year", "release_date", "first_air_date"],
         "sourceFields": ["url", "stream_url", "stream", "source", "file"],
     }
-    if season and episode:
+    if stream and episode:
         recipe["episodeRoute"] = (
-            season.rstrip("/") + "/{id}" + episode.rstrip("/") +
+            stream.rstrip("/") + "/{id}" + episode +
             "?season={season}&episode={episode}"
         )
     return recipe
