@@ -102,6 +102,15 @@ with tempfile.TemporaryDirectory() as raw_tmp:
     assert CASES["tv"][1] in hard_text
     assert "runtime.executePlugin(" not in hard_text
 
+    hard_constructor = hard.read_text(encoding="utf-8").replace(
+        "runtime.executePlugin(",
+        "PluginRuntime().executePlugin(",
+    )
+    hard_constructor_text = canonical.replace_official_execution(hard_constructor, "tv")
+    assert "providerFuture.get(25000L" in hard_constructor_text
+    assert CASES["tv"][1] in hard_constructor_text
+    assert "PluginRuntime().executePlugin(" not in hard_constructor_text
+
     # Acceptance-prepared sources can already be in canonical raw form. The
     # compatibility layer must remain safe and idempotent for that path.
     raw_path = tmp / "desktop-raw.kt"

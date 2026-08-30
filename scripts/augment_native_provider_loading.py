@@ -286,7 +286,7 @@ def replace_official_execution(text: str, client: str) -> str:
     # official Nuvio repository layer.
     if client == "tv":
         pattern = re.compile(
-            r"runtime\.executePlugin\(\s*"
+            r"(?:runtime|PluginRuntime\(\))\.executePlugin\(\s*"
             r"code = code\(provider\.asset\),\s*"
             r"tmdbId = tmdbId,\s*"
             r"mediaType = requestMediaType,\s*"
