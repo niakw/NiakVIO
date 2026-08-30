@@ -205,7 +205,7 @@ def main() -> int:
                     and canonical_path is not None
                     and runtime_path.resolve() == canonical_path.resolve()
                 )
-        if floor < 0 and trusted_clean_v2:
+        if floor < 0:
             boundary_positions = [
                 match.start()
                 for match in re.finditer(
@@ -213,21 +213,22 @@ def main() -> int:
                     text,
                 )
             ]
-            if len(boundary_positions) != 1:
+            if len(boundary_positions) == 1:
+                trusted_floor = boundary_positions[0]
+                earlier_core = [
+                    position
+                    for position in marker_positions
+                    if position < trusted_floor
+                ]
+                if earlier_core:
+                    raise AssertionError(
+                        f"{provider_id}: derived Core marker appeared before canonical boundary"
+                    )
+                floor = trusted_floor
+            elif trusted_clean_v2:
                 raise AssertionError(
                     f"{provider_id}: clean v2 bundle must contain exactly one canonical Core boundary"
                 )
-            trusted_floor = boundary_positions[0]
-            earlier_core = [
-                position
-                for position in marker_positions
-                if position < trusted_floor
-            ]
-            if earlier_core:
-                raise AssertionError(
-                    f"{provider_id}: derived Core marker appeared before trusted v2 boundary"
-                )
-            floor = trusted_floor
         if floor < 0:
             unresolved.append(provider_id)
             print(
