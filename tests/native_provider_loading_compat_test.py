@@ -84,6 +84,24 @@ with tempfile.TemporaryDirectory() as raw_tmp:
     assert CASES["tv"][1] in wrapped_text
     assert "runtime.executePlugin(" not in wrapped_text
 
+    # Android FULL isolation puts the blocking QuickJS call behind a Future hard
+    # timeout. Official Nuvio loading must still rewrite only that inner invocation.
+    hard = tmp / "tv-hard-timeout.kt"
+    hard.write_text(
+        "val providerFuture = providerExecutor.submit(java.util.concurrent.Callable {\n"
+        "    runBlocking {\n"
+        + CASES["tv"][0].replace("val rows = ", "")
+        + "\n    }\n"
+        "}\n"
+        "val rows = providerFuture.get(25000L, java.util.concurrent.TimeUnit.MILLISECONDS)",
+        encoding="utf-8",
+    )
+    assert compat.unwrap_runtime_trap(hard, "tv") is True
+    hard_text = canonical.replace_official_execution(hard.read_text(encoding="utf-8"), "tv")
+    assert "providerFuture.get(25000L" in hard_text
+    assert CASES["tv"][1] in hard_text
+    assert "runtime.executePlugin(" not in hard_text
+
     # Acceptance-prepared sources can already be in canonical raw form. The
     # compatibility layer must remain safe and idempotent for that path.
     raw_path = tmp / "desktop-raw.kt"
