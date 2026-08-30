@@ -222,6 +222,55 @@ def main() -> int:
         pattern = sanitized_url_pattern(runtime_url)
         try:
             status, final, ctype, text = fetch_text(runtime_url, args.timeout, referer=referer)
+            runtime_same = [
+                urljoin(final, clean_route(value))
+                for value in ATTR_URL.findall(text)
+            ]
+            runtime_chunks = [
+                value for value in runtime_same
+                if same_origin(value, origin)
+                and "/_next/static/" in urlsplit(value).path
+                and value.lower().split("?", 1)[0].endswith(".js")
+            ]
+            runtime_chunk_rows: list[dict[str, Any]] = []
+            runtime_route_hints: list[str] = []
+            runtime_direct_hosts: list[str] = direct_media_hosts(text)
+            for chunk in list(dict.fromkeys(runtime_chunks))[: min(max(0, args.max_chunks), 18)]:
+                chunk_pattern = sanitized_url_pattern(chunk)
+                try:
+                    chunk_status, chunk_final, chunk_ctype, chunk_text = fetch_text(
+                        chunk,
+                        args.timeout,
+                        referer=final,
+                    )
+                    chunk_hints = discover_routes(chunk_text)[:80]
+                    chunk_direct_hosts = direct_media_hosts(chunk_text)
+                    for value in chunk_hints:
+                        if value not in runtime_route_hints:
+                            runtime_route_hints.append(value)
+                    for value in chunk_direct_hosts:
+                        if value not in runtime_direct_hosts:
+                            runtime_direct_hosts.append(value)
+                    runtime_chunk_rows.append({
+                        "url_pattern": chunk_pattern,
+                        "ok": True,
+                        "status": chunk_status,
+                        "final_path": urlsplit(chunk_final).path or "/",
+                        "content_type": chunk_ctype,
+                        "bytes_scanned": min(len(chunk_text.encode("utf-8", errors="ignore")), 2_000_000),
+                        "route_hints": chunk_hints,
+                        "useful_absolute_urls": [
+                            sanitized_url_pattern(value) + "@" + (urlsplit(value).hostname or "")
+                            for value in useful_absolute_urls(chunk_text)[:40]
+                        ],
+                        "direct_media_hosts": chunk_direct_hosts,
+                    })
+                except Exception as exc:
+                    runtime_chunk_rows.append({
+                        "url_pattern": chunk_pattern,
+                        "ok": False,
+                        "error": type(exc).__name__,
+                    })
             report["runtime_routes"].append({
                 "url_pattern": pattern,
                 "referer_path": urlsplit(referer).path or "/",
@@ -236,6 +285,10 @@ def main() -> int:
                     for value in useful_absolute_urls(text)[:40]
                 ],
                 "direct_media_hosts": direct_media_hosts(text),
+                "next_chunk_count": len(runtime_chunks),
+                "runtime_chunk_route_hints": runtime_route_hints[:120],
+                "runtime_direct_media_hosts": runtime_direct_hosts[:24],
+                "runtime_chunks": runtime_chunk_rows,
             })
         except Exception as exc:
             report["runtime_routes"].append({
