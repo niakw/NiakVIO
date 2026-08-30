@@ -62,6 +62,14 @@ assert "runtime_api_patterns" in SITE_PROBE
 assert "runtime_api_probes" in SITE_PROBE
 assert '"--max-runtime-chunks"' in SITE_PROBE
 assert "default=18" in SITE_PROBE
+
+SITE_WORKFLOW = (ROOT / ".github/workflows/provider-site-probe.yml").read_text(encoding="utf-8")
+RUNTIME_PARITY = (ROOT / "scripts/probe_provider_runtime_parity.py").read_text(encoding="utf-8")
+assert "probe_provider_runtime_parity.py" in SITE_WORKFLOW
+assert "provider-runtime-parity.json" in SITE_WORKFLOW
+assert "capture_output=True" in RUNTIME_PARITY
+assert '"network_observations": observations[:80]' in RUNTIME_PARITY
+assert '"streams"' not in RUNTIME_PARITY.split("def sanitize", 1)[1].split("def main", 1)[0]
 for route_token in ("stream", "streams", "source", "sources", "server", "servers", "resolve", "proxy", "manifest", "action"):
     assert route_token in SITE_PROBE, route_token
 

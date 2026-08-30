@@ -7,6 +7,7 @@ on:
       - '.github/provider-onboarding/request.json'
       - 'scripts/probe_provider_site_structure.py'
       - 'scripts/add_provider.py'
+      - 'scripts/probe_provider_runtime_parity.py'
       - '.github/workflows/provider-site-probe.yml'
 
 permissions:
@@ -31,6 +32,11 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
       - name: Stage request metadata locally
         shell: bash
         run: |
@@ -48,6 +54,14 @@ jobs:
             --output .provider-onboarding/routes/provider-site-structure.json \
             --timeout 8 --max-chunks 18
 
+      - name: Compare raw ProviderBase with published runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/probe_provider_runtime_parity.py \
+            --current .provider-onboarding/current.json \
+            --output .provider-onboarding/routes/provider-runtime-parity.json
+
       - name: Upload sanitized route evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -56,5 +70,6 @@ jobs:
           path: |
             .provider-onboarding/current.json
             .provider-onboarding/routes/provider-site-structure.json
+            .provider-onboarding/routes/provider-runtime-parity.json
           retention-days: 3
           if-no-files-found: error
