@@ -304,3 +304,68 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1);});
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
+
+# movie transport gate avoids TMDB and provider runtime for providers without movie capability.
+tv_anime_no_movie = mod.apply(base, options={"semantic_types": ["tv", "anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "tv-anime-no-movie.js"
+    test = tmp_path / "tv-anime-no-movie-test.js"
+    provider.write_text(tv_anime_no_movie, encoding="utf-8")
+    test.write_text(r'''
+let fetches=0;
+global.fetch=async()=>{fetches+=1;throw new Error("movie request must exit before TMDB");};
+const provider=require(process.argv[2]);
+(async()=>{
+ const value=await provider.getStreams("157336","movie",null,null);
+ if(!Array.isArray(value)||value.length!==0)throw new Error("non-movie provider processed movie request");
+ if(fetches!==0)throw new Error("non-movie provider performed unnecessary TMDB lookup");
+})().catch(e=>{console.error(e);process.exit(1);});
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
+
+# Anime movie requires both movie transport capability and anime semantic capability.
+anime_movie_capable = mod.apply(base, options={"semantic_types": ["movie", "anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "anime-movie-capable.js"
+    test = tmp_path / "anime-movie-capable-test.js"
+    provider.write_text(anime_movie_capable, encoding="utf-8")
+    test.write_text(r'''
+let seen=[];
+global.fetch=async(url)=>{
+ const u=String(url);seen.push(u);
+ if(!u.includes("/movie/4242"))throw new Error("anime movie used wrong TMDB namespace");
+ return{ok:true,text:async()=>"<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+ const value=await provider.getStreams("4242","movie",null,null);
+ if(!value.length||value[0].mediaType!=="anime")throw new Error("anime movie was not semantically classified");
+ if(seen.length!==1)throw new Error("anime movie classification should need one TMDB lookup");
+})().catch(e=>{console.error(e);process.exit(1);});
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
+
+# Explicit anime without episodic context may probe movie only if provider declares movie.
+anime_only_no_movie = mod.apply(object_base, options={"semantic_types": ["anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "anime-only-no-movie.js"
+    test = tmp_path / "anime-only-no-movie-test.js"
+    provider.write_text(anime_only_no_movie, encoding="utf-8")
+    test.write_text(r'''
+const seen=[];
+global.fetch=async(url)=>{
+ const u=String(url);seen.push(u);
+ if(u.includes("/movie/"))throw new Error("anime-only provider probed movie namespace without movie capability");
+ return{ok:true,text:async()=>"<html><a href='/genre/18-drama'>Drama</a><div>Original Language English</div></html>"};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+ const value=await provider.getStreams({tmdbId:"4242",mediaType:"anime"});
+ if(!Array.isArray(value)||value.length!==0)throw new Error("anime-only provider should fail closed when TV entity is not anime");
+ if(seen.some(u=>u.includes("/movie/")))throw new Error("movie namespace was unnecessarily probed");
+})().catch(e=>{console.error(e);process.exit(1);});
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
