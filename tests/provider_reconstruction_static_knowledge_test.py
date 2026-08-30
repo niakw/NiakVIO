@@ -54,5 +54,7 @@ assert semantic_entry["canonicalSupportedTypes"] == ["anime"]
 script = (ROOT / "scripts" / "discover_candidates.py").read_text(encoding="utf-8")
 assert "--force-clean-reconstruction" in script
 assert "if pending_clean and not force_clean_reconstruction:" in script
+assert script.count("force_clean_reconstruction=provider_id in forced_reconstruction_ids") >= 2
+assert script.count("reconstruction_manifest_entry(provider_id") >= 2
 
 print("static clean ProviderBase reconstruction knowledge tests passed")
