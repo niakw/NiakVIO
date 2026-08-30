@@ -40,6 +40,7 @@ from typing import Any
 from apply_provider_overrides import apply_overrides, load_overrides
 from provider_base_store import (
     CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+    CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
     CLEAN_RECONSTRUCTION_SOURCE,
     persist_base_from_published,
     persist_clean_provider_seed,
@@ -189,6 +190,36 @@ def metadata_is_excluded(entry: dict[str, Any], sources: dict[str, Any]) -> bool
     return any(
         str(pattern).casefold() in text
         for pattern in sources.get("exclusions", {}).get("metadata_patterns", [])
+    )
+
+
+def is_pending_clean_reconstruction_candidate(
+    candidate: dict[str, Any],
+    previous_base_row: dict[str, Any] | None,
+) -> bool:
+    row = previous_base_row if isinstance(previous_base_row, dict) else {}
+    return (
+        str(candidate.get("candidate_code_origin") or "")
+        == "pending-niakvio-clean-reconstruction-v2"
+        and str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE
+        and row.get("clean_reconstruction_candidate") is True
+        and requires_clean_reconstruction(row)
+    )
+
+
+def pending_clean_reconstruction_has_strict_deep_proof(
+    candidate: dict[str, Any],
+    previous_base_row: dict[str, Any] | None,
+    decision: dict[str, Any],
+    mode: str,
+) -> bool:
+    if not is_pending_clean_reconstruction_candidate(candidate, previous_base_row):
+        return True
+    health = candidate.get("health") if isinstance(candidate.get("health"), dict) else {}
+    return (
+        str(mode) == "deep"
+        and str(health.get("status") or "") == "healthy"
+        and bool(decision.get("strict_activation_eligible", False))
     )
 
 
@@ -2079,6 +2110,70 @@ def main() -> int:
                         }
                     )
                 continue
+
+            previous_base_row = previous_provenance.get("providers", {}).get(cid, {})
+            if (
+                is_pending_clean_reconstruction_candidate(selected, previous_base_row)
+                and not pending_clean_reconstruction_has_strict_deep_proof(
+                    selected,
+                    previous_base_row,
+                    decision,
+                    mode,
+                )
+            ):
+                # A Brain/Learning candidate is only a proposal until the exact
+                # pending v2 bytes pass the canonical strict Deep gates. A
+                # conclusive CI failure must never accidentally convert a
+                # candidate into a verified ProviderBase merely because it
+                # reached the publication writer.
+                if old_artifact_available and isinstance(old_entry, dict) and old_entry:
+                    retained = dict(old_entry)
+                    entries[cid] = retained
+                    retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
+                    pending_blockers = list(
+                        dict.fromkeys(
+                            blockers + ["clean_reconstruction_strict_deep_proof_pending"]
+                        )
+                    )
+                    provenance[cid] = {
+                        **old_provenance,
+                        "id": cid,
+                        "published_filename": old_filename,
+                        "sha256": retained_digest,
+                        "patched_sha256": retained_digest,
+                        "checked_at": now,
+                        "check_mode": mode,
+                        "check_status": observed_status,
+                        "clean_reconstruction_required": True,
+                        "clean_reconstruction_verified": False,
+                        "clean_reconstruction_candidate_role": "pending-canonical-deep-proof",
+                        "activation_eligible": False,
+                        "activation_mode": "clean_reconstruction_pending_strict_deep_proof",
+                        "activation_blockers": pending_blockers,
+                    }
+                    report_items.append(
+                        {
+                            "id": cid,
+                            "action": "preserved-current-clean-candidate-awaiting-strict-deep-proof",
+                            "enabled": bool(retained.get("enabled", False)),
+                            "activation_eligible": False,
+                            "strict_activation_eligible": False,
+                            "activation_mode": "clean_reconstruction_pending_strict_deep_proof",
+                            "failed_gates": [
+                                name for name, value in gates.items() if not value.get("passed")
+                            ],
+                            "activation_blockers": pending_blockers,
+                            "activation_gates": gates,
+                            "observed_status": observed_status,
+                            "published_filename": old_filename,
+                            "variant_count": len(variants),
+                        }
+                    )
+                    continue
+                raise ValueError(
+                    f"{cid}: pending clean reconstruction lacks strict Deep proof "
+                    "and no published LKG artifact is available"
+                )
 
             try:
                 destination, digest, base_filename, base_sha256 = copy_candidate(

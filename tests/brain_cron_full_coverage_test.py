@@ -97,6 +97,8 @@ def main() -> int:
     assert "ref: main" in workflow, "scheduled Brain must run from trusted production main"
     assert "publish_proposal:" in workflow, "watchdog/manual proposal input disappeared"
     assert "publish-repair-proposal:" in workflow, "validated Brain PR job disappeared"
+    assert ".github/triggers/brain-learning-reconstruction" in workflow, "explicit Brain reconstruction trigger disappeared"
+    assert "github.event_name == 'push'" in workflow, "trigger-file Brain run no longer opens a validated reconstruction PR"
     assert "brain-repair/proposal" in workflow, "single Brain repair PR branch disappeared"
     assert "publish-architecture-proposal:" in workflow, "Brain self-evolution PR job disappeared"
     assert "brain-architecture/proposal" in workflow, "dedicated Brain architecture PR branch disappeared"

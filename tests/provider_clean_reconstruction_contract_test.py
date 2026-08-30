@@ -126,6 +126,18 @@ assert "legacy ProviderBase is compatibility-only" in promoter
 assert "refusing legacy ProviderBase fallback" in promoter
 assert "if previous_requires_clean:" in promoter
 assert "CLEAN_RECONSTRUCTION_SOURCE" in promoter
+assert "CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE" in promoter
+assert "is_pending_clean_reconstruction_candidate" in promoter
+assert "pending_clean_reconstruction_has_strict_deep_proof" in promoter
+assert '"clean_reconstruction_strict_deep_proof_pending"' in promoter
+assert '"pending-canonical-deep-proof"' in promoter
+assert 'str(mode) == "deep"' in promoter
+assert 'bool(decision.get("strict_activation_eligible", False))' in promoter
+
+sync_workflow = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+assert "'PROVENANCE.json'" in sync_workflow
+assert "'provider-bases/**'" in sync_workflow
+assert "PROVENANCE\\.json|provider-bases/" in sync_workflow
 
 print(
     "Provider clean reconstruction contract passed: "

@@ -63,6 +63,8 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/provider_compiler.py'
       - 'provider-overrides.json'
+      - 'PROVENANCE.json'
+      - 'provider-bases/**'
       - 'provider-security-revocations.json'
       - 'provider-type-policy.json'
       - 'tests/network_guard.test.cjs'
@@ -149,6 +151,8 @@ on:
       - 'scripts/provider_base_store.py'
       - 'scripts/provider_compiler.py'
       - 'provider-overrides.json'
+      - 'PROVENANCE.json'
+      - 'provider-bases/**'
       - 'provider-security-revocations.json'
       - 'provider-type-policy.json'
       - 'tests/network_guard.test.cjs'
@@ -232,7 +236,7 @@ jobs:
             BEFORE="${{ github.event.before }}"
             AFTER="${{ github.sha }}"
             if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
-              if git diff --name-only "$BEFORE" "$AFTER" | grep -Fxq '.github/triggers/deep-provider-repair'; then
+              if git diff --name-only "$BEFORE" "$AFTER" | grep -Eq '^(\.github/triggers/deep-provider-repair|PROVENANCE\.json|provider-bases/)'; then
                 MODE=deep
               fi
             fi
