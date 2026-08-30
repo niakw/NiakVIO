@@ -410,7 +410,6 @@ def validate() -> list[str]:
             and isinstance(provenance_row, dict)
             and provenance_row.get("clean_reconstruction_candidate") is True
             and provenance_row.get("clean_reconstruction_verified") is not True
-            and str(provenance_row.get("clean_reconstruction_candidate_role") or "") == "pending-canonical-deep-proof"
         )
         if pending_v2_preserved:
             deferred_to_learning[provider_id] = "pending_clean_v2_preserved_published_state"
