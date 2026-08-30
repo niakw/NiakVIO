@@ -42,12 +42,18 @@ def committed_provider_path(provider_id: str) -> str:
 
 
 def committed_base_path(provider_id: str) -> str:
-    provenance_path = ROOT / "PROVENANCE.json"
-    if not provenance_path.is_file():
-        return ""
     try:
-        provenance = load_json(provenance_path)
+        proc = subprocess.run(
+            ["git", "show", "HEAD:PROVENANCE.json"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=True,
+        )
+        provenance = json.loads(proc.stdout)
     except Exception:
+        return ""
+    if not isinstance(provenance, dict):
         return ""
     row = (provenance.get("providers") or {}).get(provider_id)
     if not isinstance(row, dict):

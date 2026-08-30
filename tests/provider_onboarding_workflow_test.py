@@ -76,6 +76,7 @@ assert '"network_observations": observations[:80]' in RUNTIME_PARITY
 assert '"onboarding_tv"' in RUNTIME_PARITY
 assert '"onboarding_compose"' in RUNTIME_PARITY
 assert "def committed_base_path" in RUNTIME_PARITY
+assert '["git", "show", "HEAD:PROVENANCE.json"]' in RUNTIME_PARITY
 assert '"committed_base"' in RUNTIME_PARITY
 assert '"injectAcceptLanguage": False' in RUNTIME_PARITY
 assert '"maxFetches": 18' in RUNTIME_PARITY
