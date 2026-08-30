@@ -25,6 +25,20 @@ def scan(path: Path, failures: list[str]) -> None:
 
 failures: list[str] = []
 
+RUNTIME_KEY_PATH = ROOT / "runtime" / "tmdb-runtime-key.json"
+runtime_key = json.loads(RUNTIME_KEY_PATH.read_text(encoding="utf-8"))
+assert runtime_key.get("version") == 1
+assert isinstance(runtime_key.get("salt"), str) and runtime_key["salt"]
+assert isinstance(runtime_key.get("cipher"), list) and runtime_key["cipher"]
+assert all(isinstance(value, int) and 0 <= value <= 255 for value in runtime_key["cipher"])
+assert "api_key" not in runtime_key and "token" not in runtime_key
+
+resolver_source = (ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
+assert "tmdbKeyCipher" in resolver_source
+assert "api.themoviedb.org/3/" in resolver_source
+assert "www.themoviedb.org/" not in resolver_source
+
+
 # All code that can author a future ProviderBase/provider is clean immediately.
 patch_root = ROOT / "scripts" / "provider_patches"
 for path in patch_root.rglob("*.py"):

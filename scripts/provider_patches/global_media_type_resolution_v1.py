@@ -5,19 +5,50 @@ Nuvio client aliases (series/show/other) mean TV by default. A trusted anime
 identity, including TMDB metadata, may refine that TV-shaped request to anime
 before any provider-specific resolver sees it.
 
-No NiakVIO credential is embedded. The resolver first reuses a runtime/provider
-TMDB credential when one already exists; otherwise it may classify TV-shaped
-requests from the public TMDB title page. Object-style requests can also carry
-trusted metadata directly. Ambiguous TV/anime metadata failure is fail-closed.
-TMDB identity is namespaced: anime-series share the TMDB TV namespace.
+TMDB API metadata is authoritative when available. The build may embed an
+obfuscated runtime-only TMDB v3 API key generated from the repository secret;
+the plaintext key is never committed and is never passed into provider business
+logic. Object-style requests can also carry trusted TMDB metadata directly.
+
+A conclusive TMDB classification still enforces provider semantic capabilities.
+Only infrastructure failure (timeout/network/auth/rate-limit/5xx/unparseable
+response) degrades to a fail-open transport/semantic fallback so one metadata
+outage cannot suppress the entire provider catalogue. No public HTML scraping is
+used as a classification substitute.
 """
 from __future__ import annotations
 
 import hashlib
 import json
+from pathlib import Path
 from typing import Any
 
 MARKER = "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"
+ROOT = Path(__file__).resolve().parents[2]
+RUNTIME_KEY_PATH = ROOT / "runtime" / "tmdb-runtime-key.json"
+
+
+def _runtime_key_payload() -> dict[str, Any]:
+    try:
+        value = json.loads(RUNTIME_KEY_PATH.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(value, dict) or int(value.get("version") or 0) != 1:
+        return {}
+    salt = str(value.get("salt") or "").strip()
+    cipher = value.get("cipher")
+    if not salt or not isinstance(cipher, list) or not cipher:
+        return {}
+    cleaned: list[int] = []
+    for item in cipher:
+        try:
+            number = int(item)
+        except (TypeError, ValueError):
+            return {}
+        if number < 0 or number > 255:
+            return {}
+        cleaned.append(number)
+    return {"tmdbKeySalt": salt, "tmdbKeyCipher": cleaned}
 
 
 def _strip_existing(text: str) -> str:
@@ -46,7 +77,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-first-provider-entity-gate-v5-bounded-execution",
+        "revision": "tmdb-api-authoritative-fail-open-infra-v6",
+        **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -72,16 +104,8 @@ function namespaceCandidates(v,season,episode,semantic){
 }
 function rows(v){return Array.isArray(v)?v:[]}
 function keywordRows(m){var k=m&&m.keywords;return rows(k&&((k.results||k.keywords)||k))}
-function htmlAnime(h){
-  var x=s(h);if(!x)return false;
-  var keyword=/(?:>|\"|&quot;)\s*anime\s*(?:<|\"|&quot;)/i.test(x)||/\/keyword\/[^"'<>\s]*anime/i.test(x);
-  var animation=/\/genre\/16(?:-|\/|\?|\")/i.test(x)||/>\s*Animation\s*</i.test(x)||/\"name\"\s*:\s*\"Animation\"/i.test(x);
-  var japanese=/Original\s+Language[\s\S]{0,260}Japanese/i.test(x)||/\"original_language\"\s*:\s*\"ja\"/i.test(x);
-  return keyword||(animation&&japanese);
-}
 function animeMeta(m){
   if(!m||typeof m!=="object")return false;
-  if(typeof m.__nuvioPublicHtml==="string")return htmlAnime(m.__nuvioPublicHtml);
   var explicit=s(m.canonicalMediaType||m.canonical_media_type||m.category).toLowerCase();
   if(explicit==="anime")return true;
   var keywords=keywordRows(m).map(function(x){return s(x&&x.name).toLowerCase()});
@@ -96,10 +120,22 @@ function animeMeta(m){
   return animation&&japanese;
 }
 function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+function embeddedKey(){
+  var salt=s(c.tmdbKeySalt),cipher=rows(c.tmdbKeyCipher);
+  if(!salt||!cipher.length)return"";
+  var material=salt+"|NiakVIO/TMDB/v1",seed=2166136261>>>0;
+  for(var i=0;i<material.length;i++){seed^=material.charCodeAt(i);seed=Math.imul(seed,16777619)>>>0}
+  var out="";
+  for(var j=0;j<cipher.length;j++){
+    seed^=(seed<<13);seed>>>=0;seed^=(seed>>>17);seed>>>=0;seed^=(seed<<5);seed>>>=0;
+    out+=String.fromCharCode((Number(cipher[j])&255)^(seed&255));
+  }
+  return out;
+}
 function localKey(){
   try{if(g&&s(g.TMDB_API_KEY))return s(g.TMDB_API_KEY)}catch(_){}
   try{if(typeof TMDB_API_KEY!=="undefined"&&s(TMDB_API_KEY))return s(TMDB_API_KEY)}catch(_){}
-  return "";
+  try{return embeddedKey()}catch(_){return""}
 }
 function localToken(){
   try{if(g&&s(g.TMDB_ACCESS_TOKEN))return s(g.TMDB_ACCESS_TOKEN)}catch(_){}
@@ -108,22 +144,6 @@ function localToken(){
 }
 var mediaCache=Object.create(null);
 try{if(g)g.__nuvioTmdbMetadataCacheV1=mediaCache}catch(_){}
-function htmlDecode(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&amp;/gi,"&").replace(/&lt;/gi,"<").replace(/&gt;/gi,">")}
-function publicMeta(html,namespace,id){
-  var h=s(html),title="",year="";
-  var m=h.match(/<meta[^>]+(?:property|name)=["'](?:og:title|twitter:title|title)["'][^>]+content=["']([^"']+)["']/i)
-    ||h.match(/<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["'](?:og:title|twitter:title|title)["']/i)
-    ||h.match(/<title[^>]*>([^<]+)<\/title>/i);
-  if(m)title=htmlDecode(m[1]).replace(/\s*[—|-]\s*The Movie Database.*$/i,"").replace(/\s*\((?:TV Series|Movie)?\s*(\d{4})[^)]*\)\s*$/i,function(_x,y){if(!year)year=y;return""}).trim();
-  var y=h.match(/(?:datePublished|release_date|first_air_date)["'\s:=]+(?:content=["'])?(\d{4})[-/]/i)
-    ||h.match(/(?:release_date|first_air_date)[\s\S]{0,160}?(19\d{2}|20\d{2})/i)
-    ||h.match(/class=["'][^"']*release_date[^"']*["'][^>]*>[^(<]*\(?(19\d{2}|20\d{2})/i);
-  if(y&&!year)year=y[1];
-  var out={__nuvioPublicHtml:h,__nuvioTmdbNamespace:namespace,__nuvioTmdbId:id};
-  if(namespace==="movie"){out.title=title;out.original_title=title;if(year)out.release_date=year+"-01-01"}
-  else{out.name=title;out.original_name=title;if(year)out.first_air_date=year+"-01-01"}
-  return out;
-}
 function hasTmdbMetadata(m){
   return !!(m&&typeof m==="object"&&(
     Array.isArray(m.genres)||Array.isArray(m.genre_ids)||Array.isArray(m.genreIds)||
@@ -133,31 +153,36 @@ function hasTmdbMetadata(m){
 }
 async function tmdb(namespaceValue,tmdbId){
   var namespace=namespaceValue==="movie"?"movie":"tv",id=s(tmdbId),cacheKey=namespace+":"+id,key=localKey(),token=localToken();
-  if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return null;
+  if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return{state:"unavailable",metadata:null};
   if(Object.prototype.hasOwnProperty.call(mediaCache,cacheKey))return await mediaCache[cacheKey];
   var pending=(async function(){
+    if(!key&&!token)return{state:"unavailable",metadata:null};
     try{
-      if(key||token){
-        var u="https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
-        if(key)u+="&api_key="+encodeURIComponent(key);
-        var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
-        var api=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
-        if(api&&api.ok&&typeof api.json==="function")return await api.json();
-      }
-      var publicUrl="https://www.themoviedb.org/"+namespace+"/"+encodeURIComponent(id)+"?language=en-US";
-      var page=await g.fetch(publicUrl,{
-        headers:{Accept:"text/html","Range":"bytes=0-65535","Cache-Control":"max-stale=86400"},
-        redirect:"follow",
-        signal:timeout()
-      });
-      if(!page||!page.ok||typeof page.text!=="function")return null;
-      return publicMeta(await page.text(),namespace,id);
-    }catch(_){return null}
+      var u="https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
+      if(key)u+="&api_key="+encodeURIComponent(key);
+      var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
+      var api=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
+      if(!api)return{state:"unavailable",metadata:null};
+      if(api.status===404)return{state:"not_found",metadata:null};
+      if(!api.ok||typeof api.json!=="function")return{state:"unavailable",metadata:null};
+      var value=await api.json();
+      if(!value||typeof value!=="object"||Number(value.id||0)<=0)return{state:"unavailable",metadata:null};
+      value.__nuvioTmdbNamespace=namespace;
+      value.__nuvioTmdbId=id;
+      return{state:"ok",metadata:value};
+    }catch(_){return{state:"unavailable",metadata:null}}
   })();
   mediaCache[cacheKey]=pending;
   var value=await pending;
   mediaCache[cacheKey]=value;
   return value;
+}
+function fallbackType(input,semantic){
+  var raw=s(input||"movie").toLowerCase(),transport=alias(input);
+  if(raw==="anime")return"anime";
+  if(transport==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")>=0)return"anime";
+  if(raw==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")>=0)return"anime";
+  return transport;
 }
 async function canonicalResolution(id,input,metadata,season,episode,semantic){
   var candidates=namespaceCandidates(input,season,episode,semantic),raw=s(input||"movie").toLowerCase();
@@ -166,14 +191,20 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
     var namespace=declared==="movie"?"movie":candidates[0];
     var type=animeMeta(metadata)?"anime":namespace;
     if(raw==="anime"&&type!=="anime")return null;
-    return{type:type,namespace:namespace,metadata:metadata};
+    return{type:type,namespace:namespace,metadata:metadata,authoritative:true,degraded:false};
   }
+  var unavailable=false;
   for(var i=0;i<candidates.length;i++){
-    var namespace=candidates[i],m=await tmdb(namespace,id);
-    if(!m)continue;
-    var type=animeMeta(m)?"anime":namespace;
+    var namespace=candidates[i],probe=await tmdb(namespace,id);
+    if(!probe||probe.state==="unavailable"){unavailable=true;continue}
+    if(probe.state==="not_found")continue;
+    var m=probe.metadata,type=animeMeta(m)?"anime":namespace;
     if(raw==="anime"&&type!=="anime")continue;
-    return{type:type,namespace:namespace,metadata:m};
+    return{type:type,namespace:namespace,metadata:m,authoritative:true,degraded:false};
+  }
+  if(unavailable){
+    var fallback=fallbackType(input,semantic),fallbackNamespace=namespaceOf(input);
+    return{type:fallback,namespace:fallbackNamespace,metadata:null,authoritative:false,degraded:true};
   }
   return null;
 }
@@ -200,6 +231,7 @@ async function resolve(a){
     tmdbNamespace:namespace,
     tmdbIdentity:namespace+":"+id,
     canonicalMediaType:type,
+    tmdbResolutionDegraded:resolved.degraded===true,
     nuvioInputMediaType:input
   };
   if(obj){
