@@ -17,6 +17,9 @@ assert 'request.get("emoji")' not in SCRIPT
 assert 'request.get("replace_existing")' in SCRIPT
 assert "provider already exists" in SCRIPT
 assert "and not replace_existing" in SCRIPT
+stage_body = SCRIPT.split("def stage(", 1)[1].split("\ndef refresh(", 1)[0]
+assert stage_body.index("manifest = load_json(MANIFEST, {})") < stage_body.index("description = str(")
+assert stage_body.index("existing_entry = next(") < stage_body.index("existing_entry = existing_entry if isinstance(existing_entry, dict) else {}")
 
 assert "Delegate automatic defaults to Provider branding assets engine" in ADD
 assert "scripts/provider_branding_assets.py" in ADD
