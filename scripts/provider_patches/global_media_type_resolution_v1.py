@@ -90,7 +90,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     js = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
-function s(v){return String(v==null?"":v).trim()}\nfunction normalizeKey(v){var x=s(v);if(x.length===33&&x.charAt(0)==="\\\\"&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
+function s(v){return String(v==null?"":v).trim()}
+function normalizeKey(v){var x=s(v);if(x.length===33&&x.charCodeAt(0)===92&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
 function namespaceCandidates(v,season,episode,semantic){
