@@ -56,18 +56,46 @@ def slugify(value: str) -> str:
     return value.strip("-")
 
 
+def useful_absolute_urls(text: str) -> list[str]:
+    normalized = html.unescape(text).replace("\\/", "/").replace("\\u002f", "/").replace("\\u003a", ":")
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in ABS_URL.findall(normalized):
+        value = clean_route(raw)
+        try:
+            parsed = urlsplit(value)
+        except ValueError:
+            continue
+        host = (parsed.hostname or "").casefold()
+        path_query = (parsed.path + "?" + parsed.query).casefold()
+        if not host or host in {"image.tmdb.org", "nextjs.org", "www.nextjs.org"}:
+            continue
+        if "/_next/static/" in parsed.path:
+            continue
+        if not any(token in path_query for token in (
+            "api", "search", "stream", "source", "server", "embed", "player",
+            "watch", "video", "resolve", "proxy", "manifest", "action",
+        )):
+            continue
+        if value not in seen:
+            seen.add(value)
+            out.append(value)
+        if len(out) >= 40:
+            break
+    return out
+
+
 def discover_routes(text: str) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
     normalized = html.unescape(text).replace("\\/", "/").replace("\\u002f", "/").replace("\\u003a", ":")
-    for pattern in (ROUTE_HINT, TMDB_HINT):
-        for match in pattern.finditer(normalized):
-            value = clean_route(match.groupdict().get("route") or match.groupdict().get("value") or "")
-            if value and value not in seen:
-                seen.add(value)
-                out.append(value)
-                if len(out) >= 120:
-                    return out
+    for match in ROUTE_HINT.finditer(normalized):
+        value = clean_route(match.group("route") or "")
+        if value and value not in seen:
+            seen.add(value)
+            out.append(value)
+            if len(out) >= 120:
+                return out
     return out
 
 
@@ -130,6 +158,7 @@ def main() -> int:
                 priority = (100 if page_is_detail else 10) + (20 if u.lower().endswith(".js") else 0)
                 chunk_priority[u] = max(priority, chunk_priority.get(u, 0))
         hints = discover_routes(text)
+        useful_abs = useful_absolute_urls(text)
         for value in hints:
             if value not in route_seen:
                 route_seen.add(value)
@@ -142,6 +171,7 @@ def main() -> int:
             "content_type": ctype,
             "bytes_scanned": min(len(text.encode("utf-8", errors="ignore")), 2_000_000),
             "same_origin_links": sorted(set(same))[:80],
+            "useful_absolute_urls": useful_abs,
             "next_chunk_count": len([u for u in same if "/_next/static/" in u]),
         })
 
@@ -157,11 +187,7 @@ def main() -> int:
             report["next_chunks"].append({"url": chunk, "ok": False, "error": type(exc).__name__})
             continue
         hints = discover_routes(text)
-        absolute = [clean_route(v) for v in ABS_URL.findall(text)]
-        useful_abs = sorted({
-            u for u in absolute
-            if any(token in u.lower() for token in ("api", "search", "stream", "source", "server", "embed", "player", "watch", "video", "resolve", "proxy", "manifest", "action", "tmdb"))
-        })[:40]
+        useful_abs = useful_absolute_urls(text)
         for value in hints:
             if value not in route_seen:
                 route_seen.add(value)
