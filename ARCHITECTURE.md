@@ -177,9 +177,12 @@ clé TMDB = (namespace, id)
         ↓
 movie:<id> ou tv:<id>
         ↓
-namespace reçu : movie → movie ; series/show/tv/anime → tv
+namespace reçu : movie → movie ; series/show/tv → tv
         ↓
-lookup TMDB dans ce namespace
+anime + saison/épisode → tv
+anime sans contexte épisodique → tv puis movie, jusqu'à preuve anime
+        ↓
+lookup TMDB dans le namespace déterminé
         ↓
 classification canonique → movie, tv ou anime
         ↓
