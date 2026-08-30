@@ -124,6 +124,11 @@ assert '"legacy-providerbase-compatibility-only"' in discover
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in discover
 assert "scripts/provider_patches/castle_strict_identity_v1.py" in base_store_source
 assert "excluded_patch_scripts=CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in base_store_source
+
+profiles_builder = (SCRIPTS / "build_provider_runtime_profiles.py").read_text(encoding="utf-8")
+assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in profiles_builder
+assert "clean_seed_origin" in profiles_builder
+assert "excluded_patch_scripts=(" in profiles_builder
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
 assert "refusing legacy ProviderBase fallback" in promoter
