@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source_tag": "5.21.0",
   "source_commit": "deae2a631727547fc1be62d446dd09bc9902cd4f",
-  "policy": "Current semantic types must remain a superset of the 5.21.0 production LKG. Providers that advertised m3u8 in 5.21.0 must retain m3u8 metadata unless this baseline is explicitly reviewed.",
+  "policy": "Current semantic types must remain a superset of the 5.21.0 production LKG; HLS providers must retain m3u8 metadata; stable provider capability strategy/validation/direct-media semantics must not drift without explicit review of this baseline.",
   "providers": {
     "anime-sama": {
       "supportedTypes": [
@@ -13,7 +13,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "purstream": {
       "supportedTypes": [
@@ -25,7 +31,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "official_domain_hub",
+        "validation": "follow_official_link_then_api_runtime",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "flemmix": {
       "supportedTypes": [
@@ -36,7 +48,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "movieshunt": {
       "supportedTypes": [
@@ -45,7 +63,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "zinkmovies": {
       "supportedTypes": [
@@ -57,7 +81,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "vegamovies": {
       "supportedTypes": [
@@ -68,7 +98,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "hindmoviez": {
       "supportedTypes": [
@@ -80,7 +116,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "4khdhub": {
       "supportedTypes": [
@@ -90,7 +132,13 @@
       "formats": [
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "persianstremio": {
       "supportedTypes": [
@@ -101,7 +149,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "desiflix": {
       "supportedTypes": [
@@ -113,7 +167,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "streamzo": {
       "supportedTypes": [
@@ -124,7 +184,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native_and_final_direct_media",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "mugiwarastream": {
       "supportedTypes": [
@@ -136,7 +202,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "french-manga": {
       "supportedTypes": [
@@ -147,7 +219,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "voiranime": {
       "supportedTypes": [
@@ -159,7 +237,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "videasy": {
       "supportedTypes": [
@@ -170,7 +254,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "castle": {
       "supportedTypes": [
@@ -181,7 +271,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "cineby": {
       "supportedTypes": [
@@ -191,7 +287,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "animezey": {
       "supportedTypes": [
@@ -203,7 +305,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "movieblast": {
       "supportedTypes": [
@@ -215,7 +323,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "anikototv": {
       "supportedTypes": [
@@ -224,7 +338,13 @@
       "formats": [
         "mp4"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "allmovieland": {
       "supportedTypes": [
@@ -234,7 +354,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "anidb": {
       "supportedTypes": [
@@ -244,7 +370,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "animepahe": {
       "supportedTypes": [
@@ -256,7 +388,13 @@
         "m3u8",
         "mp4"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "animesalt": {
       "supportedTypes": [
@@ -268,7 +406,13 @@
         "m3u8",
         "mp4"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "animesama-co": {
       "supportedTypes": [
@@ -279,7 +423,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "animesultra": {
       "supportedTypes": [
@@ -290,7 +440,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "animetsu": {
       "supportedTypes": [
@@ -299,7 +455,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "animevostfr": {
       "supportedTypes": [
@@ -310,7 +472,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "anizone": {
       "supportedTypes": [
@@ -319,7 +487,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "cinemacity": {
       "supportedTypes": [
@@ -330,7 +504,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "cinemm": {
       "supportedTypes": [
@@ -341,7 +521,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "coflix": {
       "supportedTypes": [
@@ -353,7 +539,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "dooflix": {
       "supportedTypes": [
@@ -364,7 +556,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "dulourd": {
       "supportedTypes": [
@@ -375,7 +573,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "hdhub4u": {
       "supportedTypes": [
@@ -386,7 +590,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "hianime": {
       "supportedTypes": [
@@ -395,7 +605,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "kurage": {
       "supportedTypes": [
@@ -405,7 +621,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "movies4u": {
       "supportedTypes": [
@@ -416,7 +638,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "moviesdrive": {
       "supportedTypes": [
@@ -428,7 +656,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "moviesmod": {
       "supportedTypes": [
@@ -440,7 +674,13 @@
         "m3u8",
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "movix": {
       "supportedTypes": [
@@ -453,7 +693,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "papadustream": {
       "supportedTypes": [
@@ -464,7 +710,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "streamflix": {
       "supportedTypes": [
@@ -474,7 +726,13 @@
       "formats": [
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "vidfast": {
       "supportedTypes": [
@@ -485,7 +743,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "iframe_player",
+        "validation": "embed_page",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "vidlink": {
       "supportedTypes": [
@@ -496,7 +760,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "voiranime-rip": {
       "supportedTypes": [
@@ -507,7 +777,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "vostfree": {
       "supportedTypes": [
@@ -518,7 +794,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "wookafr": {
       "supportedTypes": [
@@ -529,7 +811,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "yflix": {
       "supportedTypes": [
@@ -540,7 +828,13 @@
         "m3u8",
         "mp4"
       ],
-      "enabled": true
+      "enabled": true,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "uhdmovies": {
       "supportedTypes": [
@@ -551,7 +845,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "anime-ultime": {
       "supportedTypes": [
@@ -562,7 +862,13 @@
       "formats": [
         "mp4"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "animoflix": {
       "supportedTypes": [
@@ -573,7 +879,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "voiranime-homes": {
       "supportedTypes": [
@@ -583,7 +895,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "nakios": {
       "supportedTypes": [
@@ -594,7 +912,13 @@
       "formats": [
         "mp4"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "toflix": {
       "supportedTypes": [
@@ -606,7 +930,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "waveanime": {
       "supportedTypes": [
@@ -615,7 +945,13 @@
       "formats": [
         "dash"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "playimdb": {
       "supportedTypes": [
@@ -627,7 +963,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "goated": {
       "supportedTypes": [
@@ -639,7 +981,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "vidrock": {
       "supportedTypes": [
@@ -650,7 +998,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "einthusan": {
       "supportedTypes": [
@@ -661,7 +1015,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "peachify": {
       "supportedTypes": [
@@ -672,7 +1032,13 @@
         "m3u8",
         "mp4"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "gramcinema": {
       "supportedTypes": [
@@ -683,7 +1049,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "animekai": {
       "supportedTypes": [
@@ -695,7 +1067,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "mallumv": {
       "supportedTypes": [
@@ -705,7 +1083,13 @@
         "mkv",
         "mp4"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "vidnest-anime": {
       "supportedTypes": [
@@ -714,7 +1098,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
     },
     "animeworld": {
       "supportedTypes": [
@@ -725,7 +1115,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "cinevibe": {
       "supportedTypes": [
@@ -735,7 +1131,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "ctgmovies": {
       "supportedTypes": [
@@ -747,7 +1149,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "hdghartv": {
       "supportedTypes": [
@@ -757,7 +1165,13 @@
       "formats": [
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "moonflix": {
       "supportedTypes": [
@@ -768,7 +1182,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "vidlove": {
       "supportedTypes": [
@@ -780,7 +1200,13 @@
         "m3u8",
         "mkv"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "vidnest": {
       "supportedTypes": [
@@ -791,7 +1217,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "xpass": {
       "supportedTypes": [
@@ -803,7 +1235,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "4khdhubnew": {
       "supportedTypes": [
@@ -814,7 +1252,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "goatapi": {
       "supportedTypes": [
@@ -825,7 +1269,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "kisskh": {
       "supportedTypes": [
@@ -836,7 +1286,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "onlykdrama": {
       "supportedTypes": [
@@ -848,7 +1304,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "showbox": {
       "supportedTypes": [
@@ -860,7 +1322,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "allwish": {
       "supportedTypes": [
@@ -871,7 +1339,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "fibwatch": {
       "supportedTypes": [
@@ -883,7 +1357,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "mycima": {
       "supportedTypes": [
@@ -895,7 +1375,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "1shows": {
       "supportedTypes": [
@@ -907,7 +1393,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "allanime": {
       "supportedTypes": [
@@ -918,7 +1410,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "cinefreak": {
       "supportedTypes": [
@@ -929,7 +1427,13 @@
         "mkv",
         "mp4"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "dvdplay": {
       "supportedTypes": [
@@ -939,7 +1443,13 @@
       "formats": [
         "mkv"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "frenchstream": {
       "supportedTypes": [
@@ -952,7 +1462,13 @@
         "mkv",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "quarantined",
+        "validation": "blocked_revenant_episode_duration_mismatch",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "moviebox": {
       "supportedTypes": [
@@ -963,7 +1479,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "netmirror": {
       "supportedTypes": [
@@ -975,7 +1497,13 @@
         "m3u8",
         "mkv"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "sekai": {
       "supportedTypes": [
@@ -986,7 +1514,13 @@
         "mp4",
         "mkv"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "topcartoons": {
       "supportedTypes": [
@@ -997,7 +1531,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "quarantined",
+        "validation": "blocked_cross_title_content_mismatch",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     },
     "vidsrc": {
       "supportedTypes": [
@@ -1008,7 +1548,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
     },
     "vixsrc": {
       "supportedTypes": [
@@ -1019,7 +1565,13 @@
         "mp4",
         "m3u8"
       ],
-      "enabled": false
+      "enabled": false,
+      "capability": {
+        "strategy": "quarantined",
+        "validation": "blocked_interstellar_duration_mismatch",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
     }
   }
 }
