@@ -62,6 +62,47 @@ AUDIT_QUARANTINE_MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
 AUDIT_QUARANTINE_MODE = "catalogue_audit_safety_quarantine"
 AUDIT_QUARANTINE_BLOCKER = "catalogue_audit_playable_identity_contradiction"
 
+CLEAN_V2_CORE_BOUNDARY_MARKER = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+CLEAN_V2_DERIVED_CORE_MARKERS = (
+    "NUVIO_STREAM_OUTPUT_SANITIZER_V",
+    "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+    "NUVIO_DESKTOP_RUNTIME_COMPAT_V1",
+    "NUVIO_TV_DIRECT_MEDIA_V2",
+    "NUVIO_TV_PLAYABLE_FIRST_V1",
+    "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+    "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+    "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+    "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+    "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
+    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+    "NUVIO_GLOBAL_STREAM_FACTS_V1",
+    "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+    "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+    "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
+)
+
+
+def _canonicalize_clean_v2_core_boundary(data: bytes, provider_id: str) -> bytes:
+    """Place one trusted boundary between durable v2 provider logic and derived Core."""
+    text = data.decode("utf-8", errors="strict").replace(CLEAN_V2_CORE_BOUNDARY_MARKER, "")
+    starts = [
+        pos
+        for marker in CLEAN_V2_DERIVED_CORE_MARKERS
+        for pos in [text.find(f"/* {marker}")]
+        if pos >= 0
+    ]
+    if not starts:
+        raise ValueError(f"{provider_id}: clean v2 publication has no derived Core marker")
+    start = min(starts)
+    return (
+        text[:start].rstrip()
+        + "\n"
+        + CLEAN_V2_CORE_BOUNDARY_MARKER
+        + "\n"
+        + text[start:].lstrip()
+    ).encode("utf-8")
+
+
 
 def safe_fragment(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9._-]+", "-", str(value).strip()).strip(".-")[:120] or "provider"
@@ -754,6 +795,8 @@ def main() -> int:
                 else None
             ),
         )
+        if clean_v2_base:
+            patched = _canonicalize_clean_v2_core_boundary(patched, provider_id)
         if removed_wrappers:
             records = [{
                 "type": "migration",
