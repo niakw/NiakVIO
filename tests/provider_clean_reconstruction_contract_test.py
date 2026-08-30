@@ -42,6 +42,9 @@ assert store.get("migration_scope") == "all-current-providers"
 assert store.get("published_legacy_code_may_seed_new_base") is False
 assert store.get("upstream_code_may_seed_new_base") is False
 assert store.get("git_history_code_may_seed_new_base") is False
+if "runtime_role" in store:
+    assert store.get("runtime_role") == "reader-only"
+    assert store.get("runtime_route_discovery") is False
 
 required = []
 clean = []
@@ -96,7 +99,16 @@ promoter = (SCRIPTS / "promote_candidates.py").read_text(encoding="utf-8")
 base_store_source = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf-8")
 assert 'row.setdefault("clean_reconstruction_marked_at", marked_at)' in base_store_source
 assert 'store.update({' in base_store_source
-assert '"/title/" + titleKind + "/" + encodeURIComponent(id) + "-" + slug' in base_store_source
+assert '"runtimeRole": "reader"' in base_store_source
+assert '"runtimeDiscovery": False' in base_store_source
+assert 'function _expandLearnedRoute' in base_store_source
+assert 'function _runtimePlanAvailable' in base_store_source
+assert 'if (!_runtimePlanAvailable()) return [];' in base_store_source
+assert '"/search?q=" + query' not in base_store_source
+assert '"/search/" + query' not in base_store_source
+assert "function _detailGuesses" not in base_store_source
+assert "slice(0, 24)" not in base_store_source
+assert "NIAKVIO_PROVIDER_MODEL.officialHub,\n    ...(NIAKVIO_PROVIDER_MODEL.origins" not in base_store_source
 embedded_source = base_store_source.split("function _embeddedText(value) {", 1)[1].split("function _slug(value) {", 1)[0]
 assert embedded_source.count(".replace(") == 1, "embedded URL decoding must remain single-pass"
 assert 'const raw = match[1] || match[0] || "";' in base_store_source
@@ -119,3 +131,16 @@ print(
     "Provider clean reconstruction contract passed: "
     f"total={len(provider_ids)} required={len(required)} clean_v2={len(clean)}"
 )
+
+# Clean v2 runtime is a reader, not a discovery engine.
+seed = base_store.build_clean_provider_seed(
+    "reader-contract",
+    {"id": "reader-contract", "name": "Reader Contract", "supportedTypes": ["tv"]},
+    known_site="https://example.invalid/",
+    provider_model={"strategy": "html_scraper", "routes": [], "observedUrls": []},
+).decode("utf-8")
+assert '"runtimeRole":"reader"' in seed
+assert '"runtimeDiscovery":false' in seed
+assert "function _detailGuesses" not in seed
+assert '"/search?q="' not in seed
+assert "if (!_runtimePlanAvailable()) return [];" in seed
