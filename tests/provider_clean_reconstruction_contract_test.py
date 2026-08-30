@@ -139,6 +139,20 @@ assert "'PROVENANCE.json'" in sync_workflow
 assert "'provider-bases/**'" in sync_workflow
 assert "PROVENANCE\\.json|provider-bases/" in sync_workflow
 
+materializer = (ROOT / "scripts" / "materialize_clean_provider_reconstruction.py").read_text(encoding="utf-8")
+assert 'for provider_id in sorted(candidates):' in materializer, (
+    "clean reconstruction proposals must persist every reconstruction-required candidate, "
+    "not only providers reached by the Learning queue"
+)
+assert 'queue_results = {' in materializer
+assert 'if not lab_is_strictly_playable(result):' not in materializer, (
+    "Learning playability cannot discard a structurally valid clean ProviderBase candidate"
+)
+assert '"canonical-deep-proof-pending"' in materializer
+assert '"strictLearningProofRequiredForProposal": False' in materializer
+assert '"strictDeepProofRequiredForVerification": True' in materializer
+assert 'build_base_from_seed(' in materializer, "candidate persistence must keep structural ProviderBase validation"
+
 print(
     "Provider clean reconstruction contract passed: "
     f"total={len(provider_ids)} required={len(required)} clean_v2={len(clean)}"

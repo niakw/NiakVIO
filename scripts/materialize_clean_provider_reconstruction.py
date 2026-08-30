@@ -97,22 +97,25 @@ def main() -> int:
     rejected: list[dict[str, str]] = []
     now = datetime.now(timezone.utc).isoformat()
 
-    for result in queue.get("results") or []:
-        if not isinstance(result, dict):
-            continue
-        provider_id = canonical_id(str(result.get("provider") or ""))
-        if not provider_id:
-            continue
-        if not lab_is_strictly_playable(result):
-            rejected.append({"provider": provider_id, "reason": "strict_lab_proof_missing"})
-            continue
+    queue_results = {
+        canonical_id(str(result.get("provider") or "")): result
+        for result in queue.get("results") or []
+        if isinstance(result, dict)
+        and canonical_id(str(result.get("provider") or ""))
+    }
 
-        candidate = candidates.get(provider_id)
-        if not isinstance(candidate, dict):
-            rejected.append({"provider": provider_id, "reason": "candidate_missing"})
-            continue
+    # Persist every structurally valid NiakVIO-owned clean reconstruction as a
+    # durable *candidate*, even when Learning did not reach it or the provider
+    # is temporarily unavailable. Runtime proof belongs to the canonical Deep
+    # gate; proposal persistence must not throw away clean authoring work.
+    for provider_id in sorted(candidates):
+        candidate = candidates[provider_id]
         if candidate.get("provider_base_reconstruction_required") is not True:
             continue
+
+        result = queue_results.get(provider_id, {})
+        strict_lab_playable = lab_is_strictly_playable(result)
+
         origin = str(candidate.get("candidate_code_origin") or "")
         if origin not in {
             "new-niakvio-clean-seed",
@@ -133,6 +136,8 @@ def main() -> int:
             known_site=str(candidate.get("observed_upstream_site") or "").strip() or None,
             provider_model=model,
         )
+        # build_base_from_seed performs the ProviderBase structural/layering
+        # validation. A clean candidate that cannot compile still fails closed.
         base_data, stripped = build_base_from_seed(
             provider_id,
             seed,
@@ -159,7 +164,12 @@ def main() -> int:
         current["clean_reconstruction_authoring_version"] = CLEAN_RECONSTRUCTION_AUTHORING_VERSION
         current["clean_reconstruction_candidate_at"] = now
         current["clean_reconstruction_candidate_origin"] = origin
-        current["clean_reconstruction_candidate_lab"] = "tv-desktop-mobile-complete-playable"
+        current["clean_reconstruction_candidate_lab"] = (
+            "tv-desktop-mobile-complete-playable"
+            if strict_lab_playable
+            else "canonical-deep-proof-pending"
+        )
+        current["clean_reconstruction_candidate_learning_strict_playable"] = strict_lab_playable
         current["legacy_provider_js_executed_for_reconstruction"] = False
         current["upstream_code_role"] = "knowledge-only"
         current["upstream_code_executed"] = False
@@ -169,6 +179,7 @@ def main() -> int:
             "base_filename": relative,
             "base_sha256": digest,
             "source": CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
+            "learning_strict_playable": strict_lab_playable,
         })
 
     store = proposed.setdefault("provider_base_store", {})
@@ -182,11 +193,18 @@ def main() -> int:
             "upstream_code_executed": False,
         })
 
+    strict_lab_playable_count = sum(
+        1 for row in accepted if row.get("learning_strict_playable") is True
+    )
+    strict_lab_pending_count = len(accepted) - strict_lab_playable_count
+
     write_json(args.proposed_provenance.resolve(), proposed)
     write_json(args.summary.resolve(), {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "generatedAt": now,
         "candidateCount": len(accepted),
+        "strictLabPlayableCount": strict_lab_playable_count,
+        "strictLabPendingCount": strict_lab_pending_count,
         "providers": [row["provider"] for row in accepted],
         "candidates": accepted,
         "rejected": rejected,
@@ -196,12 +214,15 @@ def main() -> int:
             "pullRequestOnly": True,
             "requiresHumanMerge": True,
             "canonicalPipelineProofRequired": True,
+            "strictLearningProofRequiredForProposal": False,
+            "strictDeepProofRequiredForVerification": True,
             "legacyOrUpstreamExecutableSeedAllowed": False,
         },
     })
     print(
         "FIELD_CLEAN_PROVIDER_PROPOSAL "
-        f"candidates={len(accepted)} rejected={len(rejected)}"
+        f"candidates={len(accepted)} strict_lab_playable={strict_lab_playable_count} "
+        f"strict_lab_pending={strict_lab_pending_count} rejected={len(rejected)}"
     )
     return 0
 
