@@ -23,6 +23,13 @@ assert "group: nuvio-provider-publish-main" in ADD
 assert "group: nuvio-provider-publish-main" in CORE
 assert "cancel-in-progress: false" in ADD
 assert "cancel-in-progress: false" in CORE
+assert "group: nuvio-provider-onboarding-stage-main" in ADD
+assert "cancel-in-progress: true" in ADD
+assert "provider-onboarding-transaction-${{ github.run_id }}" in ADD
+assert "actions/download-artifact@" in ADD
+assert "git apply --3way --index" in ADD
+assert "needs: onboard" in ADD
+assert ADD.index("group: nuvio-provider-onboarding-stage-main") < ADD.index("group: nuvio-provider-publish-main")
 assert "scripts/add_provider.py stage" in ADD
 assert "scripts/add_provider.py refresh" in ADD
 assert "scripts/add_provider.py finalize" in ADD
