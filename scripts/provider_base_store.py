@@ -726,20 +726,44 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       const direct = urls.filter(_directMedia);
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
       if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
-        const nested = _uniq([
-          ...urls.filter(_playerLike),
-          ..._directPlayerUrls(meta.tmdbId, mediaType)
-        ]);
-        if (nested.length) {
-          const runtime = await _resolveRuntimeApi(
-            nested,
-            mediaType,
-            meta.tmdbId,
-            season,
-            episode
+        const discoveredNested = _uniq(urls.filter(_playerLike));
+        if (discoveredNested.length) {
+          // Learned runtime routes are enrichment, not a replacement for a
+          // player crawl that already works. Crawl the actual links first so
+          // route discovery can never regress an existing provider.
+          const crawled = await _crawlDirectMedia(
+            discoveredNested,
+            response.url || detailUrl,
+            2
           );
-          if (runtime.length) streams.push(...runtime);
-          else streams.push(...await _crawlDirectMedia(nested, response.url || detailUrl, 2));
+          if (crawled.length) {
+            streams.push(...crawled);
+          } else {
+            const runtimeCandidates = _uniq([
+              ...discoveredNested,
+              ..._directPlayerUrls(meta.tmdbId, mediaType)
+            ]);
+            const runtime = await _resolveRuntimeApi(
+              runtimeCandidates,
+              mediaType,
+              meta.tmdbId,
+              season,
+              episode
+            );
+            if (runtime.length) streams.push(...runtime);
+          }
+        } else {
+          const runtimeCandidates = _directPlayerUrls(meta.tmdbId, mediaType);
+          if (runtimeCandidates.length) {
+            const runtime = await _resolveRuntimeApi(
+              runtimeCandidates,
+              mediaType,
+              meta.tmdbId,
+              season,
+              episode
+            );
+            if (runtime.length) streams.push(...runtime);
+          }
         }
       }
     } catch (_) {}

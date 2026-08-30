@@ -51,6 +51,9 @@ assert 'const desiredMedia = mediaType === "movie" ? "movie" : "tv";' in text
 assert 'url.searchParams.set("m", transportType)' in text
 assert "function _sourceUrls" in text
 assert "async function _resolveRuntimeApi" in text
+assert "const discoveredNested = _uniq(urls.filter(_playerLike));" in text
+assert "const crawled = await _crawlDirectMedia(" in text
+assert text.index("const crawled = await _crawlDirectMedia(") < text.index("const runtime = await _resolveRuntimeApi(")
 assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
 assert "requests < 12" in text
