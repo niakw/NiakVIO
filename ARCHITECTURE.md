@@ -200,7 +200,7 @@ Le runtime peut uniquement :
 - adapter headers, HLS/DASH et formats Nuvio ;
 - refuser une identité ou un type incohérent.
 
-Il ne peut pas essayer arbitrairement `/search?q`, `/search/`, plusieurs formes de fiches, explorer des dizaines de pages ou découvrir l'architecture d'un site. Une connaissance insuffisante doit produire un échec rapide et renvoyer le provider vers Discovery/Learning.
+Il ne peut pas essayer arbitrairement `/search?q`, `/search/`, plusieurs formes de fiches, explorer des dizaines de pages ou découvrir l'architecture d'un site. Il ne peut pas non plus ouvrir la home ou les bundles JavaScript du provider pour y découvrir une route API pendant la lecture. Une connaissance insuffisante doit produire un échec rapide et renvoyer le provider vers Discovery/Learning.
 
 Pour limiter le coût du gate TMDB, le résultat est mis en cache dans le runtime provider ; les clients Nuvio utilisent en outre un client HTTP/cache partagé pour les requêtes addons, ce qui permet aux requêtes TMDB identiques d'être réutilisées lorsqu'elles sont cacheables.
 

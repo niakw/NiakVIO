@@ -156,3 +156,12 @@ for provider_id, patch in (overrides.get("provider_patches") or {}).items():
     assert "scripts/provider_patches/adaptive_runtime_recovery_v5.py" not in scripts, (
         f"{provider_id}: runtime discovery v5 cannot be published; move route knowledge to Discovery/Learning"
     )
+
+for provider_id, patch in (overrides.get("provider_patches") or {}).items():
+    if not isinstance(patch, dict):
+        continue
+    for path, options in (patch.get("patch_script_options") or {}).items():
+        if path == "scripts/provider_patches/vf_catalogue_recovery.py" and isinstance(options, dict):
+            assert options.get("strategy") != "api_discovery", (
+                f"{provider_id}: provider runtime cannot discover API routes; persist them as learned routes"
+            )

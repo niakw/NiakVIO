@@ -226,3 +226,33 @@ const provider = require(process.argv[2]);
 })().catch((error) => { console.error(error); process.exit(1); });
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
+
+# Semantic anime must preserve the original TMDB namespace for downstream route adaptation.
+context_base = r'''
+"use strict";
+async function getStreams(tmdbId, mediaType) {
+  const ctx = globalThis.__nuvioMediaContext || {};
+  return [{tmdbId,mediaType,namespace:ctx.tmdbNamespace,identity:ctx.tmdbIdentity,canonical:ctx.canonicalMediaType}];
+}
+module.exports = {getStreams};
+'''
+context_provider = mod.apply(context_base, options={"semantic_types":["movie","tv","anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path=Path(tmp)
+    provider=tmp_path/"context.js"
+    runner=tmp_path/"context-test.js"
+    provider.write_text(context_provider,encoding="utf-8")
+    runner.write_text(r'''
+global.fetch=async (url)=>({
+  ok:true,
+  text:async()=>"<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"
+});
+const provider=require(process.argv[2]);
+(async()=>{
+  const series=await provider.getStreams("280049","series",1,11);
+  if(series[0].mediaType!=="anime"||series[0].namespace!=="tv"||series[0].identity!=="tv:280049") throw new Error("anime series lost tv namespace context");
+  const movie=await provider.getStreams("4242","movie",null,null);
+  if(movie[0].mediaType!=="anime"||movie[0].namespace!=="movie"||movie[0].identity!=="movie:4242") throw new Error("anime movie lost movie namespace context");
+})().catch(e=>{console.error(e);process.exit(1)});
+''',encoding="utf-8")
+    subprocess.run(["node",str(runner),str(provider)],check=True)
