@@ -359,6 +359,7 @@ function _extractUrls(text, base) {
   const normalized = _embeddedText(text);
   const patterns = [
     /(?:src|href|file|url|pathname|permalink|embedUrl|embed_url|contentUrl)\s*["']?\s*[:=]\s*["']([^"'<>\s]+)["']/gi,
+    /["'](\/(?:api|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|manifest|action)(?:[^"'<>\\\s]{0,500}))["']/gi,
     /https?:\\?\/\\?\/[^"'<>\s]+/gi
   ];
   for (const pattern of patterns) {
@@ -371,6 +372,54 @@ function _extractUrls(text, base) {
     }
   }
   return _uniq(out);
+}
+function _playerLike(url) {
+  try {
+    const parsed = new URL(url);
+    return /\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);
+  } catch (_) {
+    return false;
+  }
+}
+async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
+  const queue = _uniq(seedUrls).filter(_playerLike).slice(0, 8).map(url => ({ url, depth: 0, referer }));
+  const seen = new Set();
+  const streams = [];
+  let requests = 0;
+  while (queue.length && requests < 12 && streams.length < 12) {
+    const row = queue.shift();
+    if (!row || seen.has(row.url)) continue;
+    seen.add(row.url);
+    requests += 1;
+    try {
+      const response = await _fetch(row.url, {
+        headers: row.referer ? { Referer: row.referer } : {}
+      });
+      const responseUrl = response.url || row.url;
+      const contentType = _text(response.headers.get("content-type")).toLowerCase();
+      if (_directMedia(responseUrl) || /(?:mpegurl|dash\+xml|video\/)/i.test(contentType)) {
+        streams.push(..._streams([responseUrl], row.referer || referer || ""));
+        continue;
+      }
+      let urls = [];
+      if (contentType.includes("json")) {
+        urls = _jsonUrls(await response.json());
+      } else {
+        urls = _extractUrls(await response.text(), responseUrl);
+      }
+      const direct = urls.filter(_directMedia);
+      if (direct.length) {
+        streams.push(..._streams(direct, responseUrl));
+        continue;
+      }
+      if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
+        for (const next of urls.filter(_playerLike).slice(0, 6)) {
+          if (!seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
+        }
+      }
+    } catch (_) {}
+  }
+  return streams.slice(0, 40);
 }
 function _candidateScore(url, meta) {
   let parsed;
@@ -575,8 +624,8 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       const direct = urls.filter(_directMedia);
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
       if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
-        const embeds = urls.filter(value => /embed|player|watch|iframe/i.test(value));
-        streams.push(..._streams(embeds, response.url || detailUrl));
+        const nested = urls.filter(_playerLike);
+        if (nested.length) streams.push(...await _crawlDirectMedia(nested, response.url || detailUrl, 2));
       }
     } catch (_) {}
     if (streams.length >= 12) break;
