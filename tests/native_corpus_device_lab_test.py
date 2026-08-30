@@ -140,6 +140,10 @@ assert 'MODE="${NIAKVIO_IOS_LAB_MODE:-full}"' in ios_suite
 assert 'LAUNCH_RETRY_TIMEOUT_SECONDS="${NIAKVIO_IOS_LAUNCH_RETRY_TIMEOUT_SECONDS:-}"' in ios_suite
 assert 'LaunchRetryTimeout -float "$LAUNCH_RETRY_TIMEOUT_SECONDS"' in ios_suite
 assert 'FIELD_NATIVE_IOS_SIM_LAUNCH_TIMEOUT' in ios_suite
+assert 'IDLE_TIMEOUT_SECONDS="${NIAKVIO_IOS_IDLE_TIMEOUT_SECONDS:-}"' in ios_suite
+assert 'xcrun simctl launch --terminate-running-process --console "$UDID" "$BUNDLE_ID"' in ios_suite
+assert 'if ! kill -0 "$LAUNCH_PID"' not in ios_suite
+assert 'reason=log_idle_timeout' in ios_suite
 assert 'mode == "learning" || mode == "quick"' in prepare_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
