@@ -359,8 +359,8 @@ jobs:
     needs: onboard
     if: ${{ needs.onboard.result == 'success' }}
     concurrency:
-      group: nuvio-provider-publish-main
-      cancel-in-progress: false
+      group: niakvio-add-provider-publication-main
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
