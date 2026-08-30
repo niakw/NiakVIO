@@ -95,11 +95,22 @@ function inferSupportedTypes(candidate) {
   const metadata = candidate?.metadata || {};
   const canonicalMetadata = candidate?.canonical_metadata || {};
   const canonicalMayExpand = canonicalMetadataCanExpand(candidate);
+  // Published manifests may expose Nuvio transport aliases in supportedTypes
+  // (notably anime -> movie + tv). When canonicalSupportedTypes exists it is
+  // the semantic authority and transport aliases must not widen health fixtures.
+  const metadataSemanticTypes = (
+    Array.isArray(metadata.canonicalSupportedTypes) && metadata.canonicalSupportedTypes.length
+      ? metadata.canonicalSupportedTypes
+      : (Array.isArray(metadata.supportedTypes) ? metadata.supportedTypes : [])
+  );
+  const canonicalSemanticTypes = (
+    Array.isArray(canonicalMetadata.canonicalSupportedTypes) && canonicalMetadata.canonicalSupportedTypes.length
+      ? canonicalMetadata.canonicalSupportedTypes
+      : (Array.isArray(canonicalMetadata.supportedTypes) ? canonicalMetadata.supportedTypes : [])
+  );
   const declaredValues = [
-    ...(Array.isArray(metadata.supportedTypes) ? metadata.supportedTypes : []),
-    ...(canonicalMayExpand && Array.isArray(canonicalMetadata.supportedTypes)
-      ? canonicalMetadata.supportedTypes
-      : []),
+    ...metadataSemanticTypes,
+    ...(canonicalMayExpand ? canonicalSemanticTypes : []),
   ];
   const declared = new Set(
     declaredValues.map(normalizeSupportedType).filter(Boolean),
