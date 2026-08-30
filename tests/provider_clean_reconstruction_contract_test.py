@@ -154,6 +154,14 @@ assert "is_pending_clean_reconstruction_candidate" in promoter
 assert "pending_clean_reconstruction_has_strict_deep_proof" in promoter
 assert '"clean_reconstruction_strict_deep_proof_pending"' in promoter
 assert '"pending-canonical-deep-proof"' in promoter
+assert "restore_pending_activation_lkg" in promoter
+assert "pending_configured_disabled" in promoter
+assert "cid in activation_lkg_ids" in promoter
+assert "and not old_safety_quarantine" in promoter
+assert "and not auto_disabled" in promoter
+assert "and upstream_enabled" in promoter
+assert 'gates.get("01_policy_safe_no_p2p", {}).get("passed", False)' in promoter
+assert '"restored-activation-lkg-clean-candidate-awaiting-strict-deep-proof"' in promoter
 assert 'str(mode) == "deep"' in promoter
 assert 'bool(decision.get("strict_activation_eligible", False))' in promoter
 
