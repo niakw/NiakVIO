@@ -380,6 +380,47 @@ def sanitize_capability_origins(config: dict[str, Any]) -> tuple[dict[str, Any],
     return config, removed
 
 
+def publication_configured_safety_quarantine(
+    data: bytes,
+    provider_id: str,
+    config: dict[str, Any],
+) -> tuple[bytes, str | None]:
+    """Replay configured safety quarantine as derived publication state.
+
+    ProviderBase v2 deliberately excludes terminal quarantine wrappers. A
+    configured safety quarantine must therefore be re-materialized only on the
+    published bundle, from durable configuration, after provider/Core assembly.
+    """
+    patches = config.get("provider_patches") if isinstance(config, dict) else {}
+    patch = (patches or {}).get(provider_id.casefold(), {})
+    if not isinstance(patch, dict):
+        return data, None
+    overrides = patch.get("manifest_overrides") or {}
+    scripts = [str(value) for value in patch.get("patch_scripts") or []]
+    if (
+        patch.get("capability") != "quarantined"
+        or not isinstance(overrides, dict)
+        or overrides.get("enabled") is not False
+        or "scripts/provider_patches/quarantine_provider_v1.py" not in scripts
+    ):
+        return data, None
+    options_by_script = patch.get("patch_script_options") or {}
+    if not isinstance(options_by_script, dict):
+        raise ValueError(f"{provider_id}: invalid quarantine patch_script_options")
+    options = options_by_script.get("scripts/provider_patches/quarantine_provider_v1.py") or {}
+    if not isinstance(options, dict):
+        raise ValueError(f"{provider_id}: invalid quarantine options")
+    reason = str(options.get("reason") or "").strip()
+    if not reason:
+        raise ValueError(f"{provider_id}: configured safety quarantine has no reason")
+    text = apply_terminal_quarantine(
+        data.decode("utf-8", errors="strict"),
+        options={"reason": reason},
+        context={"provider_id": provider_id},
+    )
+    return text.encode("utf-8"), reason
+
+
 def publication_audit_quarantine(
     data: bytes,
     provider_id: str,
@@ -818,6 +859,20 @@ def main() -> int:
                 "phase": "discovery",
                 "scope": "language_integrity",
             }] + list(records)
+
+        patched, configured_quarantine_reason = publication_configured_safety_quarantine(
+            patched,
+            provider_id,
+            override_config,
+        )
+        if configured_quarantine_reason:
+            records = list(records) + [{
+                "type": "publication_quarantine_replay",
+                "phase": "final-pre-security",
+                "source": "provider-overrides",
+                "scope": "configured-safety",
+                "reason": configured_quarantine_reason,
+            }]
 
         patched, audit_quarantine_kind = publication_audit_quarantine(
             patched,
