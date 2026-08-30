@@ -1,0 +1,76 @@
+name: Quick stream regression A/B (one-shot)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/quick-stream-regression-ab-once.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  quick-ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Run short current-vs-5.21.0 worker comparison
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/ab-old"
+          cat > "$RUNNER_TEMP/quick-ab.cjs" <<'NODE'
+          const fs=require('fs');
+          const path=require('path');
+          const cp=require('child_process');
+          const root=process.cwd();
+          const worker=path.join(root,'scripts/provider_worker.cjs');
+          const currentManifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          const oldManifest=JSON.parse(cp.execFileSync('git',['show','5.21.0:manifest.json'],{encoding:'utf8'}));
+          const cases=[
+            {label:'Interstellar',tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014,season:null,episode:null,providers:['HINDMOVIEZ','FLEMMIX','COFLIX','STREAMZO','CASTLE']},
+            {label:'Hell Mode S01E11',tmdbId:'280049',mediaType:'series',title:'Hell Mode',year:2025,season:1,episode:11,providers:['HIANIME','ANIDB','ANIMEPAHE','anime-sama','COFLIX']},
+            {label:'Dark Matter S02E01',tmdbId:'62425',mediaType:'series',title:'Dark Matter',year:2015,season:2,episode:1,providers:['PAPADUSTREAM','FLEMMIX','COFLIX','STREAMZO','CASTLE']},
+          ];
+          function entry(manifest,id){return (manifest.scrapers||[]).find(x=>String(x.id||'').toLowerCase()===String(id).toLowerCase()&&x.enabled!==false)||null}
+          function oldProviderFile(row){
+            if(!row)return null;
+            const rel=String(row.filename||'');
+            if(!rel.startsWith('providers/'))return null;
+            const dest=path.join(process.env.RUNNER_TEMP,'ab-old',rel.replaceAll('/','__'));
+            try{const buf=cp.execFileSync('git',['show','5.21.0:'+rel],{encoding:null,maxBuffer:25*1024*1024});fs.writeFileSync(dest,buf);return dest}catch{return null}
+          }
+          function runWorker(file,fixture){
+            if(!file)return {state:'missing'};
+            const context={locale:'fr-FR',languages:['fr-FR','fr'],platform:'android',maxSettingsProfiles:2,TMDB_API_KEY:process.env.TMDB_API_KEY||'',TMDB_ACCESS_TOKEN:process.env.TMDB_ACCESS_TOKEN||'',fixtureMetadata:fixture,networkLimits:{maxFetches:18,maxRedirects:4,maxResponseBytes:2097152,maxTotalResponseBytes:6291456,maxDistinctHosts:12}};
+            try{
+              const out=cp.execFileSync(process.execPath,[worker,file,JSON.stringify(fixture),JSON.stringify(context)],{cwd:root,encoding:'utf8',timeout:12000,maxBuffer:8*1024*1024});
+              const lines=String(out).split(/\r?\n/).filter(x=>x.startsWith('NUVIO_HEALTH_RESULT='));
+              if(!lines.length)return {state:'no-result'};
+              const r=JSON.parse(lines[lines.length-1].slice('NUVIO_HEALTH_RESULT='.length));
+              const s=(r.streams||[])[0]||null;
+              return {state:r.ok?'ok':'error',streams:r.stream_count||0,ms:r.duration_ms||0,accessible:r.provider_server_accessible===true,success:r.provider_server_successful_response===true,statuses:r.provider_server_http_statuses||[],sample:s?{title:s.title||s.name||null,quality:s.quality||null,language:s.language||null,size:s.size||null,url:!!s.url}:null,error:(r.error_details&&r.error_details.code)||r.error||null};
+            }catch(e){return {state:e.killed?'timeout':'worker-failed',error:String(e.message||e).slice(0,220)}}
+          }
+          for(const c of cases){
+            for(const id of c.providers){
+              const fixture={tmdbId:c.tmdbId,mediaType:c.mediaType,title:c.title,year:c.year,season:c.season,episode:c.episode,category:c.mediaType};
+              const cur=entry(currentManifest,id),old=entry(oldManifest,id);
+              const current=runWorker(cur?path.join(root,cur.filename):null,fixture);
+              const oldResult=runWorker(oldProviderFile(old),fixture);
+              console.log('FIELD_QUICK_AB '+JSON.stringify({case:c.label,provider:id,current,old:oldResult}));
+            }
+          }
+          NODE
+          node "$RUNNER_TEMP/quick-ab.cjs"
