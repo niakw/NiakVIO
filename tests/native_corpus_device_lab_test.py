@@ -71,6 +71,11 @@ assert acceptance.get("fixture_by_type") == {
     "anime": "jujutsu-kaisen-s01e01",
 }
 assert corpus.get("provider_timeout_ms") == 25000
+assert "java.util.concurrent.Executors.newSingleThreadExecutor" in prepare_core
+assert "providerFuture.get(" in prepare_core
+assert "java.util.concurrent.TimeUnit.MILLISECONDS" in prepare_core
+assert "provider_hard_timeout_ms=" in prepare_core
+assert "isDaemon = true" in prepare_core
 assert corpus.get("retry_provider_timeouts") is False
 
 fixtures = "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
