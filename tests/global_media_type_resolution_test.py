@@ -36,6 +36,9 @@ mixed = mod.apply(BASE, options={"semantic_types": ["tv", "anime"]})
 assert "api.themoviedb.org/3/" in mixed
 assert "www.themoviedb.org/" not in mixed
 assert "tmdbKeyCipher" in mixed
+assert "external_source=imdb_id" in mixed
+assert "alternative_titles" in mixed
+assert "language=fr-FR" in mixed
 
 run_case(mixed, r"""
 let calls = 0;
@@ -108,6 +111,40 @@ const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("157336","movie",null,null);
   if(!value.length||value[0].mediaType!=="movie"||value[0].degraded!==true)throw new Error("Movie fallback failed");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+
+# IMDb is normalized by Core before the ProviderBase sees the request.
+run_case(mixed, r"""
+const calls=[];
+global.fetch=async(url)=>{
+  url=String(url);calls.push(url);
+  if(url.includes('/find/tt0903747?')){
+    if(!url.includes('external_source=imdb_id'))throw new Error('IMDb lookup missing external_source');
+    return{ok:true,status:200,json:async()=>({
+      movie_results:[],
+      tv_results:[{id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20'}]
+    })};
+  }
+  if(url.includes('/tv/1396?')){
+    if(!url.includes('append_to_response=keywords,alternative_titles,external_ids'))throw new Error('full TMDB enrichment missing');
+    if(!url.includes('language=fr-FR'))throw new Error('Core localized TMDB lookup missing');
+    return{ok:true,status:200,json:async()=>({
+      id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',
+      genres:[{id:18,name:'Drama'}],original_language:'en',origin_country:['US'],
+      keywords:{results:[]},alternative_titles:{results:[]},external_ids:{imdb_id:'tt0903747'}
+    })};
+  }
+  throw new Error('unexpected TMDB endpoint '+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('tt0903747','series',1,1);
+  if(!value.length)throw new Error('IMDb Core resolution returned no provider call');
+  if(value[0].tmdbId!=='1396')throw new Error('ProviderBase did not receive resolved TMDB id: '+JSON.stringify(value[0]));
+  if(value[0].mediaType!=='tv')throw new Error('IMDb Core resolution did not preserve canonical TV type');
+  if(calls.length!==2)throw new Error('IMDb Core resolution should use find + one full metadata request: '+calls.join('\n'));
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
