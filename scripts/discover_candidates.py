@@ -969,6 +969,7 @@ def main() -> int:
             provenance_rows,
             overrides,
             clean_reconstruction=bool(args.clean_reconstruction),
+            force_clean_reconstruction=provider_id in forced_reconstruction_ids,
         )
         clean_seed_origin = code_origin in {
             "new-niakvio-clean-seed",
@@ -1014,12 +1015,14 @@ def main() -> int:
             "clean_provider_model": provider_model,
             "candidate_code_origin": code_origin,
             "provider_base_reconstruction_required": bool(reconstruction_required),
-            "clean_reconstruction_mode": bool(args.clean_reconstruction),
+            "clean_reconstruction_mode": bool(
+                args.clean_reconstruction or provider_id in forced_reconstruction_ids
+            ),
             "legacy_provider_js_executed_for_reconstruction": False,
             "local_patches": applied_patches,
             "baseline_origin": "published_manifest",
             "bytes": len(candidate_data),
-            "metadata": dict(entry),
+            "metadata": reconstruction_manifest_entry(provider_id, dict(entry), overrides),
             "baseline": True,
             "lkg": is_registered_lkg,
             "lkg_verified_categories": list(lkg_record.get("verified_categories") or []) if is_registered_lkg else [],
