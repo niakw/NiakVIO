@@ -27,7 +27,13 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides
-from provider_base_store import (\n    CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,\n    build_clean_provider_seed,\n    is_clean_reconstruction_candidate,\n    requires_clean_reconstruction,\n    resolve_base,\n)
+from provider_base_store import (
+    CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,
+    build_clean_provider_seed,
+    is_clean_reconstruction_candidate,
+    requires_clean_reconstruction,
+    resolve_base,
+)
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
     record_pending_source, validate_manifest_quality, write_pending,
