@@ -50,4 +50,9 @@ assert 'fixture_metadata' not in worker
 assert overrides['runtime_repair']['require_playable_stream_proof'] is True
 assert overrides['patch_profiles']['metadata_context_recovery']['runtime_auto_apply'] is False
 
+
+# Production Deep validates current executable/LKG ProviderBases. Clean-v2 seeds
+# belong to the separate Learning/Lab reconstruction proposal flow.
+assert 'discover_candidates.py --require-all-upstreams --clean-reconstruction' not in workflow
+
 print('provider diagnostics tests passed')

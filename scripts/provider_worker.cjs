@@ -229,7 +229,10 @@ function syntheticTmdbResponse(input, fixture = {}) {
     if (url.hostname.toLowerCase() !== 'api.themoviedb.org') return null;
     const fixtureType = String(fixture.mediaType || fixture.type || 'movie').toLowerCase();
     const type = fixtureType === 'movie' ? 'movie' : 'tv';
-    const fixtureAnime = fixtureType === 'anime' || String(fixture.category || '').toLowerCase() === 'anime';
+    const fixtureAnime = fixtureType === 'anime'
+      || String(fixture.category || '').toLowerCase() === 'anime'
+      || fixture.animeMovie === true
+      || fixture.anime_movie === true;
     const id = String(fixture.tmdbId || fixture.id || '');
     if (!id || !url.pathname.includes(`/${type}/${id}`)) return null;
     const title = String(fixture.title || fixture.label || '').replace(/\s*\(\d{4}\)\s*$/, '').trim();
@@ -257,7 +260,15 @@ function syntheticTmdbResponse(input, fixture = {}) {
             genres: fixtureAnime ? [{ id: 16, name: 'Animation' }] : [],
             keywords: fixtureAnime ? { results: [{ name: 'anime' }] } : { results: [] },
           }
-        : { id: Number(id), title, original_title: title, release_date: year ? `${year}-01-01` : '', original_language: 'en' };
+        : {
+            id: Number(id),
+            title,
+            original_title: title,
+            release_date: year ? `${year}-01-01` : '',
+            original_language: fixtureAnime ? 'ja' : 'en',
+            genres: fixtureAnime ? [{ id: 16, name: 'Animation' }] : [],
+            keywords: fixtureAnime ? { keywords: [{ name: 'anime' }] } : { keywords: [] },
+          };
     }
     return new Response(JSON.stringify(payload), {
       status: 200,
@@ -858,6 +869,27 @@ async function runFixtureFallbackSelfTest() {
   if (!Array.isArray(alternativesJson.titles) || alternativesJson.titles[0]?.title !== 'Tenet') throw new Error('invalid alternatives fallback');
   if (!Array.isArray(translationsJson.translations) || translationsJson.translations[0]?.data?.title !== 'Tenet') throw new Error('invalid translations fallback');
   if (syntheticTmdbResponse('https://example.com/3/movie/577922', fixture) !== null) throw new Error('fallback matched a non-TMDb host');
+
+  const animeMovieFixture = {
+    tmdbId: '635302',
+    mediaType: 'movie',
+    category: 'movie',
+    animeMovie: true,
+    title: 'Demon Slayer -Kimetsu no Yaiba- The Movie: Mugen Train',
+    year: 2020,
+  };
+  const animeMovie = syntheticTmdbResponse(
+    'https://api.themoviedb.org/3/movie/635302?api_key=test',
+    animeMovieFixture,
+  );
+  if (!animeMovie) throw new Error('anime movie fixture fallback did not match');
+  const animeMovieJson = await animeMovie.json();
+  if (
+    animeMovieJson.original_language !== 'ja'
+    || !Array.isArray(animeMovieJson.genres)
+    || !animeMovieJson.genres.some((row) => Number(row?.id) === 16)
+  ) throw new Error('anime movie fixture lost semantic TMDb identity');
+
   process.stdout.write('provider fixture fallback tests passed\n');
 }
 

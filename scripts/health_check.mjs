@@ -1025,7 +1025,7 @@ function candidateProfile(candidate) {
   const movieFixtures = withCategory(
     animeMovieScope ? (config.fixtures.anime_movie || config.fixtures.movie) : config.fixtures.movie,
     'movie',
-  );
+  ).map((fixture) => (animeMovieScope ? { ...fixture, animeMovie: true } : fixture));
   const tvFixtures = withCategory(config.fixtures.tv, 'tv');
   const animeFixtures = withCategory(config.fixtures.anime, 'anime');
   const fixtureGroups = {
@@ -1042,6 +1042,7 @@ function candidateProfile(candidate) {
       anime: false,
       pool: roundRobin([movieFixtures, tvFixtures]),
       requiredCategories: ['movie', 'tv'],
+      fixtureGroups,
     };
   }
   return {
@@ -1049,6 +1050,7 @@ function candidateProfile(candidate) {
     anime: types.includes('anime'),
     pool,
     requiredCategories,
+    fixtureGroups,
   };
 }
 
@@ -1072,11 +1074,7 @@ function fixturesForCandidate(candidate) {
   // gets one deterministic primary title and its own alternates, so a catalogue
   // miss for one anime/movie/series cannot hide a working provider or replace a
   // last-known-good artifact with a false zero-stream regression.
-  const groups = {
-    movie: withCategory(config.fixtures.movie, 'movie'),
-    tv: withCategory(config.fixtures.tv, 'tv'),
-    anime: withCategory(config.fixtures.anime, 'anime'),
-  };
+  const groups = profile.fixtureGroups;
   let fixtures;
   if (requestedMode === 'deep' && modeConfig.fixture_limit_per_category === true) {
     fixtures = profile.requiredCategories

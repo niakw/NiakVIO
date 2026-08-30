@@ -31,4 +31,11 @@ for manifest_path in [ROOT/'manifest.json', ROOT/'vf/manifest.json']:
         if provider_id in by_id:
             assert {'movie','anime'} <= set(by_id[provider_id].get('supportedTypes', [])), (manifest_path, provider_id)
 
+
+# Deep fixture selection must retain anime-film fixtures selected by the semantic
+# candidate profile instead of rebuilding the generic movie group.
+assert "fixtureGroups," in health
+assert "const groups = profile.fixtureGroups;" in health
+assert "animeMovie: true" in health
+
 print('category regression and baseline policy tests passed')

@@ -304,11 +304,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
-            python scripts/discover_candidates.py --require-all-upstreams --clean-reconstruction
-          else
-            python scripts/discover_candidates.py --require-all-upstreams
-          fi
+          # Publication validates the currently executable NiakVIO/LKG ProviderBase.
+          # Clean-v2 reconstruction is a separate Learning/Lab proposal flow; forcing
+          # fresh clean seeds here would replace 95 working LKG runtimes with
+          # intentionally incomplete readers and create systemic false negatives.
+          python scripts/discover_candidates.py --require-all-upstreams
 
       - name: Enforce canonical catalog preservation
         shell: bash
