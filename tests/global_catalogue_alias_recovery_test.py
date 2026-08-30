@@ -23,34 +23,33 @@ options = {
     "max_players": 8,
     "timeout_ms": 5000,
     "budget_ms": 20000,
+    "direct_paths": ["/{slug}"],
+    "search_paths": ["/?s={query}", "/search?q={query}"],
+    "detail_id_attributes": ["data-film-id"],
+    "mirror_routes": ["/api/mirrors/film/{id}"],
+    "mirror_types": ["movie", "anime"],
+    "mirror_allow_episodic": False,
 }
 patched = module.apply(base, options)
 
 assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" in patched
-assert "external_source=imdb_id" in patched
-assert "/find/" in patched
-assert "original_title" in patched
-assert "alternative_titles" in patched
-assert "var guessed=[],found=[],searches=[]" in patched
-assert "var candidates=[],searches=[]" not in patched
-assert '"implementationRevision":"native-media-filename-identity-v3"' in patched
-assert 'Date.now()<deadline' in patched
-for forbidden in ("Mon ninja et moi 3", "Ternet Ninja 3", "Interstellar"):
+assert '"implementationRevision":"core-tmdb-context-declarative-mirrors-v4"' in patched
+assert "api.themoviedb.org" not in patched
+assert "TMDB_API_KEY" not in patched
+assert "__nuvioMediaContext" in patched
+assert "tmdbMetadata" in patched
+assert "detailIdAttributes" in patched
+assert "mirrorRoutes" in patched
+for forbidden in ("StreamZo", "Mon ninja et moi 3", "Ternet Ninja 3", "Interstellar"):
     assert forbidden not in patched
 
-# An already-patched/LKG source must be upgraded too. The marker must not make
-# apply() skip the search-priority repair.
-old_runtime = patched.replace(module._NEW_CANDIDATE_PLAN, module._OLD_CANDIDATE_PLAN)
-assert module._OLD_CANDIDATE_PLAN in old_runtime
-upgraded_runtime = module.apply(old_runtime, options)
-assert module._OLD_CANDIDATE_PLAN not in upgraded_runtime
-assert module._NEW_CANDIDATE_PLAN in upgraded_runtime
-
+# Existing V2/LKG wrappers remain upgradeable and idempotent.
 legacy_runtime = '''/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1:legacy */
 ;(function(g,c){})(typeof globalThis!=="undefined"?globalThis:this,{});\n''' + base
 without_legacy = module.apply(legacy_runtime, options)
 assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1" not in without_legacy
 assert without_legacy.count("NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:") == 1
+assert module.apply(patched, options) == patched
 
 runner = r'''
 const assert = require('assert');
@@ -65,57 +64,75 @@ function response(body, status=200, type='application/json', url='') {
     async text() { return body; },
   };
 }
-global.TMDB_API_KEY = String(1);
+const metadata = {
+  id: 424242,
+  title: 'Film Exemple',
+  original_title: 'Original Feature',
+  release_date: '2024-05-01',
+  alternative_titles: {titles:[
+    {iso_3166_1:'FR',title:'Titre Alternatif'},
+    {iso_3166_1:'US',title:'Feature Alternate'}
+  ]},
+  external_ids: {imdb_id:'tt1234567'},
+  __nuvioTmdbNamespace:'movie',
+  __nuvioTmdbId:'424242'
+};
+global.__nuvioMediaContext = {
+  tmdbId:'424242',
+  imdbId:'tt1234567',
+  canonicalMediaType:'movie',
+  tmdbMetadata:metadata
+};
 global.fetch = async function(url) {
   url = String(url);
   calls.push(url);
-  if (url.includes('/find/tt1234567?') && url.includes('external_source=imdb_id')) {
-    return response(JSON.stringify({movie_results:[{id:424242,title:'Feature Locale',original_title:'Original Feature',release_date:'2024-05-01'}],tv_results:[]}), 200, 'application/json', url);
-  }
-  if (url.includes('/movie/424242?') && url.includes('language=fr-FR')) {
-    return response(JSON.stringify({id:424242,title:'Film Exemple',original_title:'Original Feature',release_date:'2024-05-01'}), 200, 'application/json', url);
-  }
-  if (url.includes('/movie/424242?') && url.includes('language=en-US')) {
-    return response(JSON.stringify({id:424242,title:'Example Feature',original_title:'Original Feature',release_date:'2024-05-01'}), 200, 'application/json', url);
-  }
-  if (url.includes('/movie/424242/alternative_titles?')) {
-    // Eight unique aliases are intentional. Before the search-priority fix,
-    // eight guessed slugs consumed maxCandidates=8 and the real search result
-    // below was silently discarded.
-    return response(JSON.stringify({titles:[
-      {iso_3166_1:'FR',title:'Titre Alternatif'},
-      {iso_3166_1:'US',title:'Feature Alternate'},
-      {iso_3166_1:'GB',title:'Example Alternate'},
-      {iso_3166_1:'CA',title:'Another Feature'}
-    ]}), 200, 'application/json', url);
-  }
+  if (url.includes('themoviedb.org')) throw new Error('catalogue layer must never call TMDB');
   if (url.startsWith('https://catalog.example/?s=') || url.startsWith('https://catalog.example/search?')) {
     return response('<a href="/original-feature-2024">Original Feature (2024)</a>', 200, 'text/html', url);
   }
   if (url === 'https://catalog.example/original-feature-2024') {
-    return response('<html><h1>Original Feature (2024)</h1><iframe src="https://player.example/e/abc"></iframe></html>', 200, 'text/html', url);
+    return response('<html data-film-id="77"><h1>Original Feature (2024)</h1></html>', 200, 'text/html', url);
   }
-  if (url.startsWith('https://catalog.example/')) {
-    return response('', 404, 'text/html', url);
+  if (url === 'https://catalog.example/api/mirrors/film/77') {
+    return response(JSON.stringify({players:{VF:[{url:'https://player.example/e/abc'}]}}), 200, 'application/json', url);
   }
+  if (url.startsWith('https://catalog.example/')) return response('', 404, 'text/html', url);
   return response('', 404, 'text/plain', url);
 };
 PATCHED_SOURCE
 (async () => {
-  const rows = await module.exports.getStreams({id:'tt1234567', mediaType:'movie'});
+  const rows = await module.exports.getStreams({
+    tmdbId:'424242',
+    mediaType:'movie',
+    tmdbMetadata:metadata,
+  });
   assert(Array.isArray(rows) && rows.length === 1, JSON.stringify(rows));
   assert.strictEqual(rows[0].url, 'https://player.example/e/abc');
-  assert(calls.some(x => x.includes('/find/tt1234567?') && x.includes('external_source=imdb_id')), calls.join('\n'));
-  assert(calls.some(x => x.includes('/movie/424242?') && x.includes('language=fr-FR')), calls.join('\n'));
-  assert(calls.some(x => x.includes('/movie/424242/alternative_titles?')), calls.join('\n'));
-  assert(calls.includes('https://catalog.example/original-feature-2024'), calls.join('\n'));
+  assert(calls.includes('https://catalog.example/api/mirrors/film/77'), calls.join('\n'));
+  assert(!calls.some(x => x.includes('themoviedb.org')), calls.join('\n'));
 
   calls.length = 0;
-  const rows2 = await module.exports.getStreams({id:'tmdb:424242', mediaType:'movie'});
-  assert(Array.isArray(rows2) && rows2.length === 1, JSON.stringify(rows2));
-  assert(!calls.some(x => x.includes('/find/')), calls.join('\n'));
-  assert(calls.some(x => x.includes('/movie/424242?')), calls.join('\n'));
-  console.log('global TMDB/IMDb ID-first catalogue alias recovery runtime test passed');
+  const animeMetadata = {
+    id: 999,
+    title:'Anime Exemple',
+    original_title:'Anime Example',
+    release_date:'2024-01-01',
+    alternative_titles:{titles:[]},
+    __nuvioTmdbNamespace:'tv',
+    __nuvioTmdbId:'999'
+  };
+  global.__nuvioMediaContext = {
+    tmdbId:'999',
+    canonicalMediaType:'anime',
+    tmdbMetadata:animeMetadata
+  };
+  const episodic = await module.exports.getStreams({
+    tmdbId:'999', mediaType:'anime', season:1, episode:1, tmdbMetadata:animeMetadata
+  });
+  assert(Array.isArray(episodic) && episodic.length === 0, JSON.stringify(episodic));
+  assert(!calls.some(x => x.includes('/api/mirrors/film/')), calls.join('\n'));
+
+  console.log('global catalogue recovery consumes Core TMDB context and declarative mirrors');
 })().catch(err => { console.error(err); process.exit(1); });
 '''.replace("PATCHED_SOURCE", patched)
 
