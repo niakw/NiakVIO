@@ -145,6 +145,15 @@ streamzo = (overrides.get("provider_capabilities") or {}).get("streamzo") or {}
 assert streamzo.get("strategy") == "mixed_embed_resolver", streamzo
 assert streamzo.get("request_type_aliases") == {"anime": "tv"}, streamzo
 assert streamzo.get("identity_request_source") == "original_nuvio_request", streamzo
+streamzo_patch = (overrides.get("provider_patches") or {}).get("streamzo") or {}
+streamzo_scripts = [str(value) for value in streamzo_patch.get("patch_scripts") or []]
+assert not [value for value in streamzo_scripts if "/streamzo_" in value], streamzo_scripts
+catalogue_options = (streamzo_patch.get("patch_script_options") or {}).get(
+    "scripts/provider_patches/global_catalogue_alias_recovery_v2.py"
+) or {}
+assert catalogue_options.get("detail_id_attributes") == ["data-film-id"], catalogue_options
+assert catalogue_options.get("mirror_routes") == ["/api/mirrors/film/{id}"], catalogue_options
+assert catalogue_options.get("mirror_types") == ["movie", "anime"], catalogue_options
 
 policy = overrides.get("runtime_capability_media_safety") or {}
 assert policy.get("scope") == "all_published_providers", policy
