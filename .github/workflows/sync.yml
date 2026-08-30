@@ -287,7 +287,11 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/discover_candidates.py --require-all-upstreams
+          if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
+            python scripts/discover_candidates.py --require-all-upstreams --clean-reconstruction
+          else
+            python scripts/discover_candidates.py --require-all-upstreams
+          fi
 
       - name: Enforce canonical catalog preservation
         shell: bash

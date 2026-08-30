@@ -117,11 +117,30 @@ with tempfile.TemporaryDirectory() as tmp:
     test = tmp_path / "anime-only-test.js"
     provider.write_text(anime_only, encoding="utf-8")
     test.write_text(r'''
-global.fetch = async () => { throw new Error("anime-only transport alias must not need TMDB"); };
+let fetches = 0;
+global.fetch = async (url) => {
+  fetches += 1;
+  if (String(url).includes("/tv/280049")) {
+    return {
+      ok: true,
+      text: async () => "<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"
+    };
+  }
+  return {
+    ok: true,
+    text: async () => "<html><a href='/genre/18-drama'>Drama</a><div>Original Language English</div></html>"
+  };
+};
 const provider = require(process.argv[2]);
 (async () => {
-  const value = await provider.getStreams("280049", "series", 1, 11);
-  if (value[0].mediaType !== "anime") throw new Error("anime-only provider did not map series transport to anime");
+  const hellMode = await provider.getStreams("280049", "series", 1, 11);
+  if (hellMode[0].mediaType !== "anime") throw new Error("Hell Mode was not classified anime before provider execution");
+  const hellModeAgain = await provider.getStreams("280049", "series", 1, 12);
+  if (hellModeAgain[0].mediaType !== "anime") throw new Error("cached anime classification was lost");
+  if (fetches !== 1) throw new Error("TMDB classification was not cached inside provider runtime");
+
+  const ordinaryTv = await provider.getStreams("1396", "series", 1, 1);
+  if (!Array.isArray(ordinaryTv) || ordinaryTv.length !== 0) throw new Error("anime provider did not exit for ordinary TV");
 })().catch((error) => { console.error(error); process.exit(1); });
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
@@ -146,3 +165,40 @@ const provider = require(process.argv[2]);
     subprocess.run(["node", str(test), str(provider)], check=True)
 
 print("global media-type resolver tests passed: transport series=>tv, semantic/TMDB anime=>anime without CI-only secret")
+
+# Inverse regression: TV-only provider must not run for an anime surfaced as series/tv.
+tv_only = mod.apply(base, options={"semantic_types": ["tv"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "tv-only.js"
+    test = tmp_path / "tv-only-test.js"
+    provider.write_text(tv_only, encoding="utf-8")
+    test.write_text(r'''
+global.fetch = async () => ({
+  ok: true,
+  text: async () => "<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"
+});
+const provider = require(process.argv[2]);
+(async () => {
+  const mobPsycho = await provider.getStreams("30984", "series", 1, 7);
+  if (!Array.isArray(mobPsycho) || mobPsycho.length !== 0) throw new Error("TV-only provider processed anime instead of exiting at TMDB entity gate");
+})().catch((error) => { console.error(error); process.exit(1); });
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
+
+# Ambiguous tv/anime classification failure is fail-closed.
+fail_closed = mod.apply(base, options={"semantic_types": ["tv"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "fail-closed.js"
+    test = tmp_path / "fail-closed-test.js"
+    provider.write_text(fail_closed, encoding="utf-8")
+    test.write_text(r'''
+global.fetch = async () => { throw new Error("metadata unavailable"); };
+const provider = require(process.argv[2]);
+(async () => {
+  const value = await provider.getStreams("30984", "series", 1, 7);
+  if (!Array.isArray(value) || value.length !== 0) throw new Error("ambiguous media classification must fail closed");
+})().catch((error) => { console.error(error); process.exit(1); });
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)

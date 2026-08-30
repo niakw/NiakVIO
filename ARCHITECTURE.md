@@ -164,7 +164,41 @@ Chaque provider possède un **ProviderBase NiakVIO** qui constitue sa logique du
 
 Le contrat `NIAKVIO_PROVIDER_BASE_OWNED_V2` interdit le retour silencieux à une seed exécutable legacy. Le Learning peut enrichir routes et connaissances structurées, mais ne remplace pas un ProviderBase sain par du code tiers.
 
-Pour les routes à jeton/signature, une route runtime apprise et précisément dérivée d'un player est résolue **avant** un crawl générique d'embed. Cette priorité évite qu'un iframe sans rapport consomme le budget réseau ou fasse perdre une clé courte durée.
+Pour les routes à jeton/signature, une route runtime apprise et précisément dérivée d'un player est consommée avant toute adaptation locale du player. La découverte de cette route appartient au Discovery/Learning, pas au runtime utilisateur.
+
+### 5.2 Provider JS = lecteur spécialisé
+
+Au runtime utilisateur, un provider JS est un **lecteur spécialisé**, jamais un moteur de découverte. Nuvio lui transmet l'identifiant TMDB, le type de transport et, pour les épisodes, saison/épisode. Le Core a déjà injecté le plan provider appris.
+
+Le gate d'entrée commun est :
+
+```text
+TMDB ID + mediaType Nuvio
+        ↓
+movie reste movie ; series/show → tv
+        ↓
+si tv : classification TMDB canonique → tv ou anime
+        ↓
+comparaison avec les types sémantiques du provider
+        ↓
+incompatible / classification impossible → [] immédiatement
+compatible → plan provider appris → adaptation → streams
+```
+
+Cette validation précède **tout appel au domaine du provider**. Ainsi un provider TV ne recherche jamais Mob Psycho si TMDB le classe anime, et un provider anime ne recherche jamais une série classique uniquement parce que Nuvio l'a transportée en `series/tv`.
+
+Le runtime peut uniquement :
+
+- instancier une route déjà apprise avec `id/slug/season/episode/type` ;
+- suivre un redirect attendu ;
+- récupérer une clé, signature ou token dynamique nécessaire à une route connue ;
+- parser une page/player/API connus ;
+- adapter headers, HLS/DASH et formats Nuvio ;
+- refuser une identité ou un type incohérent.
+
+Il ne peut pas essayer arbitrairement `/search?q`, `/search/`, plusieurs formes de fiches, explorer des dizaines de pages ou découvrir l'architecture d'un site. Une connaissance insuffisante doit produire un échec rapide et renvoyer le provider vers Discovery/Learning.
+
+Pour limiter le coût du gate TMDB, le résultat est mis en cache dans le runtime provider ; les clients Nuvio utilisent en outre un client HTTP/cache partagé pour les requêtes addons, ce qui permet aux requêtes TMDB identiques d'être réutilisées lorsqu'elles sont cacheables.
 
 
 ## 6. Intelligence de domaine

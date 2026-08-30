@@ -129,7 +129,7 @@ async function canonicalType(id,input,metadata,category){
   if(category==="anime"||animeMeta(metadata))return"anime";
   if(transport!=="tv")return transport;
   var m=await tmdb(id);
-  if(!m)return"tv";
+  if(!m)return null;
   return animeMeta(m)?"anime":"tv";
 }
 function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
@@ -146,6 +146,7 @@ async function resolve(a){
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
   var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
   var type=await canonicalType(id,input,metadata,category);
+  if(!type)return null;
   if(semantic.length&&semantic.indexOf(type)<0)return null;
   if(obj){
     q.nuvioInputMediaType=input;

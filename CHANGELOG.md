@@ -6,8 +6,11 @@
 - Formalise la récupération d'adresse multi-chemins : hub → terminal connu → Telegram → Yandex/DuckDuckGo → découverte Telegram publique → candidat direct → historique/LKG.
 - Ajoute/solidifie l'onboarding **Add Provider full-auto** : demande structurée, résolution de routes, branding, ProviderBase propre, bundle, Labs et activation uniquement sous preuve runtime.
 - Préserve les artefacts clients hashés comme générations immuables avec une **fenêtre glissante de 10 générations** par provider et protection des références manifest/LKG/provenance.
-- Aligne les types média : `series/show = tv` au niveau transport, avec résolution metadata canonique vers `anime` lorsque l'œuvre est un anime.
-- Priorise les APIs runtime signées apprises avant le crawl générique d'embeds et durcit le décodage d'URL en single-pass.
+- Aligne les types média : `series/show = tv` au niveau transport, puis impose un **gate TMDB canonique tv/anime avant toute exécution provider** ; les cas Hell Mode/Mob Psycho ne peuvent plus lancer un provider du mauvais type.
+- Définit chaque JS provider comme un **lecteur spécialisé** : il consomme un plan de routes déjà appris ; découverte de domaine/routes, guesses et crawl appartiennent à Discovery/Learning.
+- Réduit le fan-out runtime des ProviderBases propres et fait échouer rapidement un provider dont le plan de lecture est insuffisant au lieu d'explorer le site chez l'utilisateur.
+- Le Deep utilise désormais explicitement `--clean-reconstruction` pour faire converger les 95 ProviderBases legacy vers les ProviderBases v2 propres sous preuve.
+- Priorise les APIs runtime signées apprises avant l'adaptation locale du player et durcit le décodage d'URL en single-pass.
 - Corrige les contrats/tests devenus contradictoires avec cette priorité runtime et réaligne les workflows de preuves Android TV/Mobile utilisés par la synchronisation README.
 - Intègre Kehflix comme provider VF `movie,tv,anime` avec hub `kehflix.wiki` → terminal `kehflix.com` ; il reste désactivé tant qu'une preuve client jouable complète n'est pas acquise.
 - Met `ARCHITECTURE.md` à niveau comme document technique de référence de la racine avant tag.
