@@ -258,7 +258,7 @@ const provider=require(process.argv[2]);
     subprocess.run(["node",str(runner),str(provider)],check=True)
 
 # explicit anime without episode resolves namespace from TMDB instead of assuming TV.
-anime_ambiguous = mod.apply(object_base, options={"semantic_types": ["anime"]})
+anime_ambiguous = mod.apply(object_base, options={"semantic_types": ["movie", "anime"]})
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
     provider = tmp_path / "anime-ambiguous.js"
