@@ -285,18 +285,14 @@ def verify_sources() -> None:
             raise RuntimeError(f"{relative}: unsafe synthetic JSON decoder remains")
     if OLD_GENERIC_URL in (ROOT / BASE_STORE).read_text(encoding="utf-8"):
         raise RuntimeError("provider_base_store: double-escaped normalized URL regex remains")
-    gate=(ROOT / SECURITY_GATE).read_text(encoding="utf-8")
-    for required in ("active_provider_paths","active_base_paths","historical_unreferenced_provider_artifact","release-reachable"):
-        if required not in gate:
-            raise RuntimeError(f"security gate release-reachability contract missing: {required}")
-
+    # The workflow security gate is updated separately through the repository
+    # API because GITHUB_TOKEN cannot modify .github/workflows files.
 def main() -> int:
     patch_vf_source()
     patch_direct_source(DIRECT_V1,OLD_UNESCAPE_STR,NEW_UNESCAPE_STR)
     patch_direct_source(DIRECT_V2,OLD_UNESCAPE_S,NEW_UNESCAPE_S)
     patch_base_store_source()
     patch_vf_test()
-    patch_security_gate()
     migrate_active_bases()
     verify_sources()
     print("FIELD_CODEQL_HYGIENE_SOURCE status=ready")
