@@ -391,10 +391,19 @@ function _detailGuesses(meta, mediaType) {
   const out = [];
   const slug = _slug(meta && meta.title);
   const id = _text(meta && meta.tmdbId);
+  const titleKind = mediaType === "movie" ? "movie" : "tv";
   const routes = mediaType === "movie"
     ? ["movie", "movies", "film", "films", "watch", "title"]
     : ["series", "tv", "show", "watch", "title"];
   for (const base of _searchBases()) {
+    if (id && slug) {
+      // Common modern catalogue convention, including Next/RSC apps:
+      // /title/movie/157336-interstellar or /title/tv/1399-game-of-thrones
+      out.push(_absolute("/title/" + titleKind + "/" + encodeURIComponent(id) + "-" + slug, base));
+    }
+    if (id) {
+      out.push(_absolute("/title/" + titleKind + "/" + encodeURIComponent(id), base));
+    }
     if (slug) {
       out.push(_absolute("/" + slug, base));
       for (const route of routes) out.push(_absolute("/" + route + "/" + slug, base));
