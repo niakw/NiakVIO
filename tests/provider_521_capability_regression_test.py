@@ -43,7 +43,10 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
         errors.append(f"{provider_id}: provider removed since production 5.21.0")
         continue
 
-    required_types = norm_types(floor.get("types"))
+    # 5.21.0's supportedTypes sometimes mixed semantic capability with
+    # Nuvio transport aliases. semanticTypes is present only for those proven
+    # exceptions; otherwise the production 5.21 type set remains the floor.
+    required_types = norm_types(floor.get("semanticTypes") or floor.get("types"))
     current_types = semantic_types(current)
     lost = sorted(required_types - current_types)
     if lost:
