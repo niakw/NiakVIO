@@ -151,6 +151,85 @@ def request_sources(
     return rows
 
 
+VOLATILE_ROUTE_QUERY_KEYS = {"k", "key", "token", "sig", "signature", "auth", "expires", "expiry", "exp"}
+
+
+def _stable_route_hint(value: Any) -> str:
+    raw = str(value or "").strip()
+    if not raw.startswith("/") or raw.startswith("/_next/"):
+        return ""
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return ""
+    query_keys = {part.split("=", 1)[0].casefold() for part in parsed.query.split("&") if part}
+    if query_keys & VOLATILE_ROUTE_QUERY_KEYS:
+        return ""
+    path = parsed.path
+    movie_title = re.fullmatch(r"/title/(movie|tv)/(\d+)-[^/?#]+", path, re.I)
+    if movie_title:
+        return f"/title/{movie_title.group(1).lower()}/{{id}}-{{slug}}"
+    id_title = re.fullmatch(r"/title/(movie|tv)/(\d+)", path, re.I)
+    if id_title:
+        return f"/title/{id_title.group(1).lower()}/{{id}}"
+    if not re.match(r"^/(?:api|search|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|manifest|action)(?:/|$|\?)", raw, re.I):
+        return ""
+    return raw[:260]
+
+
+def _stable_observed_url(value: Any) -> str:
+    raw = str(value or "").strip()
+    if not raw.startswith(("http://", "https://")):
+        return ""
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return ""
+    if not parsed.hostname or parsed.hostname.casefold() in {"image.tmdb.org", "nextjs.org", "www.nextjs.org"}:
+        return ""
+    query_keys = {part.split("=", 1)[0].casefold() for part in parsed.query.split("&") if part}
+    if query_keys & VOLATILE_ROUTE_QUERY_KEYS:
+        return ""
+    if "/_next/static/" in parsed.path:
+        return ""
+    if not re.search(r"(?:api|search|watch|embed|player|play|video|stream|source|server|resolve|proxy|manifest|action)", parsed.path + "?" + parsed.query, re.I):
+        return ""
+    return raw[:500]
+
+
+def site_structure_knowledge() -> tuple[list[str], list[str]]:
+    report = load_json(WORK / "routes" / "provider-site-structure.json", {})
+    if not isinstance(report, dict):
+        return [], []
+    routes: list[str] = []
+    observed: list[str] = []
+
+    def add_route(value: Any) -> None:
+        stable = _stable_route_hint(value)
+        if stable and stable not in routes and len(routes) < 32:
+            routes.append(stable)
+
+    def add_observed(value: Any) -> None:
+        stable = _stable_observed_url(value)
+        if stable and stable not in observed and len(observed) < 32:
+            observed.append(stable)
+
+    for row in report.get("route_hints") or []:
+        if isinstance(row, dict):
+            add_route(row.get("value"))
+        else:
+            add_route(row)
+    for section in ("pages", "next_chunks"):
+        for row in report.get(section) or []:
+            if not isinstance(row, dict):
+                continue
+            for value in row.get("route_hints") or []:
+                add_route(value)
+            for value in row.get("useful_absolute_urls") or []:
+                add_observed(value)
+    return routes, observed
+
+
 def stage(request_path: Path) -> dict[str, Any]:
     request = load_json(request_path, {})
     provider_id = norm_id(request.get("id") or request.get("provider"))
@@ -481,6 +560,16 @@ def refresh(provider_id: str) -> dict[str, Any]:
         if origin and origin not in origins:
             origins.append(origin)
 
+    discovered_routes, discovered_urls = site_structure_knowledge()
+    routes = parse_list(current.get("routes"))
+    for value in discovered_routes:
+        if value not in routes and len(routes) < 32:
+            routes.append(value)
+    observed_urls = [value for value in (api, direct) if value]
+    for value in discovered_urls:
+        if value not in observed_urls and len(observed_urls) < 32:
+            observed_urls.append(value)
+
     model = {
         "strategy": str(current.get("strategy") or patch.get("capability") or "html_scraper"),
         "knownSite": direct or hub or telegram or None,
@@ -488,8 +577,8 @@ def refresh(provider_id: str) -> dict[str, Any]:
         "officialHub": hub or telegram or None,
         "officialApi": api or None,
         "origins": origins,
-        "observedUrls": [value for value in (api, direct) if value],
-        "routes": parse_list(current.get("routes")),
+        "observedUrls": observed_urls,
+        "routes": routes,
     }
     base_relative, base_sha, _stripped = base_store.persist_clean_provider_seed(
         provider_id,
@@ -525,6 +614,8 @@ def refresh(provider_id: str) -> dict[str, Any]:
         "hub": hub or None,
         "telegram": telegram or None,
         "api": api or None,
+        "discovered_routes": len(discovered_routes),
+        "discovered_urls": len(discovered_urls),
     }
     write_json(PROVENANCE, provenance)
     base_store.repair_legacy_bases()
@@ -534,11 +625,13 @@ def refresh(provider_id: str) -> dict[str, Any]:
     current["telegram"] = telegram
     current["api"] = api
     current["site"] = direct or hub or telegram
+    current["routes"] = routes
+    current["observed_urls"] = observed_urls
     write_json(WORK / "current.json", current)
     print(
         "FIELD_PROVIDER_ONBOARDING_REFRESH "
         f"id={provider_id} direct={bool(direct)} hub={bool(hub)} telegram={bool(telegram)} "
-        f"base={base_relative}"
+        f"routes={len(routes)} observed_urls={len(observed_urls)} base={base_relative}"
     )
     return current
 
