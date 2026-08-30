@@ -548,6 +548,28 @@ def clean_provider_model(
     }
 
 
+def reconstruction_manifest_entry(
+    provider_id: str,
+    entry: dict[str, Any],
+    overrides: dict[str, Any],
+) -> dict[str, Any]:
+    """Project durable semantic capability into a one-shot ProviderBase rebuild."""
+    output = dict(entry) if isinstance(entry, dict) else {}
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
+    semantic: list[str] = []
+    for raw in patch.get("published_types") if isinstance(patch.get("published_types"), list) else []:
+        value = str(raw or "").strip().casefold()
+        if value in {"movie", "tv", "anime"} and value not in semantic:
+            semantic.append(value)
+    if semantic:
+        # build_clean_provider_seed deliberately prefers canonicalSupportedTypes.
+        # Keep the upstream transport list intact for diagnostics, but never let
+        # movie/tv aliases erase a proven semantic anime capability.
+        output["canonicalSupportedTypes"] = semantic
+    return output
+
+
 def executable_seed(
     provider_id: str,
     entry: dict[str, Any],
@@ -582,6 +604,7 @@ def executable_seed(
             knowledge = merge_provider_knowledge(knowledge, historical_knowledge)
 
     provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
+    reconstruction_entry = reconstruction_manifest_entry(provider_id, entry, overrides)
 
     if pending_clean and not force_clean_reconstruction:
         path, _digest = resolve_base(provider_id, previous_row, require=True)
@@ -599,7 +622,7 @@ def executable_seed(
         return (
             build_clean_provider_seed(
                 provider_id,
-                entry,
+                reconstruction_entry,
                 known_site=site,
                 provider_model=provider_model,
             ),
@@ -629,7 +652,7 @@ def executable_seed(
     return (
         build_clean_provider_seed(
             provider_id,
-            entry,
+            reconstruction_entry,
             known_site=site,
             provider_model=provider_model,
         ),
