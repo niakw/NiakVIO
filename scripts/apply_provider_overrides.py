@@ -36,6 +36,49 @@ GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
 )
 
+_SEMANTIC_TYPES_INDEX: dict[str, list[str]] | None = None
+
+
+def _semantic_types_index() -> dict[str, list[str]]:
+    global _SEMANTIC_TYPES_INDEX
+    if _SEMANTIC_TYPES_INDEX is not None:
+        return _SEMANTIC_TYPES_INDEX
+    result: dict[str, list[str]] = {}
+    catalog_path = ROOT / "provider_catalog.json"
+    if catalog_path.exists():
+        try:
+            catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+            for row in catalog.get("providers") or []:
+                if not isinstance(row, dict):
+                    continue
+                provider_id = str(row.get("canonicalId") or row.get("scraper", {}).get("id") or "").strip().casefold()
+                scraper = row.get("scraper") if isinstance(row.get("scraper"), dict) else {}
+                values = scraper.get("supportedTypes") or []
+                types = []
+                for value in values if isinstance(values, list) else []:
+                    item = str(value).strip().lower()
+                    if item in {"movie", "tv", "anime"} and item not in types:
+                        types.append(item)
+                if provider_id and types:
+                    result[provider_id] = types
+        except Exception:
+            pass
+    _SEMANTIC_TYPES_INDEX = result
+    return result
+
+
+def _provider_semantic_types(provider_id: str, specific: dict[str, Any]) -> list[str]:
+    values = specific.get("published_types") or specific.get("supported_types")
+    if isinstance(values, list):
+        out = []
+        for value in values:
+            item = str(value).strip().lower()
+            if item in {"movie", "tv", "anime"} and item not in out:
+                out.append(item)
+        if out:
+            return out
+    return list(_semantic_types_index().get(provider_id.casefold()) or [])
+
 
 def load_overrides(path: Path | None = None) -> dict[str, Any]:
     config_path = (path or CONFIG).resolve()
@@ -1236,7 +1279,13 @@ def apply_overrides(
         # inner Core/provider layer receives the same canonical movie|tv|anime
         # identity. Client aliases remain input-only.
         before = text
-        text = _apply_patch_script(text, provider_id, GLOBAL_MEDIA_TYPE_RESOLUTION, {}, None)
+        text = _apply_patch_script(
+            text,
+            provider_id,
+            GLOBAL_MEDIA_TYPE_RESOLUTION,
+            {"semantic_types": _provider_semantic_types(provider_id, specific)},
+            None,
+        )
         if text != before:
             applied.append({
                 "type": "patch_script",

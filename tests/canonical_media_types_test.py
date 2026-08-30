@@ -35,8 +35,10 @@ def validate_manifest(path: Path) -> tuple[list[dict], int]:
         assert key not in seen, f"{path}: duplicate provider id {provider_id!r}"
         seen.add(key)
         types = canonical_types(row.get("supportedTypes"), f"{path}:{provider_id}")
-        anime += int("anime" in types)
-        out.append({"id": provider_id, "key": key, "types": types, "row": row})
+        canonical_raw = row.get("canonicalSupportedTypes")
+        canonical = canonical_types(canonical_raw, f"{path}:{provider_id}:canonicalSupportedTypes") if canonical_raw else types
+        anime += int("anime" in canonical)
+        out.append({"id": provider_id, "key": key, "types": types, "canonical": canonical, "row": row})
     return out, anime
 
 
@@ -115,9 +117,19 @@ def assert_projection(
     )
     for row, canonical_key in zip(manifest_rows, order, strict=True):
         expected_types = catalog[canonical_key]["types"]
-        assert row["types"] == expected_types, (
-            f"{manifest_path}:{row['id']}: supportedTypes drift from provider_catalog.json: "
-            f"{row['types']} != {expected_types}"
+        assert row["canonical"] == expected_types, (
+            f"{manifest_path}:{row['id']}: canonical media types drift from provider_catalog.json: "
+            f"{row['canonical']} != {expected_types}"
+        )
+        expected_transport = expected_types
+        if "anime" in expected_types and "tv" not in expected_types:
+            expected_transport = tuple([*expected_types, "tv"])
+            assert tuple(row["row"].get("canonicalSupportedTypes") or ()) == expected_types, (
+                f"{manifest_path}:{row['id']}: anime transport alias must preserve canonicalSupportedTypes"
+            )
+        assert row["types"] == expected_transport, (
+            f"{manifest_path}:{row['id']}: Nuvio transport supportedTypes drift: "
+            f"{row['types']} != {expected_transport}"
         )
     return len(manifest_rows), anime
 

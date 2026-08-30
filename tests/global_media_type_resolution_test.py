@@ -21,7 +21,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
 }
 module.exports = { getStreams };
 '''
-patched = mod.apply(base)
+patched = mod.apply(base, options={"semantic_types": ["tv", "anime"]})
 assert "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1" in patched
 assert "TMDB_API_KEY" in patched
 assert "TMDB_ACCESS_TOKEN" in patched
@@ -45,6 +45,10 @@ const provider = require(process.argv[2]);
   if (seriesAnime[0].mediaType !== "anime") throw new Error("series anime was not refined to anime");
 
   delete global.TMDB_API_KEY;
+  global.fetch = async () => ({
+    ok: true,
+    text: async () => "<html><a href='/genre/18-drama'>Drama</a><b>Original Language</b> English</html>"
+  });
   const ordinarySeries = await provider.getStreams("1396", "series", 1, 1);
   if (ordinarySeries[0].mediaType !== "tv") throw new Error("series alias did not default to tv");
 
@@ -64,7 +68,7 @@ object_base = r'''
 async function getStreams(arg) { return [arg]; }
 module.exports = { getStreams };
 '''
-object_patched = mod.apply(object_base)
+object_patched = mod.apply(object_base, options={"semantic_types": ["tv", "anime"]})
 
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
@@ -106,4 +110,39 @@ const provider = require(process.argv[2]);
     test.write_text(object_runner, encoding="utf-8")
     subprocess.run(["node", str(test), str(object_provider)], check=True)
 
-print("global media-type resolver tests passed: series=>tv, proven TMDB anime=>anime")
+anime_only = mod.apply(base, options={"semantic_types": ["anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "anime-only.js"
+    test = tmp_path / "anime-only-test.js"
+    provider.write_text(anime_only, encoding="utf-8")
+    test.write_text(r'''
+global.fetch = async () => { throw new Error("anime-only transport alias must not need TMDB"); };
+const provider = require(process.argv[2]);
+(async () => {
+  const value = await provider.getStreams("280049", "series", 1, 11);
+  if (value[0].mediaType !== "anime") throw new Error("anime-only provider did not map series transport to anime");
+})().catch((error) => { console.error(error); process.exit(1); });
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
+
+public_mixed = mod.apply(base, options={"semantic_types": ["tv", "anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "mixed-public.js"
+    test = tmp_path / "mixed-public-test.js"
+    provider.write_text(public_mixed, encoding="utf-8")
+    test.write_text(r'''
+global.fetch = async () => ({
+  ok: true,
+  text: async () => "<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"
+});
+const provider = require(process.argv[2]);
+(async () => {
+  const value = await provider.getStreams("280049", "series", 1, 11);
+  if (value[0].mediaType !== "anime") throw new Error("public TMDB fallback did not refine series to anime");
+})().catch((error) => { console.error(error); process.exit(1); });
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
+
+print("global media-type resolver tests passed: transport series=>tv, semantic/TMDB anime=>anime without CI-only secret")

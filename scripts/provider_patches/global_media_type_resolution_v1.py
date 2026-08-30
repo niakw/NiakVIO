@@ -5,9 +5,10 @@ Nuvio client aliases (series/show/other) mean TV by default. A trusted anime
 identity, including TMDB metadata, may refine that TV-shaped request to anime
 before any provider-specific resolver sees it.
 
-No credential is embedded. TMDB enrichment runs only when the runtime exposes
-TMDB_API_KEY or TMDB_ACCESS_TOKEN; object-style requests can also carry trusted
-metadata directly. Metadata failure is fail-open to tv.
+No NiakVIO credential is embedded. The resolver first reuses a runtime/provider
+TMDB credential when one already exists; otherwise it may classify TV-shaped
+requests from the public TMDB title page. Object-style requests can also carry
+trusted metadata directly. Metadata failure is fail-open to the transport type.
 """
 from __future__ import annotations
 
@@ -35,9 +36,15 @@ def _strip_existing(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = dict(options or {})
+    semantic_types = []
+    for value in cfg.get("semantic_types") or []:
+        item = str(value).strip().lower()
+        if item in {"movie", "tv", "anime"} and item not in semantic_types:
+            semantic_types.append(item)
     payload = {
-        "timeoutMs": max(1200, min(int(cfg.get("timeout_ms", 4500)), 10000)),
-        "revision": "series-tv-tmdb-anime-v1",
+        "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
+        "semanticTypes": semantic_types,
+        "revision": "series-tv-public-tmdb-semantic-gate-v2",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -53,8 +60,16 @@ function s(v){return String(v==null?"":v).trim()}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function rows(v){return Array.isArray(v)?v:[]}
 function keywordRows(m){var k=m&&m.keywords;return rows(k&&((k.results||k.keywords)||k))}
+function htmlAnime(h){
+  var x=s(h);if(!x)return false;
+  var keyword=/(?:>|\"|&quot;)\s*anime\s*(?:<|\"|&quot;)/i.test(x)||/\/keyword\/[^"'<>\s]*anime/i.test(x);
+  var animation=/\/genre\/16(?:-|\/|\?|\")/i.test(x)||/>\s*Animation\s*</i.test(x)||/\"name\"\s*:\s*\"Animation\"/i.test(x);
+  var japanese=/Original\s+Language[\s\S]{0,260}Japanese/i.test(x)||/\"original_language\"\s*:\s*\"ja\"/i.test(x);
+  return keyword||(animation&&japanese);
+}
 function animeMeta(m){
   if(!m||typeof m!=="object")return false;
+  if(typeof m.__nuvioPublicHtml==="string")return htmlAnime(m.__nuvioPublicHtml);
   var explicit=s(m.canonicalMediaType||m.canonical_media_type||m.category).toLowerCase();
   if(explicit==="anime")return true;
   var keywords=keywordRows(m).map(function(x){return s(x&&x.name).toLowerCase()});
@@ -69,16 +84,31 @@ function animeMeta(m){
   return animation&&japanese;
 }
 function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+function localKey(){
+  try{if(g&&s(g.TMDB_API_KEY))return s(g.TMDB_API_KEY)}catch(_){}
+  try{if(typeof TMDB_API_KEY!=="undefined"&&s(TMDB_API_KEY))return s(TMDB_API_KEY)}catch(_){}
+  return "";
+}
+function localToken(){
+  try{if(g&&s(g.TMDB_ACCESS_TOKEN))return s(g.TMDB_ACCESS_TOKEN)}catch(_){}
+  try{if(typeof TMDB_ACCESS_TOKEN!=="undefined"&&s(TMDB_ACCESS_TOKEN))return s(TMDB_ACCESS_TOKEN)}catch(_){}
+  return "";
+}
 async function tmdb(tvId){
-  var key=s(g&&g.TMDB_API_KEY),token=s(g&&g.TMDB_ACCESS_TOKEN);
-  if(!/^\d+$/.test(s(tvId))||(!key&&!token)||!g||typeof g.fetch!=="function")return null;
+  var id=s(tvId),key=localKey(),token=localToken();
+  if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return null;
   try{
-    var u="https://api.themoviedb.org/3/tv/"+encodeURIComponent(s(tvId))+"?append_to_response=keywords&language=en-US";
-    if(key)u+="&api_key="+encodeURIComponent(key);
-    var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
-    var r=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
-    if(!r||!r.ok||typeof r.json!=="function")return null;
-    return await r.json();
+    if(key||token){
+      var u="https://api.themoviedb.org/3/tv/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
+      if(key)u+="&api_key="+encodeURIComponent(key);
+      var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
+      var api=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
+      if(api&&api.ok&&typeof api.json==="function")return await api.json();
+    }
+    var publicUrl="https://www.themoviedb.org/tv/"+encodeURIComponent(id)+"?language=en-US";
+    var page=await g.fetch(publicUrl,{headers:{Accept:"text/html","Range":"bytes=0-65535"},redirect:"follow",signal:timeout()});
+    if(!page||!page.ok||typeof page.text!=="function")return null;
+    return {__nuvioPublicHtml:await page.text()};
   }catch(_){return null}
 }
 function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
@@ -91,7 +121,10 @@ async function resolve(a){
   if(category==="anime"||animeMeta(metadata))type="anime";
   var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
   if(type==="tv"&&/^\d+$/.test(id)){
-    var m=await tmdb(id);if(animeMeta(m))type="anime";
+    var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+    var animeOnly=semantic.indexOf("anime")>=0&&semantic.indexOf("tv")<0;
+    if(animeOnly)type="anime";
+    else{var m=await tmdb(id);if(animeMeta(m))type="anime"}
   }
   if(obj){
     q.nuvioInputMediaType=input;
@@ -104,7 +137,12 @@ async function resolve(a){
 function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
   var native=o[k];
-  var wrap=async function(){var a=await resolve(arguments);return native.apply(this,a)};
+  var wrap=async function(){
+    var a=await resolve(arguments),first=a[0],obj=objectRequest(first),type=obj?s(first.mediaType||first.type):s(a[1]);
+    var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+    if(semantic.length&&semantic.indexOf(type)<0)return [];
+    return native.apply(this,a);
+  };
   wrap.__nuvioMediaTypeResolutionV1=true;
   o[k]=wrap;return true;
 }

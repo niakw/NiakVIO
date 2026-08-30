@@ -10,9 +10,12 @@ for (let i = 2; i < process.argv.length; i += 1) {
 }
 
 function excludedFromNoAnime(scraper) {
-  const rawTypes = Array.isArray(scraper?.supportedTypes)
-    ? scraper.supportedTypes
-    : typeof scraper?.supportedTypes === "string" ? [scraper.supportedTypes] : [];
+  const canonical = Array.isArray(scraper?.canonicalSupportedTypes) && scraper.canonicalSupportedTypes.length
+    ? scraper.canonicalSupportedTypes
+    : scraper?.supportedTypes;
+  const rawTypes = Array.isArray(canonical)
+    ? canonical
+    : typeof canonical === "string" ? [canonical] : [];
   const types = rawTypes.map((value) => String(value).trim().toLowerCase()).filter(Boolean);
   const animeOnly = types.length > 0 && new Set(types).size === 1 && types[0] === "anime";
   const identity = [scraper?.id, scraper?.name].filter(Boolean).join(" ").toLowerCase();

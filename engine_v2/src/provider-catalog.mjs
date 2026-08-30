@@ -19,7 +19,7 @@ export function buildCatalogFromPublished({ generalManifest, vfManifest }) {
     if (generalById.has(canonicalId)) {
       throw new Error(`general manifest contains duplicate provider id: ${scraper.id}`);
     }
-    generalById.set(canonicalId, structuredClone(scraper));
+    generalById.set(canonicalId, canonicalizePublishedScraper(scraper));
   }
 
   const vfOrder = [];
@@ -177,7 +177,7 @@ export function manifestsFromCatalog(catalog) {
   return {
     general: {
       ...(structuredClone(catalog.manifestMeta?.general) ?? {}),
-      scrapers: catalog.manifestOrder.general.map((id) => structuredClone(byId.get(id).scraper)),
+      scrapers: catalog.manifestOrder.general.map((id) => projectScraper(byId.get(id).scraper, "general")),
     },
     vf: {
       ...(structuredClone(catalog.manifestMeta?.vf) ?? {}),
@@ -207,8 +207,17 @@ function withoutScrapers(manifest) {
   return copy;
 }
 
-function normalizeProjectionScraper(scraper, projection) {
+function canonicalizePublishedScraper(scraper) {
   const copy = structuredClone(scraper);
+  if (Array.isArray(copy.canonicalSupportedTypes) && copy.canonicalSupportedTypes.length) {
+    copy.supportedTypes = [...copy.canonicalSupportedTypes];
+  }
+  delete copy.canonicalSupportedTypes;
+  return copy;
+}
+
+function normalizeProjectionScraper(scraper, projection) {
+  const copy = canonicalizePublishedScraper(scraper);
   if (projection === "vf" && typeof copy.filename === "string" && copy.filename.startsWith("../")) {
     copy.filename = copy.filename.slice(3);
   }
@@ -217,6 +226,15 @@ function normalizeProjectionScraper(scraper, projection) {
 
 function projectScraper(scraper, projection) {
   const copy = structuredClone(scraper);
+  const semantic = Array.isArray(copy.supportedTypes)
+    ? [...new Set(copy.supportedTypes.map((value) => String(value).trim().toLowerCase()).filter(Boolean))]
+    : [];
+  if (semantic.includes("anime") && !semantic.includes("tv")) {
+    copy.canonicalSupportedTypes = [...semantic];
+    copy.supportedTypes = [...semantic, "tv"];
+  } else {
+    delete copy.canonicalSupportedTypes;
+  }
   if (projection === "vf" && typeof copy.filename === "string" && !copy.filename.startsWith("../")) {
     copy.filename = `../${copy.filename}`;
   }
