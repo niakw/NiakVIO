@@ -129,6 +129,12 @@ profiles_builder = (SCRIPTS / "build_provider_runtime_profiles.py").read_text(en
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in profiles_builder
 assert "clean_seed_origin" in profiles_builder
 assert "excluded_patch_scripts=(" in profiles_builder
+
+published_reapply = (SCRIPTS / "reapply_published_overrides.py").read_text(encoding="utf-8")
+assert "is_clean_reconstructed(provider_provenance)" in published_reapply
+assert "is_clean_reconstruction_candidate(provider_provenance)" in published_reapply
+assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in published_reapply
+assert "excluded_patch_scripts=(" in published_reapply
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
 assert "refusing legacy ProviderBase fallback" in promoter
