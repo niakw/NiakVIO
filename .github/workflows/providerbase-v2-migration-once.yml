@@ -1,0 +1,121 @@
+name: ONE-SHOT - ProviderBase v2 migration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/triggers/providerbase-v2-migration'
+
+concurrency:
+  group: providerbase-v2-migration-once
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    name: Persist clean ProviderBase v2 candidates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout trusted main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pinned runtime dependencies
+        shell: bash
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Build complete clean reconstruction stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf staging-reconstruction migration-output
+          python scripts/discover_candidates.py             --stage staging-reconstruction             --require-all-upstreams             --clean-reconstruction
+          node engine_v2/scripts/validate-stage-against-catalog.mjs             --catalog provider_catalog.json             --stage staging-reconstruction/candidates.json
+          python scripts/build_provider_runtime_profiles.py             --stage staging-reconstruction             --apply-stage
+          python scripts/normalize_terminal_quarantine_stage.py --stage staging-reconstruction
+          python scripts/validate_override_pipeline.py --stage staging-reconstruction
+          node - <<'NODE'
+          const fs=require('fs');
+          const x=JSON.parse(fs.readFileSync('staging-reconstruction/candidates.json','utf8'));
+          const candidates=(x.candidates||[]).filter(Boolean);
+          const byId=new Map(candidates.map(r=>[String(r.canonical_id||'').toLowerCase(),r]));
+          const catalog=JSON.parse(fs.readFileSync('provider_catalog.json','utf8'));
+          const expected=new Set((catalog.providers||[]).map(r=>String(r.canonicalId||'').toLowerCase()).filter(Boolean));
+          if(byId.size!==expected.size || [...expected].some(id=>!byId.has(id))) {
+            throw new Error('clean reconstruction stage coverage mismatch: got '+byId.size+' expected '+expected.size);
+          }
+          const rows=[...byId.values()].filter(r=>r.provider_base_reconstruction_required===true);
+          if(rows.some(r=>!['new-niakvio-clean-seed','pending-niakvio-clean-reconstruction-v2'].includes(r.candidate_code_origin))) {
+            throw new Error('clean reconstruction stage contains a non-NiakVIO candidate');
+          }
+          if(rows.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
+            throw new Error('legacy/upstream JS execution escaped into reconstruction-required rows');
+          }
+          console.log('FIELD_PROVIDERBASE_MIGRATION_STAGE total='+byId.size+' required='+rows.length);
+          NODE
+
+      - name: Materialize all clean candidates
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p migration-output/provider-bases
+          printf '%s\n' '{"results":[]}' > migration-output/learning-queue-summary.json
+          python scripts/materialize_clean_provider_reconstruction.py             --stage staging-reconstruction/candidates.json             --queue-summary migration-output/learning-queue-summary.json             --overrides provider-overrides.json             --output-dir migration-output/provider-bases             --proposed-provenance migration-output/PROVENANCE.json             --summary migration-output/provider-reconstruction-summary.json
+          node - <<'NODE'
+          const fs=require('fs');
+          const s=JSON.parse(fs.readFileSync('migration-output/provider-reconstruction-summary.json','utf8'));
+          const p=JSON.parse(fs.readFileSync('PROVENANCE.json','utf8'));
+          const required=Number(p.provider_base_store?.reconstruction_required||0);
+          if(Number(s.candidateCount)!==required) {
+            throw new Error('expected '+required+' clean candidates, materialized '+s.candidateCount);
+          }
+          if((s.rejected||[]).length) {
+            throw new Error('clean candidate rejection(s): '+JSON.stringify(s.rejected));
+          }
+          console.log('FIELD_PROVIDERBASE_MIGRATION_CANDIDATES candidates='+s.candidateCount);
+          NODE
+
+      - name: Persist pending candidates on main
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp migration-output/PROVENANCE.json PROVENANCE.json
+          cp migration-output/provider-bases/*.js provider-bases/
+          python tests/provider_base_layering_contract_test.py
+          python tests/provider_clean_reconstruction_contract_test.py
+          python tests/provider_base_store_test.py
+          git config user.name "niakvio-migration"
+          git config user.email "actions@users.noreply.github.com"
+          git add PROVENANCE.json provider-bases
+          if git diff --cached --quiet; then
+            echo "ProviderBase migration produced no diff." >&2
+            exit 1
+          fi
+          git commit -m "migration: persist clean ProviderBase v2 candidates"
+          git fetch origin main
+          if [ "$(git rev-parse HEAD^)" != "$(git rev-parse origin/main)" ]; then
+            echo "main moved while migration was running; refusing stale write" >&2
+            exit 1
+          fi
+          git push origin HEAD:main
