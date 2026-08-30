@@ -21,6 +21,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          target="343d18937409b674b15bf4e8feb558cc8d34e7d9"
+          target="2665e2adefc07370eca4a46d9843436675afb824"
           git tag -f 5.21.16 "$target"
           git push --force origin refs/tags/5.21.16
