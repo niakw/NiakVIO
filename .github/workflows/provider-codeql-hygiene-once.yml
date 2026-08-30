@@ -57,11 +57,11 @@ jobs:
           python tests/provider_tmdb_runtime_key_contract_test.py
           python tests/workflow_security_policy_test.py
 
-      - name: Remove one-shot machinery and publish transaction
+      - name: Publish validated transaction
         shell: bash
         run: |
           set -euo pipefail
-          rm -f .github/workflows/provider-codeql-hygiene-once.yml scripts/_provider_codeql_hygiene_once.py
+          rm -f scripts/_provider_codeql_hygiene_once.py
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
