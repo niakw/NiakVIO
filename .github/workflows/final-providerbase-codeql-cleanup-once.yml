@@ -1,0 +1,66 @@
+name: Final ProviderBase CodeQL cleanup (one-shot)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/final-providerbase-codeql-cleanup-once.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: final-providerbase-codeql-cleanup-once
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Fix active bases and prune stale ProviderBases
+        run: python scripts/_final_providerbase_codeql_cleanup_once.py
+
+      - name: Rebuild derived published artifacts
+        run: python scripts/reapply_published_overrides.py
+
+      - name: Validate final publication state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/provider_base_store.py validate
+          python scripts/reapply_published_overrides.py --check
+          python tests/provider_base_layering_contract_test.py
+          python tests/publication_contract_fingerprint_test.py
+          python tests/provider_tmdb_runtime_key_contract_test.py
+          python tests/workflow_security_policy_test.py
+          python tests/targeted_vf_catalogue_adapters_test.py
+          test "$(find provider-bases -maxdepth 1 -type f -name '*--base--*.js' | wc -l | tr -d ' ')" = "96"
+
+      - name: Publish validated cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f scripts/_final_providerbase_codeql_cleanup_once.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git commit -m "security: clean active ProviderBases and prune stale bases"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
