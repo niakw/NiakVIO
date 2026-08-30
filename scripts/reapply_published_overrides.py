@@ -35,7 +35,12 @@ from provider_engine_normalizer import (
     sanitize_provider_hooks,
     strip_foreign_provider_wrappers,
 )
-from provider_base_store import resolve_base
+from provider_base_store import (
+    CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,
+    is_clean_reconstructed,
+    is_clean_reconstruction_candidate,
+    resolve_base,
+)
 from quarantine_catalogue_audit_failures import scoped_quarantine_source
 from provider_patches.quarantine_provider_v1 import apply as apply_terminal_quarantine
 
@@ -735,7 +740,20 @@ def main() -> int:
         isolated = isolated_text.encode("utf-8")
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
         migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
-        patched, records = apply_overrides(provider_id, migrated, phase="discovery")
+        clean_v2_base = (
+            is_clean_reconstructed(provider_provenance)
+            or is_clean_reconstruction_candidate(provider_provenance)
+        )
+        patched, records = apply_overrides(
+            provider_id,
+            migrated,
+            phase="discovery",
+            excluded_patch_scripts=(
+                CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
+                if clean_v2_base
+                else None
+            ),
+        )
         if removed_wrappers:
             records = [{
                 "type": "migration",
