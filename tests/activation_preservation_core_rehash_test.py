@@ -115,3 +115,11 @@ with tempfile.TemporaryDirectory() as tmp:
         legacy.ROOT = original_root
 
 print("activation preservation deterministic Core rehash tests passed")
+
+# Pending clean-v2 migration state must not hard-block P2 activation preservation.
+validator_source = (ROOT / "scripts" / "validate_activation_preservation.py").read_text(encoding="utf-8")
+assert "deferred_to_learning" in validator_source
+assert '"preserved-published-state-clean-candidate-pending"' in validator_source
+assert '"pending-canonical-deep-proof"' in validator_source
+assert "FIELD_ACTIVATION_DEFERRED_TO_LEARNING" in validator_source
+assert "accounted_for = len(active) + len(justified) + len(deferred_to_learning)" in validator_source
