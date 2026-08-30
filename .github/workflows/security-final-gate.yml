@@ -168,29 +168,50 @@ jobs:
           from pathlib import Path
           pages=json.loads(Path(os.environ['RUNNER_TEMP']+'/codeql-open.json').read_text())
           alerts=[row for page in pages for row in (page if isinstance(page,list) else []) if isinstance(row,dict)]
+          revocation_path=Path('provider-security-revocations.json')
+          revocations=json.loads(revocation_path.read_text()) if revocation_path.is_file() else {'entries':[]}
+          revoked={
+              str(item.get('path') or '')
+              for item in (revocations.get('entries') or [])
+              if isinstance(item,dict) and str(item.get('path') or '')
+          }
           bad=[]
           provider_bad=[]
+          stale_revoked=[]
           for row in alerts:
               rule=row.get('rule') or {}
               severity=str(rule.get('security_severity_level') or rule.get('severity') or '').lower()
               instance=row.get('most_recent_instance') or {}
               location=instance.get('location') or {}
               path=str(location.get('path') or '')
-              if severity in {'high','critical'}:
-                  item={
-                      'number': row.get('number'),
-                      'rule': rule.get('id') or rule.get('name'),
-                      'severity': severity,
-                      'path': path,
-                  }
+              if severity not in {'high','critical'}:
+                  continue
+              item={
+                  'number': row.get('number'),
+                  'rule': rule.get('id') or rule.get('name'),
+                  'severity': severity,
+                  'path': path,
+              }
+              current_path=Path(path) if path else None
+              if current_path is not None and current_path.is_file():
                   bad.append(item)
-                  if path.startswith('providers/'):
+                  if path.startswith(('providers/','provider-bases/')):
                       provider_bad.append(item)
-          print(f'FIELD_CODEQL_ALERTS open={len(alerts)} high_or_critical={len(bad)} high_or_critical_provider={len(provider_bad)}')
+                  continue
+              if path in revoked:
+                  stale_revoked.append(item)
+                  continue
+              bad.append({**item,'reason':'missing_from_current_tree_without_explicit_security_revocation'})
+          print(
+              f'FIELD_CODEQL_ALERTS open={len(alerts)} current_high_or_critical={len(bad)} '
+              f'current_provider_high_or_critical={len(provider_bad)} stale_revoked={len(stale_revoked)}'
+          )
+          for row in stale_revoked:
+              print('STALE_REVOKED_HIGH_ALERT=' + json.dumps(row, sort_keys=True))
           for row in bad:
-              print('OPEN_HIGH_ALERT=' + json.dumps(row, sort_keys=True))
+              print('OPEN_CURRENT_HIGH_ALERT=' + json.dumps(row, sort_keys=True))
           if bad:
-              raise SystemExit('open high/critical CodeQL alerts remain on main')
+              raise SystemExit('current or unrevoked high/critical CodeQL alerts remain on tested main tree')
           PY
 
       - name: Report issue 69 security success

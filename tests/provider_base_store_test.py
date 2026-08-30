@@ -56,7 +56,10 @@ assert "const crawled = await _crawlDirectMedia(" in text
 assert text.index("const runtime = await _resolveRuntimeApi(") < text.index("const crawled = await _crawlDirectMedia(")
 assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
-assert "requests < 12" in text
+assert "requests < 4" in text
+assert "slice(0, 24)" not in text
+assert "function _detailGuesses" not in text
+assert "if (!_runtimePlanAvailable()) return [];" in text
 module.assert_base_layering(clean, "synthetic-clean")
 with tempfile.NamedTemporaryFile(suffix=".js") as handle:
     handle.write(clean)
