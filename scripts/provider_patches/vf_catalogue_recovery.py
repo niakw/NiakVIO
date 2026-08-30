@@ -154,7 +154,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return rows.sort(function(a,b){return b.score-a.score}).slice(0,8);
   }
   function players(html,base){
-    var found=[],seen=Object.create(null),text=String(html||"").replace(/\\\//g,"/");
+    var found=[],seen=Object.create(null),text=String(html||"").split("\\/").join("/");
     var patterns=[
       /(?:data-embed|data-src|data-player|data-url|data-video)=["']([^"']+)["']/gi,
       /<iframe\b[^>]*src=["']([^"']+)["']/gi,
@@ -168,7 +168,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function streamRows(urls,base,label){return urls.slice(0,config.maxPlayers).map(function(url,index){return {name:config.providerName+(urls.length>1?" #"+(index+1):""),title:config.providerName+" - "+label,url:url,quality:"HD",language:"fr",headers:headers(base),isDirect:/(?:\.m3u8|\.mp4|\.mpd)(?:[?#]|$)/i.test(url)}})}
   function episodePlayers(html,base,req){
     if(!req||req.mediaType!=="tv")return [];
-    var season=Number(req.season)||1,episode=Number(req.episode)||1,text=String(html||"").replace(/\\\//g,"/"),urls=[],seen=Object.create(null);
+    var season=Number(req.season)||1,episode=Number(req.episode)||1,text=String(html||"").split("\\/").join("/"),urls=[],seen=Object.create(null);
     var blocks=text.match(/<[^>]+(?:data-season|data-saison)=["'][^"']+["'][^>]*(?:data-episode|data-ep)=["'][^"']+["'][^>]*>/gi)||[];
     blocks.forEach(function(tag){
       var sm=tag.match(/(?:data-season|data-saison)=["'](\d+)["']/i),em=tag.match(/(?:data-episode|data-ep)=["'](\d+)["']/i);
@@ -177,7 +177,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}
     });
     var jsonRe=/[{,]\s*["']?(?:season|saison)["']?\s*:\s*(\d+)[\s\S]{0,500}?["']?(?:episode|ep)["']?\s*:\s*(\d+)[\s\S]{0,700}?["']?(?:url|src|embedUrl|embed_url|player)["']?\s*:\s*["'](https?:\/\/[^"']+)["']/gi,m;
-    while((m=jsonRe.exec(text))!==null){if(Number(m[1])!==season||Number(m[2])!==episode)continue;var u=absolute(m[3].replace(/\\\//g,"/"),base);if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}}
+    while((m=jsonRe.exec(text))!==null){if(Number(m[1])!==season||Number(m[2])!==episode)continue;var u=absolute(m[3].split("\\/").join("/"),base);if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}}
     return urls;
   }
   function episodeLinks(html,base,req){

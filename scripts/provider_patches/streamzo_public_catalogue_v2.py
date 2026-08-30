@@ -34,7 +34,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
 var TMDB_KEY=(g&&g.TMDB_API_KEY)||"";
-function s(v){return String(v==null?"":v).replace(/&amp;/gi,"&").replace(/\\\//g,"/").trim()}
+function s(v){return String(v==null?"":v).replace(/&amp;/gi,"&").split("\\/").join("/").trim()}
 function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_){return s(v).toLowerCase()}}
 function slug(v){return norm(v).replace(/\s+/g,"-")}
 function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return ""}}

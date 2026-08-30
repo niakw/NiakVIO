@@ -25,7 +25,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
 var TMDB_KEY=(g&&g.TMDB_API_KEY)||"";
-function s(v){return String(v==null?"":v).replace(/&amp;|&#038;/gi,"&").replace(/\\\//g,"/").trim()}
+function s(v){return String(v==null?"":v).replace(/&amp;|&#038;/gi,"&").split("\\/").join("/").trim()}
 function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_){return s(v).toLowerCase()}}
 function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return ""}}
 function args(a){var q=a[0]&&typeof a[0]==="object"?Object.assign({},a[0]):{tmdbId:a[0],mediaType:a[1],season:a[2],episode:a[3],settings:a[4]||{}};q.tmdbId=s(q.tmdbId||q.id);q.mediaType=s(q.mediaType||q.type||"movie").toLowerCase();return q}

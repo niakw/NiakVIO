@@ -379,7 +379,7 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "a690e724c1b06a2ca9b4b8ecafe10f0352b85a5529c021d4626c3f4a962bf86c",
+      "build_input_sha256": "879e25491d92e2d379d68d739a90db9a13b40249564702e69d7f882101e0ed15",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -400,9 +400,9 @@
     },
     "4khdhub": {
       "id": "4khdhub",
-      "published_filename": "providers/4khdhub--nuvio--7e5396458b457047.js",
-      "sha256": "7e5396458b45704756351ccd3d0117362744c86185b4a8be64b484be12a4bf61",
-      "patched_sha256": "7e5396458b45704756351ccd3d0117362744c86185b4a8be64b484be12a4bf61",
+      "published_filename": "providers/4khdhub--nuvio--e70dc206194911cc.js",
+      "sha256": "e70dc206194911cc4fda8b39ef5bb92c2cd173976343585dc1e27263c013cf39",
+      "patched_sha256": "e70dc206194911cc4fda8b39ef5bb92c2cd173976343585dc1e27263c013cf39",
       "upstream_sha256": "c9940593c2ca77c694994781c462d21f1c07189aace946879ade166cb03da306",
       "local_patches": [
         {
@@ -809,6 +809,24 @@
           "output_sha256": "7e5396458b45704756351ccd3d0117362744c86185b4a8be64b484be12a4bf61",
           "bytes_before": 139423,
           "bytes_after": 127383
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "0beb2912510e736e09ae5957109b917f78080c128cbbd8807846aa9c2d0adedd",
+          "output_sha256": "e70dc206194911cc4fda8b39ef5bb92c2cd173976343585dc1e27263c013cf39",
+          "bytes_before": 139427,
+          "bytes_after": 127387
         }
       ],
       "source": "published-baseline",
@@ -1096,9 +1114,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "7e5396458b45704756351ccd3d0117362744c86185b4a8be64b484be12a4bf61"
+        "sha256": "e70dc206194911cc4fda8b39ef5bb92c2cd173976343585dc1e27263c013cf39"
       },
-      "build_input_sha256": "3c6f741a7b719c4e8e31036ca93854005fc6c9cc073dc5ef8792fc1bf80177b2",
+      "build_input_sha256": "15f6c9fb89c7ecf5694531af87a23d916e91a4147270ed93ff6eccec7c2328db",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -1453,7 +1471,7 @@
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "a128213a4ec37255f372a656609cb6d711e9fc25300775255bd6ab69ee0c32fb",
+      "build_input_sha256": "01f1eded06860ff387e61b7024462e7b2efb4b25bf2c285e88828c5dc7a7f3cc",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -1850,7 +1868,7 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "b51abfad2eeb3a0426136307fd5f8ea30feacef857a4ed95e3ea29b3833dac85",
+      "build_input_sha256": "f992acacd32a5c76fef14ca5115322d5341016b0087c68b1546855ddddfdac39",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -1871,9 +1889,9 @@
     },
     "allmovieland": {
       "id": "allmovieland",
-      "published_filename": "providers/allmovieland--published-baseline--97c2d1a798ee69d4.js",
-      "sha256": "97c2d1a798ee69d4a83fa483e6f43c8c7173ae097d5293d0f03a12cfdd6bdf9c",
-      "patched_sha256": "97c2d1a798ee69d4a83fa483e6f43c8c7173ae097d5293d0f03a12cfdd6bdf9c",
+      "published_filename": "providers/allmovieland--published-baseline--28959a132be71d7c.js",
+      "sha256": "28959a132be71d7cb5f36fc51c656ad8b4335e866eea330790286e080f1f3ebd",
+      "patched_sha256": "28959a132be71d7cb5f36fc51c656ad8b4335e866eea330790286e080f1f3ebd",
       "upstream_sha256": "2217246fc678c9944a374bf227414e640ffa9e6a46775fd0fc62eea6e98eaf81",
       "local_patches": [
         {
@@ -2202,6 +2220,24 @@
           "output_sha256": "97c2d1a798ee69d4a83fa483e6f43c8c7173ae097d5293d0f03a12cfdd6bdf9c",
           "bytes_before": 122836,
           "bytes_after": 112880
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "ae5827f141f1f7f111b30a8c1c9f73f74cc5534eeece4b8b76696e339be5543d",
+          "output_sha256": "28959a132be71d7cb5f36fc51c656ad8b4335e866eea330790286e080f1f3ebd",
+          "bytes_before": 122840,
+          "bytes_after": 112884
         }
       ],
       "source": "published-baseline",
@@ -2433,9 +2469,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "97c2d1a798ee69d4a83fa483e6f43c8c7173ae097d5293d0f03a12cfdd6bdf9c"
+        "sha256": "28959a132be71d7cb5f36fc51c656ad8b4335e866eea330790286e080f1f3ebd"
       },
-      "build_input_sha256": "3f1c53d808c1d9f4b688483d463460f580b3124adacdf45e97ebd2814b48707a",
+      "build_input_sha256": "c51c8c94241d12419dcbaa08322fdfd53bf4702465bbb256b5cc3a619c85a177",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -2835,7 +2871,7 @@
         "sha256": "4840bc8a37b320d296e7a6729d967d90c251895809e55f46038861b774dd42f1"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ff63e0add52029ea53f74afb440fdbd4e65613187719fda9e17c4f7f725bb99b",
+      "build_input_sha256": "96c1c4499d814c0b04bd9210fe1464479011c91695d5e02592895ae2b70390d3",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -3381,7 +3417,7 @@
         "mangle": false,
         "sha256": "89ff5c2b651efeb5ab1a4a6a17079dceebbd163bfd9e86f0e474ee66372fcd30"
       },
-      "build_input_sha256": "f6391b9977461699ed8797551b3c9c0e784a1ab1bd2c043d31fbbe0db9b72c54",
+      "build_input_sha256": "ef6a62899da087b1e1c23dd82c2ac77ab405f9e73483cf93001fc41ecaf7214c",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -3402,9 +3438,9 @@
     },
     "anikototv": {
       "id": "anikototv",
-      "published_filename": "providers/anikototv--nuvio--b9a8e2f2ae6e3917.js",
-      "sha256": "b9a8e2f2ae6e3917a8e114ca9e0319247d145512da7a2bf94ff795824ad1dfc3",
-      "patched_sha256": "b9a8e2f2ae6e3917a8e114ca9e0319247d145512da7a2bf94ff795824ad1dfc3",
+      "published_filename": "providers/anikototv--nuvio--8aadc05c38391372.js",
+      "sha256": "8aadc05c383913727a47f66353f1270e957dee8f1e7eec72ce5f4bd5d935b339",
+      "patched_sha256": "8aadc05c383913727a47f66353f1270e957dee8f1e7eec72ce5f4bd5d935b339",
       "base_filename": "provider-bases/anikototv--base--b0db6e72d5207ca1.js",
       "base_sha256": "b0db6e72d5207ca1eda9a79ba31ad439fc9eeda811ba820f76203b16ddf3e730",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -3560,6 +3596,24 @@
           "output_sha256": "b9a8e2f2ae6e3917a8e114ca9e0319247d145512da7a2bf94ff795824ad1dfc3",
           "bytes_before": 121826,
           "bytes_after": 111868
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "94b9702daab21d879e2ca82bcd5c180ee6cfda593ee9c0743d1b2d3f8e087c9e",
+          "output_sha256": "8aadc05c383913727a47f66353f1270e957dee8f1e7eec72ce5f4bd5d935b339",
+          "bytes_before": 121830,
+          "bytes_after": 111872
         }
       ],
       "source": "aio",
@@ -3805,10 +3859,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "b9a8e2f2ae6e3917a8e114ca9e0319247d145512da7a2bf94ff795824ad1dfc3"
+        "sha256": "8aadc05c383913727a47f66353f1270e957dee8f1e7eec72ce5f4bd5d935b339"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "768486c1fd9b6a2f3f85f93c368c2f46cd70f31a2ca171e1f7b5ea4dbcf1f399",
+      "build_input_sha256": "d069696812704fd7032a6477d557e22f5acc69845d61133570fb6b7235f447c5",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -3837,9 +3891,9 @@
     },
     "anime-sama": {
       "id": "anime-sama",
-      "published_filename": "providers/anime-sama--nuvio--4ab07d5c3417a319.js",
-      "sha256": "4ab07d5c3417a319915aa598dad3bf0da7f3d2cf64092c48b349d6c96fe1d792",
-      "patched_sha256": "4ab07d5c3417a319915aa598dad3bf0da7f3d2cf64092c48b349d6c96fe1d792",
+      "published_filename": "providers/anime-sama--nuvio--c77fc61495dd1d49.js",
+      "sha256": "c77fc61495dd1d490269c532fa68163e8327e05630402815beae0264820dd3a5",
+      "patched_sha256": "c77fc61495dd1d490269c532fa68163e8327e05630402815beae0264820dd3a5",
       "base_filename": "provider-bases/anime-sama--base--613e0ca190ebffec.js",
       "base_sha256": "613e0ca190ebffecadd9ef4757753ea62064711f43f6fa9a5d6466ea8b1ccd4a",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -4012,6 +4066,24 @@
           "output_sha256": "4ab07d5c3417a319915aa598dad3bf0da7f3d2cf64092c48b349d6c96fe1d792",
           "bytes_before": 123881,
           "bytes_after": 113925
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "a90d85f618bd6b692e0566014bf3774d273a3f8bb78ab1db92e1a5edf07cd1e9",
+          "output_sha256": "c77fc61495dd1d490269c532fa68163e8327e05630402815beae0264820dd3a5",
+          "bytes_before": 123885,
+          "bytes_after": 113929
         }
       ],
       "source": "gowaru",
@@ -4266,10 +4338,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "4ab07d5c3417a319915aa598dad3bf0da7f3d2cf64092c48b349d6c96fe1d792"
+        "sha256": "c77fc61495dd1d490269c532fa68163e8327e05630402815beae0264820dd3a5"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "65475c1579f490449d994278ff81324bcb6497d7613b6ad400c1a38447fe9aaf",
+      "build_input_sha256": "ca1f2d842d98f4a7c578e7ddacb95eaa157ce12927c8d89b59cbfce3cbd06e98",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -4697,7 +4769,7 @@
         "sha256": "9917da85493786d9be59a5cc7386622405677e2a8daa4344a0ff4d5ad16f8e3b"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "92f597e60f8d7aa23a3ba9d3ea9b430318b9faeae7d8e6e30d32f04b121b2b36",
+      "build_input_sha256": "03e998fb8317b6d22e15e511060e46171adb172032152d048103544e7fb11d86",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -5130,7 +5202,7 @@
         "sha256": "f36ee061425c160d392f96273e901754cc7d608d8a5583039ffff3045ead6494"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1062e1e727bc611a73118a381a09f17908ba1590d323a7e99fc90ee40dbf1eb9",
+      "build_input_sha256": "2bf321c80723530793a96d898dcfded47beafa3f445f1dfa12ec7bf675a0d5b5",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -5683,7 +5755,7 @@
         "mangle": false,
         "sha256": "75d73fd3679b42aa52abcb59837501a3b410c4853521a5827494f9fe00d5e12e"
       },
-      "build_input_sha256": "2b64e7f9c0570ffe7410e2982e1a7bbd8c4c87b9289e3e75421a1b44db531c76",
+      "build_input_sha256": "07f2e8e843c1f78552bae9989d4351fbfd00aed5f28db2ef871504d237353dbb",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -5704,9 +5776,9 @@
     },
     "animesalt": {
       "id": "animesalt",
-      "published_filename": "providers/animesalt--published-baseline--6986c267c08937c0.js",
-      "sha256": "6986c267c08937c0fd4b7f6cb3f01cfa1403b0fdefc678e08cd7cb02be64cecf",
-      "patched_sha256": "6986c267c08937c0fd4b7f6cb3f01cfa1403b0fdefc678e08cd7cb02be64cecf",
+      "published_filename": "providers/animesalt--published-baseline--4bee389bf085824a.js",
+      "sha256": "4bee389bf085824ae680f8e2695e4f023bf3c60ef4538c1628cbb146b55b2e8d",
+      "patched_sha256": "4bee389bf085824ae680f8e2695e4f023bf3c60ef4538c1628cbb146b55b2e8d",
       "upstream_sha256": "e221da6762e9c2033ca367d50ebc415a91a6ba4ecf716118d048956ec7df6c2d",
       "local_patches": [
         {
@@ -6028,6 +6100,24 @@
           "output_sha256": "6986c267c08937c0fd4b7f6cb3f01cfa1403b0fdefc678e08cd7cb02be64cecf",
           "bytes_before": 122773,
           "bytes_after": 112817
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "a2d30e2877fa388927f26829dfa773a11e7fb750dce532a943acd01cd4ae5928",
+          "output_sha256": "4bee389bf085824ae680f8e2695e4f023bf3c60ef4538c1628cbb146b55b2e8d",
+          "bytes_before": 122777,
+          "bytes_after": 112821
         }
       ],
       "source": "published-baseline",
@@ -6260,9 +6350,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "6986c267c08937c0fd4b7f6cb3f01cfa1403b0fdefc678e08cd7cb02be64cecf"
+        "sha256": "4bee389bf085824ae680f8e2695e4f023bf3c60ef4538c1628cbb146b55b2e8d"
       },
-      "build_input_sha256": "caa0f1b91ee17ad53e415586bcf3c808656bc0d9e018af84ca9dce608b3bd5ac",
+      "build_input_sha256": "479d8ec66fa4f58c28f558f1b80594f0ee69e06a71422cf0980489c620aa78f5",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -6283,9 +6373,9 @@
     },
     "animesama-co": {
       "id": "animesama-co",
-      "published_filename": "providers/animesama-co--nuvio--b69d75ff9d940327.js",
-      "sha256": "b69d75ff9d940327ab1bc3887d43d4941bd34380402aa5c93f63ab43b5e6b922",
-      "patched_sha256": "b69d75ff9d940327ab1bc3887d43d4941bd34380402aa5c93f63ab43b5e6b922",
+      "published_filename": "providers/animesama-co--nuvio--767e940fab243e49.js",
+      "sha256": "767e940fab243e4956c2c8b52a92ac663fac61014abf224d763ea7a68227b5f0",
+      "patched_sha256": "767e940fab243e4956c2c8b52a92ac663fac61014abf224d763ea7a68227b5f0",
       "base_filename": "provider-bases/animesama-co--base--6212d68e5bd52af5.js",
       "base_sha256": "6212d68e5bd52af548a46635eb080e449f9745c717fe3a86256b517bb231a945",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -6453,6 +6543,24 @@
           "output_sha256": "b69d75ff9d940327ab1bc3887d43d4941bd34380402aa5c93f63ab43b5e6b922",
           "bytes_before": 122941,
           "bytes_after": 112983
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1964cefa2e93919fc2ec67afaaf80985fb89ab422a83414e4280ae9475b686ac",
+          "output_sha256": "767e940fab243e4956c2c8b52a92ac663fac61014abf224d763ea7a68227b5f0",
+          "bytes_before": 122945,
+          "bytes_after": 112987
         }
       ],
       "source": "gowaru",
@@ -6698,10 +6806,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "b69d75ff9d940327ab1bc3887d43d4941bd34380402aa5c93f63ab43b5e6b922"
+        "sha256": "767e940fab243e4956c2c8b52a92ac663fac61014abf224d763ea7a68227b5f0"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5d9aae3bea79232507dda8cb01817aa7220dbe415a4c3cadc48d7b89db27b00b",
+      "build_input_sha256": "d3ce69325e30ebe240219852962912b438a8ed371d90e8710a60a740ac855cd7",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -6731,9 +6839,9 @@
     },
     "animesultra": {
       "id": "animesultra",
-      "published_filename": "providers/animesultra--published-baseline--3238d773078d93fd.js",
-      "sha256": "3238d773078d93fdf9b5639e605ead5d980746b0fa359bf74241069e8fbfb0f9",
-      "patched_sha256": "3238d773078d93fdf9b5639e605ead5d980746b0fa359bf74241069e8fbfb0f9",
+      "published_filename": "providers/animesultra--published-baseline--5d47d365269607fd.js",
+      "sha256": "5d47d365269607fd4f9e65b8ce1b58031bebdbfc17b2a3d2ec4451062a052488",
+      "patched_sha256": "5d47d365269607fd4f9e65b8ce1b58031bebdbfc17b2a3d2ec4451062a052488",
       "upstream_sha256": "7704e3a452b175545251a1d24b1882406335dcc3efe49890847334ef58c645bc",
       "local_patches": [
         {
@@ -7071,6 +7179,24 @@
           "output_sha256": "3238d773078d93fdf9b5639e605ead5d980746b0fa359bf74241069e8fbfb0f9",
           "bytes_before": 123851,
           "bytes_after": 113895
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "399de901e868ce90b6dc213ebf5d9d5efc8f8924357a2a8cf5b14749254c011b",
+          "output_sha256": "5d47d365269607fd4f9e65b8ce1b58031bebdbfc17b2a3d2ec4451062a052488",
+          "bytes_before": 123855,
+          "bytes_after": 113899
         }
       ],
       "source": "published-baseline",
@@ -7305,9 +7431,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "3238d773078d93fdf9b5639e605ead5d980746b0fa359bf74241069e8fbfb0f9"
+        "sha256": "5d47d365269607fd4f9e65b8ce1b58031bebdbfc17b2a3d2ec4451062a052488"
       },
-      "build_input_sha256": "424713011dd2ca716e5d36a710ceadd514710d82792c6e59e33eec67516157cb",
+      "build_input_sha256": "a2829b8d42b9210c36275ef0fcf63f92cde6106e2c660b22294ba8aad858eab8",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -7827,7 +7953,7 @@
         "mangle": false,
         "sha256": "362792f44aea9e9761632dc722a760655d3a253aa36aff52af9d9049fbf02cb6"
       },
-      "build_input_sha256": "f6735ec0a10f06925ed5eb29afeda1f47a2d1a78a997907bbd52f9c034394280",
+      "build_input_sha256": "65a8ed38f9594f26932167a3d43ed26c776a957eda60cadaf194dd7599b28b9c",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -8233,7 +8359,7 @@
         "sha256": "644a80e107ed66cc1f750641fe4ca5e8fbb1b1ca2d164b479b8356d3d174bcb6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "7bd8a751a0797308e4f84a5951db22da5809a4f6fb37d6a97372c17781a4bf4a",
+      "build_input_sha256": "f2eb3859d2f5a9f5f140d2c0894381f66816e4a31a700710e8c7514644e9b5d3",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -8257,9 +8383,9 @@
     },
     "animevostfr": {
       "id": "animevostfr",
-      "published_filename": "providers/animevostfr--nuvio--4d579981b073791d.js",
-      "sha256": "4d579981b073791de82ed30f1200a8b410fb31af817ad3973e0301f66c733732",
-      "patched_sha256": "4d579981b073791de82ed30f1200a8b410fb31af817ad3973e0301f66c733732",
+      "published_filename": "providers/animevostfr--nuvio--67e363cfbe37ba09.js",
+      "sha256": "67e363cfbe37ba096805bb8be20ca9e44a266067dfd7e1f0e92f8e665b6b5006",
+      "patched_sha256": "67e363cfbe37ba096805bb8be20ca9e44a266067dfd7e1f0e92f8e665b6b5006",
       "base_filename": "provider-bases/animevostfr--base--e1c001632875986d.js",
       "base_sha256": "e1c001632875986d4e2d60bfd2fcfd1d81a6294bb2c814e8f964ab00d7372690",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -8427,6 +8553,24 @@
           "output_sha256": "4d579981b073791de82ed30f1200a8b410fb31af817ad3973e0301f66c733732",
           "bytes_before": 122877,
           "bytes_after": 112919
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "6f08cd6632364d7460592d16cb1e9cdeb9b7552334f7ea6c3b31ac692c5b9334",
+          "output_sha256": "67e363cfbe37ba096805bb8be20ca9e44a266067dfd7e1f0e92f8e665b6b5006",
+          "bytes_before": 122881,
+          "bytes_after": 112923
         }
       ],
       "source": "gowaru",
@@ -8669,10 +8813,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "4d579981b073791de82ed30f1200a8b410fb31af817ad3973e0301f66c733732"
+        "sha256": "67e363cfbe37ba096805bb8be20ca9e44a266067dfd7e1f0e92f8e665b6b5006"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "0d475b96b3f4347b18ccbd8300be42e275ada5d0403a8852ec98438eb190b158",
+      "build_input_sha256": "e7bb5c0d4936ce058561dd2464e54b33d91615973ed04987a25c27a224519fbe",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -9086,7 +9230,7 @@
         "sha256": "50329f3a5c73c5a11d17a0e29aea8bb6430293a53c636f943ac12de1eab0a2c4"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "b7dba3b417df67849b7fd57194c5cdb5cf088dbc1020b8c2ff2826d61281afed",
+      "build_input_sha256": "7f442f079de65bb59e0264f72512f72967d7e9a3b151fb6ac5bf055f023105fb",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -9512,7 +9656,7 @@
         "sha256": "70562408eed6879c8fcd26df89f604b07220b8d76be0f6a558cc3a3c8d641993"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "fadc9279d8d48b0a1cb00bf8526eb3cb72efa2a967cc1317de8d57a42fee9cf3",
+      "build_input_sha256": "3375b001b3e08fe1b723b72ca73e6c8f2a934d155c15c57cb16972969b01d69e",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -9960,7 +10104,7 @@
         "sha256": "c31020f8198f1997963d9dc6193de36e26a3b36df1cde98f1621afa3d99b5625"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "edebff801e91d659504cddf10734990e03af89f97deb61bf32bd3ab60bbc8e56",
+      "build_input_sha256": "84e1a7c24fd7ba6932d8ea8ef3aa6c2f87de3be060e1c82614d31294d0ebd979",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -10513,7 +10657,7 @@
         "mangle": false,
         "sha256": "1dfbf9e4d9d932b4b69d5d8934821d5d0e1af4ae6f8c6455f49aab35886ed6e0"
       },
-      "build_input_sha256": "a312ed010a92f06433f014b03c1e07c23a9215633246c7887911849936d6b461",
+      "build_input_sha256": "a41ac6b43d2656f26ecc633961318b5dee3aec4e80b4cbb0c77bad45c638975a",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -10940,7 +11084,7 @@
         "sha256": "e588cade899cccbf31774592cb1e2637e6498cb168ce926aec40d2179116d7fa"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "28052a5167ab96b4f0646a5949cd35c7c664088017362862b965547c766833b3",
+      "build_input_sha256": "f1aed9d1ef3c4ce1d8fd8f79bd9c5eef7f46676c0475d7fbf0445ae00b853dcb",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -11429,7 +11573,7 @@
         "sha256": "0421496ddb44226f4b89a7196e6d9d866ad558e3f877b73c25ffc6a03589111d"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5925aa610e39ff20245ff90373e45ec5bb688fcfffe886841d4db706b052419c",
+      "build_input_sha256": "e2170138c4a52cb704c80c0d7e41ee2f10c25cbe62f5a23166fb3cfd87de298b",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -11815,7 +11959,7 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "75cb57ec4cde9672400c42a894afbe02afd695e952593412584554f82cb83e8d",
+      "build_input_sha256": "73e0d83c054fb95888d927029d44c204928e79b0bf06326eb531fe65576d03da",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -12351,7 +12495,7 @@
         "mangle": false,
         "sha256": "c1aa1609a742dacdbdee11a60e2bad78c4b0ae75199dc6f859ca73c1522d5359"
       },
-      "build_input_sha256": "0e80df0a0306cf7dc480f00a84e4ceb10f78eda84b8ce46e96560de4d044bbff",
+      "build_input_sha256": "809f2745185acb7ef0eb8250a110ea5ad719f63357399d699ebd64a12bc5b751",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -12372,9 +12516,9 @@
     },
     "cinemm": {
       "id": "cinemm",
-      "published_filename": "providers/cinemm--published-baseline--ae03e5f161f7c51d.js",
-      "sha256": "ae03e5f161f7c51d8cf699ea0fc20628408e1d51b4038b2ef7d524fe0d230d80",
-      "patched_sha256": "ae03e5f161f7c51d8cf699ea0fc20628408e1d51b4038b2ef7d524fe0d230d80",
+      "published_filename": "providers/cinemm--published-baseline--9fbacf9af2e7eb03.js",
+      "sha256": "9fbacf9af2e7eb034afbd785f06ac984966e0eda8f753ade179b3da1735c324e",
+      "patched_sha256": "9fbacf9af2e7eb034afbd785f06ac984966e0eda8f753ade179b3da1735c324e",
       "upstream_sha256": "a5b5565452b28f36764f8119097309da115c5ab9f46703b8e58227c79972f441",
       "local_patches": [
         {
@@ -12663,6 +12807,24 @@
           "output_sha256": "ae03e5f161f7c51d8cf699ea0fc20628408e1d51b4038b2ef7d524fe0d230d80",
           "bytes_before": 121829,
           "bytes_after": 111871
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "fb8ba1e4a9aad9c62b56d4cf9cc6965900bfc62c8b73ae920556b1ae6a20aa5f",
+          "output_sha256": "9fbacf9af2e7eb034afbd785f06ac984966e0eda8f753ade179b3da1735c324e",
+          "bytes_before": 121833,
+          "bytes_after": 111875
         }
       ],
       "source": "published-baseline",
@@ -12892,9 +13054,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "ae03e5f161f7c51d8cf699ea0fc20628408e1d51b4038b2ef7d524fe0d230d80"
+        "sha256": "9fbacf9af2e7eb034afbd785f06ac984966e0eda8f753ade179b3da1735c324e"
       },
-      "build_input_sha256": "e4891690d5a0e2fcc9e1bb1b7c667038f1d421f725d67e4d493b8291eeb8d8c2",
+      "build_input_sha256": "007a76c740021b0e5e08bb2643d98ee311a31a1b0684a1feb4862a282f8c4fc4",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -13291,7 +13453,7 @@
         "sha256": "3b5a6b396c3191f464f780cc38a49ca24aec47fc46e09ed5c5eb679937b9e2e9"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9226d542c46f3d8eb0915ac675baa1087735c331b8eaab34e28289ec8eefe636",
+      "build_input_sha256": "4fdab159054eb5668bdd78dff8f5c0df97acd0f0b0c899a23be4f33ac7ea03fb",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -13315,9 +13477,9 @@
     },
     "coflix": {
       "id": "coflix",
-      "published_filename": "providers/coflix--nuvio--50bd982e7cd0fdd1.js",
-      "sha256": "50bd982e7cd0fdd1bdfadc36f13cf75c9b6fca7ce09d81e8561ac877a25db41a",
-      "patched_sha256": "50bd982e7cd0fdd1bdfadc36f13cf75c9b6fca7ce09d81e8561ac877a25db41a",
+      "published_filename": "providers/coflix--nuvio--582a006a3d6a2d52.js",
+      "sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa",
+      "patched_sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa",
       "upstream_sha256": "48239f7b107a98b295b0ddec8ed38805503a75975e1bee320543d856d0baa87c",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/vf_catalogue_recovery.py', 'phase': 'discovery'}",
@@ -13773,6 +13935,24 @@
           "output_sha256": "50bd982e7cd0fdd1bdfadc36f13cf75c9b6fca7ce09d81e8561ac877a25db41a",
           "bytes_before": 184624,
           "bytes_after": 170670
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "630a8c7de7c866e0a8a47ebaa0ffdb1fecb45a12a51d685edd8bcc88693c7bef",
+          "output_sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa",
+          "bytes_before": 184634,
+          "bytes_after": 170680
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -14051,8 +14231,8 @@
         "gowaru"
       ],
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/coflix--base--dfc7b1adac2247f1.js",
-      "base_sha256": "dfc7b1adac2247f1318111e85a728e2ee516505e9fae94758df0ef965002df13",
+      "base_filename": "provider-bases/coflix--base--cf7d147f1bea602d.js",
+      "base_sha256": "cf7d147f1bea602de8b2159d5838c4b55be07b1ef500aa2fbbc7043475d3a1cb",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migrated_at": "2026-08-28T23:38:51.944186+00:00",
       "base_migration_stripped_generated_core": true,
@@ -14065,9 +14245,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "50bd982e7cd0fdd1bdfadc36f13cf75c9b6fca7ce09d81e8561ac877a25db41a"
+        "sha256": "582a006a3d6a2d52841fc92d4872be0f1c04b422b3e314afd617b7ecdcf929aa"
       },
-      "build_input_sha256": "f2654af63a415751a3fe4b6af03f6e4fcb2d318a090c2c8ae1934305233577c5",
+      "build_input_sha256": "fec8eded9fdc93c5d910e1b53a1603754e2746b62515fbb1963757fd581aed55",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -14467,7 +14647,7 @@
         "sha256": "ab8584d67bd788b43c93b21014c6b179d6c9757f2b11d9721833925ba000975a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f09de3bc46093ed5732c4f6e466433b28d28726021367f7651daf5bc6e2b02a3",
+      "build_input_sha256": "3392dd77161c4ed7cf2554da7f4b3a2156a229e16fe11d0e6a4154d30e63d331",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -15079,7 +15259,7 @@
         "mangle": false,
         "sha256": "5cb266958e8b43de515633b2a38af559a4d68565a3e13cc4163c223157bbc62f"
       },
-      "build_input_sha256": "324e26b5cf0533fdec7e051f174af5c3849a8577166e236aa9218629f518f6d9",
+      "build_input_sha256": "34f892cf3e796e4441fbcb6d49e733a710471292e9615187c296fdb235fac7ea",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -15606,7 +15786,7 @@
         "mangle": false,
         "sha256": "a511473271c79ba1dc702b6cf9396225789c890edc976dbadd69e35b945ab348"
       },
-      "build_input_sha256": "71c3785e52636f2bbdc8ceaf8e67fe19e3191bddc61ef602839ebc9d48dcdeb4",
+      "build_input_sha256": "2c7bb74f95941735aad54c69edcb1ae9f7affe99b7c4d8d1eb35f31d6cda565a",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -16187,7 +16367,7 @@
         "mangle": false,
         "sha256": "1ec680706e14cfc9d7bcfa5fd938b896724eb4f59cefe392062dc08f893807ca"
       },
-      "build_input_sha256": "755baac54ad0618290d44a0582a40a8b9aa0fc3478c25e5aeabf1ccea2fca0d7",
+      "build_input_sha256": "0444386ef9e3078089aade03b07ec018db293eadb495a47b668ab1966d7957ca",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -16678,7 +16858,7 @@
         "mangle": false,
         "sha256": "e3a0bc8946f626fd42e01ddf962e015406c5bf7ad218d92cf02d725599ce4a51"
       },
-      "build_input_sha256": "a7b7520f1797198d42968e5e73ae6c203d78c5968ad9f608f11b384e8fabfdf3",
+      "build_input_sha256": "790ced726c331d6c6d541794d4921b17285f208f2da4f237ce91202559f9820b",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -17082,7 +17262,7 @@
         "sha256": "915af1b77781b1aca04d420bf8a8945ab2a6f27415f5b63ed6fb1328299f0fa6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4540a1b507a309f759d7b3329e5192e6df51c7f7e6d752645eaa9c16a3957741",
+      "build_input_sha256": "b3934436737b1d40b3aab56fe11bf5f8cdaec1acc0945d1345ca741d35e9549d",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -17487,7 +17667,7 @@
         "sha256": "0c7c7ff760ae62750dd49ca6b6c030e7b0e9fac186dc6645fc7abadfb31764f5"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9767f6486087963270bc376e4c96d740d379fd5274421ca32accb1217c14a465",
+      "build_input_sha256": "763b56b5ed3003cc1bcac17eed1144ced504ede680f179bc5b4e581107746ef6",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -17511,9 +17691,9 @@
     },
     "flemmix": {
       "id": "flemmix",
-      "published_filename": "providers/flemmix--nuvio--2698c653c61ed623.js",
-      "sha256": "2698c653c61ed6230ffc42612d707451513f04ba74c86cee54310b10aaf8d0a6",
-      "patched_sha256": "2698c653c61ed6230ffc42612d707451513f04ba74c86cee54310b10aaf8d0a6",
+      "published_filename": "providers/flemmix--nuvio--18ea87541317477b.js",
+      "sha256": "18ea87541317477bb2fad2519ae00706466759a2168a6ddd9d66249005d8889b",
+      "patched_sha256": "18ea87541317477bb2fad2519ae00706466759a2168a6ddd9d66249005d8889b",
       "upstream_sha256": "e0c40c452aca0d6685426c739729bc7bca333a187f4dc2737295f7394ff3955f",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -17979,6 +18159,24 @@
           "output_sha256": "2698c653c61ed6230ffc42612d707451513f04ba74c86cee54310b10aaf8d0a6",
           "bytes_before": 159042,
           "bytes_after": 145351
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "52d1cc1e4af64b7568d3ea021b17150d6dbba901eb58c807020fb0f50b30c6e8",
+          "output_sha256": "18ea87541317477bb2fad2519ae00706466759a2168a6ddd9d66249005d8889b",
+          "bytes_before": 159046,
+          "bytes_after": 145355
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -18224,9 +18422,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "2698c653c61ed6230ffc42612d707451513f04ba74c86cee54310b10aaf8d0a6"
+        "sha256": "18ea87541317477bb2fad2519ae00706466759a2168a6ddd9d66249005d8889b"
       },
-      "build_input_sha256": "e49b8526d30985076f00fb94a708ca7b541f54136a39dd22286a679bff7c0984",
+      "build_input_sha256": "5cdecc21c52c152f9807ae1d5550a66a1ae6f3e63c46e6e97c967f75a212f595",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -18247,11 +18445,11 @@
     },
     "french-manga": {
       "id": "french-manga",
-      "published_filename": "providers/french-manga--nuvio--9de762ddd28e6525.js",
-      "sha256": "9de762ddd28e6525b9b07b7feb7ecf657e506f3669fdf73364ea8b99ed564fc1",
-      "patched_sha256": "9de762ddd28e6525b9b07b7feb7ecf657e506f3669fdf73364ea8b99ed564fc1",
-      "base_filename": "provider-bases/french-manga--base--edc734a3608b0a6e.js",
-      "base_sha256": "edc734a3608b0a6e14e1ea23e06787e61181c3ddb51e88ef247d0eda91e825c0",
+      "published_filename": "providers/french-manga--nuvio--ed4defe582d237ca.js",
+      "sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed",
+      "patched_sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed",
+      "base_filename": "provider-bases/french-manga--base--68b10db033a8cc90.js",
+      "base_sha256": "68b10db033a8cc900d5fc1aa653783b31b472b0326856bd0c8d646154ac5298e",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migration_stripped_generated_core": false,
       "upstream_sha256": "fb23979ac0089b09eb706a4b0649ced3b76595ce04258e513b3599bc0ad60860",
@@ -18437,6 +18635,24 @@
           "output_sha256": "9de762ddd28e6525b9b07b7feb7ecf657e506f3669fdf73364ea8b99ed564fc1",
           "bytes_before": 161929,
           "bytes_after": 149726
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "c34ba48fdf47c0068910b87478ba02d112c2097cc57e8bd31f4a39b8e890d4db",
+          "output_sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed",
+          "bytes_before": 161931,
+          "bytes_after": 149728
         }
       ],
       "source": "gowaru",
@@ -18682,10 +18898,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "9de762ddd28e6525b9b07b7feb7ecf657e506f3669fdf73364ea8b99ed564fc1"
+        "sha256": "ed4defe582d237caecfd4f710baa5c2b2295932a8ba6839f42c9fc0a5b1683ed"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9a72e8cbcf550c90189425fd7470d5dd97177c6719d87069f5e47bc720ae4c19",
+      "build_input_sha256": "44befe21b12e7b80431045ca212b009487799452f835418c3e2aeda046b61ae9",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -19237,8 +19453,8 @@
       ],
       "preserved_candidate_key": "gowaru:frenchstream",
       "preserved_candidate_sha256": "21215d1a41dccd4b25da2cea38237bc8a57c57a54b6934fb07ec8e9c045a6542",
-      "base_filename": "provider-bases/frenchstream--base--99d77c1b2a59a49e.js",
-      "base_sha256": "99d77c1b2a59a49ec430391f631cb5b457d0bce0c7f6ddf2fed73918a36c925a",
+      "base_filename": "provider-bases/frenchstream--base--9bb80297a98749ff.js",
+      "base_sha256": "9bb80297a98749fff3baa254309b3eb35aad39facd85af72a4868bc1f1c39296",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migrated_at": "2026-08-28T23:38:55.864906+00:00",
       "base_migration_stripped_generated_core": false,
@@ -19253,7 +19469,7 @@
         "mangle": false,
         "sha256": "4651c83c32fff55253414b94a5bc36a9cb2eff242d88873297840a7ffb2a20a6"
       },
-      "build_input_sha256": "129bd00da3296098675e36b988c5d58f6f8e1b6776504f26e5a4a2e7f69640ae",
+      "build_input_sha256": "c4a4e8e249e3e0d341cd064b446037dbe451aba76dd2d76459497edd1f856100",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -19659,7 +19875,7 @@
         "sha256": "17d89747ed077f449bc16350838c69980815c44f0f000139232868a6d370a9fd"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "072596a98bbc019a8e646d68cf6393599068e9917cf0509fdd634591d641c9b3",
+      "build_input_sha256": "f22071915c1b1fe2e3fe11a585bb9a786d1ed0a593d15ad08b3531b07d42cce7",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -20072,7 +20288,7 @@
         "sha256": "67c3e272005c2eb2ac4666443a21602c9ad5c1774c967f715ae11812b1a03c1d"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "912b4b69677e7b356205d48bf7cd2cc8d9d5126a6a2cebf55bb34d0f922f5be2",
+      "build_input_sha256": "15588e47495b4f94f1ae1145bcc756d8b14936e5a8729a530a4d359c769347e9",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -20512,7 +20728,7 @@
         "sha256": "8f7f8447775898f9f29000105b5b1cf4d90197f19a1c1617deb37f6b10500099"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "5a4f79a947cfcd9130eebe23058e06e27227c65343ae07a2ff5e23b5c1f5d452",
+      "build_input_sha256": "f58691898f204dafb3c2c9b0c4a50d0ab8cfb9b8cb6cc2efcc2c90dfce41fc82",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -20919,7 +21135,7 @@
         "sha256": "5a1a180c37d0258e919084e76e4388d3155cd1a3f17bfe81a065999686af6562"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "cf2176b24af341ab7724ce5dbc71e822e14356f6bace1e1c25e3889bd5fd51b5",
+      "build_input_sha256": "0ca8ce5709ed5f7c0927b1557cc38fa8735f2eeef991a3e0fc7e99166d4ffbeb",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -20943,9 +21159,9 @@
     },
     "hdghartv": {
       "id": "hdghartv",
-      "published_filename": "providers/hdghartv--nuvio--13a0e9ae806557f9.js",
-      "sha256": "13a0e9ae806557f91cf1678c8974ad116a347cfdd7ec4f201982675f96031e63",
-      "patched_sha256": "13a0e9ae806557f91cf1678c8974ad116a347cfdd7ec4f201982675f96031e63",
+      "published_filename": "providers/hdghartv--nuvio--19d6a61ba2ae5534.js",
+      "sha256": "19d6a61ba2ae5534ceeff5710391f16b8c54e4ce8d0d27f9dc02af9ba83dfb01",
+      "patched_sha256": "19d6a61ba2ae5534ceeff5710391f16b8c54e4ce8d0d27f9dc02af9ba83dfb01",
       "base_filename": "provider-bases/hdghartv--base--6fd58c5dc45dc95a.js",
       "base_sha256": "6fd58c5dc45dc95a80fbeac96a1559cd164e6b1bbfa50e76c57b99747aa7373b",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -21106,6 +21322,24 @@
           "output_sha256": "13a0e9ae806557f91cf1678c8974ad116a347cfdd7ec4f201982675f96031e63",
           "bytes_before": 122807,
           "bytes_after": 112851
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "761c8ee806c7faa6ddcbe33c292ca68ad6607f078c10d9890f6508adfa289d85",
+          "output_sha256": "19d6a61ba2ae5534ceeff5710391f16b8c54e4ce8d0d27f9dc02af9ba83dfb01",
+          "bytes_before": 122811,
+          "bytes_after": 112855
         }
       ],
       "source": "aio",
@@ -21334,10 +21568,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "13a0e9ae806557f91cf1678c8974ad116a347cfdd7ec4f201982675f96031e63"
+        "sha256": "19d6a61ba2ae5534ceeff5710391f16b8c54e4ce8d0d27f9dc02af9ba83dfb01"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "2b733c876162dc7af996903a51bc78d6c69eb03d0660bfdc916ff00eee9883e9",
+      "build_input_sha256": "0228526bbc00a4be56216c955762eab753619ae79393083b316d6605f8fbbfcc",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -21366,9 +21600,9 @@
     },
     "hdhub4u": {
       "id": "hdhub4u",
-      "published_filename": "providers/hdhub4u--published-baseline--04f298d073bd5acc.js",
-      "sha256": "04f298d073bd5acc28356fc858f2acce0a7bd4369c644dbfffd1c70a9b772c7c",
-      "patched_sha256": "04f298d073bd5acc28356fc858f2acce0a7bd4369c644dbfffd1c70a9b772c7c",
+      "published_filename": "providers/hdhub4u--published-baseline--6b2a3b57da62e10f.js",
+      "sha256": "6b2a3b57da62e10faa34c0f2eee5a7aad5e5defc5dea73198affaa308023045d",
+      "patched_sha256": "6b2a3b57da62e10faa34c0f2eee5a7aad5e5defc5dea73198affaa308023045d",
       "upstream_sha256": "f6e1007a3cd2764bb6fba94531bf634cb91019e62b08c8308217f151fb0a68ce",
       "local_patches": [
         {
@@ -21715,6 +21949,24 @@
           "output_sha256": "04f298d073bd5acc28356fc858f2acce0a7bd4369c644dbfffd1c70a9b772c7c",
           "bytes_before": 122725,
           "bytes_after": 112769
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "3ec2106be806edc0d1223b932c5aeaf4677e37416a93b3c25df5f04ae14088b6",
+          "output_sha256": "6b2a3b57da62e10faa34c0f2eee5a7aad5e5defc5dea73198affaa308023045d",
+          "bytes_before": 122729,
+          "bytes_after": 112773
         }
       ],
       "source": "published-baseline",
@@ -21949,9 +22201,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "04f298d073bd5acc28356fc858f2acce0a7bd4369c644dbfffd1c70a9b772c7c"
+        "sha256": "6b2a3b57da62e10faa34c0f2eee5a7aad5e5defc5dea73198affaa308023045d"
       },
-      "build_input_sha256": "4b10aa073b9dd4fee63e0a0b8838cf04a9dfc1b35e08038beec3f9f1e2d83b6e",
+      "build_input_sha256": "62652e62d392dde337dbe029fffa32a4315a5348629f0cff9ca54cff506fc10f",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -22535,7 +22787,7 @@
         "mangle": false,
         "sha256": "9942954b35d3ca9ecbec283115d9f7984b96b7b1f73dfd916665461846a6ada6"
       },
-      "build_input_sha256": "c2df0c53e719168c3da2b191cc81673cd5c59afb505943e0dd6ee5cd6dcfe179",
+      "build_input_sha256": "dd371ad64b8458dd4fd45de7e4c3738051a516d65aeaa4b42664b6bce259026e",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -22990,7 +23242,7 @@
         "sha256": "2afd92f17104b65c95237ea2c36434b212576e4faf16adfbda5adeda6e70cd58"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "8c495a690c8f02300ebf05d444bbae8fcc9a394a3ce323a739e70a19be62b0d0",
+      "build_input_sha256": "5218c7212fe55d3f10b3810ec9eeaa4e483a65f6e69117c996ef8c7b22601042",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -23020,9 +23272,9 @@
     },
     "kehflix": {
       "id": "kehflix",
-      "published_filename": "providers/kehflix--nuvio--5b6cd1d781ba5fab.js",
-      "sha256": "5b6cd1d781ba5fab089f86359307a38d2d6c72f979f72b3147b3d9796923876c",
-      "patched_sha256": "5b6cd1d781ba5fab089f86359307a38d2d6c72f979f72b3147b3d9796923876c",
+      "published_filename": "providers/kehflix--nuvio--bfdd46578802aeee.js",
+      "sha256": "bfdd46578802aeee55a35c6fa60385365e19f914c4a8cfeef79e685fda8a86fc",
+      "patched_sha256": "bfdd46578802aeee55a35c6fa60385365e19f914c4a8cfeef79e685fda8a86fc",
       "base_filename": "provider-bases/kehflix--base--8527dbcaa8de0ed3.js",
       "base_sha256": "8527dbcaa8de0ed3f34ada1008fabbce19f421ccabd0d6e3399af53c95424fdc",
       "base_source": "niakvio-clean-reconstruction-v2",
@@ -23155,6 +23407,24 @@
           "output_sha256": "5b6cd1d781ba5fab089f86359307a38d2d6c72f979f72b3147b3d9796923876c",
           "bytes_before": 113758,
           "bytes_after": 109056
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "045e7cabd39d067895b535f6fe4468bbb88773468ffabd3fd4572f09406449cb",
+          "output_sha256": "bfdd46578802aeee55a35c6fa60385365e19f914c4a8cfeef79e685fda8a86fc",
+          "bytes_before": 113762,
+          "bytes_after": 109060
         }
       ],
       "source": "published-baseline",
@@ -23378,10 +23648,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "5b6cd1d781ba5fab089f86359307a38d2d6c72f979f72b3147b3d9796923876c"
+        "sha256": "bfdd46578802aeee55a35c6fa60385365e19f914c4a8cfeef79e685fda8a86fc"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "161393d6bc0ee0e174d0b9737ac679f1865102b74e4ff5022bcf74b4fecf4103"
+      "build_input_sha256": "93a888a39aef5110d0febc4a3b471e543a47e6c9c0406ac5eb6612fd06428d75"
     },
     "kisskh": {
       "id": "kisskh",
@@ -23764,7 +24034,7 @@
         "sha256": "24a75c4977233d6a763cb24f1f7459d51f46a08a1a0bf81513e7757a5ca3d2cd"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1672dfe731378b56668bbde503b9e55339ece9bf9b2cbeb3cd30a2dde002b5b7",
+      "build_input_sha256": "8a206fa6346c7ca8d16d96f600bbf2aaf4e16ac303826da5fabeb5f01d36d508",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -23788,9 +24058,9 @@
     },
     "kurage": {
       "id": "kurage",
-      "published_filename": "providers/kurage--nuvio--f761c7eda010f122.js",
-      "sha256": "f761c7eda010f12235f6e4aa2441d61990927c7165576e5c6c0a353511649234",
-      "patched_sha256": "f761c7eda010f12235f6e4aa2441d61990927c7165576e5c6c0a353511649234",
+      "published_filename": "providers/kurage--nuvio--6f2d4fa552dfc8ee.js",
+      "sha256": "6f2d4fa552dfc8ee6d83a771c0550947e0a4b41fa23994deda417a79825240b4",
+      "patched_sha256": "6f2d4fa552dfc8ee6d83a771c0550947e0a4b41fa23994deda417a79825240b4",
       "upstream_sha256": "87bbb1d8359caec9c7b98f22c9a88a9045c8bb1b5c0780a0e04842ab62bbabdb",
       "local_patches": [
         {
@@ -23988,6 +24258,24 @@
           "output_sha256": "f761c7eda010f12235f6e4aa2441d61990927c7165576e5c6c0a353511649234",
           "bytes_before": 121857,
           "bytes_after": 111899
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "8f5d1813d488786afad0edf64612b75b3ca1657884adc22edf626aa5e105be14",
+          "output_sha256": "6f2d4fa552dfc8ee6d83a771c0550947e0a4b41fa23994deda417a79825240b4",
+          "bytes_before": 121861,
+          "bytes_after": 111903
         }
       ],
       "source": "yoru",
@@ -24257,9 +24545,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "f761c7eda010f12235f6e4aa2441d61990927c7165576e5c6c0a353511649234"
+        "sha256": "6f2d4fa552dfc8ee6d83a771c0550947e0a4b41fa23994deda417a79825240b4"
       },
-      "build_input_sha256": "742a3721703e5349ebc7f790ea1c94097de623e51a58dce28fa058a92654bf07",
+      "build_input_sha256": "24e67eee54680782753f7d75051d5868059193d17236dea874b8c866386cedd0",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -24280,9 +24568,9 @@
     },
     "mallumv": {
       "id": "mallumv",
-      "published_filename": "providers/mallumv--nuvio--51c944a24c5b3520.js",
-      "sha256": "51c944a24c5b35209e2895feea0609fda8f096be39a7354b7eba2413754fa0d9",
-      "patched_sha256": "51c944a24c5b35209e2895feea0609fda8f096be39a7354b7eba2413754fa0d9",
+      "published_filename": "providers/mallumv--nuvio--863118576415a522.js",
+      "sha256": "863118576415a522751b12f46e54597780e4851022132f0a80f1407fe306e6d7",
+      "patched_sha256": "863118576415a522751b12f46e54597780e4851022132f0a80f1407fe306e6d7",
       "base_filename": "provider-bases/mallumv--base--37dcd41e6605de7e.js",
       "base_sha256": "37dcd41e6605de7ea446b2ce4a0ace3c59440704b4148519d9073fe8b00ad3c1",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -24450,6 +24738,24 @@
           "output_sha256": "51c944a24c5b35209e2895feea0609fda8f096be39a7354b7eba2413754fa0d9",
           "bytes_before": 122819,
           "bytes_after": 112863
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "5a2cd05a9d10efb00f239a45455a02f513d093b82a58e05eeedbb40d40209c3f",
+          "output_sha256": "863118576415a522751b12f46e54597780e4851022132f0a80f1407fe306e6d7",
+          "bytes_before": 122823,
+          "bytes_after": 112867
         }
       ],
       "source": "yoru",
@@ -24683,10 +24989,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "51c944a24c5b35209e2895feea0609fda8f096be39a7354b7eba2413754fa0d9"
+        "sha256": "863118576415a522751b12f46e54597780e4851022132f0a80f1407fe306e6d7"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "00a25d44ec9cd8006808de07d3f627fbfe32f69ff95f28b1efefe40d166607df",
+      "build_input_sha256": "60c10c22e3b91226143eb7b6cc2a3d698c9be972625323b2655c1094d835788d",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -25091,7 +25397,7 @@
         "sha256": "6520e30eb7e263539bcb4e11a91ad58ba418c4c847a92d9bff9ce7b09d668a4e"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "82d5f039d4919681c1226e5ebca8f9611eba4909d00769c46984d13140eccc4b",
+      "build_input_sha256": "c26e7a362f1071eabcc6f9f1a12cd12c4704aae617385a17fadf7afe488f76cb",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -25518,7 +25824,7 @@
         "sha256": "d3ac4cc15a21f9dcf9e03d0cefd5f3007a783e8adb3d87e5aee7463c48574a8a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "90bf56d970d7f4e48468e0d75913accdcdf77f225aaa604a568318ed51af6208",
+      "build_input_sha256": "2ddc47d3c59a301ab7d5857f846ab98796adaa0e507de09eeefb3ac319b59ea8",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -26025,7 +26331,7 @@
         "mangle": false,
         "sha256": "19a7b7bbaa035869b79b214ac7a1f0ef96222419af86501095968e9acbee2b2d"
       },
-      "build_input_sha256": "7514eff7d496abe5d4c17ce0ac8dc641fead2f62e78458ce8855e259367a6fe8",
+      "build_input_sha256": "da616936a168c355278bcc1f0b89e82948a249c3352389438ff5912b278d056c",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -26046,9 +26352,9 @@
     },
     "movies4u": {
       "id": "movies4u",
-      "published_filename": "providers/movies4u--nuvio--269238df35b36644.js",
-      "sha256": "269238df35b3664456d0f33f1e4855fa6f5b4ecc3b63c8ffb1146bb2f2cb4a3e",
-      "patched_sha256": "269238df35b3664456d0f33f1e4855fa6f5b4ecc3b63c8ffb1146bb2f2cb4a3e",
+      "published_filename": "providers/movies4u--nuvio--011742e5cce9bd78.js",
+      "sha256": "011742e5cce9bd78c523b29d151778fe82eecd39d2ba675b46f13d48ac2e2ef1",
+      "patched_sha256": "011742e5cce9bd78c523b29d151778fe82eecd39d2ba675b46f13d48ac2e2ef1",
       "upstream_sha256": "d57854d4a39a0c4c36af6ba3ab2bda4c00aa4bd5037e395e786f6a2b79f15ecd",
       "local_patches": [
         {
@@ -26407,6 +26713,24 @@
           "output_sha256": "269238df35b3664456d0f33f1e4855fa6f5b4ecc3b63c8ffb1146bb2f2cb4a3e",
           "bytes_before": 139499,
           "bytes_after": 127459
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "ac3e5b1348db04f2d07f0b10f4ad40d4e7d7f897825de84bb995dac543839db5",
+          "output_sha256": "011742e5cce9bd78c523b29d151778fe82eecd39d2ba675b46f13d48ac2e2ef1",
+          "bytes_before": 139503,
+          "bytes_after": 127463
         }
       ],
       "source": "published-baseline",
@@ -26671,9 +26995,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "269238df35b3664456d0f33f1e4855fa6f5b4ecc3b63c8ffb1146bb2f2cb4a3e"
+        "sha256": "011742e5cce9bd78c523b29d151778fe82eecd39d2ba675b46f13d48ac2e2ef1"
       },
-      "build_input_sha256": "e460d22cd0046e163d5b289a66493aabd4e40240dd5613de673ff1a88ea6a64f",
+      "build_input_sha256": "effd146f2f7dce3fe6fc67b23c175f06a0c12d593f3076ef7afa0f0e4a97384b",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -26694,9 +27018,9 @@
     },
     "moviesdrive": {
       "id": "moviesdrive",
-      "published_filename": "providers/moviesdrive--nuvio--3536657d4db0501a.js",
-      "sha256": "3536657d4db0501a37c1459751f800109a3f5e5769e53e9968e8d1a009bfe04f",
-      "patched_sha256": "3536657d4db0501a37c1459751f800109a3f5e5769e53e9968e8d1a009bfe04f",
+      "published_filename": "providers/moviesdrive--nuvio--f8965ff87c0e906f.js",
+      "sha256": "f8965ff87c0e906f3fa4ccd9ba524ba831115f8b04d5cad6edb5cb1df9d2094d",
+      "patched_sha256": "f8965ff87c0e906f3fa4ccd9ba524ba831115f8b04d5cad6edb5cb1df9d2094d",
       "upstream_sha256": "675d0e30755fa97131010ddbe3a3ed8733043e9635a672f5845d087d3a924ea1",
       "local_patches": [
         {
@@ -27091,6 +27415,24 @@
           "output_sha256": "3536657d4db0501a37c1459751f800109a3f5e5769e53e9968e8d1a009bfe04f",
           "bytes_before": 123006,
           "bytes_after": 113050
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "6fe294460d1d9db4506efb9ec63bfd431649d0e4db2ce6ad1d70d4bc523feef1",
+          "output_sha256": "f8965ff87c0e906f3fa4ccd9ba524ba831115f8b04d5cad6edb5cb1df9d2094d",
+          "bytes_before": 123010,
+          "bytes_after": 113054
         }
       ],
       "source": "published-baseline",
@@ -27323,9 +27665,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "3536657d4db0501a37c1459751f800109a3f5e5769e53e9968e8d1a009bfe04f"
+        "sha256": "f8965ff87c0e906f3fa4ccd9ba524ba831115f8b04d5cad6edb5cb1df9d2094d"
       },
-      "build_input_sha256": "c9212d95ef2519ece7d87eaaba9dc40d8148705de13640df2de191cae106b02a",
+      "build_input_sha256": "b351b0bf2e2ac99f2bf41adccd50cace5fb62597847657e84b2ae2e7ede14bf3",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -27725,7 +28067,7 @@
         "sha256": "ff486b0ec23ca8fcaaf036ff2fec93192fdd6b9ee396e3c56e738c947649d686"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "abc2fdb02b8cba4883957afd8474b55471053f531687b9c7b409ce84bf59bfe7",
+      "build_input_sha256": "bf311b0e6dcea323f4e98ea383d650c1b685fe7ba049158d6fc2163504e46dcc",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -27754,9 +28096,9 @@
     },
     "moviesmod": {
       "id": "moviesmod",
-      "published_filename": "providers/moviesmod--published-baseline--04f0c1cd393267dc.js",
-      "sha256": "04f0c1cd393267dc5c5946d35c8f48a4507a9de55400f94a2e364bb364d2f5b9",
-      "patched_sha256": "04f0c1cd393267dc5c5946d35c8f48a4507a9de55400f94a2e364bb364d2f5b9",
+      "published_filename": "providers/moviesmod--published-baseline--ee171333c7a3c3f6.js",
+      "sha256": "ee171333c7a3c3f6da3487d3c582088871bc627d2fa7ecd0043634b7d01ddd38",
+      "patched_sha256": "ee171333c7a3c3f6da3487d3c582088871bc627d2fa7ecd0043634b7d01ddd38",
       "upstream_sha256": "c90890640a4598443ae4a264547b9ce1d089952f5d19ac9ab74e6cf1e28e0a9f",
       "local_patches": [
         {
@@ -28085,6 +28427,24 @@
           "output_sha256": "04f0c1cd393267dc5c5946d35c8f48a4507a9de55400f94a2e364bb364d2f5b9",
           "bytes_before": 122853,
           "bytes_after": 112897
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "ebbaf71d2dd8d1447dec767492b5017336c7f5b3ed9d7ccc0649d8ca1874aed8",
+          "output_sha256": "ee171333c7a3c3f6da3487d3c582088871bc627d2fa7ecd0043634b7d01ddd38",
+          "bytes_before": 122857,
+          "bytes_after": 112901
         }
       ],
       "source": "published-baseline",
@@ -28319,9 +28679,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "04f0c1cd393267dc5c5946d35c8f48a4507a9de55400f94a2e364bb364d2f5b9"
+        "sha256": "ee171333c7a3c3f6da3487d3c582088871bc627d2fa7ecd0043634b7d01ddd38"
       },
-      "build_input_sha256": "554f034746cf455d1ae1012683e0d4b685d3cc1b6db90f57940954b762eed701",
+      "build_input_sha256": "4cda318f3c606af8ff348893ca58caf846f1052c33255febc66ee2a1b9ea10be",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -28342,9 +28702,9 @@
     },
     "movix": {
       "id": "movix",
-      "published_filename": "providers/movix--nuvio--912fff93576e2724.js",
-      "sha256": "912fff93576e2724f01e7ec68e19ba3595cbd13e4572c125b60c7cf23fe8d253",
-      "patched_sha256": "912fff93576e2724f01e7ec68e19ba3595cbd13e4572c125b60c7cf23fe8d253",
+      "published_filename": "providers/movix--nuvio--e1de6d0243791e2a.js",
+      "sha256": "e1de6d0243791e2a6ef892569bb1afcab109fa88489f622100351b8e8356b8e7",
+      "patched_sha256": "e1de6d0243791e2a6ef892569bb1afcab109fa88489f622100351b8e8356b8e7",
       "upstream_sha256": "b31ef87b05d3a4f351d20872e33980b4de95d73461ce2c27327d64bde9653787",
       "local_patches": [
         "{'type': 'patch_script', 'path': 'scripts/provider_patches/stream_output_sanitizer_v5.py', 'phase': 'discovery'}",
@@ -28763,6 +29123,24 @@
           "output_sha256": "912fff93576e2724f01e7ec68e19ba3595cbd13e4572c125b60c7cf23fe8d253",
           "bytes_before": 158595,
           "bytes_after": 144904
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "9552d3a6f27978869e21fac1863b31b16f38d20bb60961d00589ffa1d5b5a261",
+          "output_sha256": "e1de6d0243791e2a6ef892569bb1afcab109fa88489f622100351b8e8356b8e7",
+          "bytes_before": 158599,
+          "bytes_after": 144908
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -29010,9 +29388,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "912fff93576e2724f01e7ec68e19ba3595cbd13e4572c125b60c7cf23fe8d253"
+        "sha256": "e1de6d0243791e2a6ef892569bb1afcab109fa88489f622100351b8e8356b8e7"
       },
-      "build_input_sha256": "f0f8dce2778751e3eb02248c54ebc02324f90c2faa2b64319d3f25d9feb17c6a",
+      "build_input_sha256": "9162247d927f4b02aef4868e91434cb9123ed3797029d814b49832ea53f6e2db",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -29033,9 +29411,9 @@
     },
     "mugiwarastream": {
       "id": "mugiwarastream",
-      "published_filename": "providers/mugiwarastream--nuvio--03608aed9326077f.js",
-      "sha256": "03608aed9326077f5cbf0f2d048febdd9e8d09e2ad68582e68205d35176d47f2",
-      "patched_sha256": "03608aed9326077f5cbf0f2d048febdd9e8d09e2ad68582e68205d35176d47f2",
+      "published_filename": "providers/mugiwarastream--nuvio--7192e1a89082b113.js",
+      "sha256": "7192e1a89082b113e0a75c66c1a15583c0e89b437efc6befedde6f111e559427",
+      "patched_sha256": "7192e1a89082b113e0a75c66c1a15583c0e89b437efc6befedde6f111e559427",
       "base_filename": "provider-bases/mugiwarastream--base--2c84c059e745a649.js",
       "base_sha256": "2c84c059e745a6494fa4d3e9a47cf41a0bad0bbd78ee1c0d100c18c5dc02c1e3",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -29208,6 +29586,24 @@
           "output_sha256": "03608aed9326077f5cbf0f2d048febdd9e8d09e2ad68582e68205d35176d47f2",
           "bytes_before": 122926,
           "bytes_after": 112968
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "95d27994565b0bf910ca6daaa3852dbd43e8518a28b066e85a50be6a8602912a",
+          "output_sha256": "7192e1a89082b113e0a75c66c1a15583c0e89b437efc6befedde6f111e559427",
+          "bytes_before": 122930,
+          "bytes_after": 112972
         }
       ],
       "source": "published-baseline",
@@ -29467,10 +29863,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "03608aed9326077f5cbf0f2d048febdd9e8d09e2ad68582e68205d35176d47f2"
+        "sha256": "7192e1a89082b113e0a75c66c1a15583c0e89b437efc6befedde6f111e559427"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "8cd2eb62ba0b982426cea8572b7c418eeaaa1b7ed38b762fa139edf56f51ed2c",
+      "build_input_sha256": "fcac650586e0a613cd5ab24468fe675d1c94a423be76239c3deea4001badd193",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -29500,9 +29896,9 @@
     },
     "mycima": {
       "id": "mycima",
-      "published_filename": "providers/mycima--nuvio--417a0bbbc8eae58b.js",
-      "sha256": "417a0bbbc8eae58be059da6e39cf73a28dadcaa1a25154276528d8769ec11785",
-      "patched_sha256": "417a0bbbc8eae58be059da6e39cf73a28dadcaa1a25154276528d8769ec11785",
+      "published_filename": "providers/mycima--nuvio--b83eff5bd8f4e3a5.js",
+      "sha256": "b83eff5bd8f4e3a5f08d96fb2a04f423b712fe25e065d6936bc82ef0c414c97a",
+      "patched_sha256": "b83eff5bd8f4e3a5f08d96fb2a04f423b712fe25e065d6936bc82ef0c414c97a",
       "base_filename": "provider-bases/mycima--base--b74899a698b85b22.js",
       "base_sha256": "b74899a698b85b22e6efdeddf3b454b499d226bcc94e8c218ba58d05bc24fc9c",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -29674,6 +30070,24 @@
           "output_sha256": "417a0bbbc8eae58be059da6e39cf73a28dadcaa1a25154276528d8769ec11785",
           "bytes_before": 122769,
           "bytes_after": 112813
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "50ccd7245c75b93c4b63002a832055e5d11814f9047c59741bf805a67e5037a3",
+          "output_sha256": "b83eff5bd8f4e3a5f08d96fb2a04f423b712fe25e065d6936bc82ef0c414c97a",
+          "bytes_before": 122773,
+          "bytes_after": 112817
         }
       ],
       "source": "yoru",
@@ -29899,10 +30313,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "417a0bbbc8eae58be059da6e39cf73a28dadcaa1a25154276528d8769ec11785"
+        "sha256": "b83eff5bd8f4e3a5f08d96fb2a04f423b712fe25e065d6936bc82ef0c414c97a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f93994dc40f1cb3627b8091929634a49f9a85ce245b2b9b09346b035df8d8f99",
+      "build_input_sha256": "d1aa037fb7ffaddc89929bb4b4e68454a38c026981d3dba1b59880ceba624098",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -30329,7 +30743,7 @@
         "sha256": "536350077f8a008c1fc9c7134334618344e7e3b9b5c87a330c3fbe754e9661f8"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "534c9e62fe1fc4f99f7acb5c1396f6f165d7b20085536bbd07abcdc5e6c41ab5",
+      "build_input_sha256": "5addfaf08d220e3fc3caad1546b5205f0d8245488841acc076e491c506463ba9",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -30752,7 +31166,7 @@
         "sha256": "55c80ba9eebb7a655351bd948ee4f3532e8e9bdc0901b6a97fbc73cad2b331cc"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "e7f40872d231f7c3c62fe1ce8f3892d1fdf38d4ebc023632871f48bdc828b786",
+      "build_input_sha256": "f2564fd70d0f9a230dbb7f34555a5bd76dec09aa804009e7b847ae9855f05285",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -31261,7 +31675,7 @@
         "mangle": false,
         "sha256": "4733b5f332ff9bb309debbc4bd169d6d0d47120bda51a829a5af64c8ccee9336"
       },
-      "build_input_sha256": "5468fa1324e1823b1295f0a9ee76dfedb140f552d9094d7e580040921d5d027f",
+      "build_input_sha256": "dd4ca2de3c8c1e0622219ec68c386406bc209fa4a11fd9ca5ec11e8abb52235d",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -31668,7 +32082,7 @@
         "sha256": "54b445283bb385b3174fd1d942ad7f6efbbdec9de4ecf4aa88dd6e6d71660c4e"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "53e53a5fdc74eff1e4af947a16dd50947aee09571b23b152e34c8d0824c1cadf",
+      "build_input_sha256": "ce85eae6f9c8a1e1a512cd8ab4adc979c0748976e6e61b9c2f914385ffc4034e",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -31692,9 +32106,9 @@
     },
     "papadustream": {
       "id": "papadustream",
-      "published_filename": "providers/papadustream--published-baseline--6eb6ed41f530b764.js",
-      "sha256": "6eb6ed41f530b76467428a1f17cc3f77effb52e5113b3242c0144daa55d9870b",
-      "patched_sha256": "6eb6ed41f530b76467428a1f17cc3f77effb52e5113b3242c0144daa55d9870b",
+      "published_filename": "providers/papadustream--published-baseline--a26d6b94f047d941.js",
+      "sha256": "a26d6b94f047d941bafca21509864fde937fdf9bf68bf18083deeca7509cf7d6",
+      "patched_sha256": "a26d6b94f047d941bafca21509864fde937fdf9bf68bf18083deeca7509cf7d6",
       "upstream_sha256": "19fc281914eeaf7c943ba9a05ad9fa5288307a62e2d30f5599aa2e76c18db8fa",
       "local_patches": [
         {
@@ -32009,6 +32423,24 @@
           "output_sha256": "6eb6ed41f530b76467428a1f17cc3f77effb52e5113b3242c0144daa55d9870b",
           "bytes_before": 123543,
           "bytes_after": 113406
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "d266ff34059b6ffbd88a152b15fcc2ba23eb644ae583424ddd7d44166c7cf9cb",
+          "output_sha256": "a26d6b94f047d941bafca21509864fde937fdf9bf68bf18083deeca7509cf7d6",
+          "bytes_before": 123547,
+          "bytes_after": 113410
         }
       ],
       "source": "published-baseline",
@@ -32314,9 +32746,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "6eb6ed41f530b76467428a1f17cc3f77effb52e5113b3242c0144daa55d9870b"
+        "sha256": "a26d6b94f047d941bafca21509864fde937fdf9bf68bf18083deeca7509cf7d6"
       },
-      "build_input_sha256": "60b5ffd2d0f59dbfcaa2753d45273eaddea331c684402597a214ebb4cd5e4675",
+      "build_input_sha256": "68a43d2d6de276b06cead164496a0213d332ff53c3ae45bd6085a6dabf2109d4",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -32726,7 +33158,7 @@
         "sha256": "3191479d9e3d8924a08a5a288c87b62985bc90e6a73d39fb55e6b90b4a88e93d"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4a0da2e973329ca566cfc59651a59a7d1740c4fd16e75d86771608b571d96e3a",
+      "build_input_sha256": "9a537f2b379d7f6bd7fb8a50c6ffb7cbc477f031d0e2a21f58cc66b0f224041e",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -33149,7 +33581,7 @@
         "sha256": "8c735f4b38215aeae6f1af7ad6f487ef31d383443cc98f70fb1098dadf0bdb1b"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "eacf1df760c3035676d69f76f9a10f4b71f9e1c1e0ef9260c17fb33a9566c9b3",
+      "build_input_sha256": "5f0929c09d3735b8fde20e30e18135be454ad699fc574f9061125a4f8a76ec6f",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -33574,7 +34006,7 @@
         "sha256": "e33f87f4a7e4f3d775b9a1dfbb8794d797cfa0317e99490e38c476ea35d89393"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "a5bf1a62aa1a8e6c260fb947b0182c5f5c37bf0523015570af4866bb402628df",
+      "build_input_sha256": "5979f2cd780261c59b3b643f3a5f3a6e20b4eddd3371c477be664f2e2bb4d489",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -34020,7 +34452,7 @@
         "sha256": "0a77b4d442370ffd8639be3f415f7de8b5d416ccd3513bf75037573009007d81"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "8faded1361d78b4af0b6d9c915299d07351af7c0b34d4641474d5e2d6c478a8d",
+      "build_input_sha256": "1f0de4650bac486bea5af0c0a307f1ce5c61283995f27b5ed5cd7a5a93d5eb48",
       "preserved_reason": "ci_uncertain_kept_last_published_artifact",
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
@@ -34425,7 +34857,7 @@
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ef2cfb9f33e9086bac36f629bffea807c3a3009219625552ea14a36f8fb6f861",
+      "build_input_sha256": "e14ffdd8ec51a3ba2c050385616502527106d8e9c0fe5553749e2473df9edcb3",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -34828,7 +35260,7 @@
         "sha256": "b4aee24095349027ac37e958f61a57f5557295e1d0b6f40e2db22b58dc311c1f"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "1ec4790c0d20957d9c21a56fc597e20fcdc620b504eeb6f7958f34a2354d1214",
+      "build_input_sha256": "eb8371c8372bfb68a43ef3aa0086fd5dd5167f0a6f3a825a5e6ea58949389d7c",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -35375,7 +35807,7 @@
         "mangle": false,
         "sha256": "380de85e8e63a3e7a24d394fa133aa8a4538fcf32f00a890fb5d2bf1332f8a24"
       },
-      "build_input_sha256": "f2ba890a9f21efa81cf010e7328ba28852ea405d109fbf09703031aa9c45b01f",
+      "build_input_sha256": "51fbefb6868773efae4dcd547d3ddcdb13d39817541eea9ece424d15d8ebc558",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -35397,9 +35829,9 @@
     },
     "streamzo": {
       "id": "streamzo",
-      "published_filename": "providers/streamzo--nuvio--26a91b9cfb0002e3.js",
-      "sha256": "26a91b9cfb0002e32efc5bf657c0f06fcefd2e2a0863877485667c1843ef4445",
-      "patched_sha256": "26a91b9cfb0002e32efc5bf657c0f06fcefd2e2a0863877485667c1843ef4445",
+      "published_filename": "providers/streamzo--nuvio--cc91ecb55e5028e9.js",
+      "sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d",
+      "patched_sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d",
       "upstream_sha256": "0e0695a6398a6732b2ec39a15c94ec6fd8070cc120527fd7bc9dece9bddd8685",
       "local_patches": [
         {
@@ -35644,6 +36076,24 @@
           "output_sha256": "26a91b9cfb0002e32efc5bf657c0f06fcefd2e2a0863877485667c1843ef4445",
           "bytes_before": 191896,
           "bytes_after": 177801
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "464e532bff61a6c955d4020f1765dd42e3427c894b556f38d3779fd3f49aac85",
+          "output_sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d",
+          "bytes_before": 191912,
+          "bytes_after": 177817
         }
       ],
       "source": "published-baseline",
@@ -35903,8 +36353,8 @@
       "preserved_candidate_key": "gowaru:streamzo",
       "preserved_candidate_sha256": "66d117b45ca62f8d3e32505da7264e25d5c2e1aeea7cdba2f1306c3b31c21098",
       "publication_mode": "strict_existing_provider_refresh",
-      "base_filename": "provider-bases/streamzo--base--1568d47daec205b6.js",
-      "base_sha256": "1568d47daec205b6ca517e39f50cc8e192f56ceb3b1fa67cc89190686454aeba",
+      "base_filename": "provider-bases/streamzo--base--5ca1f39cfab86d6c.js",
+      "base_sha256": "5ca1f39cfab86d6c4554b32f28f0ab53fa7578cf59d8ada6b93f6e9413a13cdb",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
       "base_migrated_at": "2026-08-28T23:38:52.906948+00:00",
       "base_migration_stripped_generated_core": false,
@@ -35917,9 +36367,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "26a91b9cfb0002e32efc5bf657c0f06fcefd2e2a0863877485667c1843ef4445"
+        "sha256": "cc91ecb55e5028e9fc4c709a333b59d51d1e4f09aeff7392bf4027001a43960d"
       },
-      "build_input_sha256": "d9e0652a1984487de2dba88f6fcbf22bdbd8344d1bc1c6781d08f917565a15b8",
+      "build_input_sha256": "2d5cfbecac6a4014c1572e3177d014ed4f9ba8b5d07d04a4e2b1fae666a8fc7a",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -36273,7 +36723,7 @@
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "429c0926fb206fddf62ec0d6364346ee0b0d25b162431da3caa6aba59ad5c5cb",
+      "build_input_sha256": "c48160da7764875141a6a88d97250e6abd2c9c7ba50f105d0dc3198e11bb4800",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -36765,7 +37215,7 @@
         "mangle": false,
         "sha256": "2c3468e6b56c3c8358e69b4c7b4ab576a6d7560bb304b4ef2e0d03ac2217643e"
       },
-      "build_input_sha256": "464f442abf11722f010f075c3313f41161301c5d09a4415aee9bc86dd3447946",
+      "build_input_sha256": "00259ba357df9ea110ed6676065e38d2cea6068a469da692eba3b0e1ef1463a4",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -36786,9 +37236,9 @@
     },
     "uhdmovies": {
       "id": "uhdmovies",
-      "published_filename": "providers/uhdmovies--nuvio--01c10cc3d3c03ebb.js",
-      "sha256": "01c10cc3d3c03ebb11630cfefcd937e1b8bca991555251650eee7cf24ffee5eb",
-      "patched_sha256": "01c10cc3d3c03ebb11630cfefcd937e1b8bca991555251650eee7cf24ffee5eb",
+      "published_filename": "providers/uhdmovies--nuvio--41b2867bcc664c93.js",
+      "sha256": "41b2867bcc664c93f6374c140d0fc4c8bd3e03f86b35f15368f4b3046ae459f4",
+      "patched_sha256": "41b2867bcc664c93f6374c140d0fc4c8bd3e03f86b35f15368f4b3046ae459f4",
       "base_filename": "provider-bases/uhdmovies--base--05573493b5e750ea.js",
       "base_sha256": "05573493b5e750eaa2bbcea50531feda310ad38eedeb778c990cde5b54279a2f",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -36954,6 +37404,24 @@
           "output_sha256": "01c10cc3d3c03ebb11630cfefcd937e1b8bca991555251650eee7cf24ffee5eb",
           "bytes_before": 122803,
           "bytes_after": 112847
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "1142d513b3af20fa6f21c53f0e910172d99fad9dcc0e97dfac67ebee8bfc06e4",
+          "output_sha256": "41b2867bcc664c93f6374c140d0fc4c8bd3e03f86b35f15368f4b3046ae459f4",
+          "bytes_before": 122807,
+          "bytes_after": 112851
         }
       ],
       "source": "aio",
@@ -37187,10 +37655,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "01c10cc3d3c03ebb11630cfefcd937e1b8bca991555251650eee7cf24ffee5eb"
+        "sha256": "41b2867bcc664c93f6374c140d0fc4c8bd3e03f86b35f15368f4b3046ae459f4"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "37a736c8c1bbbdaa919933eea17baf762704e0355acc2fc6c5d807888fbe272b",
+      "build_input_sha256": "064b6f1cf8f170f55368e646e0ff6b44a4e01098dd576edc5a32b91c252e2a1e",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -37219,9 +37687,9 @@
     },
     "vegamovies": {
       "id": "vegamovies",
-      "published_filename": "providers/vegamovies--nuvio--edac4f8d63900190.js",
-      "sha256": "edac4f8d639001909f575749b09b2bb5f71b03779652fa63081104dcb3f6d182",
-      "patched_sha256": "edac4f8d639001909f575749b09b2bb5f71b03779652fa63081104dcb3f6d182",
+      "published_filename": "providers/vegamovies--nuvio--228a787d06a24940.js",
+      "sha256": "228a787d06a24940f8da9fca1c6f44308e167c49fa8f123678c10b987ec37ea7",
+      "patched_sha256": "228a787d06a24940f8da9fca1c6f44308e167c49fa8f123678c10b987ec37ea7",
       "upstream_sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
       "local_patches": [
         {
@@ -37514,6 +37982,24 @@
           "output_sha256": "edac4f8d639001909f575749b09b2bb5f71b03779652fa63081104dcb3f6d182",
           "bytes_before": 126243,
           "bytes_after": 116139
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "fec6e327cfe3de4c8b0053db18eb61d6309cfeb7527d5f6ccfe590fd9f4e31c9",
+          "output_sha256": "228a787d06a24940f8da9fca1c6f44308e167c49fa8f123678c10b987ec37ea7",
+          "bytes_before": 126247,
+          "bytes_after": 116143
         }
       ],
       "source": "aio",
@@ -37789,9 +38275,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "edac4f8d639001909f575749b09b2bb5f71b03779652fa63081104dcb3f6d182"
+        "sha256": "228a787d06a24940f8da9fca1c6f44308e167c49fa8f123678c10b987ec37ea7"
       },
-      "build_input_sha256": "3cfba5df9b40f884b63823dc6781966f1b84c346ec6cfa5a0ce84944b70e36e4",
+      "build_input_sha256": "fed4d444b795a6833bdb0886bc86ff712036edb513617e2f1b880c2ce59d71ca",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -38227,7 +38713,7 @@
         "sha256": "51e53f85370dc23428efef888653ec72c1b46a55e00452aa2e93f77d074e4f29"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f32cb9330fa53c7f788d52359bb65fcb3e73791daa9259ac1e7347a9c483bd96",
+      "build_input_sha256": "8147f1d98bcbd1b61bdac948cc06d745d71574c408b3e57955cd3216c32f3a32",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -38769,7 +39255,7 @@
         "mangle": false,
         "sha256": "8c06edeea58a8ebbe71be1681fe7ac744ae367070bc496623359df0bf29f8317"
       },
-      "build_input_sha256": "5c380aa26eb6269197cf6474cbaa6f3fcbb64d7d774621dc6d6d38f23020964c",
+      "build_input_sha256": "903398f4126cfdf8d617e7dae7852c2383a347766b827f328867c2e05c0d1b8e",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -39314,7 +39800,7 @@
         "mangle": false,
         "sha256": "e886f51e981f1ab9623185b8747555f6fe42892de891a9a26ed79ae218c3087a"
       },
-      "build_input_sha256": "66a8113eab41c9807dcc8ae3817fe7445cc1786197648f57729c71848414fc29",
+      "build_input_sha256": "02b0d170620da9d5db174791aed5871bfd2aa88a71b18338c3c68fd7d6cdef39",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -39720,7 +40206,7 @@
         "sha256": "efb1712141d044d6f5bfbf3c317c24fa24545ced6ce2fa440bc1b8e3e5b3a493"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "71ca3dc0e23d26ed506777178001478b52d458bef640b57212ba17b17dc9ae85",
+      "build_input_sha256": "4d332d8d02308202ef7e7e95998a99c0de685e8072d2a064f847a44601b925ab",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -40122,7 +40608,7 @@
         "sha256": "02f7b59ec9e662709280226566675660823429b4d8d85951feae68602991ba25"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "b4066abdaa8829c716751a9a1b085afceb34c70af69bbcc596fce03b2cd69606",
+      "build_input_sha256": "19ed802fd22dd4dc35f749b95aea024e612b615a502afe965e51b4f3f76b69a4",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -40531,7 +41017,7 @@
         "sha256": "d9a2adfe535d50ff2a0a2c7a9b19cd812875e7d1d39fbd395d9fb25e805b19a0"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f40ae05a6413c0b04b108db20dae24aac978ccaf22e7f135074e40ef6c9f5521",
+      "build_input_sha256": "e556a2bb12efaf44b277beb32f136c8aef9dfb76fb6a224ad3acf1ef7c19a6cf",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -40946,7 +41432,7 @@
         "sha256": "8e310b567b0fe5a6e95d5948280acfda8682c956fa72fd87015ee577cdc2ea3a"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "ffffcf658e2617eeaaca0909bb0d48dd71331c0cd88b615ebdd0f183bd44bc95",
+      "build_input_sha256": "e10859b726271410565cfa7224f059cdb7379b96eff7238e835b26d76ea173ef",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -41385,7 +41871,7 @@
         "mangle": false,
         "sha256": "7947316d3cbed215ea1d51103c4b4347d63eb1f72e8b3a51c26098b4c8ca9bf6"
       },
-      "build_input_sha256": "d0cf1c5f13f65f7122610eed69bd80b9451f8560ca18767d6c7c129c66cc5935",
+      "build_input_sha256": "d5bc53fb0035f499efc5d4fc22991a3cd09916f236d34b2553f90549a333b312",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -41912,7 +42398,7 @@
         "mangle": false,
         "sha256": "d6a63066fef51c8da8ed560298602bfe95b7d022eef0e594e11956ea2b3cdc68"
       },
-      "build_input_sha256": "2216afa692d9d1d9f6522ca79232d6d6b7741dc865a857a8983e03d90018328a",
+      "build_input_sha256": "492d0c0325358a4a559f73bd38fa3a130ea515cb819a217ed2b478143333cb48",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -41933,9 +42419,9 @@
     },
     "voiranime": {
       "id": "voiranime",
-      "published_filename": "providers/voiranime--nuvio--723f0471342c4eb1.js",
-      "sha256": "723f0471342c4eb19a4e7278fdaeed6cdf49a968a2e893374a9609c422cce5f5",
-      "patched_sha256": "723f0471342c4eb19a4e7278fdaeed6cdf49a968a2e893374a9609c422cce5f5",
+      "published_filename": "providers/voiranime--nuvio--9908ca75a64f9ab4.js",
+      "sha256": "9908ca75a64f9ab4faf5cd59d6008d3411aa8dfd80273f3158455969ce7ff279",
+      "patched_sha256": "9908ca75a64f9ab4faf5cd59d6008d3411aa8dfd80273f3158455969ce7ff279",
       "base_filename": "provider-bases/voiranime--base--66ea4f4738d38af1.js",
       "base_sha256": "66ea4f4738d38af19d8bf8585a8c6f2e84cb2caa239a0a69665172506b924085",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -42103,6 +42589,24 @@
           "output_sha256": "723f0471342c4eb19a4e7278fdaeed6cdf49a968a2e893374a9609c422cce5f5",
           "bytes_before": 122969,
           "bytes_after": 113011
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "af565f67d6ffae6c636c83dfd13d0b2285651837efff9008afe0dfef19acf145",
+          "output_sha256": "9908ca75a64f9ab4faf5cd59d6008d3411aa8dfd80273f3158455969ce7ff279",
+          "bytes_before": 122973,
+          "bytes_after": 113015
         }
       ],
       "source": "gowaru",
@@ -42340,10 +42844,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "723f0471342c4eb19a4e7278fdaeed6cdf49a968a2e893374a9609c422cce5f5"
+        "sha256": "9908ca75a64f9ab4faf5cd59d6008d3411aa8dfd80273f3158455969ce7ff279"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4b5ed573b9c8f652703b51ccf1bb63e4a6028640ef0e693fdc4e4f22e0a82098",
+      "build_input_sha256": "398de11f27b14ae555d85e1e6ec84d8c6e424f50e52da34de48846c74fc74bc4",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -42785,7 +43289,7 @@
         "sha256": "b40415f60370ad0b6abd3ebb2732b614a1f2e50a6a7f319a91ef8ec99796dc05"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "9e0135194d869d5355dfd4275392f05c783b8b3566b5a155cb89ef837e020cd6",
+      "build_input_sha256": "56d2983c7cdea890e40f9139cdbe70a89ee6c58fa2ab6299c626418e5de92dd7",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -42814,9 +43318,9 @@
     },
     "voiranime-rip": {
       "id": "voiranime-rip",
-      "published_filename": "providers/voiranime-rip--nuvio--c867b4fb1440bf2e.js",
-      "sha256": "c867b4fb1440bf2e8f45dd7a3f4147e8d8414edece2d05662f42d4fa98f27090",
-      "patched_sha256": "c867b4fb1440bf2e8f45dd7a3f4147e8d8414edece2d05662f42d4fa98f27090",
+      "published_filename": "providers/voiranime-rip--nuvio--4d13882f91995cea.js",
+      "sha256": "4d13882f91995cea8797f7f9249e3b00bad9e3a7c39a46cfb1b3d5585d5bedbb",
+      "patched_sha256": "4d13882f91995cea8797f7f9249e3b00bad9e3a7c39a46cfb1b3d5585d5bedbb",
       "base_filename": "provider-bases/voiranime-rip--base--0dd3973647ff0b36.js",
       "base_sha256": "0dd3973647ff0b360361ab7ff4f0e5e503e9d8ddb32111a4b9c929af2b35a75c",
       "base_source": "niakvio-clean-reconstruction-v2-candidate",
@@ -42984,6 +43488,24 @@
           "output_sha256": "c867b4fb1440bf2e8f45dd7a3f4147e8d8414edece2d05662f42d4fa98f27090",
           "bytes_before": 122875,
           "bytes_after": 112917
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "757e879d67246d587333b93bf4bbd12c173867702b3f2587835148e004d0ea33",
+          "output_sha256": "4d13882f91995cea8797f7f9249e3b00bad9e3a7c39a46cfb1b3d5585d5bedbb",
+          "bytes_before": 122879,
+          "bytes_after": 112921
         }
       ],
       "source": "gowaru",
@@ -43225,10 +43747,10 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "c867b4fb1440bf2e8f45dd7a3f4147e8d8414edece2d05662f42d4fa98f27090"
+        "sha256": "4d13882f91995cea8797f7f9249e3b00bad9e3a7c39a46cfb1b3d5585d5bedbb"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "f174599b6384dbaa52af5f60f9f355a60f5609821f47f5edf85604c38c2bb530",
+      "build_input_sha256": "6a48abd36ca63bc1d6fef39f98c1890ffb05ed074309aec7d2aba0b05361ad2a",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -43795,7 +44317,7 @@
         "mangle": false,
         "sha256": "7a20c3198fde3b19257465e779ed76c0d8c802ec29e34ee61f30af15d325eff1"
       },
-      "build_input_sha256": "2f044dcf12b43218ccd83565b461be9d0bd8ae7ae2041b76bf3cc360dbcea587",
+      "build_input_sha256": "3ffcdaa23cf05064ea09faa6b1a57477257d0603f72db134080fbaa87cc59721",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -44214,7 +44736,7 @@
         "sha256": "24af73f8c7f24ea783abda3f9925cc5dfd9d33228f1aa9cc717177e13cadd4db"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "4e274dd6f6e81c24e46cddc26d60e8c774859cc071cdb04e0a6184a6a4cc86b3",
+      "build_input_sha256": "75a718671357d533a8deabeece5883287de64d1985bf077ef9cffd281dade3ec",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -44238,9 +44760,9 @@
     },
     "wookafr": {
       "id": "wookafr",
-      "published_filename": "providers/wookafr--nuvio--e7c77b47340dee7a.js",
-      "sha256": "e7c77b47340dee7a17534b7e01f402eae637008dbb7339c184a5ec25c3803572",
-      "patched_sha256": "e7c77b47340dee7a17534b7e01f402eae637008dbb7339c184a5ec25c3803572",
+      "published_filename": "providers/wookafr--nuvio--73c72bc655edc9ea.js",
+      "sha256": "73c72bc655edc9ea0d3e35ba897e29a5dd108c7f3fafca8cc64baabb574e254b",
+      "patched_sha256": "73c72bc655edc9ea0d3e35ba897e29a5dd108c7f3fafca8cc64baabb574e254b",
       "upstream_sha256": "4ce4c33e2fe1d23bea7263bf07d4b760ec50169aa0c7b925a7103efc15271b67",
       "local_patches": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
@@ -44637,6 +45159,24 @@
           "output_sha256": "e7c77b47340dee7a17534b7e01f402eae637008dbb7339c184a5ec25c3803572",
           "bytes_before": 127452,
           "bytes_after": 116939
+        },
+        {
+          "type": "provider_purification",
+          "phase": "final-post-transform",
+          "revision": 2,
+          "tool": "terser",
+          "tool_version": "5.50.0",
+          "mode": "risk-format-only",
+          "mangle": false,
+          "fixed_point_verified": true,
+          "conservative_compression": false,
+          "risk_flags": [
+            "function_source_introspection"
+          ],
+          "source_sha256": "a4e49b01dda8ebe982ee464cb79cd1bd07c1795dd8f5c4badfdcc73ce00efe6a",
+          "output_sha256": "73c72bc655edc9ea0d3e35ba897e29a5dd108c7f3fafca8cc64baabb574e254b",
+          "bytes_before": 127456,
+          "bytes_after": 116943
         }
       ],
       "source": "desktop-runtime-compat-v1",
@@ -44884,9 +45424,9 @@
         "tool": "terser",
         "tool_version": "5.50.0",
         "mangle": false,
-        "sha256": "e7c77b47340dee7a17534b7e01f402eae637008dbb7339c184a5ec25c3803572"
+        "sha256": "73c72bc655edc9ea0d3e35ba897e29a5dd108c7f3fafca8cc64baabb574e254b"
       },
-      "build_input_sha256": "9de67f37bb3a07c936aff954d08a0592bbbcbd0014c8e100cf8bc4462c253e14",
+      "build_input_sha256": "7bbced7e1958a7220864b622c7f3dea42f1a700bf8ebab70ab501d0b60f1c374",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -45294,7 +45834,7 @@
         "sha256": "b551b94a9077983b9fa9b88cb43826ddcf93e915ce0f6cb4115d5fe5705f2bfd"
       },
       "build_contract_schema": 2,
-      "build_input_sha256": "641da0b388cc563ca99ba2771be78d17695bf36feefb3be79f2271271f6df8d6",
+      "build_input_sha256": "8d57f9400ab5f1c32472eebe79285876198d634a9f7f5132e5adaea957148fe7",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -45822,7 +46362,7 @@
         "mangle": false,
         "sha256": "f6ff420bc7d5882a2e63003d8e2a293b10c8a5e2736ef4656eb3a50099595380"
       },
-      "build_input_sha256": "e1fb559abca7d8f855619eefb04fb9fc0520da9bbe4ed46ad18625bfe68f243e",
+      "build_input_sha256": "9b5477de6b4eee01b9f268c7e3a9f9ba75e94080594fc09de105f44bb158e802",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -46369,7 +46909,7 @@
         "mangle": false,
         "sha256": "57780b61b55a00e92922aef635ece42b529664dd29a43c760337549c43d5ed3c"
       },
-      "build_input_sha256": "5f238d9d6333641dbd7dea676ad7390a2c0a5c1708fb5c694e0c67f4e28a5cf2",
+      "build_input_sha256": "63aaf6cabf89727c923ddd0321f468cf4293420081ddc9160fde444d6a9603b1",
       "clean_reconstruction_required": true,
       "legacy_provider_base_role": "compatibility-lkg-only",
       "legacy_provider_js_role": "knowledge-only-for-reconstruction",
@@ -46391,7 +46931,7 @@
   },
   "provider_publication_contract": {
     "schema_version": 2,
-    "sha256": "132efdc13fe7a8276cf59eb30a607ce7afd0bd9cf0e4198a1b64cd64a4aceb04",
+    "sha256": "a314447769a7c37eab0b624915714a42d87fea5039e9549a7420b0e47711a0ac",
     "provider_count": 96,
     "mode": "provider_base_plus_deterministic_core"
   }
