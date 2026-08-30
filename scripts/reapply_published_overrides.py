@@ -988,6 +988,7 @@ def main() -> int:
             "old": relative,
             "new": new_relative,
             "sha256": digest,
+            "base_filename": provider_base_path.relative_to(ROOT).as_posix(),
             "base_sha256": provider_base_sha,
             "final_fixed_point": {
                 "schema_version": 1,
@@ -1035,8 +1036,34 @@ def main() -> int:
                 continue
             row["published_filename"] = update["new"]
             row["sha256"] = update["sha256"]
-            if str(row.get("base_sha256") or "").casefold() != str(update["base_sha256"]).casefold():
-                raise ValueError(f"{provider_id}: ProviderBase changed outside provider pipeline")
+
+            runtime_base_filename = str(update.get("base_filename") or "").strip()
+            runtime_base_sha = str(update.get("base_sha256") or "").strip().casefold()
+            canonical_base_filename = str(row.get("base_filename") or "").strip()
+            legacy_base_filename = str(
+                row.get("legacy_base_filename_before_clean_candidate") or ""
+            ).strip()
+            if runtime_base_filename == canonical_base_filename:
+                expected_runtime_base_sha = str(row.get("base_sha256") or "").strip().casefold()
+                runtime_base_source = "canonical-providerbase"
+            elif runtime_base_filename and runtime_base_filename == legacy_base_filename:
+                expected_runtime_base_sha = str(
+                    row.get("legacy_base_sha256_before_clean_candidate") or ""
+                ).strip().casefold()
+                runtime_base_source = "preserved-lkg-pending-clean-candidate"
+            else:
+                raise ValueError(
+                    f"{provider_id}: runtime ProviderBase is not recorded in provenance "
+                    f"path={runtime_base_filename or 'missing'}"
+                )
+            if not expected_runtime_base_sha or expected_runtime_base_sha != runtime_base_sha:
+                raise ValueError(
+                    f"{provider_id}: runtime ProviderBase changed outside provider pipeline "
+                    f"source={runtime_base_source}"
+                )
+            row["published_runtime_base_filename"] = runtime_base_filename
+            row["published_runtime_base_sha256"] = runtime_base_sha
+            row["published_runtime_base_source"] = runtime_base_source
             if update.get("terminal_quarantine") or "patched_sha256" in row or update["records"]:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
