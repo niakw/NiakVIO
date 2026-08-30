@@ -172,14 +172,6 @@ def stage(request_path: Path) -> dict[str, Any]:
     vf = bool_value(request.get("vf"), any(value.startswith("fr") for value in languages))
     if vf and not any(value.startswith("fr") for value in languages):
         languages.insert(0, "fr")
-    existing_entry = existing_entry if isinstance(existing_entry, dict) else {}
-    description = str(
-        request.get("description")
-        or existing_entry.get("description")
-        or f"{name} provider managed by NiakVIO."
-    ).strip()
-    author = str(request.get("author") or existing_entry.get("author") or "NiakVIO").strip()
-    version = str(request.get("version") or existing_entry.get("version") or "1.0.0").strip()
 
     manifest = load_json(MANIFEST, {})
     replace_existing = bool_value(request.get("replace_existing"), False)
@@ -192,6 +184,15 @@ def stage(request_path: Path) -> dict[str, Any]:
     )
     if isinstance(existing_entry, dict) and not replace_existing:
         raise ValueError(f"provider already exists: {provider_id}")
+    existing_entry = existing_entry if isinstance(existing_entry, dict) else {}
+
+    description = str(
+        request.get("description")
+        or existing_entry.get("description")
+        or f"{name} provider managed by NiakVIO."
+    ).strip()
+    author = str(request.get("author") or existing_entry.get("author") or "NiakVIO").strip()
+    version = str(request.get("version") or existing_entry.get("version") or "1.0.0").strip()
 
     overrides = load_json(OVERRIDES, {})
     overrides.setdefault("provider_patches", {})
