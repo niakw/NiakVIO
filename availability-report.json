@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-08-30T19:21:13.457713+00:00",
+  "generated_at": "2026-08-30T22:49:02.185798+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
     "healthy": 0,
     "reachable": 0,
-    "blocked": 1,
-    "degraded": 1,
-    "no_streams": 4,
-    "provider_unreachable": 81,
+    "blocked": 4,
+    "degraded": 0,
+    "no_streams": 5,
+    "provider_unreachable": 76,
     "runtime_error": 0,
-    "unavailable": 9,
+    "unavailable": 11,
     "excluded": 0
   },
   "policy": {
@@ -203,7 +203,7 @@
     },
     {
       "id": "purstream",
-      "status": "provider_unreachable",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -229,7 +229,7 @@
     },
     {
       "id": "flemmix",
-      "status": "no_streams",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -753,16 +753,14 @@
     },
     {
       "id": "hindmoviez",
-      "status": "degraded",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [
-        "invalid_payload"
-      ],
+      "response_categories": [],
       "host_health": {
         "share.kujeucoixeti-6043.workers.dev": {
           "last_checked_at": "2026-08-28T22:27:03.055457+00:00",
@@ -1853,7 +1851,7 @@
     },
     {
       "id": "animetsu",
-      "status": "provider_unreachable",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2226,7 +2224,7 @@
     },
     {
       "id": "dulourd",
-      "status": "unavailable",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2240,7 +2238,7 @@
     },
     {
       "id": "french-manga",
-      "status": "provider_unreachable",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2638,7 +2636,7 @@
     },
     {
       "id": "movix",
-      "status": "provider_unreachable",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -3608,7 +3606,7 @@
     },
     {
       "id": "kehflix",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -4044,7 +4042,7 @@
     },
     {
       "id": "anime-ultime",
-      "status": "provider_unreachable",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -4546,7 +4544,7 @@
     },
     {
       "id": "nakios",
-      "status": "provider_unreachable",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
