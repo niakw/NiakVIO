@@ -155,6 +155,11 @@ assert "pending_clean_reconstruction_has_strict_deep_proof" in promoter
 assert '"clean_reconstruction_strict_deep_proof_pending"' in promoter
 assert '"pending-canonical-deep-proof"' in promoter
 assert "restore_pending_activation_lkg" in promoter
+assert "if old_safety_quarantine:" in promoter
+assert '"preserved-conclusive-safety-quarantine-clean-candidate-pending"' in promoter
+assert '"clean_candidate_pending_kept_conclusive_safety_quarantine"' in promoter
+assert '"activation_mode": str(' in promoter
+assert 'old_provenance.get("activation_blockers") or blockers' in promoter
 assert "pending_configured_disabled" in promoter
 assert "cid in activation_lkg_ids" in promoter
 assert "and not old_safety_quarantine" in promoter
