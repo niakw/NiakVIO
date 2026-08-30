@@ -12,9 +12,10 @@ OVERRIDES = json.loads((ROOT / "provider-overrides.json").read_text(encoding="ut
 
 
 def normalize_types(values: object) -> set[str]:
+    iterable = values if isinstance(values, list) else []
     return {
         str(value).strip().casefold()
-        for value in values if isinstance(values, list)
+        for value in iterable
         if str(value).strip().casefold() in {"movie", "tv", "anime"}
     }
 
