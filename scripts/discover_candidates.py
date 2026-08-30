@@ -218,6 +218,28 @@ def clean_provider_model(
     capability = capabilities.get(provider_id) if isinstance(capabilities.get(provider_id), dict) else {}
     fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
 
+    learned_routes: list[str] = []
+    for source in (
+        patch.get("learned_routes"),
+        capability.get("routes"),
+        knowledge.get("routes"),
+    ):
+        for raw in source if isinstance(source, list) else []:
+            value = str(raw or "").strip()
+            if value and value not in learned_routes:
+                learned_routes.append(value)
+
+    learned_urls: list[str] = []
+    for source in (
+        patch.get("learned_urls"),
+        capability.get("observed_urls"),
+        knowledge.get("observedUrls"),
+    ):
+        for raw in source if isinstance(source, list) else []:
+            value = str(raw or "").strip()
+            if value and value not in learned_urls:
+                learned_urls.append(value)
+
     origins: list[str] = []
     for value in capability.get("observed_origins") or []:
         value = str(value or "").strip()
@@ -257,8 +279,8 @@ def clean_provider_model(
         "officialApi": str(patch.get("official_api") or "").strip() or None,
         "fixedApi": str(fixed.get("api") or "").strip() or None,
         "origins": origins[:24],
-        "observedUrls": list(knowledge.get("observedUrls") or [])[:32],
-        "routes": list(knowledge.get("routes") or [])[:32],
+        "observedUrls": learned_urls[:32],
+        "routes": learned_routes[:32],
         "knowledgeRole": "structured-observation-only",
         "legacyCodeEmbedded": False,
         "legacyCodeExecuted": False,

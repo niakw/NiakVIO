@@ -1336,63 +1336,31 @@
           "normalize_missing_episodes": true,
           "filter_episode_labels": true,
           "max_series_streams": 24
-        },
-        "scripts/provider_patches/adaptive_runtime_recovery_v5.py": {
-          "provider_name": "🇮🇳 HindMoviez",
-          "base_url": "https://hindmovie.fit",
-          "endpoint_origins": [
-            "https://mvlink.blog",
-            "https://old.invalid"
-          ],
-          "types": [
-            "movie",
-            "tv"
-          ],
-          "search_paths": [
-            "/?s={query}",
-            "/search?q={query}",
-            "/index.php?do=search&subaction=search&story={query}"
-          ],
-          "direct_paths": [
-            "/{slug}",
-            "/film/{slug}",
-            "/films/{slug}",
-            "/anime/{slug}",
-            "/serie/{slug}",
-            "/series/{slug}"
-          ],
-          "max_pages": 10,
-          "max_embeds": 10,
-          "max_depth": 3,
-          "timeout_ms": 9000,
-          "blocked_hosts": [
-            "cloudflareinsights.com",
-            "connect.facebook.net",
-            "doubleclick.net",
-            "fstream.top",
-            "google-analytics.com",
-            "googlesyndication.com",
-            "googletagmanager.com",
-            "static.cloudflareinsights.com"
-          ],
-          "blocked_path_patterns": [
-            "/beacon.min.js",
-            "/cdn-cgi/rum",
-            "/gtag/js",
-            "/troll/"
-          ]
         }
       },
       "required_values": [],
       "patch_scripts": [
         "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ],
       "manifest_overrides": {
         "disabledPlatforms": []
-      }
+      },
+      "learned_routes": [
+        "/?s={query}",
+        "/search?q={query}",
+        "/index.php?do=search&subaction=search&story={query}",
+        "/{slug}",
+        "/film/{slug}",
+        "/films/{slug}",
+        "/anime/{slug}",
+        "/serie/{slug}",
+        "/series/{slug}"
+      ],
+      "notes": [
+        "Runtime route discovery removed: Discovery/Learning owns search/detail route recognition; provider JS consumes only learned_routes."
+      ]
     },
     "kisskh": {
       "capability": "direct_media",

@@ -8,7 +8,8 @@ before any provider-specific resolver sees it.
 No NiakVIO credential is embedded. The resolver first reuses a runtime/provider
 TMDB credential when one already exists; otherwise it may classify TV-shaped
 requests from the public TMDB title page. Object-style requests can also carry
-trusted metadata directly. Metadata failure is fail-open to the transport type.
+trusted metadata directly. Ambiguous TV/anime metadata failure is fail-closed.
+TMDB identity is namespaced: anime-series share the TMDB TV namespace.
 """
 from __future__ import annotations
 
@@ -96,9 +97,9 @@ function localToken(){
 }
 var mediaCache=Object.create(null);
 async function tmdb(tvId){
-  var id=s(tvId),key=localKey(),token=localToken();
+  var id=s(tvId),namespace="tv",cacheKey=namespace+":"+id,key=localKey(),token=localToken();
   if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return null;
-  if(Object.prototype.hasOwnProperty.call(mediaCache,id))return await mediaCache[id];
+  if(Object.prototype.hasOwnProperty.call(mediaCache,cacheKey))return await mediaCache[cacheKey];
   var pending=(async function(){
     try{
       if(key||token){
@@ -118,9 +119,9 @@ async function tmdb(tvId){
       return {__nuvioPublicHtml:await page.text()};
     }catch(_){return null}
   })();
-  mediaCache[id]=pending;
+  mediaCache[cacheKey]=pending;
   var value=await pending;
-  mediaCache[id]=value;
+  mediaCache[cacheKey]=value;
   return value;
 }
 async function canonicalType(id,input,metadata,category){

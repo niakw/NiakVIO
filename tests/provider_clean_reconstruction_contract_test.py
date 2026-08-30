@@ -144,3 +144,15 @@ assert '"runtimeDiscovery":false' in seed
 assert "function _detailGuesses" not in seed
 assert '"/search?q="' not in seed
 assert "if (!_runtimePlanAvailable()) return [];" in seed
+
+overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+for provider_id, patch in (overrides.get("provider_patches") or {}).items():
+    if not isinstance(patch, dict):
+        continue
+    scripts = [str(value) for value in patch.get("patch_scripts") or []]
+    assert "scripts/provider_patches/adaptive_runtime_recovery_v4.py" not in scripts, (
+        f"{provider_id}: runtime discovery v4 cannot be published; move route knowledge to Discovery/Learning"
+    )
+    assert "scripts/provider_patches/adaptive_runtime_recovery_v5.py" not in scripts, (
+        f"{provider_id}: runtime discovery v5 cannot be published; move route knowledge to Discovery/Learning"
+    )
