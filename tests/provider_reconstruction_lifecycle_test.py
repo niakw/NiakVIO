@@ -59,7 +59,7 @@ assert fresh_seed == expected_fresh_seed, (
     fresh_seed[:240],
     expected_fresh_seed[:240],
 )
-assert b"NUVIO_PROVIDER_BASE_OWNED_V2" in expected_fresh_seed
+assert b"NUVIO_PROVIDER_BASE_OWNED_V2" in expected_fresh_seed, expected_fresh_seed[:500]
 assert b'"authoring":"niakvio-owned-v2"' in fresh_seed
 assert b'"upstreamCodeEmbedded":false' in fresh_seed
 assert b'"upstreamCodeExecuted":false' in fresh_seed
