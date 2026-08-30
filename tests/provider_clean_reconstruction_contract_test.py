@@ -154,8 +154,9 @@ assert "clean_seed_origin" in profiles_builder
 assert "excluded_patch_scripts=(" in profiles_builder
 
 published_reapply = (SCRIPTS / "reapply_published_overrides.py").read_text(encoding="utf-8")
-assert "is_clean_reconstructed(provider_provenance)" in published_reapply
-assert "is_clean_reconstruction_candidate(provider_provenance)" in published_reapply
+assert "runtime_base_is_clean_v2(" in published_reapply
+assert "resolve_runtime_base(" in published_reapply
+assert "resolve_base(provider_id, provenance_row, require=True)" in published_reapply
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in published_reapply
 assert "excluded_patch_scripts=(" in published_reapply
 
