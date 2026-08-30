@@ -45,7 +45,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     payload = {
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-first-provider-entity-gate-v3",
+        "revision": "tmdb-first-provider-entity-gate-v4",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -61,13 +61,11 @@ function s(v){return String(v==null?"":v).trim()}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
 function namespaceCandidates(v,season,episode,semantic){
-  var raw=s(v||"movie").toLowerCase(),types=rows(semantic);
+  var raw=s(v||"movie").toLowerCase();
   if(raw==="movie")return["movie"];
   if(raw==="anime"){
     if(season!=null||episode!=null)return["tv"];
-    var out=["tv"];
-    if(types.indexOf("movie")>=0)out.push("movie");
-    return out;
+    return["tv","movie"];
   }
   return["tv"];
 }
@@ -186,7 +184,7 @@ async function resolve(a){
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   if(semantic.length){
     if(raw==="anime"&&semantic.indexOf("anime")<0)return null;
-    if(raw==="movie"&&semantic.indexOf("movie")<0)return null;
+    if(raw==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")<0)return null;
     if(raw!=="anime"&&namespace==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
   }
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);

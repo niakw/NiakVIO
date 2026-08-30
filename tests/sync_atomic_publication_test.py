@@ -34,7 +34,7 @@ publish_block = workflow[workflow.index("\n  publish:\n"):]
 
 # Long validation is latest-wins and may be cancelled, but the actual main writer
 # lane is publication-only, shared with Add Provider, and never cancels an active writer.
-assert "group: nuvio-provider-stage-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'main' }}" in stage_block
+assert "group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || 'main') }}" in stage_block
 assert "cancel-in-progress: true" in stage_block
 assert "group: nuvio-provider-publish-main" in publish_block
 assert "cancel-in-progress: false" in publish_block

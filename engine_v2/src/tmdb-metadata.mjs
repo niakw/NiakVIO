@@ -27,30 +27,48 @@ export function createTmdbMetadataResolver(options = {}) {
     const tmdbId = String(request.tmdbId ?? "").trim();
     if (!/^\d+$/.test(tmdbId)) return requestFallback(request);
     const mediaType = normalizeMediaType(request.mediaType ?? request.type);
-    const kind = mediaType === "movie" ? "movie" : "tv";
-    const append = kind === "movie"
-      ? "release_dates,alternative_titles,keywords"
-      : "content_ratings,alternative_titles,keywords";
-    const url = new URL(`${TMDB_BASE}/${kind}/${tmdbId}`);
-    if (!accessToken) url.searchParams.set("api_key", apiKey);
-    url.searchParams.set("language", language);
-    url.searchParams.set("append_to_response", append);
+    const requestedKind = normalizeTmdbKind(request.tmdbNamespace ?? request.tmdbKind);
+    const kinds = requestedKind
+      ? [requestedKind]
+      : mediaType === "movie"
+        ? ["movie"]
+        : mediaType === "tv"
+          ? ["tv"]
+          : (request.season != null || request.episode != null ? ["tv"] : ["tv", "movie"]);
 
-    const headers = { Accept: "application/json" };
-    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
-    const response = await fetchImpl(url, {
-      headers,
-      signal: AbortSignal.timeout(timeoutMs),
-    });
-    if (!response.ok) throw new Error(`TMDB HTTP ${response.status}`);
-    const payload = await response.json();
-    return normalizeTmdbPayload(payload, { mediaType, request });
+    let lastHttpError = null;
+    for (const kind of kinds) {
+      const append = kind === "movie"
+        ? "release_dates,alternative_titles,keywords"
+        : "content_ratings,alternative_titles,keywords";
+      const url = new URL(`${TMDB_BASE}/${kind}/${tmdbId}`);
+      if (!accessToken) url.searchParams.set("api_key", apiKey);
+      url.searchParams.set("language", language);
+      url.searchParams.set("append_to_response", append);
+
+      const headers = { Accept: "application/json" };
+      if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
+      const response = await fetchImpl(url, {
+        headers,
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+      if (!response.ok) {
+        lastHttpError = new Error(`TMDB HTTP ${response.status}`);
+        continue;
+      }
+      const payload = await response.json();
+      if (mediaType === "anime" && !animeEvidence(payload).isAnime) continue;
+      return normalizeTmdbPayload(payload, { mediaType, tmdbKind: kind, request });
+    }
+    if (lastHttpError && kinds.length === 1) throw lastHttpError;
+    throw new Error(`TMDB anime namespace unresolved for ${tmdbId}`);
   };
 }
 
 export function normalizeTmdbPayload(payload = {}, context = {}) {
   const mediaType = normalizeMediaType(context.mediaType ?? context.request?.mediaType);
-  const movie = mediaType === "movie";
+  const kind = normalizeTmdbKind(context.tmdbKind) ?? (mediaType === "movie" ? "movie" : "tv");
+  const movie = kind === "movie";
   const request = context.request ?? {};
   const releaseDate = clean(payload.release_date ?? payload.first_air_date);
   const runtime = movie
@@ -71,7 +89,7 @@ export function normalizeTmdbPayload(payload = {}, context = {}) {
     tmdbId: String(payload.id ?? request.tmdbId ?? "").trim() || null,
     mediaType: resolvedMediaType,
     canonicalMediaType: resolvedMediaType,
-    tmdbKind: movie ? "movie" : "tv",
+    tmdbKind: kind,
     title,
     originalTitle,
     aliases: unique([title, originalTitle, ...aliases, clean(request.title)].filter(Boolean)),
@@ -125,7 +143,7 @@ export function resolveCanonicalMediaType(inputType, payload = {}, request = {})
   if (category === "anime") return "anime";
   if (raw === "anime") return "anime";
   const aliased = ["series", "show", "other"].includes(raw) ? "tv" : raw;
-  if (aliased === "tv" && animeEvidence(payload).isAnime) return "anime";
+  if ((aliased === "tv" || aliased === "movie") && animeEvidence(payload).isAnime) return "anime";
   return aliased === "movie" ? "movie" : "tv";
 }
 
@@ -181,6 +199,11 @@ function normalizeMediaType(value) {
   if (raw === "anime") return "anime";
   if (["series", "show", "other", "tv"].includes(raw)) return "tv";
   return "tv";
+}
+
+function normalizeTmdbKind(value) {
+  const raw = String(value ?? "").trim().toLowerCase();
+  return raw === "movie" || raw === "tv" ? raw : null;
 }
 
 function firstPositive(value) {

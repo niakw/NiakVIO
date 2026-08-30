@@ -258,7 +258,7 @@ const provider=require(process.argv[2]);
     subprocess.run(["node",str(runner),str(provider)],check=True)
 
 # explicit anime without episode resolves namespace from TMDB instead of assuming TV.
-anime_ambiguous = mod.apply(object_base, options={"semantic_types": ["movie", "anime"]})
+anime_ambiguous = mod.apply(object_base, options={"semantic_types": ["anime"]})
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
     provider = tmp_path / "anime-ambiguous.js"
@@ -305,32 +305,32 @@ const provider=require(process.argv[2]);
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
 
-# movie transport gate avoids TMDB and provider runtime for providers without movie capability.
-tv_anime_no_movie = mod.apply(base, options={"semantic_types": ["tv", "anime"]})
+# A TV-only provider can still reject movie at zero cost; anime capability is the exception.
+tv_only_no_movie_or_anime = mod.apply(base, options={"semantic_types": ["tv"]})
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
-    provider = tmp_path / "tv-anime-no-movie.js"
-    test = tmp_path / "tv-anime-no-movie-test.js"
-    provider.write_text(tv_anime_no_movie, encoding="utf-8")
+    provider = tmp_path / "tv-only-no-movie.js"
+    test = tmp_path / "tv-only-no-movie-test.js"
+    provider.write_text(tv_only_no_movie_or_anime, encoding="utf-8")
     test.write_text(r'''
 let fetches=0;
-global.fetch=async()=>{fetches+=1;throw new Error("movie request must exit before TMDB");};
+global.fetch=async()=>{fetches+=1;throw new Error("TV-only movie request must exit before TMDB");};
 const provider=require(process.argv[2]);
 (async()=>{
  const value=await provider.getStreams("157336","movie",null,null);
- if(!Array.isArray(value)||value.length!==0)throw new Error("non-movie provider processed movie request");
- if(fetches!==0)throw new Error("non-movie provider performed unnecessary TMDB lookup");
+ if(!Array.isArray(value)||value.length!==0)throw new Error("TV-only provider processed movie request");
+ if(fetches!==0)throw new Error("TV-only provider performed unnecessary TMDB lookup");
 })().catch(e=>{console.error(e);process.exit(1);});
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
 
-# Anime movie requires both movie transport capability and anime semantic capability.
-anime_movie_capable = mod.apply(base, options={"semantic_types": ["movie", "anime"]})
+# Anime semantic capability is sufficient to admit movie transport to the TMDB gate.
+anime_movie_via_transport_alias = mod.apply(base, options={"semantic_types": ["anime"]})
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
-    provider = tmp_path / "anime-movie-capable.js"
-    test = tmp_path / "anime-movie-capable-test.js"
-    provider.write_text(anime_movie_capable, encoding="utf-8")
+    provider = tmp_path / "anime-movie-transport-alias.js"
+    test = tmp_path / "anime-movie-transport-alias-test.js"
+    provider.write_text(anime_movie_via_transport_alias, encoding="utf-8")
     test.write_text(r'''
 let seen=[];
 global.fetch=async(url)=>{
@@ -341,31 +341,31 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
  const value=await provider.getStreams("4242","movie",null,null);
- if(!value.length||value[0].mediaType!=="anime")throw new Error("anime movie was not semantically classified");
+ if(!value.length||value[0].mediaType!=="anime")throw new Error("anime-only provider lost anime movie transported as movie");
  if(seen.length!==1)throw new Error("anime movie classification should need one TMDB lookup");
 })().catch(e=>{console.error(e);process.exit(1);});
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
 
-# Explicit anime without episodic context may probe movie only if provider declares movie.
-anime_only_no_movie = mod.apply(object_base, options={"semantic_types": ["anime"]})
+# The same anime-only provider must reject an ordinary movie after TMDB.
+anime_only_regular_movie = mod.apply(base, options={"semantic_types": ["anime"]})
 with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
-    provider = tmp_path / "anime-only-no-movie.js"
-    test = tmp_path / "anime-only-no-movie-test.js"
-    provider.write_text(anime_only_no_movie, encoding="utf-8")
+    provider = tmp_path / "anime-only-regular-movie.js"
+    test = tmp_path / "anime-only-regular-movie-test.js"
+    provider.write_text(anime_only_regular_movie, encoding="utf-8")
     test.write_text(r'''
 const seen=[];
 global.fetch=async(url)=>{
  const u=String(url);seen.push(u);
- if(u.includes("/movie/"))throw new Error("anime-only provider probed movie namespace without movie capability");
+ if(!u.includes("/movie/4242"))throw new Error("ordinary movie used wrong TMDB namespace");
  return{ok:true,text:async()=>"<html><a href='/genre/18-drama'>Drama</a><div>Original Language English</div></html>"};
 };
 const provider=require(process.argv[2]);
 (async()=>{
- const value=await provider.getStreams({tmdbId:"4242",mediaType:"anime"});
- if(!Array.isArray(value)||value.length!==0)throw new Error("anime-only provider should fail closed when TV entity is not anime");
- if(seen.some(u=>u.includes("/movie/")))throw new Error("movie namespace was unnecessarily probed");
+ const value=await provider.getStreams("4242","movie",null,null);
+ if(!Array.isArray(value)||value.length!==0)throw new Error("anime-only provider processed an ordinary movie");
+ if(seen.length!==1)throw new Error("ordinary movie should be rejected after one TMDB lookup");
 })().catch(e=>{console.error(e);process.exit(1);});
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)

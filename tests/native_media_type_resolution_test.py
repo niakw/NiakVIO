@@ -32,6 +32,15 @@ assert mod.tmdb_metadata_indicates_anime(naruto_tmdb) is True
 assert mod.canonical_media_type("series", metadata=naruto_tmdb) == "anime"
 assert mod.canonical_media_type("tv", metadata=naruto_tmdb) == "anime"
 
+anime_movie_tmdb = {
+    "id": 4242,
+    "genres": [{"id": 16, "name": "Animation"}],
+    "original_language": "ja",
+    "production_countries": [{"iso_3166_1": "JP"}],
+    "keywords": {"keywords": [{"name": "anime"}]},
+}
+assert mod.canonical_media_type("movie", metadata=anime_movie_tmdb) == "anime"
+
 # Animation by itself is not anime.
 western_animation = {
     "genres": [{"id": 16, "name": "Animation"}],
