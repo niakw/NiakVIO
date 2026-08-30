@@ -12,6 +12,7 @@ SESSION_STATE="${NIAKVIO_IOS_SESSION_STATE:-$WORKSPACE/ios-learning-session.env}
 PROVIDER_TIMEOUT_MS="${NIAKVIO_IOS_PROVIDER_TIMEOUT_MS:-}"
 PLAYER_TIMEOUT_MS="${NIAKVIO_IOS_PLAYER_TIMEOUT_MS:-}"
 WAIT_SECONDS="${NIAKVIO_IOS_WAIT_SECONDS:-}"
+IDLE_TIMEOUT_SECONDS="${NIAKVIO_IOS_IDLE_TIMEOUT_SECONDS:-}"
 LAUNCH_RETRY_TIMEOUT_SECONDS="${NIAKVIO_IOS_LAUNCH_RETRY_TIMEOUT_SECONDS:-}"
 
 case "$MODE" in
@@ -30,6 +31,9 @@ esac
 
 if [[ -z "$WAIT_SECONDS" ]]; then
   if [[ "$MODE" = "full" ]]; then WAIT_SECONDS=7200; else WAIT_SECONDS=120; fi
+fi
+if [[ -z "$IDLE_TIMEOUT_SECONDS" ]]; then
+  if [[ "$MODE" = "full" ]]; then IDLE_TIMEOUT_SECONDS=120; else IDLE_TIMEOUT_SECONDS=60; fi
 fi
 if [[ -z "$LAUNCH_RETRY_TIMEOUT_SECONDS" ]]; then
   if [[ "$MODE" = "full" ]]; then LAUNCH_RETRY_TIMEOUT_SECONDS=600; else LAUNCH_RETRY_TIMEOUT_SECONDS=300; fi
@@ -146,12 +150,14 @@ SIMCTL_CHILD_NIAKVIO_IOS_LAB_MODE="$MODE" \
 SIMCTL_CHILD_NIAKVIO_IOS_TARGET_PROVIDER="$TARGET_PROVIDER" \
 SIMCTL_CHILD_NIAKVIO_IOS_PROVIDER_TIMEOUT_MS="$PROVIDER_TIMEOUT_MS" \
 SIMCTL_CHILD_NIAKVIO_IOS_PLAYER_TIMEOUT_MS="$PLAYER_TIMEOUT_MS" \
-  xcrun simctl launch --terminate-running-process --console-pty "$UDID" "$BUNDLE_ID" >"$LOG" 2>&1 &
+  xcrun simctl launch --terminate-running-process --console "$UDID" "$BUNDLE_ID" >"$LOG" 2>&1 &
 LAUNCH_PID=$!
 set -e
 
 STATUS=0
 DONE=0
+LAST_SIZE=0
+IDLE_SECONDS=0
 for _ in $(seq 1 "$WAIT_SECONDS"); do
   if grep -q 'FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=completed' "$LOG" 2>/dev/null; then
     DONE=1
@@ -163,8 +169,20 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
     STATUS=2
     break
   fi
-  if ! kill -0 "$LAUNCH_PID" 2>/dev/null; then
-    wait "$LAUNCH_PID" || STATUS=$?
+  # `simctl launch` may exit after returning the app PID even though the app is
+  # still running. Never use the launcher process lifetime as the Lab lifetime.
+  # Instead require periodic application log progress and terminal markers.
+  SIZE="$(wc -c < "$LOG" 2>/dev/null || echo 0)"
+  if [[ "$SIZE" =~ ^[0-9]+$ ]] && (( SIZE > LAST_SIZE )); then
+    LAST_SIZE="$SIZE"
+    IDLE_SECONDS=0
+  else
+    IDLE_SECONDS=$((IDLE_SECONDS + 1))
+  fi
+  if (( IDLE_SECONDS >= IDLE_TIMEOUT_SECONDS )); then
+    echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=log_idle_timeout idle_seconds=$IDLE_SECONDS mode=$MODE target=$TARGET_PROVIDER" >> "$LOG"
+    DONE=1
+    STATUS=2
     break
   fi
   sleep 1
