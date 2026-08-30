@@ -13,6 +13,9 @@ on:
       - 'provider-overrides.json'
       - 'providers/**'
       - 'scripts/provider_security_hardening.py'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/add_provider.py'
+      - 'scripts/probe_provider_runtime_parity.py'
       - 'scripts/provider_patches/global_provider_security_hardening_v1.py'
       - 'scripts/normalize_core_media_policy.py'
       - 'scripts/normalize_published_security_finalization.py'
@@ -50,10 +53,10 @@ jobs:
         run: |
           gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening + exhaustive published-provider scan + exact-SHA CodeQL + all High/Critical alerts."
 
-      - name: Checkout exact main
+      - name: Checkout exact tested SHA
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.sha }}
           fetch-depth: 1
           persist-credentials: false
 

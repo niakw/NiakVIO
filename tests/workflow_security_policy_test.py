@@ -50,6 +50,16 @@ if 'expected=len(rows)' not in security_gate:
 if "if checked != expected:" not in security_gate:
     errors.append('security-final-gate.yml: exhaustive scan completion check is required')
 
+if "ref: ${{ github.sha }}" not in security_gate:
+    errors.append('security-final-gate.yml: security gate must checkout the exact triggering SHA')
+for required_path in (
+    "scripts/provider_base_store.py",
+    "scripts/add_provider.py",
+    "scripts/probe_provider_runtime_parity.py",
+):
+    if f"- '{required_path}'" not in security_gate:
+        errors.append(f"security-final-gate.yml: missing security trigger for {required_path}")
+
 if errors:
     raise SystemExit('workflow security policy failed:\n- ' + '\n- '.join(errors))
 print('workflow security policy tests passed')
