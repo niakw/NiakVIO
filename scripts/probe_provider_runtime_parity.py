@@ -41,6 +41,20 @@ def committed_provider_path(provider_id: str) -> str:
     return ""
 
 
+def committed_base_path(provider_id: str) -> str:
+    provenance_path = ROOT / "PROVENANCE.json"
+    if not provenance_path.is_file():
+        return ""
+    try:
+        provenance = load_json(provenance_path)
+    except Exception:
+        return ""
+    row = (provenance.get("providers") or {}).get(provider_id)
+    if not isinstance(row, dict):
+        return ""
+    return str(row.get("base_filename") or "").strip()
+
+
 def staged_base_path(provider_id: str) -> Path:
     prefix = f"{provider_id.casefold()}--base--"
     proc = subprocess.run(
@@ -209,7 +223,9 @@ def main() -> int:
         raise SystemExit("runtime parity probe requires provider id and fixture")
 
     work = ROOT / ".provider-onboarding" / "runtime-parity"
-    base = staged_base_path(provider_id)
+    staged_base = staged_base_path(provider_id)
+    committed_base_rel = committed_base_path(provider_id)
+    committed_base = materialize_committed(committed_base_rel, work / "committed-base.js") if committed_base_rel else staged_base
     published_rel = committed_provider_path(provider_id)
     published = materialize_committed(published_rel, work / "published.js")
 
@@ -223,8 +239,12 @@ def main() -> int:
             "season": fixture.get("season"),
             "episode": fixture.get("episode"),
         },
-        "base": {
-            profile: worker_result(base, fixture, profile)
+        "staged_base": {
+            profile: worker_result(staged_base, fixture, profile)
+            for profile in ("control", "onboarding_tv", "onboarding_compose")
+        },
+        "committed_base": {
+            profile: worker_result(committed_base, fixture, profile)
             for profile in ("control", "onboarding_tv", "onboarding_compose")
         },
         "published": {
@@ -238,9 +258,10 @@ def main() -> int:
     print(
         "FIELD_PROVIDER_RUNTIME_PARITY "
         f"id={provider_id} "
-        f"base_control={report['base']['control']['stream_count']} "
-        f"base_tv={report['base']['onboarding_tv']['stream_count']} "
-        f"base_compose={report['base']['onboarding_compose']['stream_count']} "
+        f"staged_control={report['staged_base']['control']['stream_count']} "
+        f"committed_control={report['committed_base']['control']['stream_count']} "
+        f"committed_tv={report['committed_base']['onboarding_tv']['stream_count']} "
+        f"committed_compose={report['committed_base']['onboarding_compose']['stream_count']} "
         f"published_control={report['published']['control']['stream_count']} "
         f"published_tv={report['published']['onboarding_tv']['stream_count']} "
         f"published_compose={report['published']['onboarding_compose']['stream_count']}"
