@@ -137,7 +137,8 @@ The main provider pipeline is [`.github/workflows/sync.yml`](.github/workflows/s
 NiakVIO validates real paths on official Nuvio clients:
 
 - NuvioTV on Android TV;
-- Nuvio Mobile on Android;\n- Nuvio Mobile on iOS simulator through the official iOS plugin runtime and production MPV bridge;
+- Nuvio Mobile on Android;
+- Nuvio Mobile on iOS simulator through the official iOS plugin runtime and production MPV bridge;
 - Nuvio Desktop on native macOS and Windows.
 
 The Labs distinguish provider extraction problems, runtime errors, player/client incompatibility, transport failures, missing media and wrong-media identity.
