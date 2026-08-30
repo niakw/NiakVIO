@@ -43,6 +43,14 @@ assert discovery.normalize_route_literal("/stream/{id}/episode?season=&episode="
     "/stream/{id}/episode?season={season}&episode={episode}"
 )
 
+semantic_entry = discovery.reconstruction_manifest_entry(
+    "animekai",
+    {"id": "animekai", "supportedTypes": ["movie", "tv"]},
+    {"provider_patches": {"animekai": {"published_types": ["anime"]}}},
+)
+assert semantic_entry["supportedTypes"] == ["movie", "tv"]
+assert semantic_entry["canonicalSupportedTypes"] == ["anime"]
+
 script = (ROOT / "scripts" / "discover_candidates.py").read_text(encoding="utf-8")
 assert "--force-clean-reconstruction" in script
 assert "if pending_clean and not force_clean_reconstruction:" in script
