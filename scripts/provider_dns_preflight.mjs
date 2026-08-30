@@ -1150,7 +1150,6 @@ async function runCli() {
         const decision = providerDecision(domainResults, preflightConfig);
         const dnsStatus = simpleDnsStatus(domainResults);
         if (dnsStatus === 'DNS API LIMIT REACH') apiLimitReached = true;
-        if (Number(error?.status) === 429 || /(?:^|\D)429(?:\D|$)/.test(compactError(error))) apiLimitReached = true;
         results[index] = {
           key: candidate.key,
           source: candidate.source,

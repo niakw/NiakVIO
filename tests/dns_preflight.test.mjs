@@ -277,3 +277,20 @@ console.log('French ISP DNS preflight tests passed');
   assert.equal(calls[0].locations[0].magic, 'France+eyeball');
   assert.equal(calls[0].measurementOptions.resolver, '1.1.1.1');
 }
+
+
+{
+  const source = await (await import('node:fs/promises')).readFile(
+    new URL('../scripts/provider_dns_preflight.mjs', import.meta.url),
+    'utf8',
+  );
+  const workerStart = source.indexOf('async function worker()');
+  const workerEnd = source.indexOf('await Promise.all(', workerStart);
+  assert.ok(workerStart >= 0 && workerEnd > workerStart, 'DNS CLI worker source must be locatable');
+  const workerSource = source.slice(workerStart, workerEnd);
+  assert.equal(
+    workerSource.includes('Number(error?.status) === 429 || /(?:^|\\D)429'),
+    false,
+    'dns preflight CLI must not reference an out-of-scope error after a successful provider probe',
+  );
+}
