@@ -154,6 +154,7 @@ jobs:
             exit 1
           fi
 
+      # Release scope: active manifest/provenance references only; historical immutable artifacts remain visible to CodeQL.
       - name: Gate release-reachable high and critical CodeQL alerts on main
         env:
           GH_TOKEN: ${{ github.token }}
