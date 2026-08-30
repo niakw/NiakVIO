@@ -19,7 +19,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from provider_engine_normalizer import normalize_mapping_keys, sanitize_provider_hooks
-from provider_base_store import is_clean_reconstruction_candidate, resolve_base, safe_base_path
+from provider_base_store import resolve_runtime_base
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "manifest.json"
@@ -423,35 +423,23 @@ def compile_manifest(
             if not isinstance(provenance_row, dict):
                 raise ValueError(f"{provider_id}: missing provenance required for ProviderBase compilation")
 
-            # A clean reconstruction candidate is review/Learning state until
-            # canonical strict proof verifies it. Production compilation must
-            # keep using the previous provider-native LKG meanwhile; otherwise
-            # a structurally valid but semantically incomplete reconstruction
-            # can silently replace a provider that already worked.
-            source_path = None
-            source_kind = "provider_base"
-            if is_clean_reconstruction_candidate(provenance_row):
-                legacy_rel = str(
-                    provenance_row.get("legacy_base_filename_before_clean_candidate") or ""
-                ).strip()
-                legacy_sha = str(
-                    provenance_row.get("legacy_base_sha256_before_clean_candidate") or ""
-                ).strip()
-                legacy_path = safe_base_path(legacy_rel) if legacy_rel else None
-                if legacy_path is not None and legacy_path.is_file():
-                    legacy_bytes = legacy_path.read_bytes()
-                    if legacy_sha and sha256_bytes(legacy_bytes) != legacy_sha:
-                        raise ValueError(
-                            f"{provider_id}: pending clean reconstruction LKG sha mismatch "
-                            f"for {legacy_rel}"
-                        )
-                    source_path = legacy_path
-                    source_kind = "provider_base_lkg_pending_clean_candidate"
-
-            if source_path is None:
-                source_path, _base_sha = resolve_base(provider_id, provenance_row, require=True)
-                assert source_path is not None
+            # Production compilation resolves through the central runtime-base
+            # policy: an unverified clean reconstruction candidate keeps using
+            # its preserved provider-native LKG until strict proof verifies the
+            # replacement. Learning still sees the candidate through provenance.
+            source_path, _base_sha = resolve_runtime_base(
+                provider_id,
+                provenance_row,
+                require=True,
+            )
+            assert source_path is not None
             source_file = source_path.relative_to(ROOT).as_posix()
+            canonical_base = str(provenance_row.get("base_filename") or "").strip()
+            source_kind = (
+                "provider_base"
+                if source_file == canonical_base
+                else "provider_base_lkg_pending_clean_candidate"
+            )
         else:
             source_path = (manifest_path.parent / filename).resolve()
             if ROOT not in source_path.parents or not source_path.is_file():
