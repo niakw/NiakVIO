@@ -47,7 +47,7 @@ LKG_PATH = ROOT / "provider-lkg.json"
 PROVENANCE_PATH = ROOT / "PROVENANCE.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
 USER_AGENT = "Nuvio-Curated-Discovery/5.13 (+GitHub Actions)"
-URL_RE = re.compile(r"https?://[^\\s\"'\`<>\\)]+", re.I)
+URL_RE = re.compile(r"""https?://[^\s"\'`<>)]+""", re.I)
 INFRASTRUCTURE_HOSTS = {
     "api.themoviedb.org", "www.themoviedb.org", "image.tmdb.org", "api.jikan.moe",
     "graphql.anilist.co", "api.tvmaze.com", "api.github.com",
