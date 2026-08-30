@@ -205,6 +205,36 @@ def resolve_base(provider_id: str, provenance_row: dict[str, Any], *, require: b
     return path, actual
 
 
+def resolve_runtime_base(
+    provider_id: str,
+    provenance_row: dict[str, Any],
+    *,
+    require: bool = True,
+) -> tuple[Path | None, str | None]:
+    """Resolve the production seed without letting an unverified clean candidate regress LKG behavior.
+
+    The clean candidate remains the canonical reconstruction artifact in provenance
+    and is still used by Learning/Deep proof. Runtime compilation falls back to
+    the preserved pre-reconstruction ProviderBase until the clean candidate is
+    explicitly verified.
+    """
+    row = provenance_row if isinstance(provenance_row, dict) else {}
+    if is_clean_reconstruction_candidate(row):
+        relative = str(row.get("legacy_base_filename_before_clean_candidate") or "").strip()
+        digest = str(row.get("legacy_base_sha256_before_clean_candidate") or "").strip().casefold()
+        path = safe_base_path(relative)
+        if path is not None and path.is_file():
+            actual = sha256(path.read_bytes())
+            if digest and actual == digest:
+                return path, actual
+            if digest:
+                raise ValueError(
+                    f"{provider_id}: legacy runtime ProviderBase SHA mismatch "
+                    f"expected={digest} actual={actual}"
+                )
+    return resolve_base(provider_id, row, require=require)
+
+
 def clean_base_from_published(provider_id: str, published_data: bytes) -> tuple[bytes, bool]:
     """Remove every owned derived layer while preserving durable provider logic."""
     published_text = published_data.decode("utf-8", errors="strict")
