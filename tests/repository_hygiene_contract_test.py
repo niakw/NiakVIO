@@ -182,10 +182,10 @@ assert """  cleanup:
 install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
 assert "final-native-client-validation-v2.yml" not in install
 for native_workflow in (
-    "native-tv-route-reader.yml",
     "native-mobile-android-reader.yml",
     "native-mobile-ios-reader.yml",
     "native-desktop-reader-acceptance.yml",
+    "native-corpus-device-targeted.yml",
 ):
     assert native_workflow in install
 assert "native-android-route-reader.yml" not in install
