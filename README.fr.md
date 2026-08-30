@@ -476,7 +476,8 @@ Cette cible n'autorise aucun faux positif : mauvaise œuvre, mauvais épisode, d
 Le dispositif comprend :
 
 - un lab **NuvioTV Android TV** officiel sur des routes film/TV/anime, tous providers compatibles — actifs ou inactifs — et tous les streams retournés ;
-- un lab **Nuvio Mobile Android** officiel avec le même contrat de traversal et de lecture ;\n- un lab **Nuvio Mobile iOS** autonome sur `macos-15`, avec build Full, simulateur iPhone, runtime plugin iOS officiel et bridge lecteur MPV officiel ;
+- un lab **Nuvio Mobile Android** officiel avec le même contrat de traversal et de lecture ;
+- un lab **Nuvio Mobile iOS** autonome sur `macos-15`, avec build Full, simulateur iPhone, runtime plugin iOS officiel et bridge lecteur MPV officiel ;
 - un lab **Nuvio Desktop natif macOS/Windows**, Linux étant explicitement exclu comme preuve lecteur ;
 - une preuve repository → provider → HTTP → stream → lecteur, plus des phases frontend capturées ;
 - des retests ciblés par device disponibles **manuellement** sans relancer toute la matrice ;
