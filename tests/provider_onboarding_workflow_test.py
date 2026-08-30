@@ -57,6 +57,9 @@ assert 'f"/title/{kind}/{quote(tmdb_id)}-{quote(slug)}"' in SITE_PROBE
 assert 'f"/title/{kind}/{quote(tmdb_id)}"' in SITE_PROBE
 assert 'page_is_detail = "/title/" in urlsplit(final).path' in SITE_PROBE
 assert 'priority = (100 if page_is_detail else 10)' in SITE_PROBE
+assert "RUNTIME_API_LITERAL" in SITE_PROBE
+assert "runtime_api_patterns" in SITE_PROBE
+assert "runtime_api_probes" in SITE_PROBE
 for route_token in ("stream", "streams", "source", "sources", "server", "servers", "resolve", "proxy", "manifest", "action"):
     assert route_token in SITE_PROBE, route_token
 

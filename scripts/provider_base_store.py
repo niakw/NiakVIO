@@ -540,6 +540,40 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
   }
   return _uniq(out);
 }
+function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
+  let player;
+  try { player = new URL(playerUrl); } catch (_) { return []; }
+  const out = [];
+  const desiredMedia = mediaType === "movie" ? "movie" : (mediaType === "anime" ? "anime" : "tv");
+  const observedMedia = _text(player.searchParams.get("m") || player.searchParams.get("media") || player.searchParams.get("type")).toLowerCase();
+  for (const pattern of NIAKVIO_PROVIDER_MODEL.routes || []) {
+    if (!/^\/api\/(?:streams?(?:\/|$)|source|sources|resolve|proxy)/i.test(_text(pattern))) continue;
+    if (/\/(?:working|dead|warm)(?:[?#]|$)/i.test(_text(pattern))) continue;
+    const parts = _text(pattern).split("?", 2);
+    let path = parts[0].replace(/\{media\}/gi, encodeURIComponent(desiredMedia));
+    if (observedMedia && /\/(?:movie|tv|anime)$/i.test(path)) {
+      path = path.replace(/\/(?:movie|tv|anime)$/i, "/" + encodeURIComponent(desiredMedia));
+    }
+    const keys = (parts[1] || "").split("&").map(part => part.split("=", 1)[0]).filter(Boolean);
+    if (!keys.length) continue;
+    let target;
+    try { target = new URL(path, player.origin); } catch (_) { continue; }
+    let missing = false;
+    for (const key of keys) {
+      const lower = key.toLowerCase();
+      let value = player.searchParams.get(key);
+      if (value == null && lower === "id") value = _text(tmdbId);
+      if (value == null && /^(?:m|media|type)$/.test(lower)) value = desiredMedia;
+      if (value == null && /^(?:season|s)$/.test(lower) && season != null) value = _text(season);
+      if (value == null && /^(?:episode|e)$/.test(lower) && episode != null) value = _text(episode);
+      if (value == null || value === "") { missing = true; break; }
+      target.searchParams.set(key, value);
+    }
+    if (!missing) out.push({ url: target.toString(), referer: player.toString() });
+  }
+  const seen = new Set();
+  return out.filter(row => row.url && !seen.has(row.url) && seen.add(row.url));
+}
 function _jsonUrls(value, out) {
   out = out || [];
   if (typeof value === "string") {
@@ -552,6 +586,25 @@ function _jsonUrls(value, out) {
   }
   if (value && typeof value === "object") {
     for (const child of Object.values(value)) _jsonUrls(child, out);
+  }
+  return out;
+}
+function _sourceUrls(value, base, out) {
+  out = out || [];
+  if (Array.isArray(value)) {
+    for (const child of value) _sourceUrls(child, base, out);
+    return out;
+  }
+  if (!value || typeof value !== "object") return out;
+  for (const [key, child] of Object.entries(value)) {
+    if (typeof child === "string" && /^(?:src|url|file|stream|source)$/i.test(key)) {
+      const absolute = _absolute(child, base);
+      if (absolute && /^https?:/i.test(absolute) &&
+          !/\.(?:jpe?g|png|gif|webp|svg|avif)(?:[?#]|$)/i.test(absolute)) {
+        out.push(absolute);
+      }
+    }
+    if (child && typeof child === "object") _sourceUrls(child, base, out);
   }
   return out;
 }
@@ -580,6 +633,32 @@ async function _resolveApi(tmdbId, mediaType, season, episode) {
     if (streams.length) break;
   }
   return _streams(streams, _searchBases()[0] || "");
+}
+async function _resolveRuntimeApi(playerUrls, mediaType, tmdbId, season, episode) {
+  const streams = [];
+  for (const playerUrl of _uniq(playerUrls).slice(0, 6)) {
+    for (const row of _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode).slice(0, 8)) {
+      try {
+        const response = await _fetch(row.url, {
+          headers: row.referer ? { Referer: row.referer } : {}
+        });
+        const type = _text(response.headers.get("content-type")).toLowerCase();
+        if (type.includes("json")) {
+          const value = await response.json();
+          const sources = _sourceUrls(value, response.url || row.url);
+          if (sources.length) streams.push(..._streams(sources, row.referer));
+        } else {
+          const text = await response.text();
+          const urls = _extractUrls(text, response.url || row.url);
+          const direct = urls.filter(_directMedia);
+          if (direct.length) streams.push(..._streams(direct, row.referer));
+        }
+      } catch (_) {}
+      if (streams.length) break;
+    }
+    if (streams.length) break;
+  }
+  return streams.slice(0, 40);
 }
 async function _resolveHtml(meta, mediaType, season, episode) {
   if (!meta || !meta.title) return [];
@@ -625,7 +704,17 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
       if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
         const nested = urls.filter(_playerLike);
-        if (nested.length) streams.push(...await _crawlDirectMedia(nested, response.url || detailUrl, 2));
+        if (nested.length) {
+          const runtime = await _resolveRuntimeApi(
+            nested,
+            mediaType,
+            meta.tmdbId,
+            season,
+            episode
+          );
+          if (runtime.length) streams.push(...runtime);
+          else streams.push(...await _crawlDirectMedia(nested, response.url || detailUrl, 2));
+        }
       }
     } catch (_) {}
     if (streams.length >= 12) break;

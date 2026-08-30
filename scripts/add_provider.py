@@ -162,8 +162,13 @@ def _stable_route_hint(value: Any) -> str:
         parsed = urlsplit(raw)
     except ValueError:
         return ""
-    query_keys = {part.split("=", 1)[0].casefold() for part in parsed.query.split("&") if part}
-    if query_keys & VOLATILE_ROUTE_QUERY_KEYS:
+    query_parts = [part for part in parsed.query.split("&") if part]
+    if any(
+        "=" in part
+        and part.split("=", 1)[0].casefold() in VOLATILE_ROUTE_QUERY_KEYS
+        and part.split("=", 1)[1].strip()
+        for part in query_parts
+    ):
         return ""
     path = parsed.path
     movie_title = re.fullmatch(r"/title/(movie|tv)/(\d+)-[^/?#]+", path, re.I)
@@ -227,6 +232,24 @@ def site_structure_knowledge() -> tuple[list[str], list[str]]:
                 add_route(value)
             for value in row.get("useful_absolute_urls") or []:
                 add_observed(value)
+
+    # Dynamic player pages often mint short-lived query tokens. Persist only
+    # sanitized route shapes discovered by the read-only probe; never persist
+    # token values or hashed Next chunk URLs.
+    for row in report.get("runtime_routes") or []:
+        if not isinstance(row, dict):
+            continue
+        add_route(row.get("final_path"))
+        for key in ("route_hints", "runtime_chunk_route_hints", "runtime_api_patterns"):
+            for value in row.get(key) or []:
+                add_route(value)
+        for chunk in row.get("runtime_chunks") or []:
+            if not isinstance(chunk, dict):
+                continue
+            for value in chunk.get("route_hints") or []:
+                add_route(value)
+            for value in chunk.get("runtime_api_patterns") or []:
+                add_route(value)
     return routes, observed
 
 

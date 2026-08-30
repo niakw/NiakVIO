@@ -45,6 +45,9 @@ assert '"upstreamCodeExecuted":false' in text
 assert "async function getStreams" in text
 assert "function _playerLike" in text
 assert "async function _crawlDirectMedia" in text
+assert "function _runtimeApiUrls" in text
+assert "function _sourceUrls" in text
+assert "async function _resolveRuntimeApi" in text
 assert "requests < 12" in text
 module.assert_base_layering(clean, "synthetic-clean")
 with tempfile.NamedTemporaryFile(suffix=".js") as handle:

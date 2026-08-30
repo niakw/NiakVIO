@@ -47,6 +47,8 @@ assert "git diff --cached --binary --full-index" in ADD
 assert "git apply --3way --index" in ADD
 assert "site_structure_knowledge()" in SCRIPT
 assert "VOLATILE_ROUTE_QUERY_KEYS" in SCRIPT
+assert 'report.get("runtime_routes")' in SCRIPT
+assert '"runtime_api_patterns"' in SCRIPT
 assert '"discovered_routes"' in SCRIPT
 assert '"routes": routes' in SCRIPT
 PROBE = (ROOT / "scripts/probe_provider_site_structure.py").read_text(encoding="utf-8")
