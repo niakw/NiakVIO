@@ -33,6 +33,7 @@ from provider_base_store import (
     is_clean_reconstruction_candidate,
     requires_clean_reconstruction,
     resolve_base,
+    resolve_runtime_base,
 )
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
@@ -417,6 +418,35 @@ def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: by
     }
 
 
+def merge_provider_knowledge(
+    current: dict[str, Any],
+    historical: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Merge static facts without turning historical JavaScript into executable input."""
+    previous = historical if isinstance(historical, dict) else {}
+    merged = dict(current)
+    for key, limit in (
+        ("hosts", 48),
+        ("routes", 96),
+        ("routeFragments", 96),
+        ("observedUrls", 72),
+    ):
+        values: list[str] = []
+        for source in (current.get(key), previous.get(key)):
+            for raw in source if isinstance(source, list) else []:
+                value = str(raw or "").strip()
+                if value and value not in values:
+                    values.append(value)
+        merged[key] = values[:limit]
+    merged["decodedStaticStringCount"] = int(current.get("decodedStaticStringCount") or 0) + int(
+        previous.get("decodedStaticStringCount") or 0
+    )
+    merged["historicalKnowledgeMerged"] = bool(previous)
+    merged["historicalCodeRole"] = "knowledge-only" if previous else None
+    merged["historicalCodeExecuted"] = False
+    return merged
+
+
 def clean_provider_model(
     provider_id: str,
     knowledge: dict[str, Any],
@@ -532,10 +562,26 @@ def executable_seed(
     previous_row = previous if isinstance(previous, dict) else {}
     site = known_site_for_provider(provider_id, raw_upstream, overrides)
     knowledge = upstream_knowledge(provider_id, entry, raw_upstream)
-    provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
     reconstruction_required = requires_clean_reconstruction(previous_row)
 
     pending_clean = is_clean_reconstruction_candidate(previous_row)
+    if pending_clean and force_clean_reconstruction:
+        # Corrective reconstruction may recover static facts from the exact
+        # preserved production LKG, but never executes or embeds those bytes.
+        historical_path, _historical_sha = resolve_runtime_base(
+            provider_id,
+            previous_row,
+            require=False,
+        )
+        if historical_path is not None:
+            historical_knowledge = upstream_knowledge(
+                provider_id,
+                entry,
+                historical_path.read_bytes(),
+            )
+            knowledge = merge_provider_knowledge(knowledge, historical_knowledge)
+
+    provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
 
     if pending_clean and not force_clean_reconstruction:
         path, _digest = resolve_base(provider_id, previous_row, require=True)
