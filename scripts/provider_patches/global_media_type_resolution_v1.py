@@ -170,15 +170,23 @@ async function resolve(a){
   var type=await canonicalType(id,input,metadata);
   if(!type)return null;
   if(semantic.length&&semantic.indexOf(type)<0)return null;
+  var context={
+    tmdbId:id,
+    tmdbNamespace:namespace,
+    tmdbIdentity:namespace+":"+id,
+    canonicalMediaType:type,
+    nuvioInputMediaType:input
+  };
   if(obj){
     q.nuvioInputMediaType=input;
     q.tmdbNamespace=namespace;
     q.tmdbIdentity=namespace+":"+id;
+    q.canonicalMediaType=type;
     q.mediaType=type;q.type=type;
     if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
-    var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);return out;
+    var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
   }
-  var out=Array.prototype.slice.call(a);out[1]=type;return out;
+  var out=Array.prototype.slice.call(a);out[1]=type;out.__nuvioContext=context;return out;
 }
 function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
@@ -186,7 +194,14 @@ function install(o,k){
   var wrap=async function(){
     var a=await resolve(arguments);
     if(!a)return [];
-    return native.apply(this,a);
+    var had=false,previous;
+    try{had=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"));previous=g&&g.__nuvioMediaContext}catch(_){}
+    try{
+      if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
+      return await native.apply(this,a);
+    }finally{
+      try{if(g){if(had)g.__nuvioMediaContext=previous;else delete g.__nuvioMediaContext}}catch(_){}
+    }
   };
   wrap.__nuvioMediaTypeResolutionV1=true;
   o[k]=wrap;return true;

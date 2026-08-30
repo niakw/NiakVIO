@@ -379,6 +379,13 @@ function _extractUrls(text, base) {
   }
   return _uniq(out);
 }
+function _mediaNamespace(mediaType) {
+  try {
+    const ctx = typeof globalThis !== "undefined" ? globalThis.__nuvioMediaContext : null;
+    if (ctx && (ctx.tmdbNamespace === "movie" || ctx.tmdbNamespace === "tv")) return ctx.tmdbNamespace;
+  } catch (_) {}
+  return mediaType === "movie" ? "movie" : "tv";
+}
 function _playerLike(url) {
   try {
     const parsed = new URL(url);
@@ -496,7 +503,7 @@ async function _fetch(url, options) {
 }
 async function _tmdb(tmdbId, mediaType) {
   if (!tmdbId) return null;
-  const type = String(mediaType || "movie").toLowerCase() === "movie" ? "movie" : "tv";
+  const type = _mediaNamespace(mediaType);
   const identity = type + ":" + String(tmdbId || "");
   try {
     const cache = typeof globalThis !== "undefined" ? globalThis.__nuvioTmdbMetadataCacheV1 : null;
@@ -578,7 +585,7 @@ function _directPlayerUrls(tmdbId, mediaType) {
     /^\/player(?:[?#]|$)/i.test(_text(route))
   );
   if (!hasPlayerRoute) return [];
-  const transportType = mediaType === "movie" ? "movie" : "tv";
+  const transportType = _mediaNamespace(mediaType);
   const out = [];
   for (const base of _searchBases()) {
     try {
@@ -597,7 +604,7 @@ function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
   // Transport-level player media values are commonly movie/tv even when
   // Nuvio's semantic type is anime. Preserve anime as a Nuvio type, but route
   // episodic/anime players through the site's TV transport convention.
-  const desiredMedia = mediaType === "movie" ? "movie" : "tv";
+  const desiredMedia = _mediaNamespace(mediaType);
   const observedMedia = _text(player.searchParams.get("m") || player.searchParams.get("media") || player.searchParams.get("type")).toLowerCase();
   for (const pattern of NIAKVIO_PROVIDER_MODEL.routes || []) {
     if (!/^\/api\/(?:streams?(?:\/|$)|source|sources|resolve|proxy)/i.test(_text(pattern))) continue;
