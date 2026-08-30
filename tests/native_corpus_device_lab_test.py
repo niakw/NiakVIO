@@ -94,6 +94,7 @@ assert tv_reader.count("tv-route-reader:") == 1
 assert "NIAKVIO_TARGET_FIXTURES: \"interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01\"" in tv_reader
 assert "NIAKVIO_TV_PRIORITY_APPEND: \"0\"" in tv_reader
 assert "NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: \"45\"" in tv_reader
+assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"' in tv_reader
 assert "--streams 2" in tv_reader
 assert 'NIAKVIO_PRIMARY_STREAM_SCOPE: "2"' in tv_reader
 assert 'NIAKVIO_REGRESSION_STREAM_SCOPE: "2"' in tv_reader
@@ -142,6 +143,8 @@ assert 'FIELD_NATIVE_IOS_SIM_LAUNCH_TIMEOUT' in ios_suite
 assert 'mode == "learning" || mode == "quick"' in prepare_ios
 assert "prepare_native_ios_reader_acceptance.py" in mobile_ios
 assert "run_native_corpus_ios_suite.sh" in mobile_ios
+assert "provider_hard_timeout_ms=" in (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
+assert 'execute = "PluginRuntime().executePlugin"' in (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encoding="utf-8")
 assert "analyze_native_ios_results.py" in mobile_ios
 assert "native-mobile-ios-${{ inputs.mode == 'only' && 'only' || 'full' }}-${{ github.run_id }}" in mobile_ios
 
