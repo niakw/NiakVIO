@@ -1,0 +1,26 @@
+name: Realign 5.21.16 to final validated SHA (one-shot)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/realign-52116-final-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  realign:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Move release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="4a15753dee1c18240c1fb434ae675429bac52561"
+          git tag -f 5.21.16 "$target"
+          git push --force origin refs/tags/5.21.16
