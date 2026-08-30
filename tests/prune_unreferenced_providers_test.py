@@ -128,3 +128,61 @@ with tempfile.TemporaryDirectory() as tmp:
     assert relative(gens[15], root) in order
 
 print("ARCHI2 rolling provider generation retention test passed")
+
+
+# Security revocation overrides the rolling window but never authoritative state.
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    providers = root / "providers"
+    bases = root / "provider-bases"
+    providers.mkdir()
+    bases.mkdir()
+
+    current = providers / "demo--nuvio--0000000000000002.js"
+    current.write_text("module.exports={};\n", encoding="utf-8")
+    old = providers / "demo--nuvio--0000000000000001.js"
+    old.write_text("module.exports={};\n", encoding="utf-8")
+    old_base = bases / "demo--base--0000000000000001.js"
+    old_base.write_text("module.exports={};\n", encoding="utf-8")
+
+    current_rel = relative(current, root)
+    (root / "manifest.json").write_text(json.dumps({"scrapers":[{"url":current_rel}]}), encoding="utf-8")
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers":{"demo":{"published_filename":current_rel}}}),
+        encoding="utf-8",
+    )
+    (root / "provider-security-revocations.json").write_text(
+        json.dumps({"schema_version":1,"entries":[
+            {"path":relative(old, root),"reason":"test"},
+            {"path":relative(old_base, root),"reason":"test"},
+        ]}),
+        encoding="utf-8",
+    )
+    run_pruner(root)
+    assert current.exists()
+    assert not old.exists(), "unreferenced security-revoked provider must be removed immediately"
+    assert not old_base.exists(), "unreferenced security-revoked ProviderBase must be removed immediately"
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = Path(tmp)
+    providers = root / "providers"
+    providers.mkdir()
+    current = providers / "demo--nuvio--0000000000000001.js"
+    current.write_text("module.exports={};\n", encoding="utf-8")
+    current_rel = relative(current, root)
+    (root / "manifest.json").write_text(json.dumps({"scrapers":[{"url":current_rel}]}), encoding="utf-8")
+    (root / "PROVENANCE.json").write_text(
+        json.dumps({"providers":{"demo":{"published_filename":current_rel}}}),
+        encoding="utf-8",
+    )
+    (root / "provider-security-revocations.json").write_text(
+        json.dumps({"schema_version":1,"entries":[{"path":current_rel,"reason":"test"}]}),
+        encoding="utf-8",
+    )
+    failed = subprocess.run(
+        ["python3", str(SCRIPT), "--root", str(root), "--retention-generations", "10"],
+        text=True, capture_output=True, check=False,
+    )
+    assert failed.returncode != 0
+    assert "still authoritative" in (failed.stdout + failed.stderr)
+    assert current.exists(), "protected revoked artifact must fail closed rather than disappear"

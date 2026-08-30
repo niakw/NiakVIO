@@ -29,6 +29,7 @@ from urllib.parse import urlparse
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS_DIR = ROOT / "providers"
 RETENTION_LEDGER = ".generation-retention.json"
+SECURITY_REVOCATIONS = "provider-security-revocations.json"
 DEFAULT_RETENTION_GENERATIONS = 10
 HASHED_PROVIDER_RE = re.compile(
     r"^(?P<provider>.+?)--.+--(?P<digest>[0-9a-f]{16})\.js$",
@@ -97,6 +98,36 @@ def retain_recorded_provider_path(referenced: set[str], value: object) -> None:
     normalized = normalize_provider_path(value)
     if normalized:
         referenced.add(normalized)
+
+
+def normalize_generated_path(value: str) -> str | None:
+    text = str(value or "").strip().replace("\\", "/").lstrip("/")
+    if not text or ".." in Path(text).parts:
+        return None
+    if text.startswith("providers/") or text.startswith("provider-bases/"):
+        if text.endswith(".js"):
+            return Path(text).as_posix()
+    return None
+
+
+def load_security_revocations(root: Path) -> set[str]:
+    path = root / SECURITY_REVOCATIONS
+    if not path.is_file():
+        return set()
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Invalid {SECURITY_REVOCATIONS}; refusing to prune: {exc}")
+    if not isinstance(raw, dict) or not isinstance(raw.get("entries"), list):
+        raise SystemExit(f"Invalid {SECURITY_REVOCATIONS}; refusing to prune.")
+    revoked: set[str] = set()
+    for row in raw["entries"]:
+        if not isinstance(row, dict):
+            continue
+        normalized = normalize_generated_path(row.get("path"))
+        if normalized:
+            revoked.add(normalized)
+    return revoked
 
 
 def provider_key(relative: str) -> str | None:
@@ -237,6 +268,7 @@ def main() -> int:
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid provider-lkg.json; refusing to prune: {exc}")
 
+    protected_generated = set(protected)
     provenance_path = root / "PROVENANCE.json"
     if provenance_path.is_file():
         try:
@@ -245,9 +277,14 @@ def main() -> int:
             for record in records.values():
                 if isinstance(record, dict):
                     retain_recorded_provider_path(protected, record.get("published_filename"))
+                    retain_recorded_provider_path(protected_generated, record.get("published_filename"))
+                    base = normalize_generated_path(record.get("base_filename"))
+                    if base:
+                        protected_generated.add(base)
         except json.JSONDecodeError as exc:
             raise SystemExit(f"Invalid PROVENANCE.json; refusing to prune: {exc}")
 
+    protected_generated.update(protected)
     if not protected:
         raise SystemExit("No provider JavaScript paths found in authoritative published state; refusing to prune.")
 
@@ -257,6 +294,23 @@ def main() -> int:
         raise SystemExit(f"Referenced provider files are missing; refusing to prune:\n- {preview}")
 
     providers_dir.mkdir(parents=True, exist_ok=True)
+
+    revoked = load_security_revocations(root)
+    revoked_protected = sorted(revoked & protected_generated)
+    if revoked_protected:
+        preview = "\n- ".join(revoked_protected[:20])
+        raise SystemExit(
+            "Security-revoked generated artifacts are still authoritative; refusing to prune:\n- " + preview
+        )
+
+    security_removed: list[str] = []
+    for relative in sorted(revoked):
+        target = root / relative
+        if target.is_file():
+            security_removed.append(relative)
+            if not args.dry_run:
+                target.unlink()
+
     ledger_path = providers_dir / RETENTION_LEDGER
     ledger = load_ledger(ledger_path)
     order = ledger.setdefault("order", {})
@@ -323,8 +377,11 @@ def main() -> int:
         f"manifests={','.join(p.relative_to(root).as_posix() for p in manifests)}, "
         f"protected={len(protected)}, providers={len(existing_by_provider)}, "
         f"retention_generations={args.retention_generations}, "
-        f"{mode}={len(removed)}, protected_overflow={len(set(retained_overflow))}"
+        f"{mode}={len(removed)}, security_revoked={len(security_removed)}, "
+        f"protected_overflow={len(set(retained_overflow))}"
     )
+    for relative in security_removed:
+        print(f"- SECURITY_REVOKED {relative}")
     for relative in removed:
         print(f"- {relative}")
     return 0

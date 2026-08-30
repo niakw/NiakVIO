@@ -542,6 +542,8 @@ Les bundles `providers/<id>--...--<hash>.js` sont des **artefacts clients immuab
 
 La maintenance applique une **rétention glissante de 10 générations distinctes par provider** via `providers/.generation-retention.json`. Lorsqu'une 11e génération apparaît, seule la plus ancienne génération non protégée peut sortir de la fenêtre ; les références courantes/pending, le LKG et la provenance publiée restent protégés. Les sources non hashées ne sont pas supprimées par cette politique.
 
+La sécurité prime sur la rétention : `provider-security-revocations.json` peut révoquer une génération historique provider/ProviderBase. Une révocation non référencée est supprimée immédiatement ; si l'artefact révoqué est encore courant/LKG/provenance, la publication échoue fail-closed jusqu'à réparation de la référence.
+
 Le pipeline se termine par un checkout exact de `main` et rejoue les invariants de release.
 
 ## 20. Couche de compatibilité
