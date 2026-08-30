@@ -879,7 +879,9 @@ def main() -> int:
                         "clean_provider_model": provider_model,
                         "candidate_code_origin": code_origin,
                         "provider_base_reconstruction_required": bool(reconstruction_required),
-                        "clean_reconstruction_mode": bool(args.clean_reconstruction),
+                        "clean_reconstruction_mode": bool(
+                            args.clean_reconstruction or provider_id in forced_reconstruction_ids
+                        ),
                         "legacy_provider_js_executed_for_reconstruction": False,
                         "local_patches": applied_patches,
                         "bytes": len(candidate_data),
