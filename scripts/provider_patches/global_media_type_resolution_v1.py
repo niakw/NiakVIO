@@ -44,7 +44,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     payload = {
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "semanticTypes": semantic_types,
-        "revision": "series-tv-public-tmdb-semantic-gate-v2",
+        "revision": "tmdb-first-provider-entity-gate-v3",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -94,38 +94,59 @@ function localToken(){
   try{if(typeof TMDB_ACCESS_TOKEN!=="undefined"&&s(TMDB_ACCESS_TOKEN))return s(TMDB_ACCESS_TOKEN)}catch(_){}
   return "";
 }
+var mediaCache=Object.create(null);
 async function tmdb(tvId){
   var id=s(tvId),key=localKey(),token=localToken();
   if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return null;
-  try{
-    if(key||token){
-      var u="https://api.themoviedb.org/3/tv/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
-      if(key)u+="&api_key="+encodeURIComponent(key);
-      var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
-      var api=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
-      if(api&&api.ok&&typeof api.json==="function")return await api.json();
-    }
-    var publicUrl="https://www.themoviedb.org/tv/"+encodeURIComponent(id)+"?language=en-US";
-    var page=await g.fetch(publicUrl,{headers:{Accept:"text/html","Range":"bytes=0-65535"},redirect:"follow",signal:timeout()});
-    if(!page||!page.ok||typeof page.text!=="function")return null;
-    return {__nuvioPublicHtml:await page.text()};
-  }catch(_){return null}
+  if(Object.prototype.hasOwnProperty.call(mediaCache,id))return await mediaCache[id];
+  var pending=(async function(){
+    try{
+      if(key||token){
+        var u="https://api.themoviedb.org/3/tv/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
+        if(key)u+="&api_key="+encodeURIComponent(key);
+        var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
+        var api=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
+        if(api&&api.ok&&typeof api.json==="function")return await api.json();
+      }
+      var publicUrl="https://www.themoviedb.org/tv/"+encodeURIComponent(id)+"?language=en-US";
+      var page=await g.fetch(publicUrl,{
+        headers:{Accept:"text/html","Range":"bytes=0-65535","Cache-Control":"max-stale=86400"},
+        redirect:"follow",
+        signal:timeout()
+      });
+      if(!page||!page.ok||typeof page.text!=="function")return null;
+      return {__nuvioPublicHtml:await page.text()};
+    }catch(_){return null}
+  })();
+  mediaCache[id]=pending;
+  var value=await pending;
+  mediaCache[id]=value;
+  return value;
+}
+async function canonicalType(id,input,metadata,category){
+  var transport=alias(input);
+  if(transport==="movie")return"movie";
+  if(category==="anime"||animeMeta(metadata))return"anime";
+  if(transport!=="tv")return transport;
+  var m=await tmdb(id);
+  if(!m)return"tv";
+  return animeMeta(m)?"anime":"tv";
 }
 function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
-  var type=alias(input);
+  var transport=alias(input);
+  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+  if(semantic.length){
+    if(transport==="movie"&&semantic.indexOf("movie")<0)return null;
+    if(transport==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
+  }
   var category=obj?s(q.category).toLowerCase():"";
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
-  if(category==="anime"||animeMeta(metadata))type="anime";
   var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
-  if(type==="tv"&&/^\d+$/.test(id)){
-    var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
-    var animeOnly=semantic.indexOf("anime")>=0&&semantic.indexOf("tv")<0;
-    if(animeOnly)type="anime";
-    else{var m=await tmdb(id);if(animeMeta(m))type="anime"}
-  }
+  var type=await canonicalType(id,input,metadata,category);
+  if(semantic.length&&semantic.indexOf(type)<0)return null;
   if(obj){
     q.nuvioInputMediaType=input;
     q.mediaType=type;q.type=type;
@@ -138,9 +159,8 @@ function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
   var native=o[k];
   var wrap=async function(){
-    var a=await resolve(arguments),first=a[0],obj=objectRequest(first),type=obj?s(first.mediaType||first.type):s(a[1]);
-    var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
-    if(semantic.length&&semantic.indexOf(type)<0)return [];
+    var a=await resolve(arguments);
+    if(!a)return [];
     return native.apply(this,a);
   };
   wrap.__nuvioMediaTypeResolutionV1=true;
