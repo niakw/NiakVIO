@@ -14,7 +14,7 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
 source = PATH.read_text(encoding="utf-8")
-assert '"implementationVersion": 2,' in source
+assert '"implementationVersion": 3,' in source
 assert "if(!a||(!wanted&&!original))return -100;" in source
 assert "if(s>=80)rows.push" in source
 assert "years.length&&years.indexOf(String(meta.year))<0" in source

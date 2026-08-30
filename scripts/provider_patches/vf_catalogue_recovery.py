@@ -37,7 +37,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         raise ValueError("vf_catalogue_recovery: api_fixed requires api_url + learned api_routes")
 
     payload = {
-        "implementationVersion": 2,
+        "implementationVersion": 3,
         "strategy": strategy,
         "baseUrl": base_url,
         "apiUrl": api_url,
@@ -176,14 +176,14 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var um=tag.match(/(?:data-embed|data-src|data-player|data-url|data-video|src)=["']([^"']+)["']/i),u=um&&absolute(um[1],base);
       if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}
     });
-    var jsonRe=/[\{,]\s*["']?(?:season|saison)["']?\s*:\s*(\d+)[\s\S]{0,500}?["']?(?:episode|ep)["']?\s*:\s*(\d+)[\s\S]{0,700}?["']?(?:url|src|embedUrl|embed_url|player)["']?\s*:\s*["'](https?:\\?\/\\?\/[^"']+)["']/gi,m;
+    var jsonRe=/[{,]\s*["']?(?:season|saison)["']?\s*:\s*(\d+)[\s\S]{0,500}?["']?(?:episode|ep)["']?\s*:\s*(\d+)[\s\S]{0,700}?["']?(?:url|src|embedUrl|embed_url|player)["']?\s*:\s*["'](https?:\/\/[^"']+)["']/gi,m;
     while((m=jsonRe.exec(text))!==null){if(Number(m[1])!==season||Number(m[2])!==episode)continue;var u=absolute(m[3].replace(/\\\//g,"/"),base);if(usable(u)&&!seen[u]){seen[u]=1;urls.push(u)}}
     return urls;
   }
   function episodeLinks(html,base,req){
     if(!req||req.mediaType!=="tv")return [];
     var season=Number(req.season)||1,episode=Number(req.episode)||1,out=[],seen=Object.create(null),re=/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi,m;
-    var patterns=[new RegExp("s(?:aison)?[ ._-]*0?"+season+"[ ._-]*e(?:p(?:isode)?)?[ ._-]*0?"+episode,"i"),new RegExp("saison[ ._-]*0?"+season+"[\s\S]{0,40}(?:episode|ep)[ ._-]*0?"+episode,"i")];
+    var patterns=[new RegExp("s(?:aison)?[ ._-]*0?"+season+"[ ._-]*e(?:p(?:isode)?)?[ ._-]*0?"+episode,"i"),new RegExp("saison[ ._-]*0?"+season+"[\\s\\S]{0,40}(?:episode|ep)[ ._-]*0?"+episode,"i")];
     while((m=re.exec(String(html||"")))!==null){var u=absolute(m[1],base),label=stripHtml(m[2])+" "+m[1];if(!u||seen[u]||!patterns.some(function(p){return p.test(label)}))continue;seen[u]=1;out.push(u)}
     return out.slice(0,8);
   }
@@ -197,8 +197,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     for(var i=0;i<config.apiRoutes.length;i++){
       var route=clean(config.apiRoutes[i]),low=route.toLowerCase();
       if(!route)continue;
-      if(/\/movie(?:\/|\{|$)/i.test(low)&&type!=="movie")continue;
-      if(/\/tv(?:\/|\{|$)/i.test(low)&&type!=="tv")continue;
+      if((low.indexOf("/movie/")>=0||low.indexOf("/movie{")>=0||low.endsWith("/movie"))&&type!=="movie")continue;
+      if((low.indexOf("/tv/")>=0||low.indexOf("/tv{")>=0||low.endsWith("/tv"))&&type!=="tv")continue;
       out.push(route);
     }
     return Array.from(new Set(out)).slice(0,2);
