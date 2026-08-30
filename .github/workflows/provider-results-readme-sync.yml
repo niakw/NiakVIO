@@ -3,9 +3,9 @@ name: OPS - Provider README Sync
 on:
   workflow_run:
     workflows:
-      - Native Android TV + Mobile reader acceptance
-      - Native Mobile iOS reader acceptance
-      - Native Desktop reader acceptance
+      - NATIVE - Android Reader
+      - NATIVE - iOS Reader
+      - NATIVE - Desktop Reader
     types: [completed]
   push:
     branches: [main]
@@ -34,7 +34,7 @@ jobs:
     permissions:
       contents: write
       actions: read
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.name == 'Native Android TV + Mobile reader acceptance' || github.event.workflow_run.name == 'Native Mobile iOS reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance')) }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -70,7 +70,7 @@ jobs:
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download exact positive-evidence diagnostics
-        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'Native Android TV + Mobile reader acceptance' || github.event.workflow_run.name == 'Native Mobile iOS reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance')) }}
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'NATIVE - Android Reader' || github.event.workflow_run.name == 'NATIVE - iOS Reader' || github.event.workflow_run.name == 'NATIVE - Desktop Reader')) }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}
