@@ -193,7 +193,8 @@ Les commits clients audités sont suivis dans [`automation/nuvio-client-upstream
 
 | Client | Repository | Preuve native retenue |
 |---|---|---|
-| Nuvio Mobile Android | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | chemin Android officiel et stack de lecture du client |\n| Nuvio Mobile iOS | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | runtime plugin iOS Full + simulateur iOS + bridge lecteur MPV officiel |
+| Nuvio Mobile Android | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | chemin Android officiel et stack de lecture du client |
+| Nuvio Mobile iOS | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | runtime plugin iOS Full + simulateur iOS + bridge lecteur MPV officiel |
 | Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | bridges/lecteurs natifs **macOS et Windows** ; le stub Linux n'est pas une preuve lecteur |
 | NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | Android TV officiel avec Media3/ExoPlayer |
 
@@ -517,15 +518,17 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 
 | Workflow | Rôle |
 |---|---|
-| `sync.yml` | discovery → repair → validation → publication Quick/Deep |
+| `sync.yml` | discovery canonique → repair borné → validation → publication Quick/Deep |
+| `add-provider.yml` | onboarding full-auto structuré : hub/direct/Telegram/recherche → ProviderBase propre → Labs → publication sous preuve |
 | `canonical-media-types.yml` | contrats media, evidence native, cache et mémoire Brain |
 | `github-actions-gate.yml` | sécurité et invariants des workflows |
-| `native-tv-route-reader.yml` | preuve native NuvioTV — 1 job, 1 boot, 3 fixtures |\n| `native-mobile-android-reader.yml` | preuve native Nuvio Mobile Android autonome |\n| `native-mobile-ios-reader.yml` | preuve native Nuvio Mobile iOS autonome |
+| `native-mobile-android-reader.yml` | preuve native Android TV + Nuvio Mobile Android autonome |
+| `native-corpus-device-targeted.yml` | corpus ciblé manuel TV, Mobile, Desktop ou tous les clients |
+| `native-mobile-ios-reader.yml` | preuve native Nuvio Mobile iOS autonome |
 | `native-desktop-reader-acceptance.yml` | preuve lecteur officielle Desktop macOS/Windows |
-| `native-corpus-device-targeted.yml` | retests device à la demande uniquement |
 | `native-reader-learning-sync.yml` | import idempotent des résultats lecteur validés de `main` |
 | `provider-results-readme-sync.yml` | fusion des nouvelles preuves lecteur positives dans la matrice README |
-| `brain-learning-lab.yml` | expérimentation et mémoire du Repair Brain en sandbox |
+| `brain-learning-lab.yml` | observation quotidienne du catalogue complet + file Learning indépendante de 60 min, persistante entre les jours |
 | `brain-branch-maintenance.yml` | rebase la mémoire Brain sur `main` et supprime les branches proposal fermées |
 | `availability.yml` | disponibilité des providers publiés |
 | `domain-refresh.yml` | observation des domaines |

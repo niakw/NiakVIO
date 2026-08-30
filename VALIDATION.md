@@ -22,9 +22,10 @@ La suite couvre notamment :
 
 Le corpus canonique est versionné dans [`.github/triggers/nuvio-client-lab.json`](.github/triggers/nuvio-client-lab.json). La liste peut contenir plusieurs œuvres de diagnostic, mais la preuve native standard en sélectionne **une seule par type déclaré et par provider** : au maximum 1 film + 1 série + 1 anime.
 
-La preuve native est répartie entre trois workflows complémentaires :
+La preuve native est répartie entre plusieurs workflows complémentaires :
 
-- [`native-tv-route-reader.yml`](.github/workflows/native-tv-route-reader.yml) : NuvioTV/Android TV, **un seul job et un seul boot** pour les trois fixtures canoniques ;\n- [`native-mobile-android-reader.yml`](.github/workflows/native-mobile-android-reader.yml) : Nuvio Mobile Android, workflow autonome et un seul boot pour les trois fixtures ;\n- [`native-mobile-ios-reader.yml`](.github/workflows/native-mobile-ios-reader.yml) : Nuvio Mobile iOS, workflow autonome sur simulateur iOS avec runtime plugin et lecteur iOS officiels ;
+- [`native-mobile-android-reader.yml`](.github/workflows/native-mobile-android-reader.yml) : NuvioTV/Android TV **et** Nuvio Mobile Android, avec jobs/runtimes isolés et preuves distinctes par client ;
+- [`native-mobile-ios-reader.yml`](.github/workflows/native-mobile-ios-reader.yml) : Nuvio Mobile iOS, workflow autonome sur simulateur iOS avec runtime plugin et lecteur iOS officiels ;
 - [`native-desktop-reader-acceptance.yml`](.github/workflows/native-desktop-reader-acceptance.yml) : lecteurs officiels Desktop macOS et Windows ;
 - [`native-corpus-device-targeted.yml`](.github/workflows/native-corpus-device-targeted.yml) : retest manuel borné d'un device, d'un provider ou du corpus natif ciblé.
 
@@ -36,7 +37,7 @@ Chaque exécution provider est bornée individuellement. Un timeout natif n'est 
 
 ## Cycle de réparation et publication
 
-Une réparation n'est conservée que si le bundle exact progresse lors d'une nouvelle exécution bornée. La publication synchronise les versions des manifests et paquets, élague les bundles hachés devenus non référencés, régénère les empreintes, puis exécute `scripts/validate_release_integrity.py`.
+Une réparation n'est conservée que si le bundle exact progresse lors d'une nouvelle exécution bornée. La publication synchronise les versions des manifests et paquets, conserve les bundles providers comme artefacts client adressés par contenu avec une **rétention glissante de 10 générations par provider** (références courantes/LKG/provenance toujours protégées), régénère les empreintes, puis exécute `scripts/validate_release_integrity.py`.
 
 `sync.yml` est l'unique orchestrateur de publication complète. Les Labs natifs produisent de la preuve ; ils ne constituent pas une seconde voie de publication.
 

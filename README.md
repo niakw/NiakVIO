@@ -180,11 +180,14 @@ Inconsistent generations must not silently replace a previously healthy publishe
 
 | Workflow | Purpose |
 |---|---|
-| `sync.yml` | discovery → repair → validation → Quick/Deep publication |
-| `native-tv-route-reader.yml` | official NuvioTV evidence — one job / one boot / movie+TV+anime |\n| `native-mobile-android-reader.yml` | official Nuvio Mobile Android evidence |\n| `native-mobile-ios-reader.yml` | official Nuvio Mobile iOS simulator evidence |
+| `sync.yml` | canonical discovery → bounded repair → validation → Quick/Deep publication |
+| `add-provider.yml` | full-auto structured onboarding: hub/direct/Telegram/search → clean ProviderBase → Labs → gated publication |
+| `native-mobile-android-reader.yml` | official Android TV + Nuvio Mobile Android evidence |
+| `native-corpus-device-targeted.yml` | manual targeted corpus for TV, Mobile, Desktop or all clients |
+| `native-mobile-ios-reader.yml` | official Nuvio Mobile iOS simulator evidence |
 | `native-desktop-reader-acceptance.yml` | official macOS/Windows Desktop evidence |
 | `core-media-finalize-main.yml` | Core fixed point and publication integrity |
-| `brain-learning-lab.yml` | sandbox Repair Brain learning |
+| `brain-learning-lab.yml` | independent daily full-catalogue observation + 60-minute resumable Learning queue |
 | `brain-branch-maintenance.yml` | keep sanitized Brain memory rebased on `main` and remove closed proposal branches |
 | `github-actions-gate.yml` | workflow/dependency security invariants |
 | `codeql.yml` | CodeQL analysis |

@@ -3,13 +3,10 @@ name: Provider results README sync
 on:
   workflow_run:
     workflows:
-      - Native TV reader acceptance
-      - Native Mobile Android reader acceptance
+      - Native Android TV + Mobile reader acceptance
       - Native Mobile iOS reader acceptance
       - Native Desktop reader acceptance
       - Niakvio provider pipeline
-      - Emergency publish corrected providers
-      - Fast publish corrected providers
       - NiakVIO Core media finalizer
     types: [completed]
   push:
@@ -39,7 +36,7 @@ jobs:
     permissions:
       contents: write
       actions: read
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.event == 'push' || github.event.workflow_run.name == 'Niakvio provider pipeline' || github.event.workflow_run.name == 'Emergency publish corrected providers' || github.event.workflow_run.name == 'Fast publish corrected providers' || github.event.workflow_run.name == 'NiakVIO Core media finalizer')) }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'push' || (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled' && github.event.workflow_run.head_repository.full_name == github.repository && github.event.workflow_run.head_branch == 'main' && (github.event.workflow_run.name == 'Native Android TV + Mobile reader acceptance' || github.event.workflow_run.name == 'Native Mobile iOS reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance' || github.event.workflow_run.name == 'Niakvio provider pipeline' || github.event.workflow_run.name == 'NiakVIO Core media finalizer')) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -75,7 +72,7 @@ jobs:
           echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
 
       - name: Download exact positive-evidence diagnostics
-        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'Native TV reader acceptance' || github.event.workflow_run.name == 'Native Mobile Android reader acceptance' || github.event.workflow_run.name == 'Native Mobile iOS reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance')) }}
+        if: ${{ github.event_name == 'workflow_dispatch' || (github.event_name == 'workflow_run' && (github.event.workflow_run.name == 'Native Android TV + Mobile reader acceptance' || github.event.workflow_run.name == 'Native Mobile iOS reader acceptance' || github.event.workflow_run.name == 'Native Desktop reader acceptance')) }}
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ steps.source.outputs.run_id }}

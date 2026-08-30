@@ -51,14 +51,13 @@ Il expose deux profondeurs :
 
 Ne modifiez pas manuellement `manifest.json` et `vf/manifest.json` comme deux sources autonomes. La source publiée canonique est `provider_catalog.json` ; les manifests sont des projections rendues et revalidées depuis ce catalogue dans la transaction de publication.
 
-Le pipeline régénère également les versions, projections de langue, provenance, LKG et empreintes (`FILE-HASHES.json`, `SHA256SUMS.json`, `PATCH-SHA256SUMS.txt`) avant un commit atomique.
+Le pipeline régénère également les versions, projections de langue, provenance, LKG et empreintes (`FILE-HASHES.json`, `SHA256SUMS.json`, `PATCH-SHA256SUMS.txt`) avant un commit atomique. Les bundles providers hashés sont immuables ; leur historique suit une rétention glissante de 10 générations par provider, sans supprimer une génération encore référencée par un manifest, le LKG ou la provenance publiée.
 
 ## Vérification runtime
 
 Une modification du chemin de playback partagé doit être suivie des preuves natives appropriées :
 
-- NuvioTV / Android TV : `.github/workflows/native-tv-route-reader.yml` ;
-- Nuvio Mobile Android : `.github/workflows/native-mobile-android-reader.yml` ;
+- NuvioTV / Android TV + Nuvio Mobile Android : `.github/workflows/native-mobile-android-reader.yml` ;
 - Nuvio Mobile iOS : `.github/workflows/native-mobile-ios-reader.yml` ;
 - Nuvio Desktop macOS/Windows : `.github/workflows/native-desktop-reader-acceptance.yml` ;
 - corpus natif ciblé : `.github/workflows/native-corpus-device-targeted.yml`.
