@@ -1,10 +1,11 @@
 Trigger file for the strict provider-agnostic deep repair and publication workflow.
 Update this file to start a deep validation run on main.
 
-last_trigger: 2026-08-30T16:00:00+02:00
-reason: final-pretag-deep-after-semantic-health-fixture-fix
+last_trigger: 2026-08-30T16:04:00+02:00
+reason: final-pretag-deep-after-complete-audit
 pretag_release_candidate: 5.21.18
-pretag_source_ref: 7498a8e89c849beb3614390148e5c20742b0c82c
+pretag_source_ref: 056193e126dad936a9795df04981fdf8349ad1bf
 audit_fixes:
   - dns-preflight-free-error-scope
   - canonical-semantic-health-fixture-selection
+  - semantic-health-ci-path-coverage
