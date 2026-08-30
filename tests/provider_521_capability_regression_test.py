@@ -46,14 +46,22 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
     # 5.21.0's supportedTypes sometimes mixed semantic capability with
     # Nuvio transport aliases. semanticTypes is present only for those proven
     # exceptions; otherwise the production 5.21 type set remains the floor.
-    required_types = norm_types(floor.get("semanticTypes") or floor.get("types"))
+    explicit_semantic = norm_types(floor.get("semanticTypes"))
+    required_types = explicit_semantic or norm_types(floor.get("types"))
     current_types = semantic_types(current)
-    lost = sorted(required_types - current_types)
-    if lost:
-        errors.append(
-            f"{provider_id}: semantic type regression lost={lost} "
-            f"required={sorted(required_types)} current={sorted(current_types)}"
-        )
+    if explicit_semantic:
+        if current_types != explicit_semantic:
+            errors.append(
+                f"{provider_id}: semantic type contract drift "
+                f"required={sorted(explicit_semantic)} current={sorted(current_types)}"
+            )
+    else:
+        lost = sorted(required_types - current_types)
+        if lost:
+            errors.append(
+                f"{provider_id}: semantic type regression lost={lost} "
+                f"required={sorted(required_types)} current={sorted(current_types)}"
+            )
 
     old_formats = {str(value).strip().casefold() for value in floor.get("formats") or []}
     current_formats = {str(value).strip().casefold() for value in current.get("formats") or []}
