@@ -148,6 +148,26 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+# Capability filtering happens only after TMDB classification.
+run_case(tv_only, r"""
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  if(!String(url).includes("/movie/157336"))throw new Error("movie classification did not hit TMDB first");
+  return{ok:true,status:200,json:async()=>({
+    id:157336,title:"Interstellar",release_date:"2014-11-05",
+    genres:[{id:18,name:"Drama"}],original_language:"en",
+    production_countries:[{iso_3166_1:"US"}],keywords:{keywords:[]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("157336","movie");
+  if(!Array.isArray(value)||value.length!==0)throw new Error("TV-only provider must reject TMDB-proven movie after lookup");
+  if(calls!==1)throw new Error("provider capability was checked before TMDB");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 # Conclusive API identity remains authoritative on ordinary TV.
 run_case(mixed, r"""
 global.fetch=async(url)=>{
