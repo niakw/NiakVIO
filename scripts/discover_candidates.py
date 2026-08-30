@@ -628,11 +628,32 @@ def main() -> int:
             continue
         data = source_path.read_bytes()
         validate_javascript(data, filename)
+        upstream_digest = hashlib.sha256(data).hexdigest()
+        (
+            seed,
+            code_origin,
+            observed_site,
+            reconstruction_required,
+            knowledge,
+            provider_model,
+        ) = executable_seed(
+            provider_id,
+            dict(entry),
+            data,
+            provenance_rows,
+            overrides,
+            clean_reconstruction=bool(args.clean_reconstruction),
+        )
+        candidate_data, applied_patches = apply_overrides(provider_id, seed)
+        validate_javascript(candidate_data, f"niakvio:{provider_id}")
         local_path = baseline_dir / f"{safe_fragment(provider_id)}.js"
-        local_path.write_bytes(data)
-        digest = hashlib.sha256(data).hexdigest()
+        local_path.write_bytes(candidate_data)
+        subprocess.run([
+            "node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), str(local_path)
+        ], check=True, capture_output=True, text=True)
+        digest = hashlib.sha256(candidate_data).hexdigest()
         lkg_record = lkg_records.get(provider_id, {}) if isinstance(lkg_records, dict) else {}
-        is_registered_lkg = isinstance(lkg_record, dict) and lkg_record.get("sha256") == digest
+        is_registered_lkg = isinstance(lkg_record, dict) and lkg_record.get("sha256") == upstream_digest
         candidates.append({
             "key": key,
             "source": "published-baseline",
@@ -645,12 +666,21 @@ def main() -> int:
             "upstream_id": str(entry.get("id") or provider_id),
             "canonical_id": provider_id,
             "provider_url": filename,
+            "observed_upstream_site": observed_site,
             "local_path": str(local_path.relative_to(stage)),
             "sha256": digest,
-            "upstream_sha256": digest,
-            "local_patches": [],
+            "upstream_sha256": upstream_digest,
+            "upstream_code_role": "knowledge-only",
+            "upstream_code_executed": False,
+            "upstream_knowledge": knowledge,
+            "clean_provider_model": provider_model,
+            "candidate_code_origin": code_origin,
+            "provider_base_reconstruction_required": bool(reconstruction_required),
+            "clean_reconstruction_mode": bool(args.clean_reconstruction),
+            "legacy_provider_js_executed_for_reconstruction": False,
+            "local_patches": applied_patches,
             "baseline_origin": "published_manifest",
-            "bytes": len(data),
+            "bytes": len(candidate_data),
             "metadata": dict(entry),
             "baseline": True,
             "lkg": is_registered_lkg,
