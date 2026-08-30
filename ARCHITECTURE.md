@@ -507,7 +507,7 @@ Un provider peut être :
 - VF prouvé sur une source et VO seulement sur une autre ;
 - sain sur une fixture et inconclusif sur une œuvre absente du catalogue.
 
-Movie, TV/series et anime restent trois dimensions obligatoires. Breaking Bad S01E01 constitue une fixture TV de régression.
+Movie, TV/series et anime restent trois dimensions obligatoires. Breaking Bad S01E01 constitue une fixture TV de régression. Le Learning natif sépare strictement **capacité sémantique** et **alias de transport** : lire une fixture anime via une route client `tv` ou `movie` prouve seulement un alias de transport si `anime` est déjà déclaré ; cela ne doit jamais promouvoir artificiellement `tv` ou `movie` dans les types sémantiques.
 
 ## 18. Largeur de catalogue
 

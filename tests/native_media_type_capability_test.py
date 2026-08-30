@@ -94,7 +94,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert data["provenCapabilities"] == 1, data
     proposal = data["proposals"][0]
     assert proposal["provider"] == "anime-sama", proposal
-    assert proposal["addType"] == "tv", proposal
+    assert proposal["kind"] == "transport_alias", proposal
+    assert proposal["semanticType"] == "anime", proposal
+    assert proposal["addTransportType"] == "tv", proposal
+    assert "addSemanticType" not in proposal, proposal
     assert proposal["requiresCrossDeviceConfirmation"] is True
 
     brain_cap_out = tmp / "brain-capability.json"
@@ -105,6 +108,9 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert brain_cap.returncode == 0, brain_cap.stdout + brain_cap.stderr
     brain_cap_data = json.loads(brain_cap_out.read_text(encoding="utf-8"))
     assert len(brain_cap_data["proposals"]) == 1
+    assert brain_cap_data["proposals"][0]["kind"] == "transport_alias"
+    assert brain_cap_data["proposals"][0]["semanticType"] == "anime"
+    assert brain_cap_data["proposals"][0]["addTransportType"] == "tv"
     assert brain_cap_data["policy"]["productionManifestMutationAllowed"] is False
 
     failed_log = tmp / "failed.log"

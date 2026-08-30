@@ -49,10 +49,19 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
   const expectedDurationSeconds = Number(fixture.expectedDurationMinutes || 0) * 60 || null;
   const minimumDurationRatio = Number(config.policy?.minimum_duration_ratio || 0.55);
   const maximumDurationRatio = Number(config.policy?.maximum_duration_ratio || 1.8);
-  const manifestTypes = new Map((manifest.scrapers || []).filter(Boolean).map((row) => [
-    String(row.id || '').toLowerCase(),
-    new Set((row.supportedTypes || []).map((value) => String(value).toLowerCase())),
-  ]));
+  const manifestTypes = new Map((manifest.scrapers || []).filter(Boolean).map((row) => {
+    const transport = new Set((row.supportedTypes || []).map((value) => String(value).toLowerCase()));
+    const semanticSource = Array.isArray(row.canonicalSupportedTypes) && row.canonicalSupportedTypes.length
+      ? row.canonicalSupportedTypes
+      : row.supportedTypes;
+    const semantic = new Set((semanticSource || []).map((value) => String(value).toLowerCase()));
+    return [String(row.id || '').toLowerCase(), { semantic, transport }];
+  }));
+  const fixtureSemanticType = (() => {
+    const raw = String(fixture.category || fixture.mediaType || 'tv').toLowerCase();
+    if (raw === 'movie' || raw === 'anime') return raw;
+    return 'tv';
+  })();
 
   const evidence = assessNativeEvidence(logPaths);
   const routes = new Map();
@@ -124,11 +133,12 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
   const outcomes = [];
   const proposals = [];
   for (const [key, route] of routes) {
-    const declared = manifestTypes.get(route.provider) || new Set();
-    const declaredAlready = declared.has(route.requestType);
+    const declared = manifestTypes.get(route.provider) || { semantic: new Set(), transport: new Set() };
+    const semanticAlready = declared.semantic.has(fixtureSemanticType);
+    const transportAlready = declared.transport.has(route.requestType);
     const routeRows = [];
     const reasons = [];
-    if (declaredAlready) reasons.push('probe_type_already_declared');
+    if (semanticAlready && transportAlready) reasons.push('probe_contract_already_declared');
     if (route.returned <= 0) reasons.push('no_streams_returned');
     if ((runtimeErrors.get(key) || 0) > 0) reasons.push('runtime_error');
 
@@ -159,7 +169,7 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
       routeRows.push({ index, playerState: player.state, failureClass: player.failureClass, identity });
     }
 
-    const proven = evidence.complete && !declaredAlready && route.returned > 0 &&
+    const proven = evidence.complete && route.returned > 0 &&
       healthyPlayers === route.returned && identityMatches === route.returned &&
       identityUnknown === 0 && identityContradictions === 0 &&
       (runtimeErrors.get(key) || 0) === 0 && reasons.length === 0;
@@ -167,8 +177,10 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
       client: route.client,
       fixture: fixtureSlug,
       provider: route.provider,
-      addType: route.requestType,
-      declaredTypes: [...declared].sort(),
+      semanticType: fixtureSemanticType,
+      requestType: route.requestType,
+      declaredSemanticTypes: [...declared.semantic].sort(),
+      declaredTransportTypes: [...declared.transport].sort(),
       returned: route.returned,
       healthyPlayers,
       identityMatches,
@@ -180,16 +192,33 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
     };
     outcomes.push(outcome);
     if (proven) {
-      proposals.push({
-        provider: route.provider,
-        addType: route.requestType,
-        client: route.client,
-        fixture: fixtureSlug,
-        streamCount: route.returned,
-        proof: 'all_returned_streams_reader_healthy_and_identity_matched',
-        requiresCrossDeviceConfirmation: true,
-        productionWritesAllowed: false,
-      });
+      if (!semanticAlready) {
+        proposals.push({
+          kind: 'semantic_capability',
+          provider: route.provider,
+          addSemanticType: fixtureSemanticType,
+          requestType: route.requestType,
+          client: route.client,
+          fixture: fixtureSlug,
+          streamCount: route.returned,
+          proof: 'all_returned_streams_reader_healthy_and_identity_matched',
+          requiresCrossDeviceConfirmation: true,
+          productionWritesAllowed: false,
+        });
+      } else if (!transportAlready) {
+        proposals.push({
+          kind: 'transport_alias',
+          provider: route.provider,
+          semanticType: fixtureSemanticType,
+          addTransportType: route.requestType,
+          client: route.client,
+          fixture: fixtureSlug,
+          streamCount: route.returned,
+          proof: 'semantic_identity_already_declared_and_transport_route_reader_healthy',
+          requiresCrossDeviceConfirmation: true,
+          productionWritesAllowed: false,
+        });
+      }
     }
   }
 
@@ -201,8 +230,12 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
     evidenceProblems: evidence.problems,
     capabilityRoutes: outcomes.length,
     provenCapabilities: proposals.length,
-    outcomes: outcomes.sort((a, b) => a.provider.localeCompare(b.provider) || a.addType.localeCompare(b.addType) || a.client.localeCompare(b.client)),
-    proposals: proposals.sort((a, b) => a.provider.localeCompare(b.provider) || a.addType.localeCompare(b.addType) || a.client.localeCompare(b.client)),
+    outcomes: outcomes.sort((a, b) => a.provider.localeCompare(b.provider) || a.requestType.localeCompare(b.requestType) || a.client.localeCompare(b.client)),
+    proposals: proposals.sort((a, b) =>
+      a.provider.localeCompare(b.provider) ||
+      String(a.addSemanticType || a.addTransportType || '').localeCompare(String(b.addSemanticType || b.addTransportType || '')) ||
+      a.client.localeCompare(b.client)
+    ),
     policy: {
       productionWritesAllowed: false,
       manifestMutationAllowed: false,
@@ -237,7 +270,7 @@ function main() {
   console.log(`FIELD_NATIVE_MEDIA_CAPABILITY evidence_complete=${payload.evidenceComplete} routes=${payload.capabilityRoutes} proven=${payload.provenCapabilities}`);
   for (const proposal of payload.proposals.slice(0, 80)) console.log(`FIELD_NATIVE_MEDIA_CAPABILITY_PROVEN ${JSON.stringify(proposal)}`);
   for (const outcome of payload.outcomes.filter((row) => !row.proven).slice(0, 80)) {
-    console.log(`FIELD_NATIVE_MEDIA_CAPABILITY_NOT_PROVEN ${JSON.stringify({ provider: outcome.provider, addType: outcome.addType, client: outcome.client, reasons: outcome.reasons })}`);
+    console.log(`FIELD_NATIVE_MEDIA_CAPABILITY_NOT_PROVEN ${JSON.stringify({ provider: outcome.provider, semanticType: outcome.semanticType, requestType: outcome.requestType, client: outcome.client, reasons: outcome.reasons })}`);
   }
   if (!payload.evidenceComplete) process.exitCode = 2;
 }
