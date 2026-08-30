@@ -53,7 +53,7 @@ def _semantic_types_index() -> dict[str, list[str]]:
                     continue
                 provider_id = str(row.get("canonicalId") or row.get("scraper", {}).get("id") or "").strip().casefold()
                 scraper = row.get("scraper") if isinstance(row.get("scraper"), dict) else {}
-                values = scraper.get("supportedTypes") or []
+                values = scraper.get("canonicalSupportedTypes") or scraper.get("supportedTypes") or []
                 types = []
                 for value in values if isinstance(values, list) else []:
                     item = str(value).strip().lower()
