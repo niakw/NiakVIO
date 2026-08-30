@@ -885,7 +885,9 @@ def main() -> int:
                         "legacy_provider_js_executed_for_reconstruction": False,
                         "local_patches": applied_patches,
                         "bytes": len(candidate_data),
-                        "metadata": entry,
+                        "metadata": reconstruction_manifest_entry(
+                            provider_id, entry, overrides
+                        ),
                     }
                 )
                 seen_canonical_ids[provider_id] = {
