@@ -2159,8 +2159,19 @@ def main() -> int:
                     retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
                     pending_blockers = list(
                         dict.fromkeys(
-                            blockers + ["clean_reconstruction_strict_deep_proof_pending"]
+                            (
+                                list(old_provenance.get("activation_blockers") or [])
+                                if old_safety_quarantine
+                                else []
+                            )
+                            + blockers
+                            + ["clean_reconstruction_strict_deep_proof_pending"]
                         )
+                    )
+                    pending_activation_mode = (
+                        str(old_provenance.get("activation_mode") or "safety_quarantine")
+                        if old_safety_quarantine
+                        else "clean_reconstruction_pending_strict_deep_proof"
                     )
                     provenance[cid] = {
                         **old_provenance,
@@ -2175,23 +2186,32 @@ def main() -> int:
                         "clean_reconstruction_verified": False,
                         "clean_reconstruction_candidate_role": "pending-canonical-deep-proof",
                         "activation_eligible": False,
-                        "activation_mode": "clean_reconstruction_pending_strict_deep_proof",
+                        "activation_mode": pending_activation_mode,
                         "activation_blockers": pending_blockers,
                         "restored_from_activation_lkg": restore_pending_activation_lkg,
+                        "preserved_reason": (
+                            "clean_candidate_pending_kept_conclusive_safety_quarantine"
+                            if old_safety_quarantine
+                            else old_provenance.get("preserved_reason")
+                        ),
                     }
                     report_items.append(
                         {
                             "id": cid,
                             "action": (
-                                "restored-activation-lkg-clean-candidate-awaiting-strict-deep-proof"
-                                if restore_pending_activation_lkg
-                                else "preserved-current-clean-candidate-awaiting-strict-deep-proof"
+                                "preserved-conclusive-safety-quarantine-clean-candidate-awaiting-strict-deep-proof"
+                                if old_safety_quarantine
+                                else (
+                                    "restored-activation-lkg-clean-candidate-awaiting-strict-deep-proof"
+                                    if restore_pending_activation_lkg
+                                    else "preserved-current-clean-candidate-awaiting-strict-deep-proof"
+                                )
                             ),
                             "enabled": bool(retained.get("enabled", False)),
                             "restored_from_activation_lkg": restore_pending_activation_lkg,
                             "activation_eligible": False,
                             "strict_activation_eligible": False,
-                            "activation_mode": "clean_reconstruction_pending_strict_deep_proof",
+                            "activation_mode": pending_activation_mode,
                             "failed_gates": [
                                 name for name, value in gates.items() if not value.get("passed")
                             ],

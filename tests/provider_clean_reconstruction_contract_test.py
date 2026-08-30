@@ -162,6 +162,10 @@ assert "and not auto_disabled" in promoter
 assert "and upstream_enabled" in promoter
 assert 'gates.get("01_policy_safe_no_p2p", {}).get("passed", False)' in promoter
 assert '"restored-activation-lkg-clean-candidate-awaiting-strict-deep-proof"' in promoter
+assert '"preserved-conclusive-safety-quarantine-clean-candidate-awaiting-strict-deep-proof"' in promoter
+assert '"clean_candidate_pending_kept_conclusive_safety_quarantine"' in promoter
+assert "pending_activation_mode = (" in promoter
+assert 'list(old_provenance.get("activation_blockers") or [])' in promoter
 assert 'str(mode) == "deep"' in promoter
 assert 'bool(decision.get("strict_activation_eligible", False))' in promoter
 
