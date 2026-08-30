@@ -34,7 +34,8 @@ with tempfile.TemporaryDirectory() as tmp:
                 "id": "anime-only",
                 "filename": "providers/anime-only.js",
                 "contentLanguage": ["fr"],
-                "supportedTypes": ["anime"],
+                "supportedTypes": ["anime", "movie", "tv"],
+                "canonicalSupportedTypes": ["anime"],
                 "enabled": True,
             },
             {
@@ -89,7 +90,8 @@ with tempfile.TemporaryDirectory() as tmp:
                 "id": "anime-only",
                 "filename": "../providers/anime-only.js",
                 "contentLanguage": ["fr"],
-                "supportedTypes": ["anime"],
+                "supportedTypes": ["anime", "movie", "tv"],
+                "canonicalSupportedTypes": ["anime"],
                 "enabled": True,
             },
             {
@@ -118,7 +120,11 @@ with tempfile.TemporaryDirectory() as tmp:
     vf_path.write_text(json.dumps(expected_vf), encoding="utf-8")
 
     def excluded(row):
-        values = [str(v).strip().casefold() for v in row.get("supportedTypes", []) if str(v).strip()]
+        values = [
+            str(v).strip().casefold()
+            for v in (row.get("canonicalSupportedTypes") or row.get("supportedTypes", []))
+            if str(v).strip()
+        ]
         anime_only = bool(values) and set(values) == {"anime"}
         identity = " ".join(str(row.get(key) or "").casefold() for key in ("id", "name"))
         return anime_only or "anim" in identity
