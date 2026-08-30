@@ -40,6 +40,7 @@ from provider_base_store import (
     is_clean_reconstructed,
     is_clean_reconstruction_candidate,
     resolve_base,
+    resolve_runtime_base,
 )
 from quarantine_catalogue_audit_failures import scoped_quarantine_source
 from provider_patches.quarantine_provider_v1 import apply as apply_terminal_quarantine
@@ -645,7 +646,7 @@ def fast_fixed_point_check(
         row = rows.get(provider_id)
         if not isinstance(row, dict):
             return False, f"missing-provenance:{provider_id}"
-        base_path, base_sha = resolve_base(provider_id, row, require=True)
+        base_path, base_sha = resolve_runtime_base(provider_id, row, require=True)
         assert base_path is not None and base_sha is not None
         expected_input = provider_build_input_sha(provider_id, base_sha, contract_sha, row)
         if str(row.get("build_input_sha256") or "").casefold() != expected_input:
@@ -808,7 +809,7 @@ def main() -> int:
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
         if not isinstance(provider_provenance, dict):
             raise ValueError(f"{provider_id}: missing provenance required for durable ProviderBase")
-        provider_base_path, provider_base_sha = resolve_base(
+        provider_base_path, provider_base_sha = resolve_runtime_base(
             provider_id,
             provider_provenance,
             require=True,
