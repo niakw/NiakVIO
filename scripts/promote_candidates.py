@@ -2128,6 +2128,33 @@ def main() -> int:
                 # reached the publication writer.
                 if old_artifact_available and isinstance(old_entry, dict) and old_entry:
                     retained = dict(old_entry)
+                    pending_manifest_overrides = (
+                        provider_policy.get("manifest_overrides", {})
+                        if isinstance(provider_policy, dict)
+                        else {}
+                    )
+                    pending_configured_disabled = bool(
+                        isinstance(pending_manifest_overrides, dict)
+                        and pending_manifest_overrides.get("enabled") is False
+                    )
+                    restore_pending_activation_lkg = bool(
+                        cid in activation_lkg_ids
+                        and not old_safety_quarantine
+                        and not auto_disabled
+                        and upstream_enabled
+                        and gates.get("01_policy_safe_no_p2p", {}).get("passed", False)
+                        and not pending_configured_disabled
+                    )
+                    # A pending v2 proposal is not itself disablement evidence.
+                    # Preserve the exact published artifact, but restore the
+                    # historical activation LKG when no conclusive safety/policy
+                    # veto exists. This prevents the migration proposal from
+                    # shrinking the working catalogue before its strict proof.
+                    retained["enabled"] = (
+                        True
+                        if restore_pending_activation_lkg
+                        else bool(old_entry.get("enabled", False))
+                    )
                     entries[cid] = retained
                     retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
                     pending_blockers = list(
@@ -2150,12 +2177,18 @@ def main() -> int:
                         "activation_eligible": False,
                         "activation_mode": "clean_reconstruction_pending_strict_deep_proof",
                         "activation_blockers": pending_blockers,
+                        "restored_from_activation_lkg": restore_pending_activation_lkg,
                     }
                     report_items.append(
                         {
                             "id": cid,
-                            "action": "preserved-current-clean-candidate-awaiting-strict-deep-proof",
+                            "action": (
+                                "restored-activation-lkg-clean-candidate-awaiting-strict-deep-proof"
+                                if restore_pending_activation_lkg
+                                else "preserved-current-clean-candidate-awaiting-strict-deep-proof"
+                            ),
                             "enabled": bool(retained.get("enabled", False)),
+                            "restored_from_activation_lkg": restore_pending_activation_lkg,
                             "activation_eligible": False,
                             "strict_activation_eligible": False,
                             "activation_mode": "clean_reconstruction_pending_strict_deep_proof",
