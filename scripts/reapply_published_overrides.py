@@ -450,22 +450,71 @@ def publication_configured_safety_quarantine(
     return text.encode("utf-8"), reason
 
 
+def _audit_terminal_contradiction_is_current(provenance_row: dict[str, Any]) -> bool:
+    """Require current playable wrong-content evidence before replaying terminal audit quarantine."""
+    gates = provenance_row.get("activation_gates")
+    if not isinstance(gates, dict):
+        return False
+    identity = gates.get("10_content_identity_integrity")
+    playable = gates.get("00_current_playable_stream")
+    if not isinstance(identity, dict) or not isinstance(playable, dict):
+        return False
+    identity_evidence = identity.get("evidence")
+    playable_evidence = playable.get("evidence")
+    if not isinstance(identity_evidence, dict) or not isinstance(playable_evidence, dict):
+        return False
+    contradictions = int(identity_evidence.get("identity_contradiction_count") or 0)
+    duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
+    playable_streams = int(playable_evidence.get("streams_playable") or 0)
+    return playable_streams > 0 and (contradictions > 0 or duration_mismatches > 0)
+
+
+def stale_terminal_audit_quarantine(relative: str, provenance_row: dict[str, Any]) -> bool:
+    """Return true only for an old terminal audit quarantine disproved by current evidence."""
+    if "--nuvio-audit-quarantine--" not in relative:
+        return False
+    scopes = provenance_row.get("catalogue_audit_quarantine_scopes")
+    if isinstance(scopes, list) and scopes:
+        return False
+    mode = str(provenance_row.get("activation_mode") or "").strip().casefold()
+    blockers = {str(value) for value in (provenance_row.get("activation_blockers") or []) if str(value)}
+    marked = mode.startswith("catalogue_audit_") or AUDIT_QUARANTINE_BLOCKER in blockers
+    if not marked:
+        return False
+    gates = provenance_row.get("activation_gates")
+    if not isinstance(gates, dict):
+        return False
+    identity = gates.get("10_content_identity_integrity")
+    playable = gates.get("00_current_playable_stream")
+    if not isinstance(identity, dict) or not isinstance(playable, dict):
+        return False
+    identity_evidence = identity.get("evidence")
+    playable_evidence = playable.get("evidence")
+    if not isinstance(identity_evidence, dict) or not isinstance(playable_evidence, dict):
+        return False
+    playable_streams = int(playable_evidence.get("streams_playable") or 0)
+    contradictions = int(identity_evidence.get("identity_contradiction_count") or 0)
+    duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
+    return playable_streams > 0 and contradictions == 0 and duration_mismatches == 0
+
+
 def publication_audit_quarantine(
     data: bytes,
     provider_id: str,
     relative: str,
     provenance_row: dict[str, Any],
 ) -> tuple[bytes, str | None]:
-    """Replay live publication-scoped audit quarantine from durable provenance.
+    """Replay only a currently evidenced publication-scoped audit quarantine.
 
-    The current public bundle is evidence/output only; it is never an input.
-    Quick recovery replaces the audit filename/provenance after fresh strict
-    proof, so this preservation layer disappears automatically on recovery.
+    Scoped quarantine carries its own durable affected scope. Terminal quarantine
+    is more destructive and therefore requires current playable wrong-content
+    evidence; a historical filename/blocker alone can never keep a recovered
+    provider inert forever.
     """
     mode = str(provenance_row.get("activation_mode") or "").strip().casefold()
     blockers = {str(value) for value in (provenance_row.get("activation_blockers") or []) if str(value)}
     scopes = provenance_row.get("catalogue_audit_quarantine_scopes")
-    live = (
+    marked = (
         "--nuvio-audit-quarantine--" in relative
         and (
             mode.startswith("catalogue_audit_")
@@ -473,7 +522,7 @@ def publication_audit_quarantine(
             or (isinstance(scopes, list) and bool(scopes))
         )
     )
-    if not live:
+    if not marked:
         return data, None
 
     if isinstance(scopes, list) and scopes:
@@ -483,6 +532,9 @@ def publication_audit_quarantine(
             scopes,
         )
         return text.encode("utf-8"), "scoped"
+
+    if not _audit_terminal_contradiction_is_current(provenance_row):
+        return data, None
 
     text = apply_terminal_quarantine(
         data.decode("utf-8", errors="strict"),
@@ -510,9 +562,17 @@ def validate_artifact(data: bytes, provider_id: str) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def published_name(provider_id: str, old_path: Path, digest: str) -> str:
+def published_name(
+    provider_id: str,
+    old_path: Path,
+    digest: str,
+    *,
+    audit_quarantined: bool = False,
+) -> str:
     parts = old_path.stem.split("--")
     source = parts[-2] if len(parts) >= 3 else "nuvio"
+    if not audit_quarantined and source.endswith("-audit-quarantine"):
+        source = source[: -len("-audit-quarantine")] or "nuvio"
     return f"{safe_fragment(provider_id.casefold())}--{safe_fragment(source)}--{digest[:16]}.js"
 
 
@@ -904,6 +964,14 @@ def main() -> int:
                 "reason": configured_quarantine_reason,
             }]
 
+        released_stale_audit_quarantine = bool(
+            not configured_quarantine_reason
+            and stale_terminal_audit_quarantine(relative, provider_provenance)
+        )
+        if released_stale_audit_quarantine and entry.get("enabled") is not True:
+            entry["enabled"] = True
+            manifest_changed = True
+
         patched, audit_quarantine_kind = publication_audit_quarantine(
             patched,
             provider_id,
@@ -977,7 +1045,7 @@ def main() -> int:
         if changed:
             applied_count += 1
         digest = hashlib.sha256(patched).hexdigest()
-        new_relative = f"providers/{published_name(provider_id, path, digest)}"
+        new_relative = f"providers/{published_name(provider_id, path, digest, audit_quarantined=bool(audit_quarantine_kind))}"
         updates[provider_id] = (relative, new_relative)
         outputs[new_relative] = patched
         old_paths.add(relative)
@@ -1001,6 +1069,7 @@ def main() -> int:
             "records": records,
             "terminal_quarantine": terminal_quarantine,
             "audit_terminal_quarantine": audit_terminal_quarantine,
+            "released_stale_audit_quarantine": released_stale_audit_quarantine,
         }
 
     secondary_payloads: list[tuple[Path, dict[str, Any]]] = []
@@ -1077,7 +1146,30 @@ def main() -> int:
                 row,
             )
             manifest_overrides = configured_manifest_overrides(override_config, provider_id)
-            if update.get("audit_terminal_quarantine"):
+            if update.get("released_stale_audit_quarantine"):
+                row["activation_eligible"] = True
+                row["strict_activation_eligible"] = True
+                row["strict_grace_eligible"] = False
+                row["historical_quality_grace_eligible"] = False
+                row["runtime_evidence_eligible"] = False
+                row["activation_mode"] = "strict_current"
+                row["activation_blockers"] = [
+                    str(value)
+                    for value in (row.get("activation_blockers") or [])
+                    if str(value) not in {AUDIT_QUARANTINE_BLOCKER, "configured_safety_quarantine"}
+                ]
+                row.pop("catalogue_audit_quarantine_scopes", None)
+                row["local_patches"] = [
+                    record
+                    for record in (row.get("local_patches") or [])
+                    if not (
+                        isinstance(record, dict)
+                        and record.get("type") == "publication_quarantine_replay"
+                        and record.get("source") == "provenance"
+                        and record.get("reason") == AUDIT_QUARANTINE_BLOCKER
+                    )
+                ]
+            elif update.get("audit_terminal_quarantine"):
                 row["activation_eligible"] = False
                 row["strict_activation_eligible"] = False
                 row["strict_grace_eligible"] = False
