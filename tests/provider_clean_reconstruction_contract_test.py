@@ -138,6 +138,11 @@ assert "excluded_patch_scripts=(" in published_reapply
 
 assert "CLEAN_V2_CORE_BOUNDARY_MARKER" in published_reapply
 assert "_canonicalize_clean_v2_core_boundary" in published_reapply
+
+assert "publication_configured_safety_quarantine" in published_reapply
+assert '"source": "provider-overrides"' in published_reapply
+assert '"scope": "configured-safety"' in published_reapply
+assert "configured safety quarantine has no reason" in published_reapply
 assert "clean v2 publication has no derived Core marker" in published_reapply
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
