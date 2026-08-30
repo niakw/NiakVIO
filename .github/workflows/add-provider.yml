@@ -220,6 +220,7 @@ jobs:
           mkdir -p .provider-onboarding/routes
           python scripts/resolve_provider_hubs.py             --apply --mode deep --include-disabled --search-disabled             --provider "$PROVIDER_ID" --workers 1 --timeout 8             --output .provider-onboarding/routes/provider-hub-report.json || true
           python scripts/resolve_provider_hub_search_fallback.py             --report .provider-onboarding/routes/provider-hub-report.json             --output .provider-onboarding/routes/provider-hub-search-fallback.json             --apply --max-providers 1 --timeout 8 || true
+          python scripts/probe_provider_site_structure.py             --current .provider-onboarding/current.json             --output .provider-onboarding/routes/provider-site-structure.json             --timeout 8 --max-chunks 12 || true
           python scripts/add_provider.py refresh --provider "$PROVIDER_ID"
 
       - name: Delegate automatic defaults to Provider branding assets engine
@@ -275,7 +276,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m py_compile             scripts/add_provider.py             scripts/provider_branding_assets.py             scripts/run_brain_learning_queue.py             scripts/prepare_native_ios_reader_acceptance.py
+          python -m py_compile             scripts/add_provider.py             scripts/provider_branding_assets.py             scripts/run_brain_learning_queue.py             scripts/prepare_native_ios_reader_acceptance.py             scripts/probe_provider_site_structure.py
           node --check scripts/nuvio_client_lab.cjs
           node --check scripts/nuvio_client_lab_session.cjs
           python tests/add_provider_workflow_test.py
