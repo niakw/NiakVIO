@@ -10,10 +10,10 @@ PROV = ROOT / "PROVENANCE.json"
 BASE_DIR = ROOT / "provider-bases"
 TARGET_SOURCE = ROOT / "scripts/provider_patches/nuvio_tv_target_media_v3.py"
 
-BASE_BASE_OLD_CLEAN = r'''function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}'''
-BASE_BASE_NEW_CLEAN = r'''function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}'''
-SOURCE_BASE_OLD_CLEAN = r'''function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\\\//g,"/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}'''
-SOURCE_BASE_NEW_CLEAN = r'''function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}'''
+BASE_OLD_CLEAN = r'''function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}'''
+BASE_NEW_CLEAN = r'''function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}'''
+SOURCE_OLD_CLEAN = r'''function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\\\//g,"/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}'''
+SOURCE_NEW_CLEAN = r'''function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}'''
 
 OLD_ALERT_PATHS = {
     "provider-bases/movix--base--860cda2de2e43ee4.js",
@@ -24,10 +24,10 @@ OLD_ALERT_PATHS = {
 
 def patch_source() -> None:
     text = TARGET_SOURCE.read_text(encoding="utf-8")
-    count = text.count(SOURCE_BASE_OLD_CLEAN)
+    count = text.count(SOURCE_OLD_CLEAN)
     if count != 1:
         raise RuntimeError(f"target-media source clean() expected once, found {count}")
-    TARGET_SOURCE.write_text(text.replace(SOURCE_BASE_OLD_CLEAN, SOURCE_BASE_NEW_CLEAN), encoding="utf-8")
+    TARGET_SOURCE.write_text(text.replace(SOURCE_OLD_CLEAN, SOURCE_NEW_CLEAN), encoding="utf-8")
     print("FIELD_CODEQL_CLEAN_SOURCE replacements=1")
 
 def migrate_active_bases() -> tuple[dict, list[tuple[str,str,str]]]:
