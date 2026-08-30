@@ -256,3 +256,51 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 ''',encoding="utf-8")
     subprocess.run(["node",str(runner),str(provider)],check=True)
+
+# explicit anime without episode resolves namespace from TMDB instead of assuming TV.
+anime_ambiguous = mod.apply(object_base, options={"semantic_types": ["anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "anime-ambiguous.js"
+    test = tmp_path / "anime-ambiguous-test.js"
+    provider.write_text(anime_ambiguous, encoding="utf-8")
+    test.write_text(r'''
+const seen=[];
+global.fetch=async(url)=>{
+  const u=String(url);seen.push(u);
+  if(u.includes("/tv/4242"))return{ok:true,text:async()=>"<html><a href='/genre/18-drama'>Drama</a><div>Original Language English</div></html>"};
+  if(u.includes("/movie/4242"))return{ok:true,text:async()=>"<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"};
+  throw new Error("unexpected "+u);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+ const value=await provider.getStreams({tmdbId:"4242",mediaType:"anime"});
+ if(!value.length||value[0].mediaType!=="anime")throw new Error("explicit anime unresolved");
+ if(value[0].tmdbNamespace!=="movie"||value[0].tmdbIdentity!=="movie:4242")throw new Error("wrong anime namespace");
+ if(!seen.some(u=>u.includes("/tv/4242"))||!seen.some(u=>u.includes("/movie/4242")))throw new Error("both namespaces not checked");
+})().catch(e=>{console.error(e);process.exit(1);});
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
+
+# Episodic anime is deterministically TV.
+anime_episode = mod.apply(object_base, options={"semantic_types": ["anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "anime-episode.js"
+    test = tmp_path / "anime-episode-test.js"
+    provider.write_text(anime_episode, encoding="utf-8")
+    test.write_text(r'''
+const seen=[];
+global.fetch=async(url)=>{
+ const u=String(url);seen.push(u);
+ if(!u.includes("/tv/280049"))throw new Error("episodic anime left TV namespace");
+ return{ok:true,text:async()=>"<html><a href='/keyword/anime'>anime</a><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div></html>"};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+ const value=await provider.getStreams({tmdbId:"280049",mediaType:"anime",season:1,episode:11});
+ if(!value.length||value[0].tmdbNamespace!=="tv")throw new Error("episodic anime not TV");
+ if(seen.some(u=>u.includes("/movie/")))throw new Error("unnecessary movie namespace probe");
+})().catch(e=>{console.error(e);process.exit(1);});
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)
