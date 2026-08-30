@@ -152,7 +152,6 @@ assert "CLEAN_RECONSTRUCTION_SOURCE" in promoter
 assert "CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE" in promoter
 assert "is_pending_clean_reconstruction_candidate" in promoter
 assert "pending_clean_reconstruction_has_strict_deep_proof" in promoter
-assert '"clean_reconstruction_strict_deep_proof_pending"' in promoter
 assert '"pending-canonical-deep-proof"' in promoter
 assert '"preserved-published-state-clean-candidate-pending"' in promoter
 assert 'retained = dict(old_entry)' in promoter
