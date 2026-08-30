@@ -21,14 +21,19 @@ ROUTE_HINT = re.compile(
 )
 ATTR_URL = re.compile(r"""(?:href|src)\s*=\s*["']([^"'<>\s]+)["']""", re.I)
 ABS_URL = re.compile(r"""https?://[^"'<>\s\\]+""", re.I)
+PLAYER_PATH = re.compile(r"/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy)(?:/|$)", re.I)
+DIRECT_MEDIA = re.compile(r"\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#]|$)|/(?:hls|dash|stream)(?:/|[?#]|$)", re.I)
 
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def fetch_text(url: str, timeout: int = 10) -> tuple[int, str, str, str]:
-    req = Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/javascript,text/plain,*/*"})
+def fetch_text(url: str, timeout: int = 10, referer: str = "") -> tuple[int, str, str, str]:
+    headers = {"User-Agent": UA, "Accept": "text/html,application/javascript,text/plain,*/*"}
+    if referer:
+        headers["Referer"] = referer
+    req = Request(url, headers=headers)
     with urlopen(req, timeout=timeout) as response:
         status = int(getattr(response, "status", 200))
         final = str(response.geturl())
@@ -53,6 +58,35 @@ def slugify(value: str) -> str:
     value = html.unescape(str(value or "")).lower()
     value = re.sub(r"[^a-z0-9]+", "-", value)
     return value.strip("-")
+
+
+def sanitized_url_pattern(value: str) -> str:
+    try:
+        parsed = urlsplit(value)
+    except ValueError:
+        return ""
+    keys = sorted({part.split("=", 1)[0] for part in parsed.query.split("&") if part})
+    return (parsed.path or "/") + (("?" + "&".join(keys)) if keys else "")
+
+
+def direct_media_hosts(text: str) -> list[str]:
+    normalized = html.unescape(text).replace("\\/", "/").replace("\\u002f", "/").replace("\\u003a", ":")
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in ABS_URL.findall(normalized):
+        value = clean_route(raw)
+        if not DIRECT_MEDIA.search(value):
+            continue
+        try:
+            host = (urlsplit(value).hostname or "").casefold()
+        except ValueError:
+            continue
+        if host and host not in seen:
+            seen.add(host)
+            out.append(host)
+        if len(out) >= 12:
+            break
+    return out
 
 
 def useful_absolute_urls(text: str) -> list[str]:
@@ -139,9 +173,11 @@ def main() -> int:
         "pages": [],
         "next_chunks": [],
         "route_hints": [],
+        "runtime_routes": [],
     }
     route_seen: set[str] = set()
     chunk_priority: dict[str, int] = {}
+    runtime_candidates: dict[str, str] = {}
 
     for page in pages:
         try:
@@ -152,6 +188,14 @@ def main() -> int:
         attrs = [urljoin(final, clean_route(v)) for v in ATTR_URL.findall(text)]
         same = [u for u in attrs if same_origin(u, origin)]
         page_is_detail = "/title/" in urlsplit(final).path
+        if page_is_detail:
+            for candidate in same:
+                try:
+                    candidate_path = urlsplit(candidate).path
+                except ValueError:
+                    continue
+                if PLAYER_PATH.search(candidate_path):
+                    runtime_candidates.setdefault(candidate, final)
         for u in same:
             if "/_next/static/" in u:
                 priority = (100 if page_is_detail else 10) + (20 if u.lower().endswith(".js") else 0)
@@ -173,6 +217,33 @@ def main() -> int:
             "useful_absolute_urls": useful_abs,
             "next_chunk_count": len([u for u in same if "/_next/static/" in u]),
         })
+
+    for runtime_url, referer in list(runtime_candidates.items())[:4]:
+        pattern = sanitized_url_pattern(runtime_url)
+        try:
+            status, final, ctype, text = fetch_text(runtime_url, args.timeout, referer=referer)
+            report["runtime_routes"].append({
+                "url_pattern": pattern,
+                "referer_path": urlsplit(referer).path or "/",
+                "ok": True,
+                "status": status,
+                "final_path": urlsplit(final).path or "/",
+                "content_type": ctype,
+                "bytes_scanned": min(len(text.encode("utf-8", errors="ignore")), 2_000_000),
+                "route_hints": discover_routes(text)[:80],
+                "useful_absolute_urls": [
+                    sanitized_url_pattern(value) + "@" + (urlsplit(value).hostname or "")
+                    for value in useful_absolute_urls(text)[:40]
+                ],
+                "direct_media_hosts": direct_media_hosts(text),
+            })
+        except Exception as exc:
+            report["runtime_routes"].append({
+                "url_pattern": pattern,
+                "referer_path": urlsplit(referer).path or "/",
+                "ok": False,
+                "error": type(exc).__name__,
+            })
 
     ordered_chunks = sorted(
         chunk_priority,
@@ -208,7 +279,7 @@ def main() -> int:
     print(
         "FIELD_PROVIDER_SITE_STRUCTURE "
         f"id={current.get('id')} pages={len(report['pages'])} "
-        f"chunks={len(report['next_chunks'])} hints={len(report['route_hints'])}"
+        f"chunks={len(report['next_chunks'])} hints={len(report['route_hints'])} runtime_routes={len(report['runtime_routes'])}"
     )
     return 0
 
