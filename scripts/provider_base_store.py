@@ -29,6 +29,13 @@ DERIVED_PATCH_SCRIPTS = {
     "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
 }
 
+# Legacy source-shape patches are valid compatibility tools for pre-v2 bundles
+# but must never be replayed against a fresh NiakVIO-owned clean ProviderBase.
+# Their durable behavior belongs in the structured provider model / Core.
+CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS = DERIVED_PATCH_SCRIPTS | {
+    "scripts/provider_patches/castle_strict_identity_v1.py",
+}
+
 # ProviderBase owns durable provider logic. Everything below is derived publication
 # state and must never become an input to the next Core build.
 DERIVED_BASE_MARKERS = (
@@ -230,7 +237,7 @@ def build_base_from_seed(
         provider_id,
         seed_data,
         phase="discovery",
-        excluded_patch_scripts=DERIVED_PATCH_SCRIPTS,
+        excluded_patch_scripts=CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,
         include_global_core=False,
         config_path=overrides_path,
     )
