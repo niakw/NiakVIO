@@ -73,6 +73,10 @@ assert "probe_provider_runtime_parity.py" in SITE_WORKFLOW
 assert "provider-runtime-parity.json" in SITE_WORKFLOW
 assert "capture_output=True" in RUNTIME_PARITY
 assert '"network_observations": observations[:80]' in RUNTIME_PARITY
+assert '"onboarding_tv"' in RUNTIME_PARITY
+assert '"onboarding_compose"' in RUNTIME_PARITY
+assert '"injectAcceptLanguage": False' in RUNTIME_PARITY
+assert '"maxFetches": 18' in RUNTIME_PARITY
 assert '"streams"' not in RUNTIME_PARITY.split("def sanitize", 1)[1].split("def main", 1)[0]
 for route_token in ("stream", "streams", "source", "sources", "server", "servers", "resolve", "proxy", "manifest", "action"):
     assert route_token in SITE_PROBE, route_token

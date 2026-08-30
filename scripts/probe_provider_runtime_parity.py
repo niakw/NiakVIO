@@ -83,22 +83,47 @@ def materialize_committed(path: str, output: Path) -> Path:
     return output
 
 
-def worker_result(provider_path: Path, fixture: dict[str, Any]) -> dict[str, Any]:
+def worker_result(provider_path: Path, fixture: dict[str, Any], profile: str) -> dict[str, Any]:
+    profiles = {
+        "control": {
+            "platform": "android",
+            "userAgent": "Mozilla/5.0 (Linux; Android 14; Nuvio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36",
+            "injectAcceptLanguage": True,
+            "languages": ["fr-FR", "fr", "en-US", "en"],
+            "maxFetches": 30,
+        },
+        "onboarding_tv": {
+            "platform": "android-tv",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+            "injectAcceptLanguage": False,
+            "languages": ["fr-FR", "fr"],
+            "maxFetches": 18,
+        },
+        "onboarding_compose": {
+            "platform": "macos",
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+            "injectAcceptLanguage": False,
+            "languages": ["fr-FR", "fr"],
+            "maxFetches": 18,
+        },
+    }
+    selected = profiles[profile]
     context = {
         "fixtureMetadata": fixture,
         "locale": "fr-FR",
-        "languages": ["fr-FR", "fr", "en-US", "en"],
-        "platform": "android",
-        # A deliberately invalid key activates provider_worker.cjs's synthetic
-        # fixture metadata fallback without requiring any repository secret.
+        "languages": selected["languages"],
+        "platform": selected["platform"],
+        "userAgent": selected["userAgent"],
+        "injectAcceptLanguage": selected["injectAcceptLanguage"],
+        # Deterministic fixture metadata without requiring repository secrets.
         "tmdbApiKey": "niakvio-fixture",
         "maxSettingsProfiles": 1,
         "networkLimits": {
-            "maxFetches": 30,
+            "maxFetches": selected["maxFetches"],
             "maxResponseBytes": 5 * 1024 * 1024,
             "maxTotalResponseBytes": 20 * 1024 * 1024,
-            "maxDistinctHosts": 20,
-            "maxRedirects": 5,
+            "maxDistinctHosts": 12 if profile != "control" else 20,
+            "maxRedirects": 4 if profile != "control" else 5,
         },
     }
     proc = subprocess.run(
@@ -129,7 +154,9 @@ def worker_result(provider_path: Path, fixture: dict[str, Any]) -> dict[str, Any
             "error_details": {"code": "missing_worker_result"},
             "network_observations": [],
         }
-    return sanitize(result, proc.returncode)
+    sanitized = sanitize(result, proc.returncode)
+    sanitized["profile"] = profile
+    return sanitized
 
 
 def sanitize(result: dict[str, Any], exit_code: int) -> dict[str, Any]:
@@ -196,16 +223,27 @@ def main() -> int:
             "season": fixture.get("season"),
             "episode": fixture.get("episode"),
         },
-        "base": worker_result(base, fixture),
-        "published": worker_result(published, fixture),
+        "base": {
+            profile: worker_result(base, fixture, profile)
+            for profile in ("control", "onboarding_tv", "onboarding_compose")
+        },
+        "published": {
+            profile: worker_result(published, fixture, profile)
+            for profile in ("control", "onboarding_tv", "onboarding_compose")
+        },
     }
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_RUNTIME_PARITY "
-        f"id={provider_id} base={report['base']['stream_count']} "
-        f"published={report['published']['stream_count']}"
+        f"id={provider_id} "
+        f"base_control={report['base']['control']['stream_count']} "
+        f"base_tv={report['base']['onboarding_tv']['stream_count']} "
+        f"base_compose={report['base']['onboarding_compose']['stream_count']} "
+        f"published_control={report['published']['control']['stream_count']} "
+        f"published_tv={report['published']['onboarding_tv']['stream_count']} "
+        f"published_compose={report['published']['onboarding_compose']['stream_count']}"
     )
     return 0
 
