@@ -97,6 +97,9 @@ base_store_source = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf
 assert 'row.setdefault("clean_reconstruction_marked_at", marked_at)' in base_store_source
 assert 'store.update({' in base_store_source
 assert '"/title/" + titleKind + "/" + encodeURIComponent(id) + "-" + slug' in base_store_source
+embedded_source = base_store_source.split("function _embeddedText(value) {", 1)[1].split("function _slug(value) {", 1)[0]
+assert embedded_source.count(".replace(") == 1, "embedded URL decoding must remain single-pass"
+assert 'const raw = match[1] || match[0] || "";' in base_store_source
 assert "--clean-reconstruction" in discover
 assert '"upstream_code_role": "knowledge-only"' in discover
 assert '"upstream_code_executed": False' in discover
