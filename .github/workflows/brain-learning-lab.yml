@@ -242,7 +242,7 @@ jobs:
           if(rows.some(r=>r.candidate_code_origin!=='new-niakvio-clean-seed')) {
             throw new Error('clean reconstruction stage contains a legacy executable seed');
           }
-          if(candidates.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
+          if(rows.some(r=>r.upstream_code_executed!==false || r.legacy_provider_js_executed_for_reconstruction!==false)) {
             throw new Error('legacy/upstream JS execution escaped into clean reconstruction stage');
           }
           console.log('FIELD_CLEAN_RECONSTRUCTION_STAGE total='+byId.size+' required='+rows.length);
