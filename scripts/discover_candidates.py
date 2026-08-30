@@ -53,7 +53,7 @@ INFRASTRUCTURE_HOSTS = {
     "graphql.anilist.co", "api.tvmaze.com", "api.github.com",
     "raw.githubusercontent.com", "github.com", "www.github.com",
 }
-CUSTOM_B64_ALPHABET_RE = re.compile(r"""["']([A-Za-z]{52}0123456789+/=)["']""")
+CUSTOM_B64_ALPHABET_RE = re.compile(r"""["']([A-Za-z]{52}0123456789\+/=)["']""")
 CUSTOM_B64_TOKEN_RE = re.compile(r"""["']([A-Za-z0-9+/=]{4,256})["']""")
 ROUTE_LITERAL_RE = re.compile(
     r"""(?:^|["'])(/(?:api|search|recherche|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|movie|movies|media|sheet|film|films|tv|series|show|episode|season|wp-json|wp-admin|index\.php)[^"'<>\\\s]{0,500})""",
