@@ -229,16 +229,9 @@ function projectScraper(scraper, projection) {
   const semantic = Array.isArray(copy.supportedTypes)
     ? [...new Set(copy.supportedTypes.map((value) => String(value).trim().toLowerCase()).filter(Boolean))]
     : [];
-  if (semantic.includes("anime")) {
-    const aliases = [];
-    if (!semantic.includes("movie")) aliases.push("movie");
-    if (!semantic.includes("tv")) aliases.push("tv");
-    if (aliases.length) {
-      copy.canonicalSupportedTypes = [...semantic];
-      copy.supportedTypes = [...semantic, ...aliases];
-    } else {
-      delete copy.canonicalSupportedTypes;
-    }
+  if (semantic.includes("anime") && !semantic.includes("tv")) {
+    copy.canonicalSupportedTypes = [...semantic];
+    copy.supportedTypes = [...semantic, "tv"];
   } else {
     delete copy.canonicalSupportedTypes;
   }
