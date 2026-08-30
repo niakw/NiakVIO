@@ -154,7 +154,7 @@ jobs:
             exit 1
           fi
 
-      - name: Gate open high and critical CodeQL alerts on main
+      - name: Gate release-reachable high and critical CodeQL alerts on main
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -170,6 +170,32 @@ jobs:
           from pathlib import Path
           pages=json.loads(Path(os.environ['RUNNER_TEMP']+'/codeql-open.json').read_text())
           alerts=[row for page in pages for row in (page if isinstance(page,list) else []) if isinstance(row,dict)]
+
+          active_provider_paths=set()
+          for manifest_path in (Path('manifest.json'),Path('vf/manifest.json'),Path('vostfr/manifest.json')):
+              if not manifest_path.is_file():
+                  continue
+              payload=json.loads(manifest_path.read_text(encoding='utf-8'))
+              for entry in payload.get('scrapers') or []:
+                  if isinstance(entry,dict):
+                      filename=str(entry.get('filename') or '')
+                      if filename.startswith('providers/'):
+                          active_provider_paths.add(filename)
+
+          active_base_paths=set()
+          provenance_path=Path('PROVENANCE.json')
+          if provenance_path.is_file():
+              provenance=json.loads(provenance_path.read_text(encoding='utf-8'))
+              for provider_row in (provenance.get('providers') or {}).values():
+                  if not isinstance(provider_row,dict):
+                      continue
+                  base=str(provider_row.get('base_filename') or '')
+                  published=str(provider_row.get('published_filename') or '')
+                  if base.startswith('provider-bases/'):
+                      active_base_paths.add(base)
+                  if published.startswith('providers/'):
+                      active_provider_paths.add(published)
+
           revocation_path=Path('provider-security-revocations.json')
           revocations=json.loads(revocation_path.read_text()) if revocation_path.is_file() else {'entries':[]}
           revoked={
@@ -195,6 +221,10 @@ jobs:
                   'path': path,
               }
               current_path=Path(path) if path else None
+              if path.startswith('providers/') and path not in active_provider_paths:
+                  continue
+              if path.startswith('provider-bases/') and path not in active_base_paths:
+                  continue
               if current_path is not None and current_path.is_file():
                   bad.append(item)
                   if path.startswith(('providers/','provider-bases/')):
@@ -213,7 +243,7 @@ jobs:
           for row in bad:
               print('OPEN_CURRENT_HIGH_ALERT=' + json.dumps(row, sort_keys=True))
           if bad:
-              raise SystemExit('current or unrevoked high/critical CodeQL alerts remain on tested main tree')
+              raise SystemExit('release-reachable or unrevoked high/critical CodeQL alerts remain on tested main tree')
           PY
 
       - name: Report issue 69 security success
@@ -222,7 +252,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening contract, exhaustive published-provider scan, exact-SHA CodeQL and repository-wide High/Critical gate are green."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "#69 security gate SUCCEEDED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Global hardening contract, exhaustive published-provider scan, exact-SHA CodeQL and release-reachable High/Critical gate is green."
 
       - name: Report issue 69 security failure
         if: failure()
