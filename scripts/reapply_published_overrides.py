@@ -117,6 +117,20 @@ def bump_provider_version(value: str) -> str:
     return f"{major}.{minor}.{patch + 1}"
 
 
+def runtime_base_is_clean_v2(
+    provider_id: str,
+    provenance_row: dict[str, Any],
+    runtime_path: Path,
+) -> bool:
+    """Classify the actual runtime seed, not merely the provenance candidate state."""
+    if is_clean_reconstructed(provenance_row):
+        return True
+    if not is_clean_reconstruction_candidate(provenance_row):
+        return False
+    canonical_path, _canonical_sha = resolve_base(provider_id, provenance_row, require=True)
+    return canonical_path is not None and canonical_path.resolve() == runtime_path.resolve()
+
+
 def configured_authoritative_types(config: dict[str, Any], provider_id: str) -> list[str]:
     provider_key = str(provider_id or "").strip().casefold()
     patches = config.get("provider_patches") if isinstance(config, dict) else {}
@@ -837,9 +851,10 @@ def main() -> int:
         isolated = isolated_text.encode("utf-8")
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
         migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
-        clean_v2_base = (
-            is_clean_reconstructed(provider_provenance)
-            or is_clean_reconstruction_candidate(provider_provenance)
+        clean_v2_base = runtime_base_is_clean_v2(
+            provider_id,
+            provider_provenance,
+            provider_base_path,
         )
         patched, records = apply_overrides(
             provider_id,
