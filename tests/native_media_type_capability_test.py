@@ -27,7 +27,7 @@ def player(provider: str, route: str, mode: str, state: str, *, status: int = 0,
 
 
 def evidence_lines(*, probe_state: str) -> list[str]:
-    provider = "anime-sama"  # catalog/manifest: movie + anime, intentionally no tv
+    provider = "anime-sama"  # semantic anime; transport aliases may already be materialized by an earlier fixed-point test
     phases = [
         "ui-launched",
         "repository-load",
@@ -91,14 +91,42 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     assert cap.returncode == 0, cap.stdout + cap.stderr
     data = json.loads(cap_out.read_text(encoding="utf-8"))
     assert data["evidenceComplete"] is True
-    assert data["provenCapabilities"] == 1, data
-    proposal = data["proposals"][0]
-    assert proposal["provider"] == "anime-sama", proposal
-    assert proposal["kind"] == "transport_alias", proposal
-    assert proposal["semanticType"] == "anime", proposal
-    assert proposal["addTransportType"] == "tv", proposal
-    assert "addSemanticType" not in proposal, proposal
-    assert proposal["requiresCrossDeviceConfirmation"] is True
+    if data["proposals"]:
+        assert data["provenCapabilities"] == 1, data
+        proposal = data["proposals"][0]
+        assert proposal["provider"] == "anime-sama", proposal
+        assert proposal["kind"] == "transport_alias", proposal
+        assert proposal["semanticType"] == "anime", proposal
+        assert proposal["addTransportType"] == "tv", proposal
+        assert "addSemanticType" not in proposal, proposal
+        assert proposal["requiresCrossDeviceConfirmation"] is True
+    else:
+        assert data["provenCapabilities"] == 0, data
+        assert "probe_contract_already_declared" in data["outcomes"][0]["reasons"], data
+
+    helper = run(
+        "node", "-e",
+        (
+            "const {buildCapabilityProposal:f}=require('./scripts/analyze_native_media_type_capabilities.cjs');"
+            "console.log(JSON.stringify(["
+            "f({provider:'p',semanticType:'anime',requestType:'tv',semanticAlready:true,transportAlready:false,client:'tv',fixture:'a',streamCount:1}),"
+            "f({provider:'p',semanticType:'anime',requestType:'movie',semanticAlready:true,transportAlready:false,client:'tv',fixture:'a',streamCount:1}),"
+            "f({provider:'p',semanticType:'anime',requestType:'tv',semanticAlready:false,transportAlready:false,client:'tv',fixture:'a',streamCount:1}),"
+            "f({provider:'p',semanticType:'anime',requestType:'tv',semanticAlready:true,transportAlready:true,client:'tv',fixture:'a',streamCount:1})"
+            "]));"
+        ),
+    )
+    assert helper.returncode == 0, helper.stdout + helper.stderr
+    helper_rows = json.loads(helper.stdout)
+    assert helper_rows[0]["kind"] == "transport_alias"
+    assert helper_rows[0]["semanticType"] == "anime"
+    assert helper_rows[0]["addTransportType"] == "tv"
+    assert "addSemanticType" not in helper_rows[0]
+    assert helper_rows[1]["kind"] == "transport_alias"
+    assert helper_rows[1]["addTransportType"] == "movie"
+    assert helper_rows[2]["kind"] == "semantic_capability"
+    assert helper_rows[2]["addSemanticType"] == "anime"
+    assert helper_rows[3] is None
 
     brain_cap_out = tmp / "brain-capability.json"
     brain_cap = run(
@@ -107,10 +135,13 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     )
     assert brain_cap.returncode == 0, brain_cap.stdout + brain_cap.stderr
     brain_cap_data = json.loads(brain_cap_out.read_text(encoding="utf-8"))
-    assert len(brain_cap_data["proposals"]) == 1
-    assert brain_cap_data["proposals"][0]["kind"] == "transport_alias"
-    assert brain_cap_data["proposals"][0]["semanticType"] == "anime"
-    assert brain_cap_data["proposals"][0]["addTransportType"] == "tv"
+    if brain_cap_data["proposals"]:
+        assert len(brain_cap_data["proposals"]) == 1
+        assert brain_cap_data["proposals"][0]["kind"] == "transport_alias"
+        assert brain_cap_data["proposals"][0]["semanticType"] == "anime"
+        assert brain_cap_data["proposals"][0]["addTransportType"] == "tv"
+    else:
+        assert data["proposals"] == []
     assert brain_cap_data["policy"]["productionManifestMutationAllowed"] is False
 
     failed_log = tmp / "failed.log"

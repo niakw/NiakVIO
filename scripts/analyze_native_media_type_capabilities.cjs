@@ -39,6 +39,47 @@ function routeFields(f) {
   };
 }
 
+function buildCapabilityProposal({
+  provider,
+  semanticType,
+  requestType,
+  semanticAlready,
+  transportAlready,
+  client,
+  fixture,
+  streamCount,
+}) {
+  if (!semanticAlready) {
+    return {
+      kind: 'semantic_capability',
+      provider,
+      addSemanticType: semanticType,
+      requestType,
+      client,
+      fixture,
+      streamCount,
+      proof: 'all_returned_streams_reader_healthy_and_identity_matched',
+      requiresCrossDeviceConfirmation: true,
+      productionWritesAllowed: false,
+    };
+  }
+  if (!transportAlready) {
+    return {
+      kind: 'transport_alias',
+      provider,
+      semanticType,
+      addTransportType: requestType,
+      client,
+      fixture,
+      streamCount,
+      proof: 'semantic_identity_already_declared_and_transport_route_reader_healthy',
+      requiresCrossDeviceConfirmation: true,
+      productionWritesAllowed: false,
+    };
+  }
+  return null;
+}
+
 function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
   const logPaths = inputLogPaths.map((file) => path.resolve(file));
   const config = JSON.parse(fs.readFileSync(path.join(root, '.github/triggers/nuvio-client-lab.json'), 'utf8'));
@@ -192,33 +233,17 @@ function analyzeMediaTypeCapabilities(fixtureSlug, inputLogPaths) {
     };
     outcomes.push(outcome);
     if (proven) {
-      if (!semanticAlready) {
-        proposals.push({
-          kind: 'semantic_capability',
-          provider: route.provider,
-          addSemanticType: fixtureSemanticType,
-          requestType: route.requestType,
-          client: route.client,
-          fixture: fixtureSlug,
-          streamCount: route.returned,
-          proof: 'all_returned_streams_reader_healthy_and_identity_matched',
-          requiresCrossDeviceConfirmation: true,
-          productionWritesAllowed: false,
-        });
-      } else if (!transportAlready) {
-        proposals.push({
-          kind: 'transport_alias',
-          provider: route.provider,
-          semanticType: fixtureSemanticType,
-          addTransportType: route.requestType,
-          client: route.client,
-          fixture: fixtureSlug,
-          streamCount: route.returned,
-          proof: 'semantic_identity_already_declared_and_transport_route_reader_healthy',
-          requiresCrossDeviceConfirmation: true,
-          productionWritesAllowed: false,
-        });
-      }
+      const proposal = buildCapabilityProposal({
+        provider: route.provider,
+        semanticType: fixtureSemanticType,
+        requestType: route.requestType,
+        semanticAlready,
+        transportAlready,
+        client: route.client,
+        fixture: fixtureSlug,
+        streamCount: route.returned,
+      });
+      if (proposal) proposals.push(proposal);
     }
   }
 
@@ -276,4 +301,4 @@ function main() {
 }
 
 if (require.main === module) main();
-module.exports = { analyzeMediaTypeCapabilities };
+module.exports = { analyzeMediaTypeCapabilities, buildCapabilityProposal };
