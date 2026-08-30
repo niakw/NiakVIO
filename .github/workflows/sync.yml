@@ -334,7 +334,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Routine publication never reconstructs an existing clean candidate.
+          # Routine publication never reconstructs an existing clean candidate; rebuilds are explicit one-shot only.
           # An explicit one-shot trigger may name a bounded provider set for corrective
           # reconstruction; the trigger is removed after the new candidates are materialized.
           args=(--require-all-upstreams)
