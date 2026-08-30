@@ -479,8 +479,10 @@ jobs:
       - resolve-publish-source
     if: ${{ always() && github.event_name != 'pull_request' && needs.resolve-publish-source.result == 'success' && (needs.resolve-publish-source.outputs.publish_only == 'true' || needs.stage-and-test.result == 'success') }}
     concurrency:
-      group: nuvio-provider-publish-main
-      cancel-in-progress: false
+      # Serialize only Provider publications. Other applications/workflows
+      # prepare and publish independently and rely on git freshness/rebase.
+      group: niakvio-provider-publication-main
+      cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 90
     permissions:
