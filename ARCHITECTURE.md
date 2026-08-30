@@ -184,15 +184,23 @@ anime sans contexte épisodique → tv puis movie, jusqu'à preuve anime
         ↓
 lookup TMDB dans le namespace déterminé
         ↓
+gate namespace/capacité
+        ↓
+movie exige provider.movie
+tv accepte provider.tv ou provider.anime
+        ↓
 classification canonique → movie, tv ou anime
         ↓
-comparaison avec les types sémantiques du provider
+gate sémantique
+movie → provider.movie
+tv → provider.tv
+anime → provider.anime
         ↓
 incompatible / classification impossible → [] immédiatement
 compatible → plan provider appris → adaptation → streams
 ```
 
-Cette validation précède **tout appel au domaine du provider**. L'identité TMDB est toujours composite : `movie:<id>` et `tv:<id>` sont deux espaces distincts et un même nombre peut exister dans les deux. Un anime épisodique reste `tv:<id>` avec `canonicalType=anime`; `anime` n'est jamais un troisième namespace TMDB. Ainsi un provider TV ne recherche jamais Mob Psycho si TMDB le classe anime, et un provider anime ne recherche jamais une série classique uniquement parce que Nuvio l'a transportée en `series/tv`.
+Cette validation précède **tout appel au domaine du provider**. Le gate de namespace est volontairement moins coûteux que TMDB : un film envoyé à un provider `tv`, `anime` ou `tv+anime` sans capacité `movie` retourne `[]` immédiatement, sans lookup TMDB et sans fetch provider. Un film anime doit donc satisfaire les deux dimensions : capacité `movie` et sémantique `anime`. L'identité TMDB est toujours composite : `movie:<id>` et `tv:<id>` sont deux espaces distincts et un même nombre peut exister dans les deux. Un anime épisodique reste `tv:<id>` avec `canonicalType=anime`; `anime` n'est jamais un troisième namespace TMDB. Ainsi un provider TV ne recherche jamais Mob Psycho si TMDB le classe anime, et un provider anime ne recherche jamais une série classique uniquement parce que Nuvio l'a transportée en `series/tv`.
 
 Le runtime peut uniquement :
 
