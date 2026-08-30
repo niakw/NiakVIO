@@ -204,3 +204,8 @@ Le résultat DNS visible est volontairement limité à trois états :
 S'il n'existe aucun domaine à tester ou si aucune mesure exploitable n'a pu être produite pour une raison autre qu'une limite API, aucun faux `DNS OK` n'est inventé : le résultat visible reste non applicable.
 
 Les preuves détaillées (FAI, résolveur, HTTP, migration, état interne) restent conservées dans le rapport pour le moteur et le debug, mais ne remplacent pas ces trois statuts dans l'affichage NiakVIO. Un `DNS BLOCK` est une alerte uniquement. Le préflight DNS ne bloque jamais l'exécution runtime, même si le domaine semble bloqué chez un FAI ou globalement injoignable : Health/Quick/Deep/Labs continuent afin de conserver la chaîne de diagnostic complète (DNS, domaine, HTTP, runtime, erreurs et flux).
+
+
+## Learning quotidien
+
+Le contrôle santé de publication et le Learning sont séparés. Le Learning quotidien observe le catalogue complet, y compris les providers désactivés, puis traite une file adaptative persistante via `scripts/run_brain_learning_queue.py` avec un budget global de 60 minutes (5 minutes réservées à la finalisation). Un provider non terminé ou encore problématique est conservé pour un cycle ultérieur ; un résultat Learning ne contourne jamais les gates d'activation/publication.

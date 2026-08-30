@@ -1,3 +1,17 @@
+## 5.21.16 — ProviderBases propres, Learning autonome et finalisation pré-release
+
+- Formalise la reconstruction **knowledge-only** des ProviderBases : informations utiles et routes structurées sont conservées, mais le JavaScript exécutable tiers n'est pas utilisé comme base canonique.
+- Rend le ProviderBase durable et idempotent : il est créé proprement puis réutilisé/enrichi ; le Core ne le reconstruit pas à chaque appel.
+- Sépare définitivement le **Learning quotidien** du Core/Repair de publication : observation du catalogue complet, providers désactivés inclus, puis file adaptative persistante de 60 minutes avec reprise inter-jours.
+- Formalise la récupération d'adresse multi-chemins : hub → terminal connu → Telegram → Yandex/DuckDuckGo → découverte Telegram publique → candidat direct → historique/LKG.
+- Ajoute/solidifie l'onboarding **Add Provider full-auto** : demande structurée, résolution de routes, branding, ProviderBase propre, bundle, Labs et activation uniquement sous preuve runtime.
+- Préserve les artefacts clients hashés comme générations immuables avec une **fenêtre glissante de 10 générations** par provider et protection des références manifest/LKG/provenance.
+- Aligne les types média : `series/show = tv` au niveau transport, avec résolution metadata canonique vers `anime` lorsque l'œuvre est un anime.
+- Priorise les APIs runtime signées apprises avant le crawl générique d'embeds et durcit le décodage d'URL en single-pass.
+- Corrige les contrats/tests devenus contradictoires avec cette priorité runtime et réaligne les workflows de preuves Android TV/Mobile utilisés par la synchronisation README.
+- Intègre Kehflix comme provider VF `movie,tv,anime` avec hub `kehflix.wiki` → terminal `kehflix.com` ; il reste désactivé tant qu'une preuve client jouable complète n'est pas acquise.
+- Met `ARCHITECTURE.md` à niveau comme document technique de référence de la racine avant tag.
+
 ## 5.21.0 — Audit technique, clients natifs et durcissement de la publication
 
 - Intègre les corrections issues du croisement SonarQube / DeepSource / CodeScene sans réécriture aveugle des providers générés, snapshots LKG ou faux positifs de scanner.

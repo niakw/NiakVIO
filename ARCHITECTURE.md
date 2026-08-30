@@ -1,6 +1,8 @@
 # Architecture NiakVIO — ARCHI 2
 
-Ce document décrit **l'architecture réellement attendue en production** : un seul catalogue provider, un seul orchestrateur quick/deep, un moteur de décision partagé et des preuves runtime séparées.
+> **Document technique de référence à la racine du dépôt.** Toute évolution structurelle de NiakVIO doit mettre ce fichier à jour dans la même transaction que le code ou le workflow concerné.
+
+Ce document décrit **l'architecture réellement attendue en production** : un seul catalogue provider, des ProviderBases propres et durables, un seul orchestrateur Quick/Deep, un Learning quotidien indépendant, un moteur de décision partagé et des preuves runtime séparées.
 
 > NiakVIO n'héberge ni ne transcode les médias. Les providers/sites tiers restent les sources ; NiakVIO collecte leurs implémentations publiques, construit des candidats, répare les structures cassées, valide les résultats et publie des bundles Nuvio.
 
@@ -42,7 +44,7 @@ La transaction est rejetée si le round-trip catalogue → manifests n'est pas c
 
 ```mermaid
 flowchart LR
-    U[3 upstreams providers]
+    U[Upstreams + onboarding structuré]
     PUB[Bundles publiés / LKG]
     D[Discovery multi-variantes]
     DOM[Hubs / DNS / redirects / peers historiques]
@@ -126,15 +128,14 @@ Un résultat inconclusif ne détruit pas le LKG.
 
 ### Deep
 
-Deep utilise une profondeur/corpus plus large et reste l'autorité pour :
+Deep utilise une profondeur/corpus plus large pour la **validation/repair déterministe du pipeline de publication**. Il couvre notamment :
 
-- nouvelles intégrations provider ;
-- apprentissage/persistance de recipes ;
 - changements structurels importants ;
 - preuve stricte de contenu ;
-- reconstruction globale de connaissance.
+- reconstruction/probe plus profonde des providers déjà connus ;
+- migrations de domaine difficiles lorsque Quick n'apporte pas une preuve suffisante.
 
-Deep est planifié séparément et déclenchable explicitement. Une simple mise à jour de code ou de domaine ne doit pas automatiquement provoquer un rebuild Deep complet.
+**Deep n'est pas le Learning quotidien.** Le Learning est un workflow indépendant, avec son propre budget de temps et sa propre file persistante. Une simple mise à jour de Core, de provider ou de domaine ne doit donc pas relancer automatiquement le Learning ni un Lab natif lourd.
 
 ## 5. Discovery et provenance
 
@@ -151,6 +152,20 @@ La discovery :
 - rejette toute déclaration canonique dupliquée au staging au lieu de la repousser vers Repair.
 
 La provenance finale reste inscrite dans `PROVENANCE.json`.
+### 5.1 ProviderBase propre : connaissance durable, pas copie exécutable
+
+Chaque provider possède un **ProviderBase NiakVIO** qui constitue sa logique durable. La règle de construction est stricte :
+
+1. upstreams, hubs, pages publiques, APIs et observations runtime servent de **sources de connaissance** ;
+2. NiakVIO extrait identité, capacités, langues, routes, paramètres, structure search/detail/player/API, contraintes de referer et formats ;
+3. le ProviderBase est **reconstruit proprement par NiakVIO** ; du JavaScript exécutable tiers n'est pas réinjecté comme base canonique ;
+4. une fois créé proprement, le ProviderBase est **réutilisé et enrichi** ; le Core ne repart pas d'un fichier externe et ne le reconstruit pas à chaque appel ;
+5. le bundle public hashé est une **dérivation** du ProviderBase + état structuré courant + invariants Core.
+
+Le contrat `NIAKVIO_PROVIDER_BASE_OWNED_V2` interdit le retour silencieux à une seed exécutable legacy. Le Learning peut enrichir routes et connaissances structurées, mais ne remplace pas un ProviderBase sain par du code tiers.
+
+Pour les routes à jeton/signature, une route runtime apprise et précisément dérivée d'un player est résolue **avant** un crawl générique d'embed. Cette priorité évite qu'un iframe sans rapport consomme le budget réseau ou fasse perdre une clé courte durée.
+
 
 ## 6. Intelligence de domaine
 
@@ -163,9 +178,17 @@ ProviderBase / identité provider
         ↓
 Hub officiel / wiki
         ↓
-Telegram public / redirects / candidats directs / historique LKG
+URL terminale/directe connue
         ↓
-Yandex en Deep → DuckDuckGo fallback
+Telegram public connu → dernier domaine exploitable
+        ↓
+Yandex → DuckDuckGo fallback
+        ↓
+découverte Telegram publique via recherche
+        ↓
+candidat direct de recherche le plus fiable
+        ↓
+historique / LKG
         ↓
 validation même marque / allowlist
         ↓
@@ -271,7 +294,7 @@ Les classes V2 incluent :
 - `runtime_contract_drift` ;
 - `healthy`.
 
-Le Repair Brain suit une boucle déterministe :
+Le Repair Brain du pipeline suit une boucle **déterministe et bornée**. Il ne lance pas le Learning quotidien et ne transforme pas un run Core en session d'apprentissage :
 
 ```text
 classify
@@ -284,6 +307,35 @@ classify
 ```
 
 Les recettes réussies sont versionnées et liées au contexte/runtime qui les prouve.
+### 9.1 Learning quotidien indépendant et reprenable
+
+Le workflow `brain-learning-lab.yml` est une boucle d'observation/apprentissage **indépendante du Core/Repair de publication**.
+
+```text
+observation santé du catalogue complet (enabled + disabled)
+  → construction de la file adaptative
+  → provider problématique suivant
+  → résolution hub/direct/Telegram/recherche/LKG
+  → repair/probes bornés
+  → éventuellement Lab client ciblé sur un type déclaré
+  → mémoire sanitizée
+  → provider suivant
+  → reprise inter-jours si le budget est épuisé
+```
+
+Règles opérationnelles :
+
+- le catalogue complet est observé au moins une fois avant la file adaptative ;
+- les providers `enabled:false` restent observables et réparables ;
+- la file canonique est `scripts/run_brain_learning_queue.py` ;
+- budget global courant : **60 minutes**, avec **5 minutes réservées** à la finalisation ;
+- un provider peut connaître plusieurs tentatives utiles dans ce budget ;
+- `pendingProviders`, `retryProviders`, `providerState` et le provider interrompu permettent la **reprise le jour suivant** ;
+- un ciblage manuel `target_provider` utilise la même file canonique au lieu d'un chemin parallèle ;
+- le cron quotidien est `17 2 * * *` (02:17 UTC ; 04:17 à Paris pendant l'heure d'été).
+
+Le Learning produit de la connaissance et de la preuve ; il ne publie pas directement un provider sans repasser par les contrats de validation/publication prévus.
+
 
 ## 10. Déduplication avant Repair
 
@@ -303,7 +355,7 @@ Trois états doivent être distingués :
 
 Un zéro résultat sur une fixture n'est pas une preuve suffisante d'incompatibilité globale.
 
-Quick ne peut pas activer aveuglément un provider totalement nouveau : il peut réparer/réactiver les providers déjà connus sous les gates existantes ; Deep porte l'autorité d'intégration large.
+Quick ne peut pas activer aveuglément un provider totalement nouveau. L'onboarding `add-provider.yml` peut construire et publier sa présence structurée, mais **l'activation reste false tant qu'une preuve runtime demandée n'est pas acquise**. Un hub valide, un HTTP 200 ou une API détectée ne suffisent pas à eux seuls à déclarer le provider jouable.
 
 ## 12. Validation média
 
@@ -428,7 +480,8 @@ ne comptent pas comme succès.
 Une transaction publiée contient au minimum :
 
 - `provider_catalog.json` ;
-- bundles providers ;
+- ProviderBases propres ;
+- bundles providers adressés par contenu ;
 - manifests rendus ;
 - provenance ;
 - overrides/domain history nécessaires ;
@@ -448,6 +501,10 @@ Avant push :
 8. génération hashes ;
 9. intégrité finale ;
 10. commit atomique.
+
+Les bundles `providers/<id>--...--<hash>.js` sont des **artefacts clients immuables** : un fichier existant n'est pas réécrit sous le même hash.
+
+La maintenance applique une **rétention glissante de 10 générations distinctes par provider** via `providers/.generation-retention.json`. Lorsqu'une 11e génération apparaît, seule la plus ancienne génération non protégée peut sortir de la fenêtre ; les références courantes/pending, le LKG et la provenance publiée restent protégés. Les sources non hashées ne sont pas supprimées par cette politique.
 
 Le pipeline se termine par un checkout exact de `main` et rejoue les invariants de release.
 
@@ -481,7 +538,8 @@ Aucun nouveau comportement architectural ne doit être ajouté dans cette couche
 `sync.yml` reste **l'unique pipeline de publication complète Quick/Deep**. Les autres workflows durables ont des responsabilités bornées et ne doivent pas recréer une seconde boucle de publication.
 
 - **Publication / contrôle ARCHI 2** : `sync.yml`, `core-media-finalize-main.yml`, `provider-overrides-gate.yml` ;
-- **preuves natives** : `native-tv-route-reader.yml`, `native-mobile-android-reader.yml`, `native-mobile-ios-reader.yml`, `native-desktop-reader-acceptance.yml`, `native-corpus-device-targeted.yml`, `native-reader-learning-sync.yml` ;
+- **preuves natives** : `native-mobile-android-reader.yml` (Android TV + Mobile Android), `native-mobile-ios-reader.yml`, `native-desktop-reader-acceptance.yml`, `native-corpus-device-targeted.yml`, `native-reader-learning-sync.yml` ;
+- **onboarding provider** : `add-provider.yml`, qui matérialise une demande structurée, résout hub/direct/Telegram/recherche, génère ProviderBase + bundle, exécute les Labs bornés puis publie atomiquement seulement la transaction validée ;
 - **Brain / connaissance / reporting** : `brain-learning-lab.yml`, `brain-branch-maintenance.yml`, `canonical-media-types.yml`, `provider-catalogue-breadth-lab.yml`, `provider-status-export.yml`, `provider-results-readme-sync.yml` ;
 - **observabilité / découverte** : `availability.yml`, `domain-refresh.yml`, `weekly-upstream-provider-discovery.yml` ;
 - **sécurité / qualité** : `github-actions-gate.yml`, `codeql.yml`, `security-final-gate.yml`, `repository-hygiene.yml`, `external-code-audit.yml`, `badge-light-contrast.yml` ;
@@ -491,13 +549,13 @@ Les Labs natifs conservent les snapshots AVD lorsque cela évite une reconstruct
 
 Les branches Brain ne sont pas des branches de code alternatives : `brain-learning/proposals` est automatiquement reconstruite sur le dernier `main` en ne conservant que la mémoire sanitizée (`engine_v2/learning/latest.json` et `.md`). `brain-repair/proposal` n'existe que pendant une PR Brain ouverte ; après merge/fermeture elle est supprimée et le prochain proposal repart du `main` courant.
 
-Le Learning Lab exécute une résolution **deep** des hubs/domaines sur le catalogue complet, providers désactivés inclus. Le fallback public est borné à **Yandex puis DuckDuckGo** ; un domaine découvert uniquement par moteur de recherche doit être confirmé sur deux runs consécutifs avant de remplacer un last-known-good. Cette découverte n'active jamais automatiquement un provider désactivé.
+Le Learning Lab commence par une observation du **catalogue complet**, providers désactivés inclus, puis traite sa file adaptative pendant 60 minutes. La résolution provider peut utiliser hub connu, URL terminale, Telegram connu, Yandex/DuckDuckGo, découverte Telegram publique, candidat direct de recherche puis historique/LKG. Un domaine découvert uniquement par moteur de recherche doit être confirmé sur deux runs consécutifs avant de remplacer un last-known-good. Cette découverte n'active jamais automatiquement un provider désactivé.
 
 Les workflows temporaires, one-shot et anciens orchestrateurs de refresh doivent disparaître après leur absorption dans les workflows durables.
 
 ## 22. Labs natifs sur `main`
 
-Les Labs ne reposent pas sur des branches de code permanentes. Les preuves NuvioTV, Mobile Android, Mobile iOS et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule et résolus à leur HEAD courant après contrôle de drift. TV, Android et iOS sont des workflows autonomes ; le Lab TV exécute les trois fixtures canoniques dans un seul job/boot. Aucun de ces Labs n'appelle le Brain.
+Les Labs ne reposent pas sur des branches de code permanentes. Les preuves NuvioTV, Mobile Android, Mobile iOS et Desktop sont produites depuis le SHA exact de `main`, avec les dépôts clients officiels utilisés comme baselines en lecture seule après contrôle de drift. `native-mobile-android-reader.yml` porte aujourd'hui les preuves Android TV **et** Mobile Android avec isolation par job/runtime ; iOS et Desktop conservent leurs workflows dédiés. `native-corpus-device-targeted.yml` permet un corpus manuel ciblé TV, Mobile, Desktop ou tous les clients. Aucun Lab natif n'appelle le Learning pour réparer pendant sa propre exécution.
 
 Une anomalie réelle devient une non-régression durable par la chaîne :
 
@@ -533,6 +591,9 @@ Niakvio/
 ├── provider_catalog.json            source de vérité
 ├── manifest.json                    projection générale
 ├── vf/manifest.json                 projection VF/VOSTFR
+├── no-anime/manifest.json           projection générale sans providers anime
+├── vf-no-anime/manifest.json        projection VF sans providers anime
+├── provider-bases/                  logique durable NiakVIO reconstruite proprement
 ├── engine_v2/
 │   ├── config/                      upstreams / adapters / evidence
 │   ├── src/
@@ -541,7 +602,9 @@ Niakvio/
 │   │   └── provider-catalog.mjs     catalogue canonique
 │   ├── scripts/                     ingestion / observation / génération
 │   └── tests/                       invariants ARCHI 2
-├── providers/                       bundles publiés
+├── providers/                       artefacts clients hashés immuables (fenêtre glissante 10)
+├── provider-hubs.json               hub/direct/Telegram/recherche et routes connues
+├── provider-domain-history.json     historique/LKG de domaine
 ├── scripts/                         primitives de compatibilité nécessaires
 ├── automation/                      état/runtime/LKG/politiques
 ├── tests/                           non-régressions de release
@@ -557,7 +620,7 @@ Niakvio/
 1. Une seule source de vérité provider : `provider_catalog.json`.
 2. Un seul orchestrateur de publication : `sync.yml`.
 3. Réparer avant de trier/désactiver.
-4. Préférer un sibling sain avant une transformation.
+4. Health/Repair traite un seul provider canonique ; un sibling/upstream ne peut jamais masquer l'échec de ce provider.
 5. Conserver le LKG sur preuve inconclusive.
 6. Quarantine uniquement sur preuve forte.
 7. Exploration et repair toujours bornés.
@@ -572,3 +635,9 @@ Niakvio/
 16. Toute publication est atomique, hashée et fail-closed.
 17. Les Labs natifs valident le SHA exact de `main` ; aucune branche Lab de code permanente n'est requise.
 18. Une primitive historique n'est conservée que tant qu'elle apporte une fonction réellement non remplacée.
+19. Un ProviderBase propre est construit à partir de connaissance structurée ; le Core ne recopie ni ne réinjecte du code exécutable tiers comme base canonique.
+20. Le ProviderBase durable n'est pas reconstruit à chaque appel ; le bundle public est dérivé et content-addressed.
+21. Le Learning quotidien est indépendant du Core/Repair et reprend sa file entre les jours lorsque son budget est épuisé.
+22. `series` / `show` sont des alias de transport de `tv` ; la sémantique canonique peut néanmoins devenir `anime` après résolution metadata.
+23. Une route runtime signée précisément apprise est tentée avant le crawl générique d'embeds.
+24. Les bundles hashés sont immuables et suivent une fenêtre de rétention de 10 générations, sans supprimer une génération encore référencée/protégée.
