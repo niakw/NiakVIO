@@ -1294,6 +1294,20 @@ def apply_overrides(
                 "scope": "global_media_type_resolution",
             })
 
+    # A terminal quarantine is an inert publication state. Once the provider
+    # has been replaced by the quarantine artifact, historical route/domain
+    # rewrite records are no longer part of the effective build and must not
+    # survive as misleading repair evidence.
+    if "NUVIO_PROVIDER_QUARANTINE_V1" in text:
+        applied = [
+            row for row in applied
+            if str(row.get("type") or "") not in {
+                "replace",
+                "runtime_domain_overrides",
+                "fixed_endpoint",
+            }
+        ]
+
     if text == original_text:
         return data, []
     return text.encode("utf-8"), applied
