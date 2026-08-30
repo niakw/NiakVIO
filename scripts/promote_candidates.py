@@ -2128,6 +2128,54 @@ def main() -> int:
                 # reached the publication writer.
                 if old_artifact_available and isinstance(old_entry, dict) and old_entry:
                     retained = dict(old_entry)
+                    retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
+                    if old_safety_quarantine:
+                        # A pending clean-v2 proposal is not recovery proof. If
+                        # the retained published artifact is a conclusive safety
+                        # quarantine, preserve its exact activation evidence and
+                        # inert state until a later strict Deep proves recovery.
+                        retained["enabled"] = False
+                        entries[cid] = retained
+                        provenance[cid] = {
+                            **old_provenance,
+                            "id": cid,
+                            "published_filename": old_filename,
+                            "sha256": retained_digest,
+                            "patched_sha256": retained_digest,
+                            "checked_at": now,
+                            "check_mode": mode,
+                            "check_status": observed_status,
+                            "clean_reconstruction_required": True,
+                            "clean_reconstruction_verified": False,
+                            "clean_reconstruction_candidate_role": "pending-canonical-deep-proof",
+                            "preserved_candidate_key": selected.get("key"),
+                            "preserved_candidate_sha256": selected.get("sha256"),
+                            "preserved_reason": "clean_candidate_pending_kept_conclusive_safety_quarantine",
+                        }
+                        report_items.append(
+                            {
+                                "id": cid,
+                                "action": "preserved-conclusive-safety-quarantine-clean-candidate-pending",
+                                "enabled": False,
+                                "activation_eligible": False,
+                                "strict_activation_eligible": False,
+                                "activation_mode": str(
+                                    old_provenance.get("activation_mode") or "safety_quarantine"
+                                ),
+                                "failed_gates": [
+                                    name for name, value in gates.items() if not value.get("passed")
+                                ],
+                                "activation_blockers": list(
+                                    old_provenance.get("activation_blockers") or blockers
+                                ),
+                                "activation_gates": gates,
+                                "observed_status": observed_status,
+                                "published_filename": old_filename,
+                                "variant_count": len(variants),
+                            }
+                        )
+                        continue
+
                     pending_manifest_overrides = (
                         provider_policy.get("manifest_overrides", {})
                         if isinstance(provider_policy, dict)
@@ -2156,7 +2204,6 @@ def main() -> int:
                         else bool(old_entry.get("enabled", False))
                     )
                     entries[cid] = retained
-                    retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
                     pending_blockers = list(
                         dict.fromkeys(
                             (
