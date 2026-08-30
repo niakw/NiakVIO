@@ -14,7 +14,6 @@ DESKTOP = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 OLD_DIRECT = "scripts/provider_patches/nuvio_tv_direct_media_v2.py"
 FRENCHSTREAM_RAW_TV = "scripts/provider_patches/frenchstream_raw_tv_fallback.py"
 COFLIX_EXACT = "scripts/provider_patches/coflix_exact_catalogue.py"
-STREAMZO_IDENTITY = "scripts/provider_patches/streamzo_source_identity_v3.py"
 TV_PLAYABLE_FIRST = "scripts/provider_patches/nuvio_tv_playable_first_v1.py"
 QUARANTINE = "scripts/provider_patches/quarantine_provider_v1.py"
 NATIVE_TARGET_ORDER_COMPAT = "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py"
@@ -101,7 +100,10 @@ def main() -> int:
     streamzo = providers["streamzo"]
     sz_scripts = streamzo.get("patch_scripts") or []
     sz_profile = provider_profile(sz_scripts, "streamzo")
-    assert sz_profile[-5:] == [TARGET, SANITIZER, DESKTOP, STREAMZO_IDENTITY, TV_PLAYABLE_FIRST], sz_scripts
+    assert sz_profile == [TARGET, SANITIZER, DESKTOP, TV_PLAYABLE_FIRST], sz_scripts
+    assert not [path for path in sz_scripts if "/streamzo_" in path], sz_scripts
+    shared = (streamzo.get("patch_script_options") or {}).get("scripts/provider_patches/global_catalogue_alias_recovery_v2.py") or {}
+    assert shared.get("mirror_routes") == ["/api/mirrors/film/{id}"], shared
 
     print("VF terminal recovery profile tests passed")
     return 0
