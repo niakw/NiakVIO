@@ -45,5 +45,13 @@ assert "Package validated provider transaction" in ADD
 assert "Download validated provider transaction" in ADD
 assert "git diff --cached --binary --full-index" in ADD
 assert "git apply --3way --index" in ADD
+assert "site_structure_knowledge()" in SCRIPT
+assert "VOLATILE_ROUTE_QUERY_KEYS" in SCRIPT
+assert '"discovered_routes"' in SCRIPT
+assert '"routes": routes' in SCRIPT
+PROBE = (ROOT / "scripts/probe_provider_site_structure.py").read_text(encoding="utf-8")
+assert "useful_absolute_urls" in PROBE
+assert '"image.tmdb.org"' in PROBE
+assert "TMDB_HINT" not in PROBE
 
 print("add provider workflow contract passed: routing=full-auto branding=dedicated full_native_labs=false")
