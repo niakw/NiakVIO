@@ -59,7 +59,7 @@ assert fresh_seed == expected_fresh_seed, (
     fresh_seed[:240],
     expected_fresh_seed[:240],
 )
-assert b"NUVIO_PROVIDER_BASE_OWNED_V2" in expected_fresh_seed, expected_fresh_seed[:500]
+assert b"NIAKVIO_PROVIDER_BASE_OWNED_V2" in expected_fresh_seed, expected_fresh_seed[:500]
 assert b'"authoring":"niakvio-owned-v2"' in fresh_seed
 assert b'"upstreamCodeEmbedded":false' in fresh_seed
 assert b'"upstreamCodeExecuted":false' in fresh_seed
@@ -128,7 +128,7 @@ forced = discovery.executable_seed(
     force_clean_reconstruction=True,
 )
 assert forced[1] == "new-niakvio-clean-seed"
-assert b"NUVIO_PROVIDER_BASE_OWNED_V2" in forced[0]
+assert b"NIAKVIO_PROVIDER_BASE_OWNED_V2" in forced[0]
 assert forced[4].get("historicalKnowledgeMerged") is True
 assert forced[5]["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
 assert forced[5]["apiRecipe"]["movieRoute"] == "/media/{id}/sheet"
