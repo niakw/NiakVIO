@@ -634,6 +634,16 @@ jobs:
         run: |
           python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary
 
+      - name: Consume completed one-shot ProviderBase reconstruction
+        if: steps.freshness.outputs.stale != 'true'
+        shell: bash
+        run: |
+          python scripts/consume_force_clean_reconstruction_trigger.py \
+            --trigger .github/triggers/force-clean-provider-reconstruction.json \
+            --stage checked-artifact/staging/candidates.json \
+            --provenance PROVENANCE.json \
+            --consume
+
       - name: Consume successful one-shot reconstruction requests
         if: steps.freshness.outputs.stale != 'true'
         shell: bash
@@ -798,6 +808,7 @@ jobs:
             diagnostics-report.html route-regressions.json repair-report.json
           git add -A providers
           git add -A provider-bases
+          git add -A .github/triggers/force-clean-provider-reconstruction.json
           if git ls-files --error-unmatch .github/triggers/force-clean-provider-reconstruction.json >/dev/null 2>&1 \
              || [ -e .github/triggers/force-clean-provider-reconstruction.json ]; then
             git add -A -- .github/triggers/force-clean-provider-reconstruction.json
