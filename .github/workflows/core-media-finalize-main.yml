@@ -28,10 +28,10 @@ permissions:
 # workflow_dispatch runs keep an isolated group because the final orchestrator may
 # watch one exact dispatch as authoritative evidence.
 concurrency:
-  # Core, provider pipeline and full-auto onboarding all publish to main.
-  # One shared writer lane prevents stale provider/Core trees racing each other.
+  # Core generations are latest-wins. Provider P2 has its own publication lane,
+  # so a stale Core must never consume runner time behind a newer Core generation.
   group: nuvio-provider-publish-main
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   finalize-main:
@@ -169,6 +169,21 @@ jobs:
           python scripts/generate_language_manifests.py
           python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
           python scripts/prune_unreferenced_providers.py
+
+      - name: Cancel stale Core generation before heavy repository suite
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          current="$(git rev-parse origin/main)"
+          if [ "$current" != "$GITHUB_SHA" ]; then
+            echo "FIELD_CORE_STALE_BEFORE_SUITE event=$GITHUB_SHA current=$current action=cancel"
+            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/cancel" >/dev/null
+            exit 0
+          fi
+          echo "FIELD_CORE_SUITE_GENERATION_ACTIVE sha=$GITHUB_SHA"
 
       - name: Verify Core and native media contracts
         shell: bash
