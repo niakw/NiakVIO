@@ -44,8 +44,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             semantic_types.append(item)
     payload = {
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
+        "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-first-provider-entity-gate-v4",
+        "revision": "tmdb-first-provider-entity-gate-v5-bounded-execution",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -218,13 +219,31 @@ function install(o,k){
   var wrap=async function(){
     var a=await resolve(arguments);
     if(!a)return [];
-    var had=false,previous;
-    try{had=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"));previous=g&&g.__nuvioMediaContext}catch(_){}
+    var had=false,previous,hadDeadline=false,previousDeadline;
     try{
-      if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
-      return await native.apply(this,a);
+      had=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"));
+      previous=g&&g.__nuvioMediaContext;
+      hadDeadline=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"));
+      previousDeadline=g&&g.__nuvioProviderDeadlineMs;
+    }catch(_){}
+    try{
+      if(g){
+        g.__nuvioMediaContext=a.__nuvioContext||null;
+        g.__nuvioProviderDeadlineMs=Date.now()+c.providerTimeoutMs;
+      }
+      var value=await native.apply(this,a);
+      try{if(g&&Number(g.__nuvioProviderDeadlineMs)>0&&Date.now()>Number(g.__nuvioProviderDeadlineMs))return []}catch(_){}
+      return value;
+    }catch(error){
+      if(error&&error.__nuvioProviderTimeout)return [];
+      throw error;
     }finally{
-      try{if(g){if(had)g.__nuvioMediaContext=previous;else delete g.__nuvioMediaContext}}catch(_){}
+      try{
+        if(g){
+          if(had)g.__nuvioMediaContext=previous;else delete g.__nuvioMediaContext;
+          if(hadDeadline)g.__nuvioProviderDeadlineMs=previousDeadline;else delete g.__nuvioProviderDeadlineMs;
+        }
+      }catch(_){}
     }
   };
   wrap.__nuvioMediaTypeResolutionV1=true;

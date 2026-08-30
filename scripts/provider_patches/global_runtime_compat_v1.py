@@ -79,7 +79,21 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   // the network bridge itself expects one concrete URL string.
   if(typeof g.fetch==="function"&&!g.fetch.__nuvioGlobalRuntimeCompatV1){
     var nativeFetch=g.fetch.bind(g);
+    function providerTimedOut(){
+      try{
+        var deadline=Number(g&&g.__nuvioProviderDeadlineMs)||0;
+        return deadline>0&&Date.now()>deadline;
+      }catch(_error){return false;}
+    }
+    function providerTimeoutError(){
+      var error=new Error("NiakVIO provider execution budget exceeded");
+      error.name="NuvioProviderTimeoutError";
+      error.code="NUVIO_PROVIDER_TIMEOUT";
+      error.__nuvioProviderTimeout=true;
+      return error;
+    }
     var compatFetch=function(input,init){
+      if(providerTimedOut())return Promise.reject(providerTimeoutError());
       var next=input;
       try{
         if(input&&typeof input==="object"){
@@ -87,7 +101,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
           else if(typeof input.href==="string"||typeof input.toString==="function")next=String(input);
         }
       }catch(_error){next=input;}
-      return nativeFetch(next,init);
+      var pending;
+      try{pending=nativeFetch(next,init);}catch(error){return Promise.reject(error);}
+      return Promise.resolve(pending).then(function(value){
+        if(providerTimedOut())throw providerTimeoutError();
+        return value;
+      });
     };
     compatFetch.__nuvioGlobalRuntimeCompatV1=true;
     compatFetch.__nuvioOriginal=nativeFetch;

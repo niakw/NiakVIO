@@ -14,6 +14,12 @@ assert spec is not None and spec.loader is not None
 mod = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mod)
 
+RUNTIME_COMPAT = ROOT / "scripts" / "provider_patches" / "global_runtime_compat_v1.py"
+compat_spec = importlib.util.spec_from_file_location("global_runtime_compat_v1", RUNTIME_COMPAT)
+assert compat_spec is not None and compat_spec.loader is not None
+compat_mod = importlib.util.module_from_spec(compat_spec)
+compat_spec.loader.exec_module(compat_mod)
+
 base = r'''
 "use strict";
 async function getStreams(tmdbId, mediaType, season, episode) {
@@ -369,3 +375,49 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1);});
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
+
+# Provider execution budget must work without setTimeout. The outer media wrapper
+# sets a wall-clock deadline and the runtime fetch wrapper rejects the first fetch
+# that returns after the budget; the timeout is converted to [] and late rows never
+# escape to the client.
+deadline_base = r'''
+"use strict";
+async function getStreams(tmdbId, mediaType) {
+  await fetch("https://provider.example/one");
+  await fetch("https://provider.example/two");
+  return [{ tmdbId, mediaType, url: "https://provider.example/late.m3u8" }];
+}
+module.exports = { getStreams };
+'''
+deadline_patched = compat_mod.apply(deadline_base)
+deadline_patched = mod.apply(
+    deadline_patched,
+    options={"semantic_types": ["movie"], "provider_timeout_ms": 25_000},
+)
+deadline_runner = r'''
+let now = 0;
+Date.now = () => now;
+global.fetch = async () => {
+  now += 16000;
+  return { ok: true, json: async () => ({}), text: async () => "" };
+};
+const provider = require(process.argv[2]);
+(async () => {
+  const rows = await provider.getStreams({
+    tmdbId: "603",
+    mediaType: "movie",
+    tmdbMetadata: { id: 603, title: "The Matrix", genres: [{id:28,name:"Action"}], original_language: "en" }
+  });
+  if (!Array.isArray(rows) || rows.length !== 0) throw new Error("late provider result escaped deadline");
+  if (global.__nuvioProviderDeadlineMs !== undefined) throw new Error("provider deadline leaked after request");
+})().catch((error) => { console.error(error); process.exit(1); });
+'''
+with tempfile.TemporaryDirectory() as tmp:
+    provider_path = Path(tmp) / "deadline-provider.cjs"
+    runner_path = Path(tmp) / "deadline-runner.cjs"
+    provider_path.write_text(deadline_patched, encoding="utf-8")
+    runner_path.write_text(deadline_runner, encoding="utf-8")
+    result = subprocess.run(["node", str(runner_path), str(provider_path)], capture_output=True, text=True)
+    assert result.returncode == 0, result.stdout + result.stderr
+
+print("global media type resolution tests passed with 25s provider deadline")
