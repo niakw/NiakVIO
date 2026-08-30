@@ -7,7 +7,7 @@ import json
 import re
 from pathlib import Path
 from typing import Any
-from urllib.parse import quote, urljoin, urlsplit
+from urllib.parse import parse_qs, quote, urlencode, urljoin, urlsplit
 from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -167,6 +167,100 @@ def sanitized_route_contexts(text: str, routes: list[str]) -> list[dict[str, str
     return out
 
 
+RUNTIME_API_LITERAL = re.compile(
+    r"""(?P<q>["'`])(?P<route>/api/(?:streams?|source|sources|resolve|proxy)[^"'\\`\\s<>]{0,300})(?P=q)""",
+    re.I,
+)
+
+
+def runtime_api_patterns(text: str, media_type: str) -> list[str]:
+    normalized = html.unescape(text).replace("\\/", "/").replace("\\u002f", "/").replace("\\u003a", ":")
+    out: list[str] = []
+    seen: set[str] = set()
+    for match in RUNTIME_API_LITERAL.finditer(normalized):
+        raw = clean_route(match.group("route") or "")
+        try:
+            parsed = urlsplit(raw)
+        except ValueError:
+            continue
+        path = parsed.path
+        if re.search(r"/(?:working|dead|warm)$", path, re.I):
+            continue
+        media = (media_type or "").casefold()
+        if media and re.search(rf"/{re.escape(media)}$", path, re.I):
+            path = path[: -(len(media))] + "{media}"
+        keys = sorted({
+            part.split("=", 1)[0]
+            for part in parsed.query.split("&")
+            if part and part.split("=", 1)[0]
+        })
+        pattern = path + (("?" + "&".join(keys)) if keys else "")
+        if pattern not in seen:
+            seen.add(pattern)
+            out.append(pattern)
+        if len(out) >= 20:
+            break
+    return out
+
+
+def instantiate_runtime_api(pattern: str, runtime_url: str, media_type: str, season: Any, episode: Any) -> str:
+    try:
+        parsed = urlsplit(pattern)
+        runtime = urlsplit(runtime_url)
+    except ValueError:
+        return ""
+    path = parsed.path.replace("{media}", media_type or "movie")
+    runtime_params = parse_qs(runtime.query, keep_blank_values=True)
+    values: dict[str, str] = {}
+    for part in parsed.query.split("&"):
+        key = part.split("=", 1)[0].strip()
+        if not key:
+            continue
+        if key in runtime_params and runtime_params[key]:
+            values[key] = runtime_params[key][0]
+        elif key.casefold() in {"media", "m", "type"}:
+            values[key] = media_type or "movie"
+        elif key.casefold() in {"season", "s"} and season is not None:
+            values[key] = str(season)
+        elif key.casefold() in {"episode", "e"} and episode is not None:
+            values[key] = str(episode)
+        else:
+            return ""
+    return urljoin(runtime_url, path + (("?" + urlencode(values)) if values else ""))
+
+
+def json_source_patterns(text: str, base: str) -> tuple[int, list[str], list[str]]:
+    try:
+        value = json.loads(text)
+    except json.JSONDecodeError:
+        return 0, [], []
+    urls: list[str] = []
+    types: list[str] = []
+
+    def walk(node: Any, key: str = "") -> None:
+        if isinstance(node, dict):
+            for child_key, child in node.items():
+                if child_key.casefold() in {"type", "format"} and isinstance(child, str):
+                    token = child.strip().casefold()
+                    if token and token not in types:
+                        types.append(token[:40])
+                walk(child, child_key)
+        elif isinstance(node, list):
+            for child in node:
+                walk(child, key)
+        elif isinstance(node, str) and key.casefold() in {"src", "url", "file", "stream", "source"}:
+            absolute = urljoin(base, node)
+            pattern = sanitized_url_pattern(absolute)
+            host = urlsplit(absolute).hostname or ""
+            label = pattern + ("@" + host if host else "")
+            if label not in urls:
+                urls.append(label)
+
+    walk(value)
+    return len(urls), urls[:20], types[:12]
+
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--current", type=Path, default=DEFAULT_CURRENT)
@@ -269,6 +363,7 @@ def main() -> int:
             ]
             runtime_chunk_rows: list[dict[str, Any]] = []
             runtime_route_hints: list[str] = []
+            runtime_api_routes: list[str] = []
             runtime_direct_hosts: list[str] = direct_media_hosts(text)
             for chunk in list(dict.fromkeys(runtime_chunks))[: min(max(0, args.max_chunks), 18)]:
                 chunk_pattern = sanitized_url_pattern(chunk)
@@ -279,7 +374,11 @@ def main() -> int:
                         referer=final,
                     )
                     chunk_hints = discover_routes(chunk_text)[:80]
+                    chunk_api_routes = runtime_api_patterns(chunk_text, media_type)
                     chunk_direct_hosts = direct_media_hosts(chunk_text)
+                    for value in chunk_api_routes:
+                        if value not in runtime_api_routes:
+                            runtime_api_routes.append(value)
                     for value in chunk_hints:
                         if value not in runtime_route_hints:
                             runtime_route_hints.append(value)
@@ -294,6 +393,7 @@ def main() -> int:
                         "content_type": chunk_ctype,
                         "bytes_scanned": min(len(chunk_text.encode("utf-8", errors="ignore")), 2_000_000),
                         "route_hints": chunk_hints,
+                        "runtime_api_patterns": chunk_api_routes,
                         "route_contexts": sanitized_route_contexts(chunk_text, chunk_hints),
                         "useful_absolute_urls": [
                             sanitized_url_pattern(value) + "@" + (urlsplit(value).hostname or "")
@@ -307,6 +407,43 @@ def main() -> int:
                         "ok": False,
                         "error": type(exc).__name__,
                     })
+            runtime_api_probes: list[dict[str, Any]] = []
+            for api_pattern in runtime_api_routes[:6]:
+                api_url = instantiate_runtime_api(
+                    api_pattern,
+                    runtime_url,
+                    media_type,
+                    fixture.get("season"),
+                    fixture.get("episode"),
+                )
+                if not api_url:
+                    continue
+                try:
+                    api_status, api_final, api_ctype, api_text = fetch_text(
+                        api_url,
+                        args.timeout,
+                        referer=final,
+                    )
+                    source_count, source_patterns, source_types = json_source_patterns(
+                        api_text,
+                        api_final or api_url,
+                    )
+                    runtime_api_probes.append({
+                        "pattern": api_pattern,
+                        "ok": True,
+                        "status": api_status,
+                        "content_type": api_ctype,
+                        "source_count": source_count,
+                        "source_patterns": source_patterns,
+                        "source_types": source_types,
+                    })
+                except Exception as exc:
+                    runtime_api_probes.append({
+                        "pattern": api_pattern,
+                        "ok": False,
+                        "error": type(exc).__name__,
+                    })
+
             report["runtime_routes"].append({
                 "url_pattern": pattern,
                 "referer_path": urlsplit(referer).path or "/",
@@ -323,6 +460,8 @@ def main() -> int:
                 "direct_media_hosts": direct_media_hosts(text),
                 "next_chunk_count": len(runtime_chunks),
                 "runtime_chunk_route_hints": runtime_route_hints[:120],
+                "runtime_api_patterns": runtime_api_routes[:20],
+                "runtime_api_probes": runtime_api_probes,
                 "runtime_direct_media_hosts": runtime_direct_hosts[:24],
                 "runtime_chunks": runtime_chunk_rows,
             })
