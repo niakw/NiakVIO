@@ -346,6 +346,7 @@ def validate() -> list[str]:
         errors.append("activation preservation requires the current deep promotion report")
 
     justified: dict[str, str] = {}
+    deferred_to_learning: dict[str, str] = {}
     for provider_id in sorted(expected):
         manifest_row = main_rows.get(provider_id)
         is_missing = manifest_row is None
@@ -369,10 +370,35 @@ def validate() -> list[str]:
             if accepted:
                 justified[provider_id] = reason
                 continue
-        accepted, reason = conclusive_disablement(report_by_id.get(provider_id), missing=is_missing)
+        record = report_by_id.get(provider_id)
+        accepted, reason = conclusive_disablement(record, missing=is_missing)
         if accepted:
             justified[provider_id] = reason
             continue
+
+        # A persisted clean-v2 candidate is migration/Learning state, not an
+        # activation decision. When publication explicitly preserves the exact
+        # already-published state, do not block P2 just because activation-LKG
+        # metadata is older than that state. Learning/Repair owns reconciliation.
+        provenance_row = provenance_by_id.get(provider_id)
+        pending_v2_preserved = bool(
+            not is_missing
+            and isinstance(record, dict)
+            and str(record.get("action") or "") == "preserved-published-state-clean-candidate-pending"
+            and str(record.get("published_filename") or "") == str((manifest_row or {}).get("filename") or "")
+            and isinstance(provenance_row, dict)
+            and provenance_row.get("clean_reconstruction_candidate") is True
+            and provenance_row.get("clean_reconstruction_verified") is not True
+            and str(provenance_row.get("clean_reconstruction_candidate_role") or "") == "pending-canonical-deep-proof"
+        )
+        if pending_v2_preserved:
+            deferred_to_learning[provider_id] = "pending_clean_v2_preserved_published_state"
+            print(
+                "FIELD_ACTIVATION_DEFERRED_TO_LEARNING "
+                f"provider={provider_id} reason=pending_clean_v2_preserved_published_state"
+            )
+            continue
+
         if is_missing:
             errors.append(f"activation LKG provider missing without conclusive proof: {provider_id} ({reason})")
         else:
@@ -382,7 +408,7 @@ def validate() -> list[str]:
     # as accounted for when this exact deep run conclusively disqualified it.
     # This catches silent mass disablement while allowing the strict gates to do
     # their job instead of forcing stale providers active forever.
-    accounted_for = len(active) + len(justified)
+    accounted_for = len(active) + len(justified) + len(deferred_to_learning)
     if accounted_for < minimum:
         errors.append(
             f"enabled-or-conclusively-disqualified provider count regressed: {accounted_for} < {minimum}"
@@ -404,7 +430,10 @@ def main() -> int:
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(f"provider activation preservation passed ({active_count} enabled; evidence-backed shrink guarded)")
+    print(
+        f"provider activation preservation passed ({active_count} enabled; "
+        f"deferred_to_learning={len(deferred_to_learning)}; evidence-backed shrink guarded)"
+    )
     return 0
 
 
