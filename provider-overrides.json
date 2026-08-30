@@ -14,7 +14,8 @@
     "movix": {
       "notes": [
         "Resolve the official terminal site from movix.online.",
-        "Reject the unrelated fstream.top short-video endpoint."
+        "Reject the unrelated fstream.top short-video endpoint.",
+        "Runtime API discovery removed: Movix consumes learned /api/catalog movie/tv routes only."
       ],
       "replacements": {
         "api.movix.cash": "api.movix.fun",
@@ -59,7 +60,7 @@
           "min_vod_duration_seconds": 60
         },
         "scripts/provider_patches/vf_catalogue_recovery.py": {
-          "strategy": "api_discovery",
+          "strategy": "api_fixed",
           "provider_name": "Movix",
           "base_url": "https://movix.fun",
           "api_url": "https://api.movix.fun",
@@ -81,11 +82,10 @@
           "blocked_path_patterns": [],
           "max_players": 10,
           "skip_native_when_unresolved": true,
-          "obsolete_route_tokens": [
-            "/api/fstream/",
-            "fstream"
-          ],
-          "max_discovery_scripts": 10
+          "api_routes": [
+            "/api/catalog/movie/{id}",
+            "/api/catalog/tv/{id}/season/{season}"
+          ]
         },
         "scripts/provider_patches/desktop_runtime_compat_v1.py": {
           "normalize_missing_episodes": true
@@ -103,6 +103,10 @@
         "movie",
         "tv",
         "anime"
+      ],
+      "learned_routes": [
+        "/api/catalog/movie/{id}",
+        "/api/catalog/tv/{id}/season/{season}"
       ]
     },
     "frenchstream": {

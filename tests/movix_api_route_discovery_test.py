@@ -11,14 +11,14 @@ spec.loader.exec_module(recovery)
 
 source = 'module.exports={getStreams:async()=>{throw new Error("native route must be skipped")}};'
 patched = recovery.apply(source, options={
-    'strategy': 'api_discovery',
+    'strategy': 'api_fixed',
     'provider_name': 'Movix',
     'base_url': 'https://movix.fun',
     'api_url': 'https://api.movix.fun',
     'types': ['movie'],
     'recovery_first': True,
     'skip_native_when_unresolved': True,
-    'obsolete_route_tokens': ['/api/fstream/', 'fstream'],
+    'api_routes': ['/api/catalog/movie/{id}', '/api/catalog/tv/{id}/season/{season}'],
 })
 
 with tempfile.TemporaryDirectory() as tmp:
@@ -28,8 +28,7 @@ with tempfile.TemporaryDirectory() as tmp:
 const target=process.argv[1], requested=[];
 global.fetch=async function(input){
  const url=typeof input==='string'?input:String(input&&input.url||input); requested.push(url);
- if(url==='https://movix.fun') return {ok:true,status:200,text:async()=>'<script src="/assets/app.js"></script>',json:async()=>({})};
- if(url==='https://movix.fun/assets/app.js') return {ok:true,status:200,text:async()=> 'const endpoint="/api/catalog/movie/{id}"',json:async()=>({})};
+ if(url==='https://movix.fun'||url.includes('/assets/')) throw new Error('runtime route discovery is forbidden');
  if(url==='https://api.movix.fun/api/catalog/movie/577922') return {ok:true,status:200,text:async()=>'',json:async()=>({players:{VF:[{url:'https://video.example/movie.m3u8'}]}})};
  return {ok:false,status:404,text:async()=>'',json:async()=>({})};
 };
@@ -37,11 +36,10 @@ global.fetch=async function(input){
 '''
     result = subprocess.run(['node','-e',harness,str(target)],text=True,capture_output=True,check=True)
     payload=json.loads(result.stdout)
-    assert 'https://api.movix.fun/api/catalog/movie/577922' in payload['requested']
-    assert all('/api/fstream/' not in url for url in payload['requested'])
+    assert payload['requested'] == ['https://api.movix.fun/api/catalog/movie/577922'], payload['requested']
     assert payload['rows'] and payload['rows'][0]['url']=='https://video.example/movie.m3u8'
 
-# No discovered route: return an empty result and never execute the unsafe native function.
+# Fixed route unavailable: return an empty result and never execute the unsafe native function.
 with tempfile.TemporaryDirectory() as tmp:
     target = Path(tmp) / 'movix.js'; target.write_text(patched)
     harness = r'''
@@ -51,4 +49,4 @@ global.fetch=async()=>({ok:true,status:200,text:async()=>'<html></html>',json:as
     result=subprocess.run(['node','-e',harness,str(target)],text=True,capture_output=True,check=True)
     assert json.loads(result.stdout)==[]
 
-print('movix API route discovery tests passed')
+print('movix fixed learned API route tests passed: no runtime route discovery')
