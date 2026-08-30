@@ -10,6 +10,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from core_rebuild_safety import SAFE_EXPORT_FN  # noqa: E402
+from provider_base_store import (  # noqa: E402
+    is_clean_reconstructed,
+    is_clean_reconstruction_candidate,
+)
+
 
 CORE_MARKERS = (
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
@@ -147,6 +152,11 @@ def _shape_excerpt(text: str, marker_positions: list[int]) -> str:
 def main() -> int:
     _regressions()
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+    provenance = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
+    provenance_rows = provenance.get("providers") if isinstance(provenance, dict) else {}
+    if not isinstance(provenance_rows, dict):
+        raise AssertionError("PROVENANCE.providers must be an object")
+
     rows = manifest.get("scrapers") or []
     unresolved: list[str] = []
     no_post_core: list[str] = []
@@ -172,6 +182,37 @@ def main() -> int:
             continue
         checked += 1
         floor = provider_export_floor(text)
+        provenance_row = provenance_rows.get(provider_id.casefold())
+        trusted_clean_v2 = (
+            isinstance(provenance_row, dict)
+            and (
+                is_clean_reconstructed(provenance_row)
+                or is_clean_reconstruction_candidate(provenance_row)
+            )
+        )
+        if floor < 0 and trusted_clean_v2:
+            boundary_positions = [
+                match.start()
+                for match in re.finditer(
+                    re.escape("/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"),
+                    text,
+                )
+            ]
+            if len(boundary_positions) != 1:
+                raise AssertionError(
+                    f"{provider_id}: clean v2 bundle must contain exactly one canonical Core boundary"
+                )
+            trusted_floor = boundary_positions[0]
+            earlier_core = [
+                position
+                for position in marker_positions
+                if position < trusted_floor
+            ]
+            if earlier_core:
+                raise AssertionError(
+                    f"{provider_id}: derived Core marker appeared before trusted v2 boundary"
+                )
+            floor = trusted_floor
         if floor < 0:
             unresolved.append(provider_id)
             print(
