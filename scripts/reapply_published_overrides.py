@@ -200,10 +200,24 @@ def apply_manifest_type_projection(entry: dict[str, Any], semantic_types: object
 def configured_manifest_overrides(config: dict[str, Any], provider_id: str) -> dict[str, Any]:
     patches = config.get("provider_patches") if isinstance(config, dict) else {}
     patch_row = (patches or {}).get(str(provider_id or "").strip().casefold(), {})
-    overrides = patch_row.get("manifest_overrides") if isinstance(patch_row, dict) else {}
-    if not isinstance(overrides, dict):
+    if not isinstance(patch_row, dict):
         return {}
-    return {"enabled": False} if overrides.get("enabled") is False else {}
+
+    result: dict[str, Any] = {}
+    overrides = patch_row.get("manifest_overrides")
+    if isinstance(overrides, dict) and overrides.get("enabled") is False:
+        result["enabled"] = False
+
+    published_formats = patch_row.get("published_formats")
+    if isinstance(published_formats, list):
+        normalized: list[str] = []
+        for value in published_formats:
+            item = str(value or "").strip().casefold()
+            if item and item not in normalized:
+                normalized.append(item)
+        if normalized:
+            result["formats"] = normalized
+    return result
 
 
 def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
