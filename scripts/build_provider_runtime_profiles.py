@@ -212,6 +212,7 @@ def build_profiles(data: dict, providers: dict[str, tuple[dict, Path]]) -> int:
 
 def reapply_stage(stage: Path, registry: dict) -> int:
     from apply_provider_overrides import apply_overrides
+    from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
     changed = 0
     for candidate in registry.get("candidates") or []:
         if not isinstance(candidate, dict):
@@ -224,7 +225,19 @@ def reapply_stage(stage: Path, registry: dict) -> int:
         if stage.resolve() not in path.parents or not path.exists():
             continue
         original = path.read_bytes()
-        patched, applied = apply_overrides(provider_id, original)
+        clean_seed_origin = str(candidate.get("candidate_code_origin") or "") in {
+            "new-niakvio-clean-seed",
+            "pending-niakvio-clean-reconstruction-v2",
+        }
+        patched, applied = apply_overrides(
+            provider_id,
+            original,
+            excluded_patch_scripts=(
+                CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
+                if clean_seed_origin
+                else None
+            ),
+        )
         if patched != original:
             path.write_bytes(patched)
             validate_provider_file(path)
