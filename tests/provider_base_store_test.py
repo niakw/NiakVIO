@@ -42,7 +42,7 @@ assert "NIAKVIO_PROVIDER_BASE_OWNED_V2" in text
 assert "upstreamCodeEmbedded" in text
 assert '"upstreamCodeEmbedded":false' in text
 assert '"upstreamCodeExecuted":false' in text
-assert "async function getStreams" in text
+assert "async function getStreams" in text\nassert "function _playerLike" in text\nassert "async function _crawlDirectMedia" in text\nassert "requests < 12" in text
 module.assert_base_layering(clean, "synthetic-clean")
 with tempfile.NamedTemporaryFile(suffix=".js") as handle:
     handle.write(clean)
