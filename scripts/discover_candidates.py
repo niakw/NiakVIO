@@ -27,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides
-from provider_base_store import build_clean_provider_seed, is_clean_reconstruction_candidate, requires_clean_reconstruction, resolve_base
+from provider_base_store import (\n    CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,\n    build_clean_provider_seed,\n    is_clean_reconstruction_candidate,\n    requires_clean_reconstruction,\n    resolve_base,\n)
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
     record_pending_source, validate_manifest_quality, write_pending,
@@ -526,7 +526,19 @@ def main() -> int:
                     overrides,
                     clean_reconstruction=bool(args.clean_reconstruction),
                 )
-                candidate_data, applied_patches = apply_overrides(provider_id, seed)
+                clean_seed_origin = code_origin in {
+                    "new-niakvio-clean-seed",
+                    "pending-niakvio-clean-reconstruction-v2",
+                }
+                candidate_data, applied_patches = apply_overrides(
+                    provider_id,
+                    seed,
+                    excluded_patch_scripts=(
+                        CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
+                        if clean_seed_origin
+                        else None
+                    ),
+                )
                 validate_javascript(candidate_data, f"niakvio:{provider_id}")
                 local_path.write_bytes(candidate_data)
                 subprocess.run([
@@ -644,7 +656,19 @@ def main() -> int:
             overrides,
             clean_reconstruction=bool(args.clean_reconstruction),
         )
-        candidate_data, applied_patches = apply_overrides(provider_id, seed)
+        clean_seed_origin = code_origin in {
+            "new-niakvio-clean-seed",
+            "pending-niakvio-clean-reconstruction-v2",
+        }
+        candidate_data, applied_patches = apply_overrides(
+            provider_id,
+            seed,
+            excluded_patch_scripts=(
+                CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
+                if clean_seed_origin
+                else None
+            ),
+        )
         validate_javascript(candidate_data, f"niakvio:{provider_id}")
         local_path = baseline_dir / f"{safe_fragment(provider_id)}.js"
         local_path.write_bytes(candidate_data)
