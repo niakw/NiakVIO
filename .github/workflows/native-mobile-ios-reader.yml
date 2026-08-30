@@ -163,9 +163,16 @@ jobs:
         if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'only') }}
         shell: bash
         run: |
-          set -euo pipefail
-          test -s "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
-          python3 niakvio/scripts/analyze_native_ios_results.py             --log "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"             --output-dir "$GITHUB_WORKSPACE/mobile-ios-diagnostics"
+          set -uo pipefail
+          LOG="$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
+          if [ ! -s "$LOG" ]; then
+            echo "::warning::iOS Lab log missing; primary execution step already carries the failure"
+            exit 0
+          fi
+          python3 niakvio/scripts/analyze_native_ios_results.py             --log "$LOG"             --output-dir "$GITHUB_WORKSPACE/mobile-ios-diagnostics" || {
+            echo "::warning::iOS diagnostics incomplete; preserving primary Lab verdict"
+            exit 0
+          }
       - name: Upload Mobile iOS route evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
