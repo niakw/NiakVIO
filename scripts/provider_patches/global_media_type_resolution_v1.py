@@ -77,7 +77,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-api-authoritative-fail-open-infra-v6",
+        "revision": "tmdb-api-authoritative-fail-open-infra-v7-key-normalized",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -90,7 +90,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     js = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
-function s(v){return String(v==null?"":v).trim()}
+function s(v){return String(v==null?"":v).trim()}\nfunction normalizeKey(v){var x=s(v);if(x.length===33&&x.charAt(0)==="\\\\"&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
 function namespaceCandidates(v,season,episode,semantic){
@@ -133,9 +133,10 @@ function embeddedKey(){
   return out;
 }
 function localKey(){
-  try{if(g&&s(g.TMDB_API_KEY))return s(g.TMDB_API_KEY)}catch(_){}
-  try{if(typeof TMDB_API_KEY!=="undefined"&&s(TMDB_API_KEY))return s(TMDB_API_KEY)}catch(_){}
-  try{return embeddedKey()}catch(_){return""}
+  var key="";
+  try{key=normalizeKey(g&&g.TMDB_API_KEY);if(key)return key}catch(_){}
+  try{if(typeof TMDB_API_KEY!=="undefined"){key=normalizeKey(TMDB_API_KEY);if(key)return key}}catch(_){}
+  try{return normalizeKey(embeddedKey())}catch(_){return""}
 }
 function localToken(){
   try{if(g&&s(g.TMDB_ACCESS_TOKEN))return s(g.TMDB_ACCESS_TOKEN)}catch(_){}

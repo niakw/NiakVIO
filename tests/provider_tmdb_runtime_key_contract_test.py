@@ -33,8 +33,31 @@ assert isinstance(runtime_key.get("cipher"), list) and runtime_key["cipher"]
 assert all(isinstance(value, int) and 0 <= value <= 255 for value in runtime_key["cipher"])
 assert "api_key" not in runtime_key and "token" not in runtime_key
 
+def decrypt_runtime_key(payload: dict) -> str:
+    material = str(payload["salt"]) + "|NiakVIO/TMDB/v1"
+    seed = 2166136261
+    for char in material:
+        seed ^= ord(char)
+        seed = (seed * 16777619) & 0xFFFFFFFF
+    out = []
+    for raw in payload["cipher"]:
+        seed ^= (seed << 13) & 0xFFFFFFFF
+        seed &= 0xFFFFFFFF
+        seed ^= seed >> 17
+        seed &= 0xFFFFFFFF
+        seed ^= (seed << 5) & 0xFFFFFFFF
+        seed &= 0xFFFFFFFF
+        out.append(chr((int(raw) & 0xFF) ^ (seed & 0xFF)))
+    return "".join(out)
+
+runtime_plain_key = decrypt_runtime_key(runtime_key)
+assert re.fullmatch(r"[0-9a-fA-F]{32}", runtime_plain_key), (
+    "runtime TMDB key payload must decrypt to exactly one 32-hex v3 API key"
+)
+assert not runtime_plain_key.startswith("\\"), "runtime TMDB key must not carry an escaped-secret prefix"
+
 resolver_source = (ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
-assert "tmdbKeyCipher" in resolver_source
+assert "tmdbKeyCipher" in resolver_source\nassert "normalizeKey" in resolver_source
 assert "api.themoviedb.org/3/" in resolver_source
 assert "www.themoviedb.org/" not in resolver_source
 
