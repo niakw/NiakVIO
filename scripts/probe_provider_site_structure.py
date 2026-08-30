@@ -132,6 +132,41 @@ def discover_routes(text: str) -> list[str]:
     return out
 
 
+def sanitized_route_contexts(text: str, routes: list[str]) -> list[dict[str, str]]:
+    normalized = html.unescape(text).replace("\\/", "/").replace("\\u002f", "/").replace("\\u003a", ":")
+    out: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for raw_route in routes:
+        route = clean_route(raw_route)
+        if not route or route in seen:
+            continue
+        if not re.search(r"^/(?:api|player|stream|source|resolve|proxy)", route, re.I):
+            continue
+        pos = normalized.find(route)
+        if pos < 0:
+            continue
+        seen.add(route)
+        snippet = normalized[max(0, pos - 700): pos + len(route) + 1200]
+        snippet = re.sub(
+            r"(?i)([?&](?:k|key|token|sig|signature|auth|expires|expiry|exp)=)[^&\"'\\s]+",
+            r"\\1<redacted>",
+            snippet,
+        )
+        snippet = re.sub(
+            r"(?i)(?:bearer\\s+)?[A-Za-z0-9_-]{48,}(?:\\.[A-Za-z0-9_-]{16,}){0,2}",
+            "<redacted>",
+            snippet,
+        )
+        snippet = re.sub(r"\\s+", " ", snippet).strip()
+        out.append({
+            "route": sanitized_url_pattern(route),
+            "context": snippet[:1900],
+        })
+        if len(out) >= 12:
+            break
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--current", type=Path, default=DEFAULT_CURRENT)
@@ -259,6 +294,7 @@ def main() -> int:
                         "content_type": chunk_ctype,
                         "bytes_scanned": min(len(chunk_text.encode("utf-8", errors="ignore")), 2_000_000),
                         "route_hints": chunk_hints,
+                        "route_contexts": sanitized_route_contexts(chunk_text, chunk_hints),
                         "useful_absolute_urls": [
                             sanitized_url_pattern(value) + "@" + (urlsplit(value).hostname or "")
                             for value in useful_absolute_urls(chunk_text)[:40]
