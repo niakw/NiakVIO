@@ -90,6 +90,66 @@ def configured_authoritative_types(config: dict[str, Any], provider_id: str) -> 
     ]
 
 
+def _normalized_media_types(values: object) -> list[str]:
+    result: list[str] = []
+    for value in values if isinstance(values, list) else []:
+        item = str(value).strip().casefold()
+        if item in {"movie", "tv", "anime"} and item not in result:
+            result.append(item)
+    return result
+
+
+def projected_transport_types(semantic_types: object) -> list[str]:
+    """Project semantic provider capabilities onto Nuvio's transport filter."""
+    semantic = _normalized_media_types(semantic_types)
+    transport = list(semantic)
+    if "anime" in semantic:
+        for alias in ("movie", "tv"):
+            if alias not in transport:
+                transport.append(alias)
+    return transport
+
+
+def semantic_manifest_types(entry: dict[str, Any]) -> list[str]:
+    """Read semantic capability without confusing Nuvio transport aliases."""
+    canonical = _normalized_media_types(entry.get("canonicalSupportedTypes"))
+    if canonical:
+        return canonical
+    return _normalized_media_types(entry.get("supportedTypes"))
+
+
+def manifest_type_projection_matches(entry: dict[str, Any], semantic_types: object) -> bool:
+    semantic = _normalized_media_types(semantic_types)
+    transport = projected_transport_types(semantic)
+    if semantic_manifest_types(entry) != semantic:
+        return False
+    if _normalized_media_types(entry.get("supportedTypes")) != transport:
+        return False
+    canonical = _normalized_media_types(entry.get("canonicalSupportedTypes"))
+    if transport != semantic:
+        return canonical == semantic
+    return not canonical
+
+
+def apply_manifest_type_projection(entry: dict[str, Any], semantic_types: object) -> bool:
+    """Materialize semantic + transport media types and return whether the row changed."""
+    semantic = _normalized_media_types(semantic_types)
+    transport = projected_transport_types(semantic)
+    before_supported = entry.get("supportedTypes")
+    before_canonical = entry.get("canonicalSupportedTypes", None)
+
+    entry["supportedTypes"] = transport
+    if transport != semantic:
+        entry["canonicalSupportedTypes"] = semantic
+    else:
+        entry.pop("canonicalSupportedTypes", None)
+
+    return (
+        before_supported != entry.get("supportedTypes")
+        or before_canonical != entry.get("canonicalSupportedTypes", None)
+    )
+
+
 def configured_manifest_overrides(config: dict[str, Any], provider_id: str) -> dict[str, Any]:
     patches = config.get("provider_patches") if isinstance(config, dict) else {}
     patch_row = (patches or {}).get(str(provider_id or "").strip().casefold(), {})
@@ -526,7 +586,7 @@ def fast_fixed_point_check(
             return False, f"fixed-point-proof-sha-drift:{provider_id}"
 
         authoritative_types = configured_authoritative_types(config, provider_id)
-        if authoritative_types and entry.get("supportedTypes") != authoritative_types:
+        if authoritative_types and not manifest_type_projection_matches(entry, authoritative_types):
             return False, f"supported-types-drift:{provider_id}"
         for key, value in configured_manifest_overrides(config, provider_id).items():
             if entry.get(key) != value:
@@ -553,6 +613,8 @@ def fast_fixed_point_check(
             if isinstance(primary_entry.get("supportedTypes"), list):
                 if entry.get("supportedTypes") != primary_entry.get("supportedTypes"):
                     return False, f"secondary-types-drift:{path.name}:{provider_id}"
+            if entry.get("canonicalSupportedTypes") != primary_entry.get("canonicalSupportedTypes"):
+                return False, f"secondary-canonical-types-drift:{path.name}:{provider_id}"
             for key, value in configured_manifest_overrides(config, provider_id).items():
                 if entry.get(key) != value:
                     return False, f"secondary-override-drift:{path.name}:{provider_id}"
@@ -647,9 +709,7 @@ def main() -> int:
             raise ValueError(f"missing or unsafe published provider: {relative}")
 
         authoritative_types = configured_authoritative_types(override_config, provider_id)
-        types_changed = bool(authoritative_types and entry.get("supportedTypes") != authoritative_types)
-        if types_changed:
-            entry["supportedTypes"] = authoritative_types
+        types_changed = bool(authoritative_types and apply_manifest_type_projection(entry, authoritative_types))
         manifest_overrides = configured_manifest_overrides(override_config, provider_id)
         manifest_changed = any(entry.get(key) != value for key, value in manifest_overrides.items())
         if manifest_overrides:
@@ -814,6 +874,10 @@ def main() -> int:
                 entry["version"] = primary_entry["version"]
                 if isinstance(primary_entry.get("supportedTypes"), list):
                     entry["supportedTypes"] = list(primary_entry["supportedTypes"])
+                if isinstance(primary_entry.get("canonicalSupportedTypes"), list):
+                    entry["canonicalSupportedTypes"] = list(primary_entry["canonicalSupportedTypes"])
+                else:
+                    entry.pop("canonicalSupportedTypes", None)
                 for key, value in configured_manifest_overrides(override_config, provider_id).items():
                     entry[key] = value
         secondary_payloads.append((path, payload))
