@@ -644,7 +644,7 @@
       "name": "DesiFlix",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "http://desiflix.me/",
+      "hub": "https://desiflix.me/",
       "direct": null,
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
@@ -659,7 +659,7 @@
       "sources": [
         {
           "type": "hub",
-          "url": "http://desiflix.me/",
+          "url": "https://desiflix.me/",
           "priority": 100,
           "purpose": "Authoritative address reference"
         },
@@ -755,17 +755,19 @@
       "name": "AnimeSalt",
       "manifest_status": "Actif",
       "category": "International / Anime",
-      "hub": "http://animesalt.ac/",
-      "direct": "https://animesalt.link/",
+      "hub": "https://animesalt.ac/",
+      "direct": "https://animesalt.cx/",
       "source": "curated_user_registry",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "animesalt"
       ],
       "direct_candidates": [
+        "https://animesalt.cx/",
         "https://animesalt.link/"
       ],
       "allowed_terminal_hosts": [
+        "animesalt.cx",
         "animesalt.link"
       ],
       "search_queries": [
@@ -774,7 +776,7 @@
       "sources": [
         {
           "type": "hub",
-          "url": "http://animesalt.ac/",
+          "url": "https://animesalt.ac/",
           "priority": 100,
           "purpose": "Authoritative address reference"
         },
@@ -785,7 +787,8 @@
           "purpose": "Fallback discovery when curated sources fail"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "last_verified": "2026-08-30"
     },
     "hdghartv": {
       "id": "hdghartv",
@@ -2764,7 +2767,7 @@
         "wiflix"
       ],
       "direct": "https://flemmix.men/",
-      "last_verified": "2026-08-03",
+      "last_verified": "2026-08-30",
       "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "direct_candidates": [
         "https://flemmix.men/"
