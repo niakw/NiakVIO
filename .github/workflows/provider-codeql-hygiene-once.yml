@@ -1,0 +1,75 @@
+name: Provider CodeQL hygiene migration (one-shot)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-codeql-hygiene-once.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-codeql-hygiene-once
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact migration seed
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: \${{ github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Migrate active ProviderBases and durable sources
+        run: python scripts/_provider_codeql_hygiene_once.py
+
+      - name: Rebuild derived published artifacts
+        run: python scripts/reapply_published_overrides.py
+
+      - name: Verify fixed point and contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/provider_base_store.py validate
+          python scripts/reapply_published_overrides.py --check
+          python tests/vf_catalogue_identity_hardening_test.py
+          python tests/targeted_vf_catalogue_adapters_test.py
+          python tests/provider_base_layering_contract_test.py
+          python tests/publication_contract_fingerprint_test.py
+          python tests/provider_tmdb_runtime_key_contract_test.py
+          python tests/workflow_security_policy_test.py
+
+      - name: Remove one-shot machinery and publish transaction
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/provider-codeql-hygiene-once.yml scripts/_provider_codeql_hygiene_once.py
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          if git diff --cached --quiet; then
+            echo "migration produced no repository changes" >&2
+            exit 1
+          fi
+          git commit -m "security: harden release-reachable provider code"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
