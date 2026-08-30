@@ -386,7 +386,8 @@
       "notes": [
         "Do not map the provider to the hub itself. resolve_provider_hubs.py follows the official-address page and persists only a runtime-validated terminal site/API.",
         "Official hub purstream.wiki currently resolves to purstream.id; materialize the validated terminal and never keep an upstream repository lookup in published runtime bytes.",
-        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers."
+        "Purstream has no provider-specific repair hooks; content identity, stream facts, presentation and platform compatibility are handled by shared Core/capability layers.",
+        "Clean ProviderBase reconstruction uses a declarative search -> provider id -> source API recipe extracted from the upstream route contract; upstream JavaScript is never executed."
       ],
       "capability": "official_domain_hub",
       "official_hub": "https://purstream.wiki",
@@ -414,7 +415,37 @@
       "required_values": [
         "api.purstream.id",
         "purstream.id"
-      ]
+      ],
+      "api_recipe": {
+        "base": "https://api.purstream.id/api/v1",
+        "referer": "https://purstream.id/",
+        "searchRoute": "/search-bar/search/{query}",
+        "movieRoute": "/media/{id}/sheet",
+        "episodeRoute": "/stream/{id}/episode?season={season}&episode={episode}",
+        "idFields": [
+          "id",
+          "_id",
+          "media_id",
+          "post_id"
+        ],
+        "titleFields": [
+          "title",
+          "name",
+          "original_title"
+        ],
+        "yearFields": [
+          "year",
+          "release_date",
+          "first_air_date"
+        ],
+        "sourceFields": [
+          "url",
+          "stream_url",
+          "stream",
+          "source",
+          "file"
+        ]
+      }
     },
     "vidfast": {
       "replacements": {
@@ -2108,6 +2139,33 @@
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ],
+      "api_recipe": {
+        "base": "https://ballerinacappuccinalovestungtungtungsahur.com",
+        "referer": "https://player.vidlove.cc/",
+        "origin": "https://player.vidlove.cc",
+        "directRoute": "/{media}?id={tmdbId}&mode=json&sources={source}&hevc=1&season={season}&episode={episode}",
+        "sources": [
+          "moviebox",
+          "ipcloud",
+          "tcloud",
+          "vidapi",
+          "vixsrc",
+          "1embed",
+          "xpass",
+          "vidrift",
+          "lookmovie",
+          "vidnest"
+        ],
+        "sourceFields": [
+          "url",
+          "qualities",
+          "quality",
+          "source"
+        ]
+      },
+      "notes": [
+        "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract."
       ]
     },
     "moonflix": {
