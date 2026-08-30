@@ -217,7 +217,7 @@ function fallbackType(input,semantic){
 }
 async function canonicalResolution(id,input,metadata,season,episode,semantic){
   var candidates=namespaceCandidates(input,season,episode,semantic),raw=s(input||"movie").toLowerCase();
-  var rawId=s(id),tmdbId=rawId.replace(/^tmdb:/i,""),imdbId="";
+  var rawId=s(id),tmdbId=rawId.replace(/^tmdb:/i,""),imdbId="",seedMetadata=null;
   var imdbMatch=/^(?:imdb:)?(tt\d+)$/i.exec(rawId);
   if(imdbMatch){
     imdbId=imdbMatch[1].toLowerCase();
@@ -225,7 +225,7 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
     if(found&&found.state==="ok"){
       tmdbId=found.tmdbId;
       candidates=[found.namespace];
-      if(!hasTmdbMetadata(metadata)&&found.metadata)metadata=found.metadata;
+      seedMetadata=found.metadata||null;
     }else if(found&&found.state==="unavailable"){
       var degradedType=fallbackType(input,semantic),degradedNamespace=namespaceOf(input);
       return{type:degradedType,namespace:degradedNamespace,tmdbId:"",imdbId:imdbId,metadata:null,authoritative:false,degraded:true};
@@ -248,6 +248,13 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
     var m=probe.metadata,type=animeMeta(m)?"anime":namespace;
     if(raw==="anime"&&type!=="anime")continue;
     return{type:type,namespace:namespace,tmdbId:tmdbId,imdbId:imdbId,metadata:m,authoritative:true,degraded:false};
+  }
+  if(unavailable&&seedMetadata){
+    var seedNamespace=candidates[0]||namespaceOf(input),seedType=animeMeta(seedMetadata)?"anime":seedNamespace;
+    if(raw==="anime"&&seedType!=="anime")return null;
+    seedMetadata.__nuvioTmdbNamespace=seedNamespace;
+    seedMetadata.__nuvioTmdbId=tmdbId;
+    return{type:seedType,namespace:seedNamespace,tmdbId:tmdbId,imdbId:imdbId,metadata:seedMetadata,authoritative:true,degraded:true};
   }
   if(unavailable){
     var fallback=fallbackType(input,semantic),fallbackNamespace=namespaceOf(input);
