@@ -395,15 +395,29 @@ class {klass} {{
         for (provider in providers) {{
             val started = System.currentTimeMillis()
             try {{
-                val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {{
-                    {execute}(
-                        code = code(provider.asset),
-                        tmdbId = tmdbId,
-                        mediaType = mediaType,
-                        season = season,
-                        episode = episode,
-                        scraperId = provider.id,
-                    )
+                val providerExecutor = java.util.concurrent.Executors.newSingleThreadExecutor {{ runnable ->
+                    Thread(runnable, "niakvio-provider-" + provider.id).apply {{ isDaemon = true }}
+                }}
+                val providerFuture = providerExecutor.submit(java.util.concurrent.Callable {{
+                    runBlocking {{
+                        {execute}(
+                            code = code(provider.asset),
+                            tmdbId = tmdbId,
+                            mediaType = mediaType,
+                            season = season,
+                            episode = episode,
+                            scraperId = provider.id,
+                        )
+                    }}
+                }})
+                val rows = try {{
+                    providerFuture.get({f['provider_timeout_ms']}L, java.util.concurrent.TimeUnit.MILLISECONDS)
+                }} catch (timeout: java.util.concurrent.TimeoutException) {{
+                    providerFuture.cancel(true)
+                    throw RuntimeException("provider_hard_timeout_ms={f['provider_timeout_ms']}", timeout)
+                }} finally {{
+                    providerFuture.cancel(true)
+                    providerExecutor.shutdownNow()
                 }}
                 emit("FIELD_NATIVE_RESULT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
