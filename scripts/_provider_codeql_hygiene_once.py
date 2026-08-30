@@ -249,8 +249,8 @@ def migrate_active_bases() -> None:
             raise RuntimeError(f"{provider_id}: targeted ProviderBase did not change")
         if OLD_UNESCAPE_S in after or OLD_UNESCAPE_STR in after:
             raise RuntimeError(f"{provider_id}: unsafe JSON literal decoder remains")
-        if provider_id in vf_ids and r'https?:\\?\/\\?\/' in after:
-            raise RuntimeError(f"{provider_id}: double-escaped VF URL regex remains")
+        if provider_id in vf_ids and r'var jsonRe=/[\\{,]' in after:
+            raise RuntimeError(f"{provider_id}: legacy VF jsonRe wrapper remains")
 
         data=after.encode("utf-8")
         validate_base(data,provider_id)
