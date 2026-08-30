@@ -154,23 +154,17 @@ assert "is_pending_clean_reconstruction_candidate" in promoter
 assert "pending_clean_reconstruction_has_strict_deep_proof" in promoter
 assert '"clean_reconstruction_strict_deep_proof_pending"' in promoter
 assert '"pending-canonical-deep-proof"' in promoter
-assert "restore_pending_activation_lkg" in promoter
-assert "if old_safety_quarantine:" in promoter
-assert '"preserved-conclusive-safety-quarantine-clean-candidate-pending"' in promoter
-assert '"clean_candidate_pending_kept_conclusive_safety_quarantine"' in promoter
-assert '"activation_mode": str(' in promoter
-assert 'old_provenance.get("activation_blockers") or blockers' in promoter
-assert "pending_configured_disabled" in promoter
-assert "cid in activation_lkg_ids" in promoter
-assert "and not old_safety_quarantine" in promoter
-assert "and not auto_disabled" in promoter
-assert "and upstream_enabled" in promoter
-assert 'gates.get("01_policy_safe_no_p2p", {}).get("passed", False)' in promoter
-assert '"restored-activation-lkg-clean-candidate-awaiting-strict-deep-proof"' in promoter
-assert '"preserved-conclusive-safety-quarantine-clean-candidate-awaiting-strict-deep-proof"' in promoter
-assert '"clean_candidate_pending_kept_conclusive_safety_quarantine"' in promoter
-assert "pending_activation_mode = (" in promoter
-assert 'list(old_provenance.get("activation_blockers") or [])' in promoter
+assert '"preserved-published-state-clean-candidate-pending"' in promoter
+assert 'retained = dict(old_entry)' in promoter
+pending_promoter_block = promoter.split(
+    'is_pending_clean_reconstruction_candidate(selected, previous_base_row)',
+    1,
+)[1].split('try:', 1)[0]
+assert 'retained["enabled"]' not in pending_promoter_block
+assert 'restore_pending_activation_lkg' not in pending_promoter_block
+assert 'pending_configured_disabled' not in pending_promoter_block
+assert 'old_safety_quarantine' not in pending_promoter_block
+assert '"activation_mode": str(' in pending_promoter_block
 assert 'str(mode) == "deep"' in promoter
 assert 'bool(decision.get("strict_activation_eligible", False))' in promoter
 

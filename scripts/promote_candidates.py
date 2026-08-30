@@ -2121,105 +2121,13 @@ def main() -> int:
                     mode,
                 )
             ):
-                # A Brain/Learning candidate is only a proposal until the exact
-                # pending v2 bytes pass the canonical strict Deep gates. A
-                # conclusive CI failure must never accidentally convert a
-                # candidate into a verified ProviderBase merely because it
-                # reached the publication writer.
+                # Pending v2 is migration state only. It must never make an
+                # activation decision. Preserve the exact published/LKG state
+                # until strict Deep proves the candidate.
                 if old_artifact_available and isinstance(old_entry, dict) and old_entry:
                     retained = dict(old_entry)
-                    retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
-                    if old_safety_quarantine:
-                        # A pending clean-v2 proposal is not recovery proof. If
-                        # the retained published artifact is a conclusive safety
-                        # quarantine, preserve its exact activation evidence and
-                        # inert state until a later strict Deep proves recovery.
-                        retained["enabled"] = False
-                        entries[cid] = retained
-                        provenance[cid] = {
-                            **old_provenance,
-                            "id": cid,
-                            "published_filename": old_filename,
-                            "sha256": retained_digest,
-                            "patched_sha256": retained_digest,
-                            "checked_at": now,
-                            "check_mode": mode,
-                            "check_status": observed_status,
-                            "clean_reconstruction_required": True,
-                            "clean_reconstruction_verified": False,
-                            "clean_reconstruction_candidate_role": "pending-canonical-deep-proof",
-                            "preserved_candidate_key": selected.get("key"),
-                            "preserved_candidate_sha256": selected.get("sha256"),
-                            "preserved_reason": "clean_candidate_pending_kept_conclusive_safety_quarantine",
-                        }
-                        report_items.append(
-                            {
-                                "id": cid,
-                                "action": "preserved-conclusive-safety-quarantine-clean-candidate-pending",
-                                "enabled": False,
-                                "activation_eligible": False,
-                                "strict_activation_eligible": False,
-                                "activation_mode": str(
-                                    old_provenance.get("activation_mode") or "safety_quarantine"
-                                ),
-                                "failed_gates": [
-                                    name for name, value in gates.items() if not value.get("passed")
-                                ],
-                                "activation_blockers": list(
-                                    old_provenance.get("activation_blockers") or blockers
-                                ),
-                                "activation_gates": gates,
-                                "observed_status": observed_status,
-                                "published_filename": old_filename,
-                                "variant_count": len(variants),
-                            }
-                        )
-                        continue
-
-                    pending_manifest_overrides = (
-                        provider_policy.get("manifest_overrides", {})
-                        if isinstance(provider_policy, dict)
-                        else {}
-                    )
-                    pending_configured_disabled = bool(
-                        isinstance(pending_manifest_overrides, dict)
-                        and pending_manifest_overrides.get("enabled") is False
-                    )
-                    restore_pending_activation_lkg = bool(
-                        cid in activation_lkg_ids
-                        and not old_safety_quarantine
-                        and not auto_disabled
-                        and upstream_enabled
-                        and gates.get("01_policy_safe_no_p2p", {}).get("passed", False)
-                        and not pending_configured_disabled
-                    )
-                    # A pending v2 proposal is not itself disablement evidence.
-                    # Preserve the exact published artifact, but restore the
-                    # historical activation LKG when no conclusive safety/policy
-                    # veto exists. This prevents the migration proposal from
-                    # shrinking the working catalogue before its strict proof.
-                    retained["enabled"] = (
-                        True
-                        if restore_pending_activation_lkg
-                        else bool(old_entry.get("enabled", False))
-                    )
                     entries[cid] = retained
-                    pending_blockers = list(
-                        dict.fromkeys(
-                            (
-                                list(old_provenance.get("activation_blockers") or [])
-                                if old_safety_quarantine
-                                else []
-                            )
-                            + blockers
-                            + ["clean_reconstruction_strict_deep_proof_pending"]
-                        )
-                    )
-                    pending_activation_mode = (
-                        str(old_provenance.get("activation_mode") or "safety_quarantine")
-                        if old_safety_quarantine
-                        else "clean_reconstruction_pending_strict_deep_proof"
-                    )
+                    retained_digest = hashlib.sha256(old_target.read_bytes()).hexdigest()
                     provenance[cid] = {
                         **old_provenance,
                         "id": cid,
@@ -2232,38 +2140,30 @@ def main() -> int:
                         "clean_reconstruction_required": True,
                         "clean_reconstruction_verified": False,
                         "clean_reconstruction_candidate_role": "pending-canonical-deep-proof",
-                        "activation_eligible": False,
-                        "activation_mode": pending_activation_mode,
-                        "activation_blockers": pending_blockers,
-                        "restored_from_activation_lkg": restore_pending_activation_lkg,
-                        "preserved_reason": (
-                            "clean_candidate_pending_kept_conclusive_safety_quarantine"
-                            if old_safety_quarantine
-                            else old_provenance.get("preserved_reason")
-                        ),
+                        "preserved_candidate_key": selected.get("key"),
+                        "preserved_candidate_sha256": selected.get("sha256"),
                     }
                     report_items.append(
                         {
                             "id": cid,
-                            "action": (
-                                "preserved-conclusive-safety-quarantine-clean-candidate-awaiting-strict-deep-proof"
-                                if old_safety_quarantine
-                                else (
-                                    "restored-activation-lkg-clean-candidate-awaiting-strict-deep-proof"
-                                    if restore_pending_activation_lkg
-                                    else "preserved-current-clean-candidate-awaiting-strict-deep-proof"
-                                )
-                            ),
+                            "action": "preserved-published-state-clean-candidate-pending",
                             "enabled": bool(retained.get("enabled", False)),
-                            "restored_from_activation_lkg": restore_pending_activation_lkg,
-                            "activation_eligible": False,
-                            "strict_activation_eligible": False,
-                            "activation_mode": pending_activation_mode,
-                            "failed_gates": [
-                                name for name, value in gates.items() if not value.get("passed")
-                            ],
-                            "activation_blockers": pending_blockers,
-                            "activation_gates": gates,
+                            "activation_eligible": bool(
+                                old_provenance.get("activation_eligible", False)
+                            ),
+                            "strict_activation_eligible": bool(
+                                old_provenance.get("strict_activation_eligible", False)
+                            ),
+                            "activation_mode": str(
+                                old_provenance.get("activation_mode") or "preserved-published-state"
+                            ),
+                            "failed_gates": [],
+                            "activation_blockers": list(
+                                old_provenance.get("activation_blockers") or []
+                            ),
+                            "activation_gates": dict(
+                                old_provenance.get("activation_gates") or {}
+                            ),
                             "observed_status": observed_status,
                             "published_filename": old_filename,
                             "variant_count": len(variants),
