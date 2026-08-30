@@ -77,7 +77,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-api-authoritative-fail-open-infra-v8-context-metadata",
+        "revision": "tmdb-api-authoritative-global-first-v9-core-identity",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -153,26 +153,55 @@ function hasTmdbMetadata(m){
     m.production_countries||m.productionCountries||m.keywords
   ));
 }
-async function tmdb(namespaceValue,tmdbId){
-  var namespace=namespaceValue==="movie"?"movie":"tv",id=s(tmdbId),cacheKey=namespace+":"+id,key=localKey(),token=localToken();
-  if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return{state:"unavailable",metadata:null};
+async function apiJson(url){
+  var key=localKey(),token=localToken();
+  if(!g||typeof g.fetch!=="function"||(!key&&!token))return{state:"unavailable",value:null};
+  try{
+    if(key)url+=(url.indexOf("?")>=0?"&":"?")+"api_key="+encodeURIComponent(key);
+    var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
+    var api=await g.fetch(url,{headers:h,redirect:"follow",signal:timeout()});
+    if(!api)return{state:"unavailable",value:null};
+    if(api.status===404)return{state:"not_found",value:null};
+    if(!api.ok||typeof api.json!=="function")return{state:"unavailable",value:null};
+    var value=await api.json();
+    if(!value||typeof value!=="object")return{state:"unavailable",value:null};
+    return{state:"ok",value:value};
+  }catch(_){return{state:"unavailable",value:null}}
+}
+async function findTmdb(imdbId,candidates){
+  var imdb=s(imdbId).replace(/^imdb:/i,"").toLowerCase(),cacheKey="find:"+imdb;
+  if(!/^tt\d+$/.test(imdb))return{state:"not_found",tmdbId:"",namespace:"",metadata:null,imdbId:""};
   if(Object.prototype.hasOwnProperty.call(mediaCache,cacheKey))return await mediaCache[cacheKey];
   var pending=(async function(){
-    if(!key&&!token)return{state:"unavailable",metadata:null};
-    try{
-      var u="https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
-      if(key)u+="&api_key="+encodeURIComponent(key);
-      var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
-      var api=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
-      if(!api)return{state:"unavailable",metadata:null};
-      if(api.status===404)return{state:"not_found",metadata:null};
-      if(!api.ok||typeof api.json!=="function")return{state:"unavailable",metadata:null};
-      var value=await api.json();
-      if(!value||typeof value!=="object"||Number(value.id||0)<=0)return{state:"unavailable",metadata:null};
-      value.__nuvioTmdbNamespace=namespace;
-      value.__nuvioTmdbId=id;
-      return{state:"ok",metadata:value};
-    }catch(_){return{state:"unavailable",metadata:null}}
+    var probe=await apiJson("https://api.themoviedb.org/3/find/"+encodeURIComponent(imdb)+"?external_source=imdb_id");
+    if(!probe||probe.state!=="ok")return{state:probe&&probe.state||"unavailable",tmdbId:"",namespace:"",metadata:null,imdbId:imdb};
+    for(var i=0;i<candidates.length;i++){
+      var namespace=candidates[i]==="movie"?"movie":"tv";
+      var list=namespace==="movie"?rows(probe.value.movie_results):rows(probe.value.tv_results);
+      for(var j=0;j<list.length;j++){
+        var row=list[j],id=s(row&&row.id);
+        if(/^\d+$/.test(id))return{state:"ok",tmdbId:id,namespace:namespace,metadata:row,imdbId:imdb};
+      }
+    }
+    return{state:"not_found",tmdbId:"",namespace:"",metadata:null,imdbId:imdb};
+  })();
+  mediaCache[cacheKey]=pending;
+  var value=await pending;
+  mediaCache[cacheKey]=value;
+  return value;
+}
+async function tmdb(namespaceValue,tmdbId){
+  var namespace=namespaceValue==="movie"?"movie":"tv",id=s(tmdbId),cacheKey=namespace+":"+id;
+  if(!/^\d+$/.test(id))return{state:"unavailable",metadata:null};
+  if(Object.prototype.hasOwnProperty.call(mediaCache,cacheKey))return await mediaCache[cacheKey];
+  var pending=(async function(){
+    var probe=await apiJson("https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response=keywords,alternative_titles,external_ids&language=fr-FR");
+    if(!probe||probe.state!=="ok")return{state:probe&&probe.state||"unavailable",metadata:null};
+    var value=probe.value;
+    if(Number(value.id||0)<=0)return{state:"unavailable",metadata:null};
+    value.__nuvioTmdbNamespace=namespace;
+    value.__nuvioTmdbId=id;
+    return{state:"ok",metadata:value};
   })();
   mediaCache[cacheKey]=pending;
   var value=await pending;
@@ -188,25 +217,41 @@ function fallbackType(input,semantic){
 }
 async function canonicalResolution(id,input,metadata,season,episode,semantic){
   var candidates=namespaceCandidates(input,season,episode,semantic),raw=s(input||"movie").toLowerCase();
+  var rawId=s(id),tmdbId=rawId.replace(/^tmdb:/i,""),imdbId="";
+  var imdbMatch=/^(?:imdb:)?(tt\d+)$/i.exec(rawId);
+  if(imdbMatch){
+    imdbId=imdbMatch[1].toLowerCase();
+    var found=await findTmdb(imdbId,candidates);
+    if(found&&found.state==="ok"){
+      tmdbId=found.tmdbId;
+      candidates=[found.namespace];
+      if(!hasTmdbMetadata(metadata)&&found.metadata)metadata=found.metadata;
+    }else if(found&&found.state==="unavailable"){
+      var degradedType=fallbackType(input,semantic),degradedNamespace=namespaceOf(input);
+      return{type:degradedType,namespace:degradedNamespace,tmdbId:"",imdbId:imdbId,metadata:null,authoritative:false,degraded:true};
+    }else return null;
+  }
   if(hasTmdbMetadata(metadata)){
     var declared=s(metadata&&metadata.__nuvioTmdbNamespace).toLowerCase();
-    var namespace=declared==="movie"?"movie":candidates[0];
+    var namespace=declared==="movie"?"movie":declared==="tv"?"tv":candidates[0];
+    var declaredId=s(metadata&&metadata.__nuvioTmdbId||metadata&&metadata.id);
+    if(/^\d+$/.test(declaredId))tmdbId=declaredId;
     var type=animeMeta(metadata)?"anime":namespace;
     if(raw==="anime"&&type!=="anime")return null;
-    return{type:type,namespace:namespace,metadata:metadata,authoritative:true,degraded:false};
+    return{type:type,namespace:namespace,tmdbId:/^\d+$/.test(tmdbId)?tmdbId:"",imdbId:imdbId,metadata:metadata,authoritative:true,degraded:false};
   }
   var unavailable=false;
   for(var i=0;i<candidates.length;i++){
-    var namespace=candidates[i],probe=await tmdb(namespace,id);
+    var namespace=candidates[i],probe=await tmdb(namespace,tmdbId);
     if(!probe||probe.state==="unavailable"){unavailable=true;continue}
     if(probe.state==="not_found")continue;
     var m=probe.metadata,type=animeMeta(m)?"anime":namespace;
     if(raw==="anime"&&type!=="anime")continue;
-    return{type:type,namespace:namespace,metadata:m,authoritative:true,degraded:false};
+    return{type:type,namespace:namespace,tmdbId:tmdbId,imdbId:imdbId,metadata:m,authoritative:true,degraded:false};
   }
   if(unavailable){
     var fallback=fallbackType(input,semantic),fallbackNamespace=namespaceOf(input);
-    return{type:fallback,namespace:fallbackNamespace,metadata:null,authoritative:false,degraded:true};
+    return{type:fallback,namespace:fallbackNamespace,tmdbId:/^\d+$/.test(tmdbId)?tmdbId:"",imdbId:imdbId,metadata:null,authoritative:false,degraded:true};
   }
   return null;
 }
@@ -222,16 +267,19 @@ async function resolve(a){
     if(raw!=="anime"&&namespace==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
   }
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
-  var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
+  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
   var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
   var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
   if(!resolved)return null;
   var type=resolved.type;namespace=resolved.namespace;
   if(semantic.length&&semantic.indexOf(type)<0)return null;
+  var resolvedTmdbId=s(resolved.tmdbId||(/^\d+$/.test(id)?id:""));
+  var resolvedImdbId=s(resolved.imdbId||obj&&(q.imdbId||q.imdb_id)||(/^tt\d+$/i.test(id)?id:"")).toLowerCase();
   var context={
-    tmdbId:id,
+    tmdbId:resolvedTmdbId,
+    imdbId:resolvedImdbId,
     tmdbNamespace:namespace,
-    tmdbIdentity:namespace+":"+id,
+    tmdbIdentity:namespace+":"+(resolvedTmdbId||id),
     tmdbMetadata:resolved.metadata||null,
     canonicalMediaType:type,
     tmdbResolutionDegraded:resolved.degraded===true,
@@ -239,15 +287,17 @@ async function resolve(a){
   };
   if(obj){
     q.nuvioInputMediaType=input;
+    if(resolvedTmdbId)q.tmdbId=resolvedTmdbId;
+    if(resolvedImdbId)q.imdbId=resolvedImdbId;
     q.tmdbNamespace=namespace;
-    q.tmdbIdentity=namespace+":"+id;
+    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||id);
     q.tmdbMetadata=resolved.metadata||q.tmdbMetadata||q.tmdb_metadata||null;
     q.canonicalMediaType=type;
     q.mediaType=type;q.type=type;
     if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
     var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
   }
-  var out=Array.prototype.slice.call(a);out[1]=type;out.__nuvioContext=context;return out;
+  var out=Array.prototype.slice.call(a);if(resolvedTmdbId)out[0]=resolvedTmdbId;out[1]=type;out.__nuvioContext=context;return out;
 }
 function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
