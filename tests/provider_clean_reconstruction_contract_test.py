@@ -100,6 +100,8 @@ assert '"/title/" + titleKind + "/" + encodeURIComponent(id) + "-" + slug' in ba
 embedded_source = base_store_source.split("function _embeddedText(value) {", 1)[1].split("function _slug(value) {", 1)[0]
 assert embedded_source.count(".replace(") == 1, "embedded URL decoding must remain single-pass"
 assert 'const raw = match[1] || match[0] || "";' in base_store_source
+signed_runtime_block = base_store_source.split("const discoveredNested = _uniq(urls.filter(_playerLike));", 1)[1].split("} else {\n          const runtimeCandidates = _directPlayerUrls", 1)[0]
+assert signed_runtime_block.index("_resolveRuntimeApi(") < signed_runtime_block.index("_crawlDirectMedia("), "signed runtime API must be consumed before third-party embed crawl"
 assert "--clean-reconstruction" in discover
 assert '"upstream_code_role": "knowledge-only"' in discover
 assert '"upstream_code_executed": False' in discover
