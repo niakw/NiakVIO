@@ -1,15 +1,15 @@
 Trigger file for the strict provider-agnostic deep repair and publication workflow.
 Update this file to start a deep validation run on main.
 
-last_trigger: 2026-08-30T18:22:00+02:00
-reason: retry-final-providerbase-v2-deep-after-publication-boundary-fix
-pretag_source_ref: c8bde1091eccc9f2260cf2f2801e8b5cc0cfd4e9
+last_trigger: 2026-08-30T18:31:00+02:00
+reason: retry-final-providerbase-v2-deep-after-boundary-fix
+pretag_source_ref: bcc5752fcad8c6ab6287f1e43b26abc2885fecd3
 expected_providerbase_state:
   total: 96
   verified_v2: 1
   pending_v2: 95
 validation_policy:
   pending_candidates_reused_not_regenerated: true
-  legacy_source_patches_excluded_from_clean_v2: true
+  canonical_v2_core_boundary_required: true
   strict_deep_required_for_verified_v2: true
   routine_repair_mutates_parent_providerbase: true
