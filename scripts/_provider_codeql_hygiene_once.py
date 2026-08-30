@@ -14,8 +14,8 @@ BASE_STORE = "scripts/provider_base_store.py"
 SECURITY_GATE = ".github/workflows/security-final-gate.yml"
 VF_TEST = "tests/vf_catalogue_identity_hardening_test.py"
 
-OLD_GENERIC_URL = r'/https?:\\?\/\\?\/[^"\'<>\s]+/gi'
-NEW_GENERIC_URL = r'/https?:\/\/[^"\'<>\s]+/gi'
+OLD_GENERIC_URL = r'''/https?:\\?\/\\?\/[^"'<>\s]+/gi'''
+NEW_GENERIC_URL = r'''/https?:\/\/[^"'<>\s]+/gi'''
 
 OLD_UNESCAPE_S = r'''function unescapeJs(v){try{return JSON.parse('"'+s(v).replace(/"/g,'\\"')+'"')}catch(_){return clean(v)}}'''
 OLD_UNESCAPE_STR = r'''function unescapeJs(v){try{return JSON.parse('"'+str(v).replace(/"/g,'\\"')+'"')}catch(_){return clean(v)}}'''
@@ -273,7 +273,7 @@ def verify_sources() -> None:
     if '"implementationVersion": 3,' not in vf:
         raise RuntimeError("VF implementation revision not applied")
     for forbidden in (
-        r'https?:\\?\/\\?\/[^"\']+',
+        r'https?:\\?\/\\?\/',
         r'if(/\/movie(?:\/|\{|$)/i.test(low)',
         r'if(/\/tv(?:\/|\{|$)/i.test(low)',
     ):
