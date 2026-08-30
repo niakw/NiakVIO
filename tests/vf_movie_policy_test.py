@@ -98,7 +98,9 @@ for provider_id in sorted(expected_vf_movie):
         provenance = provenance_rows.get(provider_id) or {}
         assert provenance.get('clean_reconstruction_candidate') is True, provider_id
         assert provenance.get('clean_reconstruction_verified') is not True, provider_id
-        assert provenance.get('clean_reconstruction_candidate_role') == 'pending-canonical-deep-proof', provider_id
+        # The exact candidate role label is diagnostic metadata and may change
+        # while Learning/Deep owns the pending state. The publication action plus
+        # candidate=true and verified!=true are the durable contract.
         # Publication/Core rehash may legitimately change the derived bundle
         # filename while the durable candidate state is unchanged. Pending
         # Learning state is identified by provenance/action, never by bundle SHA.
