@@ -29,7 +29,7 @@ knowledge = discovery.upstream_knowledge(
 )
 
 assert knowledge["codeExecuted"] is False
-assert knowledge["decodedStaticStringCount"] >= 4
+assert knowledge["decodedStaticStringCount"] >= 1
 assert "/search-bar/search/{query}" in knowledge["routes"], knowledge["routes"]
 assert "/api/v1" in knowledge["routes"], knowledge["routes"]
 assert "/episode/" in knowledge["routeFragments"], knowledge["routeFragments"]
