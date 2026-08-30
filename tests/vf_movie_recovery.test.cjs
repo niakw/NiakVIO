@@ -64,13 +64,13 @@ async function fixtureFetch(input) {
   fetchTrace.push(raw);
   const url = new URL(raw);
   if (url.hostname === 'api.themoviedb.org') return tmdbResponse(raw);
-  if (url.hostname === 'www.themoviedb.org' && url.pathname.startsWith('/tv/')) {
+  if (url.hostname === 'www.themoviedb.org' && (url.pathname.startsWith('/tv/') || url.pathname.startsWith('/movie/'))) {
     const id = url.pathname.split('/').filter(Boolean).at(-1);
     const fixture = fixtureForId(id);
-    const html = fixture.id === tvFixture.id
-      ? "<html><a href='/genre/16-animation'>Animation</a><div>Original Language English</div></html>"
-      : "<html><a href='/genre/18-drama'>Drama</a><div>Original Language English</div></html>";
-    return new Response(html, { status: 200, headers: { 'content-type': 'text/html' } });
+    const namespace = url.pathname.startsWith('/movie/') ? 'movie' : 'tv';
+    const genre = fixture.id === tvFixture.id ? "<a href='/genre/16-animation'>Animation</a>" : "<a href='/genre/18-drama'>Drama</a>";
+    const html = `<html><head><title>${fixture.title} (${fixture.year}) — The Movie Database (TMDB)</title></head><body>${genre}<div>Original Language English</div><script type="application/ld+json">{"datePublished":"${fixture.year}-05-01","@type":"${namespace === 'movie' ? 'Movie' : 'TVSeries'}"}</script></body></html>`;
+    return new Response(html, { status: 200, headers: { 'content-type': 'text/html', 'cache-control': 'public, max-age=3600' } });
   }
   if (url.hostname === 'movix.fun' && url.pathname === '/') return new Response('<script src="/assets/app.js"></script>', { status: 200, headers: { 'content-type': 'text/html' } });
   if (url.hostname === 'movix.fun' && url.pathname === '/assets/app.js') return new Response('const movie="/api/catalog/movie/{id}"; const tv="/api/catalog/tv/{id}/season/{season}";', { status: 200, headers: { 'content-type': 'application/javascript' } });
