@@ -79,6 +79,29 @@ assert len(required) + len(clean) == provider_count
 assert store.get("reconstruction_required") == len(required)
 assert store.get("clean_reconstructed") == len(clean)
 
+# An unverified clean candidate must never strand an existing provider. Every
+# preserved pre-reconstruction LKG reference must resolve locally and match the
+# recorded SHA so production compilation can safely keep the known-good base
+# until canonical Deep proves the replacement.
+pending_lkg_checked = 0
+for provider_id in required:
+    row = rows[provider_id]
+    if not base_store.is_clean_reconstruction_candidate(row):
+        continue
+    legacy_file = str(row.get("legacy_base_filename_before_clean_candidate") or "").strip()
+    legacy_sha = str(row.get("legacy_base_sha256_before_clean_candidate") or "").strip().casefold()
+    if not legacy_file or not legacy_sha:
+        continue
+    runtime_path, runtime_sha = base_store.resolve_runtime_base(provider_id, row, require=True)
+    assert runtime_path is not None
+    assert runtime_path.relative_to(ROOT).as_posix() == legacy_file, (
+        f"{provider_id}: pending clean candidate did not resolve preserved LKG"
+    )
+    assert runtime_sha == legacy_sha, f"{provider_id}: preserved LKG SHA drift"
+    pending_lkg_checked += 1
+
+assert pending_lkg_checked > 0, "expected pending clean candidates with preserved production LKG"
+
 # At the introduction of v2 every provider that existed at that time was
 # untrusted for seeding. Future providers may be born directly as clean v2
 # reconstructions, so current catalogue size must never be frozen here.
