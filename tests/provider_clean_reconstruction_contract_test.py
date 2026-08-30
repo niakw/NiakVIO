@@ -181,7 +181,7 @@ assert 'retained = dict(old_entry)' in promoter
 pending_promoter_block = promoter.split(
     'is_pending_clean_reconstruction_candidate(selected, previous_base_row)',
     1,
-)[1].split('try:', 1)[0]
+)[1].split('\n            try:', 1)[0]
 assert 'retained["enabled"]' not in pending_promoter_block
 assert 'restore_pending_activation_lkg' not in pending_promoter_block
 assert 'pending_configured_disabled' not in pending_promoter_block
