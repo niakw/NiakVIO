@@ -33,7 +33,7 @@ var ASSET=/\.(?:woff2?|ttf|otf|eot|css|js|mjs|map|png|jpe?g|gif|svg|ico|webmanif
 var SOCIAL=/(?:^|\.)(?:youtube\.com|youtu\.be|twitter\.com|x\.com|twimg\.com|facebook\.com|instagram\.com|google\.com|googleusercontent\.com|t\.me|telegram\.me|whatsapp\.com)$/i;
 var DEMO=/(?:big[_-]?buck[_-]?bunny|sample[-_]?videos|test-videos|chrome\/static\/videos|sticky\/videos|static\/money|grok-|radar_promo)/i;
 function s(v){return String(v==null?"":v).replace(/[\u200B-\u200D\uFEFF]/g,"").trim()}
-function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\\\//g,"/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}
+function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}
 function abs(v,b){try{return new URL(clean(v),b).toString()}catch(_){return ""}}
 function hostname(u){try{return new URL(u).hostname.toLowerCase()}catch(_){return ""}}
 function origin(u){try{return new URL(u).origin}catch(_){return ""}}
