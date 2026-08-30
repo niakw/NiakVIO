@@ -3,7 +3,7 @@
 
 The wrapper is provider-configured and only runs after the native provider has
 returned no usable stream.  It follows the normal public catalogue flow:
-TMDb metadata -> official terminal site/API -> content page -> embedded player.
+Core TMDB metadata -> official terminal site/API -> content page -> embedded player.
 It does not bypass access controls, solve CAPTCHAs, or fabricate direct media.
 """
 from __future__ import annotations
@@ -37,7 +37,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         raise ValueError("vf_catalogue_recovery: api_fixed requires api_url + learned api_routes")
 
     payload = {
-        "implementationVersion": 3,
+        "implementationVersion": 4,
         "strategy": strategy,
         "baseUrl": base_url,
         "apiUrl": api_url,
@@ -70,7 +70,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 /* MARKER_PLACEHOLDER */
 ;(function(g,config){
   "use strict";
-  var TMDB_KEY=(g&&g.TMDB_API_KEY)||"";
   function clean(v){return String(v==null?"":v).replace(/&amp;/gi,"&").trim()}
   function stripHtml(v){return clean(v).replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim()}
   function normalize(v){try{return String(v||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_e){return String(v||"").toLowerCase()}}
@@ -104,6 +103,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     try{
       var ctx=g&&g.__nuvioMediaContext;
       out.tmdbNamespace=String(out.tmdbNamespace||ctx&&ctx.tmdbNamespace||(out.mediaType==="movie"?"movie":"tv")).toLowerCase();
+      out.tmdbMetadata=out.tmdbMetadata||out.tmdb_metadata||ctx&&ctx.tmdbMetadata||null;
     }catch(_e){out.tmdbNamespace=out.mediaType==="movie"?"movie":"tv"}
     if(out.tmdbNamespace!=="movie")out.tmdbNamespace="tv";
     return out;
@@ -111,13 +111,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function metadata(req){
     var title=clean(req.title||req.name||req.label||req.settings&&req.settings.title),year=Number(req.year||req.settings&&req.settings.year)||0,original="";
     if(title)title=title.replace(/\s*\(\d{4}\)\s*$/,"");
-    var kind=req.tmdbNamespace==="movie"?"movie":"tv",data=null;
+    var data=req.tmdbMetadata||req.tmdb_metadata||null;
     try{
-      var cache=g&&g.__nuvioTmdbMetadataCacheV1,identity=kind+":"+String(req.tmdbId||"");
-      var cached=cache&&cache[identity];
-      if(cached&&typeof cached.then!=="function")data=cached;
+      if(!data){var ctx=g&&g.__nuvioMediaContext;data=ctx&&ctx.tmdbMetadata||null}
+      if(data&&data.state==="ok"&&data.metadata)data=data.metadata;
     }catch(_e){}
-    if(!data&&req.tmdbId&&TMDB_KEY)data=await request("https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(req.tmdbId)+"?api_key="+TMDB_KEY+"&language=fr-FR",true);
     if(data){title=clean(data.title||data.name)||title;original=clean(data.original_title||data.original_name);var date=clean(data.release_date||data.first_air_date);year=Number(date.slice(0,4))||year}
     return {title:title,original:original,year:year};
   }

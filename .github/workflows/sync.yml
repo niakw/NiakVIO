@@ -137,6 +137,7 @@ on:
       - 'tests/native_media_type_resolution_test.py'
       - 'engine_v2/src/tmdb-metadata.mjs'
       - 'scripts/provider_patches/global_media_type_resolution_v1.py'
+      - 'scripts/provider_patches/vf_catalogue_recovery.py'
       - 'scripts/provider_patches/global_runtime_compat_v1.py'
       - 'scripts/native_media_type_contract.py'
       - 'tests/canonical_media_types_test.py'
@@ -214,9 +215,6 @@ on:
       - 'tests/runtime_capability_media_safety_v4_test.py'
       - 'tests/vf_recovery_profiles_test.py'
       - 'scripts/provider_patches/adaptive_runtime_recovery_v5.py'
-      - 'tests/streamzo_target_media_profile_test.py'
-      - 'tests/streamzo_public_catalogue_episodic_guard_test.py'
-      - 'scripts/provider_patches/streamzo_public_catalogue_v2.py'
       - 'scripts/nuvio_client_activation_ids.py'
   schedule:
     - cron: '17 5 * * 0,1,3,4,6'

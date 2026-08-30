@@ -77,7 +77,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-api-authoritative-fail-open-infra-v7-key-normalized",
+        "revision": "tmdb-api-authoritative-fail-open-infra-v8-context-metadata",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -232,6 +232,7 @@ async function resolve(a){
     tmdbId:id,
     tmdbNamespace:namespace,
     tmdbIdentity:namespace+":"+id,
+    tmdbMetadata:resolved.metadata||null,
     canonicalMediaType:type,
     tmdbResolutionDegraded:resolved.degraded===true,
     nuvioInputMediaType:input
@@ -240,6 +241,7 @@ async function resolve(a){
     q.nuvioInputMediaType=input;
     q.tmdbNamespace=namespace;
     q.tmdbIdentity=namespace+":"+id;
+    q.tmdbMetadata=resolved.metadata||q.tmdbMetadata||q.tmdb_metadata||null;
     q.canonicalMediaType=type;
     q.mediaType=type;q.type=type;
     if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
