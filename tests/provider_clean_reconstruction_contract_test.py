@@ -121,6 +121,9 @@ assert '"legacy_provider_js_executed_for_reconstruction": False' in discover
 assert '"new-niakvio-clean-seed"' in discover
 assert '"pending-niakvio-clean-reconstruction-v2"' in discover
 assert '"legacy-providerbase-compatibility-only"' in discover
+assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in discover
+assert "scripts/provider_patches/castle_strict_identity_v1.py" in base_store_source
+assert "excluded_patch_scripts=CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in base_store_source
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
 assert "refusing legacy ProviderBase fallback" in promoter
