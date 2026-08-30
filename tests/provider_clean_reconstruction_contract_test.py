@@ -96,6 +96,7 @@ promoter = (SCRIPTS / "promote_candidates.py").read_text(encoding="utf-8")
 base_store_source = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf-8")
 assert 'row.setdefault("clean_reconstruction_marked_at", marked_at)' in base_store_source
 assert 'store.update({' in base_store_source
+assert '"/title/" + titleKind + "/" + encodeURIComponent(id) + "-" + slug' in base_store_source
 assert "--clean-reconstruction" in discover
 assert '"upstream_code_role": "knowledge-only"' in discover
 assert '"upstream_code_executed": False' in discover
