@@ -33,6 +33,7 @@ from provider_base_store import (
     is_clean_reconstruction_candidate,
     requires_clean_reconstruction,
     resolve_base,
+    resolve_runtime_base,
 )
 from upstream_lkg import (
     create_pending, load_manifest_snapshot, load_provider_snapshot, load_registry,
@@ -46,12 +47,185 @@ LKG_PATH = ROOT / "provider-lkg.json"
 PROVENANCE_PATH = ROOT / "PROVENANCE.json"
 OVERRIDES_PATH = ROOT / "provider-overrides.json"
 USER_AGENT = "Nuvio-Curated-Discovery/5.13 (+GitHub Actions)"
-URL_RE = re.compile(r"https?://[^\\s\"'\`<>\\)]+", re.I)
+URL_RE = re.compile(r"""https?://[^\s"\'`<>)]+""", re.I)
 INFRASTRUCTURE_HOSTS = {
-    "api.themoviedb.org", "image.tmdb.org", "api.jikan.moe",
+    "api.themoviedb.org", "www.themoviedb.org", "image.tmdb.org", "api.jikan.moe",
     "graphql.anilist.co", "api.tvmaze.com", "api.github.com",
-    "raw.githubusercontent.com", "github.com",
+    "raw.githubusercontent.com", "github.com", "www.github.com",
 }
+CUSTOM_B64_ALPHABET_RE = re.compile(r"""["']([A-Za-z]{52}0123456789\+/=)["']""")
+CUSTOM_B64_TOKEN_RE = re.compile(r"""["']([A-Za-z0-9+/=]{4,256})["']""")
+ROUTE_LITERAL_RE = re.compile(
+    r"""(?:^|["'])(/(?:api|search|recherche|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|movie|movies|media|sheet|film|films|tv|series|show|episode|season|wp-json|wp-admin|index\.php)[^"'<>\\\s]{0,500})""",
+    re.I,
+)
+RESERVED_HOST_SUFFIXES = {".invalid", ".example", ".test", ".localhost"}
+
+
+def decode_static_obfuscated_strings(text: str) -> list[str]:
+    """Decode bounded string-table literals without executing upstream JavaScript."""
+    alphabets = list(dict.fromkeys(CUSTOM_B64_ALPHABET_RE.findall(text)))
+    if not alphabets:
+        return []
+    tokens = list(dict.fromkeys(CUSTOM_B64_TOKEN_RE.findall(text)))
+    decoded: list[str] = []
+    for alphabet in alphabets[:4]:
+        for token in tokens[:4000]:
+            raw = bytearray()
+            bit_count = 0
+            accumulator = 0
+            valid = True
+            for char in token:
+                value = alphabet.find(char)
+                if value < 0:
+                    valid = False
+                    break
+                accumulator = accumulator * 64 + value if bit_count % 4 else value
+                bit_count += 1
+                if (bit_count - 1) % 4:
+                    raw.append(0xFF & (accumulator >> ((-2 * bit_count) & 6)))
+            if not valid or not raw:
+                continue
+            try:
+                value = bytes(raw).decode("utf-8")
+            except UnicodeDecodeError:
+                continue
+            value = value.strip()
+            if not value or len(value) > 500:
+                continue
+            printable = sum(ch.isprintable() or ch in "\r\n\t" for ch in value)
+            if printable / max(1, len(value)) < 0.95:
+                continue
+            if not re.search(
+                r"https?://|/(?:api|search|watch|embed|player|play|video|stream|source|movie|tv|series|episode|season|wp-)|"
+                r"\b(?:tmdb|imdb|referer|origin|worker|download|query|title|sources?)\b",
+                value,
+                re.I,
+            ):
+                continue
+            if value not in decoded:
+                decoded.append(value)
+            if len(decoded) >= 256:
+                return decoded
+    return decoded
+
+
+def static_knowledge_text(raw_upstream: bytes) -> tuple[str, list[str]]:
+    text = raw_upstream[:2_000_000].decode("utf-8", errors="ignore")
+    decoded = decode_static_obfuscated_strings(text)
+    if not decoded:
+        return text, []
+    return text + "\n" + "\n".join(decoded), decoded
+
+
+def _plausible_hosts(hosts: list[str]) -> list[str]:
+    unique = list(dict.fromkeys(str(value or "").strip().casefold() for value in hosts if str(value or "").strip()))
+    output: list[str] = []
+    for host in unique:
+        if host in INFRASTRUCTURE_HOSTS:
+            continue
+        if "." not in host or any(host.endswith(suffix) for suffix in RESERVED_HOST_SUFFIXES):
+            continue
+        # A regex/string-table scan may stop inside a concatenated hostname
+        # (api.pur, raw.githubu, ...). Prefer a longer host that proves the
+        # shorter token was only a prefix, never a usable origin.
+        if any(other != host and other.startswith(host) and len(other) >= len(host) + 3 for other in unique):
+            continue
+        if host not in output:
+            output.append(host)
+    return output
+
+
+def _route_placeholder(key: str) -> str | None:
+    key = key.casefold()
+    if key in {"q", "query", "search", "keyword", "s"}:
+        return "{query}"
+    if key in {"id", "tmdb", "tmdbid", "tmdb_id"}:
+        return "{id}"
+    if key in {"media", "type", "media_type", "m"}:
+        return "{media}"
+    if key in {"season", "saison"}:
+        return "{season}"
+    if key in {"episode", "ep", "e"}:
+        return "{episode}"
+    return None
+
+
+def normalize_route_literal(value: str) -> str | None:
+    value = str(value or "").strip().replace("\\/", "/")
+    if not value:
+        return None
+    if value.startswith(("http://", "https://")):
+        try:
+            parsed = urllib.parse.urlparse(value)
+        except ValueError:
+            return None
+        value = parsed.path or "/"
+        if parsed.query:
+            value += "?" + parsed.query
+    if not value.startswith("/") or value == "/":
+        return None
+    path, sep, query = value.partition("?")
+    if re.search(r"/(?:search|recherche)/?$", path, re.I) and not sep:
+        path = path.rstrip("/") + "/{query}"
+    if not sep:
+        return path
+    parts: list[str] = []
+    for raw_part in query.split("&"):
+        if not raw_part:
+            continue
+        key, eq, raw_value = raw_part.partition("=")
+        if not key:
+            continue
+        placeholder = _route_placeholder(key)
+        if eq and not raw_value and placeholder:
+            raw_value = placeholder
+        parts.append(key + ("=" + raw_value if eq else ""))
+    return path + ("?" + "&".join(parts) if parts else "")
+
+
+def infer_api_recipe(
+    knowledge: dict[str, Any],
+    patch: dict[str, Any],
+    fixed: dict[str, Any],
+) -> dict[str, Any] | None:
+    explicit = patch.get("api_recipe")
+    if isinstance(explicit, dict) and explicit:
+        return explicit
+    fragments = [str(value) for value in knowledge.get("routeFragments") or []]
+    search = next((value for value in fragments if "search" in value.casefold()), None)
+    stream = next((value for value in fragments if re.search(r"/stream/?$", value, re.I)), None)
+    media = next((value for value in fragments if re.search(r"/media/?$", value, re.I)), None)
+    sheet = next((value for value in fragments if re.search(r"/sheet/?$", value, re.I)), None)
+    episode = next((value for value in fragments if re.search(r"/episode/?$", value, re.I)), None)
+    if not fixed.get("api") or not search or not stream:
+        return None
+    search_route = normalize_route_literal(search) or search
+    if "{query}" not in search_route:
+        search_route = search_route.rstrip("/") + "/{query}"
+
+    # Common API providers expose one provider-internal id from search, then
+    # separate movie and episodic source routes. Keep those route fragments as
+    # data instead of collapsing them to the first "/stream/" token seen.
+    movie_route = stream.rstrip("/") + "/{id}"
+    if media and sheet:
+        movie_route = media.rstrip("/") + "/{id}" + sheet
+    recipe: dict[str, Any] = {
+        "base": str(fixed.get("api") or "").strip(),
+        "referer": str(fixed.get("referer") or "").strip() or None,
+        "searchRoute": search_route,
+        "movieRoute": movie_route,
+        "idFields": ["id", "_id", "media_id", "post_id"],
+        "titleFields": ["title", "name", "original_title", "post_title"],
+        "yearFields": ["year", "release_date", "first_air_date"],
+        "sourceFields": ["url", "stream_url", "stream", "source", "file"],
+    }
+    if stream and episode:
+        recipe["episodeRoute"] = (
+            stream.rstrip("/") + "/{id}" + episode +
+            "?season={season}&episode={episode}"
+        )
+    return recipe
 
 
 def fetch_bytes(url: str, attempts: int = 3, timeout: int = 35) -> bytes:
@@ -128,10 +302,11 @@ def exclusion_reason(entry: dict[str, Any], data: bytes | None, exclusions: dict
 
 
 def observed_site_from_upstream(data: bytes, provider_id: str) -> str | None:
-    """Extract a provider-looking site hint without importing upstream code."""
-    text = data[:2_000_000].decode("utf-8", errors="ignore")
+    """Extract the strongest provider-looking site hint without executing code."""
+    text, _decoded = static_knowledge_text(data)
     token = re.sub(r"[^a-z0-9]", "", provider_id.casefold())
-    candidates: list[tuple[int, str]] = []
+    raw_hosts: list[str] = []
+    parsed_rows: list[tuple[str, str]] = []
     for raw in URL_RE.findall(text):
         raw = raw.rstrip(".,;")
         try:
@@ -139,11 +314,21 @@ def observed_site_from_upstream(data: bytes, provider_id: str) -> str | None:
         except ValueError:
             continue
         host = (parsed.hostname or "").casefold()
-        if not host or host in INFRASTRUCTURE_HOSTS:
+        if not host:
+            continue
+        raw_hosts.append(host)
+        parsed_rows.append((raw, host))
+    hosts = set(_plausible_hosts(raw_hosts))
+    candidates: list[tuple[int, str]] = []
+    for raw, host in parsed_rows:
+        if host not in hosts:
             continue
         normalized = re.sub(r"[^a-z0-9]", "", host)
-        score = 2 if token and len(token) >= 4 and token in normalized else 1
-        origin = f"{parsed.scheme}://{host}"
+        score = 3 if token and len(token) >= 4 and token in normalized else 1
+        if host.startswith(("api.", "player.", "cdn.")):
+            score -= 1
+        parsed = urllib.parse.urlparse(raw)
+        origin = f"{parsed.scheme if parsed.scheme in {'http', 'https'} else 'https'}://{host}"
         candidates.append((score, origin))
     if not candidates:
         return None
@@ -166,11 +351,10 @@ def known_site_for_provider(
 
 
 def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: bytes) -> dict[str, Any]:
-    """Extract bounded route knowledge without importing or executing upstream code."""
-    text = raw_upstream[:2_000_000].decode("utf-8", errors="ignore")
-    urls: list[str] = []
-    hosts: list[str] = []
-    routes: list[str] = []
+    """Extract bounded provider knowledge statically, including obfuscated string tables."""
+    text, decoded = static_knowledge_text(raw_upstream)
+    raw_urls: list[tuple[str, str]] = []
+    raw_hosts: list[str] = []
     for raw in URL_RE.findall(text):
         raw = raw.rstrip(".,;")
         try:
@@ -178,37 +362,89 @@ def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: by
         except ValueError:
             continue
         host = (parsed.hostname or "").casefold()
-        if not host or host in INFRASTRUCTURE_HOSTS:
+        if not host:
             continue
+        raw_urls.append((raw, host))
+        raw_hosts.append(host)
+
+    hosts = _plausible_hosts(raw_hosts)
+    allowed_hosts = set(hosts)
+    urls: list[str] = []
+    routes: list[str] = []
+    fragments: list[str] = []
+
+    for raw, host in raw_urls:
+        if host not in allowed_hosts:
+            continue
+        parsed = urllib.parse.urlparse(raw)
         safe_url = urllib.parse.urlunparse((
             parsed.scheme if parsed.scheme in {"http", "https"} else "https",
             host,
             parsed.path or "/",
             "",
-            "",
+            parsed.query,
             "",
         ))
         if safe_url not in urls:
             urls.append(safe_url)
-        if host not in hosts:
-            hosts.append(host)
-        route = parsed.path or "/"
-        if route not in routes:
+        route = normalize_route_literal(safe_url)
+        if route and route not in routes:
             routes.append(route)
-        if len(urls) >= 32:
-            break
+
+    literals = decoded + [match.group(1) for match in ROUTE_LITERAL_RE.finditer(text)]
+    for literal in literals:
+        value = str(literal or "").strip()
+        if not value.startswith("/"):
+            continue
+        if value not in fragments:
+            fragments.append(value)
+        route = normalize_route_literal(value)
+        if route and route not in routes:
+            routes.append(route)
+
     supported = entry.get("supportedTypes") if isinstance(entry, dict) else []
     if isinstance(supported, str):
         supported = [supported]
     return {
         "providerId": provider_id,
         "supportedTypes": [str(value) for value in supported or []][:8],
-        "hosts": hosts[:24],
-        "routes": routes[:32],
-        "observedUrls": urls[:32],
+        "hosts": hosts[:32],
+        "routes": routes[:64],
+        "routeFragments": fragments[:64],
+        "observedUrls": urls[:48],
+        "decodedStaticStringCount": len(decoded),
         "codeRole": "knowledge-only",
         "codeExecuted": False,
     }
+
+
+def merge_provider_knowledge(
+    current: dict[str, Any],
+    historical: dict[str, Any] | None,
+) -> dict[str, Any]:
+    """Merge static facts without turning historical JavaScript into executable input."""
+    previous = historical if isinstance(historical, dict) else {}
+    merged = dict(current)
+    for key, limit in (
+        ("hosts", 48),
+        ("routes", 96),
+        ("routeFragments", 96),
+        ("observedUrls", 72),
+    ):
+        values: list[str] = []
+        for source in (current.get(key), previous.get(key)):
+            for raw in source if isinstance(source, list) else []:
+                value = str(raw or "").strip()
+                if value and value not in values:
+                    values.append(value)
+        merged[key] = values[:limit]
+    merged["decodedStaticStringCount"] = int(current.get("decodedStaticStringCount") or 0) + int(
+        previous.get("decodedStaticStringCount") or 0
+    )
+    merged["historicalKnowledgeMerged"] = bool(previous)
+    merged["historicalCodeRole"] = "knowledge-only" if previous else None
+    merged["historicalCodeExecuted"] = False
+    return merged
 
 
 def clean_provider_model(
@@ -217,7 +453,7 @@ def clean_provider_model(
     overrides: dict[str, Any],
     known_site: str | None,
 ) -> dict[str, Any]:
-    """Translate observed facts/configuration into a bounded NiakVIO provider model."""
+    """Merge trusted configuration with freshly extracted static provider facts."""
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     capabilities = overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"), dict) else {}
     patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
@@ -231,8 +467,8 @@ def clean_provider_model(
         knowledge.get("routes"),
     ):
         for raw in source if isinstance(source, list) else []:
-            value = str(raw or "").strip()
-            if value and value not in learned_routes:
+            value = normalize_route_literal(str(raw or "").strip()) or str(raw or "").strip()
+            if value and value != "/" and value not in learned_routes:
                 learned_routes.append(value)
 
     learned_urls: list[str] = []
@@ -243,36 +479,54 @@ def clean_provider_model(
     ):
         for raw in source if isinstance(source, list) else []:
             value = str(raw or "").strip()
-            if value and value not in learned_urls:
+            if not value:
+                continue
+            try:
+                host = (urllib.parse.urlparse(value).hostname or "").casefold()
+            except ValueError:
+                continue
+            if host and host in _plausible_hosts([host] + list(knowledge.get("hosts") or [])) and value not in learned_urls:
                 learned_urls.append(value)
 
-    origins: list[str] = []
+    origin_candidates: list[str] = []
     for value in capability.get("observed_origins") or []:
         value = str(value or "").strip()
-        if value and value not in origins:
-            origins.append(value)
+        if value:
+            origin_candidates.append(value)
     for host in knowledge.get("hosts") or []:
         value = str(host or "").strip()
         if value:
-            origin = "https://" + value
-            if origin not in origins:
-                origins.append(origin)
+            origin_candidates.append("https://" + value)
     for mapping_key in ("runtime_domain_replacements", "route_replacements", "replacements"):
         mapping = patch.get(mapping_key) if isinstance(patch.get(mapping_key), dict) else {}
         for raw in mapping.values():
             value = str(raw or "").strip()
-            if not value:
-                continue
-            if not value.startswith(("http://", "https://")):
-                value = "https://" + value.lstrip("/")
-            try:
-                parsed = urllib.parse.urlparse(value)
-                origin = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else ""
-            except ValueError:
-                origin = ""
-            if origin and origin not in origins:
-                origins.append(origin)
+            if value:
+                origin_candidates.append(value if value.startswith(("http://", "https://")) else "https://" + value.lstrip("/"))
 
+    origin_hosts: list[str] = []
+    parsed_origins: list[tuple[str, str]] = []
+    for value in origin_candidates:
+        try:
+            parsed = urllib.parse.urlparse(value)
+        except ValueError:
+            continue
+        host = (parsed.hostname or "").casefold()
+        if not host:
+            continue
+        origin_hosts.append(host)
+        parsed_origins.append((value, host))
+    allowed_origin_hosts = set(_plausible_hosts(origin_hosts + list(knowledge.get("hosts") or [])))
+    origins: list[str] = []
+    for value, host in parsed_origins:
+        if host not in allowed_origin_hosts:
+            continue
+        parsed = urllib.parse.urlparse(value if value.startswith(("http://", "https://")) else "https://" + value.lstrip("/"))
+        origin = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else ""
+        if origin and origin not in origins:
+            origins.append(origin)
+
+    recipe = infer_api_recipe(knowledge, patch, fixed)
     return {
         "knownSite": str(known_site or "").strip() or None,
         "strategy": str(
@@ -284,13 +538,36 @@ def clean_provider_model(
         "officialHub": str(patch.get("official_hub") or "").strip() or None,
         "officialApi": str(patch.get("official_api") or "").strip() or None,
         "fixedApi": str(fixed.get("api") or "").strip() or None,
-        "origins": origins[:24],
-        "observedUrls": learned_urls[:32],
-        "routes": learned_routes[:32],
-        "knowledgeRole": "structured-observation-only",
+        "origins": origins[:32],
+        "observedUrls": learned_urls[:48],
+        "routes": learned_routes[:64],
+        "apiRecipe": recipe,
+        "knowledgeRole": "structured-static-observation-only",
         "legacyCodeEmbedded": False,
         "legacyCodeExecuted": False,
     }
+
+
+def reconstruction_manifest_entry(
+    provider_id: str,
+    entry: dict[str, Any],
+    overrides: dict[str, Any],
+) -> dict[str, Any]:
+    """Project durable semantic capability into a one-shot ProviderBase rebuild."""
+    output = dict(entry) if isinstance(entry, dict) else {}
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
+    semantic: list[str] = []
+    for raw in patch.get("published_types") if isinstance(patch.get("published_types"), list) else []:
+        value = str(raw or "").strip().casefold()
+        if value in {"movie", "tv", "anime"} and value not in semantic:
+            semantic.append(value)
+    if semantic:
+        # build_clean_provider_seed deliberately prefers canonicalSupportedTypes.
+        # Keep the upstream transport list intact for diagnostics, but never let
+        # movie/tv aliases erase a proven semantic anime capability.
+        output["canonicalSupportedTypes"] = semantic
+    return output
 
 
 def executable_seed(
@@ -301,17 +578,35 @@ def executable_seed(
     overrides: dict[str, Any],
     *,
     clean_reconstruction: bool,
+    force_clean_reconstruction: bool = False,
 ) -> tuple[bytes, str, str | None, bool, dict[str, Any], dict[str, Any]]:
     previous = provenance_rows.get(provider_id)
     previous_row = previous if isinstance(previous, dict) else {}
     site = known_site_for_provider(provider_id, raw_upstream, overrides)
     knowledge = upstream_knowledge(provider_id, entry, raw_upstream)
-    provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
     reconstruction_required = requires_clean_reconstruction(previous_row)
 
     pending_clean = is_clean_reconstruction_candidate(previous_row)
+    if pending_clean and force_clean_reconstruction:
+        # Corrective reconstruction may recover static facts from the exact
+        # preserved production LKG, but never executes or embeds those bytes.
+        historical_path, _historical_sha = resolve_runtime_base(
+            provider_id,
+            previous_row,
+            require=False,
+        )
+        if historical_path is not None:
+            historical_knowledge = upstream_knowledge(
+                provider_id,
+                entry,
+                historical_path.read_bytes(),
+            )
+            knowledge = merge_provider_knowledge(knowledge, historical_knowledge)
 
-    if pending_clean:
+    provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
+    reconstruction_entry = reconstruction_manifest_entry(provider_id, entry, overrides)
+
+    if pending_clean and not force_clean_reconstruction:
         path, _digest = resolve_base(provider_id, previous_row, require=True)
         assert path is not None
         return (
@@ -323,11 +618,11 @@ def executable_seed(
             provider_model,
         )
 
-    if reconstruction_required and clean_reconstruction:
+    if reconstruction_required and (clean_reconstruction or force_clean_reconstruction):
         return (
             build_clean_provider_seed(
                 provider_id,
-                entry,
+                reconstruction_entry,
                 known_site=site,
                 provider_model=provider_model,
             ),
@@ -357,7 +652,7 @@ def executable_seed(
     return (
         build_clean_provider_seed(
             provider_id,
-            entry,
+            reconstruction_entry,
             known_site=site,
             provider_model=provider_model,
         ),
@@ -382,7 +677,15 @@ def main() -> int:
         action="store_true",
         help="Build reconstruction-required providers from a fresh NiakVIO seed instead of compatibility LKG bytes.",
     )
+    parser.add_argument(
+        "--force-clean-reconstruction",
+        action="append",
+        default=[],
+        metavar="PROVIDER_ID",
+        help="Explicitly rebuild only the named clean ProviderBase candidate from current structured knowledge. May be repeated.",
+    )
     args = parser.parse_args()
+    forced_reconstruction_ids = {canonical_id(value) for value in args.force_clean_reconstruction if canonical_id(value)}
 
     config = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
     exclusions = config.get("exclusions", {})
@@ -531,6 +834,7 @@ def main() -> int:
                     provenance_rows,
                     overrides,
                     clean_reconstruction=bool(args.clean_reconstruction),
+                    force_clean_reconstruction=provider_id in forced_reconstruction_ids,
                 )
                 clean_seed_origin = code_origin in {
                     "new-niakvio-clean-seed",
@@ -575,11 +879,15 @@ def main() -> int:
                         "clean_provider_model": provider_model,
                         "candidate_code_origin": code_origin,
                         "provider_base_reconstruction_required": bool(reconstruction_required),
-                        "clean_reconstruction_mode": bool(args.clean_reconstruction),
+                        "clean_reconstruction_mode": bool(
+                            args.clean_reconstruction or provider_id in forced_reconstruction_ids
+                        ),
                         "legacy_provider_js_executed_for_reconstruction": False,
                         "local_patches": applied_patches,
                         "bytes": len(candidate_data),
-                        "metadata": entry,
+                        "metadata": reconstruction_manifest_entry(
+                            provider_id, entry, overrides
+                        ),
                     }
                 )
                 seen_canonical_ids[provider_id] = {
@@ -661,6 +969,7 @@ def main() -> int:
             provenance_rows,
             overrides,
             clean_reconstruction=bool(args.clean_reconstruction),
+            force_clean_reconstruction=provider_id in forced_reconstruction_ids,
         )
         clean_seed_origin = code_origin in {
             "new-niakvio-clean-seed",
@@ -706,12 +1015,14 @@ def main() -> int:
             "clean_provider_model": provider_model,
             "candidate_code_origin": code_origin,
             "provider_base_reconstruction_required": bool(reconstruction_required),
-            "clean_reconstruction_mode": bool(args.clean_reconstruction),
+            "clean_reconstruction_mode": bool(
+                args.clean_reconstruction or provider_id in forced_reconstruction_ids
+            ),
             "legacy_provider_js_executed_for_reconstruction": False,
             "local_patches": applied_patches,
             "baseline_origin": "published_manifest",
             "bytes": len(candidate_data),
-            "metadata": dict(entry),
+            "metadata": reconstruction_manifest_entry(provider_id, dict(entry), overrides),
             "baseline": True,
             "lkg": is_registered_lkg,
             "lkg_verified_categories": list(lkg_record.get("verified_categories") or []) if is_registered_lkg else [],

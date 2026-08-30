@@ -19,7 +19,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from provider_engine_normalizer import normalize_mapping_keys, sanitize_provider_hooks
-from provider_base_store import resolve_base
+from provider_base_store import resolve_runtime_base
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "manifest.json"
@@ -422,9 +422,24 @@ def compile_manifest(
             provenance_row = provenance_rows.get(provider_id)
             if not isinstance(provenance_row, dict):
                 raise ValueError(f"{provider_id}: missing provenance required for ProviderBase compilation")
-            source_path, _base_sha = resolve_base(provider_id, provenance_row, require=True)
+
+            # Production compilation resolves through the central runtime-base
+            # policy: an unverified clean reconstruction candidate keeps using
+            # its preserved provider-native LKG until strict proof verifies the
+            # replacement. Learning still sees the candidate through provenance.
+            source_path, _base_sha = resolve_runtime_base(
+                provider_id,
+                provenance_row,
+                require=True,
+            )
             assert source_path is not None
             source_file = source_path.relative_to(ROOT).as_posix()
+            canonical_base = str(provenance_row.get("base_filename") or "").strip()
+            source_kind = (
+                "provider_base"
+                if source_file == canonical_base
+                else "provider_base_lkg_pending_clean_candidate"
+            )
         else:
             source_path = (manifest_path.parent / filename).resolve()
             if ROOT not in source_path.parents or not source_path.is_file():
@@ -447,7 +462,7 @@ def compile_manifest(
             "status": "compiled",
             "source_file": source_file,
             "source_sha256": sha256_bytes(source_bytes),
-            "source_kind": "provider_base" if canonical_provider_base_mode else "explicit_manifest_source",
+            "source_kind": source_kind if canonical_provider_base_mode else "explicit_manifest_source",
             "compiled_file": f"providers/{target_name}",
             "compiled_sha256": digest,
             "contract_sha256": sha256_bytes(json.dumps(contract, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")),

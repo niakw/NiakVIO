@@ -53,7 +53,7 @@ def _semantic_types_index() -> dict[str, list[str]]:
                     continue
                 provider_id = str(row.get("canonicalId") or row.get("scraper", {}).get("id") or "").strip().casefold()
                 scraper = row.get("scraper") if isinstance(row.get("scraper"), dict) else {}
-                values = scraper.get("supportedTypes") or []
+                values = scraper.get("canonicalSupportedTypes") or scraper.get("supportedTypes") or []
                 types = []
                 for value in values if isinstance(values, list) else []:
                     item = str(value).strip().lower()
@@ -1293,6 +1293,20 @@ def apply_overrides(
                 "phase": phase,
                 "scope": "global_media_type_resolution",
             })
+
+    # A terminal quarantine is an inert publication state. Once the provider
+    # has been replaced by the quarantine artifact, historical route/domain
+    # rewrite records are no longer part of the effective build and must not
+    # survive as misleading repair evidence.
+    if "NUVIO_PROVIDER_QUARANTINE_V1" in text:
+        applied = [
+            row for row in applied
+            if str(row.get("type") or "") not in {
+                "replace",
+                "runtime_domain_overrides",
+                "fixed_endpoint",
+            }
+        ]
 
     if text == original_text:
         return data, []

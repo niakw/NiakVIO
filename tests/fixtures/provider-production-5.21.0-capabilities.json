@@ -1,0 +1,1491 @@
+{
+  "schema_version": 1,
+  "source_tag": "5.21.0",
+  "source_commit": "deae2a631727547fc1be62d446dd09bc9902cd4f",
+  "provider_count": 92,
+  "providers": {
+    "anime-sama": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "purstream": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "official_domain_hub",
+        "validation": "follow_official_link_then_api_runtime",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "flemmix": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "movieshunt": {
+      "types": [
+        "movie"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "zinkmovies": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "vegamovies": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "hindmoviez": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "4khdhub": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "persianstremio": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "desiflix": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "streamzo": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native_and_final_direct_media",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "mugiwarastream": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "french-manga": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "voiranime": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "videasy": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "castle": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "cineby": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "animezey": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "movieblast": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "anikototv": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "allmovieland": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "anidb": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "animepahe": {
+      "types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "animesalt": {
+      "types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "animesama-co": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "animesultra": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "animetsu": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "animevostfr": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "anizone": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "cinemacity": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "cinemm": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "coflix": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "dooflix": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "dulourd": {
+      "types": [
+        "anime",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "hdhub4u": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "hianime": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "kurage": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "movies4u": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "moviesdrive": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "moviesmod": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "movix": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "papadustream": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "streamflix": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "vidfast": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "iframe_player",
+        "validation": "embed_page",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "vidlink": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "voiranime-rip": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "vostfree": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "wookafr": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "yflix": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "uhdmovies": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "anime-ultime": {
+      "types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "animoflix": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "voiranime-homes": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "nakios": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "toflix": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "waveanime": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "dash"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "playimdb": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "goated": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "vidrock": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "einthusan": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "peachify": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "gramcinema": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "animekai": {
+      "types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      },
+      "semanticTypes": [
+        "anime"
+      ]
+    },
+    "mallumv": {
+      "types": [
+        "movie"
+      ],
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "vidnest-anime": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "api_stream_resolver",
+        "validation": "api_and_provider_native",
+        "allow_html_url": false,
+        "requires_direct_media": false
+      }
+    },
+    "animeworld": {
+      "types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      },
+      "semanticTypes": [
+        "anime"
+      ]
+    },
+    "cinevibe": {
+      "types": [
+        "movie"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "ctgmovies": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8",
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "hdghartv": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "moonflix": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "vidlove": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "vidnest": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "xpass": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "4khdhubnew": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "goatapi": {
+      "types": [
+        "movie"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "kisskh": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "onlykdrama": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "showbox": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "allwish": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "fibwatch": {
+      "types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "mycima": {
+      "types": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "1shows": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mkv",
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "allanime": {
+      "types": [
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "direct_media",
+        "validation": "media_url",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "cinefreak": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mkv",
+        "mp4"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "dvdplay": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "frenchstream": {
+      "types": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "quarantined",
+        "validation": "blocked_revenant_episode_duration_mismatch",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "moviebox": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "netmirror": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "sekai": {
+      "types": [
+        "movie",
+        "anime"
+      ],
+      "formats": [
+        "mp4",
+        "mkv"
+      ],
+      "capability": {
+        "strategy": "html_scraper",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "topcartoons": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "quarantined",
+        "validation": "blocked_cross_title_content_mismatch",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    },
+    "vidsrc": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "mixed_embed_resolver",
+        "validation": "provider_native",
+        "allow_html_url": true,
+        "requires_direct_media": false
+      }
+    },
+    "vixsrc": {
+      "types": [
+        "movie",
+        "tv"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "capability": {
+        "strategy": "quarantined",
+        "validation": "blocked_interstellar_duration_mismatch",
+        "allow_html_url": false,
+        "requires_direct_media": true
+      }
+    }
+  }
+}

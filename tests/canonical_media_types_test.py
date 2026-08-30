@@ -63,7 +63,13 @@ def validate_catalog(path: Path) -> tuple[dict[str, dict], dict[str, list[str]]]
         scraper_key = scraper_id.casefold()
         assert scraper_key not in scraper_ids, f"{path}: duplicate scraper id {scraper_id!r}"
         scraper_ids.add(scraper_key)
-        types = canonical_types(scraper.get("supportedTypes"), f"{path}:{canonical_id}/{scraper_id}")
+        transport_types = canonical_types(scraper.get("supportedTypes"), f"{path}:{canonical_id}/{scraper_id}")
+        canonical_raw = scraper.get("canonicalSupportedTypes")
+        types = (
+            canonical_types(canonical_raw, f"{path}:{canonical_id}/{scraper_id}:canonicalSupportedTypes")
+            if canonical_raw
+            else transport_types
+        )
         projections = entry.get("projections") or {}
         assert isinstance(projections, dict), f"{path}:{canonical_id}: projections must be an object"
         by_canonical[canonical_key] = {

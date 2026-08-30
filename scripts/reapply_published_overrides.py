@@ -40,6 +40,7 @@ from provider_base_store import (
     is_clean_reconstructed,
     is_clean_reconstruction_candidate,
     resolve_base,
+    resolve_runtime_base,
 )
 from quarantine_catalogue_audit_failures import scoped_quarantine_source
 from provider_patches.quarantine_provider_v1 import apply as apply_terminal_quarantine
@@ -83,7 +84,7 @@ CLEAN_V2_DERIVED_CORE_MARKERS = (
 
 
 def _canonicalize_clean_v2_core_boundary(data: bytes, provider_id: str) -> bytes:
-    """Place one trusted boundary between durable v2 provider logic and derived Core."""
+    """Place one publisher-owned boundary between provider logic and derived Core."""
     text = data.decode("utf-8", errors="strict").replace(CLEAN_V2_CORE_BOUNDARY_MARKER, "")
     starts = [
         pos
@@ -114,6 +115,20 @@ def bump_provider_version(value: str) -> str:
         return "1.0.1"
     major, minor, patch = (int(part) for part in match.groups())
     return f"{major}.{minor}.{patch + 1}"
+
+
+def runtime_base_is_clean_v2(
+    provider_id: str,
+    provenance_row: dict[str, Any],
+    runtime_path: Path,
+) -> bool:
+    """Classify the actual runtime seed, not merely the provenance candidate state."""
+    if is_clean_reconstructed(provenance_row):
+        return True
+    if not is_clean_reconstruction_candidate(provenance_row):
+        return False
+    canonical_path, _canonical_sha = resolve_base(provider_id, provenance_row, require=True)
+    return canonical_path is not None and canonical_path.resolve() == runtime_path.resolve()
 
 
 def configured_authoritative_types(config: dict[str, Any], provider_id: str) -> list[str]:
@@ -199,10 +214,24 @@ def apply_manifest_type_projection(entry: dict[str, Any], semantic_types: object
 def configured_manifest_overrides(config: dict[str, Any], provider_id: str) -> dict[str, Any]:
     patches = config.get("provider_patches") if isinstance(config, dict) else {}
     patch_row = (patches or {}).get(str(provider_id or "").strip().casefold(), {})
-    overrides = patch_row.get("manifest_overrides") if isinstance(patch_row, dict) else {}
-    if not isinstance(overrides, dict):
+    if not isinstance(patch_row, dict):
         return {}
-    return {"enabled": False} if overrides.get("enabled") is False else {}
+
+    result: dict[str, Any] = {}
+    overrides = patch_row.get("manifest_overrides")
+    if isinstance(overrides, dict) and overrides.get("enabled") is False:
+        result["enabled"] = False
+
+    published_formats = patch_row.get("published_formats")
+    if isinstance(published_formats, list):
+        normalized: list[str] = []
+        for value in published_formats:
+            item = str(value or "").strip().casefold()
+            if item and item not in normalized:
+                normalized.append(item)
+        if normalized:
+            result["formats"] = normalized
+    return result
 
 
 def strip_unproven_adaptive_language(data: bytes) -> tuple[bytes, int]:
@@ -421,22 +450,71 @@ def publication_configured_safety_quarantine(
     return text.encode("utf-8"), reason
 
 
+def _audit_terminal_contradiction_is_current(provenance_row: dict[str, Any]) -> bool:
+    """Require current playable wrong-content evidence before replaying terminal audit quarantine."""
+    gates = provenance_row.get("activation_gates")
+    if not isinstance(gates, dict):
+        return False
+    identity = gates.get("10_content_identity_integrity")
+    playable = gates.get("00_current_playable_stream")
+    if not isinstance(identity, dict) or not isinstance(playable, dict):
+        return False
+    identity_evidence = identity.get("evidence")
+    playable_evidence = playable.get("evidence")
+    if not isinstance(identity_evidence, dict) or not isinstance(playable_evidence, dict):
+        return False
+    contradictions = int(identity_evidence.get("identity_contradiction_count") or 0)
+    duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
+    playable_streams = int(playable_evidence.get("streams_playable") or 0)
+    return playable_streams > 0 and (contradictions > 0 or duration_mismatches > 0)
+
+
+def stale_terminal_audit_quarantine(relative: str, provenance_row: dict[str, Any]) -> bool:
+    """Return true only for an old terminal audit quarantine disproved by current evidence."""
+    if "--nuvio-audit-quarantine--" not in relative:
+        return False
+    scopes = provenance_row.get("catalogue_audit_quarantine_scopes")
+    if isinstance(scopes, list) and scopes:
+        return False
+    mode = str(provenance_row.get("activation_mode") or "").strip().casefold()
+    blockers = {str(value) for value in (provenance_row.get("activation_blockers") or []) if str(value)}
+    marked = mode.startswith("catalogue_audit_") or AUDIT_QUARANTINE_BLOCKER in blockers
+    if not marked:
+        return False
+    gates = provenance_row.get("activation_gates")
+    if not isinstance(gates, dict):
+        return False
+    identity = gates.get("10_content_identity_integrity")
+    playable = gates.get("00_current_playable_stream")
+    if not isinstance(identity, dict) or not isinstance(playable, dict):
+        return False
+    identity_evidence = identity.get("evidence")
+    playable_evidence = playable.get("evidence")
+    if not isinstance(identity_evidence, dict) or not isinstance(playable_evidence, dict):
+        return False
+    playable_streams = int(playable_evidence.get("streams_playable") or 0)
+    contradictions = int(identity_evidence.get("identity_contradiction_count") or 0)
+    duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
+    return playable_streams > 0 and contradictions == 0 and duration_mismatches == 0
+
+
 def publication_audit_quarantine(
     data: bytes,
     provider_id: str,
     relative: str,
     provenance_row: dict[str, Any],
 ) -> tuple[bytes, str | None]:
-    """Replay live publication-scoped audit quarantine from durable provenance.
+    """Replay only a currently evidenced publication-scoped audit quarantine.
 
-    The current public bundle is evidence/output only; it is never an input.
-    Quick recovery replaces the audit filename/provenance after fresh strict
-    proof, so this preservation layer disappears automatically on recovery.
+    Scoped quarantine carries its own durable affected scope. Terminal quarantine
+    is more destructive and therefore requires current playable wrong-content
+    evidence; a historical filename/blocker alone can never keep a recovered
+    provider inert forever.
     """
     mode = str(provenance_row.get("activation_mode") or "").strip().casefold()
     blockers = {str(value) for value in (provenance_row.get("activation_blockers") or []) if str(value)}
     scopes = provenance_row.get("catalogue_audit_quarantine_scopes")
-    live = (
+    marked = (
         "--nuvio-audit-quarantine--" in relative
         and (
             mode.startswith("catalogue_audit_")
@@ -444,7 +522,7 @@ def publication_audit_quarantine(
             or (isinstance(scopes, list) and bool(scopes))
         )
     )
-    if not live:
+    if not marked:
         return data, None
 
     if isinstance(scopes, list) and scopes:
@@ -454,6 +532,9 @@ def publication_audit_quarantine(
             scopes,
         )
         return text.encode("utf-8"), "scoped"
+
+    if not _audit_terminal_contradiction_is_current(provenance_row):
+        return data, None
 
     text = apply_terminal_quarantine(
         data.decode("utf-8", errors="strict"),
@@ -481,9 +562,17 @@ def validate_artifact(data: bytes, provider_id: str) -> None:
         temporary.unlink(missing_ok=True)
 
 
-def published_name(provider_id: str, old_path: Path, digest: str) -> str:
+def published_name(
+    provider_id: str,
+    old_path: Path,
+    digest: str,
+    *,
+    audit_quarantined: bool = False,
+) -> str:
     parts = old_path.stem.split("--")
     source = parts[-2] if len(parts) >= 3 else "nuvio"
+    if not audit_quarantined and source.endswith("-audit-quarantine"):
+        source = source[: -len("-audit-quarantine")] or "nuvio"
     return f"{safe_fragment(provider_id.casefold())}--{safe_fragment(source)}--{digest[:16]}.js"
 
 
@@ -645,7 +734,7 @@ def fast_fixed_point_check(
         row = rows.get(provider_id)
         if not isinstance(row, dict):
             return False, f"missing-provenance:{provider_id}"
-        base_path, base_sha = resolve_base(provider_id, row, require=True)
+        base_path, base_sha = resolve_runtime_base(provider_id, row, require=True)
         assert base_path is not None and base_sha is not None
         expected_input = provider_build_input_sha(provider_id, base_sha, contract_sha, row)
         if str(row.get("build_input_sha256") or "").casefold() != expected_input:
@@ -808,7 +897,7 @@ def main() -> int:
         provider_provenance = provenance_rows.get(provider_id) if provenance_rows else None
         if not isinstance(provider_provenance, dict):
             raise ValueError(f"{provider_id}: missing provenance required for durable ProviderBase")
-        provider_base_path, provider_base_sha = resolve_base(
+        provider_base_path, provider_base_sha = resolve_runtime_base(
             provider_id,
             provider_provenance,
             require=True,
@@ -822,9 +911,10 @@ def main() -> int:
         isolated = isolated_text.encode("utf-8")
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
         migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
-        clean_v2_base = (
-            is_clean_reconstructed(provider_provenance)
-            or is_clean_reconstruction_candidate(provider_provenance)
+        clean_v2_base = runtime_base_is_clean_v2(
+            provider_id,
+            provider_provenance,
+            provider_base_path,
         )
         patched, records = apply_overrides(
             provider_id,
@@ -836,8 +926,10 @@ def main() -> int:
                 else None
             ),
         )
-        if clean_v2_base:
-            patched = _canonicalize_clean_v2_core_boundary(patched, provider_id)
+        # The publication finalizer knows exactly where deterministic Core begins.
+        # Materialize one trusted boundary for every bundle so legacy/obfuscated
+        # provider glue never has to be guessed by downstream validators.
+        patched = _canonicalize_clean_v2_core_boundary(patched, provider_id)
         if removed_wrappers:
             records = [{
                 "type": "migration",
@@ -873,6 +965,14 @@ def main() -> int:
                 "scope": "configured-safety",
                 "reason": configured_quarantine_reason,
             }]
+
+        released_stale_audit_quarantine = bool(
+            not configured_quarantine_reason
+            and stale_terminal_audit_quarantine(relative, provider_provenance)
+        )
+        if released_stale_audit_quarantine and entry.get("enabled") is not True:
+            entry["enabled"] = True
+            manifest_changed = True
 
         patched, audit_quarantine_kind = publication_audit_quarantine(
             patched,
@@ -947,7 +1047,7 @@ def main() -> int:
         if changed:
             applied_count += 1
         digest = hashlib.sha256(patched).hexdigest()
-        new_relative = f"providers/{published_name(provider_id, path, digest)}"
+        new_relative = f"providers/{published_name(provider_id, path, digest, audit_quarantined=bool(audit_quarantine_kind))}"
         updates[provider_id] = (relative, new_relative)
         outputs[new_relative] = patched
         old_paths.add(relative)
@@ -958,6 +1058,7 @@ def main() -> int:
             "old": relative,
             "new": new_relative,
             "sha256": digest,
+            "base_filename": provider_base_path.relative_to(ROOT).as_posix(),
             "base_sha256": provider_base_sha,
             "final_fixed_point": {
                 "schema_version": 1,
@@ -970,6 +1071,7 @@ def main() -> int:
             "records": records,
             "terminal_quarantine": terminal_quarantine,
             "audit_terminal_quarantine": audit_terminal_quarantine,
+            "released_stale_audit_quarantine": released_stale_audit_quarantine,
         }
 
     secondary_payloads: list[tuple[Path, dict[str, Any]]] = []
@@ -1005,8 +1107,34 @@ def main() -> int:
                 continue
             row["published_filename"] = update["new"]
             row["sha256"] = update["sha256"]
-            if str(row.get("base_sha256") or "").casefold() != str(update["base_sha256"]).casefold():
-                raise ValueError(f"{provider_id}: ProviderBase changed outside provider pipeline")
+
+            runtime_base_filename = str(update.get("base_filename") or "").strip()
+            runtime_base_sha = str(update.get("base_sha256") or "").strip().casefold()
+            canonical_base_filename = str(row.get("base_filename") or "").strip()
+            legacy_base_filename = str(
+                row.get("legacy_base_filename_before_clean_candidate") or ""
+            ).strip()
+            if runtime_base_filename == canonical_base_filename:
+                expected_runtime_base_sha = str(row.get("base_sha256") or "").strip().casefold()
+                runtime_base_source = "canonical-providerbase"
+            elif runtime_base_filename and runtime_base_filename == legacy_base_filename:
+                expected_runtime_base_sha = str(
+                    row.get("legacy_base_sha256_before_clean_candidate") or ""
+                ).strip().casefold()
+                runtime_base_source = "preserved-lkg-pending-clean-candidate"
+            else:
+                raise ValueError(
+                    f"{provider_id}: runtime ProviderBase is not recorded in provenance "
+                    f"path={runtime_base_filename or 'missing'}"
+                )
+            if not expected_runtime_base_sha or expected_runtime_base_sha != runtime_base_sha:
+                raise ValueError(
+                    f"{provider_id}: runtime ProviderBase changed outside provider pipeline "
+                    f"source={runtime_base_source}"
+                )
+            row["published_runtime_base_filename"] = runtime_base_filename
+            row["published_runtime_base_sha256"] = runtime_base_sha
+            row["published_runtime_base_source"] = runtime_base_source
             if update.get("terminal_quarantine") or "patched_sha256" in row or update["records"]:
                 row["patched_sha256"] = update["sha256"]
             if update["records"]:
@@ -1020,7 +1148,30 @@ def main() -> int:
                 row,
             )
             manifest_overrides = configured_manifest_overrides(override_config, provider_id)
-            if update.get("audit_terminal_quarantine"):
+            if update.get("released_stale_audit_quarantine"):
+                row["activation_eligible"] = True
+                row["strict_activation_eligible"] = True
+                row["strict_grace_eligible"] = False
+                row["historical_quality_grace_eligible"] = False
+                row["runtime_evidence_eligible"] = False
+                row["activation_mode"] = "strict_current"
+                row["activation_blockers"] = [
+                    str(value)
+                    for value in (row.get("activation_blockers") or [])
+                    if str(value) not in {AUDIT_QUARANTINE_BLOCKER, "configured_safety_quarantine"}
+                ]
+                row.pop("catalogue_audit_quarantine_scopes", None)
+                row["local_patches"] = [
+                    record
+                    for record in (row.get("local_patches") or [])
+                    if not (
+                        isinstance(record, dict)
+                        and record.get("type") == "publication_quarantine_replay"
+                        and record.get("source") == "provenance"
+                        and record.get("reason") == AUDIT_QUARANTINE_BLOCKER
+                    )
+                ]
+            elif update.get("audit_terminal_quarantine"):
                 row["activation_eligible"] = False
                 row["strict_activation_eligible"] = False
                 row["strict_grace_eligible"] = False

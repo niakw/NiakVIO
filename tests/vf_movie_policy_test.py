@@ -99,7 +99,11 @@ for provider_id in sorted(expected_vf_movie):
         assert provenance.get('clean_reconstruction_candidate') is True, provider_id
         assert provenance.get('clean_reconstruction_verified') is not True, provider_id
         assert provenance.get('clean_reconstruction_candidate_role') == 'pending-canonical-deep-proof', provider_id
-        assert report.get('published_filename') == row.get('filename'), provider_id
+        # Publication/Core rehash may legitimately change the derived bundle
+        # filename while the durable candidate state is unchanged. Pending
+        # Learning state is identified by provenance/action, never by bundle SHA.
+        assert row.get('enabled') is False, provider_id
+        assert not report.get('failed_gates'), provider_id
         continue
     assert action in conclusive_disable_actions, (provider_id, action)
     if action != 'disabled-sustained-outage':

@@ -205,6 +205,36 @@ def resolve_base(provider_id: str, provenance_row: dict[str, Any], *, require: b
     return path, actual
 
 
+def resolve_runtime_base(
+    provider_id: str,
+    provenance_row: dict[str, Any],
+    *,
+    require: bool = True,
+) -> tuple[Path | None, str | None]:
+    """Resolve the production seed without letting an unverified clean candidate regress LKG behavior.
+
+    The clean candidate remains the canonical reconstruction artifact in provenance
+    and is still used by Learning/Deep proof. Runtime compilation falls back to
+    the preserved pre-reconstruction ProviderBase until the clean candidate is
+    explicitly verified.
+    """
+    row = provenance_row if isinstance(provenance_row, dict) else {}
+    if is_clean_reconstruction_candidate(row):
+        relative = str(row.get("legacy_base_filename_before_clean_candidate") or "").strip()
+        digest = str(row.get("legacy_base_sha256_before_clean_candidate") or "").strip().casefold()
+        path = safe_base_path(relative)
+        if path is not None and path.is_file():
+            actual = sha256(path.read_bytes())
+            if digest and actual == digest:
+                return path, actual
+            if digest:
+                raise ValueError(
+                    f"{provider_id}: legacy runtime ProviderBase SHA mismatch "
+                    f"expected={digest} actual={actual}"
+                )
+    return resolve_base(provider_id, row, require=require)
+
+
 def clean_base_from_published(provider_id: str, published_data: bytes) -> tuple[bytes, bool]:
     """Remove every owned derived layer while preserving durable provider logic."""
     published_text = published_data.decode("utf-8", errors="strict")
@@ -320,7 +350,12 @@ def build_clean_provider_seed(
             str(value).strip()
             for value in incoming_model.get("routes") or []
             if str(value).strip()
-        ][:32],
+        ][:64],
+        "apiRecipe": (
+            incoming_model.get("apiRecipe")
+            if isinstance(incoming_model.get("apiRecipe"), dict)
+            else None
+        ),
         "reconstructionState": "learning-clean-seed",
         "runtimeRole": "reader",
         "runtimeDiscovery": False,
@@ -559,6 +594,7 @@ function _searchUrls(meta, mediaType, season, episode) {
   return _learnedUrls("search", meta, mediaType, season, episode);
 }
 function _runtimePlanAvailable() {
+  if (NIAKVIO_PROVIDER_MODEL.apiRecipe) return true;
   if (NIAKVIO_PROVIDER_MODEL.fixedApi || NIAKVIO_PROVIDER_MODEL.officialApi) return true;
   if ((NIAKVIO_PROVIDER_MODEL.observedUrls || []).some(value => /api|stream|source|embed|player/i.test(_text(value)))) return true;
   return (NIAKVIO_PROVIDER_MODEL.routes || []).some(route => ["search","detail","player","api"].includes(_routeKind(route)));
@@ -669,7 +705,7 @@ function _sourceUrls(value, base, out) {
   }
   if (!value || typeof value !== "object") return out;
   for (const [key, child] of Object.entries(value)) {
-    if (typeof child === "string" && /^(?:src|url|file|stream|source)$/i.test(key)) {
+    if (typeof child === "string" && /^(?:src|url|file|stream|stream_url|streamUrl|source|source_url|sourceUrl)$/i.test(key)) {
       const absolute = _absolute(child, base);
       if (absolute && /^https?:/i.test(absolute) &&
           !/\.(?:jpe?g|png|gif|webp|svg|avif)(?:[?#]|$)/i.test(absolute)) {
@@ -680,13 +716,204 @@ function _sourceUrls(value, base, out) {
   }
   return out;
 }
-function _streams(urls, referer) {
+function _streams(urls, referer, extraHeaders) {
+  const headers = Object.assign({}, extraHeaders || {});
+  if (referer) headers.Referer = referer;
+  const hasHeaders = Object.keys(headers).length > 0;
   return _uniq(urls).slice(0, 40).map((url, index) => ({
     name: NIAKVIO_PROVIDER_MODEL.displayName,
     title: NIAKVIO_PROVIDER_MODEL.displayName + (index ? " #" + (index + 1) : ""),
     url,
-    headers: referer ? { Referer: referer } : undefined
+    headers: hasHeaders ? Object.assign({}, headers) : undefined
   }));
+}
+function _recipeValue(row, fields) {
+  if (!row || typeof row !== "object") return "";
+  for (const field of fields || []) {
+    const value = row[field];
+    if (value != null && value !== "") return _text(value);
+  }
+  return "";
+}
+function _recipeObjects(value, out) {
+  out = out || [];
+  if (Array.isArray(value)) {
+    for (const child of value) _recipeObjects(child, out);
+    return out;
+  }
+  if (!value || typeof value !== "object") return out;
+  out.push(value);
+  for (const child of Object.values(value)) {
+    if (child && typeof child === "object") _recipeObjects(child, out);
+    if (out.length >= 400) break;
+  }
+  return out;
+}
+function _recipeScore(row, meta, recipe) {
+  const title = _slug(_recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]));
+  const expected = _slug(meta && meta.title);
+  let score = 0;
+  if (title && expected && title === expected) score += 200;
+  else if (title && expected && (title.includes(expected) || expected.includes(title))) score += 90;
+  if (title && expected) {
+    for (const token of expected.split("-").filter(value => value.length >= 3)) {
+      if (title.includes(token)) score += 10;
+    }
+  }
+  const year = _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4);
+  if (year && meta && meta.year && year === _text(meta.year)) score += 40;
+  if (_recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"])) score += 15;
+  return score;
+}
+function _recipeUrl(pattern, values, base) {
+  let route = _text(pattern);
+  if (!route) return "";
+  const replacements = {
+    query: values.query,
+    title: values.query,
+    id: values.providerId,
+    providerId: values.providerId,
+    tmdbId: values.tmdbId,
+    tmdb_id: values.tmdbId,
+    media: values.media,
+    type: values.media,
+    season: values.season,
+    episode: values.episode,
+    source: values.source
+  };
+  route = route.replace(/\{([^}]+)\}/g, (match, key) => {
+    const value = replacements[key];
+    return value == null ? "" : encodeURIComponent(_text(value));
+  });
+  let url;
+  try { url = new URL(route, base).toString(); } catch (_) { return ""; }
+  try {
+    const parsed = new URL(url);
+    for (const key of ["season","episode","source"]) {
+      if (values[key] == null || values[key] === "") {
+        for (const param of [...parsed.searchParams.keys()]) {
+          if (param.toLowerCase() === key) parsed.searchParams.delete(param);
+        }
+      }
+    }
+    return parsed.toString();
+  } catch (_) {
+    return url;
+  }
+}
+async function _recipePayload(url, recipe, body) {
+  const headers = Object.assign({}, recipe.requestHeaders || {});
+  if (recipe.referer) headers.Referer = recipe.referer;
+  if (recipe.origin) headers.Origin = recipe.origin;
+  const options = { headers };
+  if (body != null) {
+    options.method = "POST";
+    headers["Content-Type"] = "application/json";
+    options.body = JSON.stringify(body);
+  }
+  const response = await _fetch(url, options);
+  const type = _text(response.headers.get("content-type")).toLowerCase();
+  if (type.includes("json")) return { value: await response.json(), base: response.url || url };
+  const text = await response.text();
+  try { return { value: JSON.parse(text), base: response.url || url }; }
+  catch (_) { return { value: text, base: response.url || url }; }
+}
+async function _resolveApiRecipe(meta, mediaType, season, episode) {
+  const recipe = NIAKVIO_PROVIDER_MODEL.apiRecipe;
+  if (!recipe || typeof recipe !== "object") return [];
+  const media = _mediaNamespace(mediaType);
+  const bases = _uniq([
+    recipe.base,
+    NIAKVIO_PROVIDER_MODEL.fixedApi,
+    NIAKVIO_PROVIDER_MODEL.officialApi,
+    ..._runtimeBases()
+  ]).filter(value => /^https?:/i.test(_text(value)));
+  if (!bases.length) return [];
+  const values = {
+    query: _text(meta && meta.title),
+    providerId: _text(meta && meta.tmdbId),
+    tmdbId: _text(meta && meta.tmdbId),
+    media,
+    season,
+    episode,
+    source: null
+  };
+
+  if (recipe.directRoute) {
+    const streams = [];
+    const sources = Array.isArray(recipe.sources) && recipe.sources.length ? recipe.sources : [null];
+    for (const base of bases.slice(0, 2)) {
+      for (const source of sources.slice(0, 12)) {
+        values.source = source;
+        const url = _recipeUrl(recipe.directRoute, values, base);
+        if (!url) continue;
+        try {
+          const payload = await _recipePayload(url, recipe, null);
+          if (typeof payload.value === "string") {
+            streams.push(..._streams(
+              _extractUrls(payload.value, payload.base).filter(_directMedia),
+              recipe.referer || base,
+              Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+            ));
+          } else {
+            streams.push(..._streams(
+              _sourceUrls(payload.value, payload.base),
+              recipe.referer || base,
+              Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+            ));
+          }
+        } catch (_) {}
+        if (streams.length >= 20) break;
+      }
+      if (streams.length) break;
+    }
+    return streams.slice(0, 40);
+  }
+
+  if (!recipe.searchRoute) return [];
+  let providerId = "";
+  for (const base of bases.slice(0, 3)) {
+    const url = _recipeUrl(recipe.searchRoute, values, base);
+    if (!url) continue;
+    try {
+      const payload = await _recipePayload(url, recipe, null);
+      if (!payload.value || typeof payload.value === "string") continue;
+      const rows = _recipeObjects(payload.value, [])
+        .map(row => ({ row, score: _recipeScore(row, meta, recipe) }))
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score);
+      if (!rows.length) continue;
+      providerId = _recipeValue(rows[0].row, recipe.idFields || ["id","_id","media_id","post_id"]);
+      if (providerId) break;
+    } catch (_) {}
+  }
+  if (!providerId) return [];
+  values.providerId = providerId;
+  const route = media === "movie" ? recipe.movieRoute : (recipe.episodeRoute || recipe.movieRoute);
+  if (!route) return [];
+  for (const base of bases.slice(0, 3)) {
+    const url = _recipeUrl(route, values, base);
+    if (!url) continue;
+    try {
+      const payload = await _recipePayload(url, recipe, null);
+      if (typeof payload.value === "string") {
+        const urls = _extractUrls(payload.value, payload.base).filter(_directMedia);
+        if (urls.length) return _streams(
+          urls,
+          recipe.referer || base,
+          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+        );
+      } else {
+        const urls = _sourceUrls(payload.value, payload.base);
+        if (urls.length) return _streams(
+          urls,
+          recipe.referer || base,
+          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+        );
+      }
+    } catch (_) {}
+  }
+  return [];
 }
 async function _resolveApi(tmdbId, mediaType, season, episode) {
   const streams = [];
@@ -855,6 +1082,19 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   }
   if (!_runtimePlanAvailable()) return [];
   const strategy = NIAKVIO_PROVIDER_MODEL.strategy;
+
+  // Declarative ProviderBase recipe: a clean reconstruction may need a bounded
+  // search -> provider-id -> source chain. This remains data-driven and executes
+  // no upstream JavaScript.
+  if (NIAKVIO_PROVIDER_MODEL.apiRecipe) {
+    const recipeMeta = await _tmdb(tmdbId, type) || {
+      title: "",
+      year: "",
+      tmdbId: String(tmdbId || "")
+    };
+    const recipe = await _resolveApiRecipe(recipeMeta, type, season, episode);
+    if (recipe.length) return recipe;
+  }
 
   // Reader fast path: consume already learned ID/API/player routes before any
   // title metadata lookup. Runtime executes a plan; it does not discover one.

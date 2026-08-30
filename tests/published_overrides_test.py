@@ -14,6 +14,8 @@ from reapply_published_overrides import (  # noqa: E402
     AUDIT_QUARANTINE_BLOCKER,
     provider_build_input_sha,
     publication_audit_quarantine,
+    published_name,
+    stale_terminal_audit_quarantine,
 )
 
 # Static assertions ensure the true publish path has both defence-in-depth and
@@ -278,19 +280,68 @@ plain, plain_kind = publication_audit_quarantine(
 )
 assert plain == base and plain_kind is None
 
+current_wrong_content = {
+    "activation_mode": "catalogue_audit_safety_quarantine",
+    "activation_blockers": [AUDIT_QUARANTINE_BLOCKER],
+    "activation_gates": {
+        "10_content_identity_integrity": {
+            "evidence": {
+                "identity_contradiction_count": 1,
+                "duration_identity_mismatch_count": 0,
+            }
+        },
+        "00_current_playable_stream": {
+            "evidence": {"streams_playable": 1}
+        },
+    },
+}
 terminal, terminal_kind = publication_audit_quarantine(
     base,
     "demo",
     "providers/demo--nuvio-audit-quarantine--abc.js",
-    {
-        "activation_mode": "catalogue_audit_safety_quarantine",
-        "activation_blockers": [AUDIT_QUARANTINE_BLOCKER],
-    },
+    current_wrong_content,
 )
 assert terminal_kind == "terminal"
 assert b"NUVIO_PROVIDER_QUARANTINE_V1" in terminal
 assert b"wrong.example" not in terminal
 assert b"media.example" not in terminal
+assert stale_terminal_audit_quarantine(
+    "providers/demo--nuvio-audit-quarantine--abc.js",
+    current_wrong_content,
+) is False
+
+current_clean = {
+    "activation_mode": "catalogue_audit_safety_quarantine",
+    "activation_blockers": [AUDIT_QUARANTINE_BLOCKER],
+    "activation_gates": {
+        "10_content_identity_integrity": {
+            "evidence": {
+                "identity_contradiction_count": 0,
+                "duration_identity_mismatch_count": 0,
+            }
+        },
+        "00_current_playable_stream": {
+            "evidence": {"streams_playable": 2}
+        },
+    },
+}
+recovered, recovered_kind = publication_audit_quarantine(
+    base,
+    "demo",
+    "providers/demo--nuvio-audit-quarantine--abc.js",
+    current_clean,
+)
+assert recovered == base and recovered_kind is None
+assert stale_terminal_audit_quarantine(
+    "providers/demo--nuvio-audit-quarantine--abc.js",
+    current_clean,
+) is True
+assert published_name(
+    "demo",
+    Path("providers/demo--nuvio-audit-quarantine--abc.js"),
+    "a" * 64,
+    audit_quarantined=False,
+).startswith("demo--nuvio--")
 
 scope = [{
     "kind": "fixture",
