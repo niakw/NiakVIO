@@ -60,6 +60,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 function s(v){return String(v==null?"":v).trim()}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
+function namespaceCandidates(v,season,episode){
+  var raw=s(v||"movie").toLowerCase();
+  if(raw==="movie")return["movie"];
+  if(raw==="anime"){
+    if(season!=null||episode!=null)return["tv"];
+    return["tv","movie"];
+  }
+  return["tv"];
+}
 function rows(v){return Array.isArray(v)?v:[]}
 function keywordRows(m){var k=m&&m.keywords;return rows(k&&((k.results||k.keywords)||k))}
 function htmlAnime(h){
@@ -149,26 +158,41 @@ async function tmdb(namespaceValue,tmdbId){
   mediaCache[cacheKey]=value;
   return value;
 }
-async function canonicalType(id,input,metadata){
-  var namespace=namespaceOf(input);
-  var m=hasTmdbMetadata(metadata)?metadata:await tmdb(namespace,id);
-  if(!m)return null;
-  return animeMeta(m)?"anime":namespace;
+async function canonicalResolution(id,input,metadata,season,episode){
+  var candidates=namespaceCandidates(input,season,episode),raw=s(input||"movie").toLowerCase();
+  if(hasTmdbMetadata(metadata)){
+    var declared=s(metadata&&metadata.__nuvioTmdbNamespace).toLowerCase();
+    var namespace=declared==="movie"?"movie":candidates[0];
+    var type=animeMeta(metadata)?"anime":namespace;
+    if(raw==="anime"&&type!=="anime")return null;
+    return{type:type,namespace:namespace,metadata:metadata};
+  }
+  for(var i=0;i<candidates.length;i++){
+    var namespace=candidates[i],m=await tmdb(namespace,id);
+    if(!m)continue;
+    var type=animeMeta(m)?"anime":namespace;
+    if(raw==="anime"&&type!=="anime")continue;
+    return{type:type,namespace:namespace,metadata:m};
+  }
+  return null;
 }
 function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
-  var transport=alias(input),namespace=namespaceOf(input);
+  var transport=alias(input),namespace=namespaceOf(input),raw=s(input).toLowerCase();
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   if(semantic.length){
-    if(namespace==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")<0)return null;
-    if(namespace==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
+    if(raw==="anime"&&semantic.indexOf("anime")<0)return null;
+    if(raw!=="anime"&&namespace==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")<0)return null;
+    if(raw!=="anime"&&namespace==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
   }
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
   var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
-  var type=await canonicalType(id,input,metadata);
-  if(!type)return null;
+  var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
+  var resolved=await canonicalResolution(id,input,metadata,season,episode);
+  if(!resolved)return null;
+  var type=resolved.type;namespace=resolved.namespace;
   if(semantic.length&&semantic.indexOf(type)<0)return null;
   var context={
     tmdbId:id,
