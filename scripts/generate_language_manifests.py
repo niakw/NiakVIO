@@ -113,9 +113,21 @@ def normalized_supported_types(entry: dict[str, Any]) -> list[str]:
     return [str(value).strip().casefold() for value in values if str(value).strip()]
 
 
+def semantic_supported_types(entry: dict[str, Any]) -> list[str]:
+    """Return semantic capabilities, not Nuvio transport aliases."""
+    canonical = entry.get("canonicalSupportedTypes")
+    if isinstance(canonical, str):
+        canonical = [canonical]
+    if isinstance(canonical, list):
+        values = [str(value).strip().casefold() for value in canonical if str(value).strip()]
+        if values:
+            return values
+    return normalized_supported_types(entry)
+
+
 def excluded_from_no_anime(entry: dict[str, Any]) -> bool:
-    """Exclude explicit anime-only rows or providers whose committed identity says anime."""
-    types = normalized_supported_types(entry)
+    """Exclude semantic anime-only rows or providers whose committed identity says anime."""
+    types = semantic_supported_types(entry)
     anime_only = bool(types) and set(types) == {"anime"}
     identity = " ".join(
         str(entry.get(key) or "").strip().casefold()
