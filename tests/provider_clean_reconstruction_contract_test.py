@@ -153,6 +153,18 @@ assert '"strictLearningProofRequiredForProposal": False' in materializer
 assert '"strictDeepProofRequiredForVerification": True' in materializer
 assert 'build_base_from_seed(' in materializer, "candidate persistence must keep structural ProviderBase validation"
 
+runtime_repair = (ROOT / "scripts" / "runtime_repair.py").read_text(encoding="utf-8")
+repair_start = runtime_repair.index("def create_repair_candidate(")
+repair_end = runtime_repair.index("\ndef ", repair_start + 10)
+repair_fn = runtime_repair[repair_start:repair_end]
+assert "parent_data = source_path.read_bytes()" in repair_fn
+assert 'phase="runtime"' in repair_fn
+assert "build_clean_provider_seed" not in repair_fn, (
+    "routine Repair must patch the durable/current ProviderBase, never rebuild a clean seed from scratch"
+)
+assert 'repaired["runtime_repair"]' in repair_fn
+assert '"parent_sha256": parent_digest' in repair_fn
+
 print(
     "Provider clean reconstruction contract passed: "
     f"total={len(provider_ids)} required={len(required)} clean_v2={len(clean)}"
