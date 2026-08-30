@@ -1,0 +1,60 @@
+name: Provider site structure probe
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/provider-onboarding/request.json'
+      - 'scripts/probe_provider_site_structure.py'
+      - 'scripts/add_provider.py'
+      - '.github/workflows/provider-site-probe.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-site-probe-main
+  cancel-in-progress: true
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout current production main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Stage request metadata locally
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s .github/provider-onboarding/request.json
+          python scripts/add_provider.py stage --request .github/provider-onboarding/request.json
+
+      - name: Probe fixture detail and Next route structure
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p .provider-onboarding/routes
+          python scripts/probe_provider_site_structure.py \
+            --current .provider-onboarding/current.json \
+            --output .provider-onboarding/routes/provider-site-structure.json \
+            --timeout 8 --max-chunks 18
+
+      - name: Upload sanitized route evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-site-probe-${{ github.run_id }}
+          path: |
+            .provider-onboarding/current.json
+            .provider-onboarding/routes/provider-site-structure.json
+          retention-days: 3
+          if-no-files-found: error
