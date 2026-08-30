@@ -13,6 +13,8 @@ from core_rebuild_safety import SAFE_EXPORT_FN  # noqa: E402
 from provider_base_store import (  # noqa: E402
     is_clean_reconstructed,
     is_clean_reconstruction_candidate,
+    resolve_base,
+    resolve_runtime_base,
 )
 
 
@@ -183,13 +185,26 @@ def main() -> int:
         checked += 1
         floor = provider_export_floor(text)
         provenance_row = provenance_rows.get(provider_id.casefold())
-        trusted_clean_v2 = (
-            isinstance(provenance_row, dict)
-            and (
-                is_clean_reconstructed(provenance_row)
-                or is_clean_reconstruction_candidate(provenance_row)
-            )
-        )
+        trusted_clean_v2 = False
+        if isinstance(provenance_row, dict):
+            if is_clean_reconstructed(provenance_row):
+                trusted_clean_v2 = True
+            elif is_clean_reconstruction_candidate(provenance_row):
+                runtime_path, _runtime_sha = resolve_runtime_base(
+                    provider_id,
+                    provenance_row,
+                    require=True,
+                )
+                canonical_path, _canonical_sha = resolve_base(
+                    provider_id,
+                    provenance_row,
+                    require=True,
+                )
+                trusted_clean_v2 = bool(
+                    runtime_path is not None
+                    and canonical_path is not None
+                    and runtime_path.resolve() == canonical_path.resolve()
+                )
         if floor < 0 and trusted_clean_v2:
             boundary_positions = [
                 match.start()
