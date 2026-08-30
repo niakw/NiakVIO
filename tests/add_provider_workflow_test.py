@@ -39,5 +39,11 @@ for full_lab in (
     assert full_lab not in ADD, full_lab
 assert "Run bounded onboarding Lab on first declared type" in ADD
 assert "nuvio_client_lab.cjs" in ADD
+assert "group: nuvio-provider-onboarding-stage-main" in ADD
+assert "group: nuvio-provider-publish-main" in ADD
+assert "Package validated provider transaction" in ADD
+assert "Download validated provider transaction" in ADD
+assert "git diff --cached --binary --full-index" in ADD
+assert "git apply --3way --index" in ADD
 
 print("add provider workflow contract passed: routing=full-auto branding=dedicated full_native_labs=false")
