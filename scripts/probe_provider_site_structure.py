@@ -16,7 +16,7 @@ DEFAULT_OUTPUT = ROOT / ".provider-onboarding" / "routes" / "provider-site-struc
 
 UA = "Mozilla/5.0 NiakVIO/2"
 ROUTE_HINT = re.compile(
-    r"""(?P<q>["'])(?P<route>/(?:api|search|watch|movie|movies|film|films|series|tv|show|title|media|embed|player)[^"'\\\s<>]{0,220})(?P=q)""",
+    r"""(?P<q>["'])(?P<route>/(?:api|search|watch|movie|movies|film|films|series|tv|show|title|media|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|manifest|action)[^"'\\\s<>]{0,220})(?P=q)""",
     re.I,
 )
 TMDB_HINT = re.compile(r"""(?P<q>["'])(?P<value>[^"'\\\s<>]{0,100}tmdb[^"'\\\s<>]{0,140})(?P=q)""", re.I)
@@ -50,6 +50,12 @@ def clean_route(value: str) -> str:
     return value[:260]
 
 
+def slugify(value: str) -> str:
+    value = html.unescape(str(value or "")).lower()
+    value = re.sub(r"[^a-z0-9]+", "-", value)
+    return value.strip("-")
+
+
 def discover_routes(text: str) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
@@ -75,7 +81,10 @@ def main() -> int:
 
     current = load_json(args.current)
     site = str(current.get("direct") or current.get("site") or "").strip()
-    title = str((current.get("fixture") or {}).get("title") or "").strip()
+    fixture = current.get("fixture") if isinstance(current.get("fixture"), dict) else {}
+    title = str(fixture.get("title") or "").strip()
+    tmdb_id = str(fixture.get("tmdbId") or fixture.get("tmdb_id") or "").strip()
+    media_type = str(fixture.get("mediaType") or fixture.get("media_type") or "movie").strip().lower()
     if not site:
         raise SystemExit("provider site probe: no direct/site URL")
 
@@ -87,9 +96,16 @@ def main() -> int:
             urljoin(site, "/?s=" + quote(title)),
             urljoin(site, "/search?q=" + quote(title)),
         ])
+    if tmdb_id:
+        kind = "movie" if media_type == "movie" else "tv"
+        slug = slugify(title)
+        if slug:
+            pages.append(urljoin(site, f"/title/{kind}/{quote(tmdb_id)}-{quote(slug)}"))
+        pages.append(urljoin(site, f"/title/{kind}/{quote(tmdb_id)}"))
+    pages = list(dict.fromkeys(pages))
 
     report: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "provider_id": current.get("id"),
         "site": site,
         "origin": origin,
@@ -98,8 +114,7 @@ def main() -> int:
         "route_hints": [],
     }
     route_seen: set[str] = set()
-    chunk_urls: list[str] = []
-    chunk_seen: set[str] = set()
+    chunk_priority: dict[str, int] = {}
 
     for page in pages:
         try:
@@ -109,10 +124,11 @@ def main() -> int:
             continue
         attrs = [urljoin(final, clean_route(v)) for v in ATTR_URL.findall(text)]
         same = [u for u in attrs if same_origin(u, origin)]
+        page_is_detail = "/title/" in urlsplit(final).path
         for u in same:
-            if "/_next/static/" in u and u not in chunk_seen:
-                chunk_seen.add(u)
-                chunk_urls.append(u)
+            if "/_next/static/" in u:
+                priority = (100 if page_is_detail else 10) + (20 if u.lower().endswith(".js") else 0)
+                chunk_priority[u] = max(priority, chunk_priority.get(u, 0))
         hints = discover_routes(text)
         for value in hints:
             if value not in route_seen:
@@ -129,7 +145,12 @@ def main() -> int:
             "next_chunk_count": len([u for u in same if "/_next/static/" in u]),
         })
 
-    for chunk in chunk_urls[: max(0, args.max_chunks)]:
+    ordered_chunks = sorted(
+        chunk_priority,
+        key=lambda value: (chunk_priority[value], value.lower().endswith(".js")),
+        reverse=True,
+    )
+    for chunk in ordered_chunks[: max(0, args.max_chunks)]:
         try:
             status, final, ctype, text = fetch_text(chunk, args.timeout)
         except Exception as exc:
@@ -139,7 +160,7 @@ def main() -> int:
         absolute = [clean_route(v) for v in ABS_URL.findall(text)]
         useful_abs = sorted({
             u for u in absolute
-            if any(token in u.lower() for token in ("api", "search", "stream", "embed", "player", "tmdb"))
+            if any(token in u.lower() for token in ("api", "search", "stream", "source", "server", "embed", "player", "watch", "video", "resolve", "proxy", "manifest", "action", "tmdb"))
         })[:40]
         for value in hints:
             if value not in route_seen:
@@ -154,6 +175,7 @@ def main() -> int:
             "bytes_scanned": min(len(text.encode("utf-8", errors="ignore")), 2_000_000),
             "route_hints": hints[:80],
             "useful_absolute_urls": useful_abs,
+            "priority": chunk_priority.get(chunk, 0),
         })
 
     args.output.parent.mkdir(parents=True, exist_ok=True)
