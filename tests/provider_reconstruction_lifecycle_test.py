@@ -34,7 +34,7 @@ fresh_source = (
 (
     fresh_seed,
     fresh_origin,
-    _fresh_site,
+    fresh_site,
     fresh_reconstruction,
     fresh_knowledge,
     fresh_model,
@@ -49,7 +49,20 @@ fresh_source = (
 )
 assert fresh_origin == "new-niakvio-clean-seed"
 assert fresh_reconstruction is True
-assert b"NUVIO_PROVIDER_BASE_OWNED_V2" in fresh_seed
+expected_fresh_seed = base_store.build_clean_provider_seed(
+    "fresh-provider",
+    discovery.reconstruction_manifest_entry("fresh-provider", fresh_entry, overrides),
+    known_site=fresh_site,
+    provider_model=fresh_model,
+)
+assert fresh_seed == expected_fresh_seed, (
+    fresh_seed[:240],
+    expected_fresh_seed[:240],
+)
+assert b"NUVIO_PROVIDER_BASE_OWNED_V2" in expected_fresh_seed
+assert b'"authoring":"niakvio-owned-v2"' in fresh_seed
+assert b'"upstreamCodeEmbedded":false' in fresh_seed
+assert b'"upstreamCodeExecuted":false' in fresh_seed
 assert fresh_knowledge["codeExecuted"] is False
 assert fresh_model["legacyCodeEmbedded"] is False
 assert fresh_model["legacyCodeExecuted"] is False
