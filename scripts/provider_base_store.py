@@ -540,11 +540,32 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
   }
   return _uniq(out);
 }
+function _directPlayerUrls(tmdbId, mediaType) {
+  if (!tmdbId) return [];
+  const hasPlayerRoute = (NIAKVIO_PROVIDER_MODEL.routes || []).some(route =>
+    /^\/player(?:[?#]|$)/i.test(_text(route))
+  );
+  if (!hasPlayerRoute) return [];
+  const transportType = mediaType === "movie" ? "movie" : "tv";
+  const out = [];
+  for (const base of _searchBases()) {
+    try {
+      const url = new URL("/player", base);
+      url.searchParams.set("m", transportType);
+      url.searchParams.set("id", _text(tmdbId));
+      out.push(url.toString());
+    } catch (_) {}
+  }
+  return _uniq(out);
+}
 function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
   let player;
   try { player = new URL(playerUrl); } catch (_) { return []; }
   const out = [];
-  const desiredMedia = mediaType === "movie" ? "movie" : (mediaType === "anime" ? "anime" : "tv");
+  // Transport-level player media values are commonly movie/tv even when
+  // Nuvio's semantic type is anime. Preserve anime as a Nuvio type, but route
+  // episodic/anime players through the site's TV transport convention.
+  const desiredMedia = mediaType === "movie" ? "movie" : "tv";
   const observedMedia = _text(player.searchParams.get("m") || player.searchParams.get("media") || player.searchParams.get("type")).toLowerCase();
   for (const pattern of NIAKVIO_PROVIDER_MODEL.routes || []) {
     if (!/^\/api\/(?:streams?(?:\/|$)|source|sources|resolve|proxy)/i.test(_text(pattern))) continue;
@@ -705,7 +726,10 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       const direct = urls.filter(_directMedia);
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
       if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
-        const nested = urls.filter(_playerLike);
+        const nested = _uniq([
+          ...urls.filter(_playerLike),
+          ..._directPlayerUrls(meta.tmdbId, mediaType)
+        ]);
         if (nested.length) {
           const runtime = await _resolveRuntimeApi(
             nested,

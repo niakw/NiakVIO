@@ -46,6 +46,9 @@ assert "async function getStreams" in text
 assert "function _playerLike" in text
 assert "async function _crawlDirectMedia" in text
 assert "function _runtimeApiUrls" in text
+assert "function _directPlayerUrls" in text
+assert 'const desiredMedia = mediaType === "movie" ? "movie" : "tv";' in text
+assert 'url.searchParams.set("m", transportType)' in text
 assert "function _sourceUrls" in text
 assert "async function _resolveRuntimeApi" in text
 assert '(!meta.title && !meta.tmdbId)' in text
