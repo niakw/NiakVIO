@@ -202,3 +202,37 @@ const provider = require(process.argv[2]);
 })().catch((error) => { console.error(error); process.exit(1); });
 ''', encoding="utf-8")
     subprocess.run(["node", str(test), str(provider)], check=True)
+
+# TMDB IDs are namespaced: the same numeric id may exist in movie and tv.
+mixed_all = mod.apply(base, options={"semantic_types": ["movie", "tv", "anime"]})
+with tempfile.TemporaryDirectory() as tmp:
+    tmp_path = Path(tmp)
+    provider = tmp_path / "mixed-all.js"
+    test = tmp_path / "mixed-all-test.js"
+    provider.write_text(mixed_all, encoding="utf-8")
+    test.write_text(r'''
+const seen = [];
+global.fetch = async (url) => {
+  seen.push(String(url));
+  const u = String(url);
+  if (u.includes("/movie/4242")) return {
+    ok: true,
+    text: async () => "<html><a href='/genre/28-action'>Action</a><div>Original Language English</div></html>"
+  };
+  if (u.includes("/tv/4242")) return {
+    ok: true,
+    text: async () => "<html><a href='/genre/16-animation'>Animation</a><div>Original Language Japanese</div><a href='/keyword/anime'>anime</a></html>"
+  };
+  throw new Error("unexpected URL "+u);
+};
+const provider = require(process.argv[2]);
+(async () => {
+  const movie = await provider.getStreams("4242", "movie", null, null);
+  if (movie[0].mediaType !== "movie") throw new Error("movie namespace was not preserved");
+  const tvAnime = await provider.getStreams("4242", "series", 1, 1);
+  if (tvAnime[0].mediaType !== "anime") throw new Error("tv namespace anime classification failed");
+  if (!seen.some((u) => u.includes("/movie/4242"))) throw new Error("movie namespace lookup missing");
+  if (!seen.some((u) => u.includes("/tv/4242"))) throw new Error("tv namespace lookup missing");
+})().catch((error) => { console.error(error); process.exit(1); });
+''', encoding="utf-8")
+    subprocess.run(["node", str(test), str(provider)], check=True)

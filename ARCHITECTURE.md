@@ -177,9 +177,11 @@ clé TMDB = (namespace, id)
         ↓
 movie:<id> ou tv:<id>
         ↓
-movie reste movie ; series/show → tv
+namespace reçu : movie → movie ; series/show/tv/anime → tv
         ↓
-si tv : classification TMDB canonique → tv ou anime
+lookup TMDB dans ce namespace
+        ↓
+classification canonique → movie, tv ou anime
         ↓
 comparaison avec les types sémantiques du provider
         ↓
@@ -187,7 +189,7 @@ incompatible / classification impossible → [] immédiatement
 compatible → plan provider appris → adaptation → streams
 ```
 
-Cette validation précède **tout appel au domaine du provider**. L'identité TMDB est toujours composite : `movie:<id>` et `tv:<id>` sont deux espaces distincts ; un anime épisodique reste `tv:<id>` avec `canonicalType=anime`. Ainsi un provider TV ne recherche jamais Mob Psycho si TMDB le classe anime, et un provider anime ne recherche jamais une série classique uniquement parce que Nuvio l'a transportée en `series/tv`.
+Cette validation précède **tout appel au domaine du provider**. L'identité TMDB est toujours composite : `movie:<id>` et `tv:<id>` sont deux espaces distincts et un même nombre peut exister dans les deux. Un anime épisodique reste `tv:<id>` avec `canonicalType=anime`; `anime` n'est jamais un troisième namespace TMDB. Ainsi un provider TV ne recherche jamais Mob Psycho si TMDB le classe anime, et un provider anime ne recherche jamais une série classique uniquement parce que Nuvio l'a transportée en `series/tv`.
 
 Le runtime peut uniquement :
 

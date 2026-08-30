@@ -59,6 +59,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 ;(function(g,c){"use strict";
 function s(v){return String(v==null?"":v).trim()}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
+function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
 function rows(v){return Array.isArray(v)?v:[]}
 function keywordRows(m){var k=m&&m.keywords;return rows(k&&((k.results||k.keywords)||k))}
 function htmlAnime(h){
@@ -96,20 +97,27 @@ function localToken(){
   return "";
 }
 var mediaCache=Object.create(null);
-async function tmdb(tvId){
-  var id=s(tvId),namespace="tv",cacheKey=namespace+":"+id,key=localKey(),token=localToken();
+function hasTmdbMetadata(m){
+  return !!(m&&typeof m==="object"&&(
+    Array.isArray(m.genres)||Array.isArray(m.genre_ids)||Array.isArray(m.genreIds)||
+    m.original_language||m.originalLanguage||m.origin_country||m.originCountry||
+    m.production_countries||m.productionCountries||m.keywords
+  ));
+}
+async function tmdb(namespaceValue,tmdbId){
+  var namespace=namespaceValue==="movie"?"movie":"tv",id=s(tmdbId),cacheKey=namespace+":"+id,key=localKey(),token=localToken();
   if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return null;
   if(Object.prototype.hasOwnProperty.call(mediaCache,cacheKey))return await mediaCache[cacheKey];
   var pending=(async function(){
     try{
       if(key||token){
-        var u="https://api.themoviedb.org/3/tv/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
+        var u="https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response=keywords&language=en-US";
         if(key)u+="&api_key="+encodeURIComponent(key);
         var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
         var api=await g.fetch(u,{headers:h,redirect:"follow",signal:timeout()});
         if(api&&api.ok&&typeof api.json==="function")return await api.json();
       }
-      var publicUrl="https://www.themoviedb.org/tv/"+encodeURIComponent(id)+"?language=en-US";
+      var publicUrl="https://www.themoviedb.org/"+namespace+"/"+encodeURIComponent(id)+"?language=en-US";
       var page=await g.fetch(publicUrl,{
         headers:{Accept:"text/html","Range":"bytes=0-65535","Cache-Control":"max-stale=86400"},
         redirect:"follow",
@@ -124,33 +132,31 @@ async function tmdb(tvId){
   mediaCache[cacheKey]=value;
   return value;
 }
-async function canonicalType(id,input,metadata,category){
-  var transport=alias(input);
-  if(transport==="movie")return"movie";
-  if(category==="anime"||animeMeta(metadata))return"anime";
-  if(transport!=="tv")return transport;
-  var m=await tmdb(id);
+async function canonicalType(id,input,metadata){
+  var namespace=namespaceOf(input);
+  var m=hasTmdbMetadata(metadata)?metadata:await tmdb(namespace,id);
   if(!m)return null;
-  return animeMeta(m)?"anime":"tv";
+  return animeMeta(m)?"anime":namespace;
 }
 function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
-  var transport=alias(input);
+  var transport=alias(input),namespace=namespaceOf(input);
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   if(semantic.length){
-    if(transport==="movie"&&semantic.indexOf("movie")<0)return null;
-    if(transport==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
+    if(namespace==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")<0)return null;
+    if(namespace==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")<0)return null;
   }
-  var category=obj?s(q.category).toLowerCase():"";
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
   var id=obj?s(q.tmdbId||q.tmdb_id||q.id):s(first);
-  var type=await canonicalType(id,input,metadata,category);
+  var type=await canonicalType(id,input,metadata);
   if(!type)return null;
   if(semantic.length&&semantic.indexOf(type)<0)return null;
   if(obj){
     q.nuvioInputMediaType=input;
+    q.tmdbNamespace=namespace;
+    q.tmdbIdentity=namespace+":"+id;
     q.mediaType=type;q.type=type;
     if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
     var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);return out;
