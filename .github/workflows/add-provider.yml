@@ -101,12 +101,13 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: nuvio-provider-publish-main
-  cancel-in-progress: false
-
 jobs:
   onboard:
+    concurrency:
+      group: nuvio-provider-onboarding-stage-main
+      cancel-in-progress: true
+    outputs:
+      provider_id: ${{ steps.provider.outputs.id }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
@@ -288,21 +289,29 @@ jobs:
           node engine_v2/tests/provider-catalog.test.mjs
           npm test
 
-      - name: Publish validated provider transaction
+      - name: Package validated provider transaction
         shell: bash
         env:
           PROVIDER_ID: ${{ steps.provider.outputs.id }}
         run: |
           set -euo pipefail
-          git config user.name "niakvio-provider-onboarding"
-          git config user.email "actions@users.noreply.github.com"
           git add             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider_catalog.json PROVENANCE.json provider-overrides.json provider-hubs.json provider-type-policy.json             provider-bases providers assets/providers
-          if git diff --cached --quiet; then
-            echo "No onboarding changes to publish."
-            exit 0
-          fi
-          git commit -m "provider: add $PROVIDER_ID"
-          git push origin HEAD:main
+          mkdir -p .provider-onboarding
+          git rev-parse HEAD > .provider-onboarding/base-sha.txt
+          printf '%s\n' "$PROVIDER_ID" > .provider-onboarding/provider-id.txt
+          git diff --cached --binary --full-index > .provider-onboarding/provider-transaction.patch
+          echo "FIELD_PROVIDER_ONBOARDING_TRANSACTION provider=$PROVIDER_ID bytes=$(wc -c < .provider-onboarding/provider-transaction.patch)"
+
+      - name: Upload validated provider transaction
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-onboarding-transaction-${{ github.run_id }}
+          path: |
+            .provider-onboarding/base-sha.txt
+            .provider-onboarding/provider-id.txt
+            .provider-onboarding/provider-transaction.patch
+          retention-days: 2
+          if-no-files-found: error
 
       - name: Upload sanitized onboarding evidence
         if: always()
@@ -316,3 +325,59 @@ jobs:
             .provider-onboarding/routes/*.json
           retention-days: 7
           if-no-files-found: warn
+
+  publish:
+    name: Publish validated provider transaction
+    needs: onboard
+    if: ${{ needs.onboard.result == 'success' }}
+    concurrency:
+      group: nuvio-provider-publish-main
+      cancel-in-progress: false
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout current production main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download validated provider transaction
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: provider-onboarding-transaction-${{ github.run_id }}
+          path: checked-transaction
+
+      - name: Apply and publish atomic onboarding transaction
+        shell: bash
+        env:
+          PROVIDER_ID: ${{ needs.onboard.outputs.provider_id }}
+        run: |
+          set -euo pipefail
+          BASE_SHA="$(tr -d '\r\n' < checked-transaction/base-sha.txt)"
+          ARTIFACT_PROVIDER="$(tr -d '\r\n' < checked-transaction/provider-id.txt)"
+          test -n "$BASE_SHA"
+          test "$ARTIFACT_PROVIDER" = "$PROVIDER_ID"
+          git merge-base --is-ancestor "$BASE_SHA" HEAD || {
+            echo "Validated onboarding base $BASE_SHA is not an ancestor of current main." >&2
+            exit 3
+          }
+          if [ ! -s checked-transaction/provider-transaction.patch ]; then
+            echo "FIELD_PROVIDER_ONBOARDING_PUBLISH provider=$PROVIDER_ID state=noop"
+            exit 0
+          fi
+          git apply --3way --index checked-transaction/provider-transaction.patch
+          if git diff --cached --quiet; then
+            echo "FIELD_PROVIDER_ONBOARDING_PUBLISH provider=$PROVIDER_ID state=already-applied"
+            exit 0
+          fi
+          git config user.name "niakvio-provider-onboarding"
+          git config user.email "actions@users.noreply.github.com"
+          git commit -m "provider: add $PROVIDER_ID"
+          git fetch origin main
+          git rebase origin/main
+          git push origin HEAD:main
+          echo "FIELD_PROVIDER_ONBOARDING_PUBLISH provider=$PROVIDER_ID state=published sha=$(git rev-parse HEAD)"
+
