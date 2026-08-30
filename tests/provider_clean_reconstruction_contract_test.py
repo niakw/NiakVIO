@@ -135,6 +135,10 @@ assert "is_clean_reconstructed(provider_provenance)" in published_reapply
 assert "is_clean_reconstruction_candidate(provider_provenance)" in published_reapply
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in published_reapply
 assert "excluded_patch_scripts=(" in published_reapply
+
+assert "CLEAN_V2_CORE_BOUNDARY_MARKER" in published_reapply
+assert "_canonicalize_clean_v2_core_boundary" in published_reapply
+assert "clean v2 publication has no derived Core marker" in published_reapply
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
 assert "refusing legacy ProviderBase fallback" in promoter
