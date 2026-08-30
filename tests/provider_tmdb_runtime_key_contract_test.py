@@ -64,9 +64,27 @@ assert "www.themoviedb.org/" not in resolver_source
 
 
 # All code that can author a future ProviderBase/provider is clean immediately.
+# TMDB network access is Core-owned: provider-specific adapters may consume
+# tmdbMetadata/context but may never carry their own TMDB client/key.
 patch_root = ROOT / "scripts" / "provider_patches"
+CORE_TMDB_MODULES = {
+    "global_media_type_resolution_v1.py",
+    "global_stream_identity_v1.py",
+    "global_stream_presentation_v1.py",
+    "runtime_capability_media_safety_v4.py",
+}
 for path in patch_root.rglob("*.py"):
     scan(path, failures)
+    text = path.read_text(encoding="utf-8", errors="strict")
+    if path.name not in CORE_TMDB_MODULES and (
+        "api.themoviedb.org" in text
+        or "TMDB_API_KEY" in text
+        or "TMDB_ACCESS_TOKEN" in text
+    ):
+        failures.append(
+            f"{path.relative_to(ROOT).as_posix()}: provider/capability module owns TMDB access; "
+            "consume Core tmdbMetadata instead"
+        )
 
 provenance = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
 rows = provenance.get("providers") or {}
