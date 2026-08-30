@@ -84,7 +84,7 @@ CLEAN_V2_DERIVED_CORE_MARKERS = (
 
 
 def _canonicalize_clean_v2_core_boundary(data: bytes, provider_id: str) -> bytes:
-    """Place one trusted boundary between durable v2 provider logic and derived Core."""
+    """Place one publisher-owned boundary between provider logic and derived Core."""
     text = data.decode("utf-8", errors="strict").replace(CLEAN_V2_CORE_BOUNDARY_MARKER, "")
     starts = [
         pos
@@ -926,8 +926,10 @@ def main() -> int:
                 else None
             ),
         )
-        if clean_v2_base:
-            patched = _canonicalize_clean_v2_core_boundary(patched, provider_id)
+        # The publication finalizer knows exactly where deterministic Core begins.
+        # Materialize one trusted boundary for every bundle so legacy/obfuscated
+        # provider glue never has to be guessed by downstream validators.
+        patched = _canonicalize_clean_v2_core_boundary(patched, provider_id)
         if removed_wrappers:
             records = [{
                 "type": "migration",
