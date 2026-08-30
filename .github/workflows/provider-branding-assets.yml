@@ -68,7 +68,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m pip install --disable-pip-version-check --no-input "Pillow>=10,<13"
+          python -m pip install --disable-pip-version-check --no-input "Pillow==12.3.0"
 
       - name: Update committed provider branding assets
         shell: bash

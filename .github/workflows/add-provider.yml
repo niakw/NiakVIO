@@ -134,7 +134,7 @@ jobs:
         run: |
           set -euo pipefail
           npm ci --ignore-scripts --no-audit --no-fund
-          python -m pip install --disable-pip-version-check --no-input "Pillow>=10,<13"
+          python -m pip install --disable-pip-version-check --no-input "Pillow==12.3.0"
 
       - name: Materialize structured onboarding request
         shell: bash
