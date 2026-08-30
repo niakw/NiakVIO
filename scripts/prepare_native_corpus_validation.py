@@ -342,6 +342,15 @@ class NiakvioNativeCorpusDesktopTest {{
 
 def android_test(fixture: dict, providers: list[dict], client: str) -> str:
     f = common_fixture_values(fixture)
+    # Native Android is a real device/emulator traversal. Keep a tighter hard
+    # wall-clock budget than the generic host Lab so one wedged JS runtime does
+    # not consume the whole fixture. The workflow can override this explicitly.
+    raw_android_timeout = os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "15000").strip()
+    try:
+        android_timeout_ms = max(5_000, min(int(raw_android_timeout), 60_000))
+    except ValueError:
+        android_timeout_ms = 15_000
+    f["provider_timeout_ms"] = str(min(int(f["provider_timeout_ms"]), android_timeout_ms))
     if client == "mobile":
         package = "com.nuvio.app.features.plugins"
         klass = "NiakvioNativeCorpusMobileTest"
@@ -351,8 +360,10 @@ def android_test(fixture: dict, providers: list[dict], client: str) -> str:
     else:
         package = "com.nuvio.tv.core.plugin"
         klass = "NiakvioNativeCorpusTvTest"
-        runtime_decl = "    private val runtime = PluginRuntime()\n"
-        execute = "runtime.executePlugin"
+        # Never share a PluginRuntime with a provider worker that may outlive its
+        # hard timeout. A timed-out daemon is abandoned with its own runtime.
+        runtime_decl = ""
+        execute = "PluginRuntime().executePlugin"
         imports = ""
     return f'''package {package}
 
