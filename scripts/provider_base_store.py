@@ -333,15 +333,18 @@ function _text(value) {
   return String(value == null ? "" : value);
 }
 function _embeddedText(value) {
-  return _text(value)
-    .replace(/\\u002[fF]/g, "/")
-    .replace(/\\u003[aA]/g, ":")
-    .replace(/\\u0026/g, "&")
-    .replace(/\\u003[dD]/g, "=")
-    .replace(/\\\//g, "/")
-    .replace(/\\"/g, '"')
-    .replace(/&quot;|&#34;/gi, '"')
-    .replace(/&amp;/gi, "&");
+  return _text(value).replace(
+    /\\u002[fF]|\\u003[aA]|\\u0026|\\u003[dD]|\\\/|\\"|&quot;|&#34;|&amp;/gi,
+    token => {
+      const normalized = token.toLowerCase();
+      if (normalized === "\\u002f" || normalized === "\\/") return "/";
+      if (normalized === "\\u003a") return ":";
+      if (normalized === "\\u0026" || normalized === "&amp;") return "&";
+      if (normalized === "\\u003d") return "=";
+      if (normalized === '\\"' || normalized === "&quot;" || normalized === "&#34;") return '"';
+      return token;
+    }
+  );
 }
 function _slug(value) {
   return _text(value)
@@ -365,7 +368,7 @@ function _extractUrls(text, base) {
   for (const pattern of patterns) {
     let match;
     while ((match = pattern.exec(normalized))) {
-      const raw = (match[1] || match[0] || "").replace(/\\\//g, "/").replace(/&amp;/g, "&");
+      const raw = match[1] || match[0] || "";
       const absolute = _absolute(raw, base);
       if (absolute && /^https?:/i.test(absolute)) out.push(absolute);
       if (out.length >= 240) break;
