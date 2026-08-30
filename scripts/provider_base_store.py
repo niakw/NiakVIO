@@ -276,9 +276,14 @@ def build_clean_provider_seed(
     publication.
     """
     entry = manifest_entry if isinstance(manifest_entry, dict) else {}
+    semantic_values = (
+        entry.get("canonicalSupportedTypes")
+        if isinstance(entry.get("canonicalSupportedTypes"), list) and entry.get("canonicalSupportedTypes")
+        else entry.get("supportedTypes")
+    )
     supported = [
         str(value).strip().casefold()
-        for value in entry.get("supportedTypes") or []
+        for value in semantic_values or []
         if str(value).strip().casefold() in {"movie", "tv", "anime"}
     ]
     supported = list(dict.fromkeys(supported))
@@ -837,7 +842,8 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   const type = String(mediaType || "movie").toLowerCase();
   if (NIAKVIO_PROVIDER_MODEL.supportedTypes.length &&
       !NIAKVIO_PROVIDER_MODEL.supportedTypes.includes(type) &&
-      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
+      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime")) &&
+      !(type === "movie" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
     return [];
   }
   if (!_runtimePlanAvailable()) return [];

@@ -318,7 +318,12 @@ def provider_contract(
     capabilities = normalize_mapping_keys(config.get("provider_capabilities"))
     patch = patches.get(provider_id, {}) if isinstance(patches.get(provider_id), dict) else {}
     capability = capabilities.get(provider_id, {}) if isinstance(capabilities.get(provider_id), dict) else {}
-    supported_types = [str(value) for value in manifest_row.get("supportedTypes") or [] if str(value) in {"movie", "tv", "anime"}]
+    semantic_values = (
+        manifest_row.get("canonicalSupportedTypes")
+        if isinstance(manifest_row.get("canonicalSupportedTypes"), list) and manifest_row.get("canonicalSupportedTypes")
+        else manifest_row.get("supportedTypes")
+    )
+    supported_types = [str(value) for value in semantic_values or [] if str(value) in {"movie", "tv", "anime"}]
     declared_types = [str(value) for value in patch.get("published_types") or [] if str(value) in {"movie", "tv", "anime"}]
     if declared_types:
         supported_types = declared_types
