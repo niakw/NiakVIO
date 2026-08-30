@@ -10,8 +10,10 @@ PROV = ROOT / "PROVENANCE.json"
 BASE_DIR = ROOT / "provider-bases"
 TARGET_SOURCE = ROOT / "scripts/provider_patches/nuvio_tv_target_media_v3.py"
 
-OLD_CLEAN = r'''function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}'''
-NEW_CLEAN = r'''function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}'''
+BASE_BASE_OLD_CLEAN = r'''function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}'''
+BASE_BASE_NEW_CLEAN = r'''function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}'''
+SOURCE_BASE_OLD_CLEAN = r'''function clean(v){return s(v).replace(/&amp;|&#038;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/\\\//g,"/").replace(/\\u0026/gi,"&").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/")}'''
+SOURCE_BASE_NEW_CLEAN = r'''function clean(v){return s(v).replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").split("\\/").join("/").replace(/\\u003d/gi,"=").replace(/\\x2f/gi,"/").replace(/&amp;|&#038;/gi,"&").replace(/\\u0026/gi,"&")}'''
 
 OLD_ALERT_PATHS = {
     "provider-bases/movix--base--860cda2de2e43ee4.js",
@@ -22,10 +24,10 @@ OLD_ALERT_PATHS = {
 
 def patch_source() -> None:
     text = TARGET_SOURCE.read_text(encoding="utf-8")
-    count = text.count(OLD_CLEAN)
+    count = text.count(SOURCE_BASE_OLD_CLEAN)
     if count != 1:
         raise RuntimeError(f"target-media source clean() expected once, found {count}")
-    TARGET_SOURCE.write_text(text.replace(OLD_CLEAN, NEW_CLEAN), encoding="utf-8")
+    TARGET_SOURCE.write_text(text.replace(SOURCE_BASE_OLD_CLEAN, SOURCE_BASE_NEW_CLEAN), encoding="utf-8")
     print("FIELD_CODEQL_CLEAN_SOURCE replacements=1")
 
 def migrate_active_bases() -> tuple[dict, list[tuple[str,str,str]]]:
@@ -46,12 +48,12 @@ def migrate_active_bases() -> tuple[dict, list[tuple[str,str,str]]]:
         if not rel.startswith("provider-bases/") or not path.is_file():
             raise RuntimeError(f"{provider_id}: active ProviderBase missing: {rel}")
         before = path.read_text(encoding="utf-8")
-        count = before.count(OLD_CLEAN)
+        count = before.count(BASE_OLD_CLEAN)
         if count == 0:
             continue
         if count != 1:
             raise RuntimeError(f"{provider_id}: clean() pattern occurs {count} times")
-        after = before.replace(OLD_CLEAN, NEW_CLEAN)
+        after = before.replace(BASE_OLD_CLEAN, BASE_NEW_CLEAN)
         data = after.encode("utf-8")
         validate_base(data, provider_id)
         new_rel, digest = write_base(provider_id, data)
@@ -103,10 +105,10 @@ def verify_no_double_unescape(provenance: dict) -> None:
     for provider_id, row in (provenance.get("providers") or {}).items():
         rel = str((row or {}).get("base_filename") or "")
         text = (ROOT / rel).read_text(encoding="utf-8")
-        if OLD_CLEAN in text:
+        if BASE_OLD_CLEAN in text:
             raise RuntimeError(f"{provider_id}: old double-unescape clean() remains")
     source = TARGET_SOURCE.read_text(encoding="utf-8")
-    if OLD_CLEAN in source or NEW_CLEAN not in source:
+    if BASE_OLD_CLEAN in source or BASE_NEW_CLEAN not in source:
         raise RuntimeError("target-media clean() source did not reach fixed point")
     print("FIELD_CODEQL_DOUBLE_UNESCAPE status=clean")
 
