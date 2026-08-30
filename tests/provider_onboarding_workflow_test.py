@@ -28,6 +28,7 @@ assert "scripts/add_provider.py refresh" in ADD
 assert "scripts/add_provider.py finalize" in ADD
 assert "resolve_provider_hubs.py" in ADD
 assert "resolve_provider_hub_search_fallback.py" in ADD
+assert "probe_provider_site_structure.py" in ADD
 assert "provider_branding_assets.py" in ADD and "--mode only" in ADD
 assert "nuvio_client_lab.cjs" in ADD
 assert "npm test" in ADD
@@ -43,6 +44,13 @@ assert '"api_templates"' in ONBOARD
 assert '"type": "search"' in ONBOARD
 assert "upstream" not in ONBOARD.casefold() or "upstream_id" in ONBOARD
 assert "clean_reconstruction_verified" in ONBOARD
+
+SITE_PROBE = (ROOT / "scripts/probe_provider_site_structure.py").read_text(encoding="utf-8")
+assert 'f"/title/{kind}/{quote(tmdb_id)}-{quote(slug)}"' in SITE_PROBE
+assert 'f"/title/{kind}/{quote(tmdb_id)}"' in SITE_PROBE
+assert 'page_is_detail = "/title/" in urlsplit(final).path' in SITE_PROBE
+assert 'priority = (100 if page_is_detail else 10)' in SITE_PROBE
+assert '"stream|streams|source|sources|server|servers|resolve|proxy|manifest|action"' in SITE_PROBE
 
 # Incremental branding is the default onboarding path. The all-provider rebuild
 # remains explicitly manual and is never scheduled or push-triggered.
