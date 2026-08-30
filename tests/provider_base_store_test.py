@@ -53,7 +53,7 @@ assert "function _sourceUrls" in text
 assert "async function _resolveRuntimeApi" in text
 assert "const discoveredNested = _uniq(urls.filter(_playerLike));" in text
 assert "const crawled = await _crawlDirectMedia(" in text
-assert text.index("const crawled = await _crawlDirectMedia(") < text.index("const runtime = await _resolveRuntimeApi(")
+assert text.index("const runtime = await _resolveRuntimeApi(") < text.index("const crawled = await _crawlDirectMedia(")
 assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
 assert "requests < 12" in text
