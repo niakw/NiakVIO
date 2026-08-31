@@ -106,6 +106,86 @@ assert preferred == 'https://wookafr.center'
 assert wooka_candidates[0]['message_id'] == 131
 assert all(resolver.host(row['url']) != 'unrelated.example' for row in wooka_candidates)
 
+
+# Six curated address contracts from hub_6.xlsx must remain explicit and
+# independently testable. Hubs are discovery sources; only terminal sites can
+# become provider routes.
+for provider_id in ('1shows', 'allwish', 'anidb', 'cinefreak', 'moonflix', 'zinkmovies'):
+    assert provider_id in hubs, provider_id
+    assert hubs[provider_id].get('sources'), provider_id
+    assert hubs[provider_id].get('direct_candidates'), provider_id
+
+assert hubs['1shows']['hub'] == 'https://flixnetwork.is/'
+assert hubs['1shows']['direct_fallback'] == 'https://1flixto.icu/'
+one_shows_html = '''
+<article class="tile" data-domain="1flixto.icu" data-search="1flixto.icu 1flix.to">
+  <span class="tile-domain">1flixto.icu</span>
+  <p class="tile-alt">Alternative to <b>1flix.to</b></p>
+  <a class="t-visit" href="https://1flixto.icu">Visit →</a>
+</article>
+'''
+one_shows_candidates, preferred = resolver.choose_official(
+    '1shows', hubs['1shows'], hubs['1shows']['hub'], one_shows_html
+)
+assert preferred == 'https://1flixto.icu'
+assert resolver.same_brand('1shows', preferred, hubs['1shows'])
+
+assert hubs['allwish']['resolver'] == 'latest_telegram_domain'
+allwish_html = '''
+<div class="tgme_widget_message" data-post="allwishme/44">
+  <div>All-Wish : nouvelle adresse officielle</div>
+  <a href="https://all-wish.me/">https://all-wish.me/</a>
+</div>
+'''
+_allwish_candidates, preferred = resolver.choose_official(
+    'allwish', hubs['allwish'], hubs['allwish']['hub'], allwish_html
+)
+assert preferred == 'https://all-wish.me'
+
+assert hubs['anidb']['hub'] == 'https://tbcpl.click/'
+anidb_html = '''
+<a data-category="anime" data-name="anidb" href="https://anidb.pics"
+   target="_blank" title="AniDB"><span>anidb.pics</span></a>
+'''
+_anidb_candidates, preferred = resolver.choose_official(
+    'anidb', hubs['anidb'], hubs['anidb']['hub'], anidb_html
+)
+assert preferred == 'https://anidb.pics'
+
+assert hubs['cinefreak']['resolver'] == 'latest_telegram_domain'
+cinefreak_html = '''
+<div class="tgme_widget_message" data-post="cinefreaktop/90">
+  <div>CineFreak : nouvelle adresse officielle</div>
+  <a href="https://example.invalid/">example.invalid</a>
+  <a href="https://cinefreak.ch/">cinefreak.ch</a>
+  <a href="https://example.org/">example.org</a>
+</div>
+'''
+cinefreak_candidates, preferred = resolver.choose_official(
+    'cinefreak', hubs['cinefreak'], hubs['cinefreak']['hub'], cinefreak_html
+)
+assert preferred == 'https://cinefreak.ch'
+assert all(resolver.host(row['url']) not in {'example.invalid', 'example.org'} for row in cinefreak_candidates)
+
+assert hubs['moonflix']['resolver'] == 'latest_telegram_domain'
+moonflix_html = '''
+<div class="tgme_widget_message" data-post="Moonflix_official_Channel/120">
+  <div>MoonFlix : URL du nouveau site officiel</div>
+  <a href="https://moonflix.website/browse">MoonFlix</a>
+</div>
+'''
+_moonflix_candidates, preferred = resolver.choose_official(
+    'moonflix', hubs['moonflix'], hubs['moonflix']['hub'], moonflix_html
+)
+assert preferred == 'https://moonflix.website/browse'
+
+assert hubs['zinkmovies']['hub'] == 'https://zinkmovies.org/'
+zink_html = '<a href="https://new3.zinkmovies.mobi/" rel="nofollow noindex">Click Here to Enter</a>'
+_zink_candidates, preferred = resolver.choose_official(
+    'zinkmovies', hubs['zinkmovies'], hubs['zinkmovies']['hub'], zink_html
+)
+assert preferred == 'https://new3.zinkmovies.mobi'
+
 # Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
 engines = resolver.search_engine_urls('example provider')
 assert engines[0][0] == 'yandex' and 'yandex.com/search/' in engines[0][1]
