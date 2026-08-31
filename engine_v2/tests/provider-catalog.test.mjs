@@ -16,6 +16,52 @@ const general = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
 const vf = JSON.parse(fs.readFileSync("vf/manifest.json", "utf8"));
 const catalog = buildCatalogFromPublished({ generalManifest: general, vfManifest: vf });
 
+
+const committedCatalog = loadProviderCatalog("provider_catalog.json");
+let expectedCommittedCatalog = applyCommittedProviderNames(
+  structuredClone(catalog),
+  JSON.parse(fs.readFileSync("assets/providers/emojis.json", "utf8")),
+);
+expectedCommittedCatalog = applyCommittedProviderLogos(
+  expectedCommittedCatalog,
+  JSON.parse(fs.readFileSync("assets/providers/index.json", "utf8")),
+);
+assert.deepEqual(
+  committedCatalog,
+  expectedCommittedCatalog,
+  "committed provider_catalog.json must exactly match the canonical catalog rebuilt from current manifests",
+);
+
+const committedById = new Map(committedCatalog.providers.map((row) => [row.canonicalId, row]));
+for (const row of committedCatalog.providers) {
+  const filename = String(row.scraper?.filename ?? "").trim();
+  assert.ok(filename, `${row.canonicalId}: committed catalog filename is missing`);
+  assert.ok(
+    fs.existsSync(filename),
+    `${row.canonicalId}: committed catalog references missing provider artifact ${filename}`,
+  );
+}
+for (const scraper of general.scrapers) {
+  const id = String(scraper.id ?? "").toLowerCase();
+  const catalogRow = committedById.get(id);
+  assert.ok(catalogRow, `${scraper.id}: general manifest provider missing from committed catalog`);
+  assert.equal(
+    String(scraper.filename ?? ""),
+    String(catalogRow.scraper.filename ?? ""),
+    `${scraper.id}: general manifest filename diverges from committed catalog`,
+  );
+}
+for (const scraper of vf.scrapers) {
+  const id = String(scraper.id ?? "").toLowerCase();
+  const catalogRow = committedById.get(id);
+  assert.ok(catalogRow, `${scraper.id}: VF provider missing from committed catalog`);
+  assert.equal(
+    String(scraper.filename ?? "").replace(/^\.\.\//, ""),
+    String(catalogRow.scraper.filename ?? ""),
+    `${scraper.id}: VF filename does not point to the same committed provider artifact`,
+  );
+}
+
 assert.equal(catalog.providers.length, general.scrapers.length, "catalog must preserve every general provider");
 assert.equal(catalog.manifestOrder.vf.length, vf.scrapers.length, "catalog must preserve every VF provider");
 assert.equal(catalog.policy.repairBeforeTriage, true);
