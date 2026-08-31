@@ -755,6 +755,17 @@ def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> 
                 "source_type": "curated_direct",
                 "source": "provider-hubs.json",
             })
+    direct_fallback = str(cfg.get("direct_fallback") or "").strip()
+    if is_http_url(direct_fallback):
+        normalized_fallback = direct_fallback.rstrip("/")
+        if all(_candidate_identity(row) != normalized_fallback for row in candidates):
+            candidates.append({
+                "url": normalized_fallback,
+                "label": "declared direct fallback",
+                "score": 90,
+                "source_type": "curated_direct",
+                "source": "provider-hubs.json",
+            })
     if candidates:
         return candidates
 
