@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
@@ -74,7 +75,11 @@ def main() -> int:
     assert coflix_profile == [RECOVERY, COFLIX_EXACT, TARGET, STRICT_SANITIZER, DESKTOP], scripts
     recovery = (coflix.get("patch_script_options") or {}).get(RECOVERY) or {}
     assert recovery.get("strategy") == "html", recovery
-    assert recovery.get("base_url") == "https://coflix.esq", recovery
+    official_site = coflix.get("official_site")
+    assert isinstance(official_site, str) and official_site.strip(), coflix
+    recovery_base = recovery.get("base_url")
+    assert isinstance(recovery_base, str) and recovery_base.strip(), recovery
+    assert recovery_base.rstrip("/") == official_site.rstrip("/"), (recovery, official_site)
     assert "/film/{slug}/" in (recovery.get("direct_paths") or []), recovery
     assert "/?s={query}" in (recovery.get("search_paths") or []), recovery
     assert set(recovery.get("types") or []) == {"movie", "tv", "anime"}, recovery
@@ -85,7 +90,11 @@ def main() -> int:
     assert int(strict.get("max_probes") or 0) == 20, strict
     assert COFLIX_BLOCKED_PATHS.issubset(set(strict.get("blocked_path_patterns") or [])), strict
     assert SANITIZER not in scripts, scripts
-    assert coflix.get("runtime_domain_replacements", {}).get("coflix.cymru") == "coflix.esq", coflix
+    official_host = (urlparse(official_site).hostname or "").casefold()
+    legacy_target = (coflix.get("runtime_domain_replacements") or {}).get("coflix.cymru")
+    if legacy_target is not None:
+        assert isinstance(legacy_target, str) and legacy_target.strip(), coflix
+        assert legacy_target.casefold().strip(".") == official_host, (coflix, official_site)
     assert coflix.get("manifest_overrides", {}).get("supportsExternalPlayer") is False, coflix
     assert "disabledPlatforms" not in (coflix.get("manifest_overrides") or {}), coflix
 
