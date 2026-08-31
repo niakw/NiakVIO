@@ -82,7 +82,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v13-request-isolation",
+        "revision": "tmdb-api-first-semantic-transport-split-v14-canonical-reset",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -100,26 +100,26 @@ function s(v){return String(v==null?"":v).trim()}
 function normalizeKey(v){var x=s(v);if(x.length===33&&x.charCodeAt(0)===92&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
-function providerTransport(input,canonical,namespace){
-  var raw=s(input||"movie").toLowerCase(),base=alias(raw),map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
-  var mapped=s(map[canonical]||map[raw]||map[base]).toLowerCase();
+function providerTransport(canonical,namespace){
+  var map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
+  var mapped=s(map[canonical]).toLowerCase();
   if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
   if(mapped)return alias(mapped);
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
-  if(canonical==="anime"&&semantic.indexOf("anime")>=0&&semantic.indexOf("tv")<0&&semantic.indexOf("movie")<0)return"anime";
-  if(base==="movie")return"movie";
-  if(base==="tv")return"tv";
-  if(base==="anime")return"anime";
-  return namespace==="movie"?"movie":"tv";
-}
-function namespaceCandidates(v,season,episode,semantic){
-  var raw=s(v||"movie").toLowerCase();
-  if(raw==="movie")return["movie"];
-  if(raw==="anime"){
-    if(season!=null||episode!=null)return["tv"];
-    return["tv","movie"];
+  if(canonical==="anime"){
+    var ns=namespace==="movie"?"movie":"tv";
+    if(semantic.indexOf(ns)>=0)return ns;
+    return"anime";
   }
-  return["tv"];
+  return canonical==="movie"?"movie":"tv";
+}
+function namespaceCandidates(v,season,episode){
+  // Client media type is only a lookup hint. Never let it remove the alternate
+  // TMDB namespace before canonical identity has been established.
+  if(season!=null||episode!=null)return["tv","movie"];
+  var hint=alias(v);
+  if(hint==="movie")return["movie","tv"];
+  return["tv","movie"];
 }
 function rows(v){return Array.isArray(v)?v:[]}
 function keywordRows(m){var k=m&&m.keywords;return rows(k&&((k.results||k.keywords)||k))}
@@ -234,7 +234,7 @@ function fallbackType(input,semantic){
   return transport;
 }
 async function canonicalResolution(id,input,metadata,season,episode,semantic){
-  var candidates=namespaceCandidates(input,season,episode,semantic),raw=s(input||"movie").toLowerCase();
+  var candidates=namespaceCandidates(input,season,episode);
   var rawId=s(id),tmdbId=rawId.replace(/^tmdb:/i,""),imdbId="",seedMetadata=null;
   var imdbMatch=/^(?:imdb:)?(tt\d+)$/i.exec(rawId);
   if(imdbMatch){
@@ -255,7 +255,6 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
     var declaredId=s(metadata&&metadata.__nuvioTmdbId||metadata&&metadata.id);
     if(/^\d+$/.test(declaredId))tmdbId=declaredId;
     var type=animeMeta(metadata)?"anime":namespace;
-    if(raw==="anime"&&type!=="anime")return null;
     return{type:type,namespace:namespace,tmdbId:/^\d+$/.test(tmdbId)?tmdbId:"",imdbId:imdbId,metadata:metadata,authoritative:true,degraded:false};
   }
   var unavailable=false;
@@ -264,12 +263,10 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
     if(!probe||probe.state==="unavailable"){unavailable=true;continue}
     if(probe.state==="not_found")continue;
     var m=probe.metadata,type=animeMeta(m)?"anime":namespace;
-    if(raw==="anime"&&type!=="anime")continue;
     return{type:type,namespace:namespace,tmdbId:tmdbId,imdbId:imdbId,metadata:m,authoritative:true,degraded:false};
   }
   if(unavailable&&seedMetadata){
     var seedNamespace=candidates[0]||namespaceOf(input),seedType=animeMeta(seedMetadata)?"anime":seedNamespace;
-    if(raw==="anime"&&seedType!=="anime")return null;
     seedMetadata.__nuvioTmdbNamespace=seedNamespace;
     seedMetadata.__nuvioTmdbId=tmdbId;
     return{type:seedType,namespace:seedNamespace,tmdbId:tmdbId,imdbId:imdbId,metadata:seedMetadata,authoritative:true,degraded:true};
@@ -284,7 +281,7 @@ function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
-  var transport=alias(input),namespace=namespaceOf(input),raw=s(input).toLowerCase();
+  var namespace=namespaceOf(input);
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   // TMDB identity/type resolution is the first provider gate for every request.
   // Provider capability filtering happens only after canonical movie|tv|anime
@@ -297,8 +294,8 @@ async function resolve(a){
   var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
   if(!resolved)return null;
   var type=resolved.type;namespace=resolved.namespace;
-  if(semantic.length&&semantic.indexOf(type)<0)return null;
-  var providerType=providerTransport(input,type,namespace);
+  if(resolved.authoritative&&semantic.length&&semantic.indexOf(type)<0)return null;
+  var providerType=providerTransport(type,namespace);
   var resolvedTmdbId=s(resolved.tmdbId||(/^\d+$/.test(id)?id:""));
   var resolvedImdbId=s(resolved.imdbId||obj&&(q.imdbId||q.imdb_id)||(/^tt\d+$/i.test(id)?id:"")).toLowerCase();
   var context={
