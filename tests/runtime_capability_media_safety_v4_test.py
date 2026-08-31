@@ -96,7 +96,7 @@ assert value == {"rows": 0, "calls": 0}, value
 # A mixed provider keeps normal media rows while P2P rows are rejected individually.
 mixed_p2p = patched(
     "streamzo",
-    "module.exports={getStreams:async()=>[{url:'magnet:?xt=urn:btih:abc',type:'torrent',infoHash:'abc'},{url:'https://media.example/ok.m3u8',type:'hls'}]};\\n",
+    "module.exports={getStreams:async()=>[{url:'magnet:?xt=urn:btih:abc',type:'torrent',infoHash:'abc'},{url:'https://media.example/ok.m3u8',type:'hls'}]};\n",
 )
 value = run_node(
     mixed_p2p,
