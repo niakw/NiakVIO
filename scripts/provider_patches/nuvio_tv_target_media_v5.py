@@ -122,9 +122,22 @@ def strip_legacy_direct_media(text: str, enabled: bool) -> str:
 def strip_target_media_wrappers(text: str, enabled: bool) -> str:
     if not enabled:
         return text
+    removed = False
     while True:
         start = text.find(TARGET_MEDIA_MARKER)
         if start < 0:
+            if removed:
+                # Revision comments belong to the generated wrapper. Removing
+                # that wrapper must remove its revision state in the same
+                # transaction; otherwise a later reapply can trust an orphan.
+                for marker in (
+                    V4_MARKER,
+                    V5_MARKER,
+                    HLS_PROOF_MARKER,
+                    FETCH_COMPAT_MARKER,
+                    PROTOCOL_RELATIVE_MARKER,
+                ):
+                    text = text.replace(marker, "")
             return text.rstrip()
         call = text.find(TARGET_MEDIA_CALL, start)
         if call < 0:
@@ -133,6 +146,7 @@ def strip_target_media_wrappers(text: str, enabled: bool) -> str:
         if end < 0:
             raise RuntimeError("unterminated target-media wrapper: closing boundary missing")
         text = (text[:start] + text[end + 2 :]).rstrip()
+        removed = True
 
 
 def rejected_v4(blocked_hosts: list[str]) -> str:
