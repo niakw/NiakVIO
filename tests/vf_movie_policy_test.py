@@ -201,6 +201,7 @@ for provider_id in ('frenchstream', 'movix', 'coflix', 'flemmix'):
     assert '/troll/' not in options.get('blocked_path_patterns', []), provider_id
 
 streamzo = patches['streamzo']
+assert any('shared Core' in str(note) for note in streamzo.get('notes', [])), 'streamzo'
 streamzo_scripts = streamzo.get('patch_scripts', [])
 assert recovery not in streamzo_scripts
 assert shared_recovery not in streamzo_scripts
