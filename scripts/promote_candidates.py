@@ -1304,7 +1304,7 @@ def evaluate_pre_stability_gates(
                 "require_declared_type_coverage": require_type_coverage,
                 "representative_fixture_mode": representative_fixture_mode,
             },
-            scope="stream",
+            scope="type",
         ),
         "05_stream_and_fixture_coverage": gate(
             (
@@ -1454,6 +1454,10 @@ def provider_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
 
 def stream_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
     return gates_pass(gates, "stream")
+
+
+def type_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
+    return gates_pass(gates, "type")
 
 
 def inconclusive_statuses(activation: dict[str, Any]) -> set[str]:
@@ -1768,6 +1772,12 @@ def activation_decision(
         if str(value.get("scope") or "provider") == "stream"
         and not value.get("passed")
     ]
+    type_findings = [
+        name
+        for name, value in gates.items()
+        if str(value.get("scope") or "provider") == "type"
+        and not value.get("passed")
+    ]
     blockers = list(provider_blockers)
     if onboarding_stream_required and not stream_pass:
         blockers.append("onboarding_requires_first_playable_stream")
@@ -1803,6 +1813,7 @@ def activation_decision(
         "activation_blockers": blockers,
         "provider_blockers": provider_blockers,
         "stream_findings": stream_findings,
+        "type_findings": type_findings,
         "activation_gates": gates,
         "proof": proof,
         "provider_pass": provider_pass,
@@ -2443,7 +2454,7 @@ def main() -> int:
                 name for name, value in gates.items() if not value.get("passed")
             ]
             if enabled and activation_mode == "strict_current":
-                action = "enabled-current-dns-access-stream-quality-passed"
+                action = "enabled-current-provider-health-and-capability-passed"
             elif enabled and activation_mode == "preserved_current_inconclusive":
                 action = "preserved-current-enabled-ci-inconclusive"
             elif enabled and activation_mode == "strict_grace_inconclusive":
@@ -2459,7 +2470,7 @@ def main() -> int:
             elif str(result.get("status")) in inconclusive_statuses(activation):
                 action = "published-disabled-ci-inconclusive-no-valid-runtime-evidence"
             else:
-                action = "published-disabled-failed-gates"
+                action = "published-disabled-provider-or-capability-failure"
 
             provenance[cid] = {
                 "id": cid,
