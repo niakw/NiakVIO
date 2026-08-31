@@ -318,16 +318,31 @@ async function resolveMetadata(request, resolver) {
   };
 }
 
-function collectNamedArrays(value, out, seen, depth) {
+function collectionMediaType(key) {
+  const value = String(key ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "");
+  if (["movie","movies","film","films"].includes(value)) return "movie";
+  if (["tv","tvs","series","show","shows","anime","animes","episode","episodes"].includes(value)) return "tv";
+  return null;
+}
+
+function collectNamedArrays(value, out, seen, depth, inheritedType = null) {
   if (!value || depth > 5 || seen.has(value)) return;
   if (typeof value !== "object") return;
   seen.add(value);
   if (Array.isArray(value)) {
-    if (value.some((item) => item && typeof item === "object" && (providerId(item) || itemTitle(item)))) out.push(value);
-    for (const item of value) collectNamedArrays(item, out, seen, depth + 1);
+    if (value.some((item) => item && typeof item === "object" && (providerId(item) || itemTitle(item)))) {
+      out.push(value.map((item) =>
+        item && typeof item === "object" && inheritedType && !itemType(item)
+          ? { ...item, __collectionType: inheritedType }
+          : item
+      ));
+    }
+    for (const item of value) collectNamedArrays(item, out, seen, depth + 1, inheritedType);
     return;
   }
-  for (const child of Object.values(value)) collectNamedArrays(child, out, seen, depth + 1);
+  for (const [key, child] of Object.entries(value)) {
+    collectNamedArrays(child, out, seen, depth + 1, collectionMediaType(key) ?? inheritedType);
+  }
 }
 
 function dedupeItems(items) {
@@ -351,7 +366,7 @@ function itemTitle(item) {
 }
 
 function itemType(item) {
-  const raw = cleanText(item?.type ?? item?.media_type ?? item?.mediaType)?.toLowerCase();
+  const raw = cleanText(item?.type ?? item?.media_type ?? item?.mediaType ?? item?.__collectionType)?.toLowerCase();
   if (!raw) return null;
   if (["series", "show", "anime"].includes(raw)) return "tv";
   return raw;

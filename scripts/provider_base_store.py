@@ -756,34 +756,62 @@ function _recipeValue(row, fields) {
   }
   return "";
 }
-function _recipeObjects(value, out) {
+function _collectionMediaType(key) {
+  const value = _text(key).toLowerCase().replace(/[^a-z0-9]+/g, "");
+  if (["movie","movies","film","films"].includes(value)) return "movie";
+  if (["tv","tvs","series","show","shows","anime","animes","episode","episodes"].includes(value)) return "tv";
+  return "";
+}
+function _recipeObjects(value, out, inheritedMedia) {
   out = out || [];
+  inheritedMedia = inheritedMedia || "";
   if (Array.isArray(value)) {
-    for (const child of value) _recipeObjects(child, out);
+    for (const child of value) _recipeObjects(child, out, inheritedMedia);
     return out;
   }
   if (!value || typeof value !== "object") return out;
-  out.push(value);
-  for (const child of Object.values(value)) {
-    if (child && typeof child === "object") _recipeObjects(child, out);
+  if (inheritedMedia && !value.__nuvioCollectionMediaType) {
+    out.push(Object.assign({ __nuvioCollectionMediaType: inheritedMedia }, value));
+  } else {
+    out.push(value);
+  }
+  for (const [key, child] of Object.entries(value)) {
+    if (child && typeof child === "object") {
+      _recipeObjects(child, out, _collectionMediaType(key) || inheritedMedia);
+    }
     if (out.length >= 400) break;
   }
   return out;
 }
 function _recipeMediaType(row, recipe) {
   const raw = _recipeValue(row, recipe.typeFields || ["type","media_type","mediaType","kind","category"]).toLowerCase();
-  if (!raw) return "";
-  if (["tv","series","show","anime","episode"].includes(raw)) return "tv";
-  if (["movie","film"].includes(raw)) return "movie";
-  return "";
+  if (raw) {
+    if (["tv","series","show","anime","episode"].includes(raw)) return "tv";
+    if (["movie","film"].includes(raw)) return "movie";
+  }
+  const inherited = _text(row && row.__nuvioCollectionMediaType).toLowerCase();
+  return inherited === "movie" || inherited === "tv" ? inherited : "";
 }
 function _recipeScore(row, meta, recipe, expectedMedia) {
   const title = _slug(_recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]));
   const expected = _slug(meta && meta.title);
   const actualMedia = _recipeMediaType(row, recipe);
-  if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
   const year = _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4);
-  if (year && meta && meta.year && year !== _text(meta.year)) return -1;
+  const expectedYear = _text(meta && meta.year).slice(0, 4);
+  const providerId = _recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"]);
+
+  if (recipe.strictIdentity) {
+    if (!providerId || !title || !expected || title !== expected) return -1;
+    if (!actualMedia || !expectedMedia || actualMedia !== expectedMedia) return -1;
+    if (expectedYear) {
+      if (!year || !/^\d{4}$/.test(year)) return -1;
+      if (Math.abs(Number(year) - Number(expectedYear)) > 1) return -1;
+    }
+    return 100 + (year === expectedYear ? 20 : 10) + 20;
+  }
+
+  if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
+  if (year && expectedYear && year !== expectedYear) return -1;
   let score = 0;
   if (title && expected && title === expected) score += 200;
   else if (title && expected && (title.includes(expected) || expected.includes(title))) score += 90;
@@ -792,10 +820,15 @@ function _recipeScore(row, meta, recipe, expectedMedia) {
       if (title.includes(token)) score += 10;
     }
   }
-  if (year && meta && meta.year && year === _text(meta.year)) score += 40;
+  if (year && expectedYear && year === expectedYear) score += 40;
   if (actualMedia && expectedMedia && actualMedia === expectedMedia) score += 60;
-  if (_recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"])) score += 15;
+  if (providerId) score += 15;
   return score;
+}
+function _recipeSourceUrls(value, base, recipe) {
+  const urls = _sourceUrls(value, base);
+  if (!recipe || !recipe.directSourcesOnly) return urls;
+  return urls.filter(_directMedia);
 }
 function _recipeUrl(pattern, values, base) {
   let route = _text(pattern);
@@ -889,7 +922,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
             ));
           } else {
             streams.push(..._streams(
-              _sourceUrls(payload.value, payload.base),
+              _recipeSourceUrls(payload.value, payload.base, recipe),
               recipe.referer || base,
               Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
             ));
@@ -936,7 +969,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
           Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
         );
       } else {
-        const urls = _sourceUrls(payload.value, payload.base);
+        const urls = _recipeSourceUrls(payload.value, payload.base, recipe);
         if (urls.length) return _streams(
           urls,
           recipe.referer || base,

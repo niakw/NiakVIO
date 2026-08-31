@@ -69,6 +69,8 @@ assert model["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
 assert model["apiRecipe"]["searchRoute"] == "/search-bar/search/{query}"
 assert model["apiRecipe"]["movieRoute"] == "/media/{id}/sheet"
 assert model["apiRecipe"]["episodeRoute"] == "/stream/{id}/episode?season={season}&episode={episode}"
+assert model["apiRecipe"]["strictIdentity"] is True
+assert model["apiRecipe"]["directSourcesOnly"] is True
 assert "api.purstream.id" in origin_hosts
 assert "purstream.id" in origin_hosts
 assert origin_hosts.isdisjoint({"api.purstream", "old.invalid", "raw.githubu"})
@@ -167,30 +169,58 @@ global.fetch = async function(rawUrl) {
   }
 
   if (url.includes("/search-bar/search/Interstellar")) {
-    return jsonResponse(url, [{id: "p-movie", title: "Interstellar", type: "movie", year: "2014"}]);
+    return jsonResponse(url, {data:{items:{
+      movies:{items:[
+        {id:"wrong-movie",title:"Interstellar Something Else",release_date:"2014-01-01"},
+        {id:"p-movie",title:"Interstellar",release_date:"2014-11-05"}
+      ]}
+    }}});
   }
   if (url.includes("/search-bar/search/Breaking%20Bad")) {
-    return jsonResponse(url, [{id: "p-tv", title: "Breaking Bad", type: "series", year: "2008"}]);
+    // Collision is intentionally split across independent API collections and
+    // neither item carries an explicit type field. The clean resolver must retain
+    // the collection identity instead of falling back to the first title match.
+    return jsonResponse(url, {data:{items:{
+      movies:{items:[
+        {id:"wrong-tv",title:"Breaking Bad",release_date:"2008-01-01"}
+      ]},
+      series:{items:[
+        {id:"p-tv",title:"Breaking Bad",first_air_date:"2008-01-20"}
+      ]}
+    }}});
   }
   if (url.includes("/search-bar/search/Jujutsu%20Kaisen")) {
-    // Purstream historically exposes anime as an anime-labelled catalogue row,
-    // while its actual episodic transport is the TV route family.
-    return jsonResponse(url, [{id: "p-anime", title: "Jujutsu Kaisen", type: "anime", year: "2020"}]);
+    // Purstream historically exposes anime inside its anime catalogue collection,
+    // while the episodic transport itself remains TV.
+    return jsonResponse(url, {data:{items:{
+      anime:{items:[
+        {id:"p-anime",title:"Jujutsu Kaisen",first_air_date:"2020-10-03"}
+      ]}
+    }}});
   }
 
   if (url.includes("/media/p-movie/sheet")) {
     return jsonResponse(url, {
-      url: "https://free.finepulfe.xyz/movies/157336-test/master.m3u8"
+      urls: [
+        {url:"https://embed.example/watch/p-movie"},
+        {url:"https://free.finepulfe.xyz/movies/157336-test/master.m3u8"}
+      ]
     });
   }
   if (url.includes("/stream/p-tv/episode?season=1&episode=1")) {
     return jsonResponse(url, {
-      url: "https://free.finepulfe.xyz/tv/1396-test/S01/E01/master.m3u8"
+      sources:[
+        {stream_url:"https://embed.example/watch/p-tv"},
+        {stream_url:"https://free.finepulfe.xyz/tv/1396-test/S01/E01/master.m3u8"}
+      ]
     });
   }
   if (url.includes("/stream/p-anime/episode?season=1&episode=1")) {
     return jsonResponse(url, {
-      url: "https://free.finepulfe.xyz/animes/tv/p-anime/S1/E1/master.m3u8"
+      sources:[
+        {stream_url:"https://embed.example/watch/p-anime"},
+        {stream_url:"https://free.finepulfe.xyz/animes/tv/p-anime/S1/E1/master.m3u8"}
+      ]
     });
   }
 
@@ -201,13 +231,13 @@ const provider = require(providerPath);
 
 (async () => {
   const movie = await provider.getStreams("157336", "movie");
-  if (!movie.length || !movie[0].url.includes("/movies/157336-test/")) {
-    throw new Error("Purstream movie route regression: " + JSON.stringify(movie));
+  if (!movie.length || !movie[0].url.includes("/movies/157336-test/") || movie.some(row => row.url.includes("embed.example"))) {
+    throw new Error("Purstream movie route/direct-source regression: " + JSON.stringify(movie));
   }
 
   const series = await provider.getStreams("1396", "series", 1, 1);
-  if (!series.length || !series[0].url.includes("/tv/1396-test/S01/E01/")) {
-    throw new Error("Purstream series->tv route regression: " + JSON.stringify(series));
+  if (!series.length || !series[0].url.includes("/tv/1396-test/S01/E01/") || series.some(row => row.url.includes("embed.example"))) {
+    throw new Error("Purstream series->tv route/direct-source regression: " + JSON.stringify(series));
   }
 
   // This is the key historical regression: Nuvio can describe an anime episode

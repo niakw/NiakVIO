@@ -22,10 +22,14 @@ const fetchImpl = async (url, options = {}) => {
     ] } } });
   }
   if (href.includes("/search-bar/search/Breaking%20Bad")) {
-    return json({ data: { items: { movies: { items: [
-      { id: 66, title: "Breaking Bad", type: "movie", release_date: "2008-01-01" },
-      { id: 77, title: "Breaking Bad", type: "tv", first_air_date: "2008-01-20" },
-    ] } } } });
+    return json({ data: { items: {
+      movies: { items: [
+        { id: 66, title: "Breaking Bad", release_date: "2008-01-01" },
+      ] },
+      series: { items: [
+        { id: 77, title: "Breaking Bad", first_air_date: "2008-01-20" },
+      ] },
+    } } });
   }
   if (href.includes("/stream/77/episode?season=1&episode=1")) {
     return json({ data: { items: { sources: [
