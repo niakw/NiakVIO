@@ -48,8 +48,12 @@ def main() -> int:
     # wrapper has been removed from an LKG/reconstructed artifact. Markers alone
     # must never short-circuit reconstruction.
     stale = module.strip_target_media_wrappers(patched, True)
-    assert module.V4_MARKER in stale
     assert module.TARGET_MEDIA_MARKER not in stale
+    assert module.V4_MARKER not in stale
+    assert module.V5_MARKER not in stale
+    assert module.HLS_PROOF_MARKER not in stale
+    assert module.FETCH_COMPAT_MARKER not in stale
+    assert module.PROTOCOL_RELATIVE_MARKER not in stale
     rebuilt = module.apply(stale, options=options)
     assert module.V4_MARKER in rebuilt
     assert module.V5_MARKER in rebuilt
