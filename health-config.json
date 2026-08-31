@@ -1,5 +1,5 @@
 {
-  "schema_version": 68,
+  "schema_version": 69,
   "concurrency": 4,
   "modes": {
     "availability": {
@@ -18,7 +18,8 @@
       "max_provider_response_bytes": 5242880,
       "max_settings_profiles": 2,
       "worker_memory_mb": 256,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "zero_stream_preflight": true
     },
     "retry": {
       "fixture_limit": 1,
@@ -36,7 +37,8 @@
       "max_provider_response_bytes": 5242880,
       "max_settings_profiles": 2,
       "worker_memory_mb": 256,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "zero_stream_preflight": true
     },
     "quick": {
       "fixture_limit": 1,
@@ -54,7 +56,8 @@
       "max_provider_response_bytes": 5242880,
       "max_settings_profiles": 3,
       "worker_memory_mb": 384,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "zero_stream_preflight": true
     },
     "deep": {
       "fixture_limit": 1,
@@ -81,7 +84,8 @@
       "inspect_direct_dimensions": true,
       "verify_fixture_duration_identity": true,
       "minimum_fixture_duration_ratio": 0.55,
-      "maximum_fixture_duration_ratio": 1.8
+      "maximum_fixture_duration_ratio": 1.8,
+      "zero_stream_preflight": true
     }
   },
   "fixtures": {
@@ -384,7 +388,10 @@
       "no_streams",
       "reachable"
     ],
-    "allow_type_scoped_activation": true
+    "allow_type_scoped_activation": true,
+    "provider_requires_surviving_playable_stream": true,
+    "stream_failures_are_stream_scoped": true,
+    "supported_types_require_current_stream_proof": true
   },
   "availability": {
     "auto_disable": true,
