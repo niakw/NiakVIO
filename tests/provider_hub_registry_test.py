@@ -250,6 +250,23 @@ registry = json.loads((ROOT / 'provider-hubs.json').read_text())
 history_registry = json.loads((ROOT / 'provider-domain-history.json').read_text())
 assert registry.get('schema_version', 0) >= 3
 assert history_registry.get('schema_version') == 1
+
+# Explicitly curated routes from the current hub pass must never regress to an
+# older LKG/current-history domain.
+explicit_current_routes = {
+    'flemmix': 'https://flemmix.men',
+    '1shows': 'https://1flixto.icu',
+    'allwish': 'https://all-wish.me',
+    'anidb': 'https://anidb.pics',
+    'cinefreak': 'https://cinefreak.ch',
+    'moonflix': 'https://moonflix.website/browse',
+    'zinkmovies': 'https://new3.zinkmovies.mobi',
+}
+for provider_id, expected in explicit_current_routes.items():
+    current = ((history_registry.get('providers') or {}).get(provider_id) or {}).get('current') or {}
+    assert str(current.get('url') or '').rstrip('/') == expected.rstrip('/'), (provider_id, current)
+    assert current.get('source_type') == 'curated_official_hub', (provider_id, current)
+
 assert 'dahmermovies' not in registry['providers']
 assert 'dahmermovies-tv' not in registry['providers']
 raw = json.dumps(registry, ensure_ascii=False).casefold()
