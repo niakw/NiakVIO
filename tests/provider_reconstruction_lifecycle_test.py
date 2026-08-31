@@ -60,7 +60,9 @@ assert fresh_seed == expected_fresh_seed, (
     expected_fresh_seed[:240],
 )
 assert b"NIAKVIO_PROVIDER_BASE_OWNED_V2" in expected_fresh_seed, expected_fresh_seed[:500]
-assert b'"authoring":"niakvio-owned-v2"' in fresh_seed
+assert b'"authoring":"niakvio-owned-v3"' in fresh_seed
+assert b'"modelSchemaVersion":3' in fresh_seed
+assert b'"routePlanVersion":2' in fresh_seed
 assert b'"upstreamCodeEmbedded":false' in fresh_seed
 assert b'"upstreamCodeExecuted":false' in fresh_seed
 assert fresh_knowledge["codeExecuted"] is False
