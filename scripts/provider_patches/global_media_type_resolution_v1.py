@@ -82,7 +82,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v15-request-session-isolation",
+        "revision": "tmdb-api-first-semantic-transport-split-v15-canonical-reset-request-session-isolation",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
