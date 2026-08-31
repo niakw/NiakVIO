@@ -33,6 +33,13 @@ def _tests(result: dict[str, Any]) -> list[dict[str, Any]]:
     return [row for row in result.get("tests") or [] if isinstance(row, dict)]
 
 
+def _scoped_counter(row: dict[str, Any], scoped: str, legacy: str) -> int:
+    """Use surviving-stream counters when present, else fail-safe to legacy data."""
+    if scoped in row:
+        return int(row.get(scoped) or 0)
+    return int(row.get(legacy) or 0)
+
+
 def automatic_repair_safety_gate(result: dict[str, Any]) -> tuple[bool, str]:
     """Accept a provisional quick repair only when it is playable and not wrong.
 
@@ -43,8 +50,8 @@ def automatic_repair_safety_gate(result: dict[str, Any]) -> tuple[bool, str]:
     """
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
     playable = int(evidence.get("streams_playable") or 0)
-    contradictions = int(evidence.get("playable_identity_contradiction_count") or 0)
-    duration_mismatches = int(evidence.get("playable_duration_identity_mismatch_count") or 0)
+    contradictions = _scoped_counter(evidence, "playable_identity_contradiction_count", "identity_contradiction_count")
+    duration_mismatches = _scoped_counter(evidence, "playable_duration_identity_mismatch_count", "duration_identity_mismatch_count")
 
     if playable <= 0:
         return False, "safety_gate:no_playable_proof"
@@ -58,8 +65,8 @@ def automatic_repair_safety_gate(result: dict[str, Any]) -> tuple[bool, str]:
         return False, "safety_gate:no_fixture_level_playable_proof"
 
     for row in playable_tests:
-        row_contradictions = int(row.get("playable_identity_contradiction_count") or 0)
-        row_duration = int(row.get("playable_duration_identity_mismatch_count") or 0)
+        row_contradictions = _scoped_counter(row, "playable_identity_contradiction_count", "identity_contradiction_count")
+        row_duration = _scoped_counter(row, "playable_duration_identity_mismatch_count", "duration_identity_mismatch_count")
         fixture = (row.get("fixture") or {}).get("label") or (row.get("fixture") or {}).get("tmdbId") or "fixture"
         if row_contradictions > 0:
             return False, f"safety_gate:{fixture}:content_identity_contradiction"
@@ -73,8 +80,8 @@ def automatic_repair_identity_gate(result: dict[str, Any]) -> tuple[bool, str]:
     """Strict deep-learning gate: playable media must have positive identity."""
     evidence = result.get("evidence") if isinstance(result.get("evidence"), dict) else {}
     playable = int(evidence.get("streams_playable") or 0)
-    contradictions = int(evidence.get("playable_identity_contradiction_count") or 0)
-    duration_mismatches = int(evidence.get("playable_duration_identity_mismatch_count") or 0)
+    contradictions = _scoped_counter(evidence, "playable_identity_contradiction_count", "identity_contradiction_count")
+    duration_mismatches = _scoped_counter(evidence, "playable_duration_identity_mismatch_count", "duration_identity_mismatch_count")
     verified = int(evidence.get("identity_verified_streams") or 0)
     unknown = int(evidence.get("identity_unverified_streams") or 0)
 
@@ -95,8 +102,8 @@ def automatic_repair_identity_gate(result: dict[str, Any]) -> tuple[bool, str]:
         count = int(row.get("streams_playable") or 0)
         row_verified = int(row.get("identity_verified_streams") or 0)
         row_unknown = int(row.get("identity_unverified_streams") or 0)
-        row_contradictions = int(row.get("playable_identity_contradiction_count") or 0)
-        row_duration = int(row.get("playable_duration_identity_mismatch_count") or 0)
+        row_contradictions = _scoped_counter(row, "playable_identity_contradiction_count", "identity_contradiction_count")
+        row_duration = _scoped_counter(row, "playable_duration_identity_mismatch_count", "duration_identity_mismatch_count")
         fixture = (row.get("fixture") or {}).get("label") or (row.get("fixture") or {}).get("tmdbId") or "fixture"
 
         if row_contradictions > 0:
