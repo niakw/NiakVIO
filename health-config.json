@@ -85,7 +85,7 @@
       "verify_fixture_duration_identity": true,
       "minimum_fixture_duration_ratio": 0.55,
       "maximum_fixture_duration_ratio": 1.8,
-      "zero_stream_preflight": true
+      "zero_stream_preflight": false
     }
   },
   "fixtures": {
@@ -394,7 +394,9 @@
     "supported_types_require_positive_stream_proof": true,
     "zero_stream_is_per_work_not_manifest_disable": true,
     "provider_accessibility_is_separate_from_stream_accessibility": true,
-    "provider_latency_is_separate_from_stream_latency": true
+    "provider_latency_is_separate_from_stream_latency": true,
+    "deep_learning_may_fallback_after_zero_stream": true,
+    "quick_runtime_zero_stream_is_terminal_for_current_work": true
   },
   "availability": {
     "auto_disable": true,
