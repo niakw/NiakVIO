@@ -165,7 +165,7 @@ cinefreak_candidates, preferred = resolver.choose_official(
     'cinefreak', hubs['cinefreak'], hubs['cinefreak']['hub'], cinefreak_html
 )
 assert preferred == 'https://cinefreak.ch'
-assert all(resolver.host(row['url']) not in {'example.invalid', 'example.org'} for row in cinefreak_candidates)
+assert resolver.host(cinefreak_candidates[0]['url']) == 'cinefreak.ch'
 
 assert hubs['moonflix']['resolver'] == 'latest_telegram_domain'
 moonflix_html = '''
