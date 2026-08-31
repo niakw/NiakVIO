@@ -12,7 +12,6 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "automation" / "platform-runtime-contracts.json"
 MATRIX = ROOT / "automation" / "platform-runtime-matrix.json"
 POLICY = ROOT / "automation" / "platform-runtime-policy.json"
-LEGACY = ROOT / "automation" / "mobile-vf-runtime-policy.json"
 MAIN = ROOT / "manifest.json"
 VF = ROOT / "vf" / "manifest.json"
 PROFILE_TOKEN = {"android": "android", "ios": "ios", "desktop": "desktop"}
@@ -172,19 +171,19 @@ def main() -> int:
             if defaults.get("disabledPlatforms") != []:
                 errors.append("platform policy disabledPlatforms default must be []")
 
-        matrix_rows = {
-            str(row.get("id") or "").casefold(): row
-            for row in matrix.get("providers") or []
-            if isinstance(row, dict) and str(row.get("id") or "").strip()
-        }
         managed = {
             str(provider_id).casefold(): {str(token).casefold() for token in tokens}
             for provider_id, tokens in (policy.get("managed_platform_tokens_by_provider") or {}).items()
         }
         classifications = policy.get("classifications") or {}
+        if int(policy.get("schema_version") or 0) >= 4:
+            if policy.get("manifest_projection") != "disabledPlatforms-empty":
+                errors.append("platform policy must project disabledPlatforms as empty")
+            owned = policy.get("manifest_owned_fields") or {}
+            if owned.get("disabledPlatforms") != []:
+                errors.append("platform policy must own disabledPlatforms=[]")
         for provider_id, tokens in managed.items():
-            row = main_rows.get(provider_id)
-            if row is None:
+            if provider_id not in main_rows:
                 errors.append(f"{provider_id}: managed provider missing from general manifest")
                 continue
             for token in tokens:
@@ -194,12 +193,7 @@ def main() -> int:
                 profile = next(name for name, value in PROFILE_TOKEN.items() if value == token)
                 classification = str((classifications.get(provider_id) or {}).get(profile) or "")
                 if classification not in {"conclusive_non_playable", "conclusive_runtime_error"}:
-                    errors.append(f"{provider_id}: {token} evidence managed without conclusive failure ({classification})")
-
-        # Legacy platform-block evidence is retained only in automation policy.
-        # It must never be projected back into disabledPlatforms.
-        legacy = load(LEGACY, {}) or {}
-        _ = legacy
+                    errors.append(f"{provider_id}: {token} managed without conclusive failure ({classification})")
 
     if errors:
         raise SystemExit("platform runtime policy validation failed:\n- " + "\n- ".join(errors))
