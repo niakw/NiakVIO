@@ -164,7 +164,7 @@ assert "recipe.strictIdentity" in base_store_source
 assert "Math.abs(Number(year) - Number(expectedYear)) > 1" in base_store_source
 assert "recipe.directSourcesOnly" in base_store_source
 assert "urls.filter(_directMedia)" in base_store_source
-assert "reconstruction_required and (force_clean_reconstruction or clean_reconstruction)" in discover
+assert "force_clean_reconstruction or (reconstruction_required and clean_reconstruction)" in discover
 
 discover_spec = importlib.util.spec_from_file_location("discover_clean_contract", SCRIPTS / "discover_candidates.py")
 assert discover_spec is not None and discover_spec.loader is not None
