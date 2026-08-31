@@ -231,6 +231,47 @@ lkg_only_cfg = {'hub': None, 'sources': [], 'direct_candidates': []}
 lkg_seed = resolver._seed_known_candidates(lkg_only_cfg, authority_history)
 assert [row['source_type'] for row in lkg_seed] == ['history_lkg']
 
+# A successful fresh always replaces the current route. The former route is
+# history only; it is never allowed to remain current after hub/direct moved.
+fresh_history = {
+    'current': {
+        'url': 'https://old.example',
+        'host': 'old.example',
+        'source_type': 'history_lkg',
+        'source': 'provider-domain-history.json',
+    },
+    'previous': [],
+}
+resolver.update_history_row(fresh_history, {
+    'status': 'site_validated',
+    'official_site': 'https://new.example',
+    'selected_source_type': 'hub',
+    'selected_source': 'https://hub.example/',
+})
+assert fresh_history['current']['url'] == 'https://new.example'
+assert fresh_history['current']['source_type'] == 'hub'
+assert fresh_history['current']['source'] == 'https://hub.example/'
+assert fresh_history['previous'][0]['url'] == 'https://old.example'
+
+direct_fresh_history = {
+    'current': {
+        'url': 'https://old-direct.example',
+        'host': 'old-direct.example',
+        'source_type': 'history_lkg',
+        'source': 'provider-domain-history.json',
+    },
+    'previous': [],
+}
+resolver.update_history_row(direct_fresh_history, {
+    'status': 'site_validated',
+    'official_site': 'https://new-direct.example',
+    'selected_source_type': 'curated_direct',
+    'selected_source': 'provider-hubs.json',
+})
+assert direct_fresh_history['current']['url'] == 'https://new-direct.example'
+assert direct_fresh_history['current']['source_type'] == 'curated_direct'
+assert direct_fresh_history['previous'][0]['url'] == 'https://old-direct.example'
+
 # Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
 engines = resolver.search_engine_urls('example provider')
 assert engines[0][0] == 'yandex' and 'yandex.com/search/' in engines[0][1]
