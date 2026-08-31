@@ -8,7 +8,8 @@
     "provider_contract_drift": "blocks automatic Brain provider mutation until audited",
     "client_runtime_equivalence": "Never infer runtime compatibility from a sibling client. Desktop, Mobile and TV must each execute the shared provider/Core bundle in their own official runtime; success on one client is evidence for that client only.",
     "runtime_error_observability": "Official clients may intentionally collapse getStreams JavaScript exceptions into an empty result for application resilience. Native Labs must preserve those exceptions as diagnostic evidence and must not classify the resulting empty application value as a successful runtime execution.",
-    "cross_client_divergence": "A single provider/client discrepancy remains Brain evidence. A systematic client-wide empty/runtime-error pattern while an official peer succeeds is a blocking runtime-contract failure."
+    "cross_client_divergence": "A single provider/client discrepancy remains Brain evidence. A systematic client-wide empty/runtime-error pattern while an official peer succeeds is a blocking runtime-contract failure.",
+    "client_session_lifecycle_faults": "Cross-work stream loading exhaustion or recovery after restarting the client is client-runtime lifecycle evidence, never provider disablement proof by itself."
   },
   "capability_universe": [
     "invocation",
@@ -192,7 +193,10 @@
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
         "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
-        "surface_note": "Desktop and Mobile currently share several runtime bridge subtrees, but their PluginRuntime/JsBindings/network sources are independently versioned and must be diffed separately."
+        "surface_note": "Desktop and Mobile currently share several runtime bridge subtrees, but their PluginRuntime/JsBindings/network sources are independently versioned and must be diffed separately.",
+        "stream_session_teardown_guaranteed": false,
+        "navigation_cancellation_is_provider_fault": false,
+        "session_lifecycle_note": "Cancelling the UI/request coroutine is not proof that an already-entered native QuickJS/fetch execution was torn down. Late/stuck work across media navigation is compatibility evidence only."
       },
       "brain_capabilities": [
         "invocation",
@@ -276,12 +280,15 @@
           "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt",
           "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt"
         ],
-        "audited_change": "forceRefresh/session-cache behavior remains compatible; PluginManager now bounds scraper orchestration and avoids duplicate repository writes without changing positional getStreams or returned stream/header ingestion. The seventeen-commit delta up to ba44afb080d878ba123c978e791be8115e324fe9 only adds an episode-overlay UI model in the audited contract scope; getStreams/repository/header ingestion remains unchanged.",
+        "audited_change": "forceRefresh/session-cache keys remain compatible, but cross-work native execution teardown is not proven; PluginManager now bounds scraper orchestration and avoids duplicate repository writes without changing positional getStreams or returned stream/header ingestion. The seventeen-commit delta up to ba44afb080d878ba123c978e791be8115e324fe9 only adds an episode-overlay UI model in the audited contract scope; getStreams/repository/header ingestion remains unchanged.",
         "runtime_validation": "execute NuvioTV's own Android-TV QuickJS/host implementation; Desktop/Mobile success is never TV proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
         "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
-        "surface_note": "TV owns a distinct monolithic Android runtime/host implementation and is intentionally treated as a separate runtime family."
+        "surface_note": "TV owns a distinct monolithic Android runtime/host implementation and is intentionally treated as a separate runtime family.",
+        "stream_session_teardown_guaranteed": false,
+        "navigation_cancellation_is_provider_fault": false,
+        "session_lifecycle_note": "Cancelling the UI/request coroutine is not proof that an already-entered native QuickJS/fetch execution was torn down. Late/stuck work across media navigation is compatibility evidence only."
       },
       "brain_capabilities": [
         "invocation",
