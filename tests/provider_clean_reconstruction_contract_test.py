@@ -179,15 +179,17 @@ purstream_model = discover_module.clean_provider_model(
     "https://purstream.id",
 )
 assert purstream_model["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
-assert "https://api.purstream.id" in purstream_model["origins"]
-assert all(
-    (urllib.parse.urlparse(value).hostname or "").casefold() not in {"api.purstream", "old.invalid"}
+purstream_origin_hosts = {
+    (urllib.parse.urlparse(value).hostname or "").casefold()
     for value in purstream_model["origins"]
-)
-assert all(
-    (urllib.parse.urlparse(value).hostname or "").casefold() not in {"old.invalid", "raw.githubu"}
+}
+purstream_observed_hosts = {
+    (urllib.parse.urlparse(value).hostname or "").casefold()
     for value in purstream_model["observedUrls"]
-)
+}
+assert "api.purstream.id" in purstream_origin_hosts
+assert purstream_origin_hosts.isdisjoint({"api.purstream", "old.invalid"})
+assert purstream_observed_hosts.isdisjoint({"old.invalid", "raw.githubu"})
 
 profiles_builder = (SCRIPTS / "build_provider_runtime_profiles.py").read_text(encoding="utf-8")
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in profiles_builder

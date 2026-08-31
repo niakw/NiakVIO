@@ -237,4 +237,50 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+
+# The JS-side budget cannot preempt a non-cooperative native bridge, but once a
+# native request returns after the deadline it must fail closed immediately and
+# must never let the provider chain another stale network request.
+TIMEOUT_BASE = r"""
+"use strict";
+async function getStreams(tmdbId, mediaType) {
+  await fetch("https://provider.example/slow-first");
+  await fetch("https://provider.example/forbidden-second");
+  return [{url:"https://media.example/video.m3u8"}];
+}
+module.exports = { getStreams };
+"""
+timeout_bounded = mod.apply(
+    TIMEOUT_BASE,
+    options={"semantic_types": ["movie"], "provider_timeout_ms": 5000},
+)
+run_case(timeout_bounded, r"""
+let now=1000;
+let providerCalls=[];
+Date.now=()=>now;
+global.fetch=async(url)=>{
+  url=String(url);
+  if(url.includes("api.themoviedb.org/3/movie/157336")){
+    return{ok:true,status:200,json:async()=>({
+      id:157336,title:"Interstellar",release_date:"2014-11-05",
+      genres:[{id:18,name:"Drama"}],original_language:"en",
+      production_countries:[{iso_3166_1:"US"}],keywords:{keywords:[]}
+    })};
+  }
+  providerCalls.push(url);
+  if(url.includes("slow-first")){
+    now=7000;
+    return{ok:true,status:200,text:async()=>"#EXTM3U"};
+  }
+  throw new Error("provider issued request after execution deadline: "+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("157336","movie");
+  if(!Array.isArray(value)||value.length!==0)throw new Error("expired provider budget must fail closed");
+  if(providerCalls.length!==1||!providerCalls[0].includes("slow-first"))
+    throw new Error("provider budget allowed chained request: "+providerCalls.join(","));
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 print("global media resolver: TMDB API authoritative, canonical/transport split, aliases and fail-open verified")
