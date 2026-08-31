@@ -1539,7 +1539,11 @@ def update_strict_history(
         status = str(result.get("status", "runtime_error"))
         sha256 = str(result.get("sha256", ""))
         same_sha = bool(sha256) and old.get("sha256") == sha256
-        is_inconclusive = status in inconclusive
+        classification = str(result.get("ci_classification") or "").strip().casefold()
+        is_inconclusive = (
+            classification != "conclusive_failure"
+            and (classification == "inconclusive" or status in inconclusive)
+        )
 
         consecutive = int(old.get("strict_consecutive_deep_passes", 0))
         total = int(old.get("strict_total_deep_passes", 0))
@@ -1877,11 +1881,15 @@ def healthy_categories(variant: dict[str, Any]) -> set[str]:
 
 
 def ci_result_is_inconclusive(variant: dict[str, Any], activation: dict[str, Any]) -> bool:
-    """Treat either the explicit CI class or an inconclusive runtime status as uncertainty."""
+    """Honor an explicit conclusive failure before status-based CI uncertainty."""
     health = variant.get("health", {}) if isinstance(variant.get("health"), dict) else {}
-    classification = str(health.get("ci_classification") or "")
+    classification = str(health.get("ci_classification") or "").strip().casefold()
     status = str(health.get("status") or "runtime_error")
-    return classification == "inconclusive" or status in inconclusive_statuses(activation)
+    if classification == "conclusive_failure":
+        return False
+    if classification == "inconclusive":
+        return True
+    return status in inconclusive_statuses(activation)
 
 
 def previous_state_is_safety_quarantine(
