@@ -15,15 +15,15 @@ from reapply_published_overrides import (  # noqa: E402
 )
 
 
-assert projected_transport_types(["anime"]) == ["anime", "movie", "tv"]
+assert projected_transport_types(["anime"]) == ["anime", "tv"]
 assert projected_transport_types(["movie", "anime"]) == ["movie", "anime", "tv"]
-assert projected_transport_types(["tv", "anime"]) == ["tv", "anime", "movie"]
+assert projected_transport_types(["tv", "anime"]) == ["tv", "anime"]
 assert projected_transport_types(["movie", "tv"]) == ["movie", "tv"]
 
 anime_only = {"supportedTypes": ["anime"]}
 assert apply_manifest_type_projection(anime_only, ["anime"]) is True
 assert anime_only == {
-    "supportedTypes": ["anime", "movie", "tv"],
+    "supportedTypes": ["anime", "tv"],
     "canonicalSupportedTypes": ["anime"],
 }
 assert semantic_manifest_types(anime_only) == ["anime"]
