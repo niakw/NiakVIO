@@ -166,6 +166,9 @@ jobs:
           git commit -m "chore(domains): publish validated provider routes"
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
+          # Pushes made with GITHUB_TOKEN do not recursively trigger push workflows.
+          # Dispatch exactly one provider validation run on the newly published main.
+          gh workflow run sync.yml --ref main -f mode=quick -f phase=full
 
       - name: Summarize domain and DNS observation
         shell: bash

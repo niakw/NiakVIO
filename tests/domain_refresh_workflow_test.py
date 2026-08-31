@@ -19,7 +19,10 @@ assert "DNS is diagnostic-only and never blocks route publication" in text
 assert "provider-overrides.json provider-domain-history.json" in text
 assert 'git commit -m "chore(domains): publish validated provider routes"' in text
 assert "push origin HEAD:main" in text
-assert "gh workflow run sync.yml" not in text
+assert text.count("gh workflow run sync.yml") == 1, (
+    "route publication must explicitly dispatch exactly one Provider Pipeline run because GITHUB_TOKEN pushes do not recurse"
+)
+assert "gh workflow run sync.yml --ref main -f mode=quick -f phase=full" in text
 assert "gh workflow run domain-refresh.yml" in text
 assert "steps.route-change.outputs.changed == 'true'" in text
 assert "domain-route-changes.json" in text
