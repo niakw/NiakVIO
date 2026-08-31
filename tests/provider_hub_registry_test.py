@@ -330,7 +330,7 @@ assert sync.index('resolve_provider_hubs.py') < sync.index('discover_candidates.
 assert 'finalize_upstream_lkg.py' in sync
 assert '--apply' in sync
 assert '--apply' in domain_refresh, 'CORE Domain Refresh must apply validated route changes'
-assert 'git push' in domain_refresh and 'git commit' in domain_refresh
+assert 'push origin HEAD:main' in domain_refresh and 'git commit' in domain_refresh
 assert 'provider-domain-history.json' in domain_refresh
 assert 'provider-overrides.json' in domain_refresh
 assert 'git diff --exit-code' in domain_refresh
