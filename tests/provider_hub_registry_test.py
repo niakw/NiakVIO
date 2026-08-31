@@ -251,21 +251,19 @@ history_registry = json.loads((ROOT / 'provider-domain-history.json').read_text(
 assert registry.get('schema_version', 0) >= 3
 assert history_registry.get('schema_version') == 1
 
-# Explicitly curated routes from the current hub pass must never regress to an
-# older LKG/current-history domain.
-explicit_current_routes = {
-    'flemmix': 'https://flemmix.men',
-    '1shows': 'https://1flixto.icu',
-    'allwish': 'https://all-wish.me',
-    'anidb': 'https://anidb.pics',
-    'cinefreak': 'https://cinefreak.ch',
-    'moonflix': 'https://moonflix.website/browse',
-    'zinkmovies': 'https://new3.zinkmovies.mobi',
-}
-for provider_id, expected in explicit_current_routes.items():
+# Hub-backed history must preserve provenance, not freeze today's terminal URL.
+# The terminal may rotate at any time; the configured hub remains authoritative.
+for provider_id in ('flemmix', '1shows', 'allwish', 'anidb', 'cinefreak', 'moonflix', 'zinkmovies'):
     current = ((history_registry.get('providers') or {}).get(provider_id) or {}).get('current') or {}
-    assert str(current.get('url') or '').rstrip('/') == expected.rstrip('/'), (provider_id, current)
-    assert current.get('source_type') == 'curated_official_hub', (provider_id, current)
+    assert current.get('url'), (provider_id, current)
+    assert resolver.same_brand(provider_id, str(current['url']), hubs[provider_id]), (provider_id, current)
+    authoritative_sources = {
+        str(source.get('url') or '').rstrip('/')
+        for source in hubs[provider_id].get('sources') or []
+        if source.get('type') in {'hub', 'telegram_public', 'redirect'} and source.get('url')
+    }
+    assert str(current.get('source') or '').rstrip('/') in authoritative_sources, (provider_id, current)
+    assert current.get('source_type') in {'hub', 'telegram_public', 'redirect', 'curated_official_hub'}, (provider_id, current)
 
 assert 'dahmermovies' not in registry['providers']
 assert 'dahmermovies-tv' not in registry['providers']
