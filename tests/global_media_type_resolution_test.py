@@ -59,9 +59,9 @@ global.fetch = async (url) => {
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("280049","series",1,11);
-  if(!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="tv")throw new Error("Hell Mode semantic/transport split failed");
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="tv")throw new Error("Hell Mode semantic/transport split failed");
   const again=await provider.getStreams("280049","series",1,12);
-  if(!again.length||again[0].canonicalMediaType!=="anime"||again[0].mediaType!=="tv")throw new Error("anime cache/transport lost");
+  if(!Array.isArray(again)||!again.length||again[0]==null||again[0].canonicalMediaType!=="anime"||again[0].mediaType!=="tv")throw new Error("anime cache/transport lost");
   if(calls!==1)throw new Error("TMDB lookup was not cached");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
@@ -96,7 +96,7 @@ global.fetch=async()=>{throw new Error("TMDB unavailable")};
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("62425","series",2,1);
-  if(!value.length||value[0].mediaType!=="tv"||value[0].degraded!==true)throw new Error("TV fallback must stay executable on TMDB outage");
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].mediaType!=="tv"||value[0].degraded!==true)throw new Error("TV fallback must stay executable on TMDB outage");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
@@ -105,7 +105,7 @@ global.fetch=async()=>{throw new Error("TMDB unavailable")};
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("280049","series",1,11);
-  if(!value.length||value[0].mediaType!=="anime"||value[0].degraded!==true)throw new Error("Anime-only provider must preserve anime transport on metadata outage");
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].mediaType!=="anime"||value[0].degraded!==true)throw new Error("Anime-only provider must preserve anime transport on metadata outage");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
@@ -115,7 +115,7 @@ global.fetch=async()=>{throw new Error("TMDB unavailable")};
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("157336","movie",null,null);
-  if(!value.length||value[0].mediaType!=="movie"||value[0].degraded!==true)throw new Error("Movie fallback failed");
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].mediaType!=="movie"||value[0].degraded!==true)throw new Error("Movie fallback failed");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
@@ -184,7 +184,7 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("62425","series",2,1);
-  if(!value.length||value[0].mediaType!=="tv"||value[0].degraded)throw new Error("Dark Matter TV classification failed");
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].mediaType!=="tv"||value[0].degraded)throw new Error("Dark Matter TV classification failed");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
@@ -207,13 +207,13 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const fromAnime=await provider.getStreams("46260","anime",1,1);
-  if(!fromAnime.length||fromAnime[0].canonicalMediaType!=="anime"||fromAnime[0].mediaType!=="tv")
+  if(!Array.isArray(fromAnime)||!fromAnime.length||fromAnime[0]==null||fromAnime[0].canonicalMediaType!=="anime"||fromAnime[0].mediaType!=="tv")
     throw new Error("Purstream anime must stay semantic anime but use tv transport");
   const fromSeries=await provider.getStreams("46260","series",1,1);
-  if(!fromSeries.length||fromSeries[0].canonicalMediaType!=="anime"||fromSeries[0].mediaType!=="tv")
+  if(!Array.isArray(fromSeries)||!fromSeries.length||fromSeries[0]==null||fromSeries[0].canonicalMediaType!=="anime"||fromSeries[0].mediaType!=="tv")
     throw new Error("Purstream series anime transport mismatch");
   const fromTv=await provider.getStreams("46260","tv",1,1);
-  if(!fromTv.length||fromTv[0].canonicalMediaType!=="anime"||fromTv[0].mediaType!=="tv")
+  if(!Array.isArray(fromTv)||!fromTv.length||fromTv[0]==null||fromTv[0].canonicalMediaType!=="anime"||fromTv[0].mediaType!=="tv")
     throw new Error("Purstream tv anime transport mismatch");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
@@ -232,7 +232,7 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("4242","anime");
-  if(!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="movie")
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="movie")
     throw new Error("Purstream anime movie must use TMDB movie transport");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
@@ -251,7 +251,7 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("4242","movie");
-  if(!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="movie")
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="movie")
     throw new Error("movie-transported anime film was not canonically reset");
   if(calls.length!==1||!calls[0].includes("/movie/4242"))
     throw new Error("movie hint must only prioritize lookup, not alter canonical result");
@@ -273,7 +273,7 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("777001","movie");
-  if(!value.length||value[0].canonicalMediaType!=="tv"||value[0].mediaType!=="tv")
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].canonicalMediaType!=="tv"||value[0].mediaType!=="tv")
     throw new Error("movie-labelled TV work did not recover through canonical reset");
   if(calls.length!==2)throw new Error("alternate TV namespace was not attempted");
 })().catch(e=>{console.error(e);process.exit(1)});
@@ -296,7 +296,7 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("777002","series");
-  if(!value.length||value[0].canonicalMediaType!=="movie"||value[0].mediaType!=="movie")
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].canonicalMediaType!=="movie"||value[0].mediaType!=="movie")
     throw new Error("series-labelled movie did not recover through canonical reset");
   if(calls.length!==2)throw new Error("alternate movie namespace was not attempted");
 })().catch(e=>{console.error(e);process.exit(1)});
@@ -315,7 +315,7 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("777003","anime",1,1);
-  if(!value.length||value[0].canonicalMediaType!=="tv"||value[0].mediaType!=="tv")
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].canonicalMediaType!=="tv"||value[0].mediaType!=="tv")
     throw new Error("authoritative TV type did not replace anime input hint");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
@@ -403,23 +403,23 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const dark1=await provider.getStreams('62425','series',2,1);
-  if(!dark1.length||dark1[0].canonicalMediaType!=='tv'||dark1[0].mediaType!=='tv')
+  if(!Array.isArray(dark1)||!dark1.length||dark1[0]==null||dark1[0].canonicalMediaType!=='tv'||dark1[0].mediaType!=='tv')
     throw new Error('stale anime context poisoned initial TV request: '+JSON.stringify(dark1));
 
   const hell=await provider.getStreams('280049','series',1,11);
-  if(!hell.length||hell[0].canonicalMediaType!=='anime'||hell[0].mediaType!=='tv')
+  if(!Array.isArray(hell)||!hell.length||hell[0]==null||hell[0].canonicalMediaType!=='anime'||hell[0].mediaType!=='tv')
     throw new Error('TV->anime transition failed: '+JSON.stringify(hell));
 
   const animeMovie=await provider.getStreams('4242','movie');
-  if(!animeMovie.length||animeMovie[0].canonicalMediaType!=='anime'||animeMovie[0].mediaType!=='movie')
+  if(!Array.isArray(animeMovie)||!animeMovie.length||animeMovie[0]==null||animeMovie[0].canonicalMediaType!=='anime'||animeMovie[0].mediaType!=='movie')
     throw new Error('anime movie semantic/transport split failed: '+JSON.stringify(animeMovie));
 
   const movie=await provider.getStreams('157336','movie');
-  if(!movie.length||movie[0].canonicalMediaType!=='movie'||movie[0].mediaType!=='movie')
+  if(!Array.isArray(movie)||!movie.length||movie[0]==null||movie[0].canonicalMediaType!=='movie'||movie[0].mediaType!=='movie')
     throw new Error('anime movie poisoned ordinary movie: '+JSON.stringify(movie));
 
   const dark2=await provider.getStreams('62425','series',2,2);
-  if(!dark2.length||dark2[0].canonicalMediaType!=='tv'||dark2[0].mediaType!=='tv')
+  if(!Array.isArray(dark2)||!dark2.length||dark2[0]==null||dark2[0].canonicalMediaType!=='tv'||dark2[0].mediaType!=='tv')
     throw new Error('movie/anime history poisoned later TV request: '+JSON.stringify(dark2));
 
   if(Object.prototype.hasOwnProperty.call(global,'__nuvioMediaContext'))
@@ -444,10 +444,10 @@ global.fetch=async(url)=>{
 const provider=require(process.argv[2]);
 (async()=>{
   const anime=await provider.getStreams('280049','anime',1,11);
-  if(!anime.length||anime[0].canonicalMediaType!=='anime'||anime[0].mediaType!=='tv')
+  if(!Array.isArray(anime)||!anime.length||anime[0]==null||anime[0].canonicalMediaType!=='anime'||anime[0].mediaType!=='tv')
     throw new Error('anime-first request failed');
   const tv=await provider.getStreams('62425','series',2,1);
-  if(!tv.length||tv[0].canonicalMediaType!=='tv'||tv[0].mediaType!=='tv')
+  if(!Array.isArray(tv)||!tv.length||tv[0]==null||tv[0].canonicalMediaType!=='tv'||tv[0].mediaType!=='tv')
     throw new Error('anime-first instance froze later TV request: '+JSON.stringify(tv));
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
