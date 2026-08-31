@@ -71,7 +71,7 @@ run_case(mixed, r"""
 let calls=0;
 global.fetch=async(url)=>{
   calls++;
-  if(calls===1)throw new Error("temporary TMDB outage");
+  if(calls<=2)throw new Error("temporary TMDB outage");
   return{ok:true,status:200,json:async()=>({
     id:280049,genres:[{id:16,name:"Animation"}],original_language:"ja",
     origin_country:["JP"],keywords:{results:[{name:"anime"}]}
@@ -84,7 +84,7 @@ const provider=require(process.argv[2]);
   const recovered=await provider.getStreams("280049","series",1,11);
   if(!Array.isArray(recovered)||!recovered.length||recovered[0].canonicalMediaType!=="anime"||recovered[0].degraded===true)
     throw new Error("transient TMDB outage poisoned later request: "+JSON.stringify(recovered));
-  if(calls!==2)throw new Error("transient unavailable TMDB result was cached");
+  if(calls!==3)throw new Error("transient unavailable TMDB result was cached");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
