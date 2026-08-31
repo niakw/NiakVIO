@@ -43,6 +43,8 @@ def _record_requires_baseline_restore(record: dict[str, Any]) -> bool:
     action = str(record.get("action") or "")
     if action == legacy.INCONCLUSIVE_DISABLE_ACTION:
         return True
+    if record.get("enabled") is False and legacy.report_failure_is_inconclusive(record):
+        return True
     if action != _CLEAN_PENDING_PRESERVE_ACTION:
         return False
     # The Quick clean-migration report may carry enabled=false even when the
