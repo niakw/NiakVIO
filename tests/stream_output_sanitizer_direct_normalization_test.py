@@ -25,6 +25,7 @@ module.exports={getStreams:async function(){return [
   {name:"opaque-mkv",url:"https://media.example/token-mkv"},
   {name:"html-embed",url:"https://media.example/embed/abc"},
   {name:"json-resolver",url:"https://media.example/api-resolver"},
+  {name:"forbidden-403",url:"https://media.example/forbidden.mp4"},
   {name:"html-error",url:"https://media.example/not-media"}
 ]}};
 '''
@@ -76,6 +77,7 @@ const responses={
   'https://media.example/nested/master.m3u8':()=>makeResponse('https://media.example/nested/master.m3u8','application/vnd.apple.mpegurl',enc('#EXTM3U\n#EXT-X-TARGETDURATION:5\n#EXTINF:5,\nseg.ts\n#EXT-X-ENDLIST\n')),
   'https://media.example/api-resolver':()=>makeResponse('https://media.example/api-resolver','application/json',enc('{"file":"https://cdn.example/resolved/movie.mp4"}')),
   'https://cdn.example/resolved/movie.mp4':()=>makeResponse('https://cdn.example/resolved/movie.mp4','video/mp4',[0,0,0,24,102,116,121,112,5,6,7,8]),
+  'https://media.example/forbidden.mp4':()=>({ok:false,status:403,url:'https://media.example/forbidden.mp4',headers:{get:()=>''},body:{getReader:()=>({read:async()=>({done:true}),cancel:async()=>{}})}}),
   'https://media.example/not-media':()=>makeResponse('https://media.example/not-media','text/html',enc('<html><body>error</body></html>'))
 };
 const calls=[];
@@ -134,7 +136,38 @@ sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie'})
     assert resolved["url"] == "https://cdn.example/resolved/movie.mp4", resolved
     assert resolved["isDirect"] is True
 
+    assert "forbidden-403" not in by_name
     assert "html-error" not in by_name
+
+    # All invalid streams must collapse to an empty array; no dead row may leak.
+    all_bad_source = r'''
+module.exports={getStreams:async function(){return [
+  {name:"bad403",url:"https://media.example/forbidden.mp4"},
+  {name:"badhtml",url:"https://media.example/not-media"}
+]}};
+'''
+    all_bad_patched = module.apply(
+        all_bad_source,
+        options={
+            "probe_direct_media": True,
+            "probe_all_urls": True,
+            "max_probes": 8,
+            "probe_timeout_ms": 2000,
+            "min_vod_duration_seconds": 0,
+        },
+    )
+    with tempfile.TemporaryDirectory() as directory:
+        runner_path = Path(directory) / "sanitizer-all-bad-test.cjs"
+        runner_path.write_text(runner, encoding="utf-8")
+        process = subprocess.run(
+            ["node", str(runner_path), all_bad_patched],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    assert process.returncode == 0, process.stderr
+    all_bad_payload = json.loads(process.stdout.strip())
+    assert all_bad_payload["rows"] == [], all_bad_payload["rows"]
 
     print("stream output sanitizer direct normalization tests passed")
     return 0
