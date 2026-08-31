@@ -13,7 +13,12 @@ assert int(config['modes']['retry']['worker_memory_mb']) < int(config['modes']['
 assert int(config['modes']['quick']['worker_memory_mb']) < int(config['modes']['deep']['worker_memory_mb'])
 for mode_name, mode in config['modes'].items():
     assert int(mode.get('minimum_vod_duration_seconds', 0)) >= 60, mode_name
-for token in ['modeConfig.worker_memory_mb', 'NUVIO_WORKER_MEMORY_MB', 'NUVIO_WORKER_MEMORY_EXHAUSTED', 'worker_memory_exhausted', 'appendTail', 'short_vod_preview', 'minimum_vod_duration_seconds', 'totalDurationSeconds']:
+assert config['modes']['deep'].get('zero_stream_preflight') is False
+for mode_name in ('quick', 'availability', 'retry'):
+    assert config['modes'][mode_name].get('zero_stream_preflight') is True, mode_name
+assert config['activation'].get('zero_stream_is_per_work_not_manifest_disable') is True
+assert config['activation'].get('deep_learning_may_fallback_after_zero_stream') is True
+for token in ['modeConfig.worker_memory_mb', 'NUVIO_WORKER_MEMORY_MB', 'NUVIO_WORKER_MEMORY_EXHAUSTED', 'worker_memory_exhausted', 'appendTail', 'short_vod_preview', 'minimum_vod_duration_seconds', 'totalDurationSeconds', 'zero_stream_preflight_terminal', 'streams_rejected_policy', 'streams_rejected_unreachable']:
     assert token in health_source, token
 
 def run(health, repairs):
