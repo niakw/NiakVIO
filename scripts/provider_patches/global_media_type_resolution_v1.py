@@ -82,7 +82,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v12-global-budget",
+        "revision": "tmdb-api-first-semantic-transport-split-v13-request-isolation",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -289,8 +289,9 @@ async function resolve(a){
   // TMDB identity/type resolution is the first provider gate for every request.
   // Provider capability filtering happens only after canonical movie|tv|anime
   // classification so transport aliases can never suppress a valid anime match.
+  // Per-request isolation: canonical type/metadata must come only from the
+  // current work request (plus TMDB), never from a previous getStreams call.
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
-  if(!metadata){try{var existingContext=g&&g.__nuvioMediaContext;if(existingContext&&existingContext.tmdbMetadata)metadata=existingContext.tmdbMetadata}catch(_){}}
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
   var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
   var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
@@ -351,10 +352,12 @@ function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
   var native=o[k];
   var wrap=async function(){
-    var had=false,previous,hadDeadline=false,previousDeadline,hadFetch=false,previousFetch,budgetFetchInstalled=false;
+    var hadDeadline=false,previousDeadline,hadFetch=false,previousFetch,budgetFetchInstalled=false;
     try{
-      had=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"));
-      previous=g&&g.__nuvioMediaContext;
+      // Hard-reset media context at every provider invocation. This prevents
+      // tv/anime/movie (including anime movies transported as movie) from
+      // becoming sticky for the lifetime of a native QuickJS instance.
+      if(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
       hadDeadline=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"));
       previousDeadline=g&&g.__nuvioProviderDeadlineMs;
       hadFetch=!!(g&&Object.prototype.hasOwnProperty.call(g,"fetch"));
@@ -378,7 +381,8 @@ function install(o,k){
     }finally{
       try{
         if(g){
-          if(had)g.__nuvioMediaContext=previous;else delete g.__nuvioMediaContext;
+          // Never restore a prior media context: request context is ephemeral.
+          if(Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
           if(budgetFetchInstalled){if(hadFetch)g.fetch=previousFetch;else delete g.fetch}
           if(hadDeadline)g.__nuvioProviderDeadlineMs=previousDeadline;else delete g.__nuvioProviderDeadlineMs;
         }
