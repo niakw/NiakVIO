@@ -5654,7 +5654,21 @@
     "post_media_discovery_hooks": [
       "scripts/provider_patches/hls_master_audio_preserver_v1.py"
     ],
-    "native_hls_probe_policy": "skip_additional_integrity_network_probes_on_native_host_bridge"
+    "native_hls_probe_policy": "skip_additional_integrity_network_probes_on_native_host_bridge",
+    "terminal_stream_sanitizer": {
+      "enabled": true,
+      "patch": "scripts/provider_patches/stream_output_sanitizer_v6.py",
+      "semantics": "only_validated_streams_are_returned",
+      "options": {
+        "probe_direct_media": true,
+        "probe_all_urls": true,
+        "max_probes": 20,
+        "probe_timeout_ms": 6500,
+        "min_vod_duration_seconds": 60
+      }
+    },
+    "unprobed_stream_action": "drop_stream",
+    "zero_validated_stream_action": "return_empty_array"
   },
   "catalogue_resolution_policy": {
     "version": 3,
