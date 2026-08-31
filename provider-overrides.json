@@ -382,14 +382,16 @@
     },
     "moviesdrive": {
       "replacements": {
-        "new3.moviesdrives.my": "new3.moviesdrive.christmas",
-        "new1.moviesdrive.christmas": "new3.moviesdrive.christmas",
-        "new2.moviesdrive.christmas": "new3.moviesdrive.christmas"
+        "new3.moviesdrives.my": "moviesdrives.cfd",
+        "new1.moviesdrive.christmas": "moviesdrives.cfd",
+        "new2.moviesdrive.christmas": "moviesdrives.cfd",
+        "new3.moviesdrive.christmas": "moviesdrives.cfd"
       },
       "runtime_domain_replacements": {
-        "new3.moviesdrives.my": "new3.moviesdrive.christmas",
-        "new1.moviesdrive.christmas": "new3.moviesdrive.christmas",
-        "new2.moviesdrive.christmas": "new3.moviesdrive.christmas"
+        "new3.moviesdrives.my": "moviesdrives.cfd",
+        "new1.moviesdrive.christmas": "moviesdrives.cfd",
+        "new2.moviesdrive.christmas": "moviesdrives.cfd",
+        "new3.moviesdrive.christmas": "moviesdrives.cfd"
       },
       "notes": [
         "Automatically migrated new3.moviesdrives.my to new7.moviesdrives.my after French ISP DNS/HTTP preflight redirect validation."
@@ -397,7 +399,7 @@
       "capability": "html_scraper",
       "profiles": [],
       "official_hub": "https://moviesdrives.mov/",
-      "official_site": "https://new3.moviesdrive.christmas",
+      "official_site": "https://moviesdrives.cfd",
       "required_values": [],
       "manifest_overrides": {},
       "patch_script_options": {},
@@ -408,24 +410,26 @@
     },
     "coflix": {
       "replacements": {
-        "coflix.cymru": "coflix.esq",
-        "coflix.blue": "coflix.esq",
-        "coflix.wiki": "coflix.esq",
-        "coflix.life": "coflix.esq",
-        "coflix.fr": "coflix.esq",
-        "coflix.boston": "coflix.esq",
-        "coflix.to": "coflix.esq",
-        "coflix.blog": "coflix.esq"
+        "coflix.cymru": "coflix.group",
+        "coflix.blue": "coflix.group",
+        "coflix.wiki": "coflix.group",
+        "coflix.life": "coflix.group",
+        "coflix.fr": "coflix.group",
+        "coflix.boston": "coflix.group",
+        "coflix.to": "coflix.group",
+        "coflix.blog": "coflix.group",
+        "coflix.esq": "coflix.group"
       },
       "runtime_domain_replacements": {
-        "coflix.cymru": "coflix.esq",
-        "coflix.blue": "coflix.esq",
-        "coflix.wiki": "coflix.esq",
-        "coflix.life": "coflix.esq",
-        "coflix.fr": "coflix.esq",
-        "coflix.boston": "coflix.esq",
-        "coflix.to": "coflix.esq",
-        "coflix.blog": "coflix.esq"
+        "coflix.cymru": "coflix.group",
+        "coflix.blue": "coflix.group",
+        "coflix.wiki": "coflix.group",
+        "coflix.life": "coflix.group",
+        "coflix.fr": "coflix.group",
+        "coflix.boston": "coflix.group",
+        "coflix.to": "coflix.group",
+        "coflix.blog": "coflix.group",
+        "coflix.esq": "coflix.group"
       },
       "notes": [
         "Automatically migrated coflix.cymru to coflix.blue after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint.",
@@ -436,12 +440,12 @@
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": "https://coflix.domains/",
-      "official_site": "https://coflix.esq",
+      "official_site": "https://coflix.group",
       "patch_script_options": {
         "scripts/provider_patches/vf_catalogue_recovery.py": {
           "strategy": "html",
           "provider_name": "Coflix",
-          "base_url": "https://coflix.esq",
+          "base_url": "https://coflix.group",
           "types": [
             "movie",
             "tv",
@@ -494,7 +498,7 @@
       },
       "required_values": [],
       "manifest_overrides": {
-        "logo": "https://coflix.esq/favicon.ico",
+        "logo": "https://coflix.group/favicon.ico",
         "supportsExternalPlayer": false
       },
       "patch_scripts": [
@@ -803,16 +807,18 @@
     "4khdhub": {
       "capability": "html_scraper",
       "replacements": {
-        "4khdhub.click": "new5.hdhub4u.cl",
-        "new3.hdhub4u.cl": "new5.hdhub4u.cl",
-        "4khdhub.one": "new5.hdhub4u.cl",
-        "new4.hdhub4u.cl": "new5.hdhub4u.cl"
+        "4khdhub.click": "hdhub4u.bi",
+        "new3.hdhub4u.cl": "hdhub4u.bi",
+        "4khdhub.one": "hdhub4u.bi",
+        "new4.hdhub4u.cl": "hdhub4u.bi",
+        "new5.hdhub4u.cl": "hdhub4u.bi"
       },
       "runtime_domain_replacements": {
-        "4khdhub.click": "new5.hdhub4u.cl",
-        "new3.hdhub4u.cl": "new5.hdhub4u.cl",
-        "4khdhub.one": "new5.hdhub4u.cl",
-        "new4.hdhub4u.cl": "new5.hdhub4u.cl"
+        "4khdhub.click": "hdhub4u.bi",
+        "new3.hdhub4u.cl": "hdhub4u.bi",
+        "4khdhub.one": "hdhub4u.bi",
+        "new4.hdhub4u.cl": "hdhub4u.bi",
+        "new5.hdhub4u.cl": "hdhub4u.bi"
       },
       "required_values": [],
       "route_replacements": {},
@@ -843,7 +849,7 @@
         "4KHDHub runtime domain discovery is materialized from NiakVIO's persisted terminal; the TVVVV domains.json registry is maintenance-only and never fetched during playback."
       ],
       "official_hub": "https://hdhub4u.ec/",
-      "official_site": "https://new5.hdhub4u.cl",
+      "official_site": "https://hdhub4u.bi",
       "manifest_overrides": {}
     },
     "Cineby": {
@@ -854,13 +860,13 @@
       "capability": "direct_media",
       "profiles": [],
       "replacements": {
-        "aniwatchtv.watch": "ww2.aniwatch.fit"
+        "ww2.aniwatch.fit": "aniwatchtv.watch"
       },
       "runtime_domain_replacements": {
-        "aniwatchtv.watch": "ww2.aniwatch.fit"
+        "ww2.aniwatch.fit": "aniwatchtv.watch"
       },
       "official_hub": "https://allanime.sa.com/",
-      "official_site": "https://ww2.aniwatch.fit",
+      "official_site": "https://aniwatchtv.watch",
       "required_values": [],
       "patch_script_options": {},
       "patch_scripts": [
@@ -873,21 +879,37 @@
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ]
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://t.me/s/allwishme",
+      "official_site": "https://all-wish.me",
+      "patch_script_options": {},
+      "required_values": []
     },
     "anidb": {
       "capability": "html_scraper",
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ]
+      ],
+      "replacements": {
+        "anidb.app": "anidb.pics"
+      },
+      "runtime_domain_replacements": {
+        "anidb.app": "anidb.pics"
+      },
+      "official_hub": "https://tbcpl.click/",
+      "official_site": "https://anidb.pics",
+      "patch_script_options": {},
+      "required_values": []
     },
     "anikototv": {
       "capability": "mixed_embed_resolver",
       "replacements": {},
       "runtime_domain_replacements": {},
       "official_hub": "https://streamingsiteshub.com/",
-      "official_site": "https://anikototv.to",
+      "official_site": "https://anikototv.to/home",
       "required_values": [],
       "patch_script_options": {}
     },
@@ -990,7 +1012,13 @@
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ]
+      ],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://everythingmoe.com/s/anizone",
+      "official_site": "https://anizone.to",
+      "patch_script_options": {},
+      "required_values": []
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -1174,13 +1202,13 @@
     "hdghartv": {
       "capability": "html_scraper",
       "replacements": {
-        "hdghartv.cc": "download.hdghartv.com.pk"
+        "download.hdghartv.com.pk": "hdghartv.cc"
       },
       "runtime_domain_replacements": {
-        "hdghartv.cc": "download.hdghartv.com.pk"
+        "download.hdghartv.com.pk": "hdghartv.cc"
       },
       "official_hub": "https://hdghartv.com.pk/",
-      "official_site": "https://download.hdghartv.com.pk/HDGharTV_V2.7.apk",
+      "official_site": "https://hdghartv.cc",
       "required_values": [],
       "manifest_overrides": {},
       "patch_script_options": {},
@@ -1978,7 +2006,13 @@
     },
     "moonflix": {
       "capability": "direct_media",
-      "manifest_overrides": {}
+      "manifest_overrides": {},
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://t.me/s/Moonflix_official_Channel",
+      "official_site": "https://moonflix.website",
+      "patch_script_options": {},
+      "required_values": []
     },
     "ANIMEZEY": {
       "capability": "direct_media"
