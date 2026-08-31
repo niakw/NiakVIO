@@ -74,7 +74,10 @@ with tempfile.TemporaryDirectory() as td:
     p.write_text(runner, encoding="utf-8")
     cp = subprocess.run(["node", str(p), patched], capture_output=True, text=True, timeout=10, check=True)
     data = json.loads(cp.stdout.strip().splitlines()[-1])
+assert isinstance(data.get("calls"), list), data
 assert "https://new.example/api/x" in data["calls"], data
+assert isinstance(data.get("v"), list) and data["v"], data
+assert isinstance(data["v"][0], dict) and data["v"][0].get("status") is not None, data
 assert data["v"][0]["status"] == 200, data
 
 # Adaptive V4 must capture a player/API URL visited by native code, replay the
@@ -122,8 +125,10 @@ with tempfile.TemporaryDirectory() as td:
     cp = subprocess.run(["node", str(p), out], capture_output=True, text=True, timeout=15, check=True)
     data = json.loads(cp.stdout.strip().splitlines()[-1])
 assert any("demoendpointnew.workers.dev/api/stream/token/abc" in u for u in data["calls"]), data
-assert data["v"], data
+assert isinstance(data.get("v"), list) and data["v"], data
+assert isinstance(data["v"][0], dict), data
+assert data["v"][0].get("url") is not None, data
 assert data["v"][0]["url"].startswith("https://demoendpointnew.workers.dev/api/stream/token/abc"), data
-assert all("/troll/" not in row.get("url", "") for row in data["v"]), data
+assert all(isinstance(row, dict) and "/troll/" not in str(row.get("url") or "") for row in data["v"]), data
 
 print("generic recovery hardening test passed")
