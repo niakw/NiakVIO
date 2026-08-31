@@ -44,6 +44,20 @@ def main() -> int:
     assert module.PROTOCOL_RELATIVE_MARKER in patched
     assert module.apply(patched, options=options) == patched
 
+    # Regression: revision comments can survive while the owned target-media
+    # wrapper has been removed from an LKG/reconstructed artifact. Markers alone
+    # must never short-circuit reconstruction.
+    stale = module.strip_target_media_wrappers(patched, True)
+    assert module.V4_MARKER in stale
+    assert module.TARGET_MEDIA_MARKER not in stale
+    rebuilt = module.apply(stale, options=options)
+    assert module.V4_MARKER in rebuilt
+    assert module.V5_MARKER in rebuilt
+    assert module.HLS_PROOF_MARKER in rebuilt
+    assert module.TARGET_MEDIA_MARKER in rebuilt
+    assert module.PROOF_V6 in rebuilt
+    assert module.apply(rebuilt, options=options) == rebuilt
+
     harness = r'''
 const fs=require('fs'),vm=require('vm');
 const code=fs.readFileSync('provider.js','utf8');
