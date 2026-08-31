@@ -329,7 +329,7 @@ def links(document: str, base: str) -> list[tuple[str, str, int]]:
 
 def _default_source_type(url: str, resolver: str) -> str:
     hostname = host(url)
-    if hostname.endswith(("t.me", "telegram.me")) or resolver == "latest_telegram_domain":
+    if hostname.endswith(("t.me", "telegram.me")) or resolver in {"latest_telegram_domain", "telegram_description"}:
         return "telegram_public"
     if resolver == "redirect":
         return "redirect"
@@ -544,7 +544,17 @@ def _sort_official_candidates(candidates: list[dict[str, Any]], resolver: str) -
 def choose_official(provider_id: str, cfg: dict[str, Any], hub_url: str, document: str) -> tuple[list[dict[str, Any]], str | None]:
     resolver = str(cfg.get("resolver") or "official_outbound")
     candidates: list[dict[str, Any]] = []
-    if resolver == "latest_telegram_domain":
+    if resolver == "telegram_description":
+        # Some official channels publish the current domain in the channel
+        # description rather than a message. Parse the whole public page but
+        # keep the normal brand/allow-list checks, so unrelated message links
+        # never become terminal routes.
+        extracted = links(document, hub_url)
+        for url, label, index in extracted:
+            score = candidate_score(provider_id, cfg, url, label, index, len(extracted))
+            if score >= 0:
+                candidates.append({"url": url.rstrip("/"), "label": label, "score": score, "document_index": index})
+    elif resolver == "latest_telegram_domain":
         extracted_rows = telegram_links(document, hub_url)
         if extracted_rows:
             for row in extracted_rows:
@@ -778,7 +788,9 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
             source_cfg = dict(cfg)
             source_cfg["hub"] = final
             if source_type == "telegram_public":
-                source_cfg["resolver"] = "latest_telegram_domain"
+                configured_resolver = str(source_cfg.get("resolver") or "")
+                if configured_resolver not in {"latest_telegram_domain", "telegram_description"}:
+                    source_cfg["resolver"] = "latest_telegram_domain"
             source_candidates, _preferred = choose_official(provider_id, source_cfg, final, document)
             base_priority = int(source.get("priority") or 50)
             for row in source_candidates:
