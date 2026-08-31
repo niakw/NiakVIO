@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import urllib.parse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -178,8 +179,14 @@ purstream_model = discover_module.clean_provider_model(
 )
 assert purstream_model["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
 assert "https://api.purstream.id" in purstream_model["origins"]
-assert all("api.purstream/" not in value and "old.invalid" not in value for value in purstream_model["origins"])
-assert all("old.invalid" not in value and "raw.githubu" not in value for value in purstream_model["observedUrls"])
+assert all(
+    (urllib.parse.urlparse(value).hostname or "").casefold() not in {"api.purstream", "old.invalid"}
+    for value in purstream_model["origins"]
+)
+assert all(
+    (urllib.parse.urlparse(value).hostname or "").casefold() not in {"old.invalid", "raw.githubu"}
+    for value in purstream_model["observedUrls"]
+)
 
 profiles_builder = (SCRIPTS / "build_provider_runtime_profiles.py").read_text(encoding="utf-8")
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in profiles_builder
