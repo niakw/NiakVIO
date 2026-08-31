@@ -118,7 +118,10 @@ assert 'decision.get("strict_activation_eligible", False)' in promoter
 consume_trigger = (SCRIPTS / "consume_force_reconstruction_trigger.py").read_text(encoding="utf-8")
 consume_block = consume_trigger.split("for provider_id in requested:", 1)[1].split("if remaining:", 1)[0]
 assert "durable_base_matches(" in consume_block
-assert "staged_materialization_attempt(" not in consume_block
+assert "staged_materialization_attempt(" not in consume_trigger
+assert '!= CLEAN_RECONSTRUCTION_SOURCE' in consume_trigger
+assert 'clean_reconstruction_verified") is not True' in consume_trigger
+assert 'clean_reconstruction_required") is True' in consume_trigger
 
 # Explicit one-shot migrations must force canonical Deep proof before publication.
 sync_workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")

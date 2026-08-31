@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from consume_force_reconstruction_trigger import consume  # noqa: E402
 from provider_base_store import (  # noqa: E402
     CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
+    CLEAN_RECONSTRUCTION_SOURCE,
     build_base_from_seed,
     build_clean_provider_seed,
     sha256,
@@ -83,11 +84,12 @@ with tempfile.TemporaryDirectory() as tmp:
     alpha_rel = f"provider-bases/alpha--base--{alpha_digest[:16]}.js"
     (root / alpha_rel).write_bytes(alpha_base)
     provenance_rows["alpha"] = {
-        "base_source": CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
+        "base_source": CLEAN_RECONSTRUCTION_SOURCE,
         "base_filename": alpha_rel,
         "base_sha256": alpha_digest,
-        "clean_reconstruction_candidate": True,
-        "clean_reconstruction_verified": False,
+        "clean_reconstruction_candidate": False,
+        "clean_reconstruction_verified": True,
+        "clean_reconstruction_required": False,
     }
 
     provenance = root / "PROVENANCE.json"
@@ -114,13 +116,40 @@ with tempfile.TemporaryDirectory() as tmp:
     assert persisted_trigger["providers"] == ["beta"]
     assert persisted_trigger["consumedProviders"] == ["alpha"]
 
-    # A validated staged attempt consumes beta even though no durable ProviderBase
-    # was promoted yet. Learning may continue with LKG preservation without
-    # forcing the same reconstruction on every routine run.
+    # Staging alone must never consume beta: the one-shot remains active until
+    # canonical Deep publication installs the exact verified ProviderBase SHA.
     (stage / candidates[1]["local_path"]).write_text("// staged clean seed\n", encoding="utf-8")
+    consumed, remaining = consume(trigger, registry, provenance, overrides, root)
+    assert consumed == [], (consumed, remaining)
+    assert remaining == ["beta"], (consumed, remaining)
+    persisted_trigger = json.loads(trigger.read_text(encoding="utf-8"))
+    assert persisted_trigger["providers"] == ["beta"]
+    assert persisted_trigger["consumedProviders"] == ["alpha"]
+
+    beta = candidates[1]
+    beta_seed = build_clean_provider_seed(
+        "beta",
+        beta["metadata"],
+        known_site=beta["observed_upstream_site"],
+        provider_model=beta["clean_provider_model"],
+    )
+    beta_base, _ = build_base_from_seed("beta", beta_seed, overrides_path=overrides)
+    beta_digest = sha256(beta_base)
+    beta_rel = f"provider-bases/beta--base--{beta_digest[:16]}.js"
+    (root / beta_rel).write_bytes(beta_base)
+    provenance_rows["beta"] = {
+        "base_source": CLEAN_RECONSTRUCTION_SOURCE,
+        "base_filename": beta_rel,
+        "base_sha256": beta_digest,
+        "clean_reconstruction_candidate": False,
+        "clean_reconstruction_verified": True,
+        "clean_reconstruction_required": False,
+    }
+    provenance.write_text(json.dumps({"providers": provenance_rows}), encoding="utf-8")
+
     consumed, remaining = consume(trigger, registry, provenance, overrides, root)
     assert consumed == ["beta"], (consumed, remaining)
     assert remaining == []
-    assert not trigger.exists(), "one-shot trigger must disappear after every requested seed was attempted"
+    assert not trigger.exists(), "one-shot trigger must disappear only after verified durable publication"
 
 print("force reconstruction trigger lifecycle passed")

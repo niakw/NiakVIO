@@ -84,10 +84,11 @@ def durable_base_matches(
 ) -> bool:
     if not isinstance(provenance_row, dict) or not expected_hashes:
         return False
-    if str(provenance_row.get("base_source") or "") not in {
-        CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
-        CLEAN_RECONSTRUCTION_SOURCE,
-    }:
+    if str(provenance_row.get("base_source") or "") != CLEAN_RECONSTRUCTION_SOURCE:
+        return False
+    if provenance_row.get("clean_reconstruction_verified") is not True:
+        return False
+    if provenance_row.get("clean_reconstruction_required") is True:
         return False
     digest = str(provenance_row.get("base_sha256") or "").strip()
     relative = str(provenance_row.get("base_filename") or "").strip()
@@ -102,27 +103,6 @@ def durable_base_matches(
         return False
     return True
 
-
-def staged_materialization_attempt(
-    candidates: list[dict[str, Any]],
-    registry_path: Path,
-) -> bool:
-    """A validated staged clean seed is enough to consume the explicit one-shot."""
-    if not candidates:
-        return False
-    stage_root = registry_path.parent.resolve()
-    for row in candidates:
-        relative = str(row.get("local_path") or "").strip()
-        if not relative:
-            continue
-        path = (stage_root / relative).resolve()
-        try:
-            path.relative_to(stage_root)
-        except ValueError:
-            continue
-        if path.is_file():
-            return True
-    return False
 
 
 def consume(
