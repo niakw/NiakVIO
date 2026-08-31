@@ -1415,6 +1415,7 @@ def evaluate_pre_stability_gates(
     performance = {
         # Provider latency is provider quality. Stream latency is preserved as
         # stream-quality evidence and must not disable an otherwise healthy provider.
+        "scope": "provider",
         "passed": provider_latency_ok,
         "provider_median_latency_ms": provider_latency,
         "stream_median_latency_ms": stream_latency,
@@ -1669,10 +1670,11 @@ def activation_decision(
 ) -> dict[str, Any]:
     """Enable only a provider proven functional by the current deep run.
 
-    Publication follows two ordered runtime gates before the remaining
-    media/identity gates:
-      1. provider-specific runtime access succeeded;
-      2. at least one playable stream passed the quality gates.
+    Publication separates provider state from child stream state:
+      1. provider-specific runtime access/quality gates must pass;
+      2. at least one safe surviving stream must prove current capability;
+      3. type and stream-quality gates remain scoped diagnostics and never
+         disable the provider globally by themselves.
 
     DNS is observed independently by the daily domain job and never participates
     in activation or publication decisions.
@@ -1702,6 +1704,7 @@ def activation_decision(
             "provider_server_http_statuses": proof.get("provider_server_http_statuses", []),
         },
         {"required": "successful provider-owned HTTP response"},
+        scope="provider",
     )
     gates["00_current_playable_stream"] = gate(
         stream_pass,
@@ -1711,10 +1714,17 @@ def activation_decision(
             "healthy_fixtures": proof.get("healthy_fixtures", 0),
             "effective_max_height": proof.get("effective_max_height"),
         },
-        {"required": "at least one currently playable stream"},
+        {"required": "at least one safe surviving stream on the sampled catalogue"},
+        scope="capability",
     )
 
-    current_pass = access_pass and stream_pass and all_gates_pass(gates)
+    current_pass = (
+        access_pass
+        and stream_pass
+        and all_gates_pass(gates)
+        and capability_gates_pass(gates)
+        and bool(proof.get("performance", {}).get("passed", False))
+    )
     # ``enabled:false`` in an upstream manifest is advisory when this exact JS
     # has just passed Niakvio's own strict current deep proof. Treating the flag
     # as a hard veto caused proven-working providers (for example Desiflix) to
@@ -1725,7 +1735,18 @@ def activation_decision(
     )
     eligible = current_pass
     enabled = eligible and not auto_disabled
-    blockers = [name for name, value in gates.items() if not value.get("passed")]
+    blockers = [
+        name
+        for name, value in gates.items()
+        if str(value.get("scope") or "provider") in {"provider", "capability"}
+        and not value.get("passed")
+    ]
+    nonblocking_diagnostics = [
+        name
+        for name, value in gates.items()
+        if str(value.get("scope") or "provider") in {"stream", "type"}
+        and not value.get("passed")
+    ]
     if respect_upstream and not upstream_enabled and not current_pass:
         blockers.append("upstream_disabled")
     if eligible and auto_disabled:
@@ -1737,7 +1758,7 @@ def activation_decision(
     elif not stream_pass:
         disabled_reason = "no_current_playable_stream"
     elif blockers:
-        disabled_reason = "quality_gate_failed"
+        disabled_reason = "provider_or_capability_gate_failed"
 
     return {
         "enabled": enabled,
@@ -1748,6 +1769,7 @@ def activation_decision(
         "runtime_evidence_eligible": False,
         "activation_mode": "strict_current" if eligible else "disabled",
         "activation_blockers": blockers,
+        "activation_nonblocking_diagnostics": nonblocking_diagnostics,
         "activation_gates": gates,
         "proof": proof,
         "historical_quality_grace": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
