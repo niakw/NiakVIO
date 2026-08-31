@@ -19,7 +19,7 @@ assert expected <= preserve_statuses
 assert preserve_statuses <= inconclusive_statuses
 assert 'degraded' in inconclusive_statuses
 assert 'degraded' in preserve_statuses
-assert {'degraded', 'unavailable'}.isdisjoint(preserve_statuses)
+assert 'unavailable' not in preserve_statuses
 assert config.get('zero_stream_is_per_work_not_manifest_disable') is True
 assert config.get('provider_accessibility_is_separate_from_stream_accessibility') is True
 assert config.get('provider_latency_is_separate_from_stream_latency') is True
