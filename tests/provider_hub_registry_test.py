@@ -334,7 +334,7 @@ assert 'push origin HEAD:main' in domain_refresh and 'git commit' in domain_refr
 assert 'provider-domain-history.json' in domain_refresh
 assert 'provider-overrides.json' in domain_refresh
 assert 'git diff --exit-code' in domain_refresh
-assert 'gh workflow run sync.yml' not in domain_refresh
+assert domain_refresh.count('gh workflow run sync.yml') == 1, 'route publication must trigger exactly one Provider Pipeline dispatch'
 assert 'upload-artifact' in domain_refresh
 
 print('provider hub registry tests passed')
