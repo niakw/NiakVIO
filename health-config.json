@@ -1,5 +1,5 @@
 {
-  "schema_version": 69,
+  "schema_version": 70,
   "concurrency": 4,
   "modes": {
     "availability": {
@@ -365,7 +365,8 @@
       "provider_unreachable",
       "runtime_error",
       "reachable",
-      "degraded"
+      "degraded",
+      "unavailable"
     ],
     "preserve_strict_history_on_inconclusive": true,
     "maximum_consecutive_inconclusive_deep_checks_for_strict_grace": 2,
@@ -388,7 +389,8 @@
       "runtime_error",
       "no_streams",
       "reachable",
-      "degraded"
+      "degraded",
+      "unavailable"
     ],
     "allow_type_scoped_activation": true,
     "stream_failures_are_stream_scoped": true,
