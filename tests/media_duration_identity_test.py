@@ -30,6 +30,9 @@ assert 'async function probeStream(stream, mode, fixture = null)' in source
 assert 'expectedDurationMinutes: fixture.expectedDurationMinutes ?? null' in source
 assert source.count('probeStream(stream, modeConfig, normalizedFixture)') >= 2
 assert 'durationIdentityRatio = mediaDurationSeconds / expectedDurationSeconds' in source
+assert 'durationIdentityAuthoritative = Boolean(master.isVod)' in source
+assert 'durationIdentityAuthoritative = Boolean(parsedVariant.isVod)' in source
+assert "(kind !== 'hls' || durationIdentityAuthoritative)" in source
 assert "function playbackCategory(" in source
 assert "if (durationIdentityMismatch) return 'duration_identity_mismatch';" in source
 assert "category: playbackCategory(" in source
