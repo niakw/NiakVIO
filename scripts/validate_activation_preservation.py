@@ -335,6 +335,44 @@ def catalogue_audit_safety_quarantine(
     return True, f"catalogue_audit_safety_quarantine:{CATALOGUE_AUDIT_BLOCKER}"
 
 
+def report_failure_is_inconclusive(record: dict[str, Any] | None) -> bool:
+    """Treat zero-proof runtime/network failure as uncertainty regardless of action label."""
+    if not isinstance(record, dict):
+        return True
+    evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
+    status = str(record.get("observed_status") or evidence.get("status") or "").strip().casefold()
+
+    def count(name: str) -> int:
+        try:
+            return int(evidence.get(name) or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    hard_contradiction = (
+        count("disallowed_streams") > 0
+        or count("identity_contradiction_count") > 0
+        or count("duration_identity_mismatch_count") > 0
+    )
+    positive_runtime_proof = count("streams_playable") > 0 or count("payload_verified_streams") > 0
+    if hard_contradiction or positive_runtime_proof:
+        return False
+    if status in {
+        "unavailable", "no_streams", "blocked", "provider_unreachable",
+        "runtime_error", "reachable", "degraded",
+    }:
+        return True
+    failures = {
+        str(value).strip().casefold()
+        for value in evidence.get("failure_classes") or []
+        if str(value).strip()
+    }
+    infrastructure_failures = {
+        "provider_http_error", "network_error", "dns_error", "timeout",
+        "provider_timeout", "runtime_timeout", "connection_error",
+    }
+    return bool(failures) and failures <= infrastructure_failures
+
+
 def conclusive_disablement(record: dict[str, Any] | None, *, missing: bool) -> tuple[bool, str]:
     """Return whether one deep report row explicitly justifies losing activation."""
     if not isinstance(record, dict):
@@ -358,6 +396,8 @@ def conclusive_disablement(record: dict[str, Any] | None, *, missing: bool) -> t
     if action in CONCLUSIVE_DISABLE_ACTIONS:
         if not failed and action != "disabled-sustained-outage":
             return False, "conclusive_disable_action_has_no_failed_gate"
+        if action != "disabled-sustained-outage" and report_failure_is_inconclusive(record):
+            return False, "runtime_or_network_evidence_is_inconclusive"
         return True, action
     return False, f"non_conclusive_disable_action:{action or 'missing'}"
 
