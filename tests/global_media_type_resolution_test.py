@@ -283,4 +283,90 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+
+
+# Request context must never stick across one long-lived native JS instance.
+# This reproduces the real Android TV failure: first work type used to poison
+# every later getStreams call until app cache/process reset.
+run_case(purstream_mixed, r"""
+const calls=[];
+global.__nuvioMediaContext={
+  canonicalMediaType:'anime',
+  providerMediaType:'anime',
+  tmdbMetadata:{id:999999,genres:[{id:16}],original_language:'ja',origin_country:['JP']}
+};
+global.fetch=async(url)=>{
+  url=String(url);calls.push(url);
+  if(url.includes('/tv/62425?'))return{ok:true,status:200,json:async()=>({
+    id:62425,name:'Dark Matter',genres:[{id:18,name:'Drama'}],
+    original_language:'en',origin_country:['CA'],keywords:{results:[]}
+  })};
+  if(url.includes('/tv/280049?'))return{ok:true,status:200,json:async()=>({
+    id:280049,name:'Hell Mode',genres:[{id:16,name:'Animation'}],
+    original_language:'ja',origin_country:['JP'],keywords:{results:[{name:'anime'}]}
+  })};
+  if(url.includes('/movie/4242?'))return{ok:true,status:200,json:async()=>({
+    id:4242,title:'Anime Movie',release_date:'2026-01-01',
+    genres:[{id:16,name:'Animation'}],original_language:'ja',
+    production_countries:[{iso_3166_1:'JP'}],keywords:{keywords:[{name:'anime'}]}
+  })};
+  if(url.includes('/movie/157336?'))return{ok:true,status:200,json:async()=>({
+    id:157336,title:'Interstellar',release_date:'2014-11-05',
+    genres:[{id:18,name:'Drama'}],original_language:'en',
+    production_countries:[{iso_3166_1:'US'}],keywords:{keywords:[]}
+  })};
+  throw new Error('unexpected TMDB endpoint '+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const dark1=await provider.getStreams('62425','series',2,1);
+  if(!dark1.length||dark1[0].canonicalMediaType!=='tv'||dark1[0].mediaType!=='tv')
+    throw new Error('stale anime context poisoned initial TV request: '+JSON.stringify(dark1));
+
+  const hell=await provider.getStreams('280049','series',1,11);
+  if(!hell.length||hell[0].canonicalMediaType!=='anime'||hell[0].mediaType!=='tv')
+    throw new Error('TV->anime transition failed: '+JSON.stringify(hell));
+
+  const animeMovie=await provider.getStreams('4242','movie');
+  if(!animeMovie.length||animeMovie[0].canonicalMediaType!=='anime'||animeMovie[0].mediaType!=='movie')
+    throw new Error('anime movie semantic/transport split failed: '+JSON.stringify(animeMovie));
+
+  const movie=await provider.getStreams('157336','movie');
+  if(!movie.length||movie[0].canonicalMediaType!=='movie'||movie[0].mediaType!=='movie')
+    throw new Error('anime movie poisoned ordinary movie: '+JSON.stringify(movie));
+
+  const dark2=await provider.getStreams('62425','series',2,2);
+  if(!dark2.length||dark2[0].canonicalMediaType!=='tv'||dark2[0].mediaType!=='tv')
+    throw new Error('movie/anime history poisoned later TV request: '+JSON.stringify(dark2));
+
+  if(Object.prototype.hasOwnProperty.call(global,'__nuvioMediaContext'))
+    throw new Error('request media context leaked after getStreams completion');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+# Reverse direction must be isolated too: anime first must not freeze the instance.
+run_case(purstream_mixed, r"""
+global.fetch=async(url)=>{
+  url=String(url);
+  if(url.includes('/tv/280049?'))return{ok:true,status:200,json:async()=>({
+    id:280049,name:'Hell Mode',genres:[{id:16,name:'Animation'}],
+    original_language:'ja',origin_country:['JP'],keywords:{results:[{name:'anime'}]}
+  })};
+  if(url.includes('/tv/62425?'))return{ok:true,status:200,json:async()=>({
+    id:62425,name:'Dark Matter',genres:[{id:18,name:'Drama'}],
+    original_language:'en',origin_country:['CA'],keywords:{results:[]}
+  })};
+  throw new Error('unexpected TMDB endpoint '+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const anime=await provider.getStreams('280049','anime',1,11);
+  if(!anime.length||anime[0].canonicalMediaType!=='anime'||anime[0].mediaType!=='tv')
+    throw new Error('anime-first request failed');
+  const tv=await provider.getStreams('62425','series',2,1);
+  if(!tv.length||tv[0].canonicalMediaType!=='tv'||tv[0].mediaType!=='tv')
+    throw new Error('anime-first instance froze later TV request: '+JSON.stringify(tv));
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 print("global media resolver: TMDB API authoritative, canonical/transport split, aliases and fail-open verified")
