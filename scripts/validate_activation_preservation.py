@@ -24,6 +24,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import re
 from pathlib import Path
 from typing import Any
@@ -66,6 +67,19 @@ def load(path: Path) -> dict[str, Any]:
 
 def load_optional(path: Path) -> dict[str, Any]:
     return load(path) if path.is_file() else {}
+
+
+def published_baseline_rows() -> dict[str, dict[str, Any]]:
+    raw = str(os.environ.get("NUVIO_PUBLISHED_MANIFEST_BASELINE") or "").strip()
+    if not raw:
+        return {}
+    path = Path(raw)
+    if not path.is_file():
+        return {}
+    try:
+        return rows(load(path))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return {}
 
 
 def rows(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -368,6 +382,7 @@ def validate() -> list[str]:
     vf_rows = rows(load(VF))
     report = load(REPORT)
     report_by_id = report_rows(report)
+    baseline_by_id = published_baseline_rows()
     patches_by_id = provider_patch_rows(load_optional(OVERRIDES))
     provenance_by_id = provenance_rows(load_optional(PROVENANCE))
     safety_by_id = safety_finding_rows(load_optional(SAFETY_FINDINGS))
@@ -447,6 +462,22 @@ def validate() -> list[str]:
             print(
                 "FIELD_ACTIVATION_PRESERVED_SAFETY_QUARANTINE "
                 f"provider={provider_id} reason=ci_uncertain"
+            )
+            continue
+
+        baseline_row = baseline_by_id.get(provider_id)
+        preexisting_published_disable = bool(
+            not is_missing
+            and isinstance(baseline_row, dict)
+            and baseline_row.get("enabled") is False
+            and isinstance(record, dict)
+            and record.get("enabled") is False
+        )
+        if preexisting_published_disable:
+            deferred_to_learning[provider_id] = "preexisting_published_disabled_state_nonconclusive"
+            print(
+                "FIELD_ACTIVATION_DEFERRED_TO_LEARNING "
+                f"provider={provider_id} reason=preexisting_published_disabled_state_nonconclusive"
             )
             continue
 
