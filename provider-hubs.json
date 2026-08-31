@@ -2146,8 +2146,8 @@
         "allwish",
         "all-wish"
       ],
-      "resolver": "latest_telegram_domain",
-      "schema_notes": "The public AllWish Telegram channel is the authoritative address source; its newest valid All-Wish domain is runtime-validated before persistence.",
+      "resolver": "telegram_description",
+      "schema_notes": "The public AllWish Telegram channel description is the authoritative address source; its current All-Wish domain is runtime-validated before persistence.",
       "direct_candidates": [
         "https://all-wish.me/"
       ],
@@ -2162,7 +2162,7 @@
           "type": "telegram_public",
           "url": "https://t.me/s/allwishme",
           "priority": 115,
-          "purpose": "Official public Telegram address announcements"
+          "purpose": "Official public Telegram channel description containing the current domain"
         },
         {
           "type": "search",
