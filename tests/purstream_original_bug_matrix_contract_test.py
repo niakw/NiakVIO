@@ -129,11 +129,18 @@ assert "if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; the
 deep_trigger_block = sync_workflow.split("if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then", 1)[1].split("fi", 1)[0]
 assert "MODE=deep" in deep_trigger_block
 
-# Explicit one-shot migration remains scoped to Purstream until the clean base is materialized.
+# Explicit one-shot migration remains bounded to explicitly named provider(s)
+# until their clean base is durably materialized. This contract is global and
+# must not pin the trigger forever to Purstream after Purstream is published.
 trigger = ROOT / ".github" / "triggers" / "force-clean-provider-reconstruction.json"
 if trigger.exists():
     request = json.loads(trigger.read_text(encoding="utf-8"))
-    assert request.get("providers") == ["purstream"], request
+    providers = request.get("providers")
+    assert request.get("mode") == "explicit-one-shot", request
+    assert isinstance(providers, list) and providers, request
+    normalized = [str(value or "").strip().casefold() for value in providers]
+    assert all(normalized), request
+    assert len(normalized) == len(set(normalized)), request
     assert request.get("remove_after_materialization") is True
 
 print("Purstream original bug matrix contract passed")
