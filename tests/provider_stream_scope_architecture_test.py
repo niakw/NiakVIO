@@ -74,8 +74,10 @@ assert config["activation"]["deep_learning_may_fallback_after_zero_stream"] is T
 
 # Media context is request-local and canonical resolution can cross movie/tv
 # namespaces, including anime movies transported as movie.
-assert "canonical-reset" in media
 assert "delete g.__nuvioMediaContext" in media
+assert "__nuvioProviderRequestToken" in media
+assert "requestDeadline=Date.now()+c.providerTimeoutMs" in media
+assert "g.__nuvioProviderRequestToken!==requestToken" in media
 assert 'return["movie","tv"]' in media
 assert 'return["tv","movie"]' in media
 assert 'canonical==="anime"' in media
