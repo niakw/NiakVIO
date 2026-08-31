@@ -83,6 +83,8 @@ assert 'fstream.top' in hubs['movix']['blocked_hosts']
 movix_html = '<a href="https://movix.fun/">Accéder à Movix</a>'
 movix_candidates, preferred = resolver.choose_official('movix', hubs['movix'], hubs['movix']['hub'], movix_html)
 assert preferred == 'https://movix.fun'
+assert movix_candidates and isinstance(movix_candidates[0], dict), movix_candidates
+assert movix_candidates[0].get('score') is not None, movix_candidates
 assert movix_candidates[0]['score'] >= 80
 
 # Telegram selection must use the highest message id rather than document
@@ -103,6 +105,8 @@ wooka_html = '''
 '''
 wooka_candidates, preferred = resolver.choose_official('wookafr', hubs['wookafr'], hubs['wookafr']['hub'], wooka_html)
 assert preferred == 'https://wookafr.center'
+assert wooka_candidates and isinstance(wooka_candidates[0], dict), wooka_candidates
+assert wooka_candidates[0].get('message_id') is not None, wooka_candidates
 assert wooka_candidates[0]['message_id'] == 131
 assert all(resolver.host(row['url']) != 'unrelated.example' for row in wooka_candidates)
 
@@ -170,6 +174,8 @@ cinefreak_candidates, preferred = resolver.choose_official(
     'cinefreak', hubs['cinefreak'], hubs['cinefreak']['hub'], cinefreak_html
 )
 assert preferred == 'https://cinefreak.ch'
+assert cinefreak_candidates and isinstance(cinefreak_candidates[0], dict), cinefreak_candidates
+assert cinefreak_candidates[0].get('url') is not None, cinefreak_candidates
 assert resolver.host(cinefreak_candidates[0]['url']) == 'cinefreak.ch'
 
 assert hubs['moonflix']['resolver'] == 'latest_telegram_domain'
