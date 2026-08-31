@@ -203,7 +203,7 @@ live_duration_fetch = r"""async function(url){
     return {ok:true,status:200,url,headers:{get:()=> 'application/json'},json:async()=>({runtime:24}),text:async()=>JSON.stringify({runtime:24})};
   }
   if(url.includes('master.m3u8')) {
-    return {ok:true,status:200,url,headers:{get:()=> 'application/vnd.apple.mpegurl'},text:async()=> '#EXTM3U\\n#EXTINF:2790,\\na.ts\\n#EXTINF:2790,\\nb.ts\\n'};
+    return {ok:true,status:200,url,headers:{get:()=> 'application/vnd.apple.mpegurl'},text:async()=> '#EXTM3U\n#EXTINF:2790,\na.ts\n#EXTINF:2790,\nb.ts\n'};
   }
   return {ok:false,status:404,url,headers:{get:()=> 'text/plain'},text:async()=>''};
 }"""
@@ -217,8 +217,8 @@ assert value["rows"] == 1 and value["calls"] >= 2, value
 
 # The same implausible duration is a contradiction when ENDLIST proves VOD completeness.
 vod_duration_fetch = live_duration_fetch.replace(
-    "#EXTINF:2790,\\\\nb.ts\\\\n'",
-    "#EXTINF:2790,\\\\nb.ts\\\\n#EXT-X-ENDLIST\\\\n'",
+    "#EXTINF:2790,\\nb.ts\\n'",
+    "#EXTINF:2790,\\nb.ts\\n#EXT-X-ENDLIST\\n'",
 )
 value = run_node(
     module.apply(BASE, context={"provider_id": "generic-provider"}),
