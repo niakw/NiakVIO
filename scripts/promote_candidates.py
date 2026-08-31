@@ -1223,15 +1223,9 @@ def evaluate_pre_stability_gates(
         and (minimum_height <= 0 or effective_height == 0 or effective_height >= minimum_height)
         and (minimum_bandwidth <= 0 or bandwidth is None or bandwidth >= minimum_bandwidth)
     )
-    # Provider activation and per-stream quality are separate objects.
-    # A provider may remain globally enabled while a given work returns zero
-    # usable streams. Current media proof improves confidence; runtime-light
-    # evidence can preserve a globally functional provider without treating a
-    # catalogue miss as a manifest disable.
-    runtime_light_quality_ok = runtime_light and (
-        (minimum_height > 0 and manifest_height >= minimum_height) or manifest_curated
-    )
-    quality_ok = measured_quality_ok or runtime_light_quality_ok
+    # Stream quality requires an actual surviving stream. Provider/LKG
+    # preservation is handled separately by provider-scoped activation logic.
+    quality_ok = measured_quality_ok
 
     # Some verified containers expose no audio/subtitle language tags at all.
     # In that narrow case, a current upstream manifest language may fill the
@@ -1287,7 +1281,7 @@ def evaluate_pre_stability_gates(
                 coverage_healthy_fixtures >= minimum_fixtures
                 and coverage_ratio >= minimum_ratio
                 and category_coverage
-            ) or (runtime_light and manifest_description_present),
+            ),
             {
                 "healthy_fixtures": coverage_healthy_fixtures,
                 "fixtures_tested": len(scoped_categories) if scoped_categories else int(proof.get("fixtures_tested", 0)),
@@ -1310,7 +1304,7 @@ def evaluate_pre_stability_gates(
             (
                 playable_streams >= minimum_streams
                 and playable_fixtures >= minimum_playable_fixtures
-            ) or runtime_light,
+            ),
             {
                 "playable_streams": playable_streams,
                 "playable_fixtures": playable_fixtures,
@@ -1322,7 +1316,7 @@ def evaluate_pre_stability_gates(
             scope="stream",
         ),
         "06_distinct_host_diversity": gate(
-            hosts >= minimum_hosts or runtime_light,
+            hosts >= minimum_hosts,
             {
                 "distinct_reachable_hosts": hosts,
                 "reachable_hosts": proof.get("reachable_hosts", []),
@@ -1334,7 +1328,7 @@ def evaluate_pre_stability_gates(
             (
                 payloads >= minimum_payload
                 and playable_streams >= minimum_streams
-            ) or runtime_light,
+            ),
             {
                 "payload_verified_streams": payloads,
                 "playable_streams": playable_streams,
@@ -1392,7 +1386,7 @@ def evaluate_pre_stability_gates(
                 playable_streams >= minimum_streams
                 and playable_identity_contradictions == 0
                 and playable_duration_identity_mismatches == 0
-            ) or runtime_light,
+            ),
             {
                 "playable_identity_verified_streams": identity_verified_streams,
                 "playable_identity_unverified_streams": identity_unverified_streams,
