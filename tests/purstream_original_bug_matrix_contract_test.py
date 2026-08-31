@@ -105,6 +105,21 @@ for manifest_path in (ROOT / "manifest.json", ROOT / "vf" / "manifest.json"):
         if "anime" in canonical or ("anime" in supported and canonical == []):
             assert "tv" in supported, (manifest_path, row.get("id"), supported, canonical)
 
+# Fresh and pending clean ProviderBase migrations both require strict Deep proof.
+promoter = (SCRIPTS / "promote_candidates.py").read_text(encoding="utf-8")
+assert "is_clean_reconstruction_migration_candidate(" in promoter
+assert '"new-niakvio-clean-seed"' in promoter
+assert '"pending-niakvio-clean-reconstruction-v2"' in promoter
+assert "clean_reconstruction_has_strict_deep_proof(" in promoter
+assert 'str(mode) == "deep"' in promoter
+assert 'str(health.get("status") or "") == "healthy"' in promoter
+assert 'decision.get("strict_activation_eligible", False)' in promoter
+
+consume_trigger = (SCRIPTS / "consume_force_reconstruction_trigger.py").read_text(encoding="utf-8")
+consume_block = consume_trigger.split("for provider_id in requested:", 1)[1].split("if remaining:", 1)[0]
+assert "durable_base_matches(" in consume_block
+assert "staged_materialization_attempt(" not in consume_block
+
 # Explicit one-shot migrations must force canonical Deep proof before publication.
 sync_workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
 assert "if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then" in sync_workflow

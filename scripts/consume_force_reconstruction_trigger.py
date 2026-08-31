@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """Consume explicit one-shot ProviderBase reconstruction requests after publication.
 
-A one-shot request is consumed once the validated stage proves that NiakVIO
-materialized the forced clean seed. Promotion is a separate proof decision:
-an unproven candidate may keep its published LKG and be handed to Learning,
-but the same expensive reconstruction must not be forced again on every run.
-Only providers absent from the validated forced stage remain requested.
+A one-shot request is consumed only after the canonical publication transaction
+has durably installed the exact forced ProviderBase SHA in PROVENANCE and
+provider-bases/. A staged seed alone is never enough: if strict Deep proof keeps
+the production LKG, the request remains active for a later proof attempt.
 """
 from __future__ import annotations
 
@@ -159,9 +158,11 @@ def consume(
     for provider_id in requested:
         candidates = forced_candidates(registry, provider_id)
         expected = expected_base_hashes(provider_id, candidates, overrides_path)
-        if (
-            durable_base_matches(provider_id, provenance_rows.get(provider_id), expected, root)
-            or staged_materialization_attempt(candidates, registry_path)
+        if durable_base_matches(
+            provider_id,
+            provenance_rows.get(provider_id),
+            expected,
+            root,
         ):
             consumed.append(provider_id)
         else:

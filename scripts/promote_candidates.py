@@ -208,13 +208,29 @@ def is_pending_clean_reconstruction_candidate(
     )
 
 
-def pending_clean_reconstruction_has_strict_deep_proof(
+def is_clean_reconstruction_migration_candidate(
+    candidate: dict[str, Any],
+    previous_base_row: dict[str, Any] | None,
+) -> bool:
+    row = previous_base_row if isinstance(previous_base_row, dict) else {}
+    origin = str(candidate.get("candidate_code_origin") or "")
+    return (
+        requires_clean_reconstruction(row)
+        and candidate.get("provider_base_reconstruction_required") is True
+        and origin in {
+            "new-niakvio-clean-seed",
+            "pending-niakvio-clean-reconstruction-v2",
+        }
+    )
+
+
+def clean_reconstruction_has_strict_deep_proof(
     candidate: dict[str, Any],
     previous_base_row: dict[str, Any] | None,
     decision: dict[str, Any],
     mode: str,
 ) -> bool:
-    if not is_pending_clean_reconstruction_candidate(candidate, previous_base_row):
+    if not is_clean_reconstruction_migration_candidate(candidate, previous_base_row):
         return True
     health = candidate.get("health") if isinstance(candidate.get("health"), dict) else {}
     return (
@@ -2110,17 +2126,17 @@ def main() -> int:
 
             previous_base_row = previous_provenance.get("providers", {}).get(cid, {})
             if (
-                is_pending_clean_reconstruction_candidate(selected, previous_base_row)
-                and not pending_clean_reconstruction_has_strict_deep_proof(
+                is_clean_reconstruction_migration_candidate(selected, previous_base_row)
+                and not clean_reconstruction_has_strict_deep_proof(
                     selected,
                     previous_base_row,
                     decision,
                     mode,
                 )
             ):
-                # Pending v2 is migration state only. It must never make an
-                # activation decision. Preserve the exact published/LKG state
-                # until strict Deep proves the candidate.
+                # A clean ProviderBase migration (fresh or pending) must never replace
+                # production from a Quick/inconclusive/failed proof. Preserve the
+                # exact published/LKG state until strict Deep proves the candidate.
                 if old_artifact_available and isinstance(old_entry, dict) and old_entry:
                     retained = dict(old_entry)
                     entries[cid] = retained
@@ -2168,7 +2184,7 @@ def main() -> int:
                     )
                     continue
                 raise ValueError(
-                    f"{cid}: pending clean reconstruction lacks strict Deep proof "
+                    f"{cid}: clean reconstruction migration lacks strict Deep proof "
                     "and no published LKG artifact is available"
                 )
 
