@@ -166,7 +166,7 @@ jobs:
       # Scheduled Quick/Deep observation must never cancel an explicit push/deep
       # validation already checking ProviderBase state. Publication remains
       # serialized below and rejects stale validated SHAs before applying.
-      group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || 'main') }}
+      group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || github.sha) }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
     timeout-minutes: 90

@@ -229,20 +229,24 @@ assert "if previous_requires_clean:" in promoter
 assert "CLEAN_RECONSTRUCTION_SOURCE" in promoter
 assert "CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE" in promoter
 assert "is_pending_clean_reconstruction_candidate" in promoter
-assert "pending_clean_reconstruction_has_strict_deep_proof" in promoter
+assert "is_clean_reconstruction_migration_candidate" in promoter
+assert '"new-niakvio-clean-seed"' in promoter
+assert '"pending-niakvio-clean-reconstruction-v2"' in promoter
+assert "clean_reconstruction_has_strict_deep_proof" in promoter
 assert '"pending-canonical-deep-proof"' in promoter
 assert '"preserved-published-state-clean-candidate-pending"' in promoter
 assert 'retained = dict(old_entry)' in promoter
-pending_promoter_block = promoter.split(
-    'is_pending_clean_reconstruction_candidate(selected, previous_base_row)',
+migration_promoter_block = promoter.split(
+    'is_clean_reconstruction_migration_candidate(selected, previous_base_row)',
     1,
 )[1].split('\n            try:', 1)[0]
-assert 'retained["enabled"]' not in pending_promoter_block
-assert 'restore_pending_activation_lkg' not in pending_promoter_block
-assert 'pending_configured_disabled' not in pending_promoter_block
-assert 'old_safety_quarantine' not in pending_promoter_block
-assert '"activation_mode": str(' in pending_promoter_block
+assert 'retained["enabled"]' not in migration_promoter_block
+assert 'restore_pending_activation_lkg' not in migration_promoter_block
+assert 'pending_configured_disabled' not in migration_promoter_block
+assert 'old_safety_quarantine' not in migration_promoter_block
+assert '"activation_mode": str(' in migration_promoter_block
 assert 'str(mode) == "deep"' in promoter
+assert 'str(health.get("status") or "") == "healthy"' in promoter
 assert 'bool(decision.get("strict_activation_eligible", False))' in promoter
 
 sync_workflow = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")

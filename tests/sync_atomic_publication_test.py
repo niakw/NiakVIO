@@ -29,11 +29,12 @@ stage_block = workflow[workflow.index("  stage-and-test:"):workflow.index("\n  r
 resolve_block = workflow[workflow.index("\n  resolve-publish-source:\n"):workflow.index("\n  publish:\n")]
 publish_block = workflow[workflow.index("\n  publish:\n"):]
 
-# Long validation is latest-wins. Publication-source selection and the actual
-# Provider writer are isolated latest-wins lanes; cross-workflow safety is
-# enforced by freshness checks plus the final rebase immediately before push.
-assert "group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || 'main') }}" in stage_block
+# Scheduled and PR observation remain latest-wins, but a push validation is
+# isolated by commit SHA so a newer main push cannot cancel an already-running
+# Deep proof. Stale publication is still rejected by the freshness gate.
+assert "group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || github.sha) }}" in stage_block
 assert "cancel-in-progress: true" in stage_block
+assert "|| github.sha" in stage_block
 assert "group: nuvio-provider-publish-source-main" in resolve_block
 assert "cancel-in-progress: true" in resolve_block
 assert "group: niakvio-provider-publication-main" in publish_block
