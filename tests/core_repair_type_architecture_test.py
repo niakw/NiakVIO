@@ -44,7 +44,7 @@ assert "from provider_base_store import (" in reapply_source
 assert "    resolve_base," in reapply_source
 assert "provider_base = provider_base_path.read_bytes()" in reapply_source
 assert 'provider_base.decode("utf-8", errors="strict")' in reapply_source
-assert "from provider_base_store import resolve_base" in compiler_source
+assert "from provider_base_store import resolve_runtime_base" in compiler_source
 assert 'source_kind": "provider_base" if canonical_provider_base_mode' in compiler_source
 assert "from provider_base_store import (" in promoter_source
 assert "    persist_base_from_published," in promoter_source
