@@ -69,6 +69,24 @@ REPORT_PATH = ROOT / "health-report.json"
 PROVENANCE_PATH = ROOT / "PROVENANCE.json"
 VERSIONS_DIR = ROOT / "providers"
 
+NIAKVIO_MANIFEST_PROVIDER_FIELDS = (
+    "id",
+    "name",
+    "description",
+    "version",
+    "author",
+    "supportedTypes",
+    "logo",
+    "contentLanguage",
+    "formats",
+    "limited",
+    "supportsExternalPlayer",
+    "hasSettings",
+    "notes",
+)
+NIAKVIO_MANIFEST_OVERRIDE_FIELDS = set(NIAKVIO_MANIFEST_PROVIDER_FIELDS) | {"enabled"}
+
+
 
 def load_json(path: Path, default: Any = None) -> Any:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
@@ -365,12 +383,20 @@ def build_entry(
     if not isinstance(metadata, dict):
         raise ValueError(f"missing metadata for {candidate.get('key')}")
 
-    entry = dict(metadata)
+    # Provider repositories are knowledge sources, not manifest schemas.
+    # NiakVIO publishes only its own explicit provider contract.
+    entry = {
+        field: metadata[field]
+        for field in NIAKVIO_MANIFEST_PROVIDER_FIELDS
+        if field in metadata
+    }
     config = load_overrides()
     specific = (config.get("provider_patches") or {}).get(str(candidate.get("canonical_id") or "").casefold(), {})
     manifest_overrides = specific.get("manifest_overrides") or {}
     if isinstance(manifest_overrides, dict):
-        entry.update(manifest_overrides)
+        for field, value in manifest_overrides.items():
+            if field in NIAKVIO_MANIFEST_OVERRIDE_FIELDS:
+                entry[field] = value
     claims = claims if isinstance(claims, dict) else {}
     curated_types = [
         str(value)
@@ -402,6 +428,9 @@ def build_entry(
         entry["supportsExternalPlayer"] = "--nuvio-tv-global--" not in entry["filename"]
     force_disabled = isinstance(manifest_overrides, dict) and manifest_overrides.get("enabled") is False
     entry["enabled"] = bool(enabled) and not force_disabled
+    # Retain the native property for forward compatibility, but NiakVIO never
+    # imports platform-disable decisions from upstream repositories.
+    entry["disabledPlatforms"] = []
     if not isinstance(entry.get("id"), str) or not entry["id"].strip():
         entry["id"] = candidate.get("upstream_id") or candidate["canonical_id"]
     return entry
