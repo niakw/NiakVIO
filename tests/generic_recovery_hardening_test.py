@@ -18,9 +18,11 @@ def load(name: str, path: Path):
     return module
 
 
-# Historical peer domains must participate in generic candidate selection.
+# Historical peer domains are fallback-only. An explicit direct route is
+# authoritative and must suppress old peer/LKG candidates; history participates
+# only when NiakVIO has no current hub/direct route.
 hubs = load("hubs", ROOT / "scripts" / "resolve_provider_hubs.py")
-candidates, _ = hubs.gather_candidates(
+direct_candidates, _ = hubs.gather_candidates(
     "demo",
     {
         "direct_candidates": ["https://demo.current"],
@@ -32,9 +34,24 @@ candidates, _ = hubs.gather_candidates(
     "quick",
     0.1,
 )
+assert [row.get("source_type") for row in direct_candidates] == ["curated_direct"]
+assert all(row.get("url") != "https://demo.backup" for row in direct_candidates)
+
+history_candidates, _ = hubs.gather_candidates(
+    "demo",
+    {
+        "direct_candidates": [],
+        "historical_terminal_candidates": ["https://demo.backup"],
+        "sources": [],
+        "manifest_status": "Actif",
+    },
+    {},
+    "quick",
+    0.1,
+)
 assert any(
     row.get("url") == "https://demo.backup" and row.get("source_type") == "historical_peer"
-    for row in candidates
+    for row in history_candidates
 )
 
 # Runtime domain failover must retry a configured peer on HTTP 403.
