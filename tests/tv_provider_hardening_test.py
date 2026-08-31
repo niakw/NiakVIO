@@ -27,7 +27,7 @@ assert not [path for path in purstream_scripts if '/purstream_' in path], purstr
 purstream_options = patches['purstream'].get('patch_script_options', {})
 assert not [path for path in purstream_options if '/purstream_' in str(path)], purstream_options
 runtime_safety_source = (ROOT / 'scripts/provider_patches/runtime_capability_media_safety_v4.py').read_text(encoding='utf-8')
-assert 'field-safety-v6-core-repair-types' in runtime_safety_source
+assert 'field-safety-v7-stream-scoped-p2p-vod-duration' in runtime_safety_source
 assert 'collisionFixtures' in runtime_safety_source
 
 assert papa_anime in patches['papadustream'].get('patch_scripts', [])
