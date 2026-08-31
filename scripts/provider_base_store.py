@@ -47,6 +47,8 @@ DERIVED_BASE_MARKERS = (
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
     "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
     "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
+    "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1",
+    "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1",
     "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
     "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
     "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
@@ -359,8 +361,9 @@ def build_clean_provider_seed(
         "reconstructionState": "learning-clean-seed",
         "runtimeRole": "reader",
         "runtimeDiscovery": False,
-        "routePlanVersion": 1,
-        "authoring": "niakvio-owned-v2",
+        "routePlanVersion": 2,
+        "modelSchemaVersion": 3,
+        "authoring": "niakvio-owned-v3",
         "upstreamCodeEmbedded": False,
         "upstreamCodeExecuted": False,
     }
@@ -537,14 +540,31 @@ function _learnedUrls(kind, meta, mediaType, season, episode) {
   }
   return _uniq(out);
 }
+function _providerDeadlineExceeded() {
+  try {
+    const deadline = Number(globalThis && globalThis.__nuvioProviderDeadlineMs);
+    return Number.isFinite(deadline) && deadline > 0 && Date.now() >= deadline;
+  } catch (_) {
+    return false;
+  }
+}
+function _providerTimeoutError() {
+  const error = new Error("nuvio_provider_timeout");
+  error.name = "TimeoutError";
+  error.code = "NUVIO_PROVIDER_TIMEOUT";
+  error.__nuvioProviderTimeout = true;
+  return error;
+}
 async function _fetch(url, options) {
-  const response = await fetch(url, {
-    redirect: "follow",
-    headers: Object.assign({
-      "Accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-      "User-Agent": "Mozilla/5.0 NiakVIO/2"
-    }, (options && options.headers) || {})
-  });
+  if (_providerDeadlineExceeded()) throw _providerTimeoutError();
+  const requestOptions = options && typeof options === "object" ? Object.assign({}, options) : {};
+  requestOptions.redirect = requestOptions.redirect || "follow";
+  requestOptions.headers = Object.assign({
+    "Accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
+    "User-Agent": "Mozilla/5.0 NiakVIO/3"
+  }, requestOptions.headers || {});
+  const response = await fetch(url, requestOptions);
+  if (_providerDeadlineExceeded()) throw _providerTimeoutError();
   if (!response.ok) throw new Error("provider_http_" + response.status);
   return response;
 }
@@ -552,33 +572,33 @@ async function _tmdb(tmdbId, mediaType) {
   if (!tmdbId) return null;
   const type = _mediaNamespace(mediaType);
   const identity = type + ":" + String(tmdbId || "");
+  function project(row) {
+    if (!row || typeof row !== "object") return null;
+    return {
+      title: row.title || row.name || row.original_title || row.original_name || "",
+      year: String(row.release_date || row.first_air_date || row.year || "").slice(0, 4),
+      tmdbId: String(tmdbId || "")
+    };
+  }
+  try {
+    const ctx = typeof globalThis !== "undefined" ? globalThis.__nuvioMediaContext : null;
+    const ctxId = String(ctx && ctx.tmdbId || "");
+    const ctxNamespace = String(ctx && ctx.tmdbNamespace || "");
+    if (ctx && (!ctxId || ctxId === String(tmdbId)) && (!ctxNamespace || ctxNamespace === type)) {
+      const projected = project(ctx.tmdbMetadata);
+      if (projected) return projected;
+    }
+  } catch (_) {}
   try {
     const cache = typeof globalThis !== "undefined" ? globalThis.__nuvioTmdbMetadataCacheV1 : null;
     const cached = cache && cache[identity];
     if (cached && typeof cached.then !== "function") {
-      return {
-        title: cached.title || cached.name || cached.original_title || cached.original_name || "",
-        year: String(cached.release_date || cached.first_air_date || "").slice(0, 4),
-        tmdbId: String(tmdbId || "")
-      };
+      const row = cached.metadata && typeof cached.metadata === "object" ? cached.metadata : cached;
+      const projected = project(row);
+      if (projected) return projected;
     }
   } catch (_) {}
-  const key = typeof globalThis !== "undefined" ? globalThis.TMDB_API_KEY : null;
-  if (!key) return null;
-  try {
-    const response = await _fetch(
-      "https://api.themoviedb.org/3/" + type + "/" + encodeURIComponent(tmdbId) +
-      "?api_key=" + encodeURIComponent(key) + "&language=en-US"
-    );
-    const row = await response.json();
-    return {
-      title: row.title || row.name || row.original_title || row.original_name || "",
-      year: String(row.release_date || row.first_air_date || "").slice(0, 4),
-      tmdbId: String(tmdbId || "")
-    };
-  } catch (_) {
-    return null;
-  }
+  return null;
 }
 function _runtimeBases() {
   return _uniq([
@@ -749,9 +769,20 @@ function _recipeObjects(value, out) {
   }
   return out;
 }
-function _recipeScore(row, meta, recipe) {
+function _recipeMediaType(row, recipe) {
+  const raw = _recipeValue(row, recipe.typeFields || ["type","media_type","mediaType","kind","category"]).toLowerCase();
+  if (!raw) return "";
+  if (["tv","series","show","anime","episode"].includes(raw)) return "tv";
+  if (["movie","film"].includes(raw)) return "movie";
+  return "";
+}
+function _recipeScore(row, meta, recipe, expectedMedia) {
   const title = _slug(_recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]));
   const expected = _slug(meta && meta.title);
+  const actualMedia = _recipeMediaType(row, recipe);
+  if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
+  const year = _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4);
+  if (year && meta && meta.year && year !== _text(meta.year)) return -1;
   let score = 0;
   if (title && expected && title === expected) score += 200;
   else if (title && expected && (title.includes(expected) || expected.includes(title))) score += 90;
@@ -760,8 +791,8 @@ function _recipeScore(row, meta, recipe) {
       if (title.includes(token)) score += 10;
     }
   }
-  const year = _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4);
   if (year && meta && meta.year && year === _text(meta.year)) score += 40;
+  if (actualMedia && expectedMedia && actualMedia === expectedMedia) score += 60;
   if (_recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"])) score += 15;
   return score;
 }
@@ -879,7 +910,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
       const payload = await _recipePayload(url, recipe, null);
       if (!payload.value || typeof payload.value === "string") continue;
       const rows = _recipeObjects(payload.value, [])
-        .map(row => ({ row, score: _recipeScore(row, meta, recipe) }))
+        .map(row => ({ row, score: _recipeScore(row, meta, recipe, media) }))
         .filter(item => item.score > 0)
         .sort((a, b) => b.score - a.score);
       if (!rows.length) continue;

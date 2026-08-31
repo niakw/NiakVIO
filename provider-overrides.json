@@ -425,6 +425,13 @@
           "stream",
           "source",
           "file"
+        ],
+        "typeFields": [
+          "type",
+          "media_type",
+          "mediaType",
+          "kind",
+          "category"
         ]
       }
     },
@@ -2466,10 +2473,8 @@
       "allow_html_url": false,
       "observed_origins": [
         "https://purstream.wiki",
-        "https://api.purstream",
         "https://api.purstream.id",
-        "https://purstream.id",
-        "https://old.invalid"
+        "https://purstream.id"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -5630,13 +5635,14 @@
     "provider_backend_isolation": true
   },
   "playback_integrity_policy": {
-    "version": 3,
+    "version": 4,
     "enabled": true,
     "provider_disabling_is_not_a_repair": true,
     "global_discovery_hooks": [
       "scripts/provider_patches/hls_master_audio_preserver_v1.py",
       "scripts/provider_patches/hls_runtime_integrity_v1.py",
-      "scripts/provider_patches/global_provider_security_hardening_v1.py"
+      "scripts/provider_patches/global_provider_security_hardening_v1.py",
+      "scripts/provider_patches/native_hls_integrity_budget_v1.py"
     ],
     "hls_runtime_options": {
       "timeout_ms": 6500,
@@ -5649,11 +5655,13 @@
     "vf_catalogue_identity": "tmdb_metadata_plus_strict_title_year_match",
     "unknown_metadata_action": "return_no_recovery_match",
     "pre_media_discovery_hooks": [
-      "scripts/provider_patches/hls_runtime_integrity_v1.py"
+      "scripts/provider_patches/hls_runtime_integrity_v1.py",
+      "scripts/provider_patches/native_hls_integrity_budget_v1.py"
     ],
     "post_media_discovery_hooks": [
       "scripts/provider_patches/hls_master_audio_preserver_v1.py"
-    ]
+    ],
+    "native_hls_probe_policy": "skip_additional_integrity_network_probes_on_native_host_bridge"
   },
   "catalogue_resolution_policy": {
     "version": 3,

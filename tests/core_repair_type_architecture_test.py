@@ -26,6 +26,7 @@ GLOBAL = {
     "scripts/provider_patches/global_runtime_compat_v1.py",
     "scripts/provider_patches/global_stream_presentation_v1.py",
     "scripts/provider_patches/global_provider_branding_v1.py",
+    "scripts/provider_patches/global_media_type_resolution_v1.py",
 }
 leaks = {}
 for provider_id, row in (overrides.get("provider_patches") or {}).items():
@@ -36,6 +37,16 @@ for provider_id, row in (overrides.get("provider_patches") or {}).items():
         leaks[provider_id] = found
 assert not leaks, leaks
 assert "contains Core-global modules" in apply_source
+media_resolution_source = (ROOT / "scripts/provider_patches/global_media_type_resolution_v1.py").read_text(encoding="utf-8")
+assert "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1" in media_resolution_source
+assert "budgetedFetch" in media_resolution_source
+assert media_resolution_source.index("var a=await resolve(arguments);") > media_resolution_source.index("g.__nuvioProviderDeadlineMs=Date.now()+c.providerTimeoutMs")
+playback = overrides.get("playback_integrity_policy") or {}
+assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" in (playback.get("pre_media_discovery_hooks") or [])
+assert playback.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
+worker_source = (ROOT / "scripts/provider_worker.cjs").read_text(encoding="utf-8")
+assert "fixture.tmdbMetadata = fixtureMetadata" in worker_source
+assert "globalThis.__nuvioMediaContext" in worker_source
 assert "scripts.append(RUNTIME_PATCH)" not in runtime_upgrade_source
 assert '"scope": "all_published_providers"' in runtime_upgrade_source
 assert 'runtime_safety.pop("targets", None)' in runtime_upgrade_source

@@ -219,6 +219,7 @@ def infer_api_recipe(
         "titleFields": ["title", "name", "original_title", "post_title"],
         "yearFields": ["year", "release_date", "first_air_date"],
         "sourceFields": ["url", "stream_url", "stream", "source", "file"],
+        "typeFields": ["type", "media_type", "mediaType", "kind", "category"],
     }
     if stream and episode:
         recipe["episodeRoute"] = (
@@ -453,30 +454,62 @@ def clean_provider_model(
     overrides: dict[str, Any],
     known_site: str | None,
 ) -> dict[str, Any]:
-    """Merge trusted configuration with freshly extracted static provider facts."""
+    """Merge trusted configuration with current static facts without reviving stale domains."""
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     capabilities = overrides.get("provider_capabilities") if isinstance(overrides.get("provider_capabilities"), dict) else {}
     patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
     capability = capabilities.get(provider_id) if isinstance(capabilities.get(provider_id), dict) else {}
     fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
+    strategy = str(patch.get("capability") or capability.get("strategy") or "unknown").strip().casefold()
+
+    trusted_values = [
+        known_site,
+        patch.get("official_site"),
+        patch.get("official_hub"),
+        patch.get("official_api"),
+        fixed.get("api"),
+        fixed.get("referer"),
+    ]
+    trusted_hosts: set[str] = set()
+    trusted_origins: list[str] = []
+    for raw in trusted_values:
+        value = str(raw or "").strip()
+        if not value:
+            continue
+        try:
+            parsed = urllib.parse.urlparse(value)
+        except ValueError:
+            continue
+        host = (parsed.hostname or "").casefold()
+        if not host or host not in _plausible_hosts([host]):
+            continue
+        trusted_hosts.add(host)
+        origin = f"{parsed.scheme if parsed.scheme in {'http', 'https'} else 'https'}://{parsed.netloc}"
+        if parsed.netloc and origin not in trusted_origins:
+            trusted_origins.append(origin)
+
+    def host_is_trusted(host: str) -> bool:
+        value = str(host or "").strip().casefold()
+        if not value:
+            return False
+        if not trusted_hosts:
+            return True
+        return any(
+            value == trusted
+            or value.endswith("." + trusted)
+            or trusted.endswith("." + value)
+            for trusted in trusted_hosts
+        )
 
     learned_routes: list[str] = []
-    for source in (
-        patch.get("learned_routes"),
-        capability.get("routes"),
-        knowledge.get("routes"),
-    ):
+    for source in (patch.get("learned_routes"), capability.get("routes"), knowledge.get("routes")):
         for raw in source if isinstance(source, list) else []:
             value = normalize_route_literal(str(raw or "").strip()) or str(raw or "").strip()
             if value and value != "/" and value not in learned_routes:
                 learned_routes.append(value)
 
     learned_urls: list[str] = []
-    for source in (
-        patch.get("learned_urls"),
-        capability.get("observed_urls"),
-        knowledge.get("observedUrls"),
-    ):
+    for source in (patch.get("learned_urls"), capability.get("observed_urls"), knowledge.get("observedUrls")):
         for raw in source if isinstance(source, list) else []:
             value = str(raw or "").strip()
             if not value:
@@ -485,10 +518,14 @@ def clean_provider_model(
                 host = (urllib.parse.urlparse(value).hostname or "").casefold()
             except ValueError:
                 continue
-            if host and host in _plausible_hosts([host] + list(knowledge.get("hosts") or [])) and value not in learned_urls:
+            if not host or host not in _plausible_hosts([host] + list(knowledge.get("hosts") or [])):
+                continue
+            if strategy == "official_domain_hub" and not host_is_trusted(host):
+                continue
+            if value not in learned_urls:
                 learned_urls.append(value)
 
-    origin_candidates: list[str] = []
+    origin_candidates: list[str] = list(trusted_origins)
     for value in capability.get("observed_origins") or []:
         value = str(value or "").strip()
         if value:
@@ -521,19 +558,32 @@ def clean_provider_model(
     for value, host in parsed_origins:
         if host not in allowed_origin_hosts:
             continue
+        if strategy == "official_domain_hub" and not host_is_trusted(host):
+            continue
         parsed = urllib.parse.urlparse(value if value.startswith(("http://", "https://")) else "https://" + value.lstrip("/"))
         origin = f"{parsed.scheme}://{parsed.netloc}" if parsed.netloc else ""
         if origin and origin not in origins:
             origins.append(origin)
 
     recipe = infer_api_recipe(knowledge, patch, fixed)
+    if isinstance(recipe, dict):
+        recipe = dict(recipe)
+        recipe.setdefault("typeFields", ["type", "media_type", "mediaType", "kind", "category"])
+        if strategy == "official_domain_hub":
+            for key in ("base", "referer", "origin"):
+                raw = str(recipe.get(key) or "").strip()
+                if not raw:
+                    continue
+                try:
+                    host = (urllib.parse.urlparse(raw).hostname or "").casefold()
+                except ValueError:
+                    host = ""
+                if not host_is_trusted(host):
+                    recipe.pop(key, None)
+
     return {
         "knownSite": str(known_site or "").strip() or None,
-        "strategy": str(
-            patch.get("capability")
-            or capability.get("strategy")
-            or "unknown"
-        ).strip().casefold(),
+        "strategy": strategy,
         "officialSite": str(patch.get("official_site") or "").strip() or None,
         "officialHub": str(patch.get("official_hub") or "").strip() or None,
         "officialApi": str(patch.get("official_api") or "").strip() or None,
@@ -618,7 +668,7 @@ def executable_seed(
             provider_model,
         )
 
-    if reconstruction_required and (clean_reconstruction or force_clean_reconstruction):
+    if force_clean_reconstruction or (reconstruction_required and clean_reconstruction):
         return (
             build_clean_provider_seed(
                 provider_id,

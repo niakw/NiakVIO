@@ -760,6 +760,26 @@ async function main() {
   fixture.mediaType = canonicalType;
   fixture.type = canonicalType;
   if (canonicalType === 'anime') fixture.category = 'anime';
+  const fixtureMetadata = context.fixtureMetadata && typeof context.fixtureMetadata === 'object'
+    ? { ...context.fixtureMetadata }
+    : {};
+  const tmdbNamespace = canonicalType === 'movie' ? 'movie' : 'tv';
+  if (Object.keys(fixtureMetadata).length) {
+    fixtureMetadata.__nuvioTmdbNamespace = fixtureMetadata.__nuvioTmdbNamespace || tmdbNamespace;
+    fixtureMetadata.__nuvioTmdbId = fixtureMetadata.__nuvioTmdbId || String(fixture.tmdbId || '');
+    fixtureMetadata.canonicalMediaType = fixtureMetadata.canonicalMediaType || canonicalType;
+    fixture.tmdbMetadata = fixtureMetadata;
+    fixture.tmdbNamespace = tmdbNamespace;
+    globalThis.__nuvioMediaContext = {
+      tmdbId: String(fixture.tmdbId || ''),
+      tmdbNamespace,
+      tmdbIdentity: tmdbNamespace + ':' + String(fixture.tmdbId || ''),
+      tmdbMetadata: fixtureMetadata,
+      canonicalMediaType: canonicalType,
+      nuvioInputMediaType: inputType,
+      tmdbResolutionDegraded: false,
+    };
+  }
   const startedAt = Date.now();
   const loaded = await loadProvider(providerPath);
   const getStreams = findGetStreams(loaded);

@@ -64,7 +64,7 @@ for provider_id in provider_ids:
         clean.append(provider_id)
         assert row.get("clean_reconstruction_required") is False
         assert row.get("clean_reconstruction_verified") is True
-        assert row.get("clean_reconstruction_authoring_version", 0) >= 2
+        assert row.get("clean_reconstruction_authoring_version", 0) >= base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION
 
 # This migration intentionally resets trust for every pre-v2 base, including
 # AniZone/DVDPlay. The assertion should shrink only as providers acquire an
@@ -112,7 +112,7 @@ pending_row = {
     "base_source": base_store.CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
     "clean_reconstruction_candidate": True,
     "clean_reconstruction_verified": False,
-    "clean_reconstruction_authoring_version": 2,
+    "clean_reconstruction_authoring_version": base_store.CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
 }
 assert base_store.is_clean_reconstruction_candidate(pending_row) is True
 assert base_store.requires_clean_reconstruction(pending_row) is True
@@ -147,6 +147,39 @@ assert '"legacy-providerbase-compatibility-only"' in discover
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in discover
 assert "scripts/provider_patches/castle_strict_identity_v1.py" in base_store_source
 assert "excluded_patch_scripts=CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in base_store_source
+assert '"modelSchemaVersion": 3' in base_store_source
+assert '"routePlanVersion": 2' in base_store_source
+tmdb_block = base_store_source.split("async function _tmdb(tmdbId, mediaType) {", 1)[1].split("function _runtimeBases() {", 1)[0]
+assert "TMDB_API_KEY" not in tmdb_block
+assert "api.themoviedb.org" not in tmdb_block
+assert "__nuvioMediaContext" in tmdb_block
+assert "NUVIO_PROVIDER_TIMEOUT" in base_store_source
+assert "function _recipeMediaType" in base_store_source
+assert "actualMedia !== expectedMedia" in base_store_source
+assert "year !== _text(meta.year)" in base_store_source
+assert "force_clean_reconstruction or (reconstruction_required and clean_reconstruction)" in discover
+
+discover_spec = importlib.util.spec_from_file_location("discover_clean_contract", SCRIPTS / "discover_candidates.py")
+assert discover_spec is not None and discover_spec.loader is not None
+discover_module = importlib.util.module_from_spec(discover_spec)
+discover_spec.loader.exec_module(discover_module)
+contract_overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+polluted = {
+    "hosts": ["purstream.id", "api.purstream.id", "api.purstream", "old.invalid", "raw.githubu"],
+    "routes": ["/search-bar/search/{query}"],
+    "observedUrls": ["https://api.purstream.id/api/v1", "https://api.purstream/foo", "https://old.invalid/x"],
+    "routeFragments": [],
+}
+purstream_model = discover_module.clean_provider_model(
+    "purstream",
+    polluted,
+    contract_overrides,
+    "https://purstream.id",
+)
+assert purstream_model["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
+assert "https://api.purstream.id" in purstream_model["origins"]
+assert all("api.purstream/" not in value and "old.invalid" not in value for value in purstream_model["origins"])
+assert all("old.invalid" not in value and "raw.githubu" not in value for value in purstream_model["observedUrls"])
 
 profiles_builder = (SCRIPTS / "build_provider_runtime_profiles.py").read_text(encoding="utf-8")
 assert "CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS" in profiles_builder

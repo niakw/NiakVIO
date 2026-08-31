@@ -77,7 +77,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-api-first-every-provider-v10-core-identity",
+        "revision": "tmdb-api-first-every-provider-v11-global-budget",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -89,6 +89,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 
     js = r'''
 /* MARKER_PLACEHOLDER */
+/* NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1 */
 ;(function(g,c){"use strict";
 function s(v){return String(v==null?"":v).trim()}
 function normalizeKey(v){var x=s(v);if(x.length===33&&x.charCodeAt(0)===92&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
@@ -272,6 +273,7 @@ async function resolve(a){
   // Provider capability filtering happens only after canonical movie|tv|anime
   // classification so transport aliases can never suppress a valid anime match.
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
+  if(!metadata){try{var existingContext=g&&g.__nuvioMediaContext;if(existingContext&&existingContext.tmdbMetadata)metadata=existingContext.tmdbMetadata}catch(_){}}
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
   var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
   var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
@@ -304,26 +306,51 @@ async function resolve(a){
   }
   var out=Array.prototype.slice.call(a);if(resolvedTmdbId)out[0]=resolvedTmdbId;out[1]=type;out.__nuvioContext=context;return out;
 }
+function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
+function deadlineValue(){try{var n=Number(g&&g.__nuvioProviderDeadlineMs);return Number.isFinite(n)&&n>0?n:0}catch(_){return 0}}
+function deadlineExpired(){var n=deadlineValue();return n>0&&Date.now()>=n}
+function budgetedFetch(original){
+  if(typeof original!=="function")return original;
+  if(original.__nuvioProviderExecutionBudgetV1)return original;
+  var wrapped=async function(){
+    if(deadlineExpired())throw providerTimeoutError();
+    var args=Array.prototype.slice.call(arguments),deadline=deadlineValue(),remaining=deadline>0?Math.max(1,deadline-Date.now()):0;
+    if(remaining>0&&args.length>=1){
+      var init=args[1]&&typeof args[1]==="object"?Object.assign({},args[1]):{};
+      if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(remaining)}catch(_){}}
+      args[1]=init;
+    }
+    var value=await original.apply(this,args);
+    if(deadlineExpired())throw providerTimeoutError();
+    return value;
+  };
+  try{Object.defineProperty(wrapped,"__nuvioProviderExecutionBudgetV1",{value:true})}catch(_){wrapped.__nuvioProviderExecutionBudgetV1=true}
+  return wrapped;
+}
 function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
   var native=o[k];
   var wrap=async function(){
-    var a=await resolve(arguments);
-    if(!a)return [];
-    var had=false,previous,hadDeadline=false,previousDeadline;
+    var had=false,previous,hadDeadline=false,previousDeadline,hadFetch=false,previousFetch,budgetFetchInstalled=false;
     try{
       had=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"));
       previous=g&&g.__nuvioMediaContext;
       hadDeadline=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"));
       previousDeadline=g&&g.__nuvioProviderDeadlineMs;
+      hadFetch=!!(g&&Object.prototype.hasOwnProperty.call(g,"fetch"));
+      previousFetch=g&&g.fetch;
     }catch(_){}
     try{
       if(g){
-        g.__nuvioMediaContext=a.__nuvioContext||null;
-        g.__nuvioProviderDeadlineMs=Date.now()+c.providerTimeoutMs;
+        var existing=Number(previousDeadline);
+        if(!(Number.isFinite(existing)&&existing>Date.now()))g.__nuvioProviderDeadlineMs=Date.now()+c.providerTimeoutMs;
+        if(typeof previousFetch==="function"){g.fetch=budgetedFetch(previousFetch);budgetFetchInstalled=g.fetch!==previousFetch;}
       }
+      var a=await resolve(arguments);
+      if(!a||deadlineExpired())return [];
+      if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
       var value=await native.apply(this,a);
-      try{if(g&&Number(g.__nuvioProviderDeadlineMs)>0&&Date.now()>Number(g.__nuvioProviderDeadlineMs))return []}catch(_){}
+      if(deadlineExpired())return [];
       return value;
     }catch(error){
       if(error&&error.__nuvioProviderTimeout)return [];
@@ -332,6 +359,7 @@ function install(o,k){
       try{
         if(g){
           if(had)g.__nuvioMediaContext=previous;else delete g.__nuvioMediaContext;
+          if(budgetFetchInstalled){if(hadFetch)g.fetch=previousFetch;else delete g.fetch}
           if(hadDeadline)g.__nuvioProviderDeadlineMs=previousDeadline;else delete g.__nuvioProviderDeadlineMs;
         }
       }catch(_){}
