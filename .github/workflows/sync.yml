@@ -213,6 +213,12 @@ jobs:
               fi
             fi
           fi
+          # A one-shot ProviderBase reconstruction is a publication migration,
+          # never a Quick observation. Keep it in Deep until the request is
+          # consumed by a validated publication transaction.
+          if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then
+            MODE=deep
+          fi
           echo "validation_mode=${MODE}" >> "$GITHUB_OUTPUT"
           echo "Resolved validation mode: ${MODE}"
 

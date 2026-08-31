@@ -105,6 +105,12 @@ for manifest_path in (ROOT / "manifest.json", ROOT / "vf" / "manifest.json"):
         if "anime" in canonical or ("anime" in supported and canonical == []):
             assert "tv" in supported, (manifest_path, row.get("id"), supported, canonical)
 
+# Explicit one-shot migrations must force canonical Deep proof before publication.
+sync_workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
+assert "if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then" in sync_workflow
+deep_trigger_block = sync_workflow.split("if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then", 1)[1].split("fi", 1)[0]
+assert "MODE=deep" in deep_trigger_block
+
 # Explicit one-shot migration remains scoped to Purstream until the clean base is materialized.
 trigger = ROOT / ".github" / "triggers" / "force-clean-provider-reconstruction.json"
 if trigger.exists():
