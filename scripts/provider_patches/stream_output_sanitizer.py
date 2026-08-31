@@ -108,6 +108,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }catch(_e){}
     return false;
   }
+  function streamSlot(value){if(Array.isArray(value))return {key:null,list:value};if(value&&typeof value==="object"){for(var i=0;i<3;i++){var key=["streams","results","data"][i];if(Array.isArray(value[key]))return {key:key,list:value[key]}}}return null}
+  function rebuild(value,slot,list){if(slot.key===null)return list;var out=Object.assign({},value);out[slot.key]=list;return out}
   function urlOf(stream){return stream&&typeof stream.url==="string"?stream.url.trim():""}
   function directExtension(url){return /(?:\.m3u8?|\.mpd|\.mp4|\.m4v|\.mov|\.mkv|\.webm|\.mpeg|\.mpg|\.ogv)(?:[?#]|$)/i.test(String(url||""))}
   function isDirect(stream,url){
@@ -232,10 +234,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     var original=container[key];
     var wrapped=async function(){
       var result=await original.apply(this,arguments);
-      if(!Array.isArray(result))return result;
-      var seen=Object.create(null),candidates=[],probeCount=0;
-      for(var i=0;i<result.length;i++){
-        var stream=result[i],url=urlOf(stream);
+      var slot=streamSlot(result);
+      if(!slot)return [];
+      var rows=slot.list,seen=Object.create(null),candidates=[],probeCount=0;
+      for(var i=0;i<rows.length;i++){
+        var stream=rows[i],url=urlOf(stream);
         if(!url||blocked(url)||seen[url])continue;
         seen[url]=true;
         candidates.push({stream:stream,url:url,rank:rank(stream,url),index:i});
@@ -248,7 +251,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         if(!item.probe)return item.stream;
         return await probe(item.stream,item.url)?item.stream:null;
       }));
-      return checked.filter(Boolean);
+      return rebuild(result,slot,checked.filter(Boolean));
     };
     wrapped.__nuvioSanitized=true;
     wrapped.__nuvioOriginal=original;
