@@ -1668,37 +1668,59 @@ def activation_decision(
     evidence_registry: dict[str, Any] | None = None,
     previous_record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Enable only a provider proven functional by the current deep run.
+    """Keep provider activation provider-scoped and stream decisions stream-scoped.
 
-    Publication separates provider state from child stream state:
-      1. provider-specific runtime access/quality gates must pass;
-      2. at least one safe surviving stream must prove current capability;
-      3. type and stream-quality gates remain scoped diagnostics and never
-         disable the provider globally by themselves.
+    Global manifest activation is based on provider accessibility/runtime health.
+    Stream results belong to the sampled work. A provider already proven and
+    published must not be disabled because one work returns zero/bad streams.
 
-    DNS is observed independently by the daily domain job and never participates
-    in activation or publication decisions.
-
-    Historical state, an old SHA, manual runtime evidence, or an inconclusive
-    result can never enable a provider. They remain diagnostic data only.
+    A provider that has never been proven still needs one surviving playable
+    stream during onboarding before its first activation.
     """
     gates, proof = pre_evaluation
     gates = {name: dict(value) for name, value in gates.items()}
 
-    status = str(item.get("health", {}).get("status", "runtime_error"))
+    health = item.get("health", {}) if isinstance(item.get("health"), dict) else {}
+    stream_status = str(health.get("stream_status") or health.get("status") or "no_streams")
+    provider_status = str(
+        health.get("provider_status")
+        or proof.get("provider_status")
+        or "provider_unreachable"
+    )
     upstream_enabled = bool(item.get("metadata", {}).get("enabled", True))
     respect_upstream = bool(activation.get("respect_upstream_disabled_state", True))
 
     access_pass = bool(proof.get("provider_server_successful_response", False))
+    performance_pass = bool(proof.get("performance", {}).get("passed", False))
+    provider_pass = (
+        access_pass
+        and provider_status == "reachable"
+        and provider_gates_pass(gates)
+        and performance_pass
+    )
     stream_pass = (
-        status == "healthy"
-        and int(proof.get("streams_playable", 0)) > 0
-        and int(proof.get("healthy_fixtures", 0)) > 0
+        int(proof.get("streams_playable", 0) or 0) > 0
+        and int(proof.get("payload_verified_streams", 0) or 0) > 0
+    )
+
+    previous_record = previous_record or {}
+    previous_mode = str(previous_record.get("activation_mode") or "")
+    previously_proven = bool(
+        previous_record.get("activation_eligible") is True
+        or previous_record.get("strict_activation_eligible") is True
+        or previous_mode in {
+            "strict_current",
+            "strict",
+            "preserved_current_ci_uncertain",
+            "preserved-published-state",
+        }
+        or previous_record.get("strict_validated_sha256")
     )
 
     gates["00_provider_specific_access"] = gate(
         access_pass,
         {
+            "provider_status": provider_status,
             "provider_server_successful_response": proof.get("provider_server_successful_response", False),
             "provider_server_hosts": proof.get("provider_server_hosts", []),
             "provider_server_http_statuses": proof.get("provider_server_http_statuses", []),
@@ -1709,71 +1731,86 @@ def activation_decision(
     gates["00_current_playable_stream"] = gate(
         stream_pass,
         {
-            "status": status,
+            "stream_status": stream_status,
             "streams_playable": proof.get("streams_playable", 0),
+            "payload_verified_streams": proof.get("payload_verified_streams", 0),
             "healthy_fixtures": proof.get("healthy_fixtures", 0),
-            "effective_max_height": proof.get("effective_max_height"),
         },
-        {"required": "at least one safe surviving stream on the sampled catalogue"},
-        scope="capability",
+        {
+            "required_for": "first_activation_only",
+            "already_proven_provider_kept_on_per_work_zero_stream": True,
+        },
+        scope="stream",
     )
 
-    current_pass = (
-        access_pass
-        and stream_pass
-        and all_gates_pass(gates)
-        and capability_gates_pass(gates)
-        and bool(proof.get("performance", {}).get("passed", False))
-    )
-    # ``enabled:false`` in an upstream manifest is advisory when this exact JS
-    # has just passed Niakvio's own strict current deep proof. Treating the flag
-    # as a hard veto caused proven-working providers (for example Desiflix) to
-    # disappear with no failed activation gate. Hard P2P evidence and every
-    # current access/media/quality gate above remain authoritative.
+    onboarding_stream_required = not previously_proven
+    onboarding_pass = stream_pass if onboarding_stream_required else True
+    current_pass = provider_pass and onboarding_pass
+
     upstream_disabled_overridden_by_current_strict_proof = bool(
-        respect_upstream and not upstream_enabled and current_pass
+        respect_upstream
+        and not upstream_enabled
+        and provider_pass
+        and stream_pass
     )
+
     eligible = current_pass
     enabled = eligible and not auto_disabled
-    blockers = [
+    provider_blockers = [
         name
         for name, value in gates.items()
-        if str(value.get("scope") or "provider") in {"provider", "capability"}
+        if str(value.get("scope") or "provider") == "provider"
         and not value.get("passed")
     ]
-    nonblocking_diagnostics = [
+    stream_findings = [
         name
         for name, value in gates.items()
-        if str(value.get("scope") or "provider") in {"stream", "type"}
+        if str(value.get("scope") or "provider") == "stream"
         and not value.get("passed")
     ]
-    if respect_upstream and not upstream_enabled and not current_pass:
+    blockers = list(provider_blockers)
+    if onboarding_stream_required and not stream_pass:
+        blockers.append("onboarding_requires_first_playable_stream")
+    if respect_upstream and not upstream_enabled and not upstream_disabled_overridden_by_current_strict_proof:
         blockers.append("upstream_disabled")
+        enabled = False
+        eligible = False
     if eligible and auto_disabled:
         blockers.append("availability_auto_disabled")
 
     disabled_reason = None
-    if not access_pass:
-        disabled_reason = "provider_specific_access_failed"
-    elif not stream_pass:
-        disabled_reason = "no_current_playable_stream"
-    elif blockers:
-        disabled_reason = "provider_or_capability_gate_failed"
+    if not provider_pass:
+        disabled_reason = "provider_level_health_failed"
+    elif onboarding_stream_required and not stream_pass:
+        disabled_reason = "onboarding_stream_proof_missing"
+    elif respect_upstream and not upstream_enabled and not upstream_disabled_overridden_by_current_strict_proof:
+        disabled_reason = "upstream_disabled"
 
     return {
         "enabled": enabled,
         "activation_eligible": eligible,
-        "strict_activation_eligible": eligible,
+        "strict_activation_eligible": eligible and stream_pass,
         "strict_grace_eligible": False,
         "historical_quality_grace_eligible": False,
         "runtime_evidence_eligible": False,
-        "activation_mode": "strict_current" if eligible else "disabled",
+        "activation_mode": (
+            "strict_current"
+            if eligible and stream_pass
+            else "provider_proven_stream_scope_preserved"
+            if eligible and previously_proven
+            else "disabled"
+        ),
         "activation_blockers": blockers,
-        "activation_nonblocking_diagnostics": nonblocking_diagnostics,
+        "provider_blockers": provider_blockers,
+        "stream_findings": stream_findings,
         "activation_gates": gates,
         "proof": proof,
-        "historical_quality_grace": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
-        "runtime_evidence": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
+        "provider_pass": provider_pass,
+        "stream_pass_for_sampled_work": stream_pass,
+        "onboarding_stream_required": onboarding_stream_required,
+        "previously_proven_provider": previously_proven,
+        "historical_quality_grace": {"eligible": False, "reason": "provider_stream_scope_separated"},
+        "runtime_evidence": {"eligible": False, "reason": "provider_stream_scope_separated"},
         "disabled_reason": disabled_reason,
         "upstream_disabled_overridden_by_current_strict_proof": upstream_disabled_overridden_by_current_strict_proof,
     }
