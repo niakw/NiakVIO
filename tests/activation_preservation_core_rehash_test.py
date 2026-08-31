@@ -127,7 +127,7 @@ assert adapter._record_requires_baseline_restore({
     "action": "preserved-published-state-clean-candidate-pending",
     "enabled": False,
     "failed_gates": [],
-}) is False
+}) is True
 assert adapter._record_requires_baseline_restore({
     "action": "preserved-published-state-clean-candidate-pending",
     "enabled": True,

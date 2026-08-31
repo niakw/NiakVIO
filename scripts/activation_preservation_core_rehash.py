@@ -45,7 +45,11 @@ def _record_requires_baseline_restore(record: dict[str, Any]) -> bool:
         return True
     if action != _CLEAN_PENDING_PRESERVE_ACTION:
         return False
-    return bool(record.get("enabled") is True and not (record.get("failed_gates") or []))
+    # The Quick clean-migration report may carry enabled=false even when the
+    # publication action explicitly says to preserve the previously published
+    # state. Absence of failed gates is the decisive signal; the baseline/LKG
+    # remains the activation authority until conclusive evidence says otherwise.
+    return not bool(record.get("failed_gates") or [])
 
 
 def _load_json(path: Path) -> dict[str, Any]:
