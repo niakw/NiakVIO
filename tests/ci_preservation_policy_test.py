@@ -17,6 +17,8 @@ preserve_statuses = set(config.get('preserve_enabled_on_ci_uncertain_statuses', 
 inconclusive_statuses = set(config.get('inconclusive_statuses', []))
 assert expected <= preserve_statuses
 assert preserve_statuses <= inconclusive_statuses
+assert 'degraded' in inconclusive_statuses
+assert 'degraded' in preserve_statuses
 assert {'degraded', 'unavailable'}.isdisjoint(preserve_statuses)
 assert config.get('zero_stream_is_per_work_not_manifest_disable') is True
 assert config.get('provider_accessibility_is_separate_from_stream_accessibility') is True
