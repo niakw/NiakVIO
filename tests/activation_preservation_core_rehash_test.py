@@ -114,6 +114,26 @@ with tempfile.TemporaryDirectory() as tmp:
     finally:
         legacy.ROOT = original_root
 
+assert adapter._record_requires_baseline_restore({
+    "action": legacy.INCONCLUSIVE_DISABLE_ACTION,
+    "enabled": False,
+}) is True
+assert adapter._record_requires_baseline_restore({
+    "action": "preserved-published-state-clean-candidate-pending",
+    "enabled": True,
+    "failed_gates": [],
+}) is True
+assert adapter._record_requires_baseline_restore({
+    "action": "preserved-published-state-clean-candidate-pending",
+    "enabled": False,
+    "failed_gates": [],
+}) is False
+assert adapter._record_requires_baseline_restore({
+    "action": "preserved-published-state-clean-candidate-pending",
+    "enabled": True,
+    "failed_gates": ["current_playable_stream"],
+}) is False
+
 print("activation preservation deterministic Core rehash tests passed")
 
 # Pending clean-v2 migration state must not hard-block P2 activation preservation.

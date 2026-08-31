@@ -35,6 +35,17 @@ _REHASHABLE_REASONS = {
 }
 _LEGACY_CONFIGURED_SAFETY_QUARANTINE = legacy.configured_safety_quarantine
 _BASELINE_ENV = "NUVIO_PUBLISHED_MANIFEST_BASELINE"
+_CLEAN_PENDING_PRESERVE_ACTION = "preserved-published-state-clean-candidate-pending"
+
+
+def _record_requires_baseline_restore(record: dict[str, Any]) -> bool:
+    """Return true only for non-conclusive reports that explicitly preserve published state."""
+    action = str(record.get("action") or "")
+    if action == legacy.INCONCLUSIVE_DISABLE_ACTION:
+        return True
+    if action != _CLEAN_PENDING_PRESERVE_ACTION:
+        return False
+    return bool(record.get("enabled") is True and not (record.get("failed_gates") or []))
 
 
 def _load_json(path: Path) -> dict[str, Any]:
@@ -243,7 +254,7 @@ def restore_inconclusive_previous_state() -> list[str]:
         record = report_by_id.get(provider_id)
         if not isinstance(record, dict):
             continue
-        if str(record.get("action") or "") != legacy.INCONCLUSIVE_DISABLE_ACTION:
+        if not _record_requires_baseline_restore(record):
             continue
         current_row = current_rows.get(provider_id)
         if isinstance(current_row, dict) and current_row.get("enabled") is True:
