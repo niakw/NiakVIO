@@ -22,7 +22,12 @@ from reapply_published_overrides import (  # noqa: E402
 # a final tree guard, rather than only a staging-unit test.
 promote = (ROOT / 'scripts/promote_candidates.py').read_text(encoding='utf-8')
 workflow = (ROOT / '.github/workflows/sync.yml').read_text(encoding='utf-8')
-assert 'apply_overrides(candidate["canonical_id"], staged_data)' in promote
+copy_candidate_block = promote.split("def copy_candidate(", 1)[1].split("\ndef build_entry(", 1)[0]
+assert "apply_overrides(" not in copy_candidate_block, (
+    "promotion must copy the already-derived staging bytes and never replay provider fixes"
+)
+assert "data = staged_data" in copy_candidate_block
+assert "digest = staged_digest" in copy_candidate_block
 assert 'python scripts/validate_published_overrides.py' in workflow
 reapply = (ROOT / 'scripts/reapply_published_overrides.py').read_text(encoding='utf-8')
 assert 'parser.add_argument(\n        "--primary",' in reapply
