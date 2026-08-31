@@ -283,22 +283,38 @@ def validate_javascript(data: bytes, url: str) -> None:
         raise ValueError(f"HTML received instead of JavaScript: {url}")
 
 
-def exclusion_reason(entry: dict[str, Any], data: bytes | None, exclusions: dict[str, Any]) -> str | None:
-    provider_id = canonical_id(str(entry.get("id") or entry.get("name") or ""))
-    explicit_ids = {canonical_id(str(value)) for value in exclusions.get("provider_ids", [])}
-    if provider_id in explicit_ids:
-        return "explicitly excluded P2P/torrent provider id"
+def stream_policy_markers(
+    entry: dict[str, Any],
+    data: bytes | None,
+    exclusions: dict[str, Any],
+) -> list[str]:
+    """Return stream-level P2P/torrent hints without condemning the provider.
 
+    Only an explicitly configured provider id is a provider-level exclusion.
+    Metadata/script markers merely mean that individual returned rows require
+    sanitization; mixed HTTP/HLS providers must remain eligible.
+    """
+    markers: list[str] = []
     metadata_text = json.dumps(entry, ensure_ascii=False, sort_keys=True).casefold()
     for pattern in exclusions.get("metadata_patterns", []):
-        if str(pattern).casefold() in metadata_text:
-            return f"metadata contains excluded P2P/torrent marker: {pattern}"
+        token = str(pattern).casefold()
+        if token and token in metadata_text:
+            markers.append(f"metadata:{pattern}")
 
     if data is not None:
         script_text = data[:2_000_000].decode("utf-8", errors="ignore").casefold()
         for pattern in exclusions.get("script_patterns", []):
-            if str(pattern).casefold() in script_text:
-                return f"script contains excluded P2P/torrent marker: {pattern}"
+            token = str(pattern).casefold()
+            if token and token in script_text:
+                markers.append(f"script:{pattern}")
+    return sorted(set(markers))
+
+
+def exclusion_reason(entry: dict[str, Any], data: bytes | None, exclusions: dict[str, Any]) -> str | None:
+    provider_id = canonical_id(str(entry.get("id") or entry.get("name") or ""))
+    explicit_ids = {canonical_id(str(value)) for value in exclusions.get("provider_ids", [])}
+    if provider_id in explicit_ids:
+        return "explicitly excluded P2P/torrent-only provider id"
     return None
 
 
@@ -934,6 +950,7 @@ def main() -> int:
                         ),
                         "legacy_provider_js_executed_for_reconstruction": False,
                         "local_patches": applied_patches,
+                        "stream_policy_markers": stream_policy_markers(entry, data, exclusions),
                         "bytes": len(candidate_data),
                         "metadata": reconstruction_manifest_entry(
                             provider_id, entry, overrides
@@ -1070,6 +1087,7 @@ def main() -> int:
             ),
             "legacy_provider_js_executed_for_reconstruction": False,
             "local_patches": applied_patches,
+            "stream_policy_markers": stream_policy_markers(entry, data, exclusions),
             "baseline_origin": "published_manifest",
             "bytes": len(candidate_data),
             "metadata": reconstruction_manifest_entry(provider_id, dict(entry), overrides),
