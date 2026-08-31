@@ -970,33 +970,18 @@ def result_evidence(result: dict[str, Any]) -> dict[str, Any]:
 def independently_proven_categories(
     result: dict[str, Any], activation: dict[str, Any]
 ) -> set[str]:
-    """Return catalogue types that independently pass current media proof.
+    """Return provider media types proven by surviving stream objects.
 
-    This is deliberately stricter than merely observing a healthy provider. A
-    type is eligible only when at least one current fixture for that type has a
-    verified playable payload, meets the unchanged quality/bitrate floor, and
-    carries accepted FR/EN audio or subtitle evidence. The result can safely
-    narrow supportedTypes without allowing a good movie to mask a broken TV
-    path (or vice versa).
+    Type capability is provider-level. Stream resolution, bitrate, language,
+    subtitle richness and latency are stream-quality attributes and must not
+    decide whether the provider supports movie/tv/anime.
     """
-    tests = result.get("tests") if isinstance(result.get("tests"), list) else []
-    minimum_streams = int(activation.get("minimum_playable_streams", 1))
-    minimum_payload = int(activation.get("minimum_payload_verified_streams", 1))
-    minimum_height = int(activation.get("minimum_effective_height", 0))
-    minimum_bandwidth = int(activation.get("minimum_bandwidth_bps_when_reported", 0))
-    accepted_audio = {
-        str(value).casefold() for value in activation.get("accepted_audio_languages", ["fr", "en"])
-    }
-    accepted_subtitles = {
-        str(value).casefold() for value in activation.get("accepted_subtitle_languages", ["fr", "en"])
-    }
-    require_language = bool(activation.get("require_accepted_language_evidence", False))
-    require_reachable_subtitles = bool(
-        activation.get("require_reachable_accepted_subtitle_when_advertised", True)
-    )
+    tests = [row for row in (result.get("tests") or []) if isinstance(row, dict)]
+    minimum_streams = max(1, int(activation.get("minimum_playable_streams", 1)))
+    minimum_payload = max(1, int(activation.get("minimum_payload_verified_streams", 1)))
     proven: set[str] = set()
     for test in tests:
-        if not isinstance(test, dict) or test.get("status") != "healthy":
+        if test.get("status") != "healthy":
             continue
         category = str((test.get("fixture") or {}).get("category") or "")
         if category not in {"movie", "tv", "anime"}:
@@ -1005,25 +990,9 @@ def independently_proven_categories(
             continue
         if int(test.get("payload_verified_streams", 0)) < minimum_payload:
             continue
-        height = int(test.get("effective_max_height", 0) or 0)
-        bandwidth_raw = test.get("max_bandwidth")
-        bandwidth = int(bandwidth_raw) if bandwidth_raw else None
-        if minimum_height > 0 and height > 0 and height < minimum_height:
+        if int(test.get("playable_identity_contradiction_count", 0) or 0) > 0:
             continue
-        if minimum_bandwidth > 0 and bandwidth is not None and bandwidth < minimum_bandwidth:
-            continue
-        audio = {
-            str(value).casefold() for value in test.get("accepted_audio_languages", []) if value
-        } & accepted_audio
-        subtitles = {
-            str(value).casefold() for value in test.get("accepted_subtitle_languages", []) if value
-        } & accepted_subtitles
-        advertised = int(test.get("accepted_subtitles_advertised", 0) or 0)
-        reachable = int(test.get("accepted_subtitles_reachable", 0) or 0)
-        subtitle_ok = bool(subtitles) and (
-            not require_reachable_subtitles or advertised == 0 or reachable > 0
-        )
-        if require_language and not (audio or subtitle_ok):
+        if int(test.get("playable_duration_identity_mismatch_count", 0) or 0) > 0:
             continue
         proven.add(category)
     return proven
