@@ -29,23 +29,32 @@ assert workflow.count("      - 'tests/sync_atomic_publication_test.py'") == 2, (
     "Sync must run on its publication contract test changes for both PR and main push"
 )
 
-stage_block = workflow[workflow.index("  stage-and-test:"):workflow.index("\n  publish:\n")]
+stage_block = workflow[workflow.index("  stage-and-test:"):workflow.index("\n  resolve-publish-source:\n")]
+resolve_block = workflow[workflow.index("\n  resolve-publish-source:\n"):workflow.index("\n  publish:\n")]
 publish_block = workflow[workflow.index("\n  publish:\n"):]
 
-# Long validation is latest-wins and may be cancelled, but the actual main writer
-# lane is publication-only, shared with Add Provider, and never cancels an active writer.
+# Long validation is latest-wins. Publication-source selection and the actual
+# Provider writer are isolated latest-wins lanes; cross-workflow safety is
+# enforced by freshness checks plus the final rebase immediately before push.
 assert "group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || 'main') }}" in stage_block
 assert "cancel-in-progress: true" in stage_block
-assert "group: nuvio-provider-publish-main" in publish_block
-assert "cancel-in-progress: false" in publish_block
-assert "if: github.event_name != 'pull_request'" in publish_block, (
+assert "group: nuvio-provider-publish-source-main" in resolve_block
+assert "cancel-in-progress: true" in resolve_block
+assert "group: niakvio-provider-publication-main" in publish_block
+assert "cancel-in-progress: true" in publish_block
+assert "github.event_name != 'pull_request'" in resolve_block
+assert "github.event_name != 'pull_request'" in publish_block, (
     "PR validation must never publish provider transactions to main"
 )
 assert "validated_sha: ${{ steps.validated-tree.outputs.sha }}" in stage_block
+assert "validated_sha: ${{ steps.source.outputs.validated_sha }}" in resolve_block
 assert "Reject stale validated transaction" in publish_block
-assert 'VALIDATED_SHA: ${{ needs.stage-and-test.outputs.validated_sha }}' in publish_block
+assert 'VALIDATED_SHA: ${{ needs.resolve-publish-source.outputs.validated_sha }}' in publish_block
+assert 'PUBLISH_ONLY: ${{ needs.resolve-publish-source.outputs.publish_only }}' in publish_block
 assert 'FIELD_PROVIDER_PUBLICATION_SKIPPED reason=main_advanced' in publish_block
+assert 'FIELD_PROVIDER_PUBLICATION_RESUME validated=$VALIDATED_SHA current=$CURRENT_SHA' in publish_block
 assert "steps.freshness.outputs.stale != 'true'" in publish_block
+assert "nuvio-validation-stage-${{ needs.resolve-publish-source.outputs.artifact_run_id }}" in publish_block
 
 assert "ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}" in stage_block, (
     "serialized main runs must validate the current main tree when they actually start"
