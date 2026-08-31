@@ -23,17 +23,16 @@ assert patched.count("NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2:") == 1
 runner = r'''
 const assert=require('assert');
 function response(body,status=200,type='application/json',url=''){return {ok:status>=200&&status<400,status,url,headers:{get(n){return String(n).toLowerCase()==='content-type'?type:null}},async json(){return JSON.parse(body)},async text(){return body}}}
-global.TMDB_API_KEY=String(1);
-global.fetch=async function(url){url=String(url);
- if(url.includes('/movie/424242?')&&url.includes('language=fr-FR'))return response(JSON.stringify({id:424242,title:'Mon ninja et moi 3',original_title:'Ternet Ninja 3',release_date:'2025-08-21'}),200,'application/json',url);
- if(url.includes('/movie/424242?')&&url.includes('language=en-US'))return response(JSON.stringify({id:424242,title:'Checkered Ninja 3',original_title:'Ternet Ninja 3',release_date:'2025-08-21'}),200,'application/json',url);
- if(url.includes('/movie/424242/alternative_titles?'))return response(JSON.stringify({titles:[]}),200,'application/json',url);
+const metadata={id:424242,title:'Mon ninja et moi 3',original_title:'Ternet Ninja 3',release_date:'2025-08-21',alternative_titles:{titles:[]},external_ids:{imdb_id:'tt0000001'}};
+global.__nuvioMediaContext={tmdbId:'424242',canonicalMediaType:'movie',tmdbMetadata:{state:'ok',metadata}};
+const seen=[];
+global.fetch=async function(url){url=String(url);seen.push(url);
  if(url.startsWith('https://catalog.example/?s=')||url.startsWith('https://catalog.example/search?'))return response('<a href="/ternet-ninja-3-2025">Ternet Ninja 3 (2025)</a>',200,'text/html',url);
  if(url==='https://catalog.example/ternet-ninja-3-2025')return response('<h1>Ternet Ninja 3 (2025)</h1><iframe src="https://player.example/e/correct"></iframe>',200,'text/html',url);
  return response('',404,'text/plain',url);
 };
 PATCHED
-(async()=>{const rows=await module.exports.getStreams({id:'tmdb:424242',mediaType:'movie',title:'Mon ninja et moi 3',year:2025});assert.strictEqual(rows.length,1,JSON.stringify(rows));assert.strictEqual(rows[0].url,'https://player.example/e/correct');console.log('strict native identity guard runtime test passed')})().catch(e=>{console.error(e);process.exit(1)});
+(async()=>{const rows=await module.exports.getStreams({id:'tmdb:424242',mediaType:'movie',title:'Mon ninja et moi 3',year:2025});assert.strictEqual(rows.length,1,JSON.stringify(rows));assert.strictEqual(rows[0].url,'https://player.example/e/correct');assert.ok(seen.every(url=>!url.includes('api.themoviedb.org')),JSON.stringify(seen));console.log('strict native identity guard runtime test passed')})().catch(e=>{console.error(e);process.exit(1)});
 '''.replace('PATCHED', patched)
 with tempfile.NamedTemporaryFile('w', prefix='niakvio-identity-', suffix='.cjs', delete=False, encoding='utf-8') as handle:
     handle.write(runner); path=Path(handle.name)
