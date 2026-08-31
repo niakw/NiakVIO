@@ -130,11 +130,16 @@ one_shows_candidates, preferred = resolver.choose_official(
 assert preferred == 'https://1flixto.icu'
 assert resolver.same_brand('1shows', preferred, hubs['1shows'])
 
-assert hubs['allwish']['resolver'] == 'latest_telegram_domain'
+assert hubs['allwish']['resolver'] == 'telegram_description'
 allwish_html = '''
+<div class="tgme_channel_info">
+  <div class="tgme_channel_info_description">All-Wish official domain:
+    <a href="https://all-wish.me/">https://all-wish.me/</a>
+  </div>
+</div>
 <div class="tgme_widget_message" data-post="allwishme/44">
-  <div>All-Wish : nouvelle adresse officielle</div>
-  <a href="https://all-wish.me/">https://all-wish.me/</a>
+  <div>Latest community post</div>
+  <a href="https://example.org/">example.org</a>
 </div>
 '''
 _allwish_candidates, preferred = resolver.choose_official(
