@@ -296,36 +296,114 @@
       "transport_source": "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt",
       "result_model_source": "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
       "capabilities": {
-        "runtime_engine": {"state": "native", "detail": "QuickJS"},
-        "get_streams_signature": {"state": "native", "detail": "getStreams(tmdbId, mediaType, season, episode)"},
-        "scraper_id": {"state": "native", "detail": "SCRAPER_ID injected"},
-        "scraper_settings": {"state": "native", "detail": "SCRAPER_SETTINGS injected"},
-        "tmdb_api_key": {"state": "absent", "detail": "no TMDB_API_KEY runtime global"},
-        "fetch_bridge": {"state": "bridge", "detail": "async __native_fetch → OkHttp"},
-        "http_stack": {"state": "native", "detail": "OkHttp"},
-        "proxy_policy": {"state": "native", "detail": "JVM/system default; no NO_PROXY override"},
-        "dns_policy": {"state": "native", "detail": "IPv4FirstDns"},
-        "redirects": {"state": "native", "detail": "HTTP + SSL redirects enabled"},
-        "timeouts": {"state": "native", "detail": "60s HTTP; 60s plugin runtime"},
-        "abort_controller": {"state": "polyfill", "detail": "AbortController / AbortSignal"},
-        "url_api": {"state": "polyfill", "detail": "URL + URLSearchParams over native URL parser"},
-        "base64": {"state": "polyfill", "detail": "atob + btoa"},
-        "text_codec": {"state": "polyfill", "detail": "TextEncoder + TextDecoder"},
-        "cheerio_dom": {"state": "bridge", "detail": "Cheerio-compatible API over native parser"},
-        "require_commonjs": {"state": "polyfill", "detail": "require() / CommonJS compatibility"},
-        "cryptojs": {"state": "bridge", "detail": "CryptoJS compatibility"},
-        "webassembly": {"state": "bridge", "detail": "WebAssembly compatibility bridge"},
-        "exception_to_empty": {"state": "native", "detail": "getStreams failures are caught and surfaced as []"},
-        "stream_headers": {"state": "native", "detail": "PluginRuntimeResult.headers retained"},
-        "subtitles": {"state": "native", "detail": "PluginRuntimeResult.subtitles retained"},
-        "torrent_fields": {"state": "native", "detail": "seeders / peers / infoHash retained"},
-        "behavior_hints_projection": {"state": "absent", "detail": "runtime result keeps raw headers; behaviorHints is downstream"}
-      }
+        "runtime_engine": {
+          "state": "native",
+          "detail": "QuickJS"
+        },
+        "get_streams_signature": {
+          "state": "native",
+          "detail": "getStreams(tmdbId, mediaType, season, episode)"
+        },
+        "scraper_id": {
+          "state": "native",
+          "detail": "SCRAPER_ID injected"
+        },
+        "scraper_settings": {
+          "state": "native",
+          "detail": "SCRAPER_SETTINGS injected"
+        },
+        "tmdb_api_key": {
+          "state": "absent",
+          "detail": "no TMDB_API_KEY runtime global"
+        },
+        "fetch_bridge": {
+          "state": "bridge",
+          "detail": "async __native_fetch → OkHttp"
+        },
+        "http_stack": {
+          "state": "native",
+          "detail": "OkHttp"
+        },
+        "proxy_policy": {
+          "state": "native",
+          "detail": "JVM/system default; no NO_PROXY override"
+        },
+        "dns_policy": {
+          "state": "native",
+          "detail": "IPv4FirstDns"
+        },
+        "redirects": {
+          "state": "native",
+          "detail": "HTTP + SSL redirects enabled"
+        },
+        "timeouts": {
+          "state": "native",
+          "detail": "60s HTTP; 60s plugin runtime"
+        },
+        "abort_controller": {
+          "state": "polyfill",
+          "detail": "AbortController / AbortSignal"
+        },
+        "url_api": {
+          "state": "polyfill",
+          "detail": "URL + URLSearchParams over native URL parser"
+        },
+        "base64": {
+          "state": "polyfill",
+          "detail": "atob + btoa"
+        },
+        "text_codec": {
+          "state": "polyfill",
+          "detail": "TextEncoder + TextDecoder"
+        },
+        "cheerio_dom": {
+          "state": "bridge",
+          "detail": "Cheerio-compatible API over native parser"
+        },
+        "require_commonjs": {
+          "state": "polyfill",
+          "detail": "require() / CommonJS compatibility"
+        },
+        "cryptojs": {
+          "state": "bridge",
+          "detail": "CryptoJS compatibility"
+        },
+        "webassembly": {
+          "state": "bridge",
+          "detail": "WebAssembly compatibility bridge"
+        },
+        "exception_to_empty": {
+          "state": "native",
+          "detail": "getStreams failures are caught and surfaced as []"
+        },
+        "stream_headers": {
+          "state": "native",
+          "detail": "PluginRuntimeResult.headers retained"
+        },
+        "subtitles": {
+          "state": "native",
+          "detail": "PluginRuntimeResult.subtitles retained"
+        },
+        "torrent_fields": {
+          "state": "native",
+          "detail": "seeders / peers / infoHash retained"
+        },
+        "behavior_hints_projection": {
+          "state": "absent",
+          "detail": "runtime result keeps raw headers; behaviorHints is downstream"
+        }
+      },
+      "stream_session_teardown_guaranteed": false,
+      "navigation_cancellation_note": "Current source cancels the stream coroutine/job, but teardown of already-entered native QuickJS/fetch work across media navigation is not proven. Restart-only recovery is client lifecycle evidence, not provider disablement proof."
     },
     "windows": {
       "display_name": "Windows",
       "family": "desktop-quickjs",
-      "platform_tags": ["desktop", "jvm", "windows"],
+      "platform_tags": [
+        "desktop",
+        "jvm",
+        "windows"
+      ],
       "plugin_runtime": "quickjs-positional-getStreams",
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioDesktop",
@@ -340,36 +418,114 @@
       "transport_source": "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt",
       "result_model_source": "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
       "capabilities": {
-        "runtime_engine": {"state": "native", "detail": "QuickJS"},
-        "get_streams_signature": {"state": "native", "detail": "getStreams(tmdbId, mediaType, season, episode)"},
-        "scraper_id": {"state": "native", "detail": "SCRAPER_ID injected"},
-        "scraper_settings": {"state": "native", "detail": "SCRAPER_SETTINGS injected"},
-        "tmdb_api_key": {"state": "absent", "detail": "no TMDB_API_KEY runtime global"},
-        "fetch_bridge": {"state": "bridge", "detail": "async __native_fetch → OkHttp"},
-        "http_stack": {"state": "native", "detail": "OkHttp"},
-        "proxy_policy": {"state": "native", "detail": "JVM/system default; no NO_PROXY override"},
-        "dns_policy": {"state": "native", "detail": "IPv4FirstDns"},
-        "redirects": {"state": "native", "detail": "HTTP + SSL redirects enabled"},
-        "timeouts": {"state": "native", "detail": "60s HTTP; 60s plugin runtime"},
-        "abort_controller": {"state": "polyfill", "detail": "AbortController / AbortSignal"},
-        "url_api": {"state": "polyfill", "detail": "URL + URLSearchParams over native URL parser"},
-        "base64": {"state": "polyfill", "detail": "atob + btoa"},
-        "text_codec": {"state": "polyfill", "detail": "TextEncoder + TextDecoder"},
-        "cheerio_dom": {"state": "bridge", "detail": "Cheerio-compatible API over native parser"},
-        "require_commonjs": {"state": "polyfill", "detail": "require() / CommonJS compatibility"},
-        "cryptojs": {"state": "bridge", "detail": "CryptoJS compatibility"},
-        "webassembly": {"state": "bridge", "detail": "WebAssembly compatibility bridge"},
-        "exception_to_empty": {"state": "native", "detail": "getStreams failures are caught and surfaced as []"},
-        "stream_headers": {"state": "native", "detail": "PluginRuntimeResult.headers retained"},
-        "subtitles": {"state": "native", "detail": "PluginRuntimeResult.subtitles retained"},
-        "torrent_fields": {"state": "native", "detail": "seeders / peers / infoHash retained"},
-        "behavior_hints_projection": {"state": "absent", "detail": "runtime result keeps raw headers; behaviorHints is downstream"}
-      }
+        "runtime_engine": {
+          "state": "native",
+          "detail": "QuickJS"
+        },
+        "get_streams_signature": {
+          "state": "native",
+          "detail": "getStreams(tmdbId, mediaType, season, episode)"
+        },
+        "scraper_id": {
+          "state": "native",
+          "detail": "SCRAPER_ID injected"
+        },
+        "scraper_settings": {
+          "state": "native",
+          "detail": "SCRAPER_SETTINGS injected"
+        },
+        "tmdb_api_key": {
+          "state": "absent",
+          "detail": "no TMDB_API_KEY runtime global"
+        },
+        "fetch_bridge": {
+          "state": "bridge",
+          "detail": "async __native_fetch → OkHttp"
+        },
+        "http_stack": {
+          "state": "native",
+          "detail": "OkHttp"
+        },
+        "proxy_policy": {
+          "state": "native",
+          "detail": "JVM/system default; no NO_PROXY override"
+        },
+        "dns_policy": {
+          "state": "native",
+          "detail": "IPv4FirstDns"
+        },
+        "redirects": {
+          "state": "native",
+          "detail": "HTTP + SSL redirects enabled"
+        },
+        "timeouts": {
+          "state": "native",
+          "detail": "60s HTTP; 60s plugin runtime"
+        },
+        "abort_controller": {
+          "state": "polyfill",
+          "detail": "AbortController / AbortSignal"
+        },
+        "url_api": {
+          "state": "polyfill",
+          "detail": "URL + URLSearchParams over native URL parser"
+        },
+        "base64": {
+          "state": "polyfill",
+          "detail": "atob + btoa"
+        },
+        "text_codec": {
+          "state": "polyfill",
+          "detail": "TextEncoder + TextDecoder"
+        },
+        "cheerio_dom": {
+          "state": "bridge",
+          "detail": "Cheerio-compatible API over native parser"
+        },
+        "require_commonjs": {
+          "state": "polyfill",
+          "detail": "require() / CommonJS compatibility"
+        },
+        "cryptojs": {
+          "state": "bridge",
+          "detail": "CryptoJS compatibility"
+        },
+        "webassembly": {
+          "state": "bridge",
+          "detail": "WebAssembly compatibility bridge"
+        },
+        "exception_to_empty": {
+          "state": "native",
+          "detail": "getStreams failures are caught and surfaced as []"
+        },
+        "stream_headers": {
+          "state": "native",
+          "detail": "PluginRuntimeResult.headers retained"
+        },
+        "subtitles": {
+          "state": "native",
+          "detail": "PluginRuntimeResult.subtitles retained"
+        },
+        "torrent_fields": {
+          "state": "native",
+          "detail": "seeders / peers / infoHash retained"
+        },
+        "behavior_hints_projection": {
+          "state": "absent",
+          "detail": "runtime result keeps raw headers; behaviorHints is downstream"
+        }
+      },
+      "stream_session_teardown_guaranteed": false,
+      "navigation_cancellation_note": "Current source cancels the stream coroutine/job, but teardown of already-entered native QuickJS/fetch work across media navigation is not proven. Restart-only recovery is client lifecycle evidence, not provider disablement proof."
     },
     "linux": {
       "display_name": "Linux",
       "family": "desktop-quickjs",
-      "platform_tags": ["desktop", "jvm", "linux"],
+      "platform_tags": [
+        "desktop",
+        "jvm",
+        "linux"
+      ],
       "plugin_runtime": "quickjs-positional-getStreams",
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioDesktop",
@@ -384,36 +540,113 @@
       "transport_source": "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt",
       "result_model_source": "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
       "capabilities": {
-        "runtime_engine": {"state": "native", "detail": "QuickJS"},
-        "get_streams_signature": {"state": "native", "detail": "getStreams(tmdbId, mediaType, season, episode)"},
-        "scraper_id": {"state": "native", "detail": "SCRAPER_ID injected"},
-        "scraper_settings": {"state": "native", "detail": "SCRAPER_SETTINGS injected"},
-        "tmdb_api_key": {"state": "absent", "detail": "no TMDB_API_KEY runtime global"},
-        "fetch_bridge": {"state": "bridge", "detail": "async __native_fetch → OkHttp"},
-        "http_stack": {"state": "native", "detail": "OkHttp"},
-        "proxy_policy": {"state": "native", "detail": "JVM/system default; no NO_PROXY override"},
-        "dns_policy": {"state": "native", "detail": "IPv4FirstDns"},
-        "redirects": {"state": "native", "detail": "HTTP + SSL redirects enabled"},
-        "timeouts": {"state": "native", "detail": "60s HTTP; 60s plugin runtime"},
-        "abort_controller": {"state": "polyfill", "detail": "AbortController / AbortSignal"},
-        "url_api": {"state": "polyfill", "detail": "URL + URLSearchParams over native URL parser"},
-        "base64": {"state": "polyfill", "detail": "atob + btoa"},
-        "text_codec": {"state": "polyfill", "detail": "TextEncoder + TextDecoder"},
-        "cheerio_dom": {"state": "bridge", "detail": "Cheerio-compatible API over native parser"},
-        "require_commonjs": {"state": "polyfill", "detail": "require() / CommonJS compatibility"},
-        "cryptojs": {"state": "bridge", "detail": "CryptoJS compatibility"},
-        "webassembly": {"state": "bridge", "detail": "WebAssembly compatibility bridge"},
-        "exception_to_empty": {"state": "native", "detail": "getStreams failures are caught and surfaced as []"},
-        "stream_headers": {"state": "native", "detail": "PluginRuntimeResult.headers retained"},
-        "subtitles": {"state": "native", "detail": "PluginRuntimeResult.subtitles retained"},
-        "torrent_fields": {"state": "native", "detail": "seeders / peers / infoHash retained"},
-        "behavior_hints_projection": {"state": "absent", "detail": "runtime result keeps raw headers; behaviorHints is downstream"}
-      }
+        "runtime_engine": {
+          "state": "native",
+          "detail": "QuickJS"
+        },
+        "get_streams_signature": {
+          "state": "native",
+          "detail": "getStreams(tmdbId, mediaType, season, episode)"
+        },
+        "scraper_id": {
+          "state": "native",
+          "detail": "SCRAPER_ID injected"
+        },
+        "scraper_settings": {
+          "state": "native",
+          "detail": "SCRAPER_SETTINGS injected"
+        },
+        "tmdb_api_key": {
+          "state": "absent",
+          "detail": "no TMDB_API_KEY runtime global"
+        },
+        "fetch_bridge": {
+          "state": "bridge",
+          "detail": "async __native_fetch → OkHttp"
+        },
+        "http_stack": {
+          "state": "native",
+          "detail": "OkHttp"
+        },
+        "proxy_policy": {
+          "state": "native",
+          "detail": "JVM/system default; no NO_PROXY override"
+        },
+        "dns_policy": {
+          "state": "native",
+          "detail": "IPv4FirstDns"
+        },
+        "redirects": {
+          "state": "native",
+          "detail": "HTTP + SSL redirects enabled"
+        },
+        "timeouts": {
+          "state": "native",
+          "detail": "60s HTTP; 60s plugin runtime"
+        },
+        "abort_controller": {
+          "state": "polyfill",
+          "detail": "AbortController / AbortSignal"
+        },
+        "url_api": {
+          "state": "polyfill",
+          "detail": "URL + URLSearchParams over native URL parser"
+        },
+        "base64": {
+          "state": "polyfill",
+          "detail": "atob + btoa"
+        },
+        "text_codec": {
+          "state": "polyfill",
+          "detail": "TextEncoder + TextDecoder"
+        },
+        "cheerio_dom": {
+          "state": "bridge",
+          "detail": "Cheerio-compatible API over native parser"
+        },
+        "require_commonjs": {
+          "state": "polyfill",
+          "detail": "require() / CommonJS compatibility"
+        },
+        "cryptojs": {
+          "state": "bridge",
+          "detail": "CryptoJS compatibility"
+        },
+        "webassembly": {
+          "state": "bridge",
+          "detail": "WebAssembly compatibility bridge"
+        },
+        "exception_to_empty": {
+          "state": "native",
+          "detail": "getStreams failures are caught and surfaced as []"
+        },
+        "stream_headers": {
+          "state": "native",
+          "detail": "PluginRuntimeResult.headers retained"
+        },
+        "subtitles": {
+          "state": "native",
+          "detail": "PluginRuntimeResult.subtitles retained"
+        },
+        "torrent_fields": {
+          "state": "native",
+          "detail": "seeders / peers / infoHash retained"
+        },
+        "behavior_hints_projection": {
+          "state": "absent",
+          "detail": "runtime result keeps raw headers; behaviorHints is downstream"
+        }
+      },
+      "stream_session_teardown_guaranteed": false,
+      "navigation_cancellation_note": "Current source cancels the stream coroutine/job, but teardown of already-entered native QuickJS/fetch work across media navigation is not proven. Restart-only recovery is client lifecycle evidence, not provider disablement proof."
     },
     "android-tv": {
       "display_name": "Android TV",
       "family": "tv-quickjs",
-      "platform_tags": ["android-tv", "tv"],
+      "platform_tags": [
+        "android-tv",
+        "tv"
+      ],
       "plugin_runtime": "quickjs-positional-getStreams",
       "external_player_hint_preserved": false,
       "source_repository": "NuvioMedia/NuvioTV",
@@ -428,31 +661,105 @@
       "transport_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
       "result_model_source": "app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt",
       "capabilities": {
-        "runtime_engine": {"state": "native", "detail": "QuickJS"},
-        "get_streams_signature": {"state": "native", "detail": "getStreams(tmdbId, mediaType, season, episode)"},
-        "scraper_id": {"state": "native", "detail": "SCRAPER_ID injected"},
-        "scraper_settings": {"state": "native", "detail": "SCRAPER_SETTINGS injected"},
-        "tmdb_api_key": {"state": "native", "detail": "TMDB_API_KEY injected from BuildConfig"},
-        "fetch_bridge": {"state": "bridge", "detail": "blocking native fetch behind async JS fetch → OkHttp"},
-        "http_stack": {"state": "native", "detail": "OkHttp"},
-        "proxy_policy": {"state": "native", "detail": "Proxy.NO_PROXY"},
-        "dns_policy": {"state": "native", "detail": "IPv4FirstDns"},
-        "redirects": {"state": "native", "detail": "HTTP + SSL redirects enabled"},
-        "timeouts": {"state": "native", "detail": "30s HTTP; 60s plugin runtime; 120s outer scraper safety net"},
-        "abort_controller": {"state": "polyfill", "detail": "AbortController / AbortSignal; pre/post checks + coroutine cancellation of in-flight calls"},
-        "url_api": {"state": "polyfill", "detail": "URL + URLSearchParams over native URL parser"},
-        "base64": {"state": "polyfill", "detail": "atob + btoa"},
-        "text_codec": {"state": "absent", "detail": "TextEncoder / TextDecoder not exposed by current PluginRuntime"},
-        "cheerio_dom": {"state": "bridge", "detail": "Cheerio-compatible API over Jsoup"},
-        "require_commonjs": {"state": "polyfill", "detail": "require() / CommonJS compatibility"},
-        "cryptojs": {"state": "bridge", "detail": "CryptoJS source/bytecode bundle"},
-        "webassembly": {"state": "absent", "detail": "no WebAssembly bridge in current PluginRuntime"},
-        "exception_to_empty": {"state": "native", "detail": "getStreams failures are caught and surfaced as []"},
-        "stream_headers": {"state": "native", "detail": "LocalScraperResult.headers retained"},
-        "subtitles": {"state": "absent", "detail": "LocalScraperResult has no subtitles field"},
-        "torrent_fields": {"state": "native", "detail": "seeders / peers / infoHash retained"},
-        "behavior_hints_projection": {"state": "bridge", "detail": "headers → behaviorHints.proxyHeaders.request; local-plugin bingeGroup"}
-      }
+        "runtime_engine": {
+          "state": "native",
+          "detail": "QuickJS"
+        },
+        "get_streams_signature": {
+          "state": "native",
+          "detail": "getStreams(tmdbId, mediaType, season, episode)"
+        },
+        "scraper_id": {
+          "state": "native",
+          "detail": "SCRAPER_ID injected"
+        },
+        "scraper_settings": {
+          "state": "native",
+          "detail": "SCRAPER_SETTINGS injected"
+        },
+        "tmdb_api_key": {
+          "state": "native",
+          "detail": "TMDB_API_KEY injected from BuildConfig"
+        },
+        "fetch_bridge": {
+          "state": "bridge",
+          "detail": "blocking native fetch behind async JS fetch → OkHttp"
+        },
+        "http_stack": {
+          "state": "native",
+          "detail": "OkHttp"
+        },
+        "proxy_policy": {
+          "state": "native",
+          "detail": "Proxy.NO_PROXY"
+        },
+        "dns_policy": {
+          "state": "native",
+          "detail": "IPv4FirstDns"
+        },
+        "redirects": {
+          "state": "native",
+          "detail": "HTTP + SSL redirects enabled"
+        },
+        "timeouts": {
+          "state": "native",
+          "detail": "30s HTTP; 60s plugin runtime; 120s outer scraper safety net"
+        },
+        "abort_controller": {
+          "state": "polyfill",
+          "detail": "AbortController / AbortSignal; pre/post checks + coroutine cancellation of in-flight calls"
+        },
+        "url_api": {
+          "state": "polyfill",
+          "detail": "URL + URLSearchParams over native URL parser"
+        },
+        "base64": {
+          "state": "polyfill",
+          "detail": "atob + btoa"
+        },
+        "text_codec": {
+          "state": "absent",
+          "detail": "TextEncoder / TextDecoder not exposed by current PluginRuntime"
+        },
+        "cheerio_dom": {
+          "state": "bridge",
+          "detail": "Cheerio-compatible API over Jsoup"
+        },
+        "require_commonjs": {
+          "state": "polyfill",
+          "detail": "require() / CommonJS compatibility"
+        },
+        "cryptojs": {
+          "state": "bridge",
+          "detail": "CryptoJS source/bytecode bundle"
+        },
+        "webassembly": {
+          "state": "absent",
+          "detail": "no WebAssembly bridge in current PluginRuntime"
+        },
+        "exception_to_empty": {
+          "state": "native",
+          "detail": "getStreams failures are caught and surfaced as []"
+        },
+        "stream_headers": {
+          "state": "native",
+          "detail": "LocalScraperResult.headers retained"
+        },
+        "subtitles": {
+          "state": "absent",
+          "detail": "LocalScraperResult has no subtitles field"
+        },
+        "torrent_fields": {
+          "state": "native",
+          "detail": "seeders / peers / infoHash retained"
+        },
+        "behavior_hints_projection": {
+          "state": "bridge",
+          "detail": "headers → behaviorHints.proxyHeaders.request; local-plugin bingeGroup"
+        }
+      },
+      "stream_session_teardown_guaranteed": false,
+      "navigation_cancellation_note": "Current source cancels the stream coroutine/job, but teardown of already-entered native QuickJS/fetch work across media navigation is not proven. Restart-only recovery is client lifecycle evidence, not provider disablement proof."
     }
   },
   "canonical_platform_tokens": [
