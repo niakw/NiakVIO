@@ -76,13 +76,14 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     payload = {
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
+        "preflightTmdb": bool(cfg.get("preflight_tmdb", True)),
         "semanticTypes": semantic_types,
         "requestTypeAliases": {
             str(key).strip().lower(): str(value).strip().lower()
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v15-canonical-reset-request-session-isolation",
+        "revision": "tmdb-api-first-semantic-transport-split-v16-deferred-verification-session-isolation",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -278,6 +279,54 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
   return null;
 }
 function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
+function provisional(a){
+  var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
+  var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
+  var raw=s(input).toLowerCase(),namespace=namespaceOf(input);
+  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+  var type=raw==="anime"?"anime":namespace;
+  if(semantic.length&&semantic.indexOf(type)<0)return null;
+  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
+  var providerType=providerTransport(type,namespace);
+  var resolvedTmdbId=/^\d+$/.test(id)?id:"";
+  var resolvedImdbId=s(obj&&(q.imdbId||q.imdb_id)||(/^tt\d+$/i.test(id)?id:"")).toLowerCase();
+  var context={
+    tmdbId:resolvedTmdbId,
+    imdbId:resolvedImdbId,
+    tmdbNamespace:namespace,
+    tmdbIdentity:namespace+":"+(resolvedTmdbId||id),
+    tmdbMetadata:null,
+    canonicalMediaType:type,
+    tmdbResolutionDegraded:true,
+    tmdbVerificationDeferred:true,
+    nuvioInputMediaType:input,
+    providerMediaType:providerType
+  };
+  if(obj){
+    q.nuvioInputMediaType=input;
+    if(resolvedTmdbId)q.tmdbId=resolvedTmdbId;
+    if(resolvedImdbId)q.imdbId=resolvedImdbId;
+    q.tmdbNamespace=namespace;
+    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||id);
+    q.canonicalMediaType=type;
+    q.providerMediaType=providerType;
+    q.mediaType=providerType;q.type=providerType;
+    if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
+    var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
+  }
+  var out=Array.prototype.slice.call(a);out[1]=providerType;out.__nuvioContext=context;return out;
+}
+function preflightRequired(a){
+  if(c.preflightTmdb!==false)return true;
+  var first=a[0],obj=objectRequest(first),q=obj?first:null;
+  if(obj&&hasTmdbMetadata(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q))return true;
+  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
+  return !/^\d+$/.test(id);
+}
+function hasProviderOutput(value){
+  if(Array.isArray(value))return value.length>0;
+  return value!==null&&value!==undefined;
+}
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
@@ -378,7 +427,9 @@ function install(o,k){
         g.__nuvioProviderDeadlineMs=requestDeadline;
         if(typeof fetchBase==="function"){g.fetch=budgetedFetch(fetchBase,requestDeadline);budgetFetchInstalled=g.fetch!==fetchBase;}
       }
-      var a=await resolve(arguments);
+      var originalArgs=Array.prototype.slice.call(arguments);
+      var preflight=preflightRequired(originalArgs);
+      var a=preflight?await resolve(originalArgs):provisional(originalArgs);
       if(!a||deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
@@ -386,6 +437,18 @@ function install(o,k){
       var value=await native.apply(this,a);
       if(deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+      // Ordinary numeric-ID providers avoid a redundant TMDB preflight. A
+      // zero-result work exits here with no TMDB request at all. Positive output
+      // is still verified before it can escape, preserving anime/type safety.
+      if(!preflight&&hasProviderOutput(value)){
+        var verified=await resolve(originalArgs);
+        if(!verified||deadlineExpired(requestDeadline))return [];
+        var provisionalContext=a.__nuvioContext||{},verifiedContext=verified.__nuvioContext||{};
+        if(
+          s(provisionalContext.providerMediaType)!==s(verifiedContext.providerMediaType)
+          || s(provisionalContext.tmdbNamespace)!==s(verifiedContext.tmdbNamespace)
+        )return [];
+      }
       return value;
     }catch(error){
       if(error&&error.__nuvioProviderTimeout)return [];
