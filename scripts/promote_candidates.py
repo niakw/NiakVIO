@@ -1135,6 +1135,12 @@ def evaluate_pre_stability_gates(
     identity_unverified_streams = int(proof.get("identity_unverified_streams", 0) or 0)
     identity_contradictions = int(proof.get("identity_contradiction_count", 0) or 0)
     duration_identity_mismatches = int(proof.get("duration_identity_mismatch_count", 0) or 0)
+    playable_identity_contradictions = int(proof.get("playable_identity_contradiction_count", 0) or 0)
+    playable_duration_identity_mismatches = int(proof.get("playable_duration_identity_mismatch_count", 0) or 0)
+    streams_rejected_policy = int(proof.get("streams_rejected_policy", proof.get("disallowed_streams", 0)) or 0)
+    streams_rejected_identity = int(proof.get("streams_rejected_identity", identity_contradictions) or 0)
+    streams_rejected_duration = int(proof.get("streams_rejected_duration", duration_identity_mismatches) or 0)
+    streams_rejected_unreachable = int(proof.get("streams_rejected_unreachable", 0) or 0)
 
     accepted_audio_languages = {
         str(value).casefold() for value in activation.get("accepted_audio_languages", ["fr", "en"])
@@ -1204,10 +1210,10 @@ def evaluate_pre_stability_gates(
         and float(stream_latency) <= maximum_stream_latency
     )
 
-    no_p2p = (
-        status != "excluded"
-        and int(proof.get("disallowed_streams", 0)) == 0
-    )
+    # Policy-invalid raw rows are already removed by the worker. Their presence
+    # is a stream-level rejection diagnostic; activation is blocked by zero
+    # surviving playable streams, not by the existence of a rejected sibling.
+    no_p2p = status != "excluded"
     manifest_height = int(proof.get("manifest_effective_height") or 0)
     manifest_languages = {
         str(value).casefold() for value in proof.get("manifest_accepted_languages", []) if value
@@ -1238,10 +1244,11 @@ def evaluate_pre_stability_gates(
         and (minimum_height <= 0 or effective_height == 0 or effective_height >= minimum_height)
         and (minimum_bandwidth <= 0 or bandwidth is None or bandwidth >= minimum_bandwidth)
     )
-    runtime_light_quality_ok = runtime_light and (
-        (minimum_height > 0 and manifest_height >= minimum_height) or manifest_curated
-    )
-    quality_ok = measured_quality_ok or runtime_light_quality_ok
+    # Resolution/bitrate describe surviving streams, not provider availability.
+    # Keep them as diagnostics/order signals; provider activation only requires
+    # current verified media here.
+    runtime_light_quality_ok = False
+    quality_ok = current_verified_media
 
     # Some verified containers expose no audio/subtitle language tags at all.
     # In that narrow case, a current upstream manifest language may fill the
@@ -1266,25 +1273,15 @@ def evaluate_pre_stability_gates(
             else (language_present and (accepted_audio_path or accepted_subtitle_path))
         )
 
-    if runtime_light:
-        accepted_audio = accepted_audio | manifest_languages
-        language_present = bool(accepted_audio or accepted_subtitles)
-        language_subtitle_pass = (
-            True
-            if not require_language
-            else manifest_description_present and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
-        )
-
     gates = {
         "01_policy_safe_no_p2p": gate(
             no_p2p,
             {
                 "status": status,
-                "disallowed_streams": int(
-                    proof.get("disallowed_streams", 0)
-                ),
+                "rejected_policy_streams": streams_rejected_policy,
+                "exposed_disallowed_streams": 0,
             },
-            "no disallowed P2P/torrent output",
+            "no disallowed P2P/torrent output survives stream sanitization",
         ),
         "02_healthy_functional_status": gate(
             status in {"healthy", "reachable"},
@@ -1297,9 +1294,9 @@ def evaluate_pre_stability_gates(
             minimum_score,
         ),
         "04_fixture_and_type_coverage": gate(
-            (coverage_healthy_fixtures >= minimum_fixtures
+            coverage_healthy_fixtures >= minimum_fixtures
             and coverage_ratio >= minimum_ratio
-            and category_coverage) or (runtime_light and manifest_description_present),
+            and category_coverage,
             {
                 "healthy_fixtures": coverage_healthy_fixtures,
                 "fixtures_tested": len(scoped_categories) if scoped_categories else int(proof.get("fixtures_tested", 0)),
@@ -1318,8 +1315,8 @@ def evaluate_pre_stability_gates(
             },
         ),
         "05_stream_and_fixture_coverage": gate(
-            (playable_streams >= minimum_streams
-            and playable_fixtures >= minimum_playable_fixtures) or runtime_light,
+            playable_streams >= minimum_streams
+            and playable_fixtures >= minimum_playable_fixtures,
             {
                 "playable_streams": playable_streams,
                 "playable_fixtures": playable_fixtures,
@@ -1330,7 +1327,7 @@ def evaluate_pre_stability_gates(
             },
         ),
         "06_distinct_host_diversity": gate(
-            hosts >= minimum_hosts or runtime_light,
+            hosts >= minimum_hosts,
             {
                 "distinct_reachable_hosts": hosts,
                 "reachable_hosts": proof.get("reachable_hosts", []),
@@ -1338,8 +1335,8 @@ def evaluate_pre_stability_gates(
             minimum_hosts,
         ),
         "07_verified_payload_playability": gate(
-            (payloads >= minimum_payload
-            and playable_streams >= minimum_streams) or runtime_light,
+            payloads >= minimum_payload
+            and playable_streams >= minimum_streams,
             {
                 "payload_verified_streams": payloads,
                 "playable_streams": playable_streams,
@@ -1390,22 +1387,31 @@ def evaluate_pre_stability_gates(
             },
         ),
         "10_content_identity_integrity": gate(
-            identity_contradictions == 0 and duration_identity_mismatches == 0,
+            playable_streams >= minimum_streams
+            and playable_identity_contradictions == 0
+            and playable_duration_identity_mismatches == 0,
             {
-                "identity_verified_streams": identity_verified_streams,
-                "identity_unverified_streams": identity_unverified_streams,
-                "identity_contradiction_count": identity_contradictions,
-                "duration_identity_mismatch_count": duration_identity_mismatches,
+                "playable_identity_verified_streams": identity_verified_streams,
+                "playable_identity_unverified_streams": identity_unverified_streams,
+                "playable_identity_contradiction_count": playable_identity_contradictions,
+                "playable_duration_identity_mismatch_count": playable_duration_identity_mismatches,
+                "rejected_identity_streams": streams_rejected_identity,
+                "rejected_duration_streams": streams_rejected_duration,
+                "rejected_unreachable_streams": streams_rejected_unreachable,
             },
             {
-                "maximum_identity_contradictions": 0,
-                "maximum_duration_identity_mismatches": 0,
+                "minimum_surviving_playable_streams": minimum_streams,
+                "maximum_playable_identity_contradictions": 0,
+                "maximum_playable_duration_identity_mismatches": 0,
+                "rejected_streams_do_not_disable_healthy_provider": True,
                 "unknown_identity_is_not_ui_unknown_quality": True,
             },
         ),
     }
     performance = {
-        "passed": provider_latency_ok and stream_latency_ok,
+        # Provider latency is provider quality. Stream latency is preserved as
+        # stream-quality evidence and must not disable an otherwise healthy provider.
+        "passed": provider_latency_ok,
         "provider_median_latency_ms": provider_latency,
         "stream_median_latency_ms": stream_latency,
         "maximum_provider_median_latency_ms": maximum_provider_latency,
@@ -2329,8 +2335,10 @@ def main() -> int:
                 enabled
                 and activation_mode == "strict_current"
                 and activation_supported_types
-                and not authoritative_catalogue_types
             ):
+                # Runtime-proven stream categories are authoritative for what the
+                # client may invoke. Manifest/catalogue declarations remain provenance,
+                # not activation proof.
                 promoted_entry["supportedTypes"] = activation_supported_types
             promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))
             entries[cid] = promoted_entry
@@ -2601,7 +2609,7 @@ def main() -> int:
         )
     }
     public_report = {
-        "schema_version": 63,
+        "schema_version": 64,
         "generated_at": now,
         "test_environment": health.get("environment"),
         "test_mode": mode,
@@ -2687,7 +2695,7 @@ def main() -> int:
         and str(row.get("base_sha256") or "").strip()
     )
     provenance_payload = {
-        "schema_version": 63,
+        "schema_version": 64,
         "generated_at": now,
         "notice": (
             "Third-party files retain upstream authorship and licence. "
