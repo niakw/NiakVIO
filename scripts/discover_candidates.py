@@ -672,7 +672,7 @@ def executable_seed(
     provider_model = clean_provider_model(provider_id, knowledge, overrides, site)
     reconstruction_entry = reconstruction_manifest_entry(provider_id, entry, overrides)
 
-    if pending_clean and not force_clean_reconstruction:
+    if pending_clean and not force_clean_reconstruction and not clean_reconstruction:
         path, _digest = resolve_base(provider_id, previous_row, require=True)
         assert path is not None
         return (
