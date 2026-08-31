@@ -39,9 +39,17 @@ def base_item() -> dict[str, Any]:
         "metadata": {"id": "policy-test", "enabled": True},
         "health": {
             "status": "healthy",
+            "provider_status": "reachable",
+            "stream_status": "healthy",
             "ci_classification": "conclusive_success",
             "score": 95,
+            "provider_score": 95,
+            "stream_quality_score": 95,
             "evidence": {
+                "provider_status": "reachable",
+                "provider_score": 95,
+                "stream_status": "healthy",
+                "stream_quality_score": 95,
                 "fixtures_tested": 1,
                 "healthy_fixtures": 1,
                 "healthy_fixture_ratio": 1.0,
