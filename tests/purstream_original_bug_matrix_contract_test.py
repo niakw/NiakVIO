@@ -57,16 +57,20 @@ assert "alternative_titles" in tmdb_block
 # The global provider budget must exist before canonical Core/TMDB resolution.
 media_resolution = (SCRIPTS / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
 install_block = media_resolution.split("var wrap=async function(){", 1)[1].split("wrap.__nuvioMediaTypeResolutionV1=true", 1)[0]
-deadline_anchor = 'g.__nuvioProviderDeadlineMs=Date.now()+c.providerTimeoutMs'
+deadline_anchor = "requestDeadline=Date.now()+c.providerTimeoutMs"
 resolve_anchor = "var a=await resolve(arguments)"
 assert deadline_anchor in install_block
+assert "g.__nuvioProviderDeadlineMs=requestDeadline" in install_block
 assert resolve_anchor in install_block
 assert install_block.index(deadline_anchor) < install_block.index(resolve_anchor)
-assert "g.fetch=budgetedFetch(previousFetch)" in install_block
-assert "if(deadlineExpired())throw providerTimeoutError()" in media_resolution
+assert "g.fetch=budgetedFetch(fetchBase,requestDeadline)" in install_block
+assert "g.__nuvioProviderRequestToken=requestToken" in install_block
+assert "g.__nuvioProviderRequestToken!==requestToken" in install_block
+assert "var ownsRequest=!requestToken||g.__nuvioProviderRequestToken===requestToken" in install_block
+assert "if(deadlineExpired(deadline))throw providerTimeoutError()" in media_resolution
 compact_media_resolution = "".join(media_resolution.split())
-assert "if(!a||deadlineExpired())return[];" in compact_media_resolution
-assert "if(deadlineExpired())return[];" in compact_media_resolution
+assert "if(!a||deadlineExpired(requestDeadline))return[];" in compact_media_resolution
+assert "if(deadlineExpired(requestDeadline))return[];" in compact_media_resolution
 
 # Desktop compatibility is revision 5 and cannot invent TLD failovers.
 desktop_compat = (SCRIPTS / "provider_patches" / "desktop_runtime_compat_v1.py").read_text(encoding="utf-8")
