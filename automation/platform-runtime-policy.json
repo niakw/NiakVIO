@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "generated_at": "2026-08-08T20:28:27.644254+00:00",
   "source_matrix": "automation/platform-runtime-matrix.json",
   "source_release": "5.20.27",
@@ -14,7 +14,7 @@
     "macos",
     "linux"
   ],
-  "decision_rule": "block only conclusive non-playable/runtime failure; zero-stream is inconclusive",
+  "decision_rule": "record conclusive compatibility failures internally; disabledPlatforms always stays empty in NiakVIO manifests",
   "managed_platform_tokens_by_provider": {
     "coflix": [
       "android",
@@ -244,41 +244,10 @@
       "desktop": "inconclusive"
     }
   },
-  "changed_providers": [
-    "allmovieland",
-    "animepahe",
-    "animesalt",
-    "castle",
-    "cinemacity",
-    "cinemm",
-    "coflix",
-    "dooflix",
-    "flemmix",
-    "frenchstream",
-    "hdghartv",
-    "hdhub4u",
-    "hindmoviez",
-    "movieblast",
-    "moviebox",
-    "movies4u",
-    "moviesdrive",
-    "moviesmod",
-    "movix",
-    "nakios",
-    "netmirror",
-    "papadustream",
-    "peachify",
-    "streamflix",
-    "streamzo",
-    "uhdmovies",
-    "vegamovies",
-    "vidlink",
-    "vidrock",
-    "vixsrc",
-    "voiranime-rip",
-    "wookafr",
-    "yflix",
-    "zinkmovies"
-  ],
-  "legacy_android_no_proof_policy_retired": true
+  "changed_providers": [],
+  "legacy_android_no_proof_policy_retired": true,
+  "manifest_projection": "disabledPlatforms_empty_only",
+  "manifest_field_defaults": {
+    "disabledPlatforms": []
+  }
 }
