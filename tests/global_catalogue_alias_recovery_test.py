@@ -14,7 +14,11 @@ assert spec and spec.loader
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-base = "module.exports={getStreams:async function(){return [];}};"
+base = """module.exports={getStreams:async function(input){
+  const id=String(input&&input.tmdbId||input||"");
+  if(id==="515151")return [{name:"Example",title:"Example - Film",url:"https://player.example/embed-515151.html"}];
+  return [];
+}};"""
 options = {
     "base_url": "https://catalog.example",
     "provider_name": "Example",
@@ -110,6 +114,30 @@ PATCHED_SOURCE
   assert.strictEqual(rows[0].url, 'https://player.example/e/abc');
   assert(calls.includes('https://catalog.example/api/mirrors/film/77'), calls.join('\n'));
   assert(!calls.some(x => x.includes('themoviedb.org')), calls.join('\n'));
+
+  // Opaque provider/player URLs are not content identity evidence. Technical
+  // embed/html tokens must not make Core discard an otherwise valid native row.
+  calls.length = 0;
+  const nativeMetadata = {
+    id:515151,
+    title:'Native Example',
+    original_title:'Native Example',
+    release_date:'2024-06-01',
+    alternative_titles:{titles:[]},
+    __nuvioTmdbNamespace:'movie',
+    __nuvioTmdbId:'515151'
+  };
+  global.__nuvioMediaContext = {
+    tmdbId:'515151',
+    canonicalMediaType:'movie',
+    tmdbMetadata:nativeMetadata
+  };
+  const nativeRows = await module.exports.getStreams({
+    tmdbId:'515151', mediaType:'movie', tmdbMetadata:nativeMetadata
+  });
+  assert(Array.isArray(nativeRows) && nativeRows.length === 1, JSON.stringify(nativeRows));
+  assert.strictEqual(nativeRows[0].url, 'https://player.example/embed-515151.html');
+  assert(!calls.some(x => x.startsWith('https://catalog.example/')), calls.join('\n'));
 
   calls.length = 0;
   const animeMetadata = {
