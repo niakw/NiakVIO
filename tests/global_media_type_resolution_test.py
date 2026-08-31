@@ -237,6 +237,89 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+run_case(purstream_mixed, r"""
+const calls=[];
+global.fetch=async(url)=>{
+  url=String(url);calls.push(url);
+  if(url.includes("/movie/4242"))return{ok:true,status:200,json:async()=>({
+    id:4242,title:"Anime Movie",release_date:"2026-01-01",
+    genres:[{id:16,name:"Animation"}],original_language:"ja",
+    production_countries:[{iso_3166_1:"JP"}],keywords:{keywords:[{name:"anime"}]}
+  })};
+  throw new Error("unexpected TMDB endpoint "+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("4242","movie");
+  if(!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="movie")
+    throw new Error("movie-transported anime film was not canonically reset");
+  if(calls.length!==1||!calls[0].includes("/movie/4242"))
+    throw new Error("movie hint must only prioritize lookup, not alter canonical result");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+# A wrong client movie label must not prevent fallback into the TV namespace.
+run_case(mixed, r"""
+const calls=[];
+global.fetch=async(url)=>{
+  url=String(url);calls.push(url);
+  if(url.includes("/movie/777001"))return{ok:false,status:404,json:async()=>({})};
+  if(url.includes("/tv/777001"))return{ok:true,status:200,json:async()=>({
+    id:777001,name:"Recovered Series",first_air_date:"2026-01-01",
+    genres:[{id:18,name:"Drama"}],original_language:"en",origin_country:["US"],keywords:{results:[]}
+  })};
+  throw new Error("unexpected TMDB endpoint "+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("777001","movie");
+  if(!value.length||value[0].canonicalMediaType!=="tv"||value[0].mediaType!=="tv")
+    throw new Error("movie-labelled TV work did not recover through canonical reset");
+  if(calls.length!==2)throw new Error("alternate TV namespace was not attempted");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+# A wrong client TV/series label must likewise fall back into the movie namespace.
+movie_tv_mixed = mod.apply(BASE, options={"semantic_types": ["movie", "tv"]})
+run_case(movie_tv_mixed, r"""
+const calls=[];
+global.fetch=async(url)=>{
+  url=String(url);calls.push(url);
+  if(url.includes("/tv/777002"))return{ok:false,status:404,json:async()=>({})};
+  if(url.includes("/movie/777002"))return{ok:true,status:200,json:async()=>({
+    id:777002,title:"Recovered Movie",release_date:"2026-01-01",
+    genres:[{id:18,name:"Drama"}],original_language:"en",
+    production_countries:[{iso_3166_1:"US"}],keywords:{keywords:[]}
+  })};
+  throw new Error("unexpected TMDB endpoint "+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("777002","series");
+  if(!value.length||value[0].canonicalMediaType!=="movie"||value[0].mediaType!=="movie")
+    throw new Error("series-labelled movie did not recover through canonical reset");
+  if(calls.length!==2)throw new Error("alternate movie namespace was not attempted");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+# An input labelled anime is also only a hint. Authoritative ordinary TV metadata wins.
+run_case(mixed, r"""
+global.fetch=async(url)=>{
+  url=String(url);
+  if(!url.includes("/tv/777003"))throw new Error("anime hint should prioritize TV but not force anime");
+  return{ok:true,status:200,json:async()=>({
+    id:777003,name:"Ordinary TV",first_air_date:"2026-01-01",
+    genres:[{id:18,name:"Drama"}],original_language:"en",origin_country:["US"],keywords:{results:[]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("777003","anime",1,1);
+  if(!value.length||value[0].canonicalMediaType!=="tv"||value[0].mediaType!=="tv")
+    throw new Error("authoritative TV type did not replace anime input hint");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 
 # The JS-side budget cannot preempt a non-cooperative native bridge, but once a
 # native request returns after the deadline it must fail closed immediately and
