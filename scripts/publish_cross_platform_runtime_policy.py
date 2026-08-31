@@ -2,9 +2,9 @@
 """Record cross-platform compatibility evidence without projecting unsupported manifest fields.
 
 NiakVIO keeps runtime compatibility evidence in automation/platform-runtime-policy.json.
-The upstream disabledPlatforms metadata was imported during the historical one-shot
-bootstrap, but it is not part of NiakVIO's provider manifest contract and must never
-be written back into manifest.json, vf/manifest.json or provider-overrides.json.
+The upstream disabledPlatforms values were imported during the historical one-shot
+bootstrap. NiakVIO keeps the field for manifest compatibility but always projects
+it as an empty list; compatibility evidence remains internal.
 """
 from __future__ import annotations
 
@@ -85,9 +85,9 @@ def main() -> int:
         "contract_file": str(CONTRACTS.relative_to(ROOT)),
         "runtime_profiles": list(PROFILE_TOKEN),
         "desktop_platforms": ["windows", "macos", "linux"],
-        "decision_rule": "record conclusive compatibility failures internally; never project disabledPlatforms into NiakVIO manifests",
-        "manifest_projection": "none",
-        "unsupported_manifest_fields": ["disabledPlatforms"],
+        "decision_rule": "record conclusive compatibility failures internally; disabledPlatforms always stays empty in NiakVIO manifests",
+        "manifest_projection": "disabledPlatforms_empty_only",
+        "manifest_field_defaults": {"disabledPlatforms": []},
         "managed_platform_tokens_by_provider": {
             key: sorted(set(value)) for key, value in sorted(managed.items())
         },
