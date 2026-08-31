@@ -622,6 +622,7 @@ async function probeStream(stream, mode, fixture = null) {
   const minimumVodDurationSeconds = Math.max(0, Number(mode.minimum_vod_duration_seconds || 60));
   let maxBandwidth = null;
   let mediaDurationSeconds = null;
+  let durationIdentityAuthoritative = false;
   let shortVodPreview = false;
   let contentIdentity = streamIdentity(stream, fixture || {});
 
@@ -687,6 +688,7 @@ async function probeStream(stream, mode, fixture = null) {
       kind = 'hls';
       const master = parseHls(text, result.finalUrl);
       mediaDurationSeconds = master.totalDurationSeconds;
+      durationIdentityAuthoritative = Boolean(master.isVod);
       shortVodPreview = Boolean(master.isVod && master.totalDurationSeconds != null && master.totalDurationSeconds < minimumVodDurationSeconds);
       payloadVerified = master.valid && !shortVodPreview;
       verifiedHeights.push(...master.verifiedHeights);
@@ -737,6 +739,7 @@ async function probeStream(stream, mode, fixture = null) {
           if (variantReachable) {
             mediaPlaylist = parsedVariant;
             mediaDurationSeconds = parsedVariant.totalDurationSeconds;
+            durationIdentityAuthoritative = Boolean(parsedVariant.isVod);
             shortVodPreview = Boolean(parsedVariant.isVod && parsedVariant.totalDurationSeconds != null && parsedVariant.totalDurationSeconds < minimumVodDurationSeconds);
             payloadVerified = payloadVerified && !shortVodPreview;
             mediaPlaylist.verifiedHeights.forEach((value) => verifiedHeights.push(value));
@@ -845,6 +848,7 @@ async function probeStream(stream, mode, fixture = null) {
       playbackVerified
       && mode.verify_fixture_duration_identity === true
       && expectedDurationSeconds
+      && (kind !== 'hls' || durationIdentityAuthoritative)
       && Number.isFinite(mediaDurationSeconds)
       && mediaDurationSeconds > 0
     ) {
@@ -910,6 +914,7 @@ async function probeStream(stream, mode, fixture = null) {
       media_duration_seconds: mediaDurationSeconds,
       expected_duration_seconds: expectedDurationSeconds,
       duration_identity_ratio: durationIdentityRatio,
+      duration_identity_authoritative: kind !== 'hls' || durationIdentityAuthoritative,
       duration_identity_mismatch: durationIdentityMismatch,
       content_identity_status: contentIdentity.status,
       content_identity_reason: contentIdentity.reason,
@@ -1279,7 +1284,8 @@ function providerRows(worker) {
 }
 
 function statusFrom(worker, probes) {
-  if ((worker.disallowed_stream_count || 0) > 0) return { status: 'excluded', failureClass: 'disallowed_protocol' };
+  // The worker already removes disallowed/invalid raw rows before exposing
+  // worker.streams. Keep their count as stream-level diagnostics only.
   if (probes.some((probe) => probe.playback_verified)) return { status: 'healthy', failureClass: null };
 
   const rows = providerRows(worker);
@@ -1518,15 +1524,22 @@ async function testCandidate(candidate) {
       runtime_errors: Array.isArray(worker.runtime_errors) ? worker.runtime_errors.map(sanitizeStructuredError).filter(Boolean) : [],
       invocation_diagnostics: Array.isArray(worker.invocation_diagnostics) ? worker.invocation_diagnostics.map((item) => ({ ...item, error: item?.error ? sanitizeStructuredError(item.error) : null })) : [],
       disallowed_streams: worker.disallowed_stream_count || 0,
+      disallowed_reasons: Array.isArray(worker.disallowed_reasons) ? worker.disallowed_reasons : [],
+      streams_rejected_policy: Number(worker.disallowed_stream_count || 0),
+      streams_rejected_identity: probes.filter((probe) => probe.content_identity_status === 'contradiction').length,
+      streams_rejected_duration: probes.filter((probe) => probe.duration_identity_mismatch === true).length,
+      streams_rejected_unreachable: probes.filter((probe) => !probe.playback_verified && probe.endpoint_reachable === false).length,
       streams_probed: probes.length,
       endpoints_reachable: probes.filter((probe) => probe.endpoint_reachable).length,
       streams_reachable: playable.length,
       streams_playable: playable.length,
       payload_verified_streams: playable.filter((probe) => probe.payload_verified).length,
-      identity_verified_streams: probes.filter((probe) => probe.content_identity_status === 'match').length,
-      identity_unverified_streams: probes.filter((probe) => probe.content_identity_status === 'unknown').length,
+      identity_verified_streams: playable.filter((probe) => probe.content_identity_status === 'match').length,
+      identity_unverified_streams: playable.filter((probe) => probe.content_identity_status === 'unknown').length,
       identity_contradiction_count: probes.filter((probe) => probe.content_identity_status === 'contradiction').length,
       duration_identity_mismatch_count: probes.filter((probe) => probe.duration_identity_mismatch === true).length,
+      playable_identity_contradiction_count: playable.filter((probe) => probe.content_identity_status === 'contradiction').length,
+      playable_duration_identity_mismatch_count: playable.filter((probe) => probe.duration_identity_mismatch === true).length,
       segment_or_direct_verified_streams: playable.filter(
         (probe) => probe.segment_reachable === true || probe.direct_signature_verified || probe.kind === 'dash',
       ).length,
@@ -1601,10 +1614,8 @@ async function testCandidate(candidate) {
     }
   }
 
-  const anyP2p = fixtureResults.some((item) => (item.disallowed_streams || 0) > 0 || item.status === 'excluded');
   let status;
-  if (anyP2p) status = 'excluded';
-  else if (fixtureResults.some((item) => item.status === 'healthy')) status = 'healthy';
+  if (fixtureResults.some((item) => item.status === 'healthy')) status = 'healthy';
   else {
     const priority = ['degraded', 'runtime_error', 'blocked', 'unavailable', 'no_streams', 'provider_unreachable', 'reachable'];
     status = priority.find((candidateStatus) => fixtureResults.some((item) => item.status === candidateStatus)) || 'runtime_error';
@@ -1639,6 +1650,12 @@ async function testCandidate(candidate) {
   const identityUnverifiedStreams = fixtureResults.reduce((sum, item) => sum + Number(item.identity_unverified_streams || 0), 0);
   const identityContradictionCount = fixtureResults.reduce((sum, item) => sum + Number(item.identity_contradiction_count || 0), 0);
   const durationIdentityMismatchCount = fixtureResults.reduce((sum, item) => sum + Number(item.duration_identity_mismatch_count || 0), 0);
+  const playableIdentityContradictionCount = fixtureResults.reduce((sum, item) => sum + Number(item.playable_identity_contradiction_count || 0), 0);
+  const playableDurationIdentityMismatchCount = fixtureResults.reduce((sum, item) => sum + Number(item.playable_duration_identity_mismatch_count || 0), 0);
+  const streamsRejectedPolicy = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_policy || 0), 0);
+  const streamsRejectedIdentity = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_identity || 0), 0);
+  const streamsRejectedDuration = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_duration || 0), 0);
+  const streamsRejectedUnreachable = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_unreachable || 0), 0);
   const playableFixtures = fixtureResults.filter((item) => Number(item.streams_playable || 0) > 0).length;
   const reachableHosts = [...new Set(healthyTests.flatMap((item) => item.reachable_hosts || []))].sort(compareText);
   const acceptedAudio = [...new Set(healthyTests.flatMap((item) => item.accepted_audio_languages || []))].sort(compareText);
@@ -1722,6 +1739,12 @@ async function testCandidate(candidate) {
       identity_unverified_streams: identityUnverifiedStreams,
       identity_contradiction_count: identityContradictionCount,
       duration_identity_mismatch_count: durationIdentityMismatchCount,
+      playable_identity_contradiction_count: playableIdentityContradictionCount,
+      playable_duration_identity_mismatch_count: playableDurationIdentityMismatchCount,
+      streams_rejected_policy: streamsRejectedPolicy,
+      streams_rejected_identity: streamsRejectedIdentity,
+      streams_rejected_duration: streamsRejectedDuration,
+      streams_rejected_unreachable: streamsRejectedUnreachable,
       distinct_reachable_hosts: reachableHosts.length,
       reachable_hosts: reachableHosts,
       verified_max_height: Math.max(0, ...healthyTests.map((item) => item.verified_max_height || 0)) || null,
@@ -1818,7 +1841,7 @@ const startedAt = new Date();
 const results = await runPool(registry.candidates, testCandidate, concurrency);
 const statuses = ['healthy', 'reachable', 'blocked', 'degraded', 'no_streams', 'provider_unreachable', 'runtime_error', 'unavailable', 'excluded'];
 const report = {
-  schema_version: 66,
+  schema_version: 67,
   environment: 'github-actions-node',
   mode: requestedMode,
   generated_at: new Date().toISOString(),
