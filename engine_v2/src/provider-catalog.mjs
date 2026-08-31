@@ -206,7 +206,12 @@ function withoutScrapers(manifest) {
   return copy;
 }
 
-function canonicalizePublishedScraper(scraper) {\n  const copy = structuredClone(scraper);\n  // One-shot bootstrap compatibility: keep the field but discard upstream values.\n  copy.disabledPlatforms = [];\n  if (Array.isArray(copy.canonicalSupportedTypes) && copy.canonicalSupportedTypes.length) {
+function canonicalizePublishedScraper(scraper) {
+  const copy = structuredClone(scraper);
+  // Historical upstream imports may carry non-empty platform blocks. The
+  // canonical NiakVIO contract retains the property but owns its value.
+  copy.disabledPlatforms = [];
+  if (Array.isArray(copy.canonicalSupportedTypes) && copy.canonicalSupportedTypes.length) {
     copy.supportedTypes = [...copy.canonicalSupportedTypes];
   }
   delete copy.canonicalSupportedTypes;
@@ -221,7 +226,10 @@ function normalizeProjectionScraper(scraper, projection) {
   return copy;
 }
 
-function projectScraper(scraper, projection) {\n  const copy = structuredClone(scraper);\n  copy.disabledPlatforms = [];\n  const semantic = Array.isArray(copy.supportedTypes)
+function projectScraper(scraper, projection) {
+  const copy = structuredClone(scraper);
+  copy.disabledPlatforms = [];
+  const semantic = Array.isArray(copy.supportedTypes)
     ? [...new Set(copy.supportedTypes.map((value) => String(value).trim().toLowerCase()).filter(Boolean))]
     : [];
   if (semantic.includes("anime")) {
