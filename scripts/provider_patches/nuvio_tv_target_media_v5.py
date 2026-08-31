@@ -219,13 +219,46 @@ def upgrade_playback_context(text: str) -> str:
     return text.rstrip() + "\n" + V5_MARKER + "\n"
 
 
+def _complete_materialized_v4(text: str) -> bool:
+    """A marker is not evidence: require the owned wrapper and proof body too."""
+    if V4_MARKER not in text or TARGET_MEDIA_MARKER not in text:
+        return False
+    proof_present = PROOF_V3 in text or PROOF_V6 in text
+    structural = (
+        "function genericUrls(text,base)" in text
+        and "function normalizeRows(value)" in text
+        and "function proof(r)" in text
+    )
+    return proof_present and structural
+
+
+def _strip_orphan_revision_markers(text: str) -> str:
+    for marker in (
+        V4_MARKER,
+        V5_MARKER,
+        HLS_PROOF_MARKER,
+        FETCH_COMPAT_MARKER,
+        PROTOCOL_RELATIVE_MARKER,
+    ):
+        text = text.replace(marker, "")
+    return text.rstrip()
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     cfg = dict(options or {})
-    if V4_MARKER in text:
+    if _complete_materialized_v4(text):
         patched = upgrade_fetch_capability(text)
         patched = upgrade_protocol_relative_urls(patched)
         patched = upgrade_playback_context(patched)
         return upgrade_hls_proof(patched)
+
+    # Legacy/LKG artifacts can retain revision comments after their owned
+    # target-media IIFE has been stripped or reformatted away. Never trust the
+    # comments alone: remove orphan revision state and rebuild the owned wrapper.
+    if any(marker in text for marker in (V4_MARKER, V5_MARKER, HLS_PROOF_MARKER)):
+        text = _strip_orphan_revision_markers(text)
+        text = strip_target_media_wrappers(text, True)
+        cfg["force_rewrap_target_media"] = True
 
     blocked_hosts = sorted(
         STRICT_BLOCKED_HOSTS
