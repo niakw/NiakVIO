@@ -61,6 +61,8 @@ if second != first:
     print("first tail around diff:", first[max(0, offset - 160): offset + 240].decode("utf-8", "replace"))
     print("second tail around diff:", second[max(0, offset - 160): offset + 240].decode("utf-8", "replace"))
 assert second == first
+assert first.count("NUVIO_STREAM_OUTPUT_SANITIZER_V4:") == 1, provider_id
+assert first.count("NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6") == 1, provider_id
 assert second_records == [], second_records
 
 print("override net-noop regression test passed")
