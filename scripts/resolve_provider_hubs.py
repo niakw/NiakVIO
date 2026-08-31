@@ -715,10 +715,12 @@ def _candidate_identity(candidate: dict[str, Any]) -> str:
 
 
 def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
-    """A declared hub/channel supersedes direct/history/search route authority."""
+    """A declared hub/channel/redirect supersedes direct/history/search authority."""
+    if is_http_url(cfg.get("hub")):
+        return True
     return any(
         isinstance(source, dict)
-        and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public"}
+        and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public", "redirect"}
         and is_http_url(source.get("url"))
         for source in (cfg.get("sources") or [])
     )
@@ -803,6 +805,11 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
                 })
             source_cfg = dict(cfg)
             source_cfg["hub"] = final
+            if has_authoritative_hub_source(cfg):
+                # The hub is the only route authority. Direct candidates remain
+                # useful as brand allow-list hints but must never be injected as
+                # fallback terminal URLs.
+                source_cfg.pop("direct_fallback", None)
             if source_type == "telegram_public":
                 configured_resolver = str(source_cfg.get("resolver") or "")
                 if configured_resolver not in {"latest_telegram_domain", "telegram_description"}:
@@ -819,7 +826,7 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
             observations.append({"source_type": source_type, "url": url, "error": f"{type(exc).__name__}: {exc}"})
 
     disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled"}
-    if mode == "deep" and (not disabled or bool(cfg.get("search_when_disabled", False))):
+    if (not has_authoritative_hub_source(cfg)) and mode == "deep" and (not disabled or bool(cfg.get("search_when_disabled", False))):
         for query in list(dict.fromkeys(str(item).strip() for item in cfg.get("search_queries") or [] if str(item).strip()))[:2]:
             found, search_observations = search_candidates(provider_id, cfg, query, timeout)
             candidates.extend(found)
@@ -1043,7 +1050,7 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
         selected = next((
             {**candidate, **validation, "hub_authoritative": True}
             for candidate, validation in zip(candidates, validations)
-            if str(candidate.get("source_type") or "") in {"hub", "telegram_public"}
+            if str(candidate.get("source_type") or "") in {"hub", "telegram_public", "redirect"}
             and validation.get("final_url")
             and validation.get("brand_match") is True
             and is_public_url(str(validation.get("final_url")))
