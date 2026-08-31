@@ -2185,6 +2185,7 @@ def main() -> int:
                 reconstruction_pending = (
                     "clean reconstruction required" in message
                     or "publication frozen until clean reconstruction" in message
+                    or "clean reconstruction candidate could not be reduced" in message
                 )
                 # A pre-v2 ProviderBase is intentionally frozen, not broken.
                 # Keep the exact published SHA until a NiakVIO-owned v2 candidate
