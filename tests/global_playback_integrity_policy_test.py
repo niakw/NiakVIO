@@ -46,7 +46,7 @@ assert "\n\n" + audio_marker not in first_hls
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 policy = cfg.get("playback_integrity_policy") or {}
-assert policy.get("version") == 3
+assert policy.get("version") == 4
 assert policy.get("enabled") is True
 assert policy.get("provider_disabling_is_not_a_repair") is True
 assert policy.get("global_discovery_hooks") == [
@@ -56,7 +56,9 @@ assert policy.get("global_discovery_hooks") == [
 ]
 assert policy.get("pre_media_discovery_hooks") == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
+    "scripts/provider_patches/native_hls_integrity_budget_v1.py",
 ]
+assert policy.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
 assert policy.get("post_media_discovery_hooks") == [
     "scripts/provider_patches/hls_master_audio_preserver_v1.py",
 ]
@@ -67,6 +69,7 @@ for provider_id, row in (cfg.get("provider_patches") or {}).items():
     scripts = row.get("patch_scripts") or []
     assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in scripts, provider_id
     assert "scripts/provider_patches/hls_runtime_integrity_v1.py" not in scripts, provider_id
+    assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" not in scripts, provider_id
     assert "scripts/provider_patches/global_provider_security_hardening_v1.py" not in scripts, provider_id
     options = row.get("patch_script_options") or {}
     hls_options = options.get("scripts/provider_patches/hls_runtime_integrity_v1.py")
@@ -93,6 +96,7 @@ wanted = [
     path for path in captured_scheduler_paths
     if path in {
         "scripts/provider_patches/hls_runtime_integrity_v1.py",
+        "scripts/provider_patches/native_hls_integrity_budget_v1.py",
         "scripts/provider_patches/global_media_enrichment_v1.py",
         "scripts/provider_patches/hls_master_audio_preserver_v1.py",
         "scripts/provider_patches/global_provider_security_hardening_v1.py",
@@ -101,6 +105,7 @@ wanted = [
 ]
 assert wanted == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
+    "scripts/provider_patches/native_hls_integrity_budget_v1.py",
     "scripts/provider_patches/global_media_enrichment_v1.py",
     "scripts/provider_patches/hls_master_audio_preserver_v1.py",
     "scripts/provider_patches/global_provider_security_hardening_v1.py",
@@ -112,6 +117,7 @@ patched, records = module.apply_overrides("future-provider-never-seen-before", f
 text = patched.decode("utf-8")
 assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" in text
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in text
+assert "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1" in text
 assert "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" in text
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
 assert text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") > text.rfind("NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1")
@@ -120,6 +126,7 @@ assert text.rfind("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") > text.rfind("NUVIO_GLO
 paths = {str(row.get("path")) for row in records if isinstance(row, dict)}
 assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" in paths
 assert "scripts/provider_patches/hls_runtime_integrity_v1.py" in paths
+assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" in paths
 assert "scripts/provider_patches/global_provider_security_hardening_v1.py" in paths
 assert any(row.get("scope") == "global_playback_integrity" for row in records if isinstance(row, dict))
 
@@ -147,6 +154,7 @@ assert reapplied_text.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
 assert '"implementationRevision":"field-safety-v6-core-repair-types"' in reapplied_text
 assert '"implementationRevision":"scoped-playback-context-v4"' not in reapplied_text
 assert reapplied_text.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1") == 1
+assert reapplied_text.count("NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1") == 1
 assert reapplied_text.count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
 assert reapplied_text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1") < reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1")
 assert reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_FACTS_V1")
