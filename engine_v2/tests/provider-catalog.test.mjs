@@ -72,6 +72,28 @@ const rendered = manifestsFromCatalog(catalog);
 assert.deepEqual(rendered.general, general, "general manifest must round-trip byte-semantically through catalog");
 assert.deepEqual(rendered.vf, vf, "VF manifest must round-trip byte-semantically through catalog");
 
+for (const scraper of rendered.general.scrapers) {
+  const canonical = Array.isArray(scraper.canonicalSupportedTypes) && scraper.canonicalSupportedTypes.length
+    ? scraper.canonicalSupportedTypes
+    : scraper.supportedTypes;
+  const semantic = new Set((canonical ?? []).map((value) => String(value).toLowerCase()));
+  const transport = new Set((scraper.supportedTypes ?? []).map((value) => String(value).toLowerCase()));
+  if (semantic.has("anime") && !semantic.has("movie")) {
+    assert.equal(
+      transport.has("movie"),
+      false,
+      `${scraper.id}: anime capability must never invent ordinary movie transport`,
+    );
+  }
+  if (semantic.has("anime") && !semantic.has("tv")) {
+    assert.equal(
+      transport.has("tv"),
+      true,
+      `${scraper.id}: episodic anime must retain the TV/series transport alias`,
+    );
+  }
+}
+
 const brandingIndex = JSON.parse(fs.readFileSync("assets/providers/emojis.json", "utf8"));
 const brandingCatalog = applyCommittedProviderNames(structuredClone(catalog), brandingIndex);
 const expectedNameRows = catalog.providers.length;
