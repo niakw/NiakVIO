@@ -135,8 +135,7 @@ export function validateProviderCatalog(catalog) {
     if (byId.has(canonicalId)) throw new Error(`duplicate provider in catalog: ${canonicalId}`);
     if (!row.scraper || typeof row.scraper !== "object") throw new Error(`${canonicalId}: scraper metadata is required`);
     if (canonicalProviderId(row.scraper.id) !== canonicalId) throw new Error(`${canonicalId}: scraper id does not match canonical id`);
-    if (!String(row.scraper.filename ?? "").trim()) throw new Error(`${canonicalId}: filename is required`);
-    if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
+    if (!String(row.scraper.filename ?? "").trim()) throw new Error(`${canonicalId}: filename is required`);\n    if (Object.prototype.hasOwnProperty.call(row.scraper, "disabledPlatforms")) {\n      throw new Error(`${canonicalId}: disabledPlatforms is not part of the NiakVIO provider contract`);\n    }\n    if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
     byId.set(canonicalId, row);
   }
 
@@ -207,9 +206,7 @@ function withoutScrapers(manifest) {
   return copy;
 }
 
-function canonicalizePublishedScraper(scraper) {
-  const copy = structuredClone(scraper);
-  if (Array.isArray(copy.canonicalSupportedTypes) && copy.canonicalSupportedTypes.length) {
+function canonicalizePublishedScraper(scraper) {\n  const copy = structuredClone(scraper);\n  // One-shot upstream bootstrap compatibility: NiakVIO does not publish or\n  // consume disabledPlatforms. It was inherited from external provider\n  // manifests and must never become part of the canonical scraper contract.\n  delete copy.disabledPlatforms;\n  if (Array.isArray(copy.canonicalSupportedTypes) && copy.canonicalSupportedTypes.length) {
     copy.supportedTypes = [...copy.canonicalSupportedTypes];
   }
   delete copy.canonicalSupportedTypes;
@@ -224,9 +221,7 @@ function normalizeProjectionScraper(scraper, projection) {
   return copy;
 }
 
-function projectScraper(scraper, projection) {
-  const copy = structuredClone(scraper);
-  const semantic = Array.isArray(copy.supportedTypes)
+function projectScraper(scraper, projection) {\n  const copy = structuredClone(scraper);\n  delete copy.disabledPlatforms;\n  const semantic = Array.isArray(copy.supportedTypes)
     ? [...new Set(copy.supportedTypes.map((value) => String(value).trim().toLowerCase()).filter(Boolean))]
     : [];
   if (semantic.includes("anime")) {
