@@ -191,6 +191,44 @@ _zink_candidates, preferred = resolver.choose_official(
 )
 assert preferred == 'https://new3.zinkmovies.mobi'
 
+# Route authority order: hub > explicit direct > search/LKG. Historical
+# routes are never allowed to override a declared source.
+authority_history = {
+    'current': {'url': 'https://stale.example/', 'host': 'stale.example'}
+}
+hub_authority_cfg = {
+    'hub': 'https://hub.example/',
+    'sources': [{'type': 'hub', 'url': 'https://hub.example/', 'priority': 110}],
+    'direct_candidates': ['https://direct.example/'],
+    'direct_fallback': 'https://direct.example/',
+}
+assert resolver.has_authoritative_hub_source(hub_authority_cfg)
+assert resolver._seed_known_candidates(hub_authority_cfg, authority_history) == []
+
+direct_authority_cfg = {
+    'hub': None,
+    'sources': [],
+    'direct_candidates': ['https://direct.example/'],
+    'direct_fallback': 'https://direct.example/',
+}
+assert resolver.has_authoritative_direct_source(direct_authority_cfg)
+direct_seed = resolver._seed_known_candidates(direct_authority_cfg, authority_history)
+assert [row['source_type'] for row in direct_seed] == ['curated_direct']
+assert all(row['source_type'] != 'history_lkg' for row in direct_seed)
+
+fallback_authority_cfg = {
+    'hub': None,
+    'sources': [],
+    'direct_candidates': [],
+    'direct_fallback': 'https://direct.example/',
+}
+assert resolver.has_authoritative_direct_source(fallback_authority_cfg)
+assert resolver._seed_known_candidates(fallback_authority_cfg, authority_history) == []
+
+lkg_only_cfg = {'hub': None, 'sources': [], 'direct_candidates': []}
+lkg_seed = resolver._seed_known_candidates(lkg_only_cfg, authority_history)
+assert [row['source_type'] for row in lkg_seed] == ['history_lkg']
+
 # Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
 engines = resolver.search_engine_urls('example provider')
 assert engines[0][0] == 'yandex' and 'yandex.com/search/' in engines[0][1]
