@@ -807,6 +807,7 @@ async function main() {
       });
       if (Array.isArray(candidateValue) && candidateValue.length > value.length) { value = candidateValue; selectedProfile = profile; }
       if (value.length > 0) break;
+      if (context.singleProfileZeroStreamPreflight === true && invocation.arrayResultSeen) break;
     } catch (error) {
       const detail = structuredError(error, 'settings_profile');
       const invocationDiagnostics = error?.nuvioDetails?.invocation_diagnostics || [];
@@ -838,6 +839,7 @@ async function main() {
   emit({
     ok: true,
     duration_ms: Date.now() - startedAt,
+    raw_stream_count: Array.isArray(value) ? value.length : 0,
     stream_count: streams.length,
     disallowed_stream_count: disallowedReasons.length,
     disallowed_reasons: [...new Set(disallowedReasons)].slice(0, 10),
