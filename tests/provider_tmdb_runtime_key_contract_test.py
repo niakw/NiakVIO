@@ -62,6 +62,12 @@ assert "normalizeKey" in resolver_source
 assert "api.themoviedb.org/3/" in resolver_source
 assert "www.themoviedb.org/" not in resolver_source
 
+# CI supplies TMDB credentials to Core as secrets. The repository may contain
+# only the encrypted runtime payload; neither secret value is provider-owned.
+sync_workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
+assert "TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}" in sync_workflow
+assert "TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}" in sync_workflow
+
 
 # All code that can author a future ProviderBase/provider is clean immediately.
 # TMDB network access is Core-owned: provider-specific adapters may consume
