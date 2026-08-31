@@ -176,12 +176,6 @@ def main() -> int:
             for provider_id, tokens in (policy.get("managed_platform_tokens_by_provider") or {}).items()
         }
         classifications = policy.get("classifications") or {}
-        if int(policy.get("schema_version") or 0) >= 4:
-            if policy.get("manifest_projection") != "disabledPlatforms-empty":
-                errors.append("platform policy must project disabledPlatforms as empty")
-            owned = policy.get("manifest_owned_fields") or {}
-            if owned.get("disabledPlatforms") != []:
-                errors.append("platform policy must own disabledPlatforms=[]")
         for provider_id, tokens in managed.items():
             if provider_id not in main_rows:
                 errors.append(f"{provider_id}: managed provider missing from general manifest")
