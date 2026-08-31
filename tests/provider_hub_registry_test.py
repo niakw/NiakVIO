@@ -336,3 +336,72 @@ assert 'git diff --exit-code' in domain_refresh
 assert 'upload-artifact' in domain_refresh
 
 print('provider hub registry tests passed')
+
+# Security invariant: provider route state is a web/catalogue origin, never a
+# downloadable executable, installer, disk image, archive, direct media or asset.
+assert resolver.is_provider_terminal_site_url('https://provider.example/') is True
+assert resolver.is_provider_terminal_site_url('https://provider.example/catalogue') is True
+for unsafe in (
+    'app.exe', 'setup.msi', 'bundle.msix', 'android.apk', 'android.xapk', 'ios.ipa',
+    'mac.dmg', 'mac.pkg', 'linux.AppImage', 'linux.deb', 'linux.rpm',
+    'disk.iso', 'disk.img', 'vm.vhdx', 'vm.qcow2', 'archive.zip', 'archive.7z',
+    'script.ps1', 'script.sh', 'movie.m3u8', 'movie.mp4', 'logo.png', 'doc.pdf',
+):
+    assert resolver.is_provider_terminal_site_url('https://provider.example/' + unsafe) is False, unsafe
+assert resolver.is_forbidden_terminal_content_type('application/octet-stream') is True
+assert resolver.is_forbidden_terminal_content_type('application/vnd.android.package-archive') is True
+assert resolver.is_forbidden_terminal_content_type('video/mp4') is True
+assert resolver.is_forbidden_terminal_content_type('text/html; charset=utf-8') is False
+
+stable_history = {
+    'current': {
+        'url': 'https://stable.example',
+        'host': 'stable.example',
+        'validated_at': '2026-08-30T12:00:00+00:00',
+        'source_type': 'hub',
+        'source': 'https://hub.example/',
+    },
+    'previous': [],
+}
+resolver.update_history_row(stable_history, {
+    'status': 'site_validated',
+    'official_site': 'https://stable.example',
+    'selected_source_type': 'hub',
+    'selected_source': 'https://hub.example/',
+})
+assert stable_history['current']['validated_at'] == '2026-08-30T12:00:00+00:00'
+
+unsafe_config = {
+    'provider_patches': {
+        'demo': {
+            'official_site': 'https://download.demo.example/app.apk',
+            'replacements': {'demo.example': 'download.demo.example'},
+            'runtime_domain_replacements': {'demo.example': 'download.demo.example'},
+        }
+    }
+}
+unsafe_hubs = {
+    'demo': {
+        'direct_candidates': ['https://demo.example/'],
+    }
+}
+unsafe_history = {
+    'demo': {
+        'current': {
+            'url': 'https://download.demo.example/app.apk',
+            'host': 'download.demo.example',
+            'source_type': 'history_lkg',
+            'source': 'provider-domain-history.json',
+        },
+        'previous': [],
+    }
+}
+sanitized = resolver.sanitize_unsafe_published_routes(unsafe_config, unsafe_hubs, unsafe_history)
+assert sanitized and sanitized[0]['provider_id'] == 'demo'
+assert unsafe_config['provider_patches']['demo']['official_site'] == 'https://demo.example'
+assert unsafe_config['provider_patches']['demo']['replacements'] == {}
+assert unsafe_config['provider_patches']['demo']['runtime_domain_replacements'] == {}
+assert unsafe_history['demo']['current']['url'] == 'https://demo.example'
+assert unsafe_history['demo']['current']['source_type'] == 'curated_direct'
+
+print('unsafe terminal payloads must never become provider origins')

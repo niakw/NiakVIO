@@ -61,6 +61,38 @@ SEARCH_CHALLENGE_MARKERS = (
     "captcha", "verify you are human", "unusual traffic", "robot check",
     "smart captcha", "are you not a robot",
 )
+FORBIDDEN_TERMINAL_FILE_SUFFIXES = (
+    # Windows executables / installers / scripts
+    ".exe", ".msi", ".msix", ".msixbundle", ".appx", ".appxbundle", ".com", ".scr",
+    ".cpl", ".dll", ".sys", ".bat", ".cmd", ".ps1",
+    # Android / iOS packages
+    ".apk", ".apks", ".xapk", ".aab", ".ipa",
+    # macOS / Linux packages and executables
+    ".dmg", ".pkg", ".mpkg", ".appimage", ".deb", ".rpm", ".snap", ".flatpak",
+    ".flatpakref", ".flatpakrepo", ".run", ".bin", ".elf", ".so", ".dylib",
+    ".sh", ".bash", ".zsh",
+    # Disk / VM / firmware images
+    ".iso", ".img", ".vhd", ".vhdx", ".vmdk", ".qcow", ".qcow2", ".sparseimage",
+    ".sparsebundle", ".rom", ".firmware", ".hex",
+    # Archives / packaged payloads
+    ".zip", ".rar", ".7z", ".tar", ".tgz", ".tbz", ".tbz2", ".txz", ".gz", ".bz2",
+    ".xz", ".zst", ".jar", ".war", ".ear",
+    # Direct media / playlists / documents / static assets are not site origins.
+    ".m3u8", ".mpd", ".mp4", ".mkv", ".avi", ".mov", ".webm", ".m2ts", ".mp3",
+    ".m4a", ".aac", ".flac", ".wav", ".pdf", ".png", ".jpg", ".jpeg", ".gif",
+    ".webp", ".svg", ".ico", ".woff", ".woff2", ".ttf", ".otf", ".js", ".mjs", ".cjs",
+)
+FORBIDDEN_TERMINAL_CONTENT_TYPES = (
+    "application/octet-stream",
+    "application/vnd.android.package-archive",
+    "application/zip",
+    "application/x-7z-compressed",
+    "application/x-rar-compressed",
+    "application/x-apple-diskimage",
+    "application/x-msdownload",
+    "application/x-msi",
+    "application/pdf",
+)
 
 
 def now_iso() -> str:
@@ -108,6 +140,23 @@ def is_public_url(url: str) -> bool:
     except ValueError:
         return True
     return not (address.is_private or address.is_loopback or address.is_link_local or address.is_reserved or address.is_multicast)
+
+
+def is_provider_terminal_site_url(url: str) -> bool:
+    """Return True only for a public HTTP(S) URL suitable as provider site origin."""
+    if not is_public_url(url):
+        return False
+    parsed = urllib.parse.urlparse(str(url))
+    path = urllib.parse.unquote(parsed.path or "").casefold().rstrip("/")
+    return not any(path.endswith(suffix) for suffix in FORBIDDEN_TERMINAL_FILE_SUFFIXES)
+
+
+def is_forbidden_terminal_content_type(content_type: str) -> bool:
+    value = str(content_type or "").split(";", 1)[0].strip().casefold()
+    return (
+        value.startswith(("audio/", "video/", "image/", "font/"))
+        or value in FORBIDDEN_TERMINAL_CONTENT_TYPES
+    )
 
 
 def fetch(url: str, timeout: float = 10.0) -> tuple[int, str, str, dict[str, str]]:
@@ -653,7 +702,18 @@ def validate_terminal(provider_id: str, cfg: dict[str, Any], candidate: str, tim
     content_type = headers.get("Content-Type", headers.get("content-type", ""))
     allowed_statuses = {int(item) for item in cfg.get("terminal_success_statuses") or list(range(200, 400))}
     blocked_hosts = {str(item).casefold().strip(".") for item in cfg.get("blocked_hosts") or []}
-    ok = status in allowed_statuses and bool(final_host) and is_public_url(final) and final_host not in blocked_hosts
+    content_disposition = headers.get("Content-Disposition", headers.get("content-disposition", ""))
+    safe_site_url = is_provider_terminal_site_url(final)
+    safe_content_type = not is_forbidden_terminal_content_type(content_type)
+    attachment = "attachment" in str(content_disposition or "").casefold()
+    ok = (
+        status in allowed_statuses
+        and bool(final_host)
+        and safe_site_url
+        and safe_content_type
+        and not attachment
+        and final_host not in blocked_hosts
+    )
     if ok and not same_brand(provider_id, final, cfg):
         ok = False
     lowered = re.sub(r"\s+", " ", document[:150_000].casefold())
@@ -678,6 +738,10 @@ def validate_terminal(provider_id: str, cfg: dict[str, Any], candidate: str, tim
         "status": status,
         "ok": ok,
         "content_type": content_type,
+        "content_disposition": content_disposition,
+        "safe_site_url": safe_site_url,
+        "safe_content_type": safe_content_type,
+        "attachment": attachment,
         "brand_match": same_brand(provider_id, final, cfg),
     }
 
@@ -794,7 +858,7 @@ def _dedupe_ordered_candidates(candidates: list[dict[str, Any]]) -> list[dict[st
     dedup: dict[str, dict[str, Any]] = {}
     for candidate in candidates:
         identity = _candidate_identity(candidate)
-        if not identity or not is_public_url(identity):
+        if not identity or not is_provider_terminal_site_url(identity):
             continue
         previous = dedup.get(identity)
         if previous is None or int(candidate.get("score") or 0) > int(previous.get("score") or 0):
@@ -1079,7 +1143,9 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
             if str(candidate.get("source_type") or "") in {"hub", "telegram_public", "redirect"}
             and validation.get("final_url")
             and validation.get("brand_match") is True
-            and is_public_url(str(validation.get("final_url")))
+            and is_provider_terminal_site_url(str(validation.get("final_url")))
+            and not is_forbidden_terminal_content_type(str(validation.get("content_type") or ""))
+            and validation.get("attachment") is not True
         ), None)
 
     if not selected:
@@ -1149,6 +1215,76 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
     return item
 
 
+def sanitize_unsafe_published_routes(
+    config: dict[str, Any],
+    hubs: dict[str, dict[str, Any]],
+    history_providers: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Remove already-published binary/download routes before normal discovery."""
+    patches = config.get("provider_patches") if isinstance(config.get("provider_patches"), dict) else {}
+    config["provider_patches"] = patches
+    changes: list[dict[str, Any]] = []
+
+    for provider_id, cfg in hubs.items():
+        patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
+        history_row = history_providers.get(provider_id) if isinstance(history_providers.get(provider_id), dict) else {}
+        current = history_row.get("current") if isinstance(history_row.get("current"), dict) else None
+        unsafe_urls = [
+            str(value)
+            for value in (patch.get("official_site"), current.get("url") if current else None)
+            if is_http_url(value) and not is_provider_terminal_site_url(str(value))
+        ]
+        if not unsafe_urls:
+            continue
+
+        unsafe_hosts = {host(url) for url in unsafe_urls if host(url)}
+        direct_candidates = [
+            str(url).rstrip("/")
+            for url in cfg.get("direct_candidates") or []
+            if is_http_url(url) and is_provider_terminal_site_url(str(url))
+        ]
+        safe_direct = direct_candidates[0] if direct_candidates else None
+
+        for mapping_name in ("replacements", "runtime_domain_replacements"):
+            mapping = patch.get(mapping_name)
+            if isinstance(mapping, dict):
+                for old_host, new_host in list(mapping.items()):
+                    if str(new_host).casefold().strip(".") in unsafe_hosts:
+                        mapping.pop(old_host, None)
+
+        history_row["previous"] = [
+            row
+            for row in (history_row.get("previous") or [])
+            if isinstance(row, dict)
+            and (
+                not is_http_url(row.get("url"))
+                or is_provider_terminal_site_url(str(row.get("url")))
+            )
+        ][:5]
+
+        if safe_direct:
+            patch["official_site"] = safe_direct
+            history_row["current"] = {
+                "url": safe_direct,
+                "host": host(safe_direct),
+                "validated_at": now_iso(),
+                "source_type": "curated_direct",
+                "source": "provider-hubs.json",
+            }
+        else:
+            patch.pop("official_site", None)
+            history_row.pop("current", None)
+
+        patches[provider_id] = patch
+        history_providers[provider_id] = history_row
+        changes.append({
+            "provider_id": provider_id,
+            "unsafe_urls": unsafe_urls,
+            "safe_fallback": safe_direct,
+        })
+    return changes
+
+
 def update_history_row(history_row: dict[str, Any], item: dict[str, Any]) -> None:
     if item.get("status") not in {"validated", "site_validated"}:
         return
@@ -1159,12 +1295,24 @@ def update_history_row(history_row: dict[str, Any], item: dict[str, Any]) -> Non
     if current and str(current.get("url") or "").rstrip("/") != terminal:
         previous = [current, *(history_row.get("previous") or [])]
         history_row["previous"] = previous[:5]
+    next_source_type = item.get("selected_source_type")
+    next_source = item.get("selected_source")
+    same_current = bool(
+        current
+        and str(current.get("url") or "").rstrip("/") == terminal
+        and current.get("source_type") == next_source_type
+        and current.get("source") == next_source
+    )
     history_row["current"] = {
         "url": terminal,
         "host": host(terminal),
-        "validated_at": now_iso(),
-        "source_type": item.get("selected_source_type"),
-        "source": item.get("selected_source"),
+        "validated_at": (
+            current.get("validated_at")
+            if same_current and current.get("validated_at")
+            else now_iso()
+        ),
+        "source_type": next_source_type,
+        "source": next_source,
     }
     history_row.pop("pending", None)
 
@@ -1190,6 +1338,12 @@ def main() -> int:
     history = load_json(HISTORY_PATH, {"schema_version": 1, "providers": {}})
     history.setdefault("schema_version", 1)
     history_providers = history.setdefault("providers", {})
+    history_providers_before = json.dumps(history_providers, sort_keys=True, ensure_ascii=False)
+    security_route_sanitizations = (
+        sanitize_unsafe_published_routes(config, hubs, history_providers)
+        if args.apply
+        else []
+    )
     selected_ids = {canonical_provider_id(item) for item in args.provider}
 
     work: list[tuple[str, dict[str, Any], dict[str, Any]]] = []
@@ -1210,6 +1364,7 @@ def main() -> int:
         "mode": args.mode,
         "providers": {},
         "applied": 0,
+        "security_route_sanitizations": security_route_sanitizations,
     }
     with concurrent.futures.ThreadPoolExecutor(max_workers=max(1, min(args.workers, 16))) as pool:
         future_map = {
@@ -1234,7 +1389,12 @@ def main() -> int:
     atomic_write_json(output, report)
     if args.apply:
         atomic_write_json(CONFIG_PATH, config)
-        history["updated_at"] = now_iso()
+        history_changed = (
+            json.dumps(history_providers, sort_keys=True, ensure_ascii=False)
+            != history_providers_before
+        )
+        if history_changed:
+            history["updated_at"] = now_iso()
         atomic_write_json(HISTORY_PATH, history)
     validated = sum(1 for row in report["providers"].values() if row.get("status") in {"validated", "site_validated"})
     retained = sum(1 for row in report["providers"].values() if row.get("status") == "retained_last_known_good")

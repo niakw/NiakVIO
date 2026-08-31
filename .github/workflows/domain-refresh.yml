@@ -1,4 +1,4 @@
-name: LEARN - Domain Refresh
+name: CORE - Domain Refresh
 
 on:
   workflow_dispatch:
@@ -28,27 +28,27 @@ on:
     - cron: "23 3 * * *"
 
 permissions:
-  contents: read
+  contents: write
   actions: write
 
 concurrency:
-  group: nuvio-provider-domain-observation
+  group: niakvio-core-domain-refresh-main
   cancel-in-progress: true
 
 jobs:
   observe:
-    name: Observe hubs, domains and French ISP DNS
+    name: Refresh hubs, routes and French ISP DNS
     runs-on: ubuntu-latest
     timeout-minutes: 50
     permissions:
-      contents: read
+      contents: write
       actions: write
 
     steps:
-      - name: Checkout published main without credentials
+      - name: Checkout current main without persistent credentials
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Set up Python
@@ -65,16 +65,19 @@ jobs:
       - name: Install pinned runtime dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Observe official hubs and domain candidates without publishing
+      - name: Resolve and apply authoritative provider routes
         shell: bash
         run: |
           MODE="${{ github.event.inputs.mode || 'quick' }}"
           mkdir -p health-output
+          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
+          cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
           python scripts/resolve_provider_hubs.py \
             --mode "$MODE" \
             --include-disabled \
             --workers 8 \
             --timeout 8 \
+            --apply \
             --output health-output/provider-hub-report.json
 
       - name: Diagnose all observed provider domains through French ISPs
@@ -89,7 +92,7 @@ jobs:
             --all-domains \
             --output health-output/dns-preflight-report.json
 
-      - name: Detect authoritative route changes
+      - name: Detect validated route-state changes
         id: route-change
         shell: bash
         run: |
@@ -98,34 +101,28 @@ jobs:
           import os
           from pathlib import Path
 
-          report = json.loads(Path("health-output/provider-hub-report.json").read_text(encoding="utf-8"))
-          overrides = json.loads(Path("provider-overrides.json").read_text(encoding="utf-8"))
-          history = json.loads(Path("provider-domain-history.json").read_text(encoding="utf-8"))
+          before_overrides = json.loads(Path(os.environ["RUNNER_TEMP"], "provider-overrides.before.json").read_text(encoding="utf-8"))
+          before_history = json.loads(Path(os.environ["RUNNER_TEMP"], "provider-domain-history.before.json").read_text(encoding="utf-8"))
+          after_overrides = json.loads(Path("provider-overrides.json").read_text(encoding="utf-8"))
+          after_history = json.loads(Path("provider-domain-history.json").read_text(encoding="utf-8"))
 
-          patches = overrides.get("provider_patches") or {}
-          histories = history.get("providers") or {}
-          changed = []
-
-          def norm(value):
-              return str(value or "").strip().rstrip("/")
-
-          for provider_id, row in (report.get("providers") or {}).items():
-              if not isinstance(row, dict) or row.get("status") not in {"validated", "site_validated"}:
-                  continue
-              observed = norm(row.get("official_site"))
-              if not observed:
-                  continue
-              patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
-              hist = histories.get(provider_id) if isinstance(histories.get(provider_id), dict) else {}
-              current = norm(patch.get("official_site") or ((hist.get("current") or {}).get("url")))
-              if observed != current:
-                  changed.append({"provider": provider_id, "from": current, "to": observed})
+          before_patches = before_overrides.get("provider_patches") or {}
+          after_patches = after_overrides.get("provider_patches") or {}
+          before_histories = before_history.get("providers") or {}
+          after_histories = after_history.get("providers") or {}
+          provider_ids = sorted(set(before_patches) | set(after_patches) | set(before_histories) | set(after_histories))
+          changed = [
+              provider_id
+              for provider_id in provider_ids
+              if before_patches.get(provider_id) != after_patches.get(provider_id)
+              or before_histories.get(provider_id) != after_histories.get(provider_id)
+          ]
 
           output = os.environ.get("GITHUB_OUTPUT")
           if output:
               with open(output, "a", encoding="utf-8") as handle:
                   handle.write(f"changed={'true' if changed else 'false'}\n")
-                  handle.write("providers=" + ",".join(item["provider"] for item in changed) + "\n")
+                  handle.write("providers=" + ",".join(changed) + "\n")
 
           Path("health-output/domain-route-changes.json").write_text(
               json.dumps({"changed": changed}, indent=2, ensure_ascii=False) + "\n",
@@ -134,17 +131,41 @@ jobs:
           print(json.dumps({"changed": changed}, ensure_ascii=False))
           PY
 
-      - name: Trigger canonical CORE quick refresh when route changed
+      - name: Validate route mutation scope and contracts
+        shell: bash
+        run: |
+          git diff --exit-code -- \
+            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            provider_catalog.json provider-hubs.json providers/ provider-bases/
+          test -s health-output/provider-hub-report.json
+          test -s health-output/dns-preflight-report.json
+          python tests/provider_hub_registry_test.py
+          node tests/dns_preflight.test.mjs
+          python tests/domain_refresh_workflow_test.py
+
+      - name: Publish validated route state
         if: steps.route-change.outputs.changed == 'true'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          echo "Authoritative route changes: ${{ steps.route-change.outputs.providers }}"
-          gh workflow run sync.yml \
-            --ref main \
-            -f mode=quick \
-            -f phase=full
+          set -euo pipefail
+          echo "Validated provider route changes: ${{ steps.route-change.outputs.providers }}"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json provider-domain-history.json
+          git diff --cached --quiet && exit 0
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced validated=$BASE_SHA current=$CURRENT_SHA"
+            gh workflow run domain-refresh.yml --ref main -f mode=quick
+            exit 0
+          fi
+          git commit -m "chore(domains): publish validated provider routes"
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
 
       - name: Summarize domain and DNS observation
         shell: bash
@@ -174,7 +195,7 @@ jobs:
           ]
 
           summary = [
-              "## Daily provider domain observation",
+              "## CORE provider domain refresh",
               "",
               f"- Hub/domain registry providers observed: **{len(providers)}**",
               f"- Published providers included in DNS sweep: **{dns.get('candidate_count', 0)}**",
@@ -184,7 +205,7 @@ jobs:
               f"- DNS blocks: **{', '.join(str(row.get('canonical_id')) for row in blocked) or '-'}**",
               f"- API-limited providers: **{', '.join(str(row.get('canonical_id')) for row in limited) or '-'}**",
               "",
-              "DNS is diagnostic-only and never blocks Health/Repair or publication.",
+              "DNS is diagnostic-only and never blocks route publication, Health/Repair or provider activation.",
           ]
           text = "\n".join(summary) + "\n"
           print(text)
@@ -193,22 +214,10 @@ jobs:
               Path(path).write_text(text, encoding="utf-8")
           PY
 
-      - name: Validate observation did not mutate publication state
-        shell: bash
-        run: |
-          git diff --exit-code -- \
-            manifest.json vf/manifest.json provider_catalog.json providers/ \
-            provider-overrides.json provider-domain-history.json
-          test -s health-output/provider-hub-report.json
-          test -s health-output/dns-preflight-report.json
-          python tests/provider_hub_registry_test.py
-          node tests/dns_preflight.test.mjs
-          python tests/domain_refresh_workflow_test.py
-
       - name: Upload domain observation
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.0
         with:
-          name: provider-domain-observation-${{ github.run_id }}
+          name: provider-domain-refresh-${{ github.run_id }}
           path: |
             health-output/provider-hub-report.json
             health-output/dns-preflight-report.json
