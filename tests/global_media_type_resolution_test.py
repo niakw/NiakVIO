@@ -101,6 +101,71 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+# Ordinary numeric-ID resolvers may defer TMDB until they actually return
+# candidate output. This prevents one work from multiplying the same TMDB
+# request across every QuickJS provider runtime.
+ZERO_BASE = r"""
+"use strict";
+async function getStreams(tmdbId, mediaType, season, episode) {
+  return [];
+}
+module.exports = { getStreams };
+"""
+deferred_zero = mod.apply(
+    ZERO_BASE,
+    options={"semantic_types": ["movie", "tv"], "preflight_tmdb": False},
+)
+run_case(deferred_zero, r"""
+let calls=0;
+global.fetch=async()=>{calls++;throw new Error('TMDB must not run for zero provider output')};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('1396','series',1,1);
+  if(!Array.isArray(value)||value.length!==0)throw new Error('zero provider output changed');
+  if(calls!==0)throw new Error('zero provider output caused redundant TMDB preflight');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+deferred_positive = mod.apply(
+    BASE,
+    options={"semantic_types": ["movie", "tv"], "preflight_tmdb": False},
+)
+run_case(deferred_positive, r"""
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  if(!String(url).includes('/tv/280049?'))throw new Error('unexpected TMDB endpoint '+url);
+  return{ok:true,status:200,json:async()=>({
+    id:280049,genres:[{id:16,name:'Animation'}],original_language:'ja',
+    origin_country:['JP'],keywords:{results:[{name:'anime'}]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('280049','series',1,1);
+  if(!Array.isArray(value)||value.length!==0)throw new Error('TV-only provider leaked TMDB-proven anime after deferred verification');
+  if(calls!==1)throw new Error('positive output must be verified exactly once');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+run_case(deferred_positive, r"""
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  if(!String(url).includes('/tv/1396?'))throw new Error('unexpected TMDB endpoint '+url);
+  return{ok:true,status:200,json:async()=>({
+    id:1396,genres:[{id:18,name:'Drama'}],original_language:'en',
+    origin_country:['US'],keywords:{results:[]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('1396','series',1,1);
+  if(!Array.isArray(value)||!value.length||value[0].mediaType!=='tv')throw new Error('ordinary TV output rejected after deferred verification');
+  if(calls!==1)throw new Error('ordinary positive output must be verified exactly once');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 anime_only = mod.apply(BASE, options={"semantic_types": ["anime"]})
 run_case(anime_only, r"""
 global.fetch=async()=>({ok:true,status:200,json:async()=>({
