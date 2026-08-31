@@ -164,10 +164,10 @@ def projected_transport_types(semantic_types: object) -> list[str]:
     """Project semantic provider capabilities onto Nuvio's transport filter."""
     semantic = _normalized_media_types(semantic_types)
     transport = list(semantic)
-    if "anime" in semantic:
-        for alias in ("movie", "tv"):
-            if alias not in transport:
-                transport.append(alias)
+    if "anime" in semantic and "tv" not in transport:
+        # Nuvio may surface episodic anime as series/tv. Movie is not a generic
+        # anime alias: only semantic movie capability may select movie transport.
+        transport.append("tv")
     return transport
 
 
