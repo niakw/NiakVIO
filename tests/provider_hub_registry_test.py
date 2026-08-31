@@ -223,7 +223,9 @@ fallback_authority_cfg = {
     'direct_fallback': 'https://direct.example/',
 }
 assert resolver.has_authoritative_direct_source(fallback_authority_cfg)
-assert resolver._seed_known_candidates(fallback_authority_cfg, authority_history) == []
+fallback_seed = resolver._seed_known_candidates(fallback_authority_cfg, authority_history)
+assert [row['url'] for row in fallback_seed] == ['https://direct.example']
+assert all(row['source_type'] != 'history_lkg' for row in fallback_seed)
 
 lkg_only_cfg = {'hub': None, 'sources': [], 'direct_candidates': []}
 lkg_seed = resolver._seed_known_candidates(lkg_only_cfg, authority_history)
