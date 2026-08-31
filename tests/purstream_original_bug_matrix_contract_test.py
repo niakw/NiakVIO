@@ -64,8 +64,9 @@ assert resolve_anchor in install_block
 assert install_block.index(deadline_anchor) < install_block.index(resolve_anchor)
 assert "g.fetch=budgetedFetch(previousFetch)" in install_block
 assert "if(deadlineExpired())throw providerTimeoutError()" in media_resolution
-assert "if(!a||deadlineExpired())return[]" in media_resolution
-assert "if(deadlineExpired())return[]" in media_resolution
+compact_media_resolution = "".join(media_resolution.split())
+assert "if(!a||deadlineExpired())return[];" in compact_media_resolution
+assert "if(deadlineExpired())return[];" in compact_media_resolution
 
 # Desktop compatibility is revision 5 and cannot invent TLD failovers.
 desktop_compat = (SCRIPTS / "provider_patches" / "desktop_runtime_compat_v1.py").read_text(encoding="utf-8")
