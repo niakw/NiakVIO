@@ -119,6 +119,20 @@ assert adapter._record_requires_baseline_restore({
     "enabled": False,
 }) is True
 assert adapter._record_requires_baseline_restore({
+    "action": "published-disabled-failed-gates",
+    "enabled": False,
+    "failed_gates": ["02_healthy_functional_status", "00_current_playable_stream"],
+    "observed_status": "unavailable",
+    "evidence": {
+        "streams_playable": 0,
+        "payload_verified_streams": 0,
+        "identity_contradiction_count": 0,
+        "duration_identity_mismatch_count": 0,
+        "disallowed_streams": 0,
+        "failure_classes": ["provider_http_error"],
+    },
+}) is True
+assert adapter._record_requires_baseline_restore({
     "action": "preserved-published-state-clean-candidate-pending",
     "enabled": True,
     "failed_gates": [],
