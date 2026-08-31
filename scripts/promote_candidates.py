@@ -1002,9 +1002,13 @@ def gate(
     passed: bool,
     evidence: Any,
     threshold: Any,
+    scope: str = "provider",
 ) -> dict[str, Any]:
+    if scope not in {"provider", "stream"}:
+        raise ValueError(f"invalid gate scope: {scope}")
     return {
         "passed": bool(passed),
+        "scope": scope,
         "evidence": evidence,
         "threshold": threshold,
     }
@@ -1016,7 +1020,13 @@ def evaluate_pre_stability_gates(
     result = item["health"]
     proof = result_evidence(result)
     status = str(result.get("status", "runtime_error"))
-    score = int(result.get("score", 0))
+    provider_status = str(
+        result.get("provider_status")
+        or proof.get("provider_status")
+        or "provider_unreachable"
+    )
+    stream_status = str(result.get("stream_status") or status)
+    score = int(result.get("provider_score", proof.get("provider_score", result.get("score", 0))) or 0)
 
     minimum_score = int(activation.get("minimum_score_enabled", 70))
     minimum_fixtures = int(activation.get("minimum_healthy_fixtures", 1))
@@ -1200,7 +1210,7 @@ def evaluate_pre_stability_gates(
     )
     server_accessible = bool(proof.get("provider_server_accessible", False))
     manifest_description_present = bool(proof.get("manifest_description_present", False))
-    runtime_light = status == "reachable" and server_accessible
+    runtime_light = provider_status == "reachable" and server_accessible
     manifest_curated = (
         manifest_description_present
         and (not require_language or bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages)))
@@ -1255,16 +1265,22 @@ def evaluate_pre_stability_gates(
                 "exposed_disallowed_streams": 0,
             },
             "no disallowed P2P/torrent output survives stream sanitization",
+            scope="stream",
         ),
         "02_healthy_functional_status": gate(
-            status in {"healthy", "reachable"},
-            status,
-            "healthy or reachable server/API",
+            provider_status == "reachable",
+            {
+                "provider_status": provider_status,
+                "stream_status": stream_status,
+            },
+            "provider runtime/API reachable",
+            scope="provider",
         ),
         "03_minimum_score": gate(
             score >= minimum_score,
-            score,
+            {"provider_score": score},
             minimum_score,
+            scope="provider",
         ),
         "04_fixture_and_type_coverage": gate(
             (
@@ -1288,6 +1304,7 @@ def evaluate_pre_stability_gates(
                 "require_declared_type_coverage": require_type_coverage,
                 "representative_fixture_mode": representative_fixture_mode,
             },
+            scope="stream",
         ),
         "05_stream_and_fixture_coverage": gate(
             (
@@ -1302,6 +1319,7 @@ def evaluate_pre_stability_gates(
                 "minimum_playable_streams": minimum_streams,
                 "minimum_playable_fixtures": minimum_playable_fixtures,
             },
+            scope="stream",
         ),
         "06_distinct_host_diversity": gate(
             hosts >= minimum_hosts or runtime_light,
@@ -1310,6 +1328,7 @@ def evaluate_pre_stability_gates(
                 "reachable_hosts": proof.get("reachable_hosts", []),
             },
             minimum_hosts,
+            scope="stream",
         ),
         "07_verified_payload_playability": gate(
             (
@@ -1324,6 +1343,7 @@ def evaluate_pre_stability_gates(
                 "minimum_payload_verified_streams": minimum_payload,
                 "minimum_playable_streams": minimum_streams,
             },
+            scope="stream",
         ),
         "08_quality_and_bitrate": gate(
             quality_ok,
@@ -1341,6 +1361,7 @@ def evaluate_pre_stability_gates(
                 "minimum_bandwidth_bps_when_reported": minimum_bandwidth,
                 "minimum_manifest_curation_score_when_stream_is_not_returned": minimum_manifest_curation_score,
             },
+            scope="stream",
         ),
         "09_language_and_subtitle_integrity": gate(
             language_subtitle_pass,
@@ -1364,6 +1385,7 @@ def evaluate_pre_stability_gates(
                     require_reachable_advertised_subtitles
                 ),
             },
+            scope="stream",
         ),
         "10_content_identity_integrity": gate(
             (
@@ -1387,6 +1409,7 @@ def evaluate_pre_stability_gates(
                 "rejected_streams_do_not_disable_healthy_provider": True,
                 "unknown_identity_is_not_ui_unknown_quality": True,
             },
+            scope="stream",
         ),
     }
     performance = {
@@ -1407,8 +1430,29 @@ def evaluate_pre_stability_gates(
     }
 
 
+def gates_pass(
+    gates: dict[str, dict[str, Any]],
+    scope: str | None = None,
+) -> bool:
+    selected = [
+        value
+        for value in gates.values()
+        if scope is None or str(value.get("scope") or "provider") == scope
+    ]
+    return bool(selected) and all(bool(value.get("passed")) for value in selected)
+
+
 def all_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
-    return bool(gates) and all(bool(value.get("passed")) for value in gates.values())
+    """Backward-compatible full audit verdict; never use for provider activation."""
+    return gates_pass(gates, None)
+
+
+def provider_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
+    return gates_pass(gates, "provider")
+
+
+def stream_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
+    return gates_pass(gates, "stream")
 
 
 def inconclusive_statuses(activation: dict[str, Any]) -> set[str]:
@@ -1455,7 +1499,15 @@ def update_strict_history(
         old = dict(variants.get(key, {}))
         gates, proof = pre_evaluations[key]
         performance_pass = bool(proof.get("performance", {}).get("passed", False))
-        pre_stability_pass = all_gates_pass(gates) and performance_pass
+        current_stream_proof = (
+            int(proof.get("streams_playable", 0) or 0) > 0
+            and int(proof.get("payload_verified_streams", 0) or 0) > 0
+        )
+        pre_stability_pass = (
+            provider_gates_pass(gates)
+            and performance_pass
+            and current_stream_proof
+        )
         status = str(result.get("status", "runtime_error"))
         sha256 = str(result.get("sha256", ""))
         same_sha = bool(sha256) and old.get("sha256") == sha256
