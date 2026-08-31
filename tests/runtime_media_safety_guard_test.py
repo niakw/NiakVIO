@@ -86,7 +86,7 @@ def run_node(source: str, fetch_impl: str, expression: str) -> object:
 wrong_duration_fetch = r"""async function(url){
   url=String(url);
   if(url.includes('api.themoviedb.org'))return {ok:true,status:200,json:async()=>({runtime:90}),headers:{get:()=> 'application/json'}};
-  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:3940,\na.ts\n#EXTINF:3940,\nb.ts\n#EXTINF:3940,\nc.ts\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
+  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:3940,\na.ts\n#EXTINF:3940,\nb.ts\n#EXTINF:3940,\nc.ts\n#EXT-X-ENDLIST\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
   throw new Error('unexpected '+url);
 }"""
 value = run_node(
@@ -100,7 +100,7 @@ assert value == [], value
 valid_duration_fetch = r"""async function(url){
   url=String(url);
   if(url.includes('api.themoviedb.org'))return {ok:true,status:200,json:async()=>({runtime:90}),headers:{get:()=> 'application/json'}};
-  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:2700,\na.ts\n#EXTINF:2700,\nb.ts\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
+  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:2700,\na.ts\n#EXTINF:2700,\nb.ts\n#EXT-X-ENDLIST\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
   throw new Error('unexpected '+url);
 }"""
 value = run_node(
