@@ -82,6 +82,38 @@ def _provider_semantic_types(provider_id: str, specific: dict[str, Any]) -> list
     return list(_semantic_types_index().get(provider_id.casefold()) or [])
 
 
+def _tmdb_preflight_required(
+    provider_id: str,
+    specific: dict[str, Any],
+    provider_capability: dict[str, Any],
+    config: dict[str, Any],
+) -> bool:
+    """Use TMDB before provider execution only when provider semantics need it.
+
+    Anime-capable providers need the movie|tv|anime distinction before their
+    business logic. Catalogue/title recovery also consumes Core TMDB metadata
+    before search. Ordinary numeric-ID/direct resolvers can run first and pay
+    the TMDB verification cost only when they actually return a candidate.
+    """
+    semantic_types = _provider_semantic_types(provider_id, specific)
+    if "anime" in semantic_types:
+        return True
+
+    capability = str(
+        provider_capability.get("strategy") or specific.get("capability") or ""
+    ).strip().casefold()
+    catalogue_policy = config.get("catalogue_resolution_policy") or {}
+    if not isinstance(catalogue_policy, dict) or not catalogue_policy.get("enabled", False):
+        return False
+    catalogue_capabilities = {
+        str(value).strip().casefold()
+        for value in catalogue_policy.get("capabilities", [])
+        if str(value).strip()
+    }
+    official_site = str(specific.get("official_site") or "").strip()
+    return bool(official_site and capability in catalogue_capabilities)
+
+
 def load_overrides(path: Path | None = None) -> dict[str, Any]:
     config_path = (path or CONFIG).resolve()
     if not config_path.exists():
@@ -1282,8 +1314,15 @@ def apply_overrides(
         # inner Core/provider layer receives the same canonical movie|tv|anime
         # identity. Client aliases remain input-only.
         before = text
+        semantic_types = _provider_semantic_types(provider_id, specific)
         media_type_options = {
-            "semantic_types": _provider_semantic_types(provider_id, specific),
+            "semantic_types": semantic_types,
+            "preflight_tmdb": _tmdb_preflight_required(
+                provider_id,
+                specific,
+                provider_capability,
+                config,
+            ),
             "request_type_aliases": {
                 str(key).strip().casefold(): str(value).strip().casefold()
                 for key, value in (provider_capability.get("request_type_aliases") or {}).items()
