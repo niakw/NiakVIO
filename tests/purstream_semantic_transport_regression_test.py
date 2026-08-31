@@ -135,7 +135,8 @@ global.fetch = async function(rawUrl) {
     tmdbCalls.push(url);
     return jsonResponse(url, {
       id: 157336,
-      title: "Interstellar",
+      title: "Interstellar FR",
+      original_title: "Interstellar",
       release_date: "2014-11-05",
       genres: [{id: 18, name: "Drama"}],
       original_language: "en",
@@ -168,6 +169,9 @@ global.fetch = async function(rawUrl) {
     });
   }
 
+  if (url.includes("/search-bar/search/Interstellar%20FR")) {
+    return jsonResponse(url, {data:{items:{movies:{items:[]}}}});
+  }
   if (url.includes("/search-bar/search/Interstellar")) {
     return jsonResponse(url, {data:{items:{
       movies:{items:[

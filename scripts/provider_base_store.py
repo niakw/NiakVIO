@@ -575,8 +575,19 @@ async function _tmdb(tmdbId, mediaType) {
   const identity = type + ":" + String(tmdbId || "");
   function project(row) {
     if (!row || typeof row !== "object") return null;
+    const alternativeRows = row.alternative_titles && (
+      row.alternative_titles.titles || row.alternative_titles.results || row.alternative_titles
+    );
+    const aliases = _uniq([
+      row.title,
+      row.name,
+      row.original_title,
+      row.original_name,
+      ...(Array.isArray(alternativeRows) ? alternativeRows.map(item => item && (item.title || item.name)) : [])
+    ].map(_text).filter(Boolean));
     return {
-      title: row.title || row.name || row.original_title || row.original_name || "",
+      title: aliases[0] || "",
+      aliases,
       year: String(row.release_date || row.first_air_date || row.year || "").slice(0, 4),
       tmdbId: String(tmdbId || "")
     };
@@ -794,14 +805,16 @@ function _recipeMediaType(row, recipe) {
 }
 function _recipeScore(row, meta, recipe, expectedMedia) {
   const title = _slug(_recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]));
-  const expected = _slug(meta && meta.title);
+  const expectedTitles = _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])])
+    .map(_slug).filter(Boolean);
+  const expected = expectedTitles[0] || "";
   const actualMedia = _recipeMediaType(row, recipe);
   const year = _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4);
   const expectedYear = _text(meta && meta.year).slice(0, 4);
   const providerId = _recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"]);
 
   if (recipe.strictIdentity) {
-    if (!providerId || !title || !expected || title !== expected) return -1;
+    if (!providerId || !title || !expectedTitles.length || !expectedTitles.includes(title)) return -1;
     if (!actualMedia || !expectedMedia || actualMedia !== expectedMedia) return -1;
     if (expectedYear) {
       if (!year || !/^\d{4}$/.test(year)) return -1;
@@ -937,20 +950,28 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
 
   if (!recipe.searchRoute) return [];
   let providerId = "";
-  for (const base of bases.slice(0, 3)) {
-    const url = _recipeUrl(recipe.searchRoute, values, base);
-    if (!url) continue;
-    try {
-      const payload = await _recipePayload(url, recipe, null);
-      if (!payload.value || typeof payload.value === "string") continue;
-      const rows = _recipeObjects(payload.value, [])
-        .map(row => ({ row, score: _recipeScore(row, meta, recipe, media) }))
-        .filter(item => item.score > 0)
-        .sort((a, b) => b.score - a.score);
-      if (!rows.length) continue;
-      providerId = _recipeValue(rows[0].row, recipe.idFields || ["id","_id","media_id","post_id"]);
-      if (providerId) break;
-    } catch (_) {}
+  const searchQueries = _uniq([
+    meta && meta.title,
+    ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])
+  ].map(_text).filter(Boolean));
+  for (const query of searchQueries.slice(0, 3)) {
+    values.query = query;
+    for (const base of bases.slice(0, 3)) {
+      const url = _recipeUrl(recipe.searchRoute, values, base);
+      if (!url) continue;
+      try {
+        const payload = await _recipePayload(url, recipe, null);
+        if (!payload.value || typeof payload.value === "string") continue;
+        const rows = _recipeObjects(payload.value, [])
+          .map(row => ({ row, score: _recipeScore(row, meta, recipe, media) }))
+          .filter(item => item.score > 0)
+          .sort((a, b) => b.score - a.score);
+        if (!rows.length) continue;
+        providerId = _recipeValue(rows[0].row, recipe.idFields || ["id","_id","media_id","post_id"]);
+        if (providerId) break;
+      } catch (_) {}
+    }
+    if (providerId) break;
   }
   if (!providerId) return [];
   values.providerId = providerId;
