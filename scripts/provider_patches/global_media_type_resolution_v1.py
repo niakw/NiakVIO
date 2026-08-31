@@ -103,6 +103,7 @@ function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
 function providerTransport(input,canonical,namespace){
   var raw=s(input||"movie").toLowerCase(),base=alias(raw),map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
   var mapped=s(map[canonical]||map[raw]||map[base]).toLowerCase();
+  if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
   if(mapped)return alias(mapped);
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   if(canonical==="anime"&&semantic.indexOf("anime")>=0&&semantic.indexOf("tv")<0&&semantic.indexOf("movie")<0)return"anime";

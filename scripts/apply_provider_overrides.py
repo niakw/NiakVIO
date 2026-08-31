@@ -1215,6 +1215,7 @@ def apply_overrides(
             str(key).strip().casefold(): str(value).strip().casefold()
             for key, value in request_type_aliases.items()
             if str(key).strip() and str(value).strip()
+            and str(value).strip().casefold() != "tmdb_namespace"
         }
         if "strict_playback_validation" in provider_capability:
             safety_options["strict_playback"] = bool(provider_capability.get("strict_playback_validation"))

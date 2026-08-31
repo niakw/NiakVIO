@@ -192,7 +192,7 @@ purstream_mixed = mod.apply(
     BASE,
     options={
         "semantic_types": ["movie", "tv", "anime"],
-        "request_type_aliases": {"anime": "tv"},
+        "request_type_aliases": {"anime": "tmdb_namespace"},
     },
 )
 run_case(purstream_mixed, r"""
@@ -215,6 +215,25 @@ const provider=require(process.argv[2]);
   const fromTv=await provider.getStreams("46260","tv",1,1);
   if(!fromTv.length||fromTv[0].canonicalMediaType!=="anime"||fromTv[0].mediaType!=="tv")
     throw new Error("Purstream tv anime transport mismatch");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+run_case(purstream_mixed, r"""
+global.fetch=async(url)=>{
+  url=String(url);
+  if(url.includes("/tv/4242"))return{ok:false,status:404,json:async()=>({})};
+  if(url.includes("/movie/4242"))return{ok:true,status:200,json:async()=>({
+    id:4242,title:"Anime Movie",release_date:"2026-01-01",
+    genres:[{id:16,name:"Animation"}],original_language:"ja",
+    production_countries:[{iso_3166_1:"JP"}],keywords:{keywords:[{name:"anime"}]}
+  })};
+  throw new Error("unexpected TMDB endpoint "+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("4242","anime");
+  if(!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="movie")
+    throw new Error("Purstream anime movie must use TMDB movie transport");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
