@@ -16,8 +16,6 @@ patches = overrides['provider_patches']
 
 papa_anime = 'scripts/provider_patches/papadustream_anime_tv_v1.py'
 playable_first = 'scripts/provider_patches/nuvio_tv_playable_first_v1.py'
-streamzo_identity = 'scripts/provider_patches/streamzo_source_identity_v3.py'
-streamzo_public = 'scripts/provider_patches/streamzo_public_catalogue_v2.py'
 toflix_vf_v1 = 'scripts/provider_patches/toflix_explicit_vf_v1.py'
 toflix_vf = 'scripts/provider_patches/toflix_explicit_vf_v2.py'
 
@@ -43,19 +41,25 @@ for provider_id in ('4khdhubnew', 'animezey', 'vegamovies'):
     opts = patches[provider_id].get('patch_script_options', {}).get(playable_first, {})
     assert 1 <= int(opts.get('max_probes') or 0) <= 8, provider_id
 
-streamzo_scripts = patches['streamzo'].get('patch_scripts', [])
-assert streamzo_public in streamzo_scripts
-assert streamzo_identity in streamzo_scripts
-assert streamzo_scripts.index(streamzo_public) < streamzo_scripts.index(streamzo_identity)
+# StreamZo catalogue/identity recovery is Core-owned. Provider-local
+# streamzo_* recovery scripts are forbidden; only generic capability/runtime
+# modules may remain in its provider chain.
+streamzo_scripts = [str(value) for value in patches['streamzo'].get('patch_scripts', [])]
+assert not [path for path in streamzo_scripts if '/streamzo_' in path], streamzo_scripts
+streamzo_options = patches['streamzo'].get('patch_script_options', {})
+assert not [path for path in streamzo_options if '/streamzo_' in str(path)], streamzo_options
 assert playable_first in streamzo_scripts
-assert streamzo_scripts.index(streamzo_identity) < streamzo_scripts.index(playable_first)
-public_source = (ROOT / streamzo_public).read_text(encoding='utf-8')
-assert 'original_title' in public_source and 'maxAliases' in public_source
-identity_source = (ROOT / streamzo_identity).read_text(encoding='utf-8')
-assert 'original_title' in identity_source and 'aliases.some' in identity_source
-assert 'tokens' in identity_source and 'years' in identity_source
-assert 'backtrack-les-revenants-2015' not in identity_source.lower()
-assert '210702' not in identity_source
+
+streamzo_capability = overrides['provider_capabilities']['streamzo']
+assert streamzo_capability['strategy'] == 'mixed_embed_resolver'
+assert streamzo_capability['request_type_aliases'] == {'anime': 'tv'}
+assert streamzo_capability['identity_request_source'] == 'original_nuvio_request'
+catalogue_core = 'scripts/provider_patches/global_catalogue_alias_recovery_v2.py'
+catalogue_opts = streamzo_options.get(catalogue_core, {})
+assert catalogue_opts.get('detail_id_attributes') == ['data-film-id']
+assert catalogue_opts.get('mirror_routes') == ['/api/mirrors/film/{id}']
+assert catalogue_opts.get('mirror_types') == ['movie', 'anime']
+assert catalogue_opts.get('mirror_allow_episodic') is False
 
 toflix_scripts = patches['toflix'].get('patch_scripts', [])
 assert toflix_vf in toflix_scripts
