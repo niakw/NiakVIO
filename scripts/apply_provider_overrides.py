@@ -1281,11 +1281,19 @@ def apply_overrides(
         # inner Core/provider layer receives the same canonical movie|tv|anime
         # identity. Client aliases remain input-only.
         before = text
+        media_type_options = {
+            "semantic_types": _provider_semantic_types(provider_id, specific),
+            "request_type_aliases": {
+                str(key).strip().casefold(): str(value).strip().casefold()
+                for key, value in (provider_capability.get("request_type_aliases") or {}).items()
+                if str(key).strip() and str(value).strip()
+            },
+        }
         text = _apply_patch_script(
             text,
             provider_id,
             GLOBAL_MEDIA_TYPE_RESOLUTION,
-            {"semantic_types": _provider_semantic_types(provider_id, specific)},
+            media_type_options,
             None,
         )
         if text != before:

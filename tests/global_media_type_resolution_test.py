@@ -17,7 +17,12 @@ BASE = r"""
 "use strict";
 async function getStreams(tmdbId, mediaType, season, episode) {
   const ctx = globalThis.__nuvioMediaContext || {};
-  return [{ tmdbId, mediaType, season, episode, degraded: ctx.tmdbResolutionDegraded === true }];
+  return [{
+    tmdbId, mediaType, season, episode,
+    canonicalMediaType: ctx.canonicalMediaType || "",
+    providerMediaType: ctx.providerMediaType || mediaType,
+    degraded: ctx.tmdbResolutionDegraded === true
+  }];
 }
 module.exports = { getStreams };
 """
@@ -54,9 +59,9 @@ global.fetch = async (url) => {
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("280049","series",1,11);
-  if(!value.length||value[0].mediaType!=="anime")throw new Error("Hell Mode was not refined to anime");
+  if(!value.length||value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="tv")throw new Error("Hell Mode semantic/transport split failed");
   const again=await provider.getStreams("280049","series",1,12);
-  if(!again.length||again[0].mediaType!=="anime")throw new Error("anime cache lost");
+  if(!again.length||again[0].canonicalMediaType!=="anime"||again[0].mediaType!=="tv")throw new Error("anime cache/transport lost");
   if(calls!==1)throw new Error("TMDB lookup was not cached");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
@@ -100,7 +105,7 @@ global.fetch=async()=>{throw new Error("TMDB unavailable")};
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("280049","series",1,11);
-  if(!value.length||value[0].mediaType!=="anime"||value[0].degraded!==true)throw new Error("Anime provider must fail open on metadata outage");
+  if(!value.length||value[0].mediaType!=="anime"||value[0].degraded!==true)throw new Error("Anime-only provider must preserve anime transport on metadata outage");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
@@ -183,4 +188,34 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
-print("global media resolver: TMDB API authoritative, semantic safeguard preserved, infra fail-open verified")
+purstream_mixed = mod.apply(
+    BASE,
+    options={
+        "semantic_types": ["movie", "tv", "anime"],
+        "request_type_aliases": {"anime": "tv"},
+    },
+)
+run_case(purstream_mixed, r"""
+global.fetch=async(url)=>{
+  url=String(url);
+  if(!url.includes("/tv/46260"))throw new Error("Naruto must resolve in TMDB TV namespace: "+url);
+  return{ok:true,status:200,json:async()=>({
+    id:46260,name:"Naruto",genres:[{id:16,name:"Animation"}],
+    original_language:"ja",origin_country:["JP"],keywords:{results:[{name:"anime"}]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const fromAnime=await provider.getStreams("46260","anime",1,1);
+  if(!fromAnime.length||fromAnime[0].canonicalMediaType!=="anime"||fromAnime[0].mediaType!=="tv")
+    throw new Error("Purstream anime must stay semantic anime but use tv transport");
+  const fromSeries=await provider.getStreams("46260","series",1,1);
+  if(!fromSeries.length||fromSeries[0].canonicalMediaType!=="anime"||fromSeries[0].mediaType!=="tv")
+    throw new Error("Purstream series anime transport mismatch");
+  const fromTv=await provider.getStreams("46260","tv",1,1);
+  if(!fromTv.length||fromTv[0].canonicalMediaType!=="anime"||fromTv[0].mediaType!=="tv")
+    throw new Error("Purstream tv anime transport mismatch");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+print("global media resolver: TMDB API authoritative, canonical/transport split, aliases and fail-open verified")

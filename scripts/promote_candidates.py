@@ -37,7 +37,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from apply_provider_overrides import apply_overrides, load_overrides
+from apply_provider_overrides import load_overrides
 from provider_base_store import (
     CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
     CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
@@ -46,6 +46,7 @@ from provider_base_store import (
     persist_clean_provider_seed,
     requires_clean_reconstruction,
     resolve_base,
+    provider_base_store_metadata,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -257,12 +258,10 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
         }:
             raise ValueError(f"{candidate['canonical_id']}: candidate is not NiakVIO-owned")
 
-    # Defence in depth: reapply provider overrides in the write-enabled
-    # promotion job. The operation is idempotent, so a correctly patched
-    # staging artifact remains byte-identical. This prevents an unpatched
-    # candidate from ever reaching providers/ even if staging changes later.
-    data, promotion_patches = apply_overrides(candidate["canonical_id"], staged_data)
-    digest = hashlib.sha256(data).hexdigest()
+    # Staging already materialized the immutable ProviderBase plus derived Core.
+    # Promotion validates and copies those exact bytes; provider fixes are not replayed.
+    data = staged_data
+    digest = staged_digest
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as validation_file:
         validation_file.write(data)
         validation_path = Path(validation_file.name)
@@ -291,46 +290,44 @@ def copy_candidate(candidate: dict[str, Any], previous_base_row: dict[str, Any] 
     finally:
         validation_path.unlink(missing_ok=True)
 
-    # Persist provider logic only after the promoted candidate itself is valid.
-    # The durable base is provider-pipeline state; Core never creates or mutates it.
-    # A publication-only quarantine/security wrapper must never replace a clean base.
-    try:
-        base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published(
-            candidate["canonical_id"],
-            data,
-        )
-    except ValueError as exc:
-        if "contains derived publication layer(s)" not in str(exc):
-            raise
-        if previous_requires_clean:
-            raise ValueError(
-                f"{candidate['canonical_id']}: clean reconstruction candidate could not be reduced "
-                "to a valid ProviderBase; refusing legacy ProviderBase fallback"
-            ) from exc
-        previous = previous_base_row if isinstance(previous_base_row, dict) else {}
+    # A verified clean ProviderBase is immutable. Routine Core/discovery refreshes
+    # reuse its exact filename/SHA. Only an explicitly accepted Repair transition
+    # (or a still-unverified migration) may materialize different base bytes.
+    previous = previous_base_row if isinstance(previous_base_row, dict) else {}
+    authorization = candidate.get("provider_base_change_authorized")
+    repair_authorized = (
+        isinstance(authorization, dict)
+        and authorization.get("reason") == "accepted_runtime_repair"
+        and bool(str(authorization.get("parent_sha256") or "").strip())
+    )
+    if not previous_requires_clean and not repair_authorized:
         previous_path, previous_sha = resolve_base(
             candidate["canonical_id"],
             previous,
-            require=False,
+            require=True,
         )
-        if previous_path is not None and previous_sha is not None:
-            base_filename = previous_path.relative_to(ROOT).as_posix()
-            base_sha256 = previous_sha
-            base_stripped_generated_core = False
-        else:
-            base_filename, base_sha256, base_stripped_generated_core = persist_clean_provider_seed(
+        assert previous_path is not None and previous_sha is not None
+        base_filename = previous_path.relative_to(ROOT).as_posix()
+        base_sha256 = previous_sha
+        base_stripped_generated_core = False
+    else:
+        try:
+            base_filename, base_sha256, base_stripped_generated_core = persist_base_from_published(
                 candidate["canonical_id"],
-                candidate.get("metadata") if isinstance(candidate.get("metadata"), dict) else {},
-                known_site=str(candidate.get("observed_upstream_site") or "").strip() or None,
+                data,
             )
+        except ValueError as exc:
+            if "contains derived publication layer(s)" not in str(exc):
+                raise
+            if previous_requires_clean:
+                raise ValueError(
+                    f"{candidate['canonical_id']}: clean reconstruction candidate could not be reduced "
+                    "to a valid ProviderBase; refusing legacy ProviderBase fallback"
+                ) from exc
+            raise
     candidate["provider_base_filename"] = base_filename
     candidate["provider_base_sha256"] = base_sha256
     candidate["provider_base_stripped_generated_core"] = base_stripped_generated_core
-
-    if promotion_patches:
-        existing = candidate.setdefault("local_patches", [])
-        existing.extend(patch for patch in promotion_patches if patch not in existing)
-        candidate["sha256"] = digest
 
     published_source = "nuvio" if candidate.get("local_patches") else candidate["source"]
     destination = VERSIONS_DIR / (
@@ -2680,16 +2677,23 @@ def main() -> int:
             "Third-party files retain upstream authorship and licence. "
             "See THIRD_PARTY_NOTICES.md."
         ),
-        "provider_base_store": {
-            "schema_version": 2,
-            "provider_count": provider_base_provider_count,
-            "unique_base_count": len(provider_base_files),
-            "owner": "provider_pipeline",
-            "future_source": "provider_pipeline_only",
-            "core_may_create_or_mutate_base": False,
-            "semantic_validation": "on_base_creation_or_change",
-            "core_integrity_validation": "coverage_and_sha_only",
-        },
+        "provider_base_store": provider_base_store_metadata(
+            provider_count=provider_base_provider_count,
+            unique_base_count=len(provider_base_files),
+            clean_reconstructed=sum(
+                1 for row in provenance.values()
+                if isinstance(row, dict) and not requires_clean_reconstruction(row)
+            ),
+            reconstruction_required=sum(
+                1 for row in provenance.values()
+                if isinstance(row, dict) and requires_clean_reconstruction(row)
+            ),
+            previous_store=(
+                previous_provenance.get("provider_base_store")
+                if isinstance(previous_provenance, dict)
+                else None
+            ),
+        ),
         "providers": {cid: provenance[cid] for cid in sorted(provenance)},
     }
 

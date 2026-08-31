@@ -158,6 +158,10 @@ streamzo = (overrides.get("provider_capabilities") or {}).get("streamzo") or {}
 assert streamzo.get("strategy") == "mixed_embed_resolver", streamzo
 assert streamzo.get("request_type_aliases") == {"anime": "tv"}, streamzo
 assert streamzo.get("identity_request_source") == "original_nuvio_request", streamzo
+purstream_capability = (overrides.get("provider_capabilities") or {}).get("purstream") or {}
+assert purstream_capability.get("request_type_aliases") == {"anime": "tv"}, purstream_capability
+assert purstream_capability.get("identity_request_source") == "original_nuvio_request", purstream_capability
+
 streamzo_patch = (overrides.get("provider_patches") or {}).get("streamzo") or {}
 streamzo_scripts = [str(value) for value in streamzo_patch.get("patch_scripts") or []]
 assert not [value for value in streamzo_scripts if "/streamzo_" in value], streamzo_scripts

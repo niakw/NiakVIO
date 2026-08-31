@@ -122,7 +122,8 @@ discover = (SCRIPTS / "discover_candidates.py").read_text(encoding="utf-8")
 promoter = (SCRIPTS / "promote_candidates.py").read_text(encoding="utf-8")
 base_store_source = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf-8")
 assert 'row.setdefault("clean_reconstruction_marked_at", marked_at)' in base_store_source
-assert 'store.update({' in base_store_source
+assert "def provider_base_store_metadata(" in base_store_source
+assert "INITIAL_RECONSTRUCTION_SCOPE = 95" in base_store_source
 assert '"runtimeRole": "reader"' in base_store_source
 assert '"runtimeDiscovery": False' in base_store_source
 assert 'function _expandLearnedRoute' in base_store_source
@@ -158,7 +159,7 @@ assert "NUVIO_PROVIDER_TIMEOUT" in base_store_source
 assert "function _recipeMediaType" in base_store_source
 assert "actualMedia !== expectedMedia" in base_store_source
 assert "year !== _text(meta.year)" in base_store_source
-assert "force_clean_reconstruction or (reconstruction_required and clean_reconstruction)" in discover
+assert "reconstruction_required and (force_clean_reconstruction or clean_reconstruction)" in discover
 
 discover_spec = importlib.util.spec_from_file_location("discover_clean_contract", SCRIPTS / "discover_candidates.py")
 assert discover_spec is not None and discover_spec.loader is not None
@@ -211,6 +212,11 @@ assert "clean v2 publication has no derived Core marker" in published_reapply
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
 assert "refusing legacy ProviderBase fallback" in promoter
+copy_candidate_block = promoter.split("def copy_candidate(", 1)[1].split("\ndef build_entry(", 1)[0]
+assert "apply_overrides(" not in copy_candidate_block, "promotion must not replay provider fixes"
+assert 'authorization.get("reason") == "accepted_runtime_repair"' in copy_candidate_block
+assert "require=True" in copy_candidate_block, "verified clean ProviderBase must fail closed if immutable base is missing"
+assert "provider_base_store_metadata(" in promoter
 assert 'or "clean reconstruction candidate could not be reduced" in message' in promoter
 assert "if previous_requires_clean:" in promoter
 assert "CLEAN_RECONSTRUCTION_SOURCE" in promoter
@@ -262,6 +268,9 @@ assert "build_clean_provider_seed" not in repair_fn, (
 )
 assert 'repaired["runtime_repair"]' in repair_fn
 assert '"parent_sha256": parent_digest' in repair_fn
+deep_repair_loop = (ROOT / "scripts" / "deep_repair_loop.py").read_text(encoding="utf-8")
+assert '"provider_base_change_authorized"' in deep_repair_loop
+assert '"reason": "accepted_runtime_repair"' in deep_repair_loop
 
 print(
     "Provider clean reconstruction contract passed: "

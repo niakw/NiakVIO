@@ -271,10 +271,7 @@
         "tv",
         "anime"
       ],
-      "patch_scripts": [
-        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ],
+      "patch_scripts": [],
       "patch_script_options": {},
       "manifest_overrides": {
         "disabledPlatforms": []
@@ -2473,10 +2470,8 @@
       "allow_html_url": false,
       "observed_origins": [
         "https://purstream.wiki",
-        "https://api.purstream",
         "https://api.purstream.id",
-        "https://purstream.id",
-        "https://old.invalid"
+        "https://purstream.id"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2484,7 +2479,11 @@
         "movie",
         "tv",
         "anime"
-      ]
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "4khdhub": {
       "strategy": "html_scraper",

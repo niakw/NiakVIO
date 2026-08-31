@@ -316,6 +316,11 @@ def main() -> int:
                     )
                     history.append(repair_event)
                     updated_candidate["repair_history"] = history
+                    updated_candidate["provider_base_change_authorized"] = {
+                        "reason": "accepted_runtime_repair",
+                        "parent_sha256": str(repair_event.get("parent_sha256") or ""),
+                        "profile": str(repair_event.get("profile") or ""),
+                    }
                     updated_candidate["key"] = parent_key
                     current_candidates[parent_key] = updated_candidate
                     current_results[parent_key] = result_with_parent_key(

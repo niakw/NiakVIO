@@ -77,7 +77,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 25_000)), 120_000)),
         "semanticTypes": semantic_types,
-        "revision": "tmdb-api-first-every-provider-v11-global-budget",
+        "requestTypeAliases": {
+            str(key).strip().lower(): str(value).strip().lower()
+            for key, value in (cfg.get("request_type_aliases") or {}).items()
+            if str(key).strip() and str(value).strip()
+        },
+        "revision": "tmdb-api-first-semantic-transport-split-v12-global-budget",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -95,6 +100,17 @@ function s(v){return String(v==null?"":v).trim()}
 function normalizeKey(v){var x=s(v);if(x.length===33&&x.charCodeAt(0)===92&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
+function providerTransport(input,canonical,namespace){
+  var raw=s(input||"movie").toLowerCase(),base=alias(raw),map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
+  var mapped=s(map[canonical]||map[raw]||map[base]).toLowerCase();
+  if(mapped)return alias(mapped);
+  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+  if(canonical==="anime"&&semantic.indexOf("anime")>=0&&semantic.indexOf("tv")<0&&semantic.indexOf("movie")<0)return"anime";
+  if(base==="movie")return"movie";
+  if(base==="tv")return"tv";
+  if(base==="anime")return"anime";
+  return namespace==="movie"?"movie":"tv";
+}
 function namespaceCandidates(v,season,episode,semantic){
   var raw=s(v||"movie").toLowerCase();
   if(raw==="movie")return["movie"];
@@ -280,6 +296,7 @@ async function resolve(a){
   if(!resolved)return null;
   var type=resolved.type;namespace=resolved.namespace;
   if(semantic.length&&semantic.indexOf(type)<0)return null;
+  var providerType=providerTransport(input,type,namespace);
   var resolvedTmdbId=s(resolved.tmdbId||(/^\d+$/.test(id)?id:""));
   var resolvedImdbId=s(resolved.imdbId||obj&&(q.imdbId||q.imdb_id)||(/^tt\d+$/i.test(id)?id:"")).toLowerCase();
   var context={
@@ -290,7 +307,8 @@ async function resolve(a){
     tmdbMetadata:resolved.metadata||null,
     canonicalMediaType:type,
     tmdbResolutionDegraded:resolved.degraded===true,
-    nuvioInputMediaType:input
+    nuvioInputMediaType:input,
+    providerMediaType:providerType
   };
   if(obj){
     q.nuvioInputMediaType=input;
@@ -300,11 +318,12 @@ async function resolve(a){
     q.tmdbIdentity=namespace+":"+(resolvedTmdbId||id);
     q.tmdbMetadata=resolved.metadata||q.tmdbMetadata||q.tmdb_metadata||null;
     q.canonicalMediaType=type;
-    q.mediaType=type;q.type=type;
+    q.providerMediaType=providerType;
+    q.mediaType=providerType;q.type=providerType;
     if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
     var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
   }
-  var out=Array.prototype.slice.call(a);if(resolvedTmdbId)out[0]=resolvedTmdbId;out[1]=type;out.__nuvioContext=context;return out;
+  var out=Array.prototype.slice.call(a);if(resolvedTmdbId)out[0]=resolvedTmdbId;out[1]=providerType;out.__nuvioContext=context;return out;
 }
 function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
 function deadlineValue(){try{var n=Number(g&&g.__nuvioProviderDeadlineMs);return Number.isFinite(n)&&n>0?n:0}catch(_){return 0}}

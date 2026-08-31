@@ -65,6 +65,7 @@ DERIVED_BASE_MARKERS = (
 CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v2"
 CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE = "niakvio-clean-reconstruction-v2-candidate"
 CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 2
+INITIAL_RECONSTRUCTION_SCOPE = 95
 
 
 def is_clean_reconstructed(provenance_row: dict[str, Any] | None) -> bool:
@@ -1183,6 +1184,46 @@ def persist_clean_provider_seed(
     )
 
 
+def provider_base_store_metadata(
+    *,
+    provider_count: int,
+    unique_base_count: int,
+    clean_reconstructed: int,
+    reconstruction_required: int,
+    previous_store: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Canonical ProviderBase-store metadata shared by every publisher."""
+    previous = previous_store if isinstance(previous_store, dict) else {}
+    initial_scope = int(previous.get("initial_reconstruction_scope") or INITIAL_RECONSTRUCTION_SCOPE)
+    if provider_count > 0:
+        initial_scope = min(max(1, initial_scope), provider_count)
+    return {
+        "schema_version": max(4, int(previous.get("schema_version") or 0)),
+        "provider_count": int(provider_count),
+        "unique_base_count": int(unique_base_count),
+        "initial_reconstruction_scope": initial_scope,
+        "migration_scope": "all-current-providers",
+        "owner": "provider_pipeline",
+        "future_source": "provider_pipeline_only",
+        "clean_reconstructed": int(clean_reconstructed),
+        "reconstruction_required": int(reconstruction_required),
+        "authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+        "authoring_policy": "niakvio-owned-clean-reconstruction-only",
+        "clean_source": CLEAN_RECONSTRUCTION_SOURCE,
+        "legacy_provider_role": "compatibility-lkg-and-knowledge-only",
+        "upstream_code_role": "knowledge-only",
+        "runtime_role": "reader-only",
+        "runtime_route_discovery": False,
+        "upstream_code_executed": False,
+        "published_legacy_code_may_seed_new_base": False,
+        "upstream_code_may_seed_new_base": False,
+        "git_history_code_may_seed_new_base": False,
+        "core_may_create_or_mutate_base": False,
+        "semantic_validation": "on_base_creation_or_change",
+        "core_integrity_validation": "coverage_and_sha_only",
+        "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
+    }
+
 def repair_legacy_bases() -> dict[str, Any]:
     """Mark every pre-v2 ProviderBase as compatibility-only legacy state.
 
@@ -1245,32 +1286,15 @@ def repair_legacy_bases() -> dict[str, Any]:
     if not isinstance(store, dict):
         store = {}
         provenance["provider_base_store"] = store
-    store.update({
-        "schema_version": max(4, int(store.get("schema_version") or 0)),
-        "provider_count": provider_count,
-        "unique_base_count": provider_count,
-        "initial_reconstruction_scope": int(store.get("initial_reconstruction_scope") or provider_count),
-        "migration_scope": "all-current-providers",
-        "owner": "provider_pipeline",
-        "future_source": "provider_pipeline_only",
-        "clean_reconstructed": clean_reconstructed,
-        "reconstruction_required": reconstruction_required,
-        "authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
-        "authoring_policy": "niakvio-owned-clean-reconstruction-only",
-        "clean_source": CLEAN_RECONSTRUCTION_SOURCE,
-        "legacy_provider_role": "compatibility-lkg-and-knowledge-only",
-        "upstream_code_role": "knowledge-only",
-        "runtime_role": "reader-only",
-        "runtime_route_discovery": False,
-        "upstream_code_executed": False,
-        "published_legacy_code_may_seed_new_base": False,
-        "upstream_code_may_seed_new_base": False,
-        "git_history_code_may_seed_new_base": False,
-        "core_may_create_or_mutate_base": False,
-        "semantic_validation": "on_base_creation_or_change",
-        "core_integrity_validation": "coverage_and_sha_only",
-        "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
-    })
+    store.update(
+        provider_base_store_metadata(
+            provider_count=provider_count,
+            unique_base_count=provider_count,
+            clean_reconstructed=clean_reconstructed,
+            reconstruction_required=reconstruction_required,
+            previous_store=store,
+        )
+    )
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return {
         "providers": provider_count,

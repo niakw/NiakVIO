@@ -3,14 +3,52 @@
   "generated_at": "2026-08-31T10:48:34.677744+00:00",
   "notice": "Third-party files retain upstream authorship and licence. See THIRD_PARTY_NOTICES.md.",
   "provider_base_store": {
-    "schema_version": 2,
+    "schema_version": 4,
     "provider_count": 96,
     "unique_base_count": 96,
+    "initial_reconstruction_scope": 95,
+    "migration_scope": "all-current-providers",
     "owner": "provider_pipeline",
     "future_source": "provider_pipeline_only",
+    "clean_reconstructed": 3,
+    "reconstruction_required": 93,
+    "authoring_version": 2,
+    "authoring_policy": "niakvio-owned-clean-reconstruction-only",
+    "clean_source": "niakvio-clean-reconstruction-v2",
+    "legacy_provider_role": "compatibility-lkg-and-knowledge-only",
+    "upstream_code_role": "knowledge-only",
+    "runtime_role": "reader-only",
+    "runtime_route_discovery": false,
+    "upstream_code_executed": false,
+    "published_legacy_code_may_seed_new_base": false,
+    "upstream_code_may_seed_new_base": false,
+    "git_history_code_may_seed_new_base": false,
     "core_may_create_or_mutate_base": false,
     "semantic_validation": "on_base_creation_or_change",
-    "core_integrity_validation": "coverage_and_sha_only"
+    "core_integrity_validation": "coverage_and_sha_only",
+    "derived_layers_forbidden": [
+      "NUVIO_PROVIDER_QUARANTINE_V1",
+      "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+      "NUVIO_GLOBAL_STREAM_FACTS_V1",
+      "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
+      "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
+      "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
+      "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+      "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
+      "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1",
+      "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1",
+      "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
+      "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
+      "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
+      "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
+      "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
+      "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
+      "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
+      "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
+      "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
+      "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
+      "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1"
+    ]
   },
   "providers": {
     "1shows": {
@@ -16626,7 +16664,7 @@
           "evidence": {
             "healthy_fixtures": 0,
             "fixtures_tested": 3,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 0,
             "required_categories": [
               "movie",
               "tv"
@@ -22025,7 +22063,7 @@
           "evidence": {
             "healthy_fixtures": 0,
             "fixtures_tested": 3,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 0,
             "required_categories": [
               "movie",
               "tv"
@@ -25201,7 +25239,7 @@
           "evidence": {
             "healthy_fixtures": 0,
             "fixtures_tested": 3,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixture_ratio": 0,
             "required_categories": [
               "anime",
               "movie",
