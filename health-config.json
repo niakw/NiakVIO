@@ -389,9 +389,12 @@
       "reachable"
     ],
     "allow_type_scoped_activation": true,
-    "provider_requires_surviving_playable_stream": true,
     "stream_failures_are_stream_scoped": true,
-    "supported_types_require_current_stream_proof": true
+    "supported_types_require_current_stream_proof": true,
+    "supported_types_require_positive_stream_proof": true,
+    "zero_stream_is_per_work_not_manifest_disable": true,
+    "provider_accessibility_is_separate_from_stream_accessibility": true,
+    "provider_latency_is_separate_from_stream_latency": true
   },
   "availability": {
     "auto_disable": true,
