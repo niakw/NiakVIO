@@ -1004,7 +1004,7 @@ def gate(
     threshold: Any,
     scope: str = "provider",
 ) -> dict[str, Any]:
-    if scope not in {"provider", "stream"}:
+    if scope not in {"provider", "type", "stream"}:
         raise ValueError(f"invalid gate scope: {scope}")
     return {
         "passed": bool(passed),
