@@ -1337,7 +1337,7 @@ def apply_overrides(
             sanitizer_options["probe_direct_media"] = True
             sanitizer_options["probe_all_urls"] = True
             sanitizer_options["max_probes"] = max(
-                1, min(int(sanitizer_options.get("max_probes") or 20), 20)
+                1, min(int(sanitizer_options.get("max_probes") or 8), 8)
             )
             sanitizer_options.setdefault("probe_timeout_ms", 6500)
             sanitizer_options.setdefault("min_vod_duration_seconds", 60)
