@@ -10,9 +10,15 @@ source = (ROOT / 'scripts' / 'promote_candidates.py').read_text(encoding='utf-8'
 
 assert config['activation'].get('allow_type_scoped_activation') is True
 assert 'def independently_proven_categories(' in source
-assert 'minimum_height > 0 and height > 0 and height < minimum_height' in source
-assert 'minimum_bandwidth > 0 and bandwidth is not None and bandwidth < minimum_bandwidth' in source
-assert 'if require_language and not (audio or subtitle_ok):' in source
+type_scope_block = source[
+    source.index('def independently_proven_categories('):
+    source.index('\ndef gate(', source.index('def independently_proven_categories('))
+]
+assert 'minimum_height' not in type_scope_block
+assert 'minimum_bandwidth' not in type_scope_block
+assert 'require_language' not in type_scope_block
+assert 'playable_identity_contradiction_count' in type_scope_block
+assert 'playable_duration_identity_mismatch_count' in type_scope_block
 assert 'scoped_categories = required_categories & independently_proven' in source
 assert '"activation_supported_types": sorted(scoped_categories)' in source
 assert 'authoritative_published_types = [' in source
@@ -23,12 +29,16 @@ assert 'promoted_entry["supportedTypes"] = activation_supported_types' in source
 assert 'tracked_fields = ("filename", "supportedTypes", "supportsExternalPlayer")' in source
 
 # A type cannot be published from metadata alone: the independently-proven set
-# explicitly requires a healthy current fixture plus verified media; optional quality/language thresholds apply only when configured.
-healthy_idx = source.index('if not isinstance(test, dict) or test.get("status") != "healthy":')
+# requires a healthy current fixture, surviving playable media, verified payload,
+# and no positive identity/duration contradiction. Stream quality/language never
+# decides provider type capability.
+healthy_idx = source.index('if test.get("status") != "healthy":')
+stream_idx = source.index('if int(test.get("streams_playable", 0)) < minimum_streams:')
 payload_idx = source.index('if int(test.get("payload_verified_streams", 0)) < minimum_payload:')
-quality_idx = source.index('if minimum_height > 0 and height > 0 and height < minimum_height')
+identity_idx = source.index('if int(test.get("playable_identity_contradiction_count", 0) or 0) > 0:')
+duration_idx = source.index('if int(test.get("playable_duration_identity_mismatch_count", 0) or 0) > 0:')
 publish_idx = source.index('promoted_entry["supportedTypes"] = activation_supported_types')
-assert healthy_idx < payload_idx < quality_idx < publish_idx
+assert healthy_idx < stream_idx < payload_idx < identity_idx < duration_idx < publish_idx
 
 # A catalogue may miss several representative titles before one current payload
 # proves the type. Raw title misses must not reduce type-scoped coverage.
