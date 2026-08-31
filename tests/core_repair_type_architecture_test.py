@@ -40,7 +40,15 @@ assert "contains Core-global modules" in apply_source
 media_resolution_source = (ROOT / "scripts/provider_patches/global_media_type_resolution_v1.py").read_text(encoding="utf-8")
 assert "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1" in media_resolution_source
 assert "budgetedFetch" in media_resolution_source
-assert media_resolution_source.index("var a=await resolve(arguments);") > media_resolution_source.index("g.__nuvioProviderDeadlineMs=Date.now()+c.providerTimeoutMs")
+deadline_anchor = "requestDeadline=Date.now()+c.providerTimeoutMs"
+provisional_anchor = "var a=preflight?await resolve(originalArgs):provisional(originalArgs)"
+verify_anchor = "var verified=await resolve(originalArgs)"
+assert deadline_anchor in media_resolution_source
+assert "g.__nuvioProviderDeadlineMs=requestDeadline" in media_resolution_source
+assert "g.__nuvioProviderRequestToken=requestToken" in media_resolution_source
+assert provisional_anchor in media_resolution_source
+assert verify_anchor in media_resolution_source
+assert media_resolution_source.index(deadline_anchor) < media_resolution_source.index(provisional_anchor) < media_resolution_source.index(verify_anchor)
 playback = overrides.get("playback_integrity_policy") or {}
 assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" in (playback.get("pre_media_discovery_hooks") or [])
 assert playback.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
