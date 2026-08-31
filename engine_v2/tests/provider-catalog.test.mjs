@@ -114,6 +114,14 @@ const unsafe = structuredClone(catalog);
 unsafe.policy.repairBeforeTriage = false;
 assert.throws(() => validateProviderCatalog(unsafe), /repair-before-triage/i);
 
+const foreignMetadata = structuredClone(catalog);
+foreignMetadata.providers[0].scraper.foreignUpstreamField = "must-not-leak";
+assert.throws(
+  () => validateProviderCatalog(foreignMetadata),
+  /non-NiakVIO manifest fields/i,
+  "catalog must reject provider properties that were not deliberately adopted by NiakVIO",
+);
+
 console.log(
   `provider catalog tests passed: general=${general.scrapers.length} vf=${vf.scrapers.length} committed_names=${expectedNameRows} committed_logos=${expectedLogoRows.length}`,
 );
