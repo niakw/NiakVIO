@@ -135,7 +135,11 @@ export function validateProviderCatalog(catalog) {
     if (byId.has(canonicalId)) throw new Error(`duplicate provider in catalog: ${canonicalId}`);
     if (!row.scraper || typeof row.scraper !== "object") throw new Error(`${canonicalId}: scraper metadata is required`);
     if (canonicalProviderId(row.scraper.id) !== canonicalId) throw new Error(`${canonicalId}: scraper id does not match canonical id`);
-    if (!String(row.scraper.filename ?? "").trim()) throw new Error(`${canonicalId}: filename is required`);\n    if (!Array.isArray(row.scraper.disabledPlatforms) || row.scraper.disabledPlatforms.length !== 0) {\n      throw new Error(`${canonicalId}: disabledPlatforms must exist and stay empty in the NiakVIO provider contract`);\n    }\n    if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
+    if (!String(row.scraper.filename ?? "").trim()) throw new Error(`${canonicalId}: filename is required`);
+    if (!Array.isArray(row.scraper.disabledPlatforms) || row.scraper.disabledPlatforms.length !== 0) {
+      throw new Error(`${canonicalId}: disabledPlatforms must exist and stay empty in the NiakVIO provider contract`);
+    }
+    if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
     byId.set(canonicalId, row);
   }
 
