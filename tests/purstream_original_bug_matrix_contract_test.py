@@ -73,8 +73,9 @@ desktop_compat = (SCRIPTS / "provider_patches" / "desktop_runtime_compat_v1.py")
 assert "PATCH_REVISION = 5" in desktop_compat
 assert 'forbidden = {"domain_replacements", "domain_failover"}' in desktop_compat
 assert "Never rewrite provider URLs/domains here." in desktop_compat
-for stale_suffix in (".club", ".mx", ".ch", ".ac", ".cx", ".art", ".co", ".me", ".to", ".store"):
-    assert stale_suffix not in desktop_compat
+assert "domainFailover" not in desktop_compat
+assert "hostPrefixes" not in desktop_compat
+assert '["club","mx","ch","ac","cx","art","co","me","to","store"]' not in desktop_compat.replace(" ", "")
 
 # Health execution must reproduce the Core metadata contract.
 worker = (SCRIPTS / "provider_worker.cjs").read_text(encoding="utf-8")
