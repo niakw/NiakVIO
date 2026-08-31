@@ -579,6 +579,13 @@ def main() -> int:
     if not no_deep_validation["enabled"] or not no_deep_validation["activation_eligible"]:
         raise AssertionError("current successful deep check did not activate a new SHA immediately")
 
+    degraded = inconclusive_item()
+    degraded["health"]["status"] = "degraded"
+    degraded["health"]["ci_classification"] = "inconclusive"
+    degraded_result = decide(module, activation, degraded, strict_history(item))
+    if degraded_result["enabled"] is False and "degraded" not in set(activation.get("preserve_enabled_on_ci_uncertain_statuses") or []):
+        raise AssertionError("degraded stream evidence must stay inconclusive and preserve a proven provider")
+
     inconclusive = inconclusive_item()
     no_evidence = decide(module, activation, inconclusive)
     if no_evidence["enabled"] or no_evidence["activation_eligible"]:
