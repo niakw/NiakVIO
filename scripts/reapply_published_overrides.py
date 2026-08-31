@@ -450,23 +450,37 @@ def publication_configured_safety_quarantine(
     return text.encode("utf-8"), reason
 
 
-def _audit_terminal_contradiction_is_current(provenance_row: dict[str, Any]) -> bool:
-    """Require current playable wrong-content evidence before replaying terminal audit quarantine."""
+def _audit_terminal_evidence_state(provenance_row: dict[str, Any]) -> str:
+    """Classify current terminal-audit evidence as contradiction, clean, or inconclusive.
+
+    A published safety quarantine may be released only by fresh playable clean
+    evidence. Missing/partial/network-inconclusive evidence must preserve the
+    existing quarantine LKG rather than silently materializing active ProviderBase
+    bytes behind a disabled manifest row.
+    """
     gates = provenance_row.get("activation_gates")
     if not isinstance(gates, dict):
-        return False
+        return "inconclusive"
     identity = gates.get("10_content_identity_integrity")
     playable = gates.get("00_current_playable_stream")
     if not isinstance(identity, dict) or not isinstance(playable, dict):
-        return False
+        return "inconclusive"
     identity_evidence = identity.get("evidence")
     playable_evidence = playable.get("evidence")
     if not isinstance(identity_evidence, dict) or not isinstance(playable_evidence, dict):
-        return False
+        return "inconclusive"
     contradictions = int(identity_evidence.get("identity_contradiction_count") or 0)
     duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
     playable_streams = int(playable_evidence.get("streams_playable") or 0)
-    return playable_streams > 0 and (contradictions > 0 or duration_mismatches > 0)
+    if playable_streams <= 0:
+        return "inconclusive"
+    if contradictions > 0 or duration_mismatches > 0:
+        return "contradiction"
+    return "clean"
+
+
+def _audit_terminal_contradiction_is_current(provenance_row: dict[str, Any]) -> bool:
+    return _audit_terminal_evidence_state(provenance_row) == "contradiction"
 
 
 def stale_terminal_audit_quarantine(relative: str, provenance_row: dict[str, Any]) -> bool:
@@ -481,21 +495,7 @@ def stale_terminal_audit_quarantine(relative: str, provenance_row: dict[str, Any
     marked = mode.startswith("catalogue_audit_") or AUDIT_QUARANTINE_BLOCKER in blockers
     if not marked:
         return False
-    gates = provenance_row.get("activation_gates")
-    if not isinstance(gates, dict):
-        return False
-    identity = gates.get("10_content_identity_integrity")
-    playable = gates.get("00_current_playable_stream")
-    if not isinstance(identity, dict) or not isinstance(playable, dict):
-        return False
-    identity_evidence = identity.get("evidence")
-    playable_evidence = playable.get("evidence")
-    if not isinstance(identity_evidence, dict) or not isinstance(playable_evidence, dict):
-        return False
-    playable_streams = int(playable_evidence.get("streams_playable") or 0)
-    contradictions = int(identity_evidence.get("identity_contradiction_count") or 0)
-    duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
-    return playable_streams > 0 and contradictions == 0 and duration_mismatches == 0
+    return _audit_terminal_evidence_state(provenance_row) == "clean"
 
 
 def publication_audit_quarantine(
@@ -533,9 +533,13 @@ def publication_audit_quarantine(
         )
         return text.encode("utf-8"), "scoped"
 
-    if not _audit_terminal_contradiction_is_current(provenance_row):
+    evidence_state = _audit_terminal_evidence_state(provenance_row)
+    if evidence_state == "clean":
         return data, None
 
+    # Contradictory evidence keeps the quarantine for the obvious reason.
+    # Inconclusive evidence keeps it as LKG: only fresh playable clean proof may
+    # release an already-published terminal safety quarantine.
     text = apply_terminal_quarantine(
         data.decode("utf-8", errors="strict"),
         options={"reason": AUDIT_QUARANTINE_BLOCKER},
