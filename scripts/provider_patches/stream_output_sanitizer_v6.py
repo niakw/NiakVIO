@@ -47,6 +47,10 @@ TARGET_MEDIA_MARKERS = (
     "/* NUVIO_TV_TARGET_MEDIA_V5_PLAYBACK_CONTEXT */",
     "/* NUVIO_TV_TARGET_MEDIA_HLS_PROOF_V6 */",
 )
+CORE_PREDECESSOR_MARKERS = TARGET_MEDIA_MARKERS + (
+    "/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:",
+    "/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:",
+)
 PROBE_RESOLVED = "  async function probeResolved(stream,url,depth,referer){\n"
 PROBE_ALIAS = '  async function probe(stream,url){return await probeResolved(stream,url,0,"")}\n'
 INSTALL_ANCHOR = "  function install(container,key){\n"
@@ -74,8 +78,9 @@ def _load_v5_apply():
 V5_APPLY = _load_v5_apply()
 
 
-def _latest_target_media_position(text: str) -> int:
-    return max((text.rfind(marker) for marker in TARGET_MEDIA_MARKERS), default=-1)
+def _latest_predecessor_position(text: str) -> int:
+    """Latest stream-transform layer that must remain inside the sanitizer."""
+    return max((text.rfind(marker) for marker in CORE_PREDECESSOR_MARKERS), default=-1)
 
 
 def _sanitizer_position(text: str) -> int:
@@ -84,8 +89,8 @@ def _sanitizer_position(text: str) -> int:
 
 def _needs_relocation(text: str) -> bool:
     sanitizer = _sanitizer_position(text)
-    target = _latest_target_media_position(text)
-    return sanitizer >= 0 and target > sanitizer
+    predecessor = _latest_predecessor_position(text)
+    return sanitizer >= 0 and predecessor > sanitizer
 
 
 def _strip_existing_sanitizer(text: str) -> str:
@@ -155,12 +160,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         patched = patched.replace(OLD, NEW, 1)
 
     # The actual sanitizer IIFE—not a trailing compatibility marker—must be
-    # installed after the latest target-media wrapper so final media is probed.
+    # installed after every stream-transform predecessor (target-media,
+    # presentation and branding) so the exact client-visible row is validated.
     sanitizer = _sanitizer_position(patched)
-    target = _latest_target_media_position(patched)
-    if sanitizer < 0 or (target >= 0 and sanitizer <= target):
+    predecessor = _latest_predecessor_position(patched)
+    if sanitizer < 0 or (predecessor >= 0 and sanitizer <= predecessor):
         raise ValueError(
-            f"stream sanitizer terminal order invalid: sanitizer={sanitizer} target_media={target}"
+            f"stream sanitizer terminal order invalid: sanitizer={sanitizer} predecessor={predecessor}"
         )
 
     return patched.rstrip() + "\n" + MARKER + "\n"
