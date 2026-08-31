@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "generated_at": "2026-08-31T13:19:41.037991+00:00",
+  "generated_at": "2026-08-31T14:32:09.421507+00:00",
   "mode": "deep",
   "provider_specific_rules": false,
   "max_rounds": 1,
@@ -431,17 +431,17 @@
         },
         {
           "parent_key": "aio:purstream",
-          "parent_sha256": "832ac995a707755562e518b5bee6dd313a24a27c58ed3dff4632643560916cf4",
+          "parent_sha256": "f1ddc768e73fd404670a97475ac12ca18636e858368ce3fb82242f3f0bdc8994",
           "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
+          "baseline_status": "blocked",
           "baseline_score": 10,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
           "baseline_runtime_errors": 0,
           "baseline_malformed_requests": 0,
           "status": "generated",
-          "repair_key": "aio:purstream::repair:r1:adaptive_runtime_recovery:1acf14f3",
-          "repair_sha256": "8ef4bb6b771f9ef680168ff9ae5d5f7540ce221a6cb0c3e2111f4cf1dfed2591"
+          "repair_key": "aio:purstream::repair:r1:adaptive_runtime_recovery:f1b49117",
+          "repair_sha256": "d7957823dbb6decfa6f04cc753c72b8114304809983e9221bf1fcf2f84998775"
         },
         {
           "parent_key": "yoru:streamflix",
@@ -543,7 +543,7 @@
           "parent_key": "aio:vidlove",
           "parent_sha256": "4d38ed942b773e743dc832cf53cc9534b672263c0458e89e6da24f8a1803b393",
           "profile": "adaptive_runtime_recovery",
-          "baseline_status": "no_streams",
+          "baseline_status": "unavailable",
           "baseline_score": 10,
           "baseline_streams_returned": 0,
           "baseline_streams_playable": 0,
@@ -1433,7 +1433,7 @@
         },
         {
           "parent_key": "aio:purstream",
-          "repair_key": "aio:purstream::repair:r1:adaptive_runtime_recovery:1acf14f3",
+          "repair_key": "aio:purstream::repair:r1:adaptive_runtime_recovery:f1b49117",
           "profile": "adaptive_runtime_recovery",
           "status": "blocked",
           "score": 10,
@@ -1446,9 +1446,9 @@
           "fixture_status_counts": {
             "healthy": 0,
             "reachable": 0,
-            "blocked": 1,
+            "blocked": 12,
             "degraded": 0,
-            "no_streams": 11,
+            "no_streams": 0,
             "provider_unreachable": 0,
             "runtime_error": 0,
             "unavailable": 0,
@@ -1578,18 +1578,18 @@
       ]
     }
   ],
-  "completed_at": "2026-08-31T13:30:11.193971+00:00",
+  "completed_at": "2026-08-31T14:42:53.978768+00:00",
   "accepted_repairs": 0,
   "persisted_runtime_profiles": [],
   "final_counts": {
-    "healthy": 0,
+    "healthy": 1,
     "reachable": 0,
-    "blocked": 4,
+    "blocked": 5,
     "degraded": 1,
-    "no_streams": 34,
+    "no_streams": 30,
     "provider_unreachable": 41,
     "runtime_error": 0,
-    "unavailable": 16,
+    "unavailable": 18,
     "excluded": 0
   },
   "brain": {
@@ -2864,14 +2864,12 @@
       },
       "published:kehflix": {
         "providerId": "kehflix",
-        "failureClass": "unknown_failure",
+        "failureClass": "identity_mismatch",
         "brainVersion": 4,
-        "signature": "5c839fd0abf2244d9aa0190d",
-        "action": "collect-more-evidence",
+        "signature": "6f63559fd16222aaae2e9d57",
+        "action": "hold-or-quarantine-pending-proof",
         "exitReason": null,
-        "hypotheses": [
-          "collect-missing-evidence"
-        ],
+        "hypotheses": [],
         "allowedProfiles": [],
         "plannerErrorClass": null
       },
@@ -3053,7 +3051,7 @@
       "1shows": {
         "mutationCount": 1,
         "generatedBytes": 18745,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3061,7 +3059,7 @@
       "4khdhub": {
         "mutationCount": 1,
         "generatedBytes": 18757,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1
         }
@@ -3069,13 +3067,13 @@
       "4khdhubnew": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {}
       },
       "allanime": {
         "mutationCount": 1,
         "generatedBytes": 18783,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3083,7 +3081,7 @@
       "allmovieland": {
         "mutationCount": 1,
         "generatedBytes": 18743,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {
           "9408dea970ee2148302affa4": 1
         }
@@ -3091,43 +3089,43 @@
       "allwish": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {}
       },
       "anidb": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {}
       },
       "anikototv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631731,
+        "elapsedMs": 645298,
         "signatureCounts": {}
       },
       "anime-sama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631731,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "anime-ultime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631731,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "animekai": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631731,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "animepahe": {
         "mutationCount": 1,
         "generatedBytes": 18750,
-        "elapsedMs": 631731,
+        "elapsedMs": 645297,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3135,25 +3133,25 @@
       "animesalt": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "animesama-co": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "animesultra": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "animetsu": {
         "mutationCount": 1,
         "generatedBytes": 18873,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {
           "e2a33079b82b848babde356b": 1
         }
@@ -3161,7 +3159,7 @@
       "animevost-fr": {
         "mutationCount": 1,
         "generatedBytes": 18759,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3169,13 +3167,13 @@
       "animevostfr": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "animeworld": {
         "mutationCount": 1,
         "generatedBytes": 18791,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {
           "324ebdec180c9bda40b3a2b7": 1
         }
@@ -3183,19 +3181,19 @@
       "animezey": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "animoflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "anizone": {
         "mutationCount": 1,
         "generatedBytes": 18824,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3203,13 +3201,13 @@
       "castle": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "cineby": {
         "mutationCount": 1,
         "generatedBytes": 18825,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3217,7 +3215,7 @@
       "cinefreak": {
         "mutationCount": 1,
         "generatedBytes": 18703,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3225,19 +3223,19 @@
       "cinemacity": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645297,
         "signatureCounts": {}
       },
       "cinemm": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631730,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "cinevibe": {
         "mutationCount": 1,
         "generatedBytes": 18749,
-        "elapsedMs": 631730,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3245,13 +3243,13 @@
       "coflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "ctgmovies": {
         "mutationCount": 1,
         "generatedBytes": 18793,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3259,19 +3257,19 @@
       "desiflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "dooflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "dulourd": {
         "mutationCount": 1,
         "generatedBytes": 19173,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "51f8aeda416a44e89e8c4d61": 1
         }
@@ -3279,7 +3277,7 @@
       "dvdplay": {
         "mutationCount": 1,
         "generatedBytes": 18751,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3287,7 +3285,7 @@
       "einthusan": {
         "mutationCount": 1,
         "generatedBytes": 18841,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3295,31 +3293,31 @@
       "fibwatch": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "flemmix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "french-manga": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "frenchstream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "fullanime": {
         "mutationCount": 1,
         "generatedBytes": 18754,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3327,7 +3325,7 @@
       "goatapi": {
         "mutationCount": 1,
         "generatedBytes": 18812,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3335,7 +3333,7 @@
       "goated": {
         "mutationCount": 1,
         "generatedBytes": 18728,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3343,19 +3341,19 @@
       "gramcinema": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645296,
         "signatureCounts": {}
       },
       "hdghartv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631729,
+        "elapsedMs": 645295,
         "signatureCounts": {}
       },
       "hdhub4u": {
         "mutationCount": 1,
         "generatedBytes": 18736,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1
         }
@@ -3363,13 +3361,13 @@
       "hianime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {}
       },
       "hindmoviez": {
         "mutationCount": 1,
         "generatedBytes": 18772,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3377,31 +3375,31 @@
       "kehflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {}
       },
       "kisskh": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {}
       },
       "kurage": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {}
       },
       "mallumv": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {}
       },
       "moonflix": {
         "mutationCount": 1,
         "generatedBytes": 18928,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3409,13 +3407,13 @@
       "movieblast": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {}
       },
       "moviebox": {
         "mutationCount": 1,
         "generatedBytes": 18780,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3423,7 +3421,7 @@
       "movies4u": {
         "mutationCount": 1,
         "generatedBytes": 18842,
-        "elapsedMs": 631728,
+        "elapsedMs": 645295,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1
         }
@@ -3431,7 +3429,7 @@
       "moviesdrive": {
         "mutationCount": 1,
         "generatedBytes": 18831,
-        "elapsedMs": 631725,
+        "elapsedMs": 645295,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3439,7 +3437,7 @@
       "movieshunt": {
         "mutationCount": 1,
         "generatedBytes": 18828,
-        "elapsedMs": 631724,
+        "elapsedMs": 645295,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3447,7 +3445,7 @@
       "moviesmod": {
         "mutationCount": 1,
         "generatedBytes": 18851,
-        "elapsedMs": 631724,
+        "elapsedMs": 645292,
         "signatureCounts": {
           "e2a33079b82b848babde356b": 1
         }
@@ -3455,7 +3453,7 @@
       "movix": {
         "mutationCount": 1,
         "generatedBytes": 19160,
-        "elapsedMs": 631724,
+        "elapsedMs": 645292,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1
         }
@@ -3463,13 +3461,13 @@
       "mugiwarastream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "mycima": {
         "mutationCount": 1,
         "generatedBytes": 18745,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1
         }
@@ -3477,7 +3475,7 @@
       "nakios": {
         "mutationCount": 1,
         "generatedBytes": 18818,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3485,49 +3483,49 @@
       "neko-sama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "netmirror": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "onlykdrama": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "papadustream": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "peachify": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "persianstremio": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "playimdb": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631724,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "purstream": {
         "mutationCount": 1,
-        "generatedBytes": 18763,
-        "elapsedMs": 631724,
+        "generatedBytes": 18870,
+        "elapsedMs": 645291,
         "signatureCounts": {
           "407798151f15452ec1ccd098": 1
         }
@@ -3535,19 +3533,19 @@
       "sekai": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "showbox": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "streamflix": {
         "mutationCount": 1,
         "generatedBytes": 18780,
-        "elapsedMs": 631723,
+        "elapsedMs": 645291,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3555,7 +3553,7 @@
       "streamzo": {
         "mutationCount": 1,
         "generatedBytes": 19154,
-        "elapsedMs": 631723,
+        "elapsedMs": 645291,
         "signatureCounts": {
           "9408dea970ee2148302affa4": 1
         }
@@ -3563,7 +3561,7 @@
       "toflix": {
         "mutationCount": 1,
         "generatedBytes": 18755,
-        "elapsedMs": 631723,
+        "elapsedMs": 645291,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3571,13 +3569,13 @@
       "topcartoons": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645291,
         "signatureCounts": {}
       },
       "uhdmovies": {
         "mutationCount": 1,
         "generatedBytes": 18802,
-        "elapsedMs": 631723,
+        "elapsedMs": 645291,
         "signatureCounts": {
           "e2a33079b82b848babde356b": 1
         }
@@ -3585,13 +3583,13 @@
       "vegamovies": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "videasy": {
         "mutationCount": 1,
         "generatedBytes": 18791,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3599,7 +3597,7 @@
       "vidfast": {
         "mutationCount": 1,
         "generatedBytes": 18742,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {
           "a5acf1ae6fc3078e15bcfc89": 1
         }
@@ -3607,97 +3605,97 @@
       "vidlink": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "vidlove": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "vidnest": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "vidnest-anime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "vidrock": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "vidsrc": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "vixsrc": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "voiranime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "voiranime-homes": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631723,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "voiranime-rip": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631722,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "vostfree": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631722,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "waveanime": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631722,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "wookafr": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631722,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "xpass": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631722,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "yflix": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631722,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       },
       "zinkmovies": {
         "mutationCount": 0,
         "generatedBytes": 0,
-        "elapsedMs": 631722,
+        "elapsedMs": 645290,
         "signatureCounts": {}
       }
     },
@@ -3719,7 +3717,6 @@
       "flemmix",
       "french-manga",
       "hdghartv",
-      "kehflix",
       "kurage",
       "mallumv",
       "mugiwarastream",
