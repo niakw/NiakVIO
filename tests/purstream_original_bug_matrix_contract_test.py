@@ -58,11 +58,13 @@ assert "alternative_titles" in tmdb_block
 media_resolution = (SCRIPTS / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
 install_block = media_resolution.split("var wrap=async function(){", 1)[1].split("wrap.__nuvioMediaTypeResolutionV1=true", 1)[0]
 deadline_anchor = "requestDeadline=Date.now()+c.providerTimeoutMs"
-resolve_anchor = "var a=await resolve(arguments)"
+resolve_anchor = "var a=preflight?await resolve(originalArgs):provisional(originalArgs)"
+verify_anchor = "var verified=await resolve(originalArgs)"
 assert deadline_anchor in install_block
 assert "g.__nuvioProviderDeadlineMs=requestDeadline" in install_block
 assert resolve_anchor in install_block
-assert install_block.index(deadline_anchor) < install_block.index(resolve_anchor)
+assert verify_anchor in install_block
+assert install_block.index(deadline_anchor) < install_block.index(resolve_anchor) < install_block.index(verify_anchor)
 assert "g.fetch=budgetedFetch(fetchBase,requestDeadline)" in install_block
 assert "g.__nuvioProviderRequestToken=requestToken" in install_block
 assert "g.__nuvioProviderRequestToken!==requestToken" in install_block
