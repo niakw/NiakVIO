@@ -82,7 +82,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v14-canonical-reset",
+        "revision": "tmdb-api-first-semantic-transport-split-v15-request-session-isolation",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -205,7 +205,7 @@ async function findTmdb(imdbId,candidates){
   })();
   mediaCache[cacheKey]=pending;
   var value=await pending;
-  mediaCache[cacheKey]=value;
+  if(value&&value.state==="unavailable")delete mediaCache[cacheKey];else mediaCache[cacheKey]=value;
   return value;
 }
 async function tmdb(namespaceValue,tmdbId){
@@ -223,7 +223,7 @@ async function tmdb(namespaceValue,tmdbId){
   })();
   mediaCache[cacheKey]=pending;
   var value=await pending;
-  mediaCache[cacheKey]=value;
+  if(value&&value.state==="unavailable")delete mediaCache[cacheKey];else mediaCache[cacheKey]=value;
   return value;
 }
 function fallbackType(input,semantic){
@@ -324,53 +324,68 @@ async function resolve(a){
   }
   var out=Array.prototype.slice.call(a);if(resolvedTmdbId)out[0]=resolvedTmdbId;out[1]=providerType;out.__nuvioContext=context;return out;
 }
+var requestSerial=0;
 function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
-function deadlineValue(){try{var n=Number(g&&g.__nuvioProviderDeadlineMs);return Number.isFinite(n)&&n>0?n:0}catch(_){return 0}}
-function deadlineExpired(){var n=deadlineValue();return n>0&&Date.now()>=n}
-function budgetedFetch(original){
+function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
+function budgetedFetch(original,deadline){
   if(typeof original!=="function")return original;
-  if(original.__nuvioProviderExecutionBudgetV1)return original;
+  var base=original.__nuvioProviderExecutionBudgetBase||original;
   var wrapped=async function(){
-    if(deadlineExpired())throw providerTimeoutError();
-    var args=Array.prototype.slice.call(arguments),deadline=deadlineValue(),remaining=deadline>0?Math.max(1,deadline-Date.now()):0;
+    if(deadlineExpired(deadline))throw providerTimeoutError();
+    var args=Array.prototype.slice.call(arguments),remaining=deadline>0?Math.max(1,deadline-Date.now()):0;
     if(remaining>0&&args.length>=1){
       var init=args[1]&&typeof args[1]==="object"?Object.assign({},args[1]):{};
       if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(remaining)}catch(_){}}
       args[1]=init;
     }
-    var value=await original.apply(this,args);
-    if(deadlineExpired())throw providerTimeoutError();
+    var value=await base.apply(this,args);
+    if(deadlineExpired(deadline))throw providerTimeoutError();
     return value;
   };
-  try{Object.defineProperty(wrapped,"__nuvioProviderExecutionBudgetV1",{value:true})}catch(_){wrapped.__nuvioProviderExecutionBudgetV1=true}
+  try{
+    Object.defineProperty(wrapped,"__nuvioProviderExecutionBudgetV1",{value:true});
+    Object.defineProperty(wrapped,"__nuvioProviderExecutionBudgetBase",{value:base});
+  }catch(_){
+    wrapped.__nuvioProviderExecutionBudgetV1=true;
+    wrapped.__nuvioProviderExecutionBudgetBase=base;
+  }
   return wrapped;
 }
 function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
   var native=o[k];
   var wrap=async function(){
-    var hadDeadline=false,previousDeadline,hadFetch=false,previousFetch,budgetFetchInstalled=false;
+    var requestToken=0,requestDeadline=0,hadFetch=false,previousFetch,fetchBase,budgetFetchInstalled=false;
     try{
       // Hard-reset media context at every provider invocation. This prevents
       // tv/anime/movie (including anime movies transported as movie) from
       // becoming sticky for the lifetime of a native QuickJS instance.
       if(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
-      hadDeadline=!!(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"));
-      previousDeadline=g&&g.__nuvioProviderDeadlineMs;
+      if(g){
+        var priorSerial=Number(g.__nuvioProviderRequestSerial||requestSerial);
+        requestToken=(Number.isFinite(priorSerial)&&priorSerial>=0?priorSerial:requestSerial)+1;
+        requestSerial=requestToken;
+        g.__nuvioProviderRequestSerial=requestToken;
+        g.__nuvioProviderRequestToken=requestToken;
+      }
       hadFetch=!!(g&&Object.prototype.hasOwnProperty.call(g,"fetch"));
       previousFetch=g&&g.fetch;
+      fetchBase=previousFetch&&previousFetch.__nuvioProviderExecutionBudgetBase||previousFetch;
     }catch(_){}
     try{
+      requestDeadline=Date.now()+c.providerTimeoutMs;
       if(g){
-        var existing=Number(previousDeadline);
-        if(!(Number.isFinite(existing)&&existing>Date.now()))g.__nuvioProviderDeadlineMs=Date.now()+c.providerTimeoutMs;
-        if(typeof previousFetch==="function"){g.fetch=budgetedFetch(previousFetch);budgetFetchInstalled=g.fetch!==previousFetch;}
+        g.__nuvioProviderDeadlineMs=requestDeadline;
+        if(typeof fetchBase==="function"){g.fetch=budgetedFetch(fetchBase,requestDeadline);budgetFetchInstalled=g.fetch!==fetchBase;}
       }
       var a=await resolve(arguments);
-      if(!a||deadlineExpired())return [];
+      if(!a||deadlineExpired(requestDeadline))return [];
+      if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+      if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
       if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
       var value=await native.apply(this,a);
-      if(deadlineExpired())return [];
+      if(deadlineExpired(requestDeadline))return [];
+      if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       return value;
     }catch(error){
       if(error&&error.__nuvioProviderTimeout)return [];
@@ -378,10 +393,14 @@ function install(o,k){
     }finally{
       try{
         if(g){
-          // Never restore a prior media context: request context is ephemeral.
-          if(Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
-          if(budgetFetchInstalled){if(hadFetch)g.fetch=previousFetch;else delete g.fetch}
-          if(hadDeadline)g.__nuvioProviderDeadlineMs=previousDeadline;else delete g.__nuvioProviderDeadlineMs;
+          // An older request must never clean state owned by a newer request.
+          var ownsRequest=!requestToken||g.__nuvioProviderRequestToken===requestToken;
+          if(ownsRequest){
+            if(Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
+            if(budgetFetchInstalled){if(hadFetch&&typeof fetchBase==="function")g.fetch=fetchBase;else if(!hadFetch)delete g.fetch}
+            if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"))delete g.__nuvioProviderDeadlineMs;
+            if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderRequestToken"))delete g.__nuvioProviderRequestToken;
+          }
         }
       }catch(_){}
     }
