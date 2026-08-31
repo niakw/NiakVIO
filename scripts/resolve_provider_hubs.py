@@ -751,10 +751,13 @@ def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> 
             candidates.append({
                 "url": str(url).rstrip("/"),
                 "label": "curated direct candidate",
-                "score": 72 - min(index, 10),
+                "score": 92 - min(index, 10),
                 "source_type": "curated_direct",
                 "source": "provider-hubs.json",
             })
+    if candidates:
+        return candidates
+
     for index, url in enumerate(cfg.get("historical_terminal_candidates") or []):
         if is_http_url(url):
             candidates.append({
