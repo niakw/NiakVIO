@@ -336,6 +336,31 @@ assert stale_terminal_audit_quarantine(
     "providers/demo--nuvio-audit-quarantine--abc.js",
     current_clean,
 ) is True
+
+# Inconclusive refresh cannot release an already-published safety quarantine.
+# Reapply must deterministically replay the inert terminal wrapper until fresh
+# playable clean evidence exists.
+inconclusive = {
+    "activation_mode": "catalogue_audit_safety_quarantine",
+    "activation_blockers": [AUDIT_QUARANTINE_BLOCKER],
+    "activation_gates": {
+        "10_content_identity_integrity": {"evidence": {}},
+        "00_current_playable_stream": {"evidence": {"streams_playable": 0}},
+    },
+}
+preserved, preserved_kind = publication_audit_quarantine(
+    base,
+    "demo",
+    "providers/demo--nuvio-audit-quarantine--abc.js",
+    inconclusive,
+)
+assert preserved_kind == "terminal"
+assert b"NUVIO_PROVIDER_QUARANTINE_V1" in preserved
+assert stale_terminal_audit_quarantine(
+    "providers/demo--nuvio-audit-quarantine--abc.js",
+    inconclusive,
+) is False
+
 assert published_name(
     "demo",
     Path("providers/demo--nuvio-audit-quarantine--abc.js"),
