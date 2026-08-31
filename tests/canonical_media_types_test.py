@@ -128,13 +128,15 @@ def assert_projection(
             f"{row['canonical']} != {expected_types}"
         )
         expected_transport = expected_types
-        if "anime" in expected_types:
-            aliases = [value for value in ("movie", "tv") if value not in expected_types]
-            if aliases:
-                expected_transport = tuple([*expected_types, *aliases])
-                assert tuple(row["row"].get("canonicalSupportedTypes") or ()) == expected_types, (
-                    f"{manifest_path}:{row['id']}: anime transport aliases must preserve canonicalSupportedTypes"
-                )
+        if "anime" in expected_types and "tv" not in expected_types:
+            expected_transport = tuple([*expected_types, "tv"])
+            assert tuple(row["row"].get("canonicalSupportedTypes") or ()) == expected_types, (
+                f"{manifest_path}:{row['id']}: anime TV transport alias must preserve canonicalSupportedTypes"
+            )
+        if "anime" in expected_types and "movie" not in expected_types:
+            assert "movie" not in row["types"], (
+                f"{manifest_path}:{row['id']}: anime-only provider must not be selected for ordinary movie transport"
+            )
         assert row["types"] == expected_transport, (
             f"{manifest_path}:{row['id']}: Nuvio transport supportedTypes drift: "
             f"{row['types']} != {expected_transport}"
