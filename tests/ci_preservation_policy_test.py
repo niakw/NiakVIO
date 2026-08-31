@@ -19,7 +19,8 @@ assert expected <= preserve_statuses
 assert preserve_statuses <= inconclusive_statuses
 assert 'degraded' in inconclusive_statuses
 assert 'degraded' in preserve_statuses
-assert 'unavailable' not in preserve_statuses
+assert 'unavailable' in preserve_statuses
+assert 'unavailable' in inconclusive_statuses
 assert config.get('zero_stream_is_per_work_not_manifest_disable') is True
 assert config.get('provider_accessibility_is_separate_from_stream_accessibility') is True
 assert config.get('provider_latency_is_separate_from_stream_latency') is True
@@ -133,6 +134,32 @@ result = run_validator(
 )
 assert result.returncode == 1
 assert 'ci_inconclusive_is_not_disablement_proof' in result.stderr
+
+# An ordinary failed-gates label cannot turn network/runtime absence into proof.
+result = run_validator(
+    manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': False}],
+    report_rows=[
+        {'id': 'a', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},
+        {
+            'id': 'b',
+            'enabled': False,
+            'action': 'published-disabled-failed-gates',
+            'failed_gates': ['02_healthy_functional_status', '00_current_playable_stream'],
+            'observed_status': 'unavailable',
+            'evidence': {
+                'streams_playable': 0,
+                'payload_verified_streams': 0,
+                'identity_contradiction_count': 0,
+                'duration_identity_mismatch_count': 0,
+                'disallowed_streams': 0,
+                'provider_server_successful_response': False,
+                'failure_classes': ['provider_http_error'],
+            },
+        },
+    ],
+)
+assert result.returncode == 1
+assert 'runtime_or_network_evidence_is_inconclusive' in result.stderr
 
 # A provider explicitly classified P2P-only by policy may still be removed
 # globally. Mixed-provider P2P rows are stream-scoped and never reach this path.
@@ -265,6 +292,9 @@ spec.loader.exec_module(promoter_module)
 # Generic Brain state preservation: no provider-specific exception is allowed.
 assert promoter_module.ci_result_is_inconclusive(
     {"health": {"status": "no_streams", "ci_classification": ""}}, config
+) is True
+assert promoter_module.ci_result_is_inconclusive(
+    {"health": {"status": "unavailable", "ci_classification": ""}}, config
 ) is True
 assert promoter_module.ci_result_is_inconclusive(
     {"health": {"status": "healthy", "ci_classification": "conclusive"}}, config
