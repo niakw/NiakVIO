@@ -668,7 +668,7 @@ def executable_seed(
             provider_model,
         )
 
-    if reconstruction_required and (force_clean_reconstruction or clean_reconstruction):
+    if force_clean_reconstruction or (reconstruction_required and clean_reconstruction):
         return (
             build_clean_provider_seed(
                 provider_id,

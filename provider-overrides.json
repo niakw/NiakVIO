@@ -2161,7 +2161,10 @@
     "kehflix": {
       "notes": [
         "Created by the NiakVIO full-auto provider onboarding workflow from structured route knowledge only.",
-        "Activation remains disabled until the onboarding quick Lab proves the provider on every requested runtime group."
+        "Preserve the observed same-origin signed chain: detail -> signed /player -> /api/streams/movie or /api/streams/episode -> /api/stream-gw.",
+        "Kehflix episodic playback uses /api/streams/episode?id&season&episode&k; Nuvio tv/anime remain semantic types while the provider runtime uses its episodic route.",
+        "External embeds remain fallback observations; the signed same-origin runtime API is attempted first.",
+        "Activation remains disabled until canonical publication proof accepts the rebuilt ProviderBase."
       ],
       "replacements": {},
       "runtime_domain_replacements": {},
@@ -2179,7 +2182,23 @@
         "disabledPlatforms": []
       },
       "patch_script_options": {},
-      "required_values": []
+      "required_values": [],
+      "learned_routes": [
+        "/title/movie/{id}-{slug}",
+        "/title/tv/{id}-{slug}",
+        "/player",
+        "/api/streams/{media}?id&k",
+        "/api/streams/episode?id&season&episode&k",
+        "/api/stream-gw",
+        "/api/report",
+        "/api/track-view",
+        "/api/track",
+        "/api/fp",
+        "/api/ad-link",
+        "/api/streams/working",
+        "/api/streams/dead",
+        "/api/streams/warm"
+      ]
     },
     "frenchstream": {
       "notes": [
