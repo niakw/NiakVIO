@@ -348,6 +348,22 @@ def conclusive_disablement(record: dict[str, Any] | None, *, missing: bool) -> t
     return False, f"non_conclusive_disable_action:{action or 'missing'}"
 
 
+def pending_clean_preservation_is_deferred(
+    record: dict[str, Any] | None,
+    provenance_row: dict[str, Any] | None,
+) -> bool:
+    """Migration-pending preservation is report-owned, not fragile provenance state."""
+    if not isinstance(record, dict):
+        return False
+    if str(record.get("action") or "") != "preserved-published-state-clean-candidate-pending":
+        return False
+    if record.get("enabled") is not False or (record.get("failed_gates") or []):
+        return False
+    if isinstance(provenance_row, dict) and provenance_row.get("clean_reconstruction_verified") is True:
+        return False
+    return True
+
+
 def validate() -> list[str]:
     policy = load(POLICY)
     main_rows = rows(load(MAIN))
@@ -403,13 +419,7 @@ def validate() -> list[str]:
         provenance_row = provenance_by_id.get(provider_id)
         pending_v2_preserved = bool(
             not is_missing
-            and isinstance(record, dict)
-            and str(record.get("action") or "") == "preserved-published-state-clean-candidate-pending"
-            and record.get("enabled") is False
-            and not (record.get("failed_gates") or [])
-            and isinstance(provenance_row, dict)
-            and provenance_row.get("clean_reconstruction_candidate") is True
-            and provenance_row.get("clean_reconstruction_verified") is not True
+            and pending_clean_preservation_is_deferred(record, provenance_row)
         )
         if pending_v2_preserved:
             deferred_to_learning[provider_id] = "pending_clean_v2_preserved_published_state"

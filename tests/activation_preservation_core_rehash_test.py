@@ -136,6 +136,31 @@ assert adapter._record_requires_baseline_restore({
 
 print("activation preservation deterministic Core rehash tests passed")
 
+assert legacy.pending_clean_preservation_is_deferred(
+    {
+        "action": "preserved-published-state-clean-candidate-pending",
+        "enabled": False,
+        "failed_gates": [],
+    },
+    {},
+) is True
+assert legacy.pending_clean_preservation_is_deferred(
+    {
+        "action": "preserved-published-state-clean-candidate-pending",
+        "enabled": False,
+        "failed_gates": [],
+    },
+    {"clean_reconstruction_verified": True},
+) is False
+assert legacy.pending_clean_preservation_is_deferred(
+    {
+        "action": "preserved-published-state-clean-candidate-pending",
+        "enabled": False,
+        "failed_gates": ["current_playable_stream"],
+    },
+    {},
+) is False
+
 # Pending clean-v2 migration state must not hard-block P2 activation preservation.
 validator_source = (ROOT / "scripts" / "validate_activation_preservation.py").read_text(encoding="utf-8")
 assert "deferred_to_learning" in validator_source
