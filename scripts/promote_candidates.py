@@ -1488,7 +1488,7 @@ def inconclusive_statuses(activation: dict[str, Any]) -> set[str]:
         str(value)
         for value in activation.get(
             "inconclusive_statuses",
-            ["no_streams", "blocked", "provider_unreachable", "runtime_error"],
+            ["no_streams", "blocked", "provider_unreachable", "runtime_error", "unavailable"],
         )
     }
 
