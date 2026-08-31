@@ -66,6 +66,8 @@ validator_source = (ROOT / 'scripts/validate_activation_preservation.py').read_t
 assert 'ci_inconclusive_is_not_disablement_proof' in validator_source
 assert 'removed-disallowed-p2p' in validator_source
 assert 'configured_safety_quarantine' in validator_source
+assert '["git", "show", "HEAD:manifest.json"]' in validator_source
+assert 'NUVIO_PUBLISHED_MANIFEST_BASELINE' in validator_source
 
 
 def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None):
