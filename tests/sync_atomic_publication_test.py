@@ -21,12 +21,8 @@ assert "Capture published manifest baseline" in workflow
 assert workflow.count("      - 'scripts/activation_preservation_core_rehash.py'") == 2, (
     "Sync must run on preservation-adapter changes for both PR and main push"
 )
-assert workflow.count("      - 'tests/patched_provider_runtime_smoke.test.cjs'") == 2, (
-    "Sync must run on provider runtime smoke changes for both PR and main push"
-)
-
-assert workflow.count("      - 'tests/sync_atomic_publication_test.py'") == 2, (
-    "Sync must run on its publication contract test changes for both PR and main push"
+assert workflow.count("      - 'tests/**'") == 2, (
+    "Sync must run on every test change for both PR and main push"
 )
 
 stage_block = workflow[workflow.index("  stage-and-test:"):workflow.index("\n  resolve-publish-source:\n")]
