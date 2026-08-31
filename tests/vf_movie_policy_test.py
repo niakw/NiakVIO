@@ -169,9 +169,15 @@ for provider_id in ('purstream', 'movix', 'nakios'):
         assert cfg.get('api_probe_routes'), provider_id
 
 recovery = 'scripts/provider_patches/vf_catalogue_recovery.py'
+shared_recovery = 'scripts/provider_patches/global_catalogue_alias_recovery_v2.py'
 sanitizer_v5 = 'scripts/provider_patches/stream_output_sanitizer_v5.py'
 sanitizer_v6 = 'scripts/provider_patches/stream_output_sanitizer_v6.py'
-for provider_id in ('frenchstream', 'streamzo', 'movix', 'coflix', 'flemmix'):
+
+# Legacy VF providers still own their explicit recovery adapter. StreamZo was
+# intentionally migrated to the shared Core catalogue recovery path: TMDB/type
+# resolution happens in Core first, and only declarative routes/options remain
+# provider-owned.
+for provider_id in ('frenchstream', 'movix', 'coflix', 'flemmix'):
     patch = patches[provider_id]
     scripts = patch.get('patch_scripts', [])
     assert recovery in scripts, provider_id
@@ -193,6 +199,19 @@ for provider_id in ('frenchstream', 'streamzo', 'movix', 'coflix', 'flemmix'):
     # A path name is not proof of invalid media. The response body must prove
     # `#EXTM3U`; HTML/403 responses and the known fake host remain rejected.
     assert '/troll/' not in options.get('blocked_path_patterns', []), provider_id
+
+streamzo = patches['streamzo']
+streamzo_scripts = streamzo.get('patch_scripts', [])
+assert recovery not in streamzo_scripts
+assert shared_recovery not in streamzo_scripts
+assert sanitizer_v5 in streamzo_scripts
+streamzo_shared = streamzo.get('patch_script_options', {}).get(shared_recovery, {})
+assert streamzo_shared.get('search_paths'), 'streamzo'
+assert streamzo_shared.get('direct_paths'), 'streamzo'
+assert streamzo_shared.get('mirror_routes'), 'streamzo'
+streamzo_sanitizer = streamzo.get('patch_script_options', {}).get(sanitizer_v5, {})
+assert 'fstream.top' in streamzo_sanitizer.get('blocked_hosts', []), 'streamzo'
+assert '/troll/' not in streamzo_sanitizer.get('blocked_path_patterns', []), 'streamzo'
 
 # Prefix collisions such as flemmix.me -> flemmix.men may never create .menn.
 for path in (ROOT / 'providers').glob('*.js'):
