@@ -18,6 +18,20 @@ spec.loader.exec_module(module)
 
 assert module.PUBLICATION_CONTRACT_SCHEMA == 2
 
+# The stored per-provider build fingerprint must describe the final provenance
+# row, not an intermediate state that is mutated again later in publication.
+# Otherwise the immediate fixed-point --check reports provider-input-changed
+# even though the just-generated artifacts are current.
+source = SCRIPT.read_text(encoding="utf-8")
+fingerprint_write = source.index('row["build_input_sha256"] = provider_build_input_sha(')
+for mutation in (
+    'row["activation_mode"] = "strict_current"',
+    'row["activation_mode"] = AUDIT_QUARANTINE_MODE',
+    'row["activation_mode"] = "configured_safety_quarantine"',
+):
+    assert source.index(mutation) < fingerprint_write, mutation
+assert source.index('row.pop("catalogue_audit_quarantine_scopes", None)') < fingerprint_write
+
 base = {
     "name": "fixture",
     "version": "5.21.8",
