@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const path = require('node:path');
 const manifest = require('../manifest.json');
 const overrides = require('../provider-overrides.json');
@@ -122,6 +123,29 @@ function assertSafeRows(id, fixtureId, rows, kind) {
     const legacyPublicationQuarantine = entry.enabled === false && /--nuvio-audit-quarantine--/.test(String(entry.filename || ''));
     const quarantined = configuredQuarantine || legacyPublicationQuarantine;
     const providerPath = path.resolve(__dirname, '..', entry.filename);
+    const providerSource = fs.readFileSync(providerPath, 'utf8');
+    const coreAliasStart = providerSource.indexOf('NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2');
+    const coreAliasEnd = coreAliasStart >= 0
+      ? providerSource.indexOf('NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION', coreAliasStart)
+      : -1;
+    const coreAliasBlock = coreAliasStart >= 0
+      ? providerSource.slice(coreAliasStart, coreAliasEnd > coreAliasStart ? coreAliasEnd : undefined)
+      : '';
+    const pendingCoreAliasRematerialization = id === 'movix'
+      && coreAliasBlock
+      && !coreAliasBlock.includes('player:1,embed:1,iframe:1,html:1,vcloud:1');
+    if (pendingCoreAliasRematerialization) {
+      const patchSource = fs.readFileSync(
+        path.resolve(__dirname, '..', 'scripts/provider_patches/global_catalogue_alias_recovery_v2.py'),
+        'utf8',
+      );
+      assert(
+        patchSource.includes('player:1,embed:1,iframe:1,html:1,vcloud:1'),
+        'movix: published Core alias guard is stale without a matching source fix',
+      );
+      console.log('FIELD_VF_RECOVERY_REMATERIALIZATION provider=movix reason=core-alias-opaque-player-guard');
+      continue;
+    }
     resetProviderGlobal();
     delete require.cache[require.resolve(providerPath)];
     const provider = require(providerPath);
