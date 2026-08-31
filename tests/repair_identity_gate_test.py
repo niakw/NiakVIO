@@ -17,6 +17,8 @@ def sample(
     unknown: int = 0,
     contradictions: int = 0,
     duration_mismatches: int = 0,
+    playable_contradictions: int = 0,
+    playable_duration_mismatches: int = 0,
     include_playable_fixture: bool = True,
 ) -> dict:
     tests = []
@@ -29,6 +31,8 @@ def sample(
                 "identity_unverified_streams": unknown,
                 "identity_contradiction_count": contradictions,
                 "duration_identity_mismatch_count": duration_mismatches,
+                "playable_identity_contradiction_count": playable_contradictions,
+                "playable_duration_identity_mismatch_count": playable_duration_mismatches,
             }
         )
     return {
@@ -39,6 +43,8 @@ def sample(
             "identity_unverified_streams": unknown,
             "identity_contradiction_count": contradictions,
             "duration_identity_mismatch_count": duration_mismatches,
+            "playable_identity_contradiction_count": playable_contradictions,
+            "playable_duration_identity_mismatch_count": playable_duration_mismatches,
         },
         "tests": tests,
     }
@@ -47,10 +53,18 @@ def sample(
 ok, reason = automatic_repair_identity_gate(sample())
 assert ok and reason == "positive_content_identity_proof", (ok, reason)
 
+# Rejected sibling streams remain diagnostics and do not poison a healthy repair.
 ok, reason = automatic_repair_identity_gate(sample(duration_mismatches=1))
-assert not ok and "duration_identity_mismatch" in reason, (ok, reason)
+assert ok, (ok, reason)
 
 ok, reason = automatic_repair_identity_gate(sample(contradictions=1))
+assert ok, (ok, reason)
+
+# Only contradictions that survive into the playable set remain hard blockers.
+ok, reason = automatic_repair_identity_gate(sample(playable_duration_mismatches=1))
+assert not ok and "duration_identity_mismatch" in reason, (ok, reason)
+
+ok, reason = automatic_repair_identity_gate(sample(playable_contradictions=1))
 assert not ok and "content_identity_contradiction" in reason, (ok, reason)
 
 ok, reason = automatic_repair_identity_gate(sample(verified=0, unknown=1))
