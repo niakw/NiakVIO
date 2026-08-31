@@ -81,10 +81,10 @@ function candidateScore(status, healthyAverage, coverageRatio, claims, fixtureRe
 }
 
 function ciClassification(status, inconclusiveStatuses) {
-  if (status === 'excluded' || status === 'unavailable' || status === 'degraded') {
+  if (inconclusiveStatuses.has(status)) return 'inconclusive';
+  if (status === 'excluded' || status === 'unavailable') {
     return 'conclusive_failure';
   }
-  if (inconclusiveStatuses.has(status)) return 'inconclusive';
   if (status === 'healthy') return 'conclusive_success';
   return 'unknown';
 }
