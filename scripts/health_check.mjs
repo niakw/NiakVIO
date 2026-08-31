@@ -1140,6 +1140,7 @@ function executionContextForCandidate(candidate) {
       nuvio_has_settings: String(Boolean(metadata.hasSettings)),
     },
     maxSettingsProfiles: Math.max(1, Math.min(12, Number(modeConfig.max_settings_profiles || 6))),
+    singleProfileZeroStreamPreflight: modeConfig.zero_stream_preflight === true && !Boolean(metadata.hasSettings),
     networkLimits: {
       maxFetches: Number(modeConfig.max_provider_fetches || 30),
       maxRedirects: Number(modeConfig.max_redirects || 5),
@@ -1515,8 +1516,14 @@ async function testCandidate(candidate) {
             error: item?.error ? sanitizeStructuredError(item.error) : null,
           }))
         : [],
+      raw_stream_count: Number(worker.raw_stream_count ?? streams.length),
       stream_count: streams.length,
       streams_returned: streams.length,
+      zero_stream_preflight_terminal: Boolean(
+        modeConfig.zero_stream_preflight === true
+        && worker.ok
+        && Number(worker.raw_stream_count ?? streams.length) === 0
+      ),
       failure_class: failureClass,
       worker_memory_mb: Number(worker.worker_memory_mb || workerMemoryMb),
       worker_exit: worker.worker_exit || null,
@@ -1594,7 +1601,8 @@ async function testCandidate(candidate) {
       const rows = primaryResults.filter((item) => item.fixture?.category === category);
       return rows.length > 0
         && !rows.some((item) => item.status === 'healthy')
-        && !rows.some((item) => item.status === 'excluded');
+        && !rows.some((item) => item.status === 'excluded')
+        && !rows.some((item) => item.zero_stream_preflight_terminal === true);
     }),
   );
   let fallbackExecuted = false;
@@ -1721,6 +1729,13 @@ async function testCandidate(candidate) {
       primary_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'primary').length,
       fallback_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'fallback').length,
       fallback_triggered: fallbackExecuted,
+      zero_stream_preflight_enabled: modeConfig.zero_stream_preflight === true,
+      zero_stream_terminal_types: [...new Set(
+        fixtureResults
+          .filter((item) => item.zero_stream_preflight_terminal === true)
+          .map((item) => item.fixture?.category)
+          .filter(Boolean),
+      )].sort(compareText),
       fixtures_tested: activationTests.length,
       total_fixtures_executed: fixtureResults.length,
       fixture_status_counts: fixtureStatusCounts,
