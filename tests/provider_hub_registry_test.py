@@ -83,6 +83,8 @@ assert 'fstream.top' in hubs['movix']['blocked_hosts']
 movix_html = '<a href="https://movix.fun/">Accéder à Movix</a>'
 movix_candidates, preferred = resolver.choose_official('movix', hubs['movix'], hubs['movix']['hub'], movix_html)
 assert preferred == 'https://movix.fun'
+assert movix_candidates and isinstance(movix_candidates[0], dict), movix_candidates
+assert movix_candidates[0].get('score') is not None, movix_candidates
 assert movix_candidates[0]['score'] >= 80
 
 # Telegram selection must use the highest message id rather than document
@@ -103,8 +105,178 @@ wooka_html = '''
 '''
 wooka_candidates, preferred = resolver.choose_official('wookafr', hubs['wookafr'], hubs['wookafr']['hub'], wooka_html)
 assert preferred == 'https://wookafr.center'
+assert wooka_candidates and isinstance(wooka_candidates[0], dict), wooka_candidates
+assert wooka_candidates[0].get('message_id') is not None, wooka_candidates
 assert wooka_candidates[0]['message_id'] == 131
 assert all(resolver.host(row['url']) != 'unrelated.example' for row in wooka_candidates)
+
+
+# Six curated address contracts from hub_6.xlsx must remain explicit and
+# independently testable. Hubs are discovery sources; only terminal sites can
+# become provider routes.
+for provider_id in ('1shows', 'allwish', 'anidb', 'cinefreak', 'moonflix', 'zinkmovies'):
+    assert provider_id in hubs, provider_id
+    assert hubs[provider_id].get('sources'), provider_id
+    assert hubs[provider_id].get('direct_candidates'), provider_id
+
+assert hubs['1shows']['hub'] == 'https://flixnetwork.is/'
+assert hubs['1shows']['direct_fallback'] == 'https://1flixto.icu/'
+one_shows_html = '''
+<article class="tile" data-domain="1flixto.icu" data-search="1flixto.icu 1flix.to">
+  <span class="tile-domain">1flixto.icu</span>
+  <p class="tile-alt">Alternative to <b>1flix.to</b></p>
+  <a class="t-visit" href="https://1flixto.icu">Visit →</a>
+</article>
+'''
+one_shows_candidates, preferred = resolver.choose_official(
+    '1shows', hubs['1shows'], hubs['1shows']['hub'], one_shows_html
+)
+assert preferred == 'https://1flixto.icu'
+assert resolver.same_brand('1shows', preferred, hubs['1shows'])
+
+assert hubs['allwish']['resolver'] == 'telegram_description'
+allwish_html = '''
+<div class="tgme_channel_info">
+  <div class="tgme_channel_info_description">All-Wish official domain:
+    <a href="https://all-wish.me/">https://all-wish.me/</a>
+  </div>
+</div>
+<div class="tgme_widget_message" data-post="allwishme/44">
+  <div>Latest community post</div>
+  <a href="https://example.org/">example.org</a>
+</div>
+'''
+_allwish_candidates, preferred = resolver.choose_official(
+    'allwish', hubs['allwish'], hubs['allwish']['hub'], allwish_html
+)
+assert preferred == 'https://all-wish.me'
+
+assert hubs['anidb']['hub'] == 'https://tbcpl.click/'
+anidb_html = '''
+<a data-category="anime" data-name="anidb" href="https://anidb.pics"
+   target="_blank" title="AniDB"><span>anidb.pics</span></a>
+'''
+_anidb_candidates, preferred = resolver.choose_official(
+    'anidb', hubs['anidb'], hubs['anidb']['hub'], anidb_html
+)
+assert preferred == 'https://anidb.pics'
+
+assert hubs['cinefreak']['resolver'] == 'latest_telegram_domain'
+cinefreak_html = '''
+<div class="tgme_widget_message" data-post="cinefreaktop/90">
+  <div>CineFreak : nouvelle adresse officielle</div>
+  <a href="https://example.invalid/">example.invalid</a>
+  <a href="https://cinefreak.ch/">cinefreak.ch</a>
+  <a href="https://example.org/">example.org</a>
+</div>
+'''
+cinefreak_candidates, preferred = resolver.choose_official(
+    'cinefreak', hubs['cinefreak'], hubs['cinefreak']['hub'], cinefreak_html
+)
+assert preferred == 'https://cinefreak.ch'
+assert cinefreak_candidates and isinstance(cinefreak_candidates[0], dict), cinefreak_candidates
+assert cinefreak_candidates[0].get('url') is not None, cinefreak_candidates
+assert resolver.host(cinefreak_candidates[0]['url']) == 'cinefreak.ch'
+
+assert hubs['moonflix']['resolver'] == 'latest_telegram_domain'
+moonflix_html = '''
+<div class="tgme_widget_message" data-post="Moonflix_official_Channel/120">
+  <div>MoonFlix : URL du nouveau site officiel</div>
+  <a href="https://moonflix.website/browse">MoonFlix</a>
+</div>
+'''
+_moonflix_candidates, preferred = resolver.choose_official(
+    'moonflix', hubs['moonflix'], hubs['moonflix']['hub'], moonflix_html
+)
+assert preferred == 'https://moonflix.website/browse'
+
+assert hubs['zinkmovies']['hub'] == 'https://zinkmovies.org/'
+zink_html = '<a href="https://new3.zinkmovies.mobi/" rel="nofollow noindex">Click Here to Enter</a>'
+_zink_candidates, preferred = resolver.choose_official(
+    'zinkmovies', hubs['zinkmovies'], hubs['zinkmovies']['hub'], zink_html
+)
+assert preferred == 'https://new3.zinkmovies.mobi'
+
+# Route authority order: hub > explicit direct > search/LKG. Historical
+# routes are never allowed to override a declared source.
+authority_history = {
+    'current': {'url': 'https://stale.example/', 'host': 'stale.example'}
+}
+hub_authority_cfg = {
+    'hub': 'https://hub.example/',
+    'sources': [{'type': 'hub', 'url': 'https://hub.example/', 'priority': 110}],
+    'direct_candidates': ['https://direct.example/'],
+    'direct_fallback': 'https://direct.example/',
+}
+assert resolver.has_authoritative_hub_source(hub_authority_cfg)
+assert resolver._seed_known_candidates(hub_authority_cfg, authority_history) == []
+
+direct_authority_cfg = {
+    'hub': None,
+    'sources': [],
+    'direct_candidates': ['https://direct.example/'],
+    'direct_fallback': 'https://direct.example/',
+}
+assert resolver.has_authoritative_direct_source(direct_authority_cfg)
+direct_seed = resolver._seed_known_candidates(direct_authority_cfg, authority_history)
+assert [row['source_type'] for row in direct_seed] == ['curated_direct']
+assert all(row['source_type'] != 'history_lkg' for row in direct_seed)
+
+fallback_authority_cfg = {
+    'hub': None,
+    'sources': [],
+    'direct_candidates': [],
+    'direct_fallback': 'https://direct.example/',
+}
+assert resolver.has_authoritative_direct_source(fallback_authority_cfg)
+fallback_seed = resolver._seed_known_candidates(fallback_authority_cfg, authority_history)
+assert [row['url'] for row in fallback_seed] == ['https://direct.example']
+assert all(row['source_type'] != 'history_lkg' for row in fallback_seed)
+
+lkg_only_cfg = {'hub': None, 'sources': [], 'direct_candidates': []}
+lkg_seed = resolver._seed_known_candidates(lkg_only_cfg, authority_history)
+assert [row['source_type'] for row in lkg_seed] == ['history_lkg']
+
+# A successful fresh always replaces the current route. The former route is
+# history only; it is never allowed to remain current after hub/direct moved.
+fresh_history = {
+    'current': {
+        'url': 'https://old.example',
+        'host': 'old.example',
+        'source_type': 'history_lkg',
+        'source': 'provider-domain-history.json',
+    },
+    'previous': [],
+}
+resolver.update_history_row(fresh_history, {
+    'status': 'site_validated',
+    'official_site': 'https://new.example',
+    'selected_source_type': 'hub',
+    'selected_source': 'https://hub.example/',
+})
+assert fresh_history['current']['url'] == 'https://new.example'
+assert fresh_history['current']['source_type'] == 'hub'
+assert fresh_history['current']['source'] == 'https://hub.example/'
+assert fresh_history['previous'][0]['url'] == 'https://old.example'
+
+direct_fresh_history = {
+    'current': {
+        'url': 'https://old-direct.example',
+        'host': 'old-direct.example',
+        'source_type': 'history_lkg',
+        'source': 'provider-domain-history.json',
+    },
+    'previous': [],
+}
+resolver.update_history_row(direct_fresh_history, {
+    'status': 'site_validated',
+    'official_site': 'https://new-direct.example',
+    'selected_source_type': 'curated_direct',
+    'selected_source': 'provider-hubs.json',
+})
+assert direct_fresh_history['current']['url'] == 'https://new-direct.example'
+assert direct_fresh_history['current']['source_type'] == 'curated_direct'
+assert direct_fresh_history['previous'][0]['url'] == 'https://old-direct.example'
 
 # Deep discovery uses Yandex first and DuckDuckGo as a bounded fallback.
 engines = resolver.search_engine_urls('example provider')
@@ -125,6 +297,21 @@ registry = json.loads((ROOT / 'provider-hubs.json').read_text())
 history_registry = json.loads((ROOT / 'provider-domain-history.json').read_text())
 assert registry.get('schema_version', 0) >= 3
 assert history_registry.get('schema_version') == 1
+
+# Hub-backed history must preserve provenance, not freeze today's terminal URL.
+# The terminal may rotate at any time; the configured hub remains authoritative.
+for provider_id in ('flemmix', '1shows', 'allwish', 'anidb', 'cinefreak', 'moonflix', 'zinkmovies'):
+    current = ((history_registry.get('providers') or {}).get(provider_id) or {}).get('current') or {}
+    assert current.get('url'), (provider_id, current)
+    assert resolver.same_brand(provider_id, str(current['url']), hubs[provider_id]), (provider_id, current)
+    authoritative_sources = {
+        str(source.get('url') or '').rstrip('/')
+        for source in hubs[provider_id].get('sources') or []
+        if source.get('type') in {'hub', 'telegram_public', 'redirect'} and source.get('url')
+    }
+    assert str(current.get('source') or '').rstrip('/') in authoritative_sources, (provider_id, current)
+    assert current.get('source_type') in {'hub', 'telegram_public', 'redirect', 'curated_official_hub'}, (provider_id, current)
+
 assert 'dahmermovies' not in registry['providers']
 assert 'dahmermovies-tv' not in registry['providers']
 raw = json.dumps(registry, ensure_ascii=False).casefold()

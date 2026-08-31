@@ -3,6 +3,12 @@ import path from "node:path";
 
 export const PROVIDER_CATALOG_SCHEMA_VERSION = 2;
 
+export const PROVIDER_SCRAPER_ALLOWED_FIELDS = new Set([
+  "id", "name", "description", "version", "author", "supportedTypes",
+  "filename", "enabled", "logo", "contentLanguage", "formats", "limited",
+  "supportsExternalPlayer", "disabledPlatforms", "hasSettings", "notes",
+]);
+
 export function canonicalProviderId(value) {
   const id = String(value ?? "").trim();
   if (!id) throw new Error("provider id is required");
@@ -134,8 +140,15 @@ export function validateProviderCatalog(catalog) {
     }
     if (byId.has(canonicalId)) throw new Error(`duplicate provider in catalog: ${canonicalId}`);
     if (!row.scraper || typeof row.scraper !== "object") throw new Error(`${canonicalId}: scraper metadata is required`);
+    const unexpectedFields = Object.keys(row.scraper).filter((field) => !PROVIDER_SCRAPER_ALLOWED_FIELDS.has(field));
+    if (unexpectedFields.length) {
+      throw new Error(`${canonicalId}: scraper contains non-NiakVIO manifest fields: ${unexpectedFields.sort().join(",")}`);
+    }
     if (canonicalProviderId(row.scraper.id) !== canonicalId) throw new Error(`${canonicalId}: scraper id does not match canonical id`);
     if (!String(row.scraper.filename ?? "").trim()) throw new Error(`${canonicalId}: filename is required`);
+    if (!Array.isArray(row.scraper.disabledPlatforms) || row.scraper.disabledPlatforms.length !== 0) {
+      throw new Error(`${canonicalId}: disabledPlatforms must exist and stay empty in the NiakVIO provider contract`);
+    }
     if (row.projections?.general !== true) throw new Error(`${canonicalId}: every catalog provider must project to general`);
     byId.set(canonicalId, row);
   }
@@ -209,6 +222,9 @@ function withoutScrapers(manifest) {
 
 function canonicalizePublishedScraper(scraper) {
   const copy = structuredClone(scraper);
+  // Historical upstream imports may carry non-empty platform blocks. The
+  // canonical NiakVIO contract retains the property but owns its value.
+  copy.disabledPlatforms = [];
   if (Array.isArray(copy.canonicalSupportedTypes) && copy.canonicalSupportedTypes.length) {
     copy.supportedTypes = [...copy.canonicalSupportedTypes];
   }
@@ -226,6 +242,7 @@ function normalizeProjectionScraper(scraper, projection) {
 
 function projectScraper(scraper, projection) {
   const copy = structuredClone(scraper);
+  copy.disabledPlatforms = [];
   const semantic = Array.isArray(copy.supportedTypes)
     ? [...new Set(copy.supportedTypes.map((value) => String(value).trim().toLowerCase()).filter(Boolean))]
     : [];

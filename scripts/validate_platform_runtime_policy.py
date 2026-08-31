@@ -12,7 +12,6 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACTS = ROOT / "automation" / "platform-runtime-contracts.json"
 MATRIX = ROOT / "automation" / "platform-runtime-matrix.json"
 POLICY = ROOT / "automation" / "platform-runtime-policy.json"
-LEGACY = ROOT / "automation" / "mobile-vf-runtime-policy.json"
 MAIN = ROOT / "manifest.json"
 VF = ROOT / "vf" / "manifest.json"
 PROFILE_TOKEN = {"android": "android", "ios": "ios", "desktop": "desktop"}
@@ -125,17 +124,19 @@ def main() -> int:
     for provider_id, row in main_rows.items():
         validate_platform_field(errors, provider_id, row, "disabledPlatforms")
         validate_platform_field(errors, provider_id, row, "supportedPlatforms")
+        if row.get("disabledPlatforms") != []:
+            errors.append(f"{provider_id}: disabledPlatforms must stay empty in NiakVIO manifests")
     for provider_id, row in vf_rows.items():
         validate_platform_field(errors, f"vf:{provider_id}", row, "disabledPlatforms")
         validate_platform_field(errors, f"vf:{provider_id}", row, "supportedPlatforms")
+        if row.get("disabledPlatforms") != []:
+            errors.append(f"vf:{provider_id}: disabledPlatforms must stay empty in NiakVIO manifests")
         main_row = main_rows.get(provider_id)
         if main_row is None:
             errors.append(f"vf:{provider_id}: missing from general manifest")
             continue
         if bool(row.get("enabled")) != bool(main_row.get("enabled")):
             errors.append(f"{provider_id}: general/VF enabled mismatch")
-        if set(values(row, "disabledPlatforms")) != set(values(main_row, "disabledPlatforms")):
-            errors.append(f"{provider_id}: general/VF disabledPlatforms mismatch")
         if set(values(row, "supportedPlatforms")) != set(values(main_row, "supportedPlatforms")):
             errors.append(f"{provider_id}: general/VF supportedPlatforms mismatch")
         if [str(x).casefold() for x in row.get("supportedTypes") or []] != [str(x).casefold() for x in main_row.get("supportedTypes") or []]:
@@ -163,45 +164,30 @@ def main() -> int:
             errors.append("platform policy/matrix release mismatch")
         if policy.get("legacy_android_no_proof_policy_retired") is not True:
             errors.append("legacy Android no-proof policy was not retired")
+        if policy.get("schema_version", 0) >= 4:
+            if policy.get("manifest_projection") != "disabledPlatforms_empty_only":
+                errors.append("platform policy must keep disabledPlatforms empty-only")
+            defaults = policy.get("manifest_field_defaults") or {}
+            if defaults.get("disabledPlatforms") != []:
+                errors.append("platform policy disabledPlatforms default must be []")
 
-        matrix_rows = {
-            str(row.get("id") or "").casefold(): row
-            for row in matrix.get("providers") or []
-            if isinstance(row, dict) and str(row.get("id") or "").strip()
-        }
         managed = {
             str(provider_id).casefold(): {str(token).casefold() for token in tokens}
             for provider_id, tokens in (policy.get("managed_platform_tokens_by_provider") or {}).items()
         }
         classifications = policy.get("classifications") or {}
         for provider_id, tokens in managed.items():
-            row = main_rows.get(provider_id)
-            if row is None:
+            if provider_id not in main_rows:
                 errors.append(f"{provider_id}: managed provider missing from general manifest")
                 continue
-            disabled = set(values(row, "disabledPlatforms"))
             for token in tokens:
                 if token not in PROFILE_TOKEN.values():
                     errors.append(f"{provider_id}: invalid managed platform token {token}")
                     continue
-                if token not in disabled:
-                    errors.append(f"{provider_id}: managed block {token} absent from general manifest")
                 profile = next(name for name, value in PROFILE_TOKEN.items() if value == token)
                 classification = str((classifications.get(provider_id) or {}).get(profile) or "")
                 if classification not in {"conclusive_non_playable", "conclusive_runtime_error"}:
                     errors.append(f"{provider_id}: {token} managed without conclusive failure ({classification})")
-
-        legacy = load(LEGACY, {}) or {}
-        weak = {str(value).casefold() for value in legacy.get("android_disabled_no_direct_movie_proof") or []}
-        for provider_id in weak:
-            matrix_row = matrix_rows.get(provider_id)
-            row = main_rows.get(provider_id)
-            if not matrix_row or not row:
-                continue
-            classification = str(((matrix_row.get("profiles") or {}).get("android") or {}).get("classification") or "inconclusive")
-            if classification in {"compatible_direct", "inconclusive"} and "android" in set(values(row, "disabledPlatforms")):
-                if "android" not in managed.get(provider_id, set()):
-                    errors.append(f"{provider_id}: stale legacy Android no-proof block remains")
 
     if errors:
         raise SystemExit("platform runtime policy validation failed:\n- " + "\n- ".join(errors))

@@ -19,11 +19,11 @@ for patch in overrides.get('provider_patches',{}).values():
 
 # ARCHI2 now resolves provider routes centrally before discovery/repair rather
 # than coupling a French-ISP DNS preflight to every health runtime. Keep the
-# route/LKG stage ordered ahead of provider mutation and diagnostics.
+# current-route stage ordered ahead of provider mutation and diagnostics.
 assert 'dns_preflight' not in config
 assert 'dnsPreflightForCandidate' not in health
 assert 'runtime_skipped_by_dns_preflight' not in health
-route_stage = 'Resolve official hubs and retain last-known-good routes'
+route_stage = 'Resolve current provider routes'
 discovery_stage = 'Discover all non-P2P candidates before triage'
 profile_stage = 'Apply known runtime profiles before repair'
 repair_stage = 'Repair unresolved provider structures'

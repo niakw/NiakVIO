@@ -1631,30 +1631,43 @@
       "name": "ZinkMovies",
       "manifest_status": "Actif",
       "category": "International",
-      "hub": "https://redirect.zinkmovies.org/",
-      "direct": null,
+      "hub": "https://zinkmovies.org/",
+      "direct": "https://new3.zinkmovies.mobi/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "zinkmovies"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "terminal_aliases": [
+        "zinkmovies"
+      ],
+      "resolver": "official_outbound",
+      "official_link_labels": [
+        "Click Here to Enter",
+        "Click Here",
+        "Enter"
+      ],
+      "schema_notes": "zinkmovies.org is the authoritative address page; follow the current 'Click Here to Enter' link and runtime-validate the terminal before persistence.",
+      "direct_candidates": [
+        "https://new3.zinkmovies.mobi/"
+      ],
+      "allowed_terminal_hosts": [
+        "new3.zinkmovies.mobi"
+      ],
       "search_queries": [
         "\"ZinkMovies\" official domain"
       ],
       "sources": [
         {
           "type": "hub",
-          "url": "https://redirect.zinkmovies.org/",
-          "priority": 100,
-          "purpose": "Authoritative address reference"
+          "url": "https://zinkmovies.org/",
+          "priority": 115,
+          "purpose": "Authoritative ZinkMovies address page"
         },
         {
           "type": "search",
           "query": "\"ZinkMovies\" official domain",
-          "priority": 35,
-          "purpose": "Fallback discovery when curated sources fail"
+          "priority": 25,
+          "purpose": "Conservative fallback discovery"
         }
       ],
       "search_confirmation_runs": 2
@@ -1695,28 +1708,38 @@
       "name": "AniDB",
       "manifest_status": "Actif",
       "category": "International / Anime",
-      "hub": null,
-      "direct": "https://anidb.app/",
+      "hub": "https://tbcpl.click/",
+      "direct": "https://anidb.pics/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "anidb"
       ],
+      "terminal_aliases": [
+        "anidb"
+      ],
+      "resolver": "official_outbound",
+      "schema_notes": "tbcpl.click is the authoritative catalogue source; resolve the AniDB card/link and runtime-validate the terminal before persistence.",
       "direct_candidates": [
-        "https://anidb.app/"
+        "https://anidb.pics/"
       ],
       "allowed_terminal_hosts": [
-        "anidb.app"
+        "anidb.pics"
       ],
       "search_queries": [
         "\"AniDB\" official domain"
       ],
       "sources": [
         {
+          "type": "hub",
+          "url": "https://tbcpl.click/",
+          "priority": 115,
+          "purpose": "Authoritative service catalogue containing the AniDB card"
+        },
+        {
           "type": "search",
           "query": "\"AniDB\" official domain",
-          "priority": 35,
-          "purpose": "Fallback discovery when curated sources fail"
+          "priority": 25,
+          "purpose": "Conservative fallback discovery"
         }
       ],
       "search_confirmation_runs": 2
@@ -2112,24 +2135,40 @@
       "name": "All-Wish",
       "manifest_status": "Désactivé",
       "category": "International",
-      "hub": null,
-      "direct": null,
+      "hub": "https://t.me/s/allwishme",
+      "direct": "https://all-wish.me/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
-        "allwish"
+        "allwish",
+        "all-wish"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "terminal_aliases": [
+        "allwish",
+        "all-wish"
+      ],
+      "resolver": "telegram_description",
+      "schema_notes": "The public AllWish Telegram channel description is the authoritative address source; its current All-Wish domain is runtime-validated before persistence.",
+      "direct_candidates": [
+        "https://all-wish.me/"
+      ],
+      "allowed_terminal_hosts": [
+        "all-wish.me"
+      ],
       "search_queries": [
         "\"All-Wish\" official streaming site"
       ],
       "sources": [
         {
+          "type": "telegram_public",
+          "url": "https://t.me/s/allwishme",
+          "priority": 115,
+          "purpose": "Official public Telegram channel description containing the current domain"
+        },
+        {
           "type": "search",
           "query": "\"All-Wish\" official streaming site",
           "priority": 25,
-          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+          "purpose": "Conservative fallback discovery"
         }
       ],
       "search_confirmation_runs": 2
@@ -2193,24 +2232,38 @@
       "name": "CineFreak",
       "manifest_status": "Désactivé",
       "category": "International",
-      "hub": null,
-      "direct": null,
+      "hub": "https://t.me/s/cinefreaktop",
+      "direct": "https://cinefreak.ch/",
       "source": "curated_user_registry",
-      "schema_notes": "Address sources are evaluated in trust order and every terminal route is runtime-validated before persistence.",
       "aliases": [
         "cinefreak"
       ],
-      "direct_candidates": [],
-      "allowed_terminal_hosts": [],
+      "terminal_aliases": [
+        "cinefreak"
+      ],
+      "resolver": "latest_telegram_domain",
+      "schema_notes": "The public CineFreak Telegram channel is the authoritative address source; choose the newest message domain matching CineFreak and runtime-validate it.",
+      "direct_candidates": [
+        "https://cinefreak.ch/"
+      ],
+      "allowed_terminal_hosts": [
+        "cinefreak.ch"
+      ],
       "search_queries": [
         "\"CineFreak\" official streaming site"
       ],
       "sources": [
         {
+          "type": "telegram_public",
+          "url": "https://t.me/s/cinefreaktop",
+          "priority": 115,
+          "purpose": "Official public Telegram address announcements; newest matching domain wins"
+        },
+        {
           "type": "search",
           "query": "\"CineFreak\" official streaming site",
           "priority": 25,
-          "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
+          "purpose": "Conservative fallback discovery"
         }
       ],
       "search_confirmation_runs": 2
@@ -2862,6 +2915,95 @@
           "query": "site:kehflix.wiki Kehflix",
           "priority": 35,
           "purpose": "Fallback route discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "1shows": {
+      "id": "1shows",
+      "name": "1Shows",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": "https://flixnetwork.is/",
+      "direct": "https://1flixto.icu/",
+      "source": "curated_user_registry",
+      "aliases": [
+        "1shows"
+      ],
+      "terminal_aliases": [
+        "1flixto",
+        "1flix",
+        "1flix.to"
+      ],
+      "resolver": "official_outbound",
+      "official_link_labels": [
+        "Visit",
+        "1flixto",
+        "1flix.to"
+      ],
+      "schema_notes": "FlixNetwork is the authoritative address hub; select the 1flixto tile/link and runtime-validate the terminal before persistence.",
+      "direct_candidates": [
+        "https://1flixto.icu/"
+      ],
+      "allowed_terminal_hosts": [
+        "1flixto.icu"
+      ],
+      "search_queries": [
+        "\"1Shows\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "hub",
+          "url": "https://flixnetwork.is/",
+          "priority": 115,
+          "purpose": "Authoritative FlixNetwork address catalogue; select the 1flixto entry"
+        },
+        {
+          "type": "search",
+          "query": "\"1Shows\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery"
+        }
+      ],
+      "search_confirmation_runs": 2
+    },
+    "moonflix": {
+      "id": "moonflix",
+      "name": "MoonFlix",
+      "manifest_status": "Désactivé",
+      "category": "International",
+      "hub": "https://t.me/s/Moonflix_official_Channel",
+      "direct": "https://moonflix.website/browse",
+      "source": "curated_user_registry",
+      "aliases": [
+        "moonflix"
+      ],
+      "terminal_aliases": [
+        "moonflix"
+      ],
+      "resolver": "latest_telegram_domain",
+      "schema_notes": "The public MoonFlix Telegram channel is the authoritative address source; resolve the newest MoonFlix link and retain its catalogue path.",
+      "direct_candidates": [
+        "https://moonflix.website/browse"
+      ],
+      "allowed_terminal_hosts": [
+        "moonflix.website"
+      ],
+      "search_queries": [
+        "\"MoonFlix\" official streaming site"
+      ],
+      "sources": [
+        {
+          "type": "telegram_public",
+          "url": "https://t.me/s/Moonflix_official_Channel",
+          "priority": 115,
+          "purpose": "Official public Telegram address announcements"
+        },
+        {
+          "type": "search",
+          "query": "\"MoonFlix\" official streaming site",
+          "priority": 25,
+          "purpose": "Conservative fallback discovery"
         }
       ],
       "search_confirmation_runs": 2

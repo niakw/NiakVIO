@@ -81,10 +81,10 @@ function candidateScore(status, healthyAverage, coverageRatio, claims, fixtureRe
 }
 
 function ciClassification(status, inconclusiveStatuses) {
-  if (status === 'excluded' || status === 'unavailable' || status === 'degraded') {
+  if (inconclusiveStatuses.has(status)) return 'inconclusive';
+  if (status === 'excluded' || status === 'unavailable') {
     return 'conclusive_failure';
   }
-  if (inconclusiveStatuses.has(status)) return 'inconclusive';
   if (status === 'healthy') return 'conclusive_success';
   return 'unknown';
 }
@@ -622,6 +622,7 @@ async function probeStream(stream, mode, fixture = null) {
   const minimumVodDurationSeconds = Math.max(0, Number(mode.minimum_vod_duration_seconds || 60));
   let maxBandwidth = null;
   let mediaDurationSeconds = null;
+  let durationIdentityAuthoritative = false;
   let shortVodPreview = false;
   let contentIdentity = streamIdentity(stream, fixture || {});
 
@@ -687,6 +688,7 @@ async function probeStream(stream, mode, fixture = null) {
       kind = 'hls';
       const master = parseHls(text, result.finalUrl);
       mediaDurationSeconds = master.totalDurationSeconds;
+      durationIdentityAuthoritative = Boolean(master.isVod);
       shortVodPreview = Boolean(master.isVod && master.totalDurationSeconds != null && master.totalDurationSeconds < minimumVodDurationSeconds);
       payloadVerified = master.valid && !shortVodPreview;
       verifiedHeights.push(...master.verifiedHeights);
@@ -737,6 +739,7 @@ async function probeStream(stream, mode, fixture = null) {
           if (variantReachable) {
             mediaPlaylist = parsedVariant;
             mediaDurationSeconds = parsedVariant.totalDurationSeconds;
+            durationIdentityAuthoritative = Boolean(parsedVariant.isVod);
             shortVodPreview = Boolean(parsedVariant.isVod && parsedVariant.totalDurationSeconds != null && parsedVariant.totalDurationSeconds < minimumVodDurationSeconds);
             payloadVerified = payloadVerified && !shortVodPreview;
             mediaPlaylist.verifiedHeights.forEach((value) => verifiedHeights.push(value));
@@ -845,6 +848,7 @@ async function probeStream(stream, mode, fixture = null) {
       playbackVerified
       && mode.verify_fixture_duration_identity === true
       && expectedDurationSeconds
+      && (kind !== 'hls' || durationIdentityAuthoritative)
       && Number.isFinite(mediaDurationSeconds)
       && mediaDurationSeconds > 0
     ) {
@@ -910,6 +914,7 @@ async function probeStream(stream, mode, fixture = null) {
       media_duration_seconds: mediaDurationSeconds,
       expected_duration_seconds: expectedDurationSeconds,
       duration_identity_ratio: durationIdentityRatio,
+      duration_identity_authoritative: kind !== 'hls' || durationIdentityAuthoritative,
       duration_identity_mismatch: durationIdentityMismatch,
       content_identity_status: contentIdentity.status,
       content_identity_reason: contentIdentity.reason,
@@ -1135,6 +1140,7 @@ function executionContextForCandidate(candidate) {
       nuvio_has_settings: String(Boolean(metadata.hasSettings)),
     },
     maxSettingsProfiles: Math.max(1, Math.min(12, Number(modeConfig.max_settings_profiles || 6))),
+    singleProfileZeroStreamPreflight: modeConfig.zero_stream_preflight === true && !Boolean(metadata.hasSettings),
     networkLimits: {
       maxFetches: Number(modeConfig.max_provider_fetches || 30),
       maxRedirects: Number(modeConfig.max_redirects || 5),
@@ -1278,9 +1284,21 @@ function providerRows(worker) {
     .filter((item) => item && !item.infrastructure);
 }
 
+function acceptedPlayableProbe(probe) {
+  if (!probe?.playback_verified) return false;
+  // Stream-scope safety. Rejected siblings remain diagnostics but never enter
+  // provider/type capability evidence.
+  if (probe.content_identity_status === 'contradiction') return false;
+  if (probe.duration_identity_mismatch === true) return false;
+  const limit = Number(activationConfig.maximum_stream_median_latency_ms || 12000);
+  if (!Number.isFinite(limit) || limit <= 0) return true;
+  return !Number.isFinite(Number(probe.latency_ms)) || Number(probe.latency_ms) <= limit;
+}
+
 function statusFrom(worker, probes) {
-  if ((worker.disallowed_stream_count || 0) > 0) return { status: 'excluded', failureClass: 'disallowed_protocol' };
-  if (probes.some((probe) => probe.playback_verified)) return { status: 'healthy', failureClass: null };
+  // The worker already removes disallowed/invalid raw rows before exposing
+  // worker.streams. Keep their count as stream-level diagnostics only.
+  if (probes.some(acceptedPlayableProbe)) return { status: 'healthy', failureClass: null };
 
   const rows = providerRows(worker);
   const streamCount = Number(worker.stream_count || 0);
@@ -1326,47 +1344,75 @@ function statusFrom(worker, probes) {
   return { status: 'provider_unreachable', failureClass: 'no_provider_request_observed' };
 }
 
-function scoreTest(worker, probes, status) {
-  if (status === 'excluded') return 0;
-  if (requestedMode === 'availability' || requestedMode === 'retry') {
-    if (status === 'healthy') return 100;
-    if (status === 'blocked') return 45;
-    if (status === 'reachable') return 75;
-    if (status === 'degraded' || status === 'no_streams') return 25;
-    return 0;
+function providerStatusFrom(worker) {
+  const rows = providerRows(worker);
+  const statuses = rows.map((item) => Number(item.status)).filter(Number.isInteger);
+  const successfulRows = rows.filter((item) => Number.isInteger(Number(item.status)) && Number(item.status) >= 200 && Number(item.status) < 400);
+  const meaningfulSuccess = successfulRows.filter((item) => ['search', 'content_lookup', 'episode', 'player'].includes(String(item.stage || '')));
+  const blockedRows = rows.filter((item) => [401, 403, 429, 451].includes(Number(item.status)));
+  const unavailableRows = rows.filter((item) => [404, 410].includes(Number(item.status)) || Number(item.status) >= 500);
+  const networkFailures = rows.filter((item) => item.status == null && item.error);
+  const invalidRequest = rows.some((item) => item.error_code === 'NUVIO_INVALID_REQUEST_ARGUMENT' || /object(?:%20|\s)*object/i.test(String(item.path_pattern || '')))
+    || worker.error_details?.code === 'NUVIO_INVALID_REQUEST_ARGUMENT'
+    || (worker.invocation_diagnostics || []).some((diag) => diag?.error?.code === 'NUVIO_INVALID_REQUEST_ARGUMENT');
+
+  if (!worker.ok) {
+    if (worker.error_details?.code === 'NUVIO_WORKER_MEMORY_EXHAUSTED') return { status: 'runtime_error', failureClass: 'worker_memory_exhausted' };
+    if (invalidRequest) return { status: 'runtime_error', failureClass: 'invalid_request_arguments' };
+    if (blockedRows.length && meaningfulSuccess.length === 0) return { status: 'blocked', failureClass: 'provider_http_blocked' };
+    if (unavailableRows.length && meaningfulSuccess.length === 0) return { status: 'unavailable', failureClass: 'provider_http_unavailable' };
+    if (worker.timeout || (networkFailures.length && statuses.length === 0)
+      || /timeout|enotfound|eai_again|econnrefused|econnreset|network|fetch failed/i.test(String(worker.error || ''))) {
+      return { status: 'provider_unreachable', failureClass: 'network_unreachable' };
+    }
+    return { status: 'runtime_error', failureClass: worker.error_details?.code || 'provider_runtime_exception' };
   }
 
-  let score = 0;
+  if (worker.provider_server_successful_response || meaningfulSuccess.length > 0 || successfulRows.length > 0) {
+    return { status: 'reachable', failureClass: null };
+  }
+  if (invalidRequest) return { status: 'runtime_error', failureClass: 'invalid_request_arguments' };
+  if (blockedRows.length) return { status: 'blocked', failureClass: 'provider_http_blocked' };
+  if (unavailableRows.length && successfulRows.length === 0) return { status: 'unavailable', failureClass: 'provider_http_unavailable' };
+  if (networkFailures.length > 0 && statuses.length === 0) return { status: 'provider_unreachable', failureClass: 'network_unreachable' };
+  if (statuses.length > 0) return { status: 'unavailable', failureClass: 'provider_http_error' };
+  return { status: 'provider_unreachable', failureClass: 'no_provider_request_observed' };
+}
+
+function providerScore(worker, providerStatus) {
+  if (providerStatus === 'provider_unreachable' || providerStatus === 'runtime_error') return 0;
+  if (providerStatus === 'unavailable') return 15;
+  if (providerStatus === 'blocked') return 30;
+  let score = 60;
   if (worker.ok) score += 10;
-  if (status === 'reachable') return 75;
-  if ((worker.stream_count || 0) > 0) score += 10;
-  const playable = probes.filter((probe) => probe.playback_verified);
-  if (playable.length > 0) score += 20;
-  if (playable.length > 1) score += 10;
+  if (worker.provider_server_successful_response) score += 15;
+  const duration = Number(worker.duration_ms);
+  const limit = Number(activationConfig.maximum_provider_median_latency_ms || 15000);
+  if (Number.isFinite(duration) && Number.isFinite(limit) && duration <= limit) score += 15;
+  return Math.min(100, score);
+}
+
+function streamQualityScore(probes, status) {
+  if (status === 'no_streams') return 0;
+  const playable = probes.filter(acceptedPlayableProbe);
+  if (!playable.length) return 0;
+  let score = 40;
+  if (playable.length > 1) score += 5;
   if (playable.some((probe) => probe.payload_verified)) score += 10;
   if (playable.some((probe) => probe.segment_reachable === true || probe.direct_signature_verified || probe.kind === 'dash')) score += 10;
-
   const effectiveMax = Math.max(0, ...playable.map((probe) => probe.effective_height || 0));
   if (effectiveMax >= 2160) score += 15;
   else if (effectiveMax >= 1080) score += 12;
   else if (effectiveMax >= 720) score += 8;
-
+  else if (effectiveMax >= 480) score += 4;
   const acceptedAudio = new Set(playable.flatMap((probe) => probe.accepted_audio_languages || []));
   const acceptedSubtitles = new Set(playable.flatMap((probe) => probe.accepted_subtitle_languages || []));
-  if (acceptedAudio.size || acceptedSubtitles.size) score += 8;
-  if (
-    playable.some((probe) => (probe.accepted_subtitles_reachable || 0) > 0)
-    || acceptedAudio.size
-  ) score += 5;
-
+  if (acceptedAudio.size || acceptedSubtitles.size) score += 5;
+  if (playable.some((probe) => (probe.accepted_subtitles_reachable || 0) > 0) || acceptedAudio.size) score += 3;
   const hosts = new Set(playable.map((probe) => probe.host).filter(Boolean));
-  if (hosts.size >= 2) score += 5;
-  const probeMedian = median(playable.map((probe) => probe.latency_ms));
-  if (probeMedian != null && probeMedian <= 12000) score += 5;
+  if (hosts.size >= 2) score += 3;
   if (playable.some((probe) => (probe.codecs || []).length)) score += 2;
   if (playable.some((probe) => (probe.hdrFormats || []).length)) score += 2;
-
-  if (status !== 'healthy') score = Math.min(score, 35);
   return Math.min(100, score);
 }
 
@@ -1463,11 +1509,16 @@ async function testCandidate(candidate) {
       }
     }
 
+    const providerClassification = providerStatusFrom(worker);
     const classification = statusFrom(worker, probes);
     const status = classification.status;
     const failureClass = classification.failureClass;
-    const score = scoreTest(worker, probes, status);
-    const playable = probes.filter((probe) => probe.playback_verified);
+    const providerStatus = providerClassification.status;
+    const providerFailureClass = providerClassification.failureClass;
+    const providerScoreValue = providerScore(worker, providerStatus);
+    const streamQualityScoreValue = streamQualityScore(probes, status);
+    const score = providerScoreValue;
+    const playable = probes.filter(acceptedPlayableProbe);
     const reachableHosts = [...new Set(playable.map((probe) => probe.host).filter(Boolean))].sort(compareText);
     const verifiedMax = Math.max(0, ...playable.flatMap((probe) => probe.verifiedHeights || [])) || null;
     const reportedMax = Math.max(0, ...playable.flatMap((probe) => probe.reportedHeights || [])) || null;
@@ -1479,6 +1530,11 @@ async function testCandidate(candidate) {
       fixture_phase: fixturePhase,
       status,
       score,
+      provider_status: providerStatus,
+      provider_score: providerScoreValue,
+      provider_failure_class: providerFailureClass,
+      stream_status: status,
+      stream_quality_score: streamQualityScoreValue,
       provider_duration_ms: worker.duration_ms || null,
       worker_ok: Boolean(worker.ok),
       execution_context: worker.environment_context || null,
@@ -1509,8 +1565,14 @@ async function testCandidate(candidate) {
             error: item?.error ? sanitizeStructuredError(item.error) : null,
           }))
         : [],
+      raw_stream_count: Number(worker.raw_stream_count ?? streams.length),
       stream_count: streams.length,
       streams_returned: streams.length,
+      zero_stream_preflight_terminal: Boolean(
+        modeConfig.zero_stream_preflight === true
+        && worker.ok
+        && Number(worker.raw_stream_count ?? streams.length) === 0
+      ),
       failure_class: failureClass,
       worker_memory_mb: Number(worker.worker_memory_mb || workerMemoryMb),
       worker_exit: worker.worker_exit || null,
@@ -1518,15 +1580,23 @@ async function testCandidate(candidate) {
       runtime_errors: Array.isArray(worker.runtime_errors) ? worker.runtime_errors.map(sanitizeStructuredError).filter(Boolean) : [],
       invocation_diagnostics: Array.isArray(worker.invocation_diagnostics) ? worker.invocation_diagnostics.map((item) => ({ ...item, error: item?.error ? sanitizeStructuredError(item.error) : null })) : [],
       disallowed_streams: worker.disallowed_stream_count || 0,
+      disallowed_reasons: Array.isArray(worker.disallowed_reasons) ? worker.disallowed_reasons : [],
+      streams_rejected_policy: Number(worker.disallowed_stream_count || 0),
+      streams_rejected_identity: probes.filter((probe) => probe.content_identity_status === 'contradiction').length,
+      streams_rejected_duration: probes.filter((probe) => probe.duration_identity_mismatch === true).length,
+      streams_rejected_unreachable: probes.filter((probe) => !probe.playback_verified && probe.endpoint_reachable === false).length,
+      streams_rejected_slow: probes.filter((probe) => probe.playback_verified && !acceptedPlayableProbe(probe)).length,
       streams_probed: probes.length,
       endpoints_reachable: probes.filter((probe) => probe.endpoint_reachable).length,
       streams_reachable: playable.length,
       streams_playable: playable.length,
       payload_verified_streams: playable.filter((probe) => probe.payload_verified).length,
-      identity_verified_streams: probes.filter((probe) => probe.content_identity_status === 'match').length,
-      identity_unverified_streams: probes.filter((probe) => probe.content_identity_status === 'unknown').length,
+      identity_verified_streams: playable.filter((probe) => probe.content_identity_status === 'match').length,
+      identity_unverified_streams: playable.filter((probe) => probe.content_identity_status === 'unknown').length,
       identity_contradiction_count: probes.filter((probe) => probe.content_identity_status === 'contradiction').length,
       duration_identity_mismatch_count: probes.filter((probe) => probe.duration_identity_mismatch === true).length,
+      playable_identity_contradiction_count: playable.filter((probe) => probe.content_identity_status === 'contradiction').length,
+      playable_duration_identity_mismatch_count: playable.filter((probe) => probe.duration_identity_mismatch === true).length,
       segment_or_direct_verified_streams: playable.filter(
         (probe) => probe.segment_reachable === true || probe.direct_signature_verified || probe.kind === 'dash',
       ).length,
@@ -1581,7 +1651,8 @@ async function testCandidate(candidate) {
       const rows = primaryResults.filter((item) => item.fixture?.category === category);
       return rows.length > 0
         && !rows.some((item) => item.status === 'healthy')
-        && !rows.some((item) => item.status === 'excluded');
+        && !rows.some((item) => item.status === 'excluded')
+        && !rows.some((item) => item.zero_stream_preflight_terminal === true);
     }),
   );
   let fallbackExecuted = false;
@@ -1601,10 +1672,8 @@ async function testCandidate(candidate) {
     }
   }
 
-  const anyP2p = fixtureResults.some((item) => (item.disallowed_streams || 0) > 0 || item.status === 'excluded');
   let status;
-  if (anyP2p) status = 'excluded';
-  else if (fixtureResults.some((item) => item.status === 'healthy')) status = 'healthy';
+  if (fixtureResults.some((item) => item.status === 'healthy')) status = 'healthy';
   else {
     const priority = ['degraded', 'runtime_error', 'blocked', 'unavailable', 'no_streams', 'provider_unreachable', 'reachable'];
     status = priority.find((candidateStatus) => fixtureResults.some((item) => item.status === candidateStatus)) || 'runtime_error';
@@ -1630,7 +1699,14 @@ async function testCandidate(candidate) {
     ? activationHealthyTests.length / activationTests.length
     : 0;
   const claims = manifestClaims(candidate);
-  const score = candidateScore(status, healthyAverage, coverageRatio, claims, fixtureResults);
+  const providerStatuses = fixtureResults.map((item) => item.provider_status).filter(Boolean);
+  const providerStatus = providerStatuses.includes('reachable')
+    ? 'reachable'
+    : ['runtime_error', 'blocked', 'unavailable', 'provider_unreachable'].find((value) => providerStatuses.includes(value))
+      || 'provider_unreachable';
+  const providerScoreValue = Math.max(0, ...fixtureResults.map((item) => Number(item.provider_score || 0)));
+  const streamQualityScoreValue = Math.max(0, ...fixtureResults.map((item) => Number(item.stream_quality_score || 0)));
+  const score = providerScoreValue;
 
   const healthyCategories = [...new Set(activationHealthyTests.map((item) => item.fixture.category).filter(Boolean))].sort(compareText);
   const playableStreams = fixtureResults.reduce((sum, item) => sum + Number(item.streams_playable || 0), 0);
@@ -1639,6 +1715,13 @@ async function testCandidate(candidate) {
   const identityUnverifiedStreams = fixtureResults.reduce((sum, item) => sum + Number(item.identity_unverified_streams || 0), 0);
   const identityContradictionCount = fixtureResults.reduce((sum, item) => sum + Number(item.identity_contradiction_count || 0), 0);
   const durationIdentityMismatchCount = fixtureResults.reduce((sum, item) => sum + Number(item.duration_identity_mismatch_count || 0), 0);
+  const playableIdentityContradictionCount = fixtureResults.reduce((sum, item) => sum + Number(item.playable_identity_contradiction_count || 0), 0);
+  const playableDurationIdentityMismatchCount = fixtureResults.reduce((sum, item) => sum + Number(item.playable_duration_identity_mismatch_count || 0), 0);
+  const streamsRejectedPolicy = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_policy || 0), 0);
+  const streamsRejectedIdentity = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_identity || 0), 0);
+  const streamsRejectedDuration = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_duration || 0), 0);
+  const streamsRejectedUnreachable = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_unreachable || 0), 0);
+  const streamsRejectedSlow = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_slow || 0), 0);
   const playableFixtures = fixtureResults.filter((item) => Number(item.streams_playable || 0) > 0).length;
   const reachableHosts = [...new Set(healthyTests.flatMap((item) => item.reachable_hosts || []))].sort(compareText);
   const acceptedAudio = [...new Set(healthyTests.flatMap((item) => item.accepted_audio_languages || []))].sort(compareText);
@@ -1690,6 +1773,10 @@ async function testCandidate(candidate) {
     sha256: candidate.sha256,
     mode: requestedMode,
     status,
+    provider_status: providerStatus,
+    provider_score: providerScoreValue,
+    stream_status: status,
+    stream_quality_score: streamQualityScoreValue,
     ci_classification: ciClassification(status, inconclusiveStatuses),
     score,
     candidate_profile: {
@@ -1704,6 +1791,13 @@ async function testCandidate(candidate) {
       primary_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'primary').length,
       fallback_fixtures_tested: fixtureResults.filter((item) => item.fixture_phase === 'fallback').length,
       fallback_triggered: fallbackExecuted,
+      zero_stream_preflight_enabled: modeConfig.zero_stream_preflight === true,
+      zero_stream_terminal_types: [...new Set(
+        fixtureResults
+          .filter((item) => item.zero_stream_preflight_terminal === true)
+          .map((item) => item.fixture?.category)
+          .filter(Boolean),
+      )].sort(compareText),
       fixtures_tested: activationTests.length,
       total_fixtures_executed: fixtureResults.length,
       fixture_status_counts: fixtureStatusCounts,
@@ -1716,12 +1810,23 @@ async function testCandidate(candidate) {
       playable_fixtures: playableFixtures,
       required_fixture_categories: profile.requiredCategories,
       healthy_fixture_categories: healthyCategories,
+      provider_status: providerStatus,
+      provider_score: providerScoreValue,
+      stream_status: status,
+      stream_quality_score: streamQualityScoreValue,
       streams_playable: playableStreams,
       payload_verified_streams: payloadVerifiedStreams,
       identity_verified_streams: identityVerifiedStreams,
       identity_unverified_streams: identityUnverifiedStreams,
       identity_contradiction_count: identityContradictionCount,
       duration_identity_mismatch_count: durationIdentityMismatchCount,
+      playable_identity_contradiction_count: playableIdentityContradictionCount,
+      playable_duration_identity_mismatch_count: playableDurationIdentityMismatchCount,
+      streams_rejected_policy: streamsRejectedPolicy,
+      streams_rejected_identity: streamsRejectedIdentity,
+      streams_rejected_duration: streamsRejectedDuration,
+      streams_rejected_unreachable: streamsRejectedUnreachable,
+      streams_rejected_slow: streamsRejectedSlow,
       distinct_reachable_hosts: reachableHosts.length,
       reachable_hosts: reachableHosts,
       verified_max_height: Math.max(0, ...healthyTests.map((item) => item.verified_max_height || 0)) || null,
@@ -1818,7 +1923,7 @@ const startedAt = new Date();
 const results = await runPool(registry.candidates, testCandidate, concurrency);
 const statuses = ['healthy', 'reachable', 'blocked', 'degraded', 'no_streams', 'provider_unreachable', 'runtime_error', 'unavailable', 'excluded'];
 const report = {
-  schema_version: 66,
+  schema_version: 68,
   environment: 'github-actions-node',
   mode: requestedMode,
   generated_at: new Date().toISOString(),

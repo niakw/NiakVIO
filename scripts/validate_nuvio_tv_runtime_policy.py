@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT / "automation" / "nuvio-tv-runtime-contract.json"
 MAIN_PATH = ROOT / "manifest.json"
 VF_PATH = ROOT / "vf" / "manifest.json"
-ALL_NON_TV_RUNTIME_BLOCKS = {"android", "ios", "desktop"}
+PLATFORM_POLICY_PATH = ROOT / "automation" / "platform-runtime-policy.json"
 COFLIX_REQUIRED_RUNTIME_MARKERS = {
     "NUVIO_TARGET_MEDIA_HOST_FILTER_V4",
     "NUVIO_STREAM_OUTPUT_SANITIZER",
@@ -86,14 +86,6 @@ def coflix_strict_runtime_guard(text: str) -> list[str]:
     if JS_TRUE_FIELD.search(text) is None:
         missing.append("probeAllUrls:true")
     return sorted(set(missing))
-
-
-def platform_values(row: dict[str, Any], key: str) -> set[str]:
-    return {
-        str(value).strip().casefold()
-        for value in row.get(key) or []
-        if str(value).strip()
-    }
 
 
 def main() -> int:
@@ -185,6 +177,7 @@ def main() -> int:
 
     main_doc = load(MAIN_PATH)
     vf_doc = load(VF_PATH)
+    platform_policy = load(PLATFORM_POLICY_PATH)
     main_rows = rows(main_doc)
     vf_rows = rows(vf_doc)
 
@@ -208,22 +201,34 @@ def main() -> int:
         if vf_row is not None and normalized_provider_path(vf_row.get("filename")) != relative:
             errors.append(f"{provider_id}: main/VF NuvioTV bundle mismatch")
 
+    # Platform failures stay internal; manifests deliberately publish
+    # disabledPlatforms=[]. Providers with conclusive failures on every non-TV
+    # runtime still need the strict NuvioTV media sanitizer because NuvioTV does
+    # not enforce those manifest fields.
+    managed = {
+        str(provider_id).casefold(): {
+            str(token).strip().casefold()
+            for token in tokens
+            if str(token).strip()
+        }
+        for provider_id, tokens in (platform_policy.get("managed_platform_tokens_by_provider") or {}).items()
+    }
     strict_guarded: list[str] = []
-    for provider_id, row in sorted(main_rows.items()):
-        if row.get("enabled") is not True:
+    for provider_id, tokens in sorted(managed.items()):
+        if not {"android", "ios", "desktop"}.issubset(tokens):
             continue
-        disabled = platform_values(row, "disabledPlatforms")
-        if not ALL_NON_TV_RUNTIME_BLOCKS.issubset(disabled):
+        row = main_rows.get(provider_id)
+        if row is None or row.get("enabled") is not True:
             continue
         relative = normalized_provider_path(row.get("filename"))
         provider_path = ROOT / relative
         if not provider_path.is_file():
-            errors.append(f"{provider_id}: client-blocked provider bundle missing: {relative}")
+            errors.append(f"{provider_id}: internally guarded provider bundle missing: {relative}")
             continue
         text = provider_path.read_text(encoding="utf-8", errors="replace")
         if not strict_all_url_media_guard(text):
             errors.append(
-                f"{provider_id}: blocked on android+ios+desktop but still reachable by NuvioTV; "
+                f"{provider_id}: internally guarded on android+ios+desktop but reachable by NuvioTV; "
                 "bundle must probe every returned URL and reject non-media payloads"
             )
             continue

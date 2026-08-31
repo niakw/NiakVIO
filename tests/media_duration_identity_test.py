@@ -30,6 +30,9 @@ assert 'async function probeStream(stream, mode, fixture = null)' in source
 assert 'expectedDurationMinutes: fixture.expectedDurationMinutes ?? null' in source
 assert source.count('probeStream(stream, modeConfig, normalizedFixture)') >= 2
 assert 'durationIdentityRatio = mediaDurationSeconds / expectedDurationSeconds' in source
+assert 'durationIdentityAuthoritative = Boolean(master.isVod)' in source
+assert 'durationIdentityAuthoritative = Boolean(parsedVariant.isVod)' in source
+assert "(kind !== 'hls' || durationIdentityAuthoritative)" in source
 assert "function playbackCategory(" in source
 assert "if (durationIdentityMismatch) return 'duration_identity_mismatch';" in source
 assert "category: playbackCategory(" in source
@@ -101,6 +104,10 @@ try:
         assert bad_proc.returncode != 0, bad
         assert bad['identity_contradiction_count'] == 1, bad
         assert bad['content_verified_count'] == 0, bad
+        assert isinstance(bad.get('streams'), list) and bad['streams'], bad
+        assert isinstance(bad['streams'][0], dict), bad
+        assert isinstance(bad['streams'][0].get('duration_identity'), dict), bad
+        assert bad['streams'][0]['duration_identity'].get('reason') is not None, bad
         assert bad['streams'][0]['duration_identity']['reason'] == 'fixture_duration_mismatch', bad
 
         good_proc, good = run_provider('generic_but_described', {
@@ -118,6 +125,10 @@ try:
         })
         assert duration_proc.returncode == 0, (duration_only, duration_proc.stderr)
         assert duration_only['content_verified_count'] == 1, duration_only
+        assert isinstance(duration_only.get('streams'), list) and duration_only['streams'], duration_only
+        assert isinstance(duration_only['streams'][0], dict), duration_only
+        assert isinstance(duration_only['streams'][0].get('identity'), dict), duration_only
+        assert duration_only['streams'][0]['identity'].get('reason') is not None, duration_only
         assert duration_only['streams'][0]['identity']['reason'] == 'fixture_duration_match', duration_only
 finally:
     server.shutdown()

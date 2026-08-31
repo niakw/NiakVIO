@@ -31,7 +31,7 @@ def patched(provider_id: str, source: str = BASE) -> str:
 
 future = patched("future-provider")
 assert future.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v6-core-repair-types"' in future
+assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in future
 assert '"implementationRevision":"scoped-playback-context-v4"' not in future
 assert '"durationIdentity":true' in future
 assert '"strictPlayback":false' in future
@@ -86,7 +86,7 @@ def run_node(source: str, fetch_impl: str, expression: str) -> object:
 wrong_duration_fetch = r"""async function(url){
   url=String(url);
   if(url.includes('api.themoviedb.org'))return {ok:true,status:200,json:async()=>({runtime:90}),headers:{get:()=> 'application/json'}};
-  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:3940,\na.ts\n#EXTINF:3940,\nb.ts\n#EXTINF:3940,\nc.ts\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
+  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:3940,\na.ts\n#EXTINF:3940,\nb.ts\n#EXTINF:3940,\nc.ts\n#EXT-X-ENDLIST\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
   throw new Error('unexpected '+url);
 }"""
 value = run_node(
@@ -100,7 +100,7 @@ assert value == [], value
 valid_duration_fetch = r"""async function(url){
   url=String(url);
   if(url.includes('api.themoviedb.org'))return {ok:true,status:200,json:async()=>({runtime:90}),headers:{get:()=> 'application/json'}};
-  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:2700,\na.ts\n#EXTINF:2700,\nb.ts\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
+  if(url.includes('media.example'))return {ok:true,status:200,url:url,text:async()=> '#EXTM3U\n#EXTINF:2700,\na.ts\n#EXTINF:2700,\nb.ts\n#EXT-X-ENDLIST\n',headers:{get:()=> 'application/vnd.apple.mpegurl'}};
   throw new Error('unexpected '+url);
 }"""
 value = run_node(

@@ -329,7 +329,7 @@ def links(document: str, base: str) -> list[tuple[str, str, int]]:
 
 def _default_source_type(url: str, resolver: str) -> str:
     hostname = host(url)
-    if hostname.endswith(("t.me", "telegram.me")) or resolver == "latest_telegram_domain":
+    if hostname.endswith(("t.me", "telegram.me")) or resolver in {"latest_telegram_domain", "telegram_description"}:
         return "telegram_public"
     if resolver == "redirect":
         return "redirect"
@@ -544,7 +544,17 @@ def _sort_official_candidates(candidates: list[dict[str, Any]], resolver: str) -
 def choose_official(provider_id: str, cfg: dict[str, Any], hub_url: str, document: str) -> tuple[list[dict[str, Any]], str | None]:
     resolver = str(cfg.get("resolver") or "official_outbound")
     candidates: list[dict[str, Any]] = []
-    if resolver == "latest_telegram_domain":
+    if resolver == "telegram_description":
+        # Some official channels publish the current domain in the channel
+        # description rather than a message. Parse the whole public page but
+        # keep the normal brand/allow-list checks, so unrelated message links
+        # never become terminal routes.
+        extracted = links(document, hub_url)
+        for url, label, index in extracted:
+            score = candidate_score(provider_id, cfg, url, label, index, len(extracted))
+            if score >= 0:
+                candidates.append({"url": url.rstrip("/"), "label": label, "score": score, "document_index": index})
+    elif resolver == "latest_telegram_domain":
         extracted_rows = telegram_links(document, hub_url)
         if extracted_rows:
             for row in extracted_rows:
@@ -704,17 +714,61 @@ def _candidate_identity(candidate: dict[str, Any]) -> str:
     return str(candidate.get("url") or "").rstrip("/")
 
 
+def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
+    """A declared hub/channel/redirect supersedes direct/history/search authority."""
+    if is_http_url(cfg.get("hub")):
+        return True
+    return any(
+        isinstance(source, dict)
+        and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public", "redirect"}
+        and is_http_url(source.get("url"))
+        for source in (cfg.get("sources") or [])
+    )
+
+
+def has_authoritative_direct_source(cfg: dict[str, Any]) -> bool:
+    """Explicit registry direct URLs supersede history/search when no hub exists."""
+    if has_authoritative_hub_source(cfg):
+        return False
+    if is_http_url(cfg.get("direct_fallback")):
+        return True
+    return any(is_http_url(url) for url in (cfg.get("direct_candidates") or []))
+
+
+def has_authoritative_route_source(cfg: dict[str, Any]) -> bool:
+    return has_authoritative_hub_source(cfg) or has_authoritative_direct_source(cfg)
+
+
 def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> list[dict[str, Any]]:
+    # Declared routing sources outrank history. A hub starts from the hub only;
+    # otherwise explicit direct URLs are tested before any historical fallback.
+    if has_authoritative_hub_source(cfg):
+        return []
+
     candidates: list[dict[str, Any]] = []
     for index, url in enumerate(cfg.get("direct_candidates") or []):
         if is_http_url(url):
             candidates.append({
                 "url": str(url).rstrip("/"),
                 "label": "curated direct candidate",
-                "score": 72 - min(index, 10),
+                "score": 92 - min(index, 10),
                 "source_type": "curated_direct",
                 "source": "provider-hubs.json",
             })
+    direct_fallback = str(cfg.get("direct_fallback") or "").strip()
+    if is_http_url(direct_fallback):
+        normalized_fallback = direct_fallback.rstrip("/")
+        if all(_candidate_identity(row) != normalized_fallback for row in candidates):
+            candidates.append({
+                "url": normalized_fallback,
+                "label": "declared direct fallback",
+                "score": 90,
+                "source_type": "curated_direct",
+                "source": "provider-hubs.json",
+            })
+    if candidates:
+        return candidates
+
     for index, url in enumerate(cfg.get("historical_terminal_candidates") or []):
         if is_http_url(url):
             candidates.append({
@@ -725,7 +779,7 @@ def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> 
                 "source": "provider routing history",
             })
     current = history_row.get("current") if isinstance(history_row, dict) else None
-    if isinstance(current, dict) and is_http_url(current.get("url")):
+    if (not has_authoritative_direct_source(cfg)) and isinstance(current, dict) and is_http_url(current.get("url")):
         candidates.append({
             "url": str(current["url"]).rstrip("/"),
             "label": "last-known-good domain",
@@ -777,8 +831,15 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
                 })
             source_cfg = dict(cfg)
             source_cfg["hub"] = final
+            if has_authoritative_hub_source(cfg):
+                # The hub is the only route authority. Direct candidates remain
+                # useful as brand allow-list hints but must never be injected as
+                # fallback terminal URLs.
+                source_cfg.pop("direct_fallback", None)
             if source_type == "telegram_public":
-                source_cfg["resolver"] = "latest_telegram_domain"
+                configured_resolver = str(source_cfg.get("resolver") or "")
+                if configured_resolver not in {"latest_telegram_domain", "telegram_description"}:
+                    source_cfg["resolver"] = "latest_telegram_domain"
             source_candidates, _preferred = choose_official(provider_id, source_cfg, final, document)
             base_priority = int(source.get("priority") or 50)
             for row in source_candidates:
@@ -791,7 +852,7 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
             observations.append({"source_type": source_type, "url": url, "error": f"{type(exc).__name__}: {exc}"})
 
     disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled"}
-    if mode == "deep" and (not disabled or bool(cfg.get("search_when_disabled", False))):
+    if (not has_authoritative_route_source(cfg)) and mode == "deep" and (not disabled or bool(cfg.get("search_when_disabled", False))):
         for query in list(dict.fromkeys(str(item).strip() for item in cfg.get("search_queries") or [] if str(item).strip()))[:2]:
             found, search_observations = search_candidates(provider_id, cfg, query, timeout)
             candidates.extend(found)
@@ -1006,7 +1067,30 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
             selected = {**candidate, **validation}
             break
     item["site_validations"] = validations
+    if not selected and has_authoritative_hub_source(cfg):
+        # A hub is the provider's address authority. CI/CD may receive 403,
+        # anti-bot or another non-success response from the terminal site; that
+        # does not make an older LKG more authoritative. Accept the final
+        # same-brand public destination reached from the hub and let runtime
+        # provider/media validation judge functionality separately.
+        selected = next((
+            {**candidate, **validation, "hub_authoritative": True}
+            for candidate, validation in zip(candidates, validations)
+            if str(candidate.get("source_type") or "") in {"hub", "telegram_public", "redirect"}
+            and validation.get("final_url")
+            and validation.get("brand_match") is True
+            and is_public_url(str(validation.get("final_url")))
+        ), None)
+
     if not selected:
+        if has_authoritative_hub_source(cfg):
+            item["status"] = "hub_unresolved"
+            item["reason"] = "authoritative_hub_no_terminal_candidate"
+            return item
+        if has_authoritative_direct_source(cfg):
+            item["status"] = "direct_unresolved"
+            item["reason"] = "authoritative_direct_no_runtime_validated_terminal"
+            return item
         current = history_row.get("current") if isinstance(history_row, dict) else None
         if isinstance(current, dict) and current.get("url"):
             item["status"] = "retained_last_known_good"
@@ -1057,7 +1141,11 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
         return item
     item["validated_api"] = validated_api
     item["status"] = "validated" if validated_api else "site_validated"
-    item["reason"] = "terminal_site_runtime_validated"
+    item["reason"] = (
+        "authoritative_hub_terminal_resolved"
+        if selected.get("hub_authoritative")
+        else "terminal_site_runtime_validated"
+    )
     return item
 
 

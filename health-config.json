@@ -1,5 +1,5 @@
 {
-  "schema_version": 68,
+  "schema_version": 69,
   "concurrency": 4,
   "modes": {
     "availability": {
@@ -18,7 +18,8 @@
       "max_provider_response_bytes": 5242880,
       "max_settings_profiles": 2,
       "worker_memory_mb": 256,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "zero_stream_preflight": true
     },
     "retry": {
       "fixture_limit": 1,
@@ -36,7 +37,8 @@
       "max_provider_response_bytes": 5242880,
       "max_settings_profiles": 2,
       "worker_memory_mb": 256,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "zero_stream_preflight": true
     },
     "quick": {
       "fixture_limit": 1,
@@ -54,7 +56,8 @@
       "max_provider_response_bytes": 5242880,
       "max_settings_profiles": 3,
       "worker_memory_mb": 384,
-      "minimum_vod_duration_seconds": 60
+      "minimum_vod_duration_seconds": 60,
+      "zero_stream_preflight": true
     },
     "deep": {
       "fixture_limit": 1,
@@ -81,7 +84,8 @@
       "inspect_direct_dimensions": true,
       "verify_fixture_duration_identity": true,
       "minimum_fixture_duration_ratio": 0.55,
-      "maximum_fixture_duration_ratio": 1.8
+      "maximum_fixture_duration_ratio": 1.8,
+      "zero_stream_preflight": false
     }
   },
   "fixtures": {
@@ -360,7 +364,8 @@
       "blocked",
       "provider_unreachable",
       "runtime_error",
-      "reachable"
+      "reachable",
+      "degraded"
     ],
     "preserve_strict_history_on_inconclusive": true,
     "maximum_consecutive_inconclusive_deep_checks_for_strict_grace": 2,
@@ -382,9 +387,18 @@
       "provider_unreachable",
       "runtime_error",
       "no_streams",
-      "reachable"
+      "reachable",
+      "degraded"
     ],
-    "allow_type_scoped_activation": true
+    "allow_type_scoped_activation": true,
+    "stream_failures_are_stream_scoped": true,
+    "supported_types_require_current_stream_proof": true,
+    "supported_types_require_positive_stream_proof": true,
+    "zero_stream_is_per_work_not_manifest_disable": true,
+    "provider_accessibility_is_separate_from_stream_accessibility": true,
+    "provider_latency_is_separate_from_stream_latency": true,
+    "deep_learning_may_fallback_after_zero_stream": true,
+    "quick_runtime_zero_stream_is_terminal_for_current_work": true
   },
   "availability": {
     "auto_disable": true,

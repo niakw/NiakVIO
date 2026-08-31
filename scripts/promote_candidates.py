@@ -69,6 +69,24 @@ REPORT_PATH = ROOT / "health-report.json"
 PROVENANCE_PATH = ROOT / "PROVENANCE.json"
 VERSIONS_DIR = ROOT / "providers"
 
+NIAKVIO_MANIFEST_PROVIDER_FIELDS = (
+    "id",
+    "name",
+    "description",
+    "version",
+    "author",
+    "supportedTypes",
+    "logo",
+    "contentLanguage",
+    "formats",
+    "limited",
+    "supportsExternalPlayer",
+    "hasSettings",
+    "notes",
+)
+NIAKVIO_MANIFEST_OVERRIDE_FIELDS = set(NIAKVIO_MANIFEST_PROVIDER_FIELDS) | {"enabled"}
+
+
 
 def load_json(path: Path, default: Any = None) -> Any:
     return json.loads(path.read_text(encoding="utf-8")) if path.exists() else default
@@ -365,12 +383,20 @@ def build_entry(
     if not isinstance(metadata, dict):
         raise ValueError(f"missing metadata for {candidate.get('key')}")
 
-    entry = dict(metadata)
+    # Provider repositories are knowledge sources, not manifest schemas.
+    # NiakVIO publishes only its own explicit provider contract.
+    entry = {
+        field: metadata[field]
+        for field in NIAKVIO_MANIFEST_PROVIDER_FIELDS
+        if field in metadata
+    }
     config = load_overrides()
     specific = (config.get("provider_patches") or {}).get(str(candidate.get("canonical_id") or "").casefold(), {})
     manifest_overrides = specific.get("manifest_overrides") or {}
     if isinstance(manifest_overrides, dict):
-        entry.update(manifest_overrides)
+        for field, value in manifest_overrides.items():
+            if field in NIAKVIO_MANIFEST_OVERRIDE_FIELDS:
+                entry[field] = value
     claims = claims if isinstance(claims, dict) else {}
     curated_types = [
         str(value)
@@ -402,6 +428,9 @@ def build_entry(
         entry["supportsExternalPlayer"] = "--nuvio-tv-global--" not in entry["filename"]
     force_disabled = isinstance(manifest_overrides, dict) and manifest_overrides.get("enabled") is False
     entry["enabled"] = bool(enabled) and not force_disabled
+    # Retain the native property for forward compatibility, but NiakVIO never
+    # imports platform-disable decisions from upstream repositories.
+    entry["disabledPlatforms"] = []
     if not isinstance(entry.get("id"), str) or not entry["id"].strip():
         entry["id"] = candidate.get("upstream_id") or candidate["canonical_id"]
     return entry
@@ -970,33 +999,18 @@ def result_evidence(result: dict[str, Any]) -> dict[str, Any]:
 def independently_proven_categories(
     result: dict[str, Any], activation: dict[str, Any]
 ) -> set[str]:
-    """Return catalogue types that independently pass current media proof.
+    """Return provider media types proven by surviving stream objects.
 
-    This is deliberately stricter than merely observing a healthy provider. A
-    type is eligible only when at least one current fixture for that type has a
-    verified playable payload, meets the unchanged quality/bitrate floor, and
-    carries accepted FR/EN audio or subtitle evidence. The result can safely
-    narrow supportedTypes without allowing a good movie to mask a broken TV
-    path (or vice versa).
+    Type capability is provider-level. Stream resolution, bitrate, language,
+    subtitle richness and latency are stream-quality attributes and must not
+    decide whether the provider supports movie/tv/anime.
     """
-    tests = result.get("tests") if isinstance(result.get("tests"), list) else []
-    minimum_streams = int(activation.get("minimum_playable_streams", 1))
-    minimum_payload = int(activation.get("minimum_payload_verified_streams", 1))
-    minimum_height = int(activation.get("minimum_effective_height", 0))
-    minimum_bandwidth = int(activation.get("minimum_bandwidth_bps_when_reported", 0))
-    accepted_audio = {
-        str(value).casefold() for value in activation.get("accepted_audio_languages", ["fr", "en"])
-    }
-    accepted_subtitles = {
-        str(value).casefold() for value in activation.get("accepted_subtitle_languages", ["fr", "en"])
-    }
-    require_language = bool(activation.get("require_accepted_language_evidence", False))
-    require_reachable_subtitles = bool(
-        activation.get("require_reachable_accepted_subtitle_when_advertised", True)
-    )
+    tests = [row for row in (result.get("tests") or []) if isinstance(row, dict)]
+    minimum_streams = max(1, int(activation.get("minimum_playable_streams", 1)))
+    minimum_payload = max(1, int(activation.get("minimum_payload_verified_streams", 1)))
     proven: set[str] = set()
     for test in tests:
-        if not isinstance(test, dict) or test.get("status") != "healthy":
+        if test.get("status") != "healthy":
             continue
         category = str((test.get("fixture") or {}).get("category") or "")
         if category not in {"movie", "tv", "anime"}:
@@ -1005,25 +1019,9 @@ def independently_proven_categories(
             continue
         if int(test.get("payload_verified_streams", 0)) < minimum_payload:
             continue
-        height = int(test.get("effective_max_height", 0) or 0)
-        bandwidth_raw = test.get("max_bandwidth")
-        bandwidth = int(bandwidth_raw) if bandwidth_raw else None
-        if minimum_height > 0 and height > 0 and height < minimum_height:
+        if int(test.get("playable_identity_contradiction_count", 0) or 0) > 0:
             continue
-        if minimum_bandwidth > 0 and bandwidth is not None and bandwidth < minimum_bandwidth:
-            continue
-        audio = {
-            str(value).casefold() for value in test.get("accepted_audio_languages", []) if value
-        } & accepted_audio
-        subtitles = {
-            str(value).casefold() for value in test.get("accepted_subtitle_languages", []) if value
-        } & accepted_subtitles
-        advertised = int(test.get("accepted_subtitles_advertised", 0) or 0)
-        reachable = int(test.get("accepted_subtitles_reachable", 0) or 0)
-        subtitle_ok = bool(subtitles) and (
-            not require_reachable_subtitles or advertised == 0 or reachable > 0
-        )
-        if require_language and not (audio or subtitle_ok):
+        if int(test.get("playable_duration_identity_mismatch_count", 0) or 0) > 0:
             continue
         proven.add(category)
     return proven
@@ -1033,9 +1031,13 @@ def gate(
     passed: bool,
     evidence: Any,
     threshold: Any,
+    scope: str = "provider",
 ) -> dict[str, Any]:
+    if scope not in {"provider", "type", "stream"}:
+        raise ValueError(f"invalid gate scope: {scope}")
     return {
         "passed": bool(passed),
+        "scope": scope,
         "evidence": evidence,
         "threshold": threshold,
     }
@@ -1047,7 +1049,13 @@ def evaluate_pre_stability_gates(
     result = item["health"]
     proof = result_evidence(result)
     status = str(result.get("status", "runtime_error"))
-    score = int(result.get("score", 0))
+    provider_status = str(
+        result.get("provider_status")
+        or proof.get("provider_status")
+        or "provider_unreachable"
+    )
+    stream_status = str(result.get("stream_status") or status)
+    score = int(result.get("provider_score", proof.get("provider_score", result.get("score", 0))) or 0)
 
     minimum_score = int(activation.get("minimum_score_enabled", 70))
     minimum_fixtures = int(activation.get("minimum_healthy_fixtures", 1))
@@ -1135,6 +1143,12 @@ def evaluate_pre_stability_gates(
     identity_unverified_streams = int(proof.get("identity_unverified_streams", 0) or 0)
     identity_contradictions = int(proof.get("identity_contradiction_count", 0) or 0)
     duration_identity_mismatches = int(proof.get("duration_identity_mismatch_count", 0) or 0)
+    playable_identity_contradictions = int(proof.get("playable_identity_contradiction_count", 0) or 0)
+    playable_duration_identity_mismatches = int(proof.get("playable_duration_identity_mismatch_count", 0) or 0)
+    streams_rejected_policy = int(proof.get("streams_rejected_policy", proof.get("disallowed_streams", 0)) or 0)
+    streams_rejected_identity = int(proof.get("streams_rejected_identity", identity_contradictions) or 0)
+    streams_rejected_duration = int(proof.get("streams_rejected_duration", duration_identity_mismatches) or 0)
+    streams_rejected_unreachable = int(proof.get("streams_rejected_unreachable", 0) or 0)
 
     accepted_audio_languages = {
         str(value).casefold() for value in activation.get("accepted_audio_languages", ["fr", "en"])
@@ -1204,10 +1218,10 @@ def evaluate_pre_stability_gates(
         and float(stream_latency) <= maximum_stream_latency
     )
 
-    no_p2p = (
-        status != "excluded"
-        and int(proof.get("disallowed_streams", 0)) == 0
-    )
+    # Policy-invalid raw rows are already removed by the worker. Their presence
+    # is a stream-level rejection diagnostic; activation is blocked by zero
+    # surviving playable streams, not by the existence of a rejected sibling.
+    no_p2p = status != "excluded"
     manifest_height = int(proof.get("manifest_effective_height") or 0)
     manifest_languages = {
         str(value).casefold() for value in proof.get("manifest_accepted_languages", []) if value
@@ -1225,7 +1239,7 @@ def evaluate_pre_stability_gates(
     )
     server_accessible = bool(proof.get("provider_server_accessible", False))
     manifest_description_present = bool(proof.get("manifest_description_present", False))
-    runtime_light = status == "reachable" and server_accessible
+    runtime_light = provider_status == "reachable" and server_accessible
     manifest_curated = (
         manifest_description_present
         and (not require_language or bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages)))
@@ -1238,10 +1252,9 @@ def evaluate_pre_stability_gates(
         and (minimum_height <= 0 or effective_height == 0 or effective_height >= minimum_height)
         and (minimum_bandwidth <= 0 or bandwidth is None or bandwidth >= minimum_bandwidth)
     )
-    runtime_light_quality_ok = runtime_light and (
-        (minimum_height > 0 and manifest_height >= minimum_height) or manifest_curated
-    )
-    quality_ok = measured_quality_ok or runtime_light_quality_ok
+    # Stream quality requires an actual surviving stream. Provider/LKG
+    # preservation is handled separately by provider-scoped activation logic.
+    quality_ok = measured_quality_ok
 
     # Some verified containers expose no audio/subtitle language tags at all.
     # In that narrow case, a current upstream manifest language may fill the
@@ -1266,40 +1279,38 @@ def evaluate_pre_stability_gates(
             else (language_present and (accepted_audio_path or accepted_subtitle_path))
         )
 
-    if runtime_light:
-        accepted_audio = accepted_audio | manifest_languages
-        language_present = bool(accepted_audio or accepted_subtitles)
-        language_subtitle_pass = (
-            True
-            if not require_language
-            else manifest_description_present and bool(manifest_languages & (accepted_audio_languages | accepted_subtitle_languages))
-        )
-
     gates = {
         "01_policy_safe_no_p2p": gate(
             no_p2p,
             {
                 "status": status,
-                "disallowed_streams": int(
-                    proof.get("disallowed_streams", 0)
-                ),
+                "rejected_policy_streams": streams_rejected_policy,
+                "exposed_disallowed_streams": 0,
             },
-            "no disallowed P2P/torrent output",
+            "no disallowed P2P/torrent output survives stream sanitization",
+            scope="stream",
         ),
         "02_healthy_functional_status": gate(
-            status in {"healthy", "reachable"},
-            status,
-            "healthy or reachable server/API",
+            provider_status == "reachable",
+            {
+                "provider_status": provider_status,
+                "stream_status": stream_status,
+            },
+            "provider runtime/API reachable",
+            scope="provider",
         ),
         "03_minimum_score": gate(
             score >= minimum_score,
-            score,
+            {"provider_score": score},
             minimum_score,
+            scope="provider",
         ),
         "04_fixture_and_type_coverage": gate(
-            (coverage_healthy_fixtures >= minimum_fixtures
-            and coverage_ratio >= minimum_ratio
-            and category_coverage) or (runtime_light and manifest_description_present),
+            (
+                coverage_healthy_fixtures >= minimum_fixtures
+                and coverage_ratio >= minimum_ratio
+                and category_coverage
+            ),
             {
                 "healthy_fixtures": coverage_healthy_fixtures,
                 "fixtures_tested": len(scoped_categories) if scoped_categories else int(proof.get("fixtures_tested", 0)),
@@ -1316,10 +1327,13 @@ def evaluate_pre_stability_gates(
                 "require_declared_type_coverage": require_type_coverage,
                 "representative_fixture_mode": representative_fixture_mode,
             },
+            scope="type",
         ),
         "05_stream_and_fixture_coverage": gate(
-            (playable_streams >= minimum_streams
-            and playable_fixtures >= minimum_playable_fixtures) or runtime_light,
+            (
+                playable_streams >= minimum_streams
+                and playable_fixtures >= minimum_playable_fixtures
+            ),
             {
                 "playable_streams": playable_streams,
                 "playable_fixtures": playable_fixtures,
@@ -1328,18 +1342,22 @@ def evaluate_pre_stability_gates(
                 "minimum_playable_streams": minimum_streams,
                 "minimum_playable_fixtures": minimum_playable_fixtures,
             },
+            scope="stream",
         ),
         "06_distinct_host_diversity": gate(
-            hosts >= minimum_hosts or runtime_light,
+            hosts >= minimum_hosts,
             {
                 "distinct_reachable_hosts": hosts,
                 "reachable_hosts": proof.get("reachable_hosts", []),
             },
             minimum_hosts,
+            scope="stream",
         ),
         "07_verified_payload_playability": gate(
-            (payloads >= minimum_payload
-            and playable_streams >= minimum_streams) or runtime_light,
+            (
+                payloads >= minimum_payload
+                and playable_streams >= minimum_streams
+            ),
             {
                 "payload_verified_streams": payloads,
                 "playable_streams": playable_streams,
@@ -1348,6 +1366,7 @@ def evaluate_pre_stability_gates(
                 "minimum_payload_verified_streams": minimum_payload,
                 "minimum_playable_streams": minimum_streams,
             },
+            scope="stream",
         ),
         "08_quality_and_bitrate": gate(
             quality_ok,
@@ -1365,6 +1384,7 @@ def evaluate_pre_stability_gates(
                 "minimum_bandwidth_bps_when_reported": minimum_bandwidth,
                 "minimum_manifest_curation_score_when_stream_is_not_returned": minimum_manifest_curation_score,
             },
+            scope="stream",
         ),
         "09_language_and_subtitle_integrity": gate(
             language_subtitle_pass,
@@ -1388,24 +1408,38 @@ def evaluate_pre_stability_gates(
                     require_reachable_advertised_subtitles
                 ),
             },
+            scope="stream",
         ),
         "10_content_identity_integrity": gate(
-            identity_contradictions == 0 and duration_identity_mismatches == 0,
+            (
+                playable_streams >= minimum_streams
+                and playable_identity_contradictions == 0
+                and playable_duration_identity_mismatches == 0
+            ),
             {
-                "identity_verified_streams": identity_verified_streams,
-                "identity_unverified_streams": identity_unverified_streams,
-                "identity_contradiction_count": identity_contradictions,
-                "duration_identity_mismatch_count": duration_identity_mismatches,
+                "playable_identity_verified_streams": identity_verified_streams,
+                "playable_identity_unverified_streams": identity_unverified_streams,
+                "playable_identity_contradiction_count": playable_identity_contradictions,
+                "playable_duration_identity_mismatch_count": playable_duration_identity_mismatches,
+                "rejected_identity_streams": streams_rejected_identity,
+                "rejected_duration_streams": streams_rejected_duration,
+                "rejected_unreachable_streams": streams_rejected_unreachable,
             },
             {
-                "maximum_identity_contradictions": 0,
-                "maximum_duration_identity_mismatches": 0,
+                "minimum_surviving_playable_streams": minimum_streams,
+                "maximum_playable_identity_contradictions": 0,
+                "maximum_playable_duration_identity_mismatches": 0,
+                "rejected_streams_do_not_disable_healthy_provider": True,
                 "unknown_identity_is_not_ui_unknown_quality": True,
             },
+            scope="stream",
         ),
     }
     performance = {
-        "passed": provider_latency_ok and stream_latency_ok,
+        # Provider latency is provider quality. Stream latency is preserved as
+        # stream-quality evidence and must not disable an otherwise healthy provider.
+        "scope": "provider",
+        "passed": provider_latency_ok,
         "provider_median_latency_ms": provider_latency,
         "stream_median_latency_ms": stream_latency,
         "maximum_provider_median_latency_ms": maximum_provider_latency,
@@ -1420,8 +1454,33 @@ def evaluate_pre_stability_gates(
     }
 
 
+def gates_pass(
+    gates: dict[str, dict[str, Any]],
+    scope: str | None = None,
+) -> bool:
+    selected = [
+        value
+        for value in gates.values()
+        if scope is None or str(value.get("scope") or "provider") == scope
+    ]
+    return bool(selected) and all(bool(value.get("passed")) for value in selected)
+
+
 def all_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
-    return bool(gates) and all(bool(value.get("passed")) for value in gates.values())
+    """Backward-compatible full audit verdict; never use for provider activation."""
+    return gates_pass(gates, None)
+
+
+def provider_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
+    return gates_pass(gates, "provider")
+
+
+def stream_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
+    return gates_pass(gates, "stream")
+
+
+def type_gates_pass(gates: dict[str, dict[str, Any]]) -> bool:
+    return gates_pass(gates, "type")
 
 
 def inconclusive_statuses(activation: dict[str, Any]) -> set[str]:
@@ -1468,7 +1527,15 @@ def update_strict_history(
         old = dict(variants.get(key, {}))
         gates, proof = pre_evaluations[key]
         performance_pass = bool(proof.get("performance", {}).get("passed", False))
-        pre_stability_pass = all_gates_pass(gates) and performance_pass
+        current_stream_proof = (
+            int(proof.get("streams_playable", 0) or 0) > 0
+            and int(proof.get("payload_verified_streams", 0) or 0) > 0
+        )
+        pre_stability_pass = (
+            provider_gates_pass(gates)
+            and performance_pass
+            and current_stream_proof
+        )
         status = str(result.get("status", "runtime_error"))
         sha256 = str(result.get("sha256", ""))
         same_sha = bool(sha256) and old.get("sha256") == sha256
@@ -1628,91 +1695,156 @@ def activation_decision(
     evidence_registry: dict[str, Any] | None = None,
     previous_record: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Enable only a provider proven functional by the current deep run.
+    """Keep provider activation provider-scoped and stream decisions stream-scoped.
 
-    Publication follows two ordered runtime gates before the remaining
-    media/identity gates:
-      1. provider-specific runtime access succeeded;
-      2. at least one playable stream passed the quality gates.
+    Global manifest activation is based on provider accessibility/runtime health.
+    Stream results belong to the sampled work. A provider already proven and
+    published must not be disabled because one work returns zero/bad streams.
 
-    DNS is observed independently by the daily domain job and never participates
-    in activation or publication decisions.
-
-    Historical state, an old SHA, manual runtime evidence, or an inconclusive
-    result can never enable a provider. They remain diagnostic data only.
+    A provider that has never been proven still needs one surviving playable
+    stream during onboarding before its first activation.
     """
     gates, proof = pre_evaluation
     gates = {name: dict(value) for name, value in gates.items()}
 
-    status = str(item.get("health", {}).get("status", "runtime_error"))
+    health = item.get("health", {}) if isinstance(item.get("health"), dict) else {}
+    stream_status = str(health.get("stream_status") or health.get("status") or "no_streams")
+    provider_status = str(
+        health.get("provider_status")
+        or proof.get("provider_status")
+        or "provider_unreachable"
+    )
     upstream_enabled = bool(item.get("metadata", {}).get("enabled", True))
     respect_upstream = bool(activation.get("respect_upstream_disabled_state", True))
 
     access_pass = bool(proof.get("provider_server_successful_response", False))
+    performance_pass = bool(proof.get("performance", {}).get("passed", False))
+    provider_pass = (
+        access_pass
+        and provider_status == "reachable"
+        and provider_gates_pass(gates)
+        and performance_pass
+    )
     stream_pass = (
-        status == "healthy"
-        and int(proof.get("streams_playable", 0)) > 0
-        and int(proof.get("healthy_fixtures", 0)) > 0
+        int(proof.get("streams_playable", 0) or 0) > 0
+        and int(proof.get("payload_verified_streams", 0) or 0) > 0
+    )
+
+    previous_record = previous_record or {}
+    previous_mode = str(previous_record.get("activation_mode") or "")
+    previously_proven = bool(
+        previous_record.get("activation_eligible") is True
+        or previous_record.get("strict_activation_eligible") is True
+        or previous_mode in {
+            "strict_current",
+            "strict",
+            "preserved_current_ci_uncertain",
+            "preserved-published-state",
+        }
+        or previous_record.get("strict_validated_sha256")
     )
 
     gates["00_provider_specific_access"] = gate(
         access_pass,
         {
+            "provider_status": provider_status,
             "provider_server_successful_response": proof.get("provider_server_successful_response", False),
             "provider_server_hosts": proof.get("provider_server_hosts", []),
             "provider_server_http_statuses": proof.get("provider_server_http_statuses", []),
         },
         {"required": "successful provider-owned HTTP response"},
+        scope="provider",
     )
     gates["00_current_playable_stream"] = gate(
         stream_pass,
         {
-            "status": status,
+            "stream_status": stream_status,
             "streams_playable": proof.get("streams_playable", 0),
+            "payload_verified_streams": proof.get("payload_verified_streams", 0),
             "healthy_fixtures": proof.get("healthy_fixtures", 0),
-            "effective_max_height": proof.get("effective_max_height"),
         },
-        {"required": "at least one currently playable stream"},
+        {
+            "required_for": "first_activation_only",
+            "already_proven_provider_kept_on_per_work_zero_stream": True,
+        },
+        scope="stream",
     )
 
-    current_pass = access_pass and stream_pass and all_gates_pass(gates)
-    # ``enabled:false`` in an upstream manifest is advisory when this exact JS
-    # has just passed Niakvio's own strict current deep proof. Treating the flag
-    # as a hard veto caused proven-working providers (for example Desiflix) to
-    # disappear with no failed activation gate. Hard P2P evidence and every
-    # current access/media/quality gate above remain authoritative.
+    onboarding_stream_required = not previously_proven
+    onboarding_pass = stream_pass if onboarding_stream_required else True
+    current_pass = provider_pass and onboarding_pass
+
     upstream_disabled_overridden_by_current_strict_proof = bool(
-        respect_upstream and not upstream_enabled and current_pass
+        respect_upstream
+        and not upstream_enabled
+        and provider_pass
+        and stream_pass
     )
+
     eligible = current_pass
     enabled = eligible and not auto_disabled
-    blockers = [name for name, value in gates.items() if not value.get("passed")]
-    if respect_upstream and not upstream_enabled and not current_pass:
+    provider_blockers = [
+        name
+        for name, value in gates.items()
+        if str(value.get("scope") or "provider") == "provider"
+        and not value.get("passed")
+    ]
+    stream_findings = [
+        name
+        for name, value in gates.items()
+        if str(value.get("scope") or "provider") == "stream"
+        and not value.get("passed")
+    ]
+    type_findings = [
+        name
+        for name, value in gates.items()
+        if str(value.get("scope") or "provider") == "type"
+        and not value.get("passed")
+    ]
+    blockers = list(provider_blockers)
+    if onboarding_stream_required and not stream_pass:
+        blockers.append("onboarding_requires_first_playable_stream")
+    if respect_upstream and not upstream_enabled and not upstream_disabled_overridden_by_current_strict_proof:
         blockers.append("upstream_disabled")
+        enabled = False
+        eligible = False
     if eligible and auto_disabled:
         blockers.append("availability_auto_disabled")
 
     disabled_reason = None
-    if not access_pass:
-        disabled_reason = "provider_specific_access_failed"
-    elif not stream_pass:
-        disabled_reason = "no_current_playable_stream"
-    elif blockers:
-        disabled_reason = "quality_gate_failed"
+    if not provider_pass:
+        disabled_reason = "provider_level_health_failed"
+    elif onboarding_stream_required and not stream_pass:
+        disabled_reason = "onboarding_stream_proof_missing"
+    elif respect_upstream and not upstream_enabled and not upstream_disabled_overridden_by_current_strict_proof:
+        disabled_reason = "upstream_disabled"
 
     return {
         "enabled": enabled,
         "activation_eligible": eligible,
-        "strict_activation_eligible": eligible,
+        "strict_activation_eligible": eligible and stream_pass,
         "strict_grace_eligible": False,
         "historical_quality_grace_eligible": False,
         "runtime_evidence_eligible": False,
-        "activation_mode": "strict_current" if eligible else "disabled",
+        "activation_mode": (
+            "strict_current"
+            if eligible and stream_pass
+            else "provider_proven_stream_scope_preserved"
+            if eligible and previously_proven
+            else "disabled"
+        ),
         "activation_blockers": blockers,
+        "provider_blockers": provider_blockers,
+        "stream_findings": stream_findings,
+        "type_findings": type_findings,
         "activation_gates": gates,
         "proof": proof,
-        "historical_quality_grace": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
-        "runtime_evidence": {"eligible": False, "reason": "disabled_by_current_proof_policy"},
+        "provider_pass": provider_pass,
+        "stream_pass_for_sampled_work": stream_pass,
+        "onboarding_stream_required": onboarding_stream_required,
+        "previously_proven_provider": previously_proven,
+        "historical_quality_grace": {"eligible": False, "reason": "provider_stream_scope_separated"},
+        "runtime_evidence": {"eligible": False, "reason": "provider_stream_scope_separated"},
         "disabled_reason": disabled_reason,
         "upstream_disabled_overridden_by_current_strict_proof": upstream_disabled_overridden_by_current_strict_proof,
     }
@@ -2331,6 +2463,9 @@ def main() -> int:
                 and activation_supported_types
                 and not authoritative_catalogue_types
             ):
+                # Positive stream proof may establish an otherwise unknown type.
+                # A zero-stream result for one sampled work never removes an
+                # already-established catalogue capability.
                 promoted_entry["supportedTypes"] = activation_supported_types
             promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))
             entries[cid] = promoted_entry
@@ -2342,7 +2477,7 @@ def main() -> int:
                 name for name, value in gates.items() if not value.get("passed")
             ]
             if enabled and activation_mode == "strict_current":
-                action = "enabled-current-dns-access-stream-quality-passed"
+                action = "enabled-current-provider-health-and-capability-passed"
             elif enabled and activation_mode == "preserved_current_inconclusive":
                 action = "preserved-current-enabled-ci-inconclusive"
             elif enabled and activation_mode == "strict_grace_inconclusive":
@@ -2358,7 +2493,7 @@ def main() -> int:
             elif str(result.get("status")) in inconclusive_statuses(activation):
                 action = "published-disabled-ci-inconclusive-no-valid-runtime-evidence"
             else:
-                action = "published-disabled-failed-gates"
+                action = "published-disabled-provider-or-capability-failure"
 
             provenance[cid] = {
                 "id": cid,
@@ -2601,7 +2736,7 @@ def main() -> int:
         )
     }
     public_report = {
-        "schema_version": 63,
+        "schema_version": 64,
         "generated_at": now,
         "test_environment": health.get("environment"),
         "test_mode": mode,
@@ -2687,7 +2822,7 @@ def main() -> int:
         and str(row.get("base_sha256") or "").strip()
     )
     provenance_payload = {
-        "schema_version": 63,
+        "schema_version": 64,
         "generated_at": now,
         "notice": (
             "Third-party files retain upstream authorship and licence. "

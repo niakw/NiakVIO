@@ -1,5 +1,5 @@
 name: CORE - Provider Pipeline
-# Final publication uses runtime LKG for pending clean candidates.
+# Route authority: official hub > explicit direct > history fallback only when neither current source exists.
 
 on:
   workflow_dispatch:
@@ -273,7 +273,7 @@ jobs:
           set -euo pipefail
           python scripts/normalize_provider_activation_overrides.py
 
-      - name: Resolve official hubs and retain last-known-good routes
+      - name: Resolve current provider routes
         shell: bash
         run: |
           set -euo pipefail

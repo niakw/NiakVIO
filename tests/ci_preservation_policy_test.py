@@ -17,11 +17,18 @@ preserve_statuses = set(config.get('preserve_enabled_on_ci_uncertain_statuses', 
 inconclusive_statuses = set(config.get('inconclusive_statuses', []))
 assert expected <= preserve_statuses
 assert preserve_statuses <= inconclusive_statuses
-assert {'degraded', 'unavailable'}.isdisjoint(preserve_statuses)
+assert 'degraded' in inconclusive_statuses
+assert 'degraded' in preserve_statuses
+assert 'unavailable' not in preserve_statuses
+assert config.get('zero_stream_is_per_work_not_manifest_disable') is True
+assert config.get('provider_accessibility_is_separate_from_stream_accessibility') is True
+assert config.get('provider_latency_is_separate_from_stream_latency') is True
 
 promoter = (ROOT / 'scripts/promote_candidates.py').read_text()
 assert 'preserved-current-enabled-ci-uncertain' in promoter
 assert 'ci_uncertain_kept_last_published_artifact' in promoter
+assert '"no_streams"' in promoter
+assert 'preserved-current-enabled-ci-uncertain' in promoter
 assert 'old_artifact_available' in promoter
 assert 'ACTIVATION_LKG_PATH' in promoter
 assert 'activation_lkg_ids' in promoter
@@ -127,8 +134,8 @@ result = run_validator(
 assert result.returncode == 1
 assert 'ci_inconclusive_is_not_disablement_proof' in result.stderr
 
-# A hard P2P exclusion may remove an old provider entirely, but only with the
-# dedicated policy gate evidence. This does not weaken the P2P guard.
+# A provider explicitly classified P2P-only by policy may still be removed
+# globally. Mixed-provider P2P rows are stream-scoped and never reach this path.
 result = run_validator(
     manifest_rows=[{'id': 'a', 'enabled': True}],
     report_rows=[

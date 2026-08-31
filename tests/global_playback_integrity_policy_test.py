@@ -151,7 +151,8 @@ if reapplied != patched:
 reapplied_text = reapplied.decode("utf-8")
 assert reapplied_text.count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
 assert reapplied_text.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
-assert '"implementationRevision":"field-safety-v6-core-repair-types"' in reapplied_text
+assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in reapplied_text
+assert '"implementationRevision":"field-safety-v6-core-repair-types"' not in reapplied_text
 assert '"implementationRevision":"scoped-playback-context-v4"' not in reapplied_text
 assert reapplied_text.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1") == 1
 assert reapplied_text.count("NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1") == 1

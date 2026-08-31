@@ -57,17 +57,17 @@ def run_node(source: str, fetch_impl: str, expression: str, prelude: str = "") -
 
 streamzo = patched("streamzo")
 assert streamzo.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v6-core-repair-types"' in streamzo
+assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in streamzo
 policy = module._collision_policy()
 assert policy["259544"]["expectedYear"] == 2025
 assert 1996 in policy["259544"]["ambiguousReleaseYears"]
 assert policy["760873"]["expectedYear"] == 2021
 
 # Any old published wrapper is replaced, never stacked.
-legacy = streamzo.replace('"implementationRevision":"field-safety-v6-core-repair-types"', '"implementationRevision":"field-safety-v2"')
+legacy = streamzo.replace('"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"', '"implementationRevision":"field-safety-v2"')
 upgraded = patched("streamzo", legacy)
 assert upgraded.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v6-core-repair-types"' in upgraded
+assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in upgraded
 assert '"implementationRevision":"field-safety-v2"' not in upgraded
 assert patched("streamzo", upgraded) == upgraded
 
@@ -78,7 +78,7 @@ for user_agent in ("NuvioDesktop macOS", "NuvioMobile Android", "NuvioTV Android
     value = run_node(
         streamzo,
         "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
-        "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+        "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
         "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:" + json.dumps(user_agent) + "};",
     )
     assert value == {"rows": 1, "calls": 0}, (user_agent, value)
@@ -88,10 +88,23 @@ tv_bad = patched("streamzo", "module.exports={getStreams:async()=>[{url:'https:/
 value = run_node(
     tv_bad,
     "async function(){global.__fetchCalls++;throw new Error('must reject statically')}",
-    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
 )
 assert value == {"rows": 0, "calls": 0}, value
+
+# A mixed provider keeps normal media rows while P2P rows are rejected individually.
+mixed_p2p = patched(
+    "streamzo",
+    "module.exports={getStreams:async()=>[{url:'magnet:?xt=urn:btih:abc',type:'torrent',infoHash:'abc'},{url:'https://media.example/ok.m3u8',type:'hls'}]};\n",
+)
+value = run_node(
+    mixed_p2p,
+    "async function(){global.__fetchCalls++;throw new Error('native path must not probe')}",
+    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),url:(Array.isArray(v)&&v.length>0&&v[0]!=null&&v[0].url!=null?v[0].url:null),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+)
+assert value == {"rows": 1, "url": "https://media.example/ok.m3u8", "calls": 0}, value
 
 # 5.20.70 regression: known same-title remakes/collisions are now fail-closed in
 # native runtimes. Wrong 1996 Nube must not appear for TMDB 259544 (2025 remake),
@@ -101,7 +114,7 @@ for name in ("Hell Teacher Nube 1996 S01E01", "Hianime"):
     value = run_node(
         patched("hianime", src),
         "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
-        "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+        "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
         "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
     )
     assert value == {"rows": 0, "calls": 0}, (name, value)
@@ -114,7 +127,7 @@ correct_nube = patched(
 value = run_node(
     correct_nube,
     "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
-    "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
 )
 assert value == {"rows": 1, "calls": 0}, value
@@ -128,7 +141,7 @@ wrong_episode = patched(
 value = run_node(
     wrong_episode,
     "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
-    "p.getStreams('95479','tv',1,1).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "p.getStreams('95479','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
 )
 assert value == {"rows": 0, "calls": 0}, value
@@ -141,7 +154,7 @@ many_wrong = patched(
 value = run_node(
     many_wrong,
     "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
-    "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
 )
 assert value == {"rows": 0, "calls": 0}, value
@@ -151,7 +164,7 @@ forbidden = r"""async function(url){global.__fetchCalls++;return {ok:false,statu
 value = run_node(
     patched("moviebox", "module.exports={getStreams:async()=>[{url:'https://media.example/video.mp4',type:'mp4'}]};\n"),
     forbidden,
-    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__fetchCalls=0;global.navigator={userAgent:'web-like-test'};",
 )
 assert value["rows"] == 0 and value["calls"] >= 1, value
@@ -173,7 +186,7 @@ alias_patched = module.apply(
 value = run_node(
     alias_patched,
     "async function(){throw new Error('native path must not add remote media probes')}",
-    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:v.length,seenType:global.__seenType}))).catch(e=>{console.error(e);process.exit(1)})",
+    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),seenType:global.__seenType}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
 )
 assert value == {"rows": 1, "seenType": "tv"}, value
@@ -181,10 +194,9 @@ assert '"requestTypeAliases":{"anime":"tv"}' in alias_patched
 assert '"durationIdentity":true' in alias_patched
 
 
-# Duration identity is a global Core invariant, not a provider exception.
-# In a runtime where bounded media probing is allowed, an episodic request
-# expected around 24 minutes must reject a terminal HLS around 93 minutes.
-duration_fetch = r"""async function(url){
+# Duration identity is stream-scoped and only authoritative for complete VOD HLS.
+# A live/sliding playlist without ENDLIST is a window, not the work duration.
+live_duration_fetch = r"""async function(url){
   global.__fetchCalls++;
   url=String(url);
   if(url.includes('api.themoviedb.org')) {
@@ -197,8 +209,21 @@ duration_fetch = r"""async function(url){
 }"""
 value = run_node(
     module.apply(BASE, context={"provider_id": "generic-provider"}),
-    duration_fetch,
-    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:v.length,calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    live_duration_fetch,
+    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.TMDB_API_KEY=String(1);global.navigator={userAgent:'web-like-test'};",
+)
+assert value["rows"] == 1 and value["calls"] >= 2, value
+
+# The same implausible duration is a contradiction when ENDLIST proves VOD completeness.
+vod_duration_fetch = live_duration_fetch.replace(
+    "#EXTINF:2790,\\nb.ts\\n'",
+    "#EXTINF:2790,\\nb.ts\\n#EXT-X-ENDLIST\\n'",
+)
+value = run_node(
+    module.apply(BASE, context={"provider_id": "generic-provider"}),
+    vod_duration_fetch,
+    "p.getStreams('280049','anime',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__fetchCalls=0;global.TMDB_API_KEY=String(1);global.navigator={userAgent:'web-like-test'};",
 )
 assert value["rows"] == 0 and value["calls"] >= 2, value

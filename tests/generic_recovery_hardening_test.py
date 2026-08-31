@@ -18,9 +18,11 @@ def load(name: str, path: Path):
     return module
 
 
-# Historical peer domains must participate in generic candidate selection.
+# Historical peer domains are fallback-only. An explicit direct route is
+# authoritative and must suppress old peer/LKG candidates; history participates
+# only when NiakVIO has no current hub/direct route.
 hubs = load("hubs", ROOT / "scripts" / "resolve_provider_hubs.py")
-candidates, _ = hubs.gather_candidates(
+direct_candidates, _ = hubs.gather_candidates(
     "demo",
     {
         "direct_candidates": ["https://demo.current"],
@@ -32,9 +34,24 @@ candidates, _ = hubs.gather_candidates(
     "quick",
     0.1,
 )
+assert [row.get("source_type") for row in direct_candidates] == ["curated_direct"]
+assert all(row.get("url") != "https://demo.backup" for row in direct_candidates)
+
+history_candidates, _ = hubs.gather_candidates(
+    "demo",
+    {
+        "direct_candidates": [],
+        "historical_terminal_candidates": ["https://demo.backup"],
+        "sources": [],
+        "manifest_status": "Actif",
+    },
+    {},
+    "quick",
+    0.1,
+)
 assert any(
     row.get("url") == "https://demo.backup" and row.get("source_type") == "historical_peer"
-    for row in candidates
+    for row in history_candidates
 )
 
 # Runtime domain failover must retry a configured peer on HTTP 403.
@@ -57,7 +74,10 @@ with tempfile.TemporaryDirectory() as td:
     p.write_text(runner, encoding="utf-8")
     cp = subprocess.run(["node", str(p), patched], capture_output=True, text=True, timeout=10, check=True)
     data = json.loads(cp.stdout.strip().splitlines()[-1])
+assert isinstance(data.get("calls"), list), data
 assert "https://new.example/api/x" in data["calls"], data
+assert isinstance(data.get("v"), list) and data["v"], data
+assert isinstance(data["v"][0], dict) and data["v"][0].get("status") is not None, data
 assert data["v"][0]["status"] == 200, data
 
 # Adaptive V4 must capture a player/API URL visited by native code, replay the
@@ -105,8 +125,10 @@ with tempfile.TemporaryDirectory() as td:
     cp = subprocess.run(["node", str(p), out], capture_output=True, text=True, timeout=15, check=True)
     data = json.loads(cp.stdout.strip().splitlines()[-1])
 assert any("demoendpointnew.workers.dev/api/stream/token/abc" in u for u in data["calls"]), data
-assert data["v"], data
+assert isinstance(data.get("v"), list) and data["v"], data
+assert isinstance(data["v"][0], dict), data
+assert data["v"][0].get("url") is not None, data
 assert data["v"][0]["url"].startswith("https://demoendpointnew.workers.dev/api/stream/token/abc"), data
-assert all("/troll/" not in row.get("url", "") for row in data["v"]), data
+assert all(isinstance(row, dict) and "/troll/" not in str(row.get("url") or "") for row in data["v"]), data
 
 print("generic recovery hardening test passed")

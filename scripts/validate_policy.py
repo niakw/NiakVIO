@@ -39,9 +39,17 @@ def base_item() -> dict[str, Any]:
         "metadata": {"id": "policy-test", "enabled": True},
         "health": {
             "status": "healthy",
+            "provider_status": "reachable",
+            "stream_status": "healthy",
             "ci_classification": "conclusive_success",
             "score": 95,
+            "provider_score": 95,
+            "stream_quality_score": 95,
             "evidence": {
+                "provider_status": "reachable",
+                "provider_score": 95,
+                "stream_status": "healthy",
+                "stream_quality_score": 95,
                 "fixtures_tested": 1,
                 "healthy_fixtures": 1,
                 "healthy_fixture_ratio": 1.0,
@@ -349,10 +357,15 @@ def main() -> int:
 
     reachable = inconclusive_item()
     reachable["health"]["status"] = "reachable"
+    reachable["health"]["provider_status"] = "reachable"
     reachable["health"]["score"] = 75
+    reachable["health"]["provider_score"] = 75
     reachable["health"]["evidence"].update(
+        provider_status="reachable",
+        provider_score=75,
         provider_server_accessible=True,
-        provider_server_http_statuses=[403],
+        provider_server_successful_response=True,
+        provider_server_http_statuses=[200],
         manifest_description_present=True,
         manifest_accepted_languages=["fr", "en"],
         manifest_formats=["mp4", "m3u8"],
@@ -362,9 +375,14 @@ def main() -> int:
         manifest_sources=["aio"],
     )
     reachable_gates, _reachable_proof = module.evaluate_pre_stability_gates(reachable, activation)
-    if not module.all_gates_pass(reachable_gates):
-        failed = [name for name, value in reachable_gates.items() if not value.get("passed")]
-        raise AssertionError(f"curated reachable provider did not pass pre-stability gates: {failed}")
+    if not module.provider_gates_pass(reachable_gates):
+        failed = [
+            name for name, value in reachable_gates.items()
+            if value.get("scope") == "provider" and not value.get("passed")
+        ]
+        raise AssertionError(f"curated reachable provider did not pass provider gates: {failed}")
+    if module.stream_gates_pass(reachable_gates):
+        raise AssertionError("reachable-only provider incorrectly gained stream proof")
     uncurated = copy.deepcopy(reachable)
     uncurated["health"]["evidence"]["manifest_curation_score"] = generic_claims["curation_score"]
     uncurated_gates, _ = module.evaluate_pre_stability_gates(uncurated, activation)
@@ -386,22 +404,108 @@ def main() -> int:
         "10_content_identity_integrity",
     }
     if set(gates) != expected_pre_gates or not module.all_gates_pass(gates):
-        raise AssertionError("the ten pre-stability gates are incomplete or permissive")
+        raise AssertionError("the scoped pre-stability audit is incomplete or permissive")
     if not proof.get("performance", {}).get("passed"):
         raise AssertionError("valid latency evidence did not pass")
 
-    mutations = [
-        (lambda value: value["health"]["evidence"].update(disallowed_streams=1), "01_policy_safe_no_p2p"),
-        (lambda value: value["health"].update(status="no_streams"), "02_healthy_functional_status"),
-        (lambda value: value["health"].update(score=54), "03_minimum_score"),
-        (lambda value: value["health"]["evidence"].update(healthy_fixtures=0, healthy_fixture_ratio=0.0, healthy_fixture_categories=[]), "04_fixture_and_type_coverage"),
-        (lambda value: value["health"]["evidence"].update(streams_playable=0, playable_fixtures=0), "05_stream_and_fixture_coverage"),
-        (lambda value: value["health"]["evidence"].update(distinct_reachable_hosts=0, reachable_hosts=[]), "06_distinct_host_diversity"),
-        (lambda value: value["health"]["evidence"].update(payload_verified_streams=0), "07_verified_payload_playability"),
-        (lambda value: value["health"]["evidence"].update(identity_contradiction_count=1), "10_content_identity_integrity"),
+    # Provider-level failures remain global blockers.
+    provider_mutations = [
+        (
+            lambda value: value["health"].update(
+                provider_status="unavailable",
+                provider_score=0,
+            ),
+            "02_healthy_functional_status",
+        ),
+        (
+            lambda value: value["health"].update(provider_score=54, score=54),
+            "03_minimum_score",
+        ),
     ]
-    for mutate, expected in mutations:
+    for mutate, expected in provider_mutations:
         assert_gate_fails(module, activation, mutate, expected)
+
+    # Type/stream failures stay at their own level.
+    scoped_mutations = [
+        (
+            lambda value: value["health"]["evidence"].update(
+                healthy_fixtures=0,
+                healthy_fixture_ratio=0.0,
+                healthy_fixture_categories=[],
+            ),
+            "04_fixture_and_type_coverage",
+            "type",
+        ),
+        (
+            lambda value: value["health"]["evidence"].update(
+                streams_playable=0,
+                playable_fixtures=0,
+            ),
+            "05_stream_and_fixture_coverage",
+            "stream",
+        ),
+        (
+            lambda value: value["health"]["evidence"].update(
+                distinct_reachable_hosts=0,
+                reachable_hosts=[],
+            ),
+            "06_distinct_host_diversity",
+            "stream",
+        ),
+        (
+            lambda value: value["health"]["evidence"].update(payload_verified_streams=0),
+            "07_verified_payload_playability",
+            "stream",
+        ),
+        (
+            lambda value: value["health"]["evidence"].update(
+                playable_identity_contradiction_count=1
+            ),
+            "10_content_identity_integrity",
+            "stream",
+        ),
+    ]
+    for mutate, expected, scope in scoped_mutations:
+        scoped = base_item()
+        mutate(scoped)
+        scoped_gates, _ = module.evaluate_pre_stability_gates(scoped, activation)
+        if scoped_gates[expected].get("passed"):
+            raise AssertionError(f"{expected} was not enforced at {scope} scope")
+        if scoped_gates[expected].get("scope") != scope:
+            raise AssertionError(
+                f"{expected} scope mismatch: {scoped_gates[expected].get('scope')}"
+            )
+        if not module.provider_gates_pass(scoped_gates):
+            raise AssertionError(
+                f"{expected} leaked into provider-global activation"
+            )
+
+    # A rejected sibling stream is already removed by sanitization and must not
+    # poison the provider-level policy gate.
+    rejected_sibling = base_item()
+    rejected_sibling["health"]["evidence"].update(
+        disallowed_streams=1,
+        streams_rejected_policy=1,
+    )
+    rejected_gates, _ = module.evaluate_pre_stability_gates(
+        rejected_sibling, activation
+    )
+    if not rejected_gates["01_policy_safe_no_p2p"]["passed"]:
+        raise AssertionError("sanitized rejected sibling poisoned provider policy")
+    if not module.provider_gates_pass(rejected_gates):
+        raise AssertionError("stream rejection contaminated provider gates")
+
+    # no_streams belongs to the sampled work. Provider status remains reachable.
+    per_work_zero = base_item()
+    per_work_zero["health"].update(status="no_streams", stream_status="no_streams")
+    per_work_zero["health"]["evidence"].update(
+        streams_playable=0,
+        playable_fixtures=0,
+        payload_verified_streams=0,
+    )
+    zero_gates, _ = module.evaluate_pre_stability_gates(per_work_zero, activation)
+    if not module.provider_gates_pass(zero_gates):
+        raise AssertionError("per-work zero streams contaminated provider gates")
 
     # General activation must not reject a real payload merely because it is
     # SD/low bitrate or uses a language outside FR/EN. Those signals are used
@@ -475,6 +579,13 @@ def main() -> int:
     if not no_deep_validation["enabled"] or not no_deep_validation["activation_eligible"]:
         raise AssertionError("current successful deep check did not activate a new SHA immediately")
 
+    degraded = inconclusive_item()
+    degraded["health"]["status"] = "degraded"
+    degraded["health"]["ci_classification"] = "inconclusive"
+    degraded_result = decide(module, activation, degraded, strict_history(item))
+    if degraded_result["enabled"] is False and "degraded" not in set(activation.get("preserve_enabled_on_ci_uncertain_statuses") or []):
+        raise AssertionError("degraded stream evidence must stay inconclusive and preserve a proven provider")
+
     inconclusive = inconclusive_item()
     no_evidence = decide(module, activation, inconclusive)
     if no_evidence["enabled"] or no_evidence["activation_eligible"]:
@@ -522,13 +633,17 @@ def main() -> int:
     prior = {
         "sha256": inconclusive["sha256"],
         "health_score": 100,
-        "activation_gates": {name: {"passed": True} for name in (
-            "01_policy_safe_no_p2p", "03_minimum_score",
-            "04_fixture_and_type_coverage", "05_stream_and_fixture_coverage",
-            "06_distinct_host_diversity", "07_verified_payload_playability",
-            "08_quality_and_bitrate", "09_language_and_subtitle_integrity",
-            "10_content_identity_integrity",
-        )},
+        "activation_gates": {
+            "02_healthy_functional_status": {"passed": True, "scope": "provider"},
+            "03_minimum_score": {"passed": True, "scope": "provider"},
+            "04_fixture_and_type_coverage": {"passed": True, "scope": "type"},
+            "05_stream_and_fixture_coverage": {"passed": True, "scope": "stream"},
+            "06_distinct_host_diversity": {"passed": True, "scope": "stream"},
+            "07_verified_payload_playability": {"passed": True, "scope": "stream"},
+            "08_quality_and_bitrate": {"passed": True, "scope": "stream"},
+            "09_language_and_subtitle_integrity": {"passed": True, "scope": "stream"},
+            "10_content_identity_integrity": {"passed": True, "scope": "stream"},
+        },
     }
     historical = decide(module, activation, inconclusive, previous_record=prior)
     if historical["enabled"] or historical["historical_quality_grace_eligible"]:

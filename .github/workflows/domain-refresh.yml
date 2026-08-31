@@ -29,6 +29,7 @@ on:
 
 permissions:
   contents: read
+  actions: write
 
 concurrency:
   group: nuvio-provider-domain-observation
@@ -41,6 +42,7 @@ jobs:
     timeout-minutes: 50
     permissions:
       contents: read
+      actions: write
 
     steps:
       - name: Checkout published main without credentials
@@ -86,6 +88,63 @@ jobs:
             --config domain-observation-config.json \
             --all-domains \
             --output health-output/dns-preflight-report.json
+
+      - name: Detect authoritative route changes
+        id: route-change
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          report = json.loads(Path("health-output/provider-hub-report.json").read_text(encoding="utf-8"))
+          overrides = json.loads(Path("provider-overrides.json").read_text(encoding="utf-8"))
+          history = json.loads(Path("provider-domain-history.json").read_text(encoding="utf-8"))
+
+          patches = overrides.get("provider_patches") or {}
+          histories = history.get("providers") or {}
+          changed = []
+
+          def norm(value):
+              return str(value or "").strip().rstrip("/")
+
+          for provider_id, row in (report.get("providers") or {}).items():
+              if not isinstance(row, dict) or row.get("status") not in {"validated", "site_validated"}:
+                  continue
+              observed = norm(row.get("official_site"))
+              if not observed:
+                  continue
+              patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
+              hist = histories.get(provider_id) if isinstance(histories.get(provider_id), dict) else {}
+              current = norm(patch.get("official_site") or ((hist.get("current") or {}).get("url")))
+              if observed != current:
+                  changed.append({"provider": provider_id, "from": current, "to": observed})
+
+          output = os.environ.get("GITHUB_OUTPUT")
+          if output:
+              with open(output, "a", encoding="utf-8") as handle:
+                  handle.write(f"changed={'true' if changed else 'false'}\n")
+                  handle.write("providers=" + ",".join(item["provider"] for item in changed) + "\n")
+
+          Path("health-output/domain-route-changes.json").write_text(
+              json.dumps({"changed": changed}, indent=2, ensure_ascii=False) + "\n",
+              encoding="utf-8",
+          )
+          print(json.dumps({"changed": changed}, ensure_ascii=False))
+          PY
+
+      - name: Trigger canonical CORE quick refresh when route changed
+        if: steps.route-change.outputs.changed == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Authoritative route changes: ${{ steps.route-change.outputs.providers }}"
+          gh workflow run sync.yml \
+            --ref main \
+            -f mode=quick \
+            -f phase=full
 
       - name: Summarize domain and DNS observation
         shell: bash
@@ -153,5 +212,6 @@ jobs:
           path: |
             health-output/provider-hub-report.json
             health-output/dns-preflight-report.json
+            health-output/domain-route-changes.json
           retention-days: 7
           if-no-files-found: error
