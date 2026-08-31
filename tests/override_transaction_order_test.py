@@ -56,13 +56,13 @@ def main() -> int:
         "provider-type-policy.json",
         "package.json",
         "package-lock.json",
-        "tests/override_transaction_order_test.py",
-        "tests/provider_base_layering_contract_test.py",
-        "tests/publication_contract_fingerprint_test.py",
     ):
         assert sync_workflow.count(f"- '{critical_path}'") >= 2, (
             f"sync push/PR triggers must include {critical_path}"
         )
+    assert sync_workflow.count("- 'tests/**'") == 2, (
+        "sync push/PR triggers must cover the complete tests tree"
+    )
 
     module = load_module()
     clean = "native-provider-code\n\n"
