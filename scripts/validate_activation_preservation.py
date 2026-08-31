@@ -352,16 +352,14 @@ def pending_clean_preservation_is_deferred(
     record: dict[str, Any] | None,
     provenance_row: dict[str, Any] | None,
 ) -> bool:
-    """Migration-pending preservation is report-owned, not fragile provenance state."""
+    """A clean-candidate-pending report is migration state, never disablement proof."""
+    del provenance_row  # Core rehash may legitimately rematerialize provenance.
     if not isinstance(record, dict):
         return False
-    if str(record.get("action") or "") != "preserved-published-state-clean-candidate-pending":
-        return False
-    if record.get("enabled") is not False or (record.get("failed_gates") or []):
-        return False
-    if isinstance(provenance_row, dict) and provenance_row.get("clean_reconstruction_verified") is True:
-        return False
-    return True
+    return bool(
+        str(record.get("action") or "") == "preserved-published-state-clean-candidate-pending"
+        and record.get("enabled") is False
+    )
 
 
 def validate() -> list[str]:

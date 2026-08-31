@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Consume explicit one-shot ProviderBase reconstruction requests after publication.
 
-A provider is removed from the trigger only when the durable ProviderBase in
-PROVENANCE matches one of the clean seeds that this validated stage actually
-forced. Providers not durably materialized remain in the trigger for a later
-run. This makes force reconstruction genuinely one-shot per successful provider.
+A one-shot request is consumed once the validated stage proves that NiakVIO
+materialized the forced clean seed. Promotion is a separate proof decision:
+an unproven candidate may keep its published LKG and be handed to Learning,
+but the same expensive reconstruction must not be forced again on every run.
+Only providers absent from the validated forced stage remain requested.
 """
 from __future__ import annotations
 
@@ -103,6 +104,28 @@ def durable_base_matches(
     return True
 
 
+def staged_materialization_attempt(
+    candidates: list[dict[str, Any]],
+    registry_path: Path,
+) -> bool:
+    """A validated staged clean seed is enough to consume the explicit one-shot."""
+    if not candidates:
+        return False
+    stage_root = registry_path.parent.resolve()
+    for row in candidates:
+        relative = str(row.get("local_path") or "").strip()
+        if not relative:
+            continue
+        path = (stage_root / relative).resolve()
+        try:
+            path.relative_to(stage_root)
+        except ValueError:
+            continue
+        if path.is_file():
+            return True
+    return False
+
+
 def consume(
     trigger_path: Path,
     registry_path: Path,
@@ -136,7 +159,10 @@ def consume(
     for provider_id in requested:
         candidates = forced_candidates(registry, provider_id)
         expected = expected_base_hashes(provider_id, candidates, overrides_path)
-        if durable_base_matches(provider_id, provenance_rows.get(provider_id), expected, root):
+        if (
+            durable_base_matches(provider_id, provenance_rows.get(provider_id), expected, root)
+            or staged_materialization_attempt(candidates, registry_path)
+        ):
             consumed.append(provider_id)
         else:
             remaining.append(provider_id)

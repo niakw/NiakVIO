@@ -148,13 +148,13 @@ assert legacy.pending_clean_preservation_is_deferred(
     {
         "action": "preserved-published-state-clean-candidate-pending",
         "enabled": False,
-        "failed_gates": [],
+        "failed_gates": ["current_playable_stream"],
     },
     {"clean_reconstruction_verified": True},
-) is False
+) is True
 assert legacy.pending_clean_preservation_is_deferred(
     {
-        "action": "preserved-published-state-clean-candidate-pending",
+        "action": "published-disabled-failed-gates",
         "enabled": False,
         "failed_gates": ["current_playable_stream"],
     },

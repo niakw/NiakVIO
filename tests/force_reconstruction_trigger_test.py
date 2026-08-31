@@ -67,8 +67,8 @@ with tempfile.TemporaryDirectory() as tmp:
     candidates = [candidate("alpha"), candidate("beta")]
     registry = stage / "candidates.json"
     registry.write_text(json.dumps({"candidates": candidates}), encoding="utf-8")
-    for row in candidates:
-        (stage / row["local_path"]).write_text("// staged clean seed\n", encoding="utf-8")
+    # Alpha was materially staged; beta is deliberately absent on the first pass.
+    (stage / candidates[0]["local_path"]).write_text("// staged clean seed\n", encoding="utf-8")
 
     provenance_rows = {}
     alpha = candidates[0]
@@ -114,29 +114,13 @@ with tempfile.TemporaryDirectory() as tmp:
     assert persisted_trigger["providers"] == ["beta"]
     assert persisted_trigger["consumedProviders"] == ["alpha"]
 
-    beta = candidates[1]
-    beta_seed = build_clean_provider_seed(
-        "beta",
-        beta["metadata"],
-        known_site=beta["observed_upstream_site"],
-        provider_model=beta["clean_provider_model"],
-    )
-    beta_base, _ = build_base_from_seed("beta", beta_seed, overrides_path=overrides)
-    beta_digest = sha256(beta_base)
-    beta_rel = f"provider-bases/beta--base--{beta_digest[:16]}.js"
-    (root / beta_rel).write_bytes(beta_base)
-    provenance_rows["beta"] = {
-        "base_source": CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
-        "base_filename": beta_rel,
-        "base_sha256": beta_digest,
-        "clean_reconstruction_candidate": True,
-        "clean_reconstruction_verified": False,
-    }
-    provenance.write_text(json.dumps({"providers": provenance_rows}), encoding="utf-8")
-
+    # A validated staged attempt consumes beta even though no durable ProviderBase
+    # was promoted yet. Learning may continue with LKG preservation without
+    # forcing the same reconstruction on every routine run.
+    (stage / candidates[1]["local_path"]).write_text("// staged clean seed\n", encoding="utf-8")
     consumed, remaining = consume(trigger, registry, provenance, overrides, root)
     assert consumed == ["beta"], (consumed, remaining)
     assert remaining == []
-    assert not trigger.exists(), "one-shot trigger must disappear after all requested bases materialize"
+    assert not trigger.exists(), "one-shot trigger must disappear after every requested seed was attempted"
 
 print("force reconstruction trigger lifecycle passed")
