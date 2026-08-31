@@ -34,7 +34,9 @@
     "text_encoder_decoder": false,
     "webassembly": false,
     "subtitles_projected": false,
-    "headers_projected_to_behavior_hints": true
+    "headers_projected_to_behavior_hints": true,
+    "stream_session_teardown_guaranteed": false,
+    "navigation_cancels_inflight_native_execution": false
   },
   "manifest_platform_filtering": {
     "fields_parsed": [
@@ -71,6 +73,7 @@
     "NuvioTV parses supportedPlatforms/disabledPlatforms in the manifest model but PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
-    "Promoted direct-media wrappers require strict HLS, DASH or real container evidence."
+    "Promoted direct-media wrappers require strict HLS, DASH or real container evidence.",
+    "Cross-work infinite loading that clears immediately after restarting NuvioTV is classified as client lifecycle/executor exhaustion evidence, not provider disablement proof."
   ]
 }
