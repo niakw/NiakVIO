@@ -726,10 +726,22 @@ def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
     )
 
 
+def has_authoritative_direct_source(cfg: dict[str, Any]) -> bool:
+    """Explicit registry direct URLs supersede history/search when no hub exists."""
+    if has_authoritative_hub_source(cfg):
+        return False
+    if is_http_url(cfg.get("direct_fallback")):
+        return True
+    return any(is_http_url(url) for url in (cfg.get("direct_candidates") or []))
+
+
+def has_authoritative_route_source(cfg: dict[str, Any]) -> bool:
+    return has_authoritative_hub_source(cfg) or has_authoritative_direct_source(cfg)
+
+
 def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> list[dict[str, Any]]:
-    # Hub-first invariant: when a provider has an authoritative address hub,
-    # terminal discovery MUST start from that hub. Direct/LKG/history rows are
-    # diagnostics only and can never supersede what the hub currently announces.
+    # Declared routing sources outrank history. A hub starts from the hub only;
+    # otherwise explicit direct URLs are tested before any historical fallback.
     if has_authoritative_hub_source(cfg):
         return []
 
@@ -753,7 +765,7 @@ def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> 
                 "source": "provider routing history",
             })
     current = history_row.get("current") if isinstance(history_row, dict) else None
-    if isinstance(current, dict) and is_http_url(current.get("url")):
+    if (not has_authoritative_direct_source(cfg)) and isinstance(current, dict) and is_http_url(current.get("url")):
         candidates.append({
             "url": str(current["url"]).rstrip("/"),
             "label": "last-known-good domain",
@@ -826,7 +838,7 @@ def gather_candidates(provider_id: str, cfg: dict[str, Any], history_row: dict[s
             observations.append({"source_type": source_type, "url": url, "error": f"{type(exc).__name__}: {exc}"})
 
     disabled = str(cfg.get("manifest_status") or "").casefold() in {"désactivé", "desactive", "disabled"}
-    if (not has_authoritative_hub_source(cfg)) and mode == "deep" and (not disabled or bool(cfg.get("search_when_disabled", False))):
+    if (not has_authoritative_route_source(cfg)) and mode == "deep" and (not disabled or bool(cfg.get("search_when_disabled", False))):
         for query in list(dict.fromkeys(str(item).strip() for item in cfg.get("search_queries") or [] if str(item).strip()))[:2]:
             found, search_observations = search_candidates(provider_id, cfg, query, timeout)
             candidates.extend(found)
@@ -1058,7 +1070,12 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
 
     if not selected:
         if has_authoritative_hub_source(cfg):
+            item["status"] = "hub_unresolved"
             item["reason"] = "authoritative_hub_no_terminal_candidate"
+            return item
+        if has_authoritative_direct_source(cfg):
+            item["status"] = "direct_unresolved"
+            item["reason"] = "authoritative_direct_no_runtime_validated_terminal"
             return item
         current = history_row.get("current") if isinstance(history_row, dict) else None
         if isinstance(current, dict) and current.get("url"):
