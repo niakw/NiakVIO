@@ -91,6 +91,15 @@ def main() -> int:
     assert module.PROBE_ALIAS_RE.search(sanitizer_region(relocated))
     assert module.apply(relocated, options=options) == relocated
 
+    # Core stream presentation/branding can also be rematerialized after an old
+    # sanitizer. The strict terminal layer must move after them as well.
+    branding_stale = first.rstrip() + "\n/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */\n"
+    branding_relocated = module.apply(branding_stale, options=options)
+    sanitizer_pos = branding_relocated.find(module.SANITIZER_PREFIX)
+    branding_pos = branding_relocated.rfind("/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:fixture */")
+    assert branding_pos >= 0 and sanitizer_pos > branding_pos, (branding_pos, sanitizer_pos)
+    assert module.apply(branding_relocated, options=options) == branding_relocated
+
     # Reproduce the Coflix collision: another provider wrapper may already define
     # the exact V5 compatibility alias text. Whole-file detection must not make
     # the terminal sanitizer omit its own lexical alias.
