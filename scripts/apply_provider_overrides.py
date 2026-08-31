@@ -26,6 +26,11 @@ GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
 GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v6.py"
+CORE_MANAGED_SANITIZER_SCRIPTS = {
+    "scripts/provider_patches/stream_output_sanitizer.py",
+    "scripts/provider_patches/stream_output_sanitizer_v5.py",
+    "scripts/provider_patches/stream_output_sanitizer_v6.py",
+}
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
 GENERATED_CORE_TAIL_MARKERS = (
@@ -1116,6 +1121,11 @@ def apply_overrides(
         )
     for patch_script in patch_scripts if phase == "discovery" else []:
         if patch_script in excluded_scripts:
+            continue
+        # Stream-output sanitization is now one Core-owned terminal layer.
+        # Historical per-provider entries remain as declarative option sources
+        # during migration, but must never install a second wrapper.
+        if include_global_core and patch_script in CORE_MANAGED_SANITIZER_SCRIPTS:
             continue
         per_script_options = script_options.get(patch_script)
         if per_script_options is None:
