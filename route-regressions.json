@@ -1,6 +1,47 @@
 {
   "schema_version": 3,
-  "regressions": [],
+  "regressions": [
+    {
+      "provider": "purstream",
+      "host": "purstream.wiki",
+      "stage": "search",
+      "requests": 6,
+      "obsolete_responses": 6,
+      "obsolete_ratio": 1.0,
+      "path_patterns": [
+        {
+          "pattern": "/search-bar/search/Better%20Call%20Saul",
+          "count": 2
+        },
+        {
+          "pattern": "/search-bar/search/Fullmetal%20Alchemist%20%3A%20Brotherhood",
+          "count": 2
+        },
+        {
+          "pattern": "/search-bar/search/{value}",
+          "count": 2
+        }
+      ],
+      "configured_route_replacements": {},
+      "action": "the bounded deep-repair loop should try every structurally compatible runtime profile; add a reusable profile only when no generic strategy matches"
+    },
+    {
+      "provider": "videasy",
+      "host": "api.speedracelight.com",
+      "stage": "content_lookup",
+      "requests": 4,
+      "obsolete_responses": 3,
+      "obsolete_ratio": 0.75,
+      "path_patterns": [
+        {
+          "pattern": "/tv/",
+          "count": 3
+        }
+      ],
+      "configured_route_replacements": {},
+      "action": "the bounded deep-repair loop should try every structurally compatible runtime profile; add a reusable profile only when no generic strategy matches"
+    }
+  ],
   "instrumentation_gaps": [],
   "provider_specific_rules": false
 }

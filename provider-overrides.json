@@ -109,113 +109,6 @@
         "/api/catalog/tv/{id}/season/{season}"
       ]
     },
-    "frenchstream": {
-      "notes": [
-        "Resolve the current terminal site from fstream.org before applying the provider.",
-        "Reject known short preview/troll players independently from the Frenchstream site address.",
-        "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback.",
-        "Quarantined after playable media returned for Revenant S01E01 measured 2144 seconds versus 4620 expected (ratio 0.464) on TV, macOS and mobile; publish an inert bundle for cache-safe client behavior."
-      ],
-      "replacements": {
-        "french-stream.one": "fs16.lol",
-        "frenchstream.food": "fs16.lol",
-        "fs03.lol": "fs16.lol",
-        "fs09.lol": "fs16.lol"
-      },
-      "required_values": [],
-      "route_replacements": {},
-      "required_route_values": [],
-      "manifest_overrides": {
-        "logo": "https://fs16.lol/favicon.ico",
-        "supportsExternalPlayer": false,
-        "disabledPlatforms": [],
-        "enabled": false
-      },
-      "capability": "quarantined",
-      "runtime_domain_replacements": {
-        "french-stream.one": "fs16.lol",
-        "frenchstream.food": "fs16.lol",
-        "fs03.lol": "fs16.lol",
-        "fs09.lol": "fs16.lol"
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/frenchstream_detail_players.py",
-        "scripts/provider_patches/vf_catalogue_recovery.py",
-        "scripts/provider_patches/frenchstream_dle_catalogue.py",
-        "scripts/provider_patches/frenchstream_raw_tv_fallback.py",
-        "scripts/provider_patches/nuvio_tv_target_media_v4.py",
-        "scripts/provider_patches/stream_output_sanitizer_v5.py",
-        "scripts/provider_patches/desktop_runtime_compat_v1.py",
-        "scripts/provider_patches/quarantine_provider_v1.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
-          "blocked_hosts": [
-            "fstream.top"
-          ],
-          "blocked_path_patterns": [],
-          "probe_direct_media": false,
-          "probe_all_urls": false,
-          "max_probes": 0,
-          "min_vod_duration_seconds": 60
-        },
-        "scripts/provider_patches/vf_catalogue_recovery.py": {
-          "strategy": "html",
-          "provider_name": "Frenchstream",
-          "base_url": "https://fs16.lol",
-          "types": [
-            "movie",
-            "tv",
-            "anime"
-          ],
-          "search_paths": [
-            "/index.php?do=search&subaction=search&story={query}",
-            "/?do=search&subaction=search&story={query}",
-            "/?s={query}"
-          ],
-          "direct_paths": [],
-          "blocked_hosts": [
-            "fstream.top"
-          ],
-          "blocked_path_patterns": [],
-          "max_players": 8
-        },
-        "scripts/provider_patches/frenchstream_dle_catalogue.py": {
-          "hub_url": "https://www.fstream.org/",
-          "base_url": "https://fs16.lol",
-          "provider_name": "Frenchstream"
-        },
-        "scripts/provider_patches/nuvio_tv_target_media_v4.py": {
-          "provider_name": "Frenchstream",
-          "max_candidates": 22,
-          "timeout_ms": 20000,
-          "blocked_hosts": [
-            "snap.com",
-            "snapchat.com",
-            "ctfassets.net",
-            "sc-cdn.net",
-            "fstream.top",
-            "s1.fsvid.lol"
-          ],
-          "force_rewrap_target_media": true
-        },
-        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
-          "normalize_missing_episodes": true
-        },
-        "scripts/provider_patches/quarantine_provider_v1.py": {
-          "reason": "revenant_episode_duration_mismatch"
-        }
-      },
-      "official_hub": "https://fstream.org/",
-      "official_site": "https://fs16.lol",
-      "published_types": [
-        "movie",
-        "tv",
-        "anime"
-      ]
-    },
     "streamzo": {
       "notes": [
         "StreamZo is configured through shared Core catalogue/target-media capabilities; no provider-specific recovery engine is allowed.",
@@ -1535,30 +1428,6 @@
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
-    "netmirror": {
-      "capability": "quarantined",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "official_hub": "https://netmiror.com/",
-      "official_site": "https://net27.cc",
-      "required_values": [],
-      "manifest_overrides": {
-        "disabledPlatforms": [],
-        "enabled": false
-      },
-      "patch_script_options": {
-        "scripts/provider_patches/quarantine_provider_v1.py": {
-          "reason": "cross_title_search_identity_mismatch"
-        }
-      },
-      "profiles": [],
-      "patch_scripts": [
-        "scripts/provider_patches/quarantine_provider_v1.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ],
-      "notes": "Fail-closed safety quarantine: cross_title_search_identity_mismatch. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
-    },
     "onlykdrama": {
       "capability": "html_scraper",
       "patch_scripts": [
@@ -2014,9 +1883,6 @@
     "FRENCH-MANGA": {
       "capability": "mixed_embed_resolver"
     },
-    "FRENCHSTREAM": {
-      "capability": "mixed_embed_resolver"
-    },
     "GOATED": {
       "capability": "api_stream_resolver"
     },
@@ -2058,9 +1924,6 @@
     },
     "NAKIOS": {
       "capability": "api_stream_resolver"
-    },
-    "NETMIRROR": {
-      "capability": "mixed_embed_resolver"
     },
     "PAPADUSTREAM": {
       "capability": "html_scraper"
@@ -2316,6 +2179,143 @@
       },
       "patch_script_options": {},
       "required_values": []
+    },
+    "frenchstream": {
+      "notes": [
+        "Resolve the current terminal site from fstream.org before applying the provider.",
+        "Reject known short preview/troll players independently from the Frenchstream site address.",
+        "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback.",
+        "Quarantined after playable media returned for Revenant S01E01 measured 2144 seconds versus 4620 expected (ratio 0.464) on TV, macOS and mobile; publish an inert bundle for cache-safe client behavior."
+      ],
+      "replacements": {
+        "french-stream.one": "fs16.lol",
+        "frenchstream.food": "fs16.lol",
+        "fs03.lol": "fs16.lol",
+        "fs09.lol": "fs16.lol"
+      },
+      "required_values": [],
+      "route_replacements": {},
+      "required_route_values": [],
+      "manifest_overrides": {
+        "logo": "https://fs16.lol/favicon.ico",
+        "supportsExternalPlayer": false,
+        "disabledPlatforms": [],
+        "enabled": false
+      },
+      "capability": "quarantined",
+      "runtime_domain_replacements": {
+        "french-stream.one": "fs16.lol",
+        "frenchstream.food": "fs16.lol",
+        "fs03.lol": "fs16.lol",
+        "fs09.lol": "fs16.lol"
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/frenchstream_detail_players.py",
+        "scripts/provider_patches/vf_catalogue_recovery.py",
+        "scripts/provider_patches/frenchstream_dle_catalogue.py",
+        "scripts/provider_patches/frenchstream_raw_tv_fallback.py",
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+        "scripts/provider_patches/stream_output_sanitizer_v5.py",
+        "scripts/provider_patches/desktop_runtime_compat_v1.py",
+        "scripts/provider_patches/quarantine_provider_v1.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/stream_output_sanitizer_v5.py": {
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [],
+          "probe_direct_media": false,
+          "probe_all_urls": false,
+          "max_probes": 0,
+          "min_vod_duration_seconds": 60
+        },
+        "scripts/provider_patches/vf_catalogue_recovery.py": {
+          "strategy": "html",
+          "provider_name": "Frenchstream",
+          "base_url": "https://fs16.lol",
+          "types": [
+            "movie",
+            "tv",
+            "anime"
+          ],
+          "search_paths": [
+            "/index.php?do=search&subaction=search&story={query}",
+            "/?do=search&subaction=search&story={query}",
+            "/?s={query}"
+          ],
+          "direct_paths": [],
+          "blocked_hosts": [
+            "fstream.top"
+          ],
+          "blocked_path_patterns": [],
+          "max_players": 8
+        },
+        "scripts/provider_patches/frenchstream_dle_catalogue.py": {
+          "hub_url": "https://www.fstream.org/",
+          "base_url": "https://fs16.lol",
+          "provider_name": "Frenchstream"
+        },
+        "scripts/provider_patches/nuvio_tv_target_media_v4.py": {
+          "provider_name": "Frenchstream",
+          "max_candidates": 22,
+          "timeout_ms": 20000,
+          "blocked_hosts": [
+            "snap.com",
+            "snapchat.com",
+            "ctfassets.net",
+            "sc-cdn.net",
+            "fstream.top",
+            "s1.fsvid.lol"
+          ],
+          "force_rewrap_target_media": true
+        },
+        "scripts/provider_patches/desktop_runtime_compat_v1.py": {
+          "normalize_missing_episodes": true
+        },
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "revenant_episode_duration_mismatch"
+        }
+      },
+      "official_hub": "https://fstream.org/",
+      "official_site": "https://fs16.lol",
+      "published_types": [
+        "movie",
+        "tv",
+        "anime"
+      ]
+    },
+    "FRENCHSTREAM": {
+      "capability": "mixed_embed_resolver"
+    },
+    "netmirror": {
+      "capability": "quarantined",
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://netmiror.com/",
+      "official_site": "https://net27.cc",
+      "required_values": [],
+      "manifest_overrides": {
+        "disabledPlatforms": [],
+        "enabled": false
+      },
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "cross_title_search_identity_mismatch"
+        }
+      },
+      "profiles": [],
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ],
+      "notes": "Fail-closed safety quarantine: cross_title_search_identity_mismatch. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
+    },
+    "NETMIRROR": {
+      "capability": "mixed_embed_resolver"
     }
   },
   "route_override_defaults": {
@@ -2473,8 +2473,10 @@
       "allow_html_url": false,
       "observed_origins": [
         "https://purstream.wiki",
+        "https://api.purstream",
         "https://api.purstream.id",
-        "https://purstream.id"
+        "https://purstream.id",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -2526,10 +2528,12 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://ww2.aniwatch.fit",
-        "https://graphql.anili",
         "https://allanime.day",
+        "https://api.allanime.day",
+        "https://youtu-chan.com",
+        "https://arm.haglund.dev",
+        "https://allmanga.to",
         "https://allanime.sa.com",
-        "https://graphql.anilist.co",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -2860,6 +2864,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://cinefreak.nl",
+        "https://new5.cinecloud.site",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -3008,8 +3013,7 @@
       "observed_origins": [
         "https://dvdplay.cv",
         "https://pixeldrain.net",
-        "https://old.invalid",
-        "https://www.themoviedb.org"
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3112,9 +3116,14 @@
       "requires_direct_media": true,
       "observed_origins": [
         "https://fs16.lol",
+        "https://npms.io",
+        "https://video.sibnet.ru",
         "https://vidmoly.to",
         "https://my.mail.ru",
+        "https://fsvid.lol",
         "https://vidzy.live",
+        "https://streamtape.com",
+        "https://sendvid.com",
         "https://www.myvi.ru",
         "https://younetu.org",
         "https://vidoza.net",
@@ -3122,10 +3131,14 @@
         "https://wookafr.center",
         "https://up4fun.top",
         "https://arm.haglund.dev",
+        "https://v3-cinemeta.strem.io",
+        "https://kitsu.io",
+        "https://lodash.com",
+        "https://openjsf.org",
+        "http://underscorejs.org",
+        "https://www.fstream.org",
         "https://fstream.org",
-        "https://old.invalid",
-        "https://www.themoviedb.org",
-        "https://www.fstream.org"
+        "https://underscorejs.org"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3262,9 +3275,9 @@
       "observed_origins": [
         "https://moviebox.yachts",
         "https://pengu.uk",
+        "https://stremio-moviebox-1.onrender.com",
         "https://moviiebox.lol",
-        "https://old.invalid",
-        "https://www.themoviedb.org"
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true,
@@ -3418,9 +3431,9 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://net27.cc",
+        "https://videodownloader.site",
         "https://netmiror.com",
-        "https://old.invalid",
-        "https://www.themoviedb.org"
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3599,8 +3612,8 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://old.invalid",
-        "https://www.themoviedb.org"
+        "https://www.topcartoons.tv",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3705,8 +3718,8 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://whisperingauroras.com",
         "https://vidsrc.me",
+        "https://whisperingauroras.com",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -3718,8 +3731,8 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://old.invalid",
-        "https://www.themoviedb.org"
+        "https://komiknostalgia.id",
+        "https://old.invalid"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
@@ -3973,8 +3986,8 @@
       "allow_html_url": false,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://api.reallyfast.xyz",
         "https://goated.cx",
+        "https://api.reallyfast.xyz",
         "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
@@ -4999,6 +5012,9 @@
       "observed_origins": [
         "https://www.1shows.org",
         "https://streamtape.com",
+        "https://gd.kmhd.eu",
+        "https://pixeldrain.com",
+        "https://api.viduki.net",
         "https://old.invalid"
       ],
       "generated_from_manifest_or_stage": true
