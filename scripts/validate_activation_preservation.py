@@ -26,6 +26,7 @@ import json
 import math
 import os
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -70,16 +71,38 @@ def load_optional(path: Path) -> dict[str, Any]:
 
 
 def published_baseline_rows() -> dict[str, dict[str, Any]]:
+    """Return the exact manifest state published at the start of this transaction.
+
+    Publication jobs may provide an explicit captured baseline. Test/pretest
+    phases mutate the working tree before activation validation, so when no
+    explicit file is provided we read manifest.json from Git HEAD rather than
+    mistaking current working-tree output for a new disablement.
+    """
     raw = str(os.environ.get("NUVIO_PUBLISHED_MANIFEST_BASELINE") or "").strip()
-    if not raw:
-        return {}
-    path = Path(raw)
-    if not path.is_file():
-        return {}
+    if raw:
+        path = Path(raw)
+        if path.is_file():
+            try:
+                return rows(load(path))
+            except (OSError, ValueError, json.JSONDecodeError):
+                return {}
+
     try:
-        return rows(load(path))
-    except (OSError, ValueError, json.JSONDecodeError):
-        return {}
+        process = subprocess.run(
+            ["git", "show", "HEAD:manifest.json"],
+            cwd=ROOT,
+            text=True,
+            capture_output=True,
+            check=False,
+            timeout=10,
+        )
+        if process.returncode == 0 and process.stdout.strip():
+            payload = json.loads(process.stdout)
+            if isinstance(payload, dict):
+                return rows(payload)
+    except (OSError, ValueError, json.JSONDecodeError, subprocess.SubprocessError):
+        pass
+    return {}
 
 
 def rows(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
