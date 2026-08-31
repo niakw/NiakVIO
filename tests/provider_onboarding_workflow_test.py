@@ -14,22 +14,25 @@ IOS = (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encodi
 IOS_SUITE = (ROOT / "scripts/run_native_corpus_ios_suite.sh").read_text(encoding="utf-8")
 
 # Full-auto provider onboarding accepts structured knowledge, never executable
-# source, and shares the exact same production writer lane as Core/provider sync.
+# source. Validation and publication use isolated latest-wins lanes; the writer
+# rebases on current main rather than blocking unrelated Core publication work.
 assert "workflow_dispatch:" in ADD
 assert '".github/provider-onboarding/request.json"' in ADD
 for field in ("hub:", "direct:", "telegram:", "api:", "search_queries:", "types:", "languages:", "formats:"):
     assert field in ADD, field
-assert "group: nuvio-provider-publish-main" in ADD
+assert "group: niakvio-add-provider-publication-main" in ADD
 assert "group: nuvio-provider-publish-main" in CORE
-assert "cancel-in-progress: false" in ADD
-assert "cancel-in-progress: false" in CORE
+assert "cancel-in-progress: true" in ADD
+assert "cancel-in-progress: true" in CORE
 assert "group: nuvio-provider-onboarding-stage-main" in ADD
 assert "cancel-in-progress: true" in ADD
 assert "provider-onboarding-transaction-${{ github.run_id }}" in ADD
 assert "actions/download-artifact@" in ADD
 assert "git apply --3way --index" in ADD
+assert "git fetch origin main" in ADD
+assert "git rebase origin/main" in ADD
 assert "needs: onboard" in ADD
-assert ADD.index("group: nuvio-provider-onboarding-stage-main") < ADD.index("group: nuvio-provider-publish-main")
+assert ADD.index("group: nuvio-provider-onboarding-stage-main") < ADD.index("group: niakvio-add-provider-publication-main")
 assert "scripts/add_provider.py stage" in ADD
 assert "scripts/add_provider.py refresh" in ADD
 assert "scripts/add_provider.py finalize" in ADD
