@@ -1286,6 +1286,10 @@ function providerRows(worker) {
 
 function acceptedPlayableProbe(probe) {
   if (!probe?.playback_verified) return false;
+  // Stream-scope safety. Rejected siblings remain diagnostics but never enter
+  // provider/type capability evidence.
+  if (probe.content_identity_status === 'contradiction') return false;
+  if (probe.duration_identity_mismatch === true) return false;
   const limit = Number(activationConfig.maximum_stream_median_latency_ms || 12000);
   if (!Number.isFinite(limit) || limit <= 0) return true;
   return !Number.isFinite(Number(probe.latency_ms)) || Number(probe.latency_ms) <= limit;
