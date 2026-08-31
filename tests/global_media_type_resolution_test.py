@@ -66,6 +66,28 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+# Transient TMDB infrastructure failure is never cached.
+run_case(mixed, r"""
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  if(calls===1)throw new Error("temporary TMDB outage");
+  return{ok:true,status:200,json:async()=>({
+    id:280049,genres:[{id:16,name:"Animation"}],original_language:"ja",
+    origin_country:["JP"],keywords:{results:[{name:"anime"}]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const degraded=await provider.getStreams("280049","series",1,11);
+  if(!Array.isArray(degraded)||!degraded.length||degraded[0].degraded!==true)throw new Error("first outage did not fail open");
+  const recovered=await provider.getStreams("280049","series",1,11);
+  if(!Array.isArray(recovered)||!recovered.length||recovered[0].canonicalMediaType!=="anime"||recovered[0].degraded===true)
+    throw new Error("transient TMDB outage poisoned later request: "+JSON.stringify(recovered));
+  if(calls!==2)throw new Error("transient unavailable TMDB result was cached");
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 tv_only = mod.apply(BASE, options={"semantic_types": ["tv"]})
 run_case(tv_only, r"""
 global.fetch=async()=>({ok:true,status:200,json:async()=>({
@@ -424,6 +446,62 @@ const provider=require(process.argv[2]);
 
   if(Object.prototype.hasOwnProperty.call(global,'__nuvioMediaContext'))
     throw new Error('request media context leaked after getStreams completion');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+# Concurrent request teardown is generation-scoped. A late old request must not
+# delete the newer request's media context/deadline.
+CONCURRENT_BASE = r"""
+"use strict";
+async function getStreams(tmdbId, mediaType, season, episode) {
+  const ctx = globalThis.__nuvioMediaContext || {};
+  if (tmdbId === "62425") {
+    globalThis.__oldStarted = true;
+    await globalThis.__oldGate;
+  } else if (tmdbId === "280049") {
+    globalThis.__newStarted = true;
+    await globalThis.__newGate;
+  }
+  return [{ tmdbId, mediaType, canonicalMediaType: ctx.canonicalMediaType || "", requestToken: ctx.requestToken || 0 }];
+}
+module.exports = { getStreams };
+"""
+concurrent = mod.apply(CONCURRENT_BASE, options={"semantic_types": ["tv", "anime"], "provider_timeout_ms": 25000})
+run_case(concurrent, r"""
+let releaseOld,releaseNew;
+global.__oldGate=new Promise(r=>{releaseOld=r});
+global.__newGate=new Promise(r=>{releaseNew=r});
+global.fetch=async(url)=>{
+  url=String(url);
+  if(url.includes('/tv/62425?'))return{ok:true,status:200,json:async()=>({
+    id:62425,name:'Dark Matter',genres:[{id:18,name:'Drama'}],original_language:'en',origin_country:['CA'],keywords:{results:[]}
+  })};
+  if(url.includes('/tv/280049?'))return{ok:true,status:200,json:async()=>({
+    id:280049,name:'Hell Mode',genres:[{id:16,name:'Animation'}],original_language:'ja',origin_country:['JP'],keywords:{results:[{name:'anime'}]}
+  })};
+  throw new Error('unexpected endpoint '+url);
+};
+const provider=require(process.argv[2]);
+const spin=async(flag)=>{for(let i=0;i<200&&!global[flag];i++)await new Promise(r=>setImmediate(r));if(!global[flag])throw new Error(flag+' not reached')};
+(async()=>{
+  const old=provider.getStreams('62425','series',1,1);
+  await spin('__oldStarted');
+  const newer=provider.getStreams('280049','series',1,1);
+  await spin('__newStarted');
+  const newerToken=global.__nuvioMediaContext&&global.__nuvioMediaContext.requestToken;
+  if(!newerToken)throw new Error('new request token missing');
+  releaseOld();
+  const oldValue=await old;
+  if(!Array.isArray(oldValue)||oldValue.length!==0)throw new Error('late old request was not discarded');
+  if(!global.__nuvioMediaContext||global.__nuvioMediaContext.requestToken!==newerToken)
+    throw new Error('old request cleaned newer context');
+  releaseNew();
+  const newValue=await newer;
+  if(!Array.isArray(newValue)||!newValue.length||newValue[0].canonicalMediaType!=='anime')
+    throw new Error('new request failed after old teardown: '+JSON.stringify(newValue));
+  if(Object.prototype.hasOwnProperty.call(global,'__nuvioMediaContext'))throw new Error('final media context leaked');
+  if(Object.prototype.hasOwnProperty.call(global,'__nuvioProviderDeadlineMs'))throw new Error('deadline leaked');
+  if(Object.prototype.hasOwnProperty.call(global,'__nuvioProviderRequestToken'))throw new Error('request token leaked');
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
