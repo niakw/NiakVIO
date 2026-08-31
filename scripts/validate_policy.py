@@ -703,7 +703,9 @@ def main() -> int:
     state = h3["variants"][item["key"]]
     if state.get("strict_validated_sha256") != item["sha256"] or state.get("consecutive_inconclusive_deep_checks") != 1:
         raise AssertionError("inconclusive deep incorrectly erased strict history")
-    hard = copy.deepcopy(inconclusive); hard["health"]["status"] = "unavailable"
+    hard = copy.deepcopy(inconclusive)
+    hard["health"]["status"] = "unavailable"
+    hard["health"]["ci_classification"] = "conclusive_failure"
     hard_result = {**hard["health"], **{k: hard[k] for k in ("key", "source", "upstream_id", "canonical_id", "sha256")}}
     pre_h = {item["key"]: module.evaluate_pre_stability_gates(hard, activation)}
     h4 = module.update_strict_history(h3, candidates, [hard_result], pre_h, "deep", activation)
