@@ -118,6 +118,22 @@ routine = discovery.executable_seed(
 assert routine[1] == "pending-niakvio-clean-reconstruction-v2"
 assert routine[0] == candidate_before.read_bytes()
 
+# A dedicated clean-reconstruction stage must supersede pending-base reuse.
+# It is an isolated Learning/Lab build and therefore produces a fresh clean seed
+# without changing the production runtime/base pointers.
+clean_stage = discovery.executable_seed(
+    provider_id,
+    purstream_entry,
+    purstream_source,
+    provenance["providers"],
+    overrides,
+    clean_reconstruction=True,
+    force_clean_reconstruction=False,
+)
+assert clean_stage[1] == "new-niakvio-clean-seed"
+assert clean_stage[3] is True
+assert b"NIAKVIO_PROVIDER_BASE_OWNED_V2" in clean_stage[0]
+
 # 3) Explicit force reconstruction creates a new clean candidate from current
 # + preserved structured knowledge, but cannot mutate/swap the production LKG.
 forced = discovery.executable_seed(
