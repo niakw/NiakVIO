@@ -1284,10 +1284,17 @@ function providerRows(worker) {
     .filter((item) => item && !item.infrastructure);
 }
 
+function acceptedPlayableProbe(probe) {
+  if (!probe?.playback_verified) return false;
+  const limit = Number(activationConfig.maximum_stream_median_latency_ms || 12000);
+  if (!Number.isFinite(limit) || limit <= 0) return true;
+  return !Number.isFinite(Number(probe.latency_ms)) || Number(probe.latency_ms) <= limit;
+}
+
 function statusFrom(worker, probes) {
   // The worker already removes disallowed/invalid raw rows before exposing
   // worker.streams. Keep their count as stream-level diagnostics only.
-  if (probes.some((probe) => probe.playback_verified)) return { status: 'healthy', failureClass: null };
+  if (probes.some(acceptedPlayableProbe)) return { status: 'healthy', failureClass: null };
 
   const rows = providerRows(worker);
   const streamCount = Number(worker.stream_count || 0);
@@ -1347,7 +1354,7 @@ function scoreTest(worker, probes, status) {
   if (worker.ok) score += 10;
   if (status === 'reachable') return 75;
   if ((worker.stream_count || 0) > 0) score += 10;
-  const playable = probes.filter((probe) => probe.playback_verified);
+  const playable = probes.filter(acceptedPlayableProbe);
   if (playable.length > 0) score += 20;
   if (playable.length > 1) score += 10;
   if (playable.some((probe) => probe.payload_verified)) score += 10;
@@ -1474,7 +1481,7 @@ async function testCandidate(candidate) {
     const status = classification.status;
     const failureClass = classification.failureClass;
     const score = scoreTest(worker, probes, status);
-    const playable = probes.filter((probe) => probe.playback_verified);
+    const playable = probes.filter(acceptedPlayableProbe);
     const reachableHosts = [...new Set(playable.map((probe) => probe.host).filter(Boolean))].sort(compareText);
     const verifiedMax = Math.max(0, ...playable.flatMap((probe) => probe.verifiedHeights || [])) || null;
     const reportedMax = Math.max(0, ...playable.flatMap((probe) => probe.reportedHeights || [])) || null;
@@ -1536,6 +1543,7 @@ async function testCandidate(candidate) {
       streams_rejected_identity: probes.filter((probe) => probe.content_identity_status === 'contradiction').length,
       streams_rejected_duration: probes.filter((probe) => probe.duration_identity_mismatch === true).length,
       streams_rejected_unreachable: probes.filter((probe) => !probe.playback_verified && probe.endpoint_reachable === false).length,
+      streams_rejected_slow: probes.filter((probe) => probe.playback_verified && !acceptedPlayableProbe(probe)).length,
       streams_probed: probes.length,
       endpoints_reachable: probes.filter((probe) => probe.endpoint_reachable).length,
       streams_reachable: playable.length,
@@ -1664,6 +1672,7 @@ async function testCandidate(candidate) {
   const streamsRejectedIdentity = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_identity || 0), 0);
   const streamsRejectedDuration = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_duration || 0), 0);
   const streamsRejectedUnreachable = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_unreachable || 0), 0);
+  const streamsRejectedSlow = fixtureResults.reduce((sum, item) => sum + Number(item.streams_rejected_slow || 0), 0);
   const playableFixtures = fixtureResults.filter((item) => Number(item.streams_playable || 0) > 0).length;
   const reachableHosts = [...new Set(healthyTests.flatMap((item) => item.reachable_hosts || []))].sort(compareText);
   const acceptedAudio = [...new Set(healthyTests.flatMap((item) => item.accepted_audio_languages || []))].sort(compareText);
@@ -1760,6 +1769,7 @@ async function testCandidate(candidate) {
       streams_rejected_identity: streamsRejectedIdentity,
       streams_rejected_duration: streamsRejectedDuration,
       streams_rejected_unreachable: streamsRejectedUnreachable,
+      streams_rejected_slow: streamsRejectedSlow,
       distinct_reachable_hosts: reachableHosts.length,
       reachable_hosts: reachableHosts,
       verified_max_height: Math.max(0, ...healthyTests.map((item) => item.verified_max_height || 0)) || null,
