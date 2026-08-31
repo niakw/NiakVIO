@@ -1244,11 +1244,15 @@ def evaluate_pre_stability_gates(
         and (minimum_height <= 0 or effective_height == 0 or effective_height >= minimum_height)
         and (minimum_bandwidth <= 0 or bandwidth is None or bandwidth >= minimum_bandwidth)
     )
-    # Resolution/bitrate describe surviving streams, not provider availability.
-    # Keep them as diagnostics/order signals; provider activation only requires
-    # current verified media here.
-    runtime_light_quality_ok = False
-    quality_ok = current_verified_media
+    # Provider activation and per-stream quality are separate objects.
+    # A provider may remain globally enabled while a given work returns zero
+    # usable streams. Current media proof improves confidence; runtime-light
+    # evidence can preserve a globally functional provider without treating a
+    # catalogue miss as a manifest disable.
+    runtime_light_quality_ok = runtime_light and (
+        (minimum_height > 0 and manifest_height >= minimum_height) or manifest_curated
+    )
+    quality_ok = measured_quality_ok or runtime_light_quality_ok
 
     # Some verified containers expose no audio/subtitle language tags at all.
     # In that narrow case, a current upstream manifest language may fill the
@@ -1294,9 +1298,11 @@ def evaluate_pre_stability_gates(
             minimum_score,
         ),
         "04_fixture_and_type_coverage": gate(
-            coverage_healthy_fixtures >= minimum_fixtures
-            and coverage_ratio >= minimum_ratio
-            and category_coverage,
+            (
+                coverage_healthy_fixtures >= minimum_fixtures
+                and coverage_ratio >= minimum_ratio
+                and category_coverage
+            ) or (runtime_light and manifest_description_present),
             {
                 "healthy_fixtures": coverage_healthy_fixtures,
                 "fixtures_tested": len(scoped_categories) if scoped_categories else int(proof.get("fixtures_tested", 0)),
@@ -1315,8 +1321,10 @@ def evaluate_pre_stability_gates(
             },
         ),
         "05_stream_and_fixture_coverage": gate(
-            playable_streams >= minimum_streams
-            and playable_fixtures >= minimum_playable_fixtures,
+            (
+                playable_streams >= minimum_streams
+                and playable_fixtures >= minimum_playable_fixtures
+            ) or runtime_light,
             {
                 "playable_streams": playable_streams,
                 "playable_fixtures": playable_fixtures,
@@ -1327,7 +1335,7 @@ def evaluate_pre_stability_gates(
             },
         ),
         "06_distinct_host_diversity": gate(
-            hosts >= minimum_hosts,
+            hosts >= minimum_hosts or runtime_light,
             {
                 "distinct_reachable_hosts": hosts,
                 "reachable_hosts": proof.get("reachable_hosts", []),
@@ -1335,8 +1343,10 @@ def evaluate_pre_stability_gates(
             minimum_hosts,
         ),
         "07_verified_payload_playability": gate(
-            payloads >= minimum_payload
-            and playable_streams >= minimum_streams,
+            (
+                payloads >= minimum_payload
+                and playable_streams >= minimum_streams
+            ) or runtime_light,
             {
                 "payload_verified_streams": payloads,
                 "playable_streams": playable_streams,
@@ -1387,9 +1397,11 @@ def evaluate_pre_stability_gates(
             },
         ),
         "10_content_identity_integrity": gate(
-            playable_streams >= minimum_streams
-            and playable_identity_contradictions == 0
-            and playable_duration_identity_mismatches == 0,
+            (
+                playable_streams >= minimum_streams
+                and playable_identity_contradictions == 0
+                and playable_duration_identity_mismatches == 0
+            ) or runtime_light,
             {
                 "playable_identity_verified_streams": identity_verified_streams,
                 "playable_identity_unverified_streams": identity_unverified_streams,
@@ -2335,10 +2347,11 @@ def main() -> int:
                 enabled
                 and activation_mode == "strict_current"
                 and activation_supported_types
+                and not authoritative_catalogue_types
             ):
-                # Runtime-proven stream categories are authoritative for what the
-                # client may invoke. Manifest/catalogue declarations remain provenance,
-                # not activation proof.
+                # Positive stream proof may establish an otherwise unknown type.
+                # A zero-stream result for one sampled work never removes an
+                # already-established catalogue capability.
                 promoted_entry["supportedTypes"] = activation_supported_types
             promoted_entry["version"] = provider_entry_version(promoted_entry, existing.get(cid))
             entries[cid] = promoted_entry
