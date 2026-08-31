@@ -31,13 +31,20 @@ media_source = (ROOT / media["global_discovery_hook"]).read_text(encoding="utf-8
 for token in (
     "alternative_titles",
     "original_title",
-    "external_source=imdb_id",
-    "/find/",
-    "language=en-US",
+    "__nuvioMediaContext",
+    "tmdbMetadata",
+    "external_ids.imdb_id",
     "nativeIdentityReject",
     "q.tmdbId",
 ):
     assert token in cat_source, token
+for forbidden_tmdb_discovery in (
+    "api.themoviedb.org",
+    "external_source=imdb_id",
+    "/find/",
+    "language=en-US",
+):
+    assert forbidden_tmdb_discovery not in cat_source, forbidden_tmdb_discovery
 for forbidden in ("Mon ninja et moi 3", "Interstellar", "Ternet Ninja 3"):
     assert forbidden not in cat_source, forbidden
 for token in ("preserveOriginal", "m3u8|mpd|mp4|m4v|mkv|webm|ts", "kindBytes", "add(row)"):
