@@ -1141,12 +1141,6 @@ def main() -> int:
                 row["local_patches"] = merge_patch_records(row.get("local_patches"), update["records"])
             row["final_fixed_point"] = dict(update["final_fixed_point"])
             row["build_contract_schema"] = PUBLICATION_CONTRACT_SCHEMA
-            row["build_input_sha256"] = provider_build_input_sha(
-                provider_id,
-                str(update["base_sha256"]),
-                publication_contract,
-                row,
-            )
             manifest_overrides = configured_manifest_overrides(override_config, provider_id)
             if update.get("released_stale_audit_quarantine"):
                 row["activation_eligible"] = True
@@ -1195,6 +1189,18 @@ def main() -> int:
                     if str(value) and str(value) not in {"configured_safety_quarantine", AUDIT_QUARANTINE_BLOCKER}
                 ]
                 row["activation_blockers"] = blockers + ["configured_safety_quarantine"]
+
+            # Fingerprint the final durable build inputs only after every
+            # provenance mutation for this publication row. Computing this
+            # earlier makes the immediate --check compare against a newer
+            # activation/preservation state and report a false
+            # provider-input-changed miss.
+            row["build_input_sha256"] = provider_build_input_sha(
+                provider_id,
+                str(update["base_sha256"]),
+                publication_contract,
+                row,
+            )
 
     if provenance is not None:
         provenance["provider_publication_contract"] = {
