@@ -25,6 +25,7 @@ GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentatio
 GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
+GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v6.py"
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
 GENERATED_CORE_TAIL_MARKERS = (
@@ -33,6 +34,9 @@ GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
     "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
+    "NUVIO_STREAM_OUTPUT_SANITIZER_V4",
+    "NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5",
+    "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6",
     "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
     "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1",
     "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1",
@@ -1309,6 +1313,49 @@ def apply_overrides(
                 "phase": phase,
                 "scope": "global_provider_branding",
             })
+
+        # Terminal stream validation is a Core-wide publication boundary.
+        # Every returned URL is probed with the exact stream headers; unprobed
+        # overflow rows are dropped, never passed through. Therefore zero
+        # validated streams becomes [] and N validated streams becomes exactly N.
+        terminal_policy = playback_policy.get("terminal_stream_sanitizer") or {}
+        if not isinstance(terminal_policy, dict):
+            raise ValueError("playback_integrity_policy.terminal_stream_sanitizer must be an object")
+        if terminal_policy.get("enabled", True):
+            sanitizer_options = dict(terminal_policy.get("options") or {})
+            # Preserve provider-specific blocked hosts/paths when they exist, but
+            # Core owns the fail-closed semantics and cannot be weakened.
+            for legacy_script in (
+                GLOBAL_STREAM_SANITIZER,
+                "scripts/provider_patches/stream_output_sanitizer_v5.py",
+                "scripts/provider_patches/stream_output_sanitizer.py",
+            ):
+                provider_options = script_options.get(legacy_script)
+                if isinstance(provider_options, dict):
+                    for key, value in provider_options.items():
+                        sanitizer_options.setdefault(key, value)
+            sanitizer_options["probe_direct_media"] = True
+            sanitizer_options["probe_all_urls"] = True
+            sanitizer_options["max_probes"] = max(
+                1, min(int(sanitizer_options.get("max_probes") or 20), 20)
+            )
+            sanitizer_options.setdefault("probe_timeout_ms", 6500)
+            sanitizer_options.setdefault("min_vod_duration_seconds", 60)
+            before = text
+            text = _apply_patch_script(
+                text,
+                provider_id,
+                GLOBAL_STREAM_SANITIZER,
+                sanitizer_options,
+                None,
+            )
+            if text != before:
+                applied.append({
+                    "type": "patch_script",
+                    "path": GLOBAL_STREAM_SANITIZER,
+                    "phase": phase,
+                    "scope": "global_terminal_stream_sanitizer",
+                })
 
         # Media-type resolution must be the outermost request wrapper so every
         # inner Core/provider layer receives the same canonical movie|tv|anime
