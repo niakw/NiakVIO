@@ -714,7 +714,23 @@ def _candidate_identity(candidate: dict[str, Any]) -> str:
     return str(candidate.get("url") or "").rstrip("/")
 
 
+def has_authoritative_hub_source(cfg: dict[str, Any]) -> bool:
+    """A declared hub/channel supersedes direct/history/search route authority."""
+    return any(
+        isinstance(source, dict)
+        and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public"}
+        and is_http_url(source.get("url"))
+        for source in (cfg.get("sources") or [])
+    )
+
+
 def _seed_known_candidates(cfg: dict[str, Any], history_row: dict[str, Any]) -> list[dict[str, Any]]:
+    # Hub-first invariant: when a provider has an authoritative address hub,
+    # terminal discovery MUST start from that hub. Direct/LKG/history rows are
+    # diagnostics only and can never supersede what the hub currently announces.
+    if has_authoritative_hub_source(cfg):
+        return []
+
     candidates: list[dict[str, Any]] = []
     for index, url in enumerate(cfg.get("direct_candidates") or []):
         if is_http_url(url):
@@ -1018,7 +1034,25 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
             selected = {**candidate, **validation}
             break
     item["site_validations"] = validations
+    if not selected and has_authoritative_hub_source(cfg):
+        # A hub is the provider's address authority. CI/CD may receive 403,
+        # anti-bot or another non-success response from the terminal site; that
+        # does not make an older LKG more authoritative. Accept the final
+        # same-brand public destination reached from the hub and let runtime
+        # provider/media validation judge functionality separately.
+        selected = next((
+            {**candidate, **validation, "hub_authoritative": True}
+            for candidate, validation in zip(candidates, validations)
+            if str(candidate.get("source_type") or "") in {"hub", "telegram_public"}
+            and validation.get("final_url")
+            and validation.get("brand_match") is True
+            and is_public_url(str(validation.get("final_url")))
+        ), None)
+
     if not selected:
+        if has_authoritative_hub_source(cfg):
+            item["reason"] = "authoritative_hub_no_terminal_candidate"
+            return item
         current = history_row.get("current") if isinstance(history_row, dict) else None
         if isinstance(current, dict) and current.get("url"):
             item["status"] = "retained_last_known_good"
@@ -1069,7 +1103,11 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
         return item
     item["validated_api"] = validated_api
     item["status"] = "validated" if validated_api else "site_validated"
-    item["reason"] = "terminal_site_runtime_validated"
+    item["reason"] = (
+        "authoritative_hub_terminal_resolved"
+        if selected.get("hub_authoritative")
+        else "terminal_site_runtime_validated"
+    )
     return item
 
 
