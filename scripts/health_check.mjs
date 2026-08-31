@@ -1340,47 +1340,75 @@ function statusFrom(worker, probes) {
   return { status: 'provider_unreachable', failureClass: 'no_provider_request_observed' };
 }
 
-function scoreTest(worker, probes, status) {
-  if (status === 'excluded') return 0;
-  if (requestedMode === 'availability' || requestedMode === 'retry') {
-    if (status === 'healthy') return 100;
-    if (status === 'blocked') return 45;
-    if (status === 'reachable') return 75;
-    if (status === 'degraded' || status === 'no_streams') return 25;
-    return 0;
+function providerStatusFrom(worker) {
+  const rows = providerRows(worker);
+  const statuses = rows.map((item) => Number(item.status)).filter(Number.isInteger);
+  const successfulRows = rows.filter((item) => Number.isInteger(Number(item.status)) && Number(item.status) >= 200 && Number(item.status) < 400);
+  const meaningfulSuccess = successfulRows.filter((item) => ['search', 'content_lookup', 'episode', 'player'].includes(String(item.stage || '')));
+  const blockedRows = rows.filter((item) => [401, 403, 429, 451].includes(Number(item.status)));
+  const unavailableRows = rows.filter((item) => [404, 410].includes(Number(item.status)) || Number(item.status) >= 500);
+  const networkFailures = rows.filter((item) => item.status == null && item.error);
+  const invalidRequest = rows.some((item) => item.error_code === 'NUVIO_INVALID_REQUEST_ARGUMENT' || /object(?:%20|\s)*object/i.test(String(item.path_pattern || '')))
+    || worker.error_details?.code === 'NUVIO_INVALID_REQUEST_ARGUMENT'
+    || (worker.invocation_diagnostics || []).some((diag) => diag?.error?.code === 'NUVIO_INVALID_REQUEST_ARGUMENT');
+
+  if (!worker.ok) {
+    if (worker.error_details?.code === 'NUVIO_WORKER_MEMORY_EXHAUSTED') return { status: 'runtime_error', failureClass: 'worker_memory_exhausted' };
+    if (invalidRequest) return { status: 'runtime_error', failureClass: 'invalid_request_arguments' };
+    if (blockedRows.length && meaningfulSuccess.length === 0) return { status: 'blocked', failureClass: 'provider_http_blocked' };
+    if (unavailableRows.length && meaningfulSuccess.length === 0) return { status: 'unavailable', failureClass: 'provider_http_unavailable' };
+    if (worker.timeout || (networkFailures.length && statuses.length === 0)
+      || /timeout|enotfound|eai_again|econnrefused|econnreset|network|fetch failed/i.test(String(worker.error || ''))) {
+      return { status: 'provider_unreachable', failureClass: 'network_unreachable' };
+    }
+    return { status: 'runtime_error', failureClass: worker.error_details?.code || 'provider_runtime_exception' };
   }
 
-  let score = 0;
+  if (worker.provider_server_successful_response || meaningfulSuccess.length > 0 || successfulRows.length > 0) {
+    return { status: 'reachable', failureClass: null };
+  }
+  if (invalidRequest) return { status: 'runtime_error', failureClass: 'invalid_request_arguments' };
+  if (blockedRows.length) return { status: 'blocked', failureClass: 'provider_http_blocked' };
+  if (unavailableRows.length && successfulRows.length === 0) return { status: 'unavailable', failureClass: 'provider_http_unavailable' };
+  if (networkFailures.length > 0 && statuses.length === 0) return { status: 'provider_unreachable', failureClass: 'network_unreachable' };
+  if (statuses.length > 0) return { status: 'unavailable', failureClass: 'provider_http_error' };
+  return { status: 'provider_unreachable', failureClass: 'no_provider_request_observed' };
+}
+
+function providerScore(worker, providerStatus) {
+  if (providerStatus === 'provider_unreachable' || providerStatus === 'runtime_error') return 0;
+  if (providerStatus === 'unavailable') return 15;
+  if (providerStatus === 'blocked') return 30;
+  let score = 60;
   if (worker.ok) score += 10;
-  if (status === 'reachable') return 75;
-  if ((worker.stream_count || 0) > 0) score += 10;
+  if (worker.provider_server_successful_response) score += 15;
+  const duration = Number(worker.duration_ms);
+  const limit = Number(activationConfig.maximum_provider_median_latency_ms || 15000);
+  if (Number.isFinite(duration) && Number.isFinite(limit) && duration <= limit) score += 15;
+  return Math.min(100, score);
+}
+
+function streamQualityScore(probes, status) {
+  if (status === 'no_streams') return 0;
   const playable = probes.filter(acceptedPlayableProbe);
-  if (playable.length > 0) score += 20;
-  if (playable.length > 1) score += 10;
+  if (!playable.length) return 0;
+  let score = 40;
+  if (playable.length > 1) score += 5;
   if (playable.some((probe) => probe.payload_verified)) score += 10;
   if (playable.some((probe) => probe.segment_reachable === true || probe.direct_signature_verified || probe.kind === 'dash')) score += 10;
-
   const effectiveMax = Math.max(0, ...playable.map((probe) => probe.effective_height || 0));
   if (effectiveMax >= 2160) score += 15;
   else if (effectiveMax >= 1080) score += 12;
   else if (effectiveMax >= 720) score += 8;
-
+  else if (effectiveMax >= 480) score += 4;
   const acceptedAudio = new Set(playable.flatMap((probe) => probe.accepted_audio_languages || []));
   const acceptedSubtitles = new Set(playable.flatMap((probe) => probe.accepted_subtitle_languages || []));
-  if (acceptedAudio.size || acceptedSubtitles.size) score += 8;
-  if (
-    playable.some((probe) => (probe.accepted_subtitles_reachable || 0) > 0)
-    || acceptedAudio.size
-  ) score += 5;
-
+  if (acceptedAudio.size || acceptedSubtitles.size) score += 5;
+  if (playable.some((probe) => (probe.accepted_subtitles_reachable || 0) > 0) || acceptedAudio.size) score += 3;
   const hosts = new Set(playable.map((probe) => probe.host).filter(Boolean));
-  if (hosts.size >= 2) score += 5;
-  const probeMedian = median(playable.map((probe) => probe.latency_ms));
-  if (probeMedian != null && probeMedian <= 12000) score += 5;
+  if (hosts.size >= 2) score += 3;
   if (playable.some((probe) => (probe.codecs || []).length)) score += 2;
   if (playable.some((probe) => (probe.hdrFormats || []).length)) score += 2;
-
-  if (status !== 'healthy') score = Math.min(score, 35);
   return Math.min(100, score);
 }
 
@@ -1477,10 +1505,15 @@ async function testCandidate(candidate) {
       }
     }
 
+    const providerClassification = providerStatusFrom(worker);
     const classification = statusFrom(worker, probes);
     const status = classification.status;
     const failureClass = classification.failureClass;
-    const score = scoreTest(worker, probes, status);
+    const providerStatus = providerClassification.status;
+    const providerFailureClass = providerClassification.failureClass;
+    const providerScoreValue = providerScore(worker, providerStatus);
+    const streamQualityScoreValue = streamQualityScore(probes, status);
+    const score = providerScoreValue;
     const playable = probes.filter(acceptedPlayableProbe);
     const reachableHosts = [...new Set(playable.map((probe) => probe.host).filter(Boolean))].sort(compareText);
     const verifiedMax = Math.max(0, ...playable.flatMap((probe) => probe.verifiedHeights || [])) || null;
@@ -1493,6 +1526,11 @@ async function testCandidate(candidate) {
       fixture_phase: fixturePhase,
       status,
       score,
+      provider_status: providerStatus,
+      provider_score: providerScoreValue,
+      provider_failure_class: providerFailureClass,
+      stream_status: status,
+      stream_quality_score: streamQualityScoreValue,
       provider_duration_ms: worker.duration_ms || null,
       worker_ok: Boolean(worker.ok),
       execution_context: worker.environment_context || null,
@@ -1657,7 +1695,14 @@ async function testCandidate(candidate) {
     ? activationHealthyTests.length / activationTests.length
     : 0;
   const claims = manifestClaims(candidate);
-  const score = candidateScore(status, healthyAverage, coverageRatio, claims, fixtureResults);
+  const providerStatuses = fixtureResults.map((item) => item.provider_status).filter(Boolean);
+  const providerStatus = providerStatuses.includes('reachable')
+    ? 'reachable'
+    : ['runtime_error', 'blocked', 'unavailable', 'provider_unreachable'].find((value) => providerStatuses.includes(value))
+      || 'provider_unreachable';
+  const providerScoreValue = Math.max(0, ...fixtureResults.map((item) => Number(item.provider_score || 0)));
+  const streamQualityScoreValue = Math.max(0, ...fixtureResults.map((item) => Number(item.stream_quality_score || 0)));
+  const score = providerScoreValue;
 
   const healthyCategories = [...new Set(activationHealthyTests.map((item) => item.fixture.category).filter(Boolean))].sort(compareText);
   const playableStreams = fixtureResults.reduce((sum, item) => sum + Number(item.streams_playable || 0), 0);
@@ -1724,6 +1769,10 @@ async function testCandidate(candidate) {
     sha256: candidate.sha256,
     mode: requestedMode,
     status,
+    provider_status: providerStatus,
+    provider_score: providerScoreValue,
+    stream_status: status,
+    stream_quality_score: streamQualityScoreValue,
     ci_classification: ciClassification(status, inconclusiveStatuses),
     score,
     candidate_profile: {
@@ -1757,6 +1806,10 @@ async function testCandidate(candidate) {
       playable_fixtures: playableFixtures,
       required_fixture_categories: profile.requiredCategories,
       healthy_fixture_categories: healthyCategories,
+      provider_status: providerStatus,
+      provider_score: providerScoreValue,
+      stream_status: status,
+      stream_quality_score: streamQualityScoreValue,
       streams_playable: playableStreams,
       payload_verified_streams: payloadVerifiedStreams,
       identity_verified_streams: identityVerifiedStreams,
@@ -1866,7 +1919,7 @@ const startedAt = new Date();
 const results = await runPool(registry.candidates, testCandidate, concurrency);
 const statuses = ['healthy', 'reachable', 'blocked', 'degraded', 'no_streams', 'provider_unreachable', 'runtime_error', 'unavailable', 'excluded'];
 const report = {
-  schema_version: 67,
+  schema_version: 68,
   environment: 'github-actions-node',
   mode: requestedMode,
   generated_at: new Date().toISOString(),
