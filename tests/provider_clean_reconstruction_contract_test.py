@@ -171,6 +171,7 @@ assert "clean v2 publication has no derived Core marker" in published_reapply
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter
 assert "legacy ProviderBase is compatibility-only" in promoter
 assert "refusing legacy ProviderBase fallback" in promoter
+assert 'or "clean reconstruction candidate could not be reduced" in message' in promoter
 assert "if previous_requires_clean:" in promoter
 assert "CLEAN_RECONSTRUCTION_SOURCE" in promoter
 assert "CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE" in promoter
