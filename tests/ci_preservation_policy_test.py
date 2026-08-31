@@ -299,6 +299,9 @@ assert promoter_module.ci_result_is_inconclusive(
     {"health": {"status": "unavailable", "ci_classification": ""}}, config
 ) is True
 assert promoter_module.ci_result_is_inconclusive(
+    {"health": {"status": "unavailable", "ci_classification": "conclusive_failure"}}, config
+) is False
+assert promoter_module.ci_result_is_inconclusive(
     {"health": {"status": "healthy", "ci_classification": "conclusive"}}, config
 ) is False
 assert promoter_module.previous_state_is_safety_quarantine(
