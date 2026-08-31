@@ -311,10 +311,21 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
 
     # Mirror legacy headers before ranking/probing so both the sanitizer and the
     # actual Nuvio reader use the same request contract.
-    patched = patched.replace(
-        "        var stream=result[i],url=urlOf(stream);\n",
-        "        var stream=result[i];syncPlaybackHeaders(stream);var url=urlOf(stream);\n",
-        1,
-    )
+    legacy_loop = "        var stream=result[i],url=urlOf(stream);\n"
+    fail_closed_loop = "        var stream=rows[i],url=urlOf(stream);\n"
+    if legacy_loop in patched:
+        patched = patched.replace(
+            legacy_loop,
+            "        var stream=result[i];syncPlaybackHeaders(stream);var url=urlOf(stream);\n",
+            1,
+        )
+    elif fail_closed_loop in patched:
+        patched = patched.replace(
+            fail_closed_loop,
+            "        var stream=rows[i];syncPlaybackHeaders(stream);var url=urlOf(stream);\n",
+            1,
+        )
+    elif "syncPlaybackHeaders(stream);var url=urlOf(stream);" not in patched:
+        raise ValueError("stream sanitizer candidate loop anchor not found")
 
     return patched.rstrip() + f"\n{MARKER_COMMENT}\n{REPAIR_MARKER_COMMENT}\n"
