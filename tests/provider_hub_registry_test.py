@@ -70,12 +70,27 @@ movix_config = {
             'runtime_domain_replacements': {'movix.cash': 'movix.fun'},
             'required_values': ['movix.fun'],
             'fixed_endpoint': {'resolver_function': 'detectApi', 'api': 'https://api.movix.fun', 'referer': 'https://movix.fun/'},
+            'api_recipe': {'base': 'https://api.movix.fun', 'referer': 'https://movix.fun/', 'movieRoute': '/api/catalog/movie/{id}'},
+            'patch_scripts': ['scripts/provider_patches/vf_catalogue_recovery.py'],
+            'patch_script_options': {
+                'scripts/provider_patches/vf_catalogue_recovery.py': {
+                    'strategy': 'api_fixed',
+                    'base_url': 'https://movix.fun',
+                    'api_url': 'https://api.movix.fun',
+                }
+            },
         }
     }
 }
 resolver.update_provider_patch(movix_config, 'movix', hubs['movix'], 'https://movix.example/', 'https://api.movix.example', {})
-assert movix_config['provider_patches']['movix']['fixed_endpoint']['api'] == 'https://api.movix.example'
-assert movix_config['provider_patches']['movix']['fixed_endpoint']['referer'] == 'https://movix.example/'
+movix_patch = movix_config['provider_patches']['movix']
+assert movix_patch['fixed_endpoint']['api'] == 'https://api.movix.example'
+assert movix_patch['fixed_endpoint']['referer'] == 'https://movix.example/'
+assert movix_patch['api_recipe']['base'] == 'https://api.movix.example'
+assert movix_patch['api_recipe']['referer'] == 'https://movix.example/'
+movix_recovery = movix_patch['patch_script_options']['scripts/provider_patches/vf_catalogue_recovery.py']
+assert movix_recovery['base_url'] == 'https://movix.example'
+assert movix_recovery['api_url'] == 'https://api.movix.example'
 assert hubs['movix']['hub'] == 'https://movix.online/'
 assert resolver.host(hubs['movix']['direct_fallback']) == 'movix.fun'
 assert 'fstream.top' in hubs['movix']['blocked_hosts']
@@ -86,6 +101,16 @@ assert preferred == 'https://movix.fun'
 assert movix_candidates and isinstance(movix_candidates[0], dict), movix_candidates
 assert movix_candidates[0].get('score') is not None, movix_candidates
 assert movix_candidates[0]['score'] >= 80
+
+# Purstream's wiki can render its current address dynamically. The official
+# Telegram announcements are a second authoritative route source, so a hub HTML
+# placeholder cannot strand the resolver on an old terminal.
+purstream_sources = hubs['purstream'].get('sources') or []
+assert any(
+    source.get('type') == 'telegram_public'
+    and str(source.get('url') or '').rstrip('/') == 'https://t.me/s/purstreamm'
+    for source in purstream_sources
+)
 
 # Telegram selection must use the highest message id rather than document
 # position. This remains correct with pinned or reordered messages.
