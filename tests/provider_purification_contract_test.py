@@ -6,7 +6,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from provider_purification import purify_bytes, split_owned_prefix_bootstraps  # noqa: E402
+from provider_purification import (  # noqa: E402\n    purify_bytes,\n    split_owned_prefix_bootstraps,\n    split_provider_core_tail,\n)\nfrom provider_patch_blocks import render_managed_fix  # noqa: E402
 
 node_path = ROOT / "engine_v2/scripts/purify-provider.mjs"
 cleaner_path = ROOT / "engine_v2/scripts/terser-clean.mjs"
@@ -87,7 +87,9 @@ for required in (
     '"requiresRuntimeRetest": True',
     '"repair_candidates_must_repurify": True',
     "def split_owned_prefix_bootstraps(data: bytes)",
-    '"ownedPrefixPreserved": True',
+    "def split_provider_core_tail(data: bytes)",
+    '"ownedPrefixPreserved": bool(prefix)',
+    '"coreTailPreserved": bool(core_tail)',
 ):
     assert required in helper, required
 
@@ -113,6 +115,27 @@ assert first.startswith(prefix)
 assert second == first
 assert first_report.get("ownedPrefixPreserved") is True
 assert second_report.get("ownedPrefixPreserved") is True
+
+# Generated Core Lego is not provider source. Once the canonical Core boundary
+# starts, purification must preserve the entire tail byte-for-byte, including
+# transactional START/END ownership and deterministic data markers.
+managed_core = render_managed_fix(
+    "CORE.TEST.PURIFICATION.V1",
+    "globalThis.__nuvioPurificationManagedTest=1;",
+    data={"fixture": "core-tail-byte-preservation"},
+)
+core_tail = (core_boundary + "\n" + managed_core + "\n").encode("utf-8")
+lego_source = provider_body.encode("utf-8") + core_tail
+lego_first, lego_report = purify_bytes(lego_source)
+lego_second, _lego_second_report = purify_bytes(lego_first)
+_lego_provider, lego_preserved_tail = split_provider_core_tail(lego_first)
+assert lego_second == lego_first
+assert lego_preserved_tail == core_tail
+assert lego_report.get("coreTailPreserved") is True
+lego_text = lego_first.decode("utf-8")
+assert lego_text.count("/* START NIAKVIO_FIX:CORE.TEST.PURIFICATION.V1 */") == 1
+assert lego_text.count("/* END NIAKVIO_FIX:CORE.TEST.PURIFICATION.V1 */") == 1
+assert "NIAKVIO_FIX_DATA_PAYLOAD:CORE.TEST.PURIFICATION.V1:" in lego_text
 
 # Terser preserves NUVIO comments, but its comment attachment must never turn the
 # retained in-place HLS marker into a whitespace accumulator. This is the exact

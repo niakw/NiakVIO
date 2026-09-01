@@ -33,6 +33,7 @@ _TERSER_READY = False
 RUNTIME_DOMAIN_PREFIX = "/* NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1 */"
 ADAPTIVE_DOMAIN_BEGIN = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:BEGIN */"
 ADAPTIVE_DOMAIN_END = "/* NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1:END */"
+CORE_START_BOUNDARY = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
 RUNTIME_DOMAIN_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
 
@@ -97,6 +98,27 @@ def split_owned_prefix_bootstraps(data: bytes) -> tuple[bytes, bytes]:
         # Never feed an empty/non-provider body into a build transform.
         return b"", data
     return prefix, body
+
+
+def split_provider_core_tail(data: bytes) -> tuple[bytes, bytes]:
+    """Split ProviderBase bytes from the generated NiakVIO Core Lego tail.
+
+    The Core tail is an owned build artifact. Terser must never rewrite it:
+    managed START/END ownership markers, deterministic data markers and each
+    brick's implementation remain byte-for-byte stable across purification.
+    """
+    try:
+        text = data.decode("utf-8", errors="strict")
+    except UnicodeDecodeError:
+        return data, b""
+    boundary = text.find(CORE_START_BOUNDARY)
+    if boundary < 0:
+        return data, b""
+    provider = text[:boundary].encode("utf-8")
+    core_tail = text[boundary:].encode("utf-8")
+    if not provider.strip() or not core_tail.strip():
+        return data, b""
+    return provider, core_tail
 
 
 def ensure_terser() -> None:
@@ -311,18 +333,22 @@ def _purify_body_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
 
 
 def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
-    """Purify provider/Core bytes while preserving canonical owned prefix bootstraps.
+    """Purify only provider-owned bytes; preserve every NiakVIO-owned layer exactly.
 
-    The returned *complete* artifact is itself byte-idempotent under this function:
-    the prefix is reproduced byte-for-byte and only the provider/Core body crosses
-    the Terser boundary.
+    Canonical runtime-domain bootstraps and the complete generated Core Lego tail
+    stay outside Terser. This keeps managed START/END ownership markers and fix
+    implementations immutable while still allowing conservative ProviderBase
+    purification.
     """
     prefix, body = split_owned_prefix_bootstraps(data)
-    if not prefix:
-        return _purify_body_bytes(data)
+    provider_body, core_tail = split_provider_core_tail(body)
+    purification_target = provider_body if core_tail else body
+    purified_body, body_report = _purify_body_bytes(purification_target)
 
-    purified_body, body_report = _purify_body_bytes(body)
-    chosen = prefix + purified_body
+    separator = b""
+    if core_tail and purified_body and not purified_body.endswith((b"\n", b"\r")):
+        separator = b"\n"
+    chosen = prefix + purified_body + separator + core_tail
     applied = chosen != data
     report = {
         **body_report,
@@ -335,8 +361,10 @@ def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
         "bytesSaved": max(0, len(data) - len(chosen)),
         "savingPercent": round(max(0, len(data) - len(chosen)) * 100 / max(1, len(data)), 2),
         "sizeReduced": len(chosen) < len(data),
-        "ownedPrefixPreserved": True,
+        "ownedPrefixPreserved": bool(prefix),
         "ownedPrefixBytes": len(prefix),
+        "coreTailPreserved": bool(core_tail),
+        "coreTailBytes": len(core_tail),
         "fixedPointVerified": bool(body_report.get("fixedPointVerified", True)),
     }
     return chosen, report

@@ -226,7 +226,14 @@ with tempfile.TemporaryDirectory() as raw:
     assert rejected
     assert source.read_bytes() == original
 
-    secured_text, _secured_report = harden_bundle(original.decode("utf-8"))
+    # Static already-hardened fixture: staging validation must never persist
+    # dynamically transformed sensitive/provider bytes merely to test idempotence.
+    secured_text = (
+        "/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:test-fixture */\n"
+        "var __nuvioProviderSilentLog=function(){};\n"
+        "globalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\n"
+        "globalThis.getStreams=async function(){return []};\n"
+    )
     secured = secured_text.encode("utf-8")
     source.write_bytes(secured)
     registry["candidates"][0]["sha256"] = hashlib.sha256(secured).hexdigest()
