@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Verify persisted proof that every published provider is a final Terser fixed point.
+"""Verify exact raw-byte publication proof for every provider.
 
-The expensive two-pass Terser proof is minted only by the publication finalizer
-when provider bytes are actually rebuilt. Unchanged Core runs verify the exact
-published SHA, proof metadata and publication contract without re-running Terser.
+Provider JavaScript transformation is disabled. Publication records the validated
+SHA verbatim; this verifier rejects byte, proof-metadata or build-input drift.
 """
 from __future__ import annotations
 
@@ -77,8 +76,8 @@ def main() -> int:
             raise ValueError(f"{provider_id}: unexpected raw-byte mangle policy")
         if str(proof.get("tool") or "") != "raw-bytes":
             raise ValueError(f"{provider_id}: unexpected fixed-point tool")
-        if str(proof.get("tool_version") or "") != TERSER_VERSION:
-            raise ValueError(f"{provider_id}: stale fixed-point Terser version")
+        if str(proof.get("tool_version") or "") != BYTE_STABILITY_VERSION:
+            raise ValueError(f"{provider_id}: stale fixed-point raw-byte version")
         if str(proof.get("sha256") or "").casefold() != digest:
             raise ValueError(f"{provider_id}: fixed-point proof SHA mismatch")
         if not str(row.get("build_input_sha256") or "").strip():
@@ -93,8 +92,8 @@ def main() -> int:
         )
 
     print(
-        f"FIELD_FINAL_TERSER_FIXED_POINT providers={checked} "
-        f"tool=terser version={TERSER_VERSION} mangle=false proof=persisted-sha"
+        f"FIELD_FINAL_RAW_BYTE_FIXED_POINT providers={checked} "
+        f"tool=raw-bytes version={BYTE_STABILITY_VERSION} mangle=false proof=persisted-sha"
     )
     return 0
 
