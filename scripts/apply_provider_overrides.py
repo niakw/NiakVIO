@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 from override_text_utils import replace_literal
-from provider_patch_blocks import assert_single_managed_fix
+from provider_patch_blocks import (\n    assert_single_managed_fix,\n    render_managed_fix,\n    replace_managed_fix_in_place,\n)
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
@@ -192,7 +192,7 @@ def _apply_patch_script(
     if not isinstance(result, str):
         raise TypeError(f"provider patch {patch_script} must return str")
 
-    # Managed patch modules own one full BEGIN/END block. The dispatcher proves
+    # Managed patch modules own one full START/END block. The dispatcher proves
     # cardinality and byte-idempotence centrally so a provider-specific script
     # cannot silently stack, partially replace, or duplicate a fix.
     managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
@@ -266,6 +266,20 @@ def _replace_named_function(text: str, function_name: str, replacement: str) -> 
     raise ValueError(f"unterminated function body: {function_name}")
 
 
+def _managed_fix_component(value: str) -> str:
+    component = re.sub(r"[^A-Z0-9_.:-]+", "_", str(value or "").strip().upper()).strip("_.:-")
+    if not component:
+        raise ValueError(f"invalid managed fix component: {value!r}")
+    return component
+
+
+def _fixed_endpoint_fix_id(provider_id: str, function_name: str) -> str:
+    return (
+        f"PROVIDER.{_managed_fix_component(provider_id)}."
+        f"FIXED_ENDPOINT.{_managed_fix_component(function_name)}"
+    )
+
+
 def _apply_fixed_endpoint(text: str, provider_id: str, config: dict[str, Any]) -> tuple[str, dict[str, Any] | None]:
     fixed = config.get("fixed_endpoint")
     if not isinstance(fixed, dict):
@@ -275,25 +289,57 @@ def _apply_fixed_endpoint(text: str, provider_id: str, config: dict[str, Any]) -
     referer = str(fixed.get("referer") or "").rstrip("/") + "/"
     if not function_name or not api:
         raise ValueError(f"provider_patches.{provider_id}.fixed_endpoint is incomplete")
+
     marker = f"NUVIO_FIXED_ENDPOINT:{api}"
-    if marker in text:
-        return text, None
-    replacement = (
+    fix_id = _fixed_endpoint_fix_id(provider_id, function_name)
+    javascript = (
         f"function {function_name}(){{"
         f"/* {marker} */"
         f"return Promise.resolve({{api:{json.dumps(api)},referer:{json.dumps(referer)}}});"
         "}"
     )
-    output, changed = _replace_named_function(text, function_name, replacement)
-    if not changed:
-        return text, None
-    return output, {
-        "type": "fixed_endpoint",
+    fix_data = {
+        "provider_id": provider_id,
         "resolver_function": function_name,
         "api": api,
         "referer": referer,
     }
 
+    # Once a provider function is owned, only that exact START/END block may be
+    # refreshed. Hub/domain changes therefore update data + function atomically
+    # without touching ProviderBase or any unrelated fix.
+    output, owned = replace_managed_fix_in_place(
+        text,
+        fix_id,
+        javascript,
+        data=fix_data,
+    )
+    if owned:
+        if output == text:
+            return text, None
+        assert_single_managed_fix(output, fix_id)
+        return output, {
+            "type": "fixed_endpoint",
+            "fix_id": fix_id,
+            "resolver_function": function_name,
+            "api": api,
+            "referer": referer,
+        }
+
+    # One-time migration from an upstream/legacy function. Replace the whole
+    # function with one owned unit in place; never append a competing resolver.
+    managed = render_managed_fix(fix_id, javascript, data=fix_data)
+    output, changed = _replace_named_function(text, function_name, managed)
+    if not changed:
+        return text, None
+    assert_single_managed_fix(output, fix_id)
+    return output, {
+        "type": "fixed_endpoint",
+        "fix_id": fix_id,
+        "resolver_function": function_name,
+        "api": api,
+        "referer": referer,
+    }
 
 def _scan_runtime_domain_iife_end(text: str, start: int) -> int | None:
     """Return the end of a complete ``(function(){...})(args)`` statement."""
