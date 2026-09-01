@@ -17,7 +17,10 @@ import hashlib
 import json
 from typing import Any
 
+from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+
 MARKER = "NUVIO_GLOBAL_STREAM_IDENTITY_V1"
+MANAGED_FIX_ID = "CORE.STREAM_IDENTITY.V1"
 
 
 def _strip_existing(text: str) -> str:
@@ -42,8 +45,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    if marker in text:
-        return text
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
     text = _strip_existing(text)
 
     js = r'''
@@ -79,4 +81,9 @@ function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamI
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
-    return text.rstrip() + "\n" + js.lstrip()
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        js,
+        data=payload,
+    )
