@@ -18,7 +18,7 @@ import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
 from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
-from provider_byte_stability import purify_candidate, purify_registry  # noqa: E402
+from provider_purification import purify_candidate, purify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
@@ -45,9 +45,9 @@ def _profiled_create(stage, candidate, profile_name, round_number):
     repaired, error = _base_create(stage, candidate, profile_name, round_number)
     if not isinstance(repaired, dict):
         return repaired, error
-    # Any Brain/runtime mutation must immediately re-enter byte_stability before its
-    # strict deep retest. The deep result therefore proves the exact exact raw bytes,
-    # not the larger pre-byte_stability candidate.
+    # Any Brain/runtime mutation must immediately re-enter raw-byte validation before its
+    # strict deep retest. The deep result therefore proves the exact raw bytes,
+    # not the larger pre-validation candidate.
     try:
         repaired, _byte_stability = purify_candidate(Path(stage), repaired)
     except Exception as exc:
