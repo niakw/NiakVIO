@@ -1,24 +1,24 @@
 {
   "schema_version": 3,
-  "generated_at": "2026-09-01T06:15:07.455841+00:00",
+  "generated_at": "2026-09-01T09:18:00.484239+00:00",
   "source_health_schema_version": 68,
   "provider_count": 96,
   "status_counts": {
     "provider_unreachable": 39,
-    "no_streams": 31,
+    "no_streams": 32,
     "blocked": 8,
     "unavailable": 15,
     "runtime_error": 1,
-    "healthy": 2
+    "healthy": 1
   },
   "failure_class_counts": {
     "no_provider_request_observed": 312,
-    "content_lookup_completed_no_streams": 261,
+    "content_lookup_completed_no_streams": 265,
     "provider_http_blocked": 70,
     "provider_http_unavailable": 37,
     "provider_http_error": 72,
     "NUVIO_ALL_SETTINGS_PROFILES_FAILED": 8,
-    "stream_valid": 4
+    "stream_valid": 3
   },
   "providers": [
     {
@@ -90,7 +90,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "4khdhub",
@@ -2567,7 +2567,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "4khdhubnew",
@@ -2638,7 +2638,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "allanime",
@@ -2703,7 +2703,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "allmovieland",
@@ -5182,7 +5182,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "allwish",
@@ -7659,7 +7659,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "anidb",
@@ -8619,11 +8619,11 @@
             "host": "anidb.pics",
             "method": "GET",
             "path_pattern": "/?s={value}",
-            "status": 200,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "search",
@@ -8808,22 +8808,22 @@
             "host": "anidb.pics",
             "method": "GET",
             "path_pattern": "/?s={value}",
-            "status": 200,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "search",
             "host": "anidb.pics",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 404,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "search",
@@ -8929,193 +8929,6 @@
             "host": "anidb.pics",
             "method": "GET",
             "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/jujutsu-kaisen",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/{id}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/{id}",
             "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
@@ -9235,32 +9048,10 @@
             "error": null
           },
           {
-            "stage": "search",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
+            "path_pattern": "/watch/chiikawa-140842",
             "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
@@ -9268,32 +9059,10 @@
             "error": null
           },
           {
-            "stage": "search",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
+            "path_pattern": "/watch/liar-game-197754",
             "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
@@ -9301,32 +9070,10 @@
             "error": null
           },
           {
-            "stage": "search",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
+            "path_pattern": "/watch/{token}",
             "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
@@ -9334,32 +9081,10 @@
             "error": null
           },
           {
-            "stage": "search",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
+            "path_pattern": "/watch/{token}",
             "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
@@ -9367,77 +9092,44 @@
             "error": null
           },
           {
-            "stage": "search",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
+            "path_pattern": "/watch/{token}",
+            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
             "error": null
           },
           {
-            "stage": "search",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
+            "path_pattern": "/watch/{token}",
+            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
             "error": null
           },
           {
-            "stage": "content_lookup",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/l-attaque-des-titans",
-            "status": 404,
+            "path_pattern": "/watch/{token}",
+            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
             "error": null
           },
           {
-            "stage": "content_lookup",
+            "stage": "player",
             "host": "anidb.pics",
             "method": "GET",
-            "path_pattern": "/ataque-dos-titas",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/tv",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/oad",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/utok-titanu",
-            "status": 404,
+            "path_pattern": "/watch/{token}",
+            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -9450,11 +9142,11 @@
             "host": "anidb.pics",
             "method": "GET",
             "path_pattern": "/?s={value}",
-            "status": 200,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "search",
@@ -9593,171 +9285,6 @@
             "host": "anidb.pics",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/one-piece",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/ek-tukda",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/tutti-all-arrembaggio",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/all-arrembaggio",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "anidb.pics",
-            "method": "GET",
-            "path_pattern": "/{token}",
             "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
@@ -9766,7 +9293,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "anikototv",
@@ -10926,22 +10453,22 @@
             "host": "anikototv.to",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": null,
+            "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": "23",
-            "error": "The operation was aborted due to timeout"
+            "error_code": null,
+            "error": null
           },
           {
             "stage": "search",
             "host": "anikototv.to",
             "method": "GET",
             "path_pattern": "/search?query={value}",
-            "status": null,
+            "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": "23",
-            "error": "The operation was aborted due to timeout"
+            "error_code": null,
+            "error": null
           },
           {
             "stage": "content_lookup",
@@ -11752,7 +11279,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "anime-sama",
@@ -13958,7 +13485,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "anime-ultime",
@@ -14593,7 +14120,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animekai",
@@ -14664,7 +14191,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animepahe",
@@ -14759,7 +14286,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animesalt",
@@ -16921,7 +16448,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animesama-co",
@@ -19127,7 +18654,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animesultra",
@@ -21212,7 +20739,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animetsu",
@@ -21592,7 +21119,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animevost-fr",
@@ -21657,7 +21184,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animevostfr",
@@ -23885,7 +23412,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animeworld",
@@ -23932,7 +23459,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animezey",
@@ -24003,7 +23530,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "animoflix",
@@ -24205,7 +23732,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "anizone",
@@ -24270,7 +23797,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "castle",
@@ -24525,7 +24052,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "cineby",
@@ -24780,7 +24307,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "cinefreak",
@@ -24851,7 +24378,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "cinemacity",
@@ -24922,7 +24449,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "cinemm",
@@ -27399,7 +26926,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "cinevibe",
@@ -27446,7 +26973,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "coflix",
@@ -30204,7 +29731,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "ctgmovies",
@@ -30459,7 +29986,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "desiflix",
@@ -30802,7 +30329,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "dooflix",
@@ -30873,7 +30400,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "dulourd",
@@ -31128,7 +30655,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "dvdplay",
@@ -31383,7 +30910,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "einthusan",
@@ -31454,7 +30981,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "fibwatch",
@@ -31549,7 +31076,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "flemmix",
@@ -34180,7 +33707,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "french-manga",
@@ -36463,7 +35990,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "frenchstream",
@@ -36969,7 +36496,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "fullanime",
@@ -37034,7 +36561,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "goatapi",
@@ -37173,7 +36700,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "goated",
@@ -37780,7 +37307,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "gramcinema",
@@ -37851,7 +37378,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "hdghartv",
@@ -40328,7 +39855,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "hdhub4u",
@@ -40988,6 +40515,17 @@
             "error": null
           },
           {
+            "stage": "content_lookup",
+            "host": "greenmountmotors.com",
+            "method": "GET",
+            "path_pattern": "/?id={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
             "stage": "search",
             "host": "hubcloud.cx",
             "method": "GET",
@@ -41010,22 +40548,11 @@
             "error": null
           },
           {
-            "stage": "content_lookup",
-            "host": "new5.hdhub4u.cl",
+            "stage": "search",
+            "host": "hubcloud.cx",
             "method": "GET",
-            "path_pattern": "/breaking-bad",
+            "path_pattern": "/drive/search-recover.php?from_ac={value}&q={value}",
             "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "new5.hdhub4u.cl",
-            "method": "GET",
-            "path_pattern": "/b-db-xt",
-            "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -42717,7 +42244,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "hianime",
@@ -42782,7 +42309,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "hindmoviez",
@@ -43389,7 +42916,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "kehflix",
@@ -43408,7 +42935,7 @@
       "errors": [],
       "runtime_error_count": 0,
       "malformed_request_count": 0,
-      "streams_returned": 17,
+      "streams_returned": 18,
       "streams_playable": 4,
       "language_evidence": [
         {
@@ -43593,40 +43120,40 @@
             "host": "kehflix.com",
             "method": "GET",
             "path_pattern": "/api/stream-gw?t={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kehflix.com",
+            "method": "GET",
+            "path_pattern": "/api/stream-gw?t={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kehflix.com",
+            "method": "GET",
+            "path_pattern": "/api/stream-gw?t={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kehflix.com",
+            "method": "GET",
+            "path_pattern": "/api/stream-gw?t={value}",
             "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "kehflix.com",
-            "method": "GET",
-            "path_pattern": "/api/stream-gw?t={value}",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "kehflix.com",
-            "method": "GET",
-            "path_pattern": "/api/stream-gw?t={value}",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "kehflix.com",
-            "method": "GET",
-            "path_pattern": "/api/stream-gw?t={value}",
-            "status": 206,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -43936,40 +43463,7 @@
             "host": "kehflix.com",
             "method": "GET",
             "path_pattern": "/api/stream-gw?t={value}",
-            "status": 403,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "media.nakastream.tv",
-            "method": "GET",
-            "path_pattern": "/tv/1396-yh3cz/S01/E01/",
-            "status": 403,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "www.cloudflare.com",
-            "method": "GET",
-            "path_pattern": "/5xx-error-landing",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "kehflix.com",
-            "method": "GET",
-            "path_pattern": "/api/stream-gw?t={value}",
-            "status": 200,
+            "status": 206,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -43992,6 +43486,17 @@
             "method": "GET",
             "path_pattern": "/api/stream-gw?t={value}",
             "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kehflix.com",
+            "method": "GET",
+            "path_pattern": "/api/stream-gw?t={value}",
+            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -44047,6 +43552,28 @@
             "method": "GET",
             "path_pattern": "/api/stream-gw?t={value}",
             "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kehflix.com",
+            "method": "GET",
+            "path_pattern": "/api/stream-gw?t={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kehflix.com",
+            "method": "GET",
+            "path_pattern": "/api/stream-gw?t={value}",
+            "status": 206,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -44696,7 +44223,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "kisskh",
@@ -44951,7 +44478,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "kurage",
@@ -45014,785 +44541,11 @@
             "host": "kurage.live",
             "method": "GET",
             "path_pattern": "/?s={value}",
-            "status": 200,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/demon-slayer-mugen-train",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          }
-        ],
-        [
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "episode",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/2nd-season",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/hell-mode",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          }
-        ],
-        [
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?q={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "search",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/search?query={value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/?s={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "search",
@@ -45810,62 +44563,18 @@
             "host": "kurage.live",
             "method": "GET",
             "path_pattern": "/search?query={value}",
-            "status": 404,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "content_lookup",
             "host": "kurage.live",
             "method": "GET",
-            "path_pattern": "/le-voyage-de-chihiro",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/{token}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/unesenniye-prizrakami",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/chihiro-ilmmiid-gaskkas",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "kurage.live",
-            "method": "GET",
-            "path_pattern": "/el-viatge-de-chihiro",
-            "status": 404,
+            "path_pattern": "/?s={value}",
+            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -45966,11 +44675,11 @@
             "host": "kurage.live",
             "method": "GET",
             "path_pattern": "/search?query={value}",
-            "status": null,
+            "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": "23",
-            "error": "The operation was aborted due to timeout"
+            "error_code": null,
+            "error": null
           },
           {
             "stage": "content_lookup",
@@ -46043,11 +44752,576 @@
             "host": "kurage.live",
             "method": "GET",
             "path_pattern": "/anime/{id}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/watch/{id}/{id}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "origin_probe",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/manifest.webmanifest",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          }
+        ],
+        [
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
             "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": "23",
             "error": "The operation was aborted due to timeout"
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": null,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": null,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": null,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
+          }
+        ],
+        [
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": null,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/search?query={value}",
+            "status": 404,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/anime/{id}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/watch/{id}/{id}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "origin_probe",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/manifest.webmanifest",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "kurage.live",
+            "method": "GET",
+            "path_pattern": "/browse?genre={value}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
           }
         ],
         [
@@ -46320,11 +45594,11 @@
             "host": "kurage.live",
             "method": "GET",
             "path_pattern": "/jujutsu-kaisen",
-            "status": 404,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "content_lookup",
@@ -46709,22 +45983,22 @@
             "host": "kurage.live",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 404,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "search",
             "host": "kurage.live",
             "method": "GET",
             "path_pattern": "/search?query={value}",
-            "status": 404,
+            "status": null,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
-            "error_code": null,
-            "error": null
+            "error_code": "23",
+            "error": "The operation was aborted due to timeout"
           },
           {
             "stage": "content_lookup",
@@ -47014,7 +46288,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "mallumv",
@@ -48231,7 +47505,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "moonflix",
@@ -48486,7 +47760,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "movieblast",
@@ -48557,7 +47831,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "moviebox",
@@ -48628,7 +47902,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "movies4u",
@@ -51160,7 +50434,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "moviesdrive",
@@ -53637,7 +52911,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "movieshunt",
@@ -53684,7 +52958,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "moviesmod",
@@ -56062,7 +55336,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "movix",
@@ -59777,7 +59051,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "mugiwarastream",
@@ -61906,7 +61180,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "mycima",
@@ -65676,7 +64950,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "nakios",
@@ -66047,7 +65321,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "neko-sama",
@@ -66112,7 +65386,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "netmirror",
@@ -66367,7 +65641,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "onlykdrama",
@@ -66438,7 +65712,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "papadustream",
@@ -68811,7 +68085,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "peachify",
@@ -68882,7 +68156,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "persianstremio",
@@ -68953,7 +68227,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "playimdb",
@@ -69024,7 +68298,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "purstream",
@@ -69659,7 +68933,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "sekai",
@@ -71788,7 +71062,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "showbox",
@@ -71859,7 +71133,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "streamflix",
@@ -72114,28 +71388,41 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "streamzo",
       "key": "gowaru:streamzo",
       "source": "gowaru",
-      "status": "healthy",
+      "status": "no_streams",
       "score": 100,
       "fixture_status_counts": {
-        "healthy": 1,
-        "no_streams": 8
+        "no_streams": 12
       },
       "failure_classes": [
-        "content_lookup_completed_no_streams",
-        "stream_valid"
+        "content_lookup_completed_no_streams"
       ],
       "errors": [],
       "runtime_error_count": 0,
       "malformed_request_count": 0,
-      "streams_returned": 1,
-      "streams_playable": 1,
+      "streams_returned": 0,
+      "streams_playable": 0,
       "language_evidence": [
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        },
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        },
+        {
+          "group": "unknown",
+          "confidence": "none",
+          "evidence": []
+        },
         {
           "group": "unknown",
           "confidence": "none",
@@ -72288,194 +71575,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/embed/player.videasy.to/{id}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "cdn.vidstack.io",
-            "method": "GET",
-            "path_pattern": "/player/theme.css@1.15.6",
             "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "cdn.vidstack.io",
-            "method": "GET",
-            "path_pattern": "/player/video.css@1.15.6",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "cdn.vidstack.io",
-            "method": "GET",
-            "path_pattern": "/player@1.15.6",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "moon.peakstorm.top",
-            "method": "GET",
-            "path_pattern": "/vd/{token}/index-s2160p-v1-a1.m3u8",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/embed/player.videasy.to/{value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "origin_probe",
-            "host": "image.tmdb.org",
-            "method": "GET",
-            "path_pattern": "/",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "origin_probe",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/films",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/series",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/favorites",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/history",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/categories",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/embed/player.videasy.to/+",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/embed/player.videasy.to/{value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "moon.peakstorm.top",
-            "method": "GET",
-            "path_pattern": "/vd/{token}/index-s2160p-v1-a1.m3u8",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "moon.peakstorm.top",
-            "method": "GET",
-            "path_pattern": "/vd/{token}/index-s2160p-v1-a1.m3u8",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "moon.peakstorm.top",
-            "method": "GET",
-            "path_pattern": "/vd/{token}/index-s2160p-v1-a1.m3u8",
-            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -72865,6 +71965,342 @@
             "stage": "content_lookup",
             "host": "streamzo.fr",
             "method": "GET",
+            "path_pattern": "/tenet",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/embed/player.videasy.to/{id}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          }
+        ],
+        [
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/oppenheimer",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/embed/player.videasy.to/{id}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          }
+        ],
+        [
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/inception",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "player",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/embed/player.videasy.to/{id}",
+            "status": 206,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          }
+        ],
+        [
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/?s={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "search",
+            "host": "streamzo.fr",
+            "method": "GET",
+            "path_pattern": "/search?q={value}",
+            "status": 200,
+            "invocation": "positional_with_settings",
+            "settings_profile": "empty",
+            "error_code": null,
+            "error": null
+          },
+          {
+            "stage": "content_lookup",
+            "host": "streamzo.fr",
+            "method": "GET",
             "path_pattern": "/series/game-of-thrones-2011",
             "status": 200,
             "invocation": "positional_with_settings",
@@ -72978,7 +72414,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73000,7 +72436,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73079,7 +72515,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73101,7 +72537,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73123,7 +72559,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73145,7 +72581,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73155,172 +72591,7 @@
             "stage": "content_lookup",
             "host": "streamzo.fr",
             "method": "GET",
-            "path_pattern": "/series/stranger-things",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/embed/vidzy.live/episode/{id}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "cdn.vidstack.io",
-            "method": "GET",
-            "path_pattern": "/player/theme.css@1.15.6",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "cdn.vidstack.io",
-            "method": "GET",
-            "path_pattern": "/player/video.css@1.15.6",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "cdn.vidstack.io",
-            "method": "GET",
-            "path_pattern": "/player@1.15.6",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "v6.vidzy.cc",
-            "method": "GET",
-            "path_pattern": "/hls2/{id}/{id}/8lwsvaas8nzq_n/master.m3u8?amp;e={value}&amp;f={value}&amp;i={value}&amp;s={value}&amp;sp={value}&t={value}",
-            "status": 403,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/embed/vidzy.live/episode/{value}",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "origin_probe",
-            "host": "image.tmdb.org",
-            "method": "GET",
-            "path_pattern": "/",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "origin_probe",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/films",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/series",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/favorites",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/history",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/categories",
-            "status": 206,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/embed/vidzy.live/episode/+",
-            "status": 404,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/embed/vidzy.live/episode/{value}",
+            "path_pattern": "/stranger-things",
             "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
@@ -73329,10 +72600,10 @@
           },
           {
             "stage": "content_lookup",
-            "host": "v6.vidzy.cc",
+            "host": "streamzo.fr",
             "method": "GET",
-            "path_pattern": "/hls2/{id}/{id}/8lwsvaas8nzq_n/master.m3u8?t={value}",
-            "status": 403,
+            "path_pattern": "/extrano-al-reves",
+            "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73340,21 +72611,10 @@
           },
           {
             "stage": "content_lookup",
-            "host": "v6.vidzy.cc",
+            "host": "streamzo.fr",
             "method": "GET",
-            "path_pattern": "/hls2/{id}/{id}/8lwsvaas8nzq_n/master.m3u8?t={value}",
-            "status": 403,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "vidzy.live",
-            "method": "GET",
-            "path_pattern": "/embed-8lwsvaas8nzq.html",
-            "status": 200,
+            "path_pattern": "/{token}",
+            "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73362,21 +72622,10 @@
           },
           {
             "stage": "content_lookup",
-            "host": "vidzy.live",
+            "host": "streamzo.fr",
             "method": "GET",
-            "path_pattern": "/premium.html",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "player",
-            "host": "vidzy.org",
-            "method": "GET",
-            "path_pattern": "/embed-8lwsvaas8nzq.html",
-            "status": 200,
+            "path_pattern": "/cosas-extranas",
+            "status": 404,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73400,7 +72649,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73422,7 +72671,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73444,7 +72693,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73466,18 +72715,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/series/jujutsu-kaisen",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73545,7 +72783,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73567,7 +72805,7 @@
             "host": "streamzo.fr",
             "method": "GET",
             "path_pattern": "/search?q={value}",
-            "status": 200,
+            "status": 429,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73612,17 +72850,6 @@
             "method": "GET",
             "path_pattern": "/search?q={value}",
             "status": 429,
-            "invocation": "positional_with_settings",
-            "settings_profile": "empty",
-            "error_code": null,
-            "error": null
-          },
-          {
-            "stage": "content_lookup",
-            "host": "streamzo.fr",
-            "method": "GET",
-            "path_pattern": "/series/l-attaque-des-titans-2013",
-            "status": 200,
             "invocation": "positional_with_settings",
             "settings_profile": "empty",
             "error_code": null,
@@ -73819,7 +73046,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "toflix",
@@ -74190,7 +73417,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "topcartoons",
@@ -74261,7 +73488,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "uhdmovies",
@@ -76628,7 +75855,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vegamovies",
@@ -79105,7 +78332,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "videasy",
@@ -79176,7 +78403,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vidfast",
@@ -79247,7 +78474,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vidlink",
@@ -79318,7 +78545,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vidlove",
@@ -79573,7 +78800,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vidnest",
@@ -79644,7 +78871,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vidnest-anime",
@@ -79709,7 +78936,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vidrock",
@@ -79780,7 +79007,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vidsrc",
@@ -79851,7 +79078,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vixsrc",
@@ -79922,7 +79149,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "voiranime",
@@ -82139,7 +81366,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "voiranime-homes",
@@ -82341,7 +81568,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "voiranime-rip",
@@ -84514,7 +83741,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "vostfree",
@@ -84716,7 +83943,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "waveanime",
@@ -84781,7 +84008,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "wookafr",
@@ -87346,7 +86573,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "xpass",
@@ -87417,7 +86644,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "yflix",
@@ -87672,7 +86899,7 @@
           }
         ]
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     },
     {
       "id": "zinkmovies",
@@ -87743,7 +86970,7 @@
         [],
         []
       ],
-      "last_checked": "2026-09-01T06:15:06.933667+00:00"
+      "last_checked": "2026-09-01T09:17:59.801950+00:00"
     }
   ]
 }

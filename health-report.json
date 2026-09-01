@@ -1,6 +1,6 @@
 {
   "schema_version": 64,
-  "generated_at": "2026-09-01T07:12:06.617494+00:00",
+  "generated_at": "2026-09-01T09:21:10.919240+00:00",
   "test_environment": "github-actions-node",
   "test_mode": "deep",
   "upstream_manifest_count": 3,
@@ -21,11 +21,11 @@
   "runtime_evidence_enabled_providers": 0,
   "ci_inconclusive_disabled_providers": 32,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 1,
     "reachable": 0,
     "blocked": 8,
     "degraded": 0,
-    "no_streams": 31,
+    "no_streams": 32,
     "provider_unreachable": 39,
     "runtime_error": 1,
     "unavailable": 15,
@@ -2296,9 +2296,9 @@
     },
     {
       "id": "desiflix",
-      "action": "restored-activation-lkg-enabled-ci-uncertain",
+      "action": "preserved-current-enabled-ci-uncertain",
       "enabled": true,
-      "restored_from_activation_lkg": true,
+      "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
@@ -2317,8 +2317,7 @@
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
-        "00_provider_specific_access",
-        "onboarding_requires_first_playable_stream"
+        "00_provider_specific_access"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -2708,14 +2707,11 @@
             "provider_server_hosts": [
               "kehflix.com",
               "kehflix.wiki",
-              "media.nakastream.tv",
-              "www.cloudflare.com",
               "www.youtube.com"
             ],
             "provider_server_http_statuses": [
               200,
               206,
-              403,
               404
             ]
           },
@@ -2739,7 +2735,7 @@
         }
       },
       "selected_source": "published-baseline",
-      "selected_upstream_id": "kehflix",
+      "selected_upstream_id": "KEHFLIX",
       "observed_status": "healthy",
       "observed_score": 100,
       "manifest_ordering": {
@@ -2775,7 +2771,7 @@
             "fixture_phase": "primary",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 5,
+            "stream_count": 6,
             "error": null
           },
           {
@@ -2868,21 +2864,18 @@
         "accepted_subtitles_advertised": 0,
         "accepted_subtitles_reachable": 0,
         "provider_median_latency_ms": 7504,
-        "stream_median_latency_ms": 472,
+        "stream_median_latency_ms": 514,
         "disallowed_streams": 0,
         "provider_server_accessible": true,
         "provider_server_successful_response": true,
         "provider_server_hosts": [
           "kehflix.com",
           "kehflix.wiki",
-          "media.nakastream.tv",
-          "www.cloudflare.com",
           "www.youtube.com"
         ],
         "provider_server_http_statuses": [
           200,
           206,
-          403,
           404
         ],
         "manifest_description_present": true,
@@ -2918,7 +2911,7 @@
             "fixture_phase": "primary",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 5,
+            "stream_count": 6,
             "error": null
           },
           {
@@ -2951,7 +2944,7 @@
           "scope": "provider",
           "passed": true,
           "provider_median_latency_ms": 7504,
-          "stream_median_latency_ms": 472,
+          "stream_median_latency_ms": 514,
           "maximum_provider_median_latency_ms": 15000,
           "maximum_stream_median_latency_ms": 12000
         },
@@ -7714,9 +7707,9 @@
     },
     {
       "id": "goated",
-      "action": "restored-activation-lkg-enabled-ci-uncertain",
+      "action": "preserved-current-enabled-ci-uncertain",
       "enabled": true,
-      "restored_from_activation_lkg": true,
+      "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
@@ -7735,8 +7728,7 @@
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
-        "00_provider_specific_access",
-        "onboarding_requires_first_playable_stream"
+        "00_provider_specific_access"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -8336,6 +8328,7 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
+              "greenmountmotors.com",
               "hubcloud.cx",
               "new5.hdhub4u.cl",
               "www.imdb.com"
@@ -10110,9 +10103,9 @@
     },
     {
       "id": "nakios",
-      "action": "restored-activation-lkg-enabled-ci-uncertain",
+      "action": "preserved-current-enabled-ci-uncertain",
       "enabled": true,
-      "restored_from_activation_lkg": true,
+      "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
@@ -10131,8 +10124,7 @@
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
-        "00_provider_specific_access",
-        "onboarding_requires_first_playable_stream"
+        "00_provider_specific_access"
       ],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
@@ -11634,14 +11626,216 @@
     },
     {
       "id": "streamzo",
-      "action": "preserved-current-clean-reconstruction-pending",
+      "action": "preserved-current-enabled-ci-uncertain",
       "enabled": true,
+      "restored_from_activation_lkg": false,
+      "preservation_upstream_enabled": true,
       "activation_eligible": false,
-      "failed_gates": [],
-      "activation_blockers": [
-        "clean_reconstruction_pending"
+      "activation_mode": "preserved_current_ci_uncertain",
+      "failed_gates": [
+        "04_fixture_and_type_coverage",
+        "05_stream_and_fixture_coverage",
+        "06_distinct_host_diversity",
+        "07_verified_payload_playability",
+        "08_quality_and_bitrate",
+        "10_content_identity_integrity",
+        "00_current_playable_stream"
       ],
-      "activation_gates": {},
+      "activation_blockers": [],
+      "activation_gates": {
+        "01_policy_safe_no_p2p": {
+          "passed": true,
+          "scope": "stream",
+          "evidence": {
+            "status": "no_streams",
+            "rejected_policy_streams": 0,
+            "exposed_disallowed_streams": 0
+          },
+          "threshold": "no disallowed P2P/torrent output survives stream sanitization"
+        },
+        "02_healthy_functional_status": {
+          "passed": true,
+          "scope": "provider",
+          "evidence": {
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
+          },
+          "threshold": "provider runtime/API reachable"
+        },
+        "03_minimum_score": {
+          "passed": true,
+          "scope": "provider",
+          "evidence": {
+            "provider_score": 100
+          },
+          "threshold": 55
+        },
+        "04_fixture_and_type_coverage": {
+          "passed": false,
+          "scope": "type",
+          "evidence": {
+            "healthy_fixtures": 0,
+            "fixtures_tested": 9,
+            "healthy_fixture_ratio": 0.0,
+            "required_categories": [
+              "anime",
+              "movie",
+              "tv"
+            ],
+            "original_required_categories": [
+              "anime",
+              "movie",
+              "tv"
+            ],
+            "healthy_categories": [],
+            "activation_supported_types": [],
+            "type_scope_applied": false
+          },
+          "threshold": {
+            "minimum_healthy_fixtures": 1,
+            "minimum_healthy_fixture_ratio": 0.34,
+            "require_declared_type_coverage": true,
+            "representative_fixture_mode": true
+          }
+        },
+        "05_stream_and_fixture_coverage": {
+          "passed": false,
+          "scope": "stream",
+          "evidence": {
+            "playable_streams": 0,
+            "playable_fixtures": 0
+          },
+          "threshold": {
+            "minimum_playable_streams": 1,
+            "minimum_playable_fixtures": 1
+          }
+        },
+        "06_distinct_host_diversity": {
+          "passed": false,
+          "scope": "stream",
+          "evidence": {
+            "distinct_reachable_hosts": 0,
+            "reachable_hosts": []
+          },
+          "threshold": 1
+        },
+        "07_verified_payload_playability": {
+          "passed": false,
+          "scope": "stream",
+          "evidence": {
+            "payload_verified_streams": 0,
+            "playable_streams": 0
+          },
+          "threshold": {
+            "minimum_payload_verified_streams": 1,
+            "minimum_playable_streams": 1
+          }
+        },
+        "08_quality_and_bitrate": {
+          "passed": false,
+          "scope": "stream",
+          "evidence": {
+            "effective_max_height": null,
+            "max_bandwidth": null,
+            "manifest_effective_height": null,
+            "manifest_curation_score": 5,
+            "manifest_quality_signals": [],
+            "manifest_formats": [
+              "m3u8"
+            ],
+            "manifest_sources": [
+              "gowaru"
+            ]
+          },
+          "threshold": {
+            "minimum_effective_height": 0,
+            "minimum_bandwidth_bps_when_reported": 0,
+            "minimum_manifest_curation_score_when_stream_is_not_returned": 5
+          }
+        },
+        "09_language_and_subtitle_integrity": {
+          "passed": true,
+          "scope": "stream",
+          "evidence": {
+            "accepted_audio_languages": [],
+            "accepted_subtitle_languages": [],
+            "accepted_subtitles_advertised": 0,
+            "accepted_subtitles_reachable": 0,
+            "runtime_observed_languages": [],
+            "manifest_accepted_languages": [
+              "fr"
+            ],
+            "verified_manifest_audio_fallback": false
+          },
+          "threshold": {
+            "accepted_audio_languages": [
+              "fr",
+              "en"
+            ],
+            "accepted_subtitle_languages": [
+              "fr",
+              "en"
+            ],
+            "reachable_advertised_subtitle_required": true
+          }
+        },
+        "10_content_identity_integrity": {
+          "passed": false,
+          "scope": "stream",
+          "evidence": {
+            "playable_identity_verified_streams": 0,
+            "playable_identity_unverified_streams": 0,
+            "playable_identity_contradiction_count": 0,
+            "playable_duration_identity_mismatch_count": 0,
+            "rejected_identity_streams": 0,
+            "rejected_duration_streams": 0,
+            "rejected_unreachable_streams": 0
+          },
+          "threshold": {
+            "minimum_surviving_playable_streams": 1,
+            "maximum_playable_identity_contradictions": 0,
+            "maximum_playable_duration_identity_mismatches": 0,
+            "rejected_streams_do_not_disable_healthy_provider": true,
+            "unknown_identity_is_not_ui_unknown_quality": true
+          }
+        },
+        "00_provider_specific_access": {
+          "passed": true,
+          "scope": "provider",
+          "evidence": {
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
+            "provider_server_hosts": [
+              "streamzo.fr"
+            ],
+            "provider_server_http_statuses": [
+              200,
+              206,
+              404,
+              429
+            ]
+          },
+          "threshold": {
+            "required": "successful provider-owned HTTP response"
+          }
+        },
+        "00_current_playable_stream": {
+          "passed": false,
+          "scope": "stream",
+          "evidence": {
+            "stream_status": "no_streams",
+            "streams_playable": 0,
+            "payload_verified_streams": 0,
+            "healthy_fixtures": 0
+          },
+          "threshold": {
+            "required_for": "first_activation_only",
+            "already_proven_provider_kept_on_per_work_zero_stream": true
+          }
+        }
+      },
+      "observed_status": "no_streams",
+      "published_filename": "providers/streamzo--nuvio--510b1d19e94c0be8.js",
       "variant_count": 1,
       "manifest_position": 53
     },
