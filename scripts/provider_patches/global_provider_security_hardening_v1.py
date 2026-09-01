@@ -26,6 +26,7 @@ from provider_security_hardening import assert_hardened, harden_text  # noqa: E4
 
 HOOK_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
 HOOK_BOUNDARY = "__nuvioGlobalProviderSecurityBoundaryV1"
+CORE_START_BOUNDARY = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
 TRUSTED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
@@ -34,7 +35,13 @@ TRUSTED_CORE_TAIL_MARKERS = (
 
 
 def _split_trusted_core_tail(text: str) -> tuple[str, str]:
-    """Separate an already-generated trusted Core tail from provider-derived code."""
+    """Separate provider-owned source from every NiakVIO Core brick."""
+    boundary = text.find(f"/* {CORE_START_BOUNDARY} */")
+    if boundary >= 0:
+        return text[:boundary], text[boundary:]
+
+    # Compatibility only for pre-boundary bundles. New reconstruction always
+    # emits CORE_START_BOUNDARY before any Core hook and must never harden Core.
     starts = [
         index
         for marker in TRUSTED_CORE_TAIL_MARKERS
