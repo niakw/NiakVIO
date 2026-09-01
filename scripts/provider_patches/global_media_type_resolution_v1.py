@@ -91,7 +91,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v18-native-deferred-verification",
+        "revision": "tmdb-api-first-semantic-transport-split-v19-launch-nonzero-gate",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -354,7 +354,15 @@ function preflightRequired(a){
 }
 function hasProviderOutput(value){
   if(Array.isArray(value))return value.length>0;
-  return value!==null&&value!==undefined;
+  if(!value||typeof value!=="object")return false;
+  for(var i=0;i<3;i++){
+    var key=["streams","results","data"][i];
+    if(Array.isArray(value[key]))return value[key].length>0;
+  }
+  var url=value.url;
+  if(typeof url==="string"&&s(url))return true;
+  if(url&&typeof url==="object"&&typeof url.url==="string"&&s(url.url))return true;
+  return false;
 }
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
@@ -465,13 +473,18 @@ function install(o,k){
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
       if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
+      var providerLaunched=true;
       var value=await native.apply(this,a);
       if(deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
-      // Ordinary numeric-ID providers avoid a redundant TMDB preflight. A
-      // zero-result work exits here with no TMDB request at all. Positive output
-      // is still verified before it can escape, preserving anime/type safety.
-      if(!preflight&&hasProviderOutput(value)){
+      // Hard launch/output gate: provider post-processing is allowed only for the
+      // current launched invocation and only when at least one real stream exists.
+      // [] and {streams/results/data: []} exit immediately with no deferred TMDB,
+      // presentation or later Core work.
+      if(!providerLaunched||!hasProviderOutput(value))return [];
+      // Ordinary numeric-ID providers avoid a redundant TMDB preflight. Positive
+      // output is still verified before it can escape, preserving anime/type safety.
+      if(!preflight){
         var verified=await resolve(originalArgs);
         if(!verified||deadlineExpired(requestDeadline))return [];
         var provisionalContext=a.__nuvioContext||{},verifiedContext=verified.__nuvioContext||{};
