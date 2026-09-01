@@ -29,7 +29,7 @@ base = r'''module.exports={getStreams:async function(){return [
 
 patched = identity.apply(base, context={"provider_id": "example"})
 assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
-assert "cross-client-positive-mismatch-runtime-tmdb-fail-open-v6" in patched
+assert "cross-client-shared-tmdb-cache-lazy-episode-v7" in patched
 assert identity.apply(patched, context={"provider_id": "example"}) == patched
 
 # The final Core presentation composes facts + identity before presentation, so
@@ -174,7 +174,7 @@ fail_open_source = r'''module.exports={getStreams:async()=>[
  {name:'Server 2',filename:'Interstellar.Nolan.Cut.2014.1080p.BluRay.mkv',url:'https://cdn.example/interstellar-cut.m3u8'}
 ]};'''
 fail_open_patched = identity.apply(fail_open_source, context={"provider_id": "example"})
-assert "cross-client-positive-mismatch-runtime-tmdb-fail-open-v6" in fail_open_patched
+assert "cross-client-shared-tmdb-cache-lazy-episode-v7" in fail_open_patched
 fail_open_runner = r'''
 const assert=require('assert');
 global.TMDB_API_KEY=String(1);
@@ -220,5 +220,36 @@ try:
     assert proc.returncode == 0, proc.stdout + proc.stderr
 finally:
     native_bridge_path.unlink(missing_ok=True)
+
+
+# Composition regression: media_type already verified this movie and populated the
+# shared cache. Native clients must not repeat the same TMDB base fetch in identity.
+shared_cache_source = r'''module.exports={getStreams:async()=>[
+ {name:'Server 1',title:'Interstellar',tmdbId:'157336',url:'https://cdn.example/interstellar.m3u8'}
+]};'''
+shared_cache_patched = identity.apply(shared_cache_source, context={"provider_id": "example"})
+shared_cache_runner = r'''
+const assert=require('assert');
+let calls=0;
+global.TMDB_API_KEY=String(1);
+global.__native_fetch=async()=>{throw new Error('provider native bridge not expected here')};
+global.__nuvioTmdbMetadataCacheV1={
+ 'movie:157336':{state:'ok',metadata:{id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05',external_ids:{imdb_id:'tt0816692'}}}
+};
+global.fetch=async()=>{calls++;throw new Error('cached TMDB base must not be fetched again')};
+PATCHED
+module.exports.getStreams({tmdbId:'157336',imdbId:'tt0816692',mediaType:'movie',title:'Interstellar',year:2014}).then(rows=>{
+ assert.equal(calls,0,'duplicate TMDB base fetch');
+ assert.equal(rows.length,1,JSON.stringify(rows));
+}).catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', shared_cache_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(shared_cache_runner)
+    shared_cache_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(shared_cache_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    shared_cache_path.unlink(missing_ok=True)
 
 print('global stream identity TV/anime/homonymous-movie + native Desktop fail-open regression tests passed')
