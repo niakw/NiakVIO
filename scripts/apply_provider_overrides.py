@@ -197,23 +197,26 @@ def _apply_patch_script(
     if not isinstance(result, str):
         raise TypeError(f"provider patch {patch_script} must return str")
 
-    # Managed patch modules own one full START/END block. The dispatcher proves
-    # cardinality and byte-idempotence centrally so a provider-specific script
-    # cannot silently stack, partially replace, or duplicate a fix.
+    # Every active brick must be byte-idempotent. Reapply/deep may execute the
+    # same declared fix more than once; a second application with identical
+    # provider data is never allowed to append, reorder or rewrite anything.
     managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
     if managed_fix_id:
         assert_single_managed_fix(result, str(managed_fix_id))
-        second = apply_fn(result, **kwargs) if (
-            "options" in signature.parameters
-            or any(parameter.kind == parameter.VAR_KEYWORD for parameter in signature.parameters.values())
-        ) else apply_fn(result)
-        if not isinstance(second, str):
-            raise TypeError(f"managed provider patch {patch_script} must return str")
-        if second != result:
-            raise ValueError(
-                f"managed provider patch {patch_script} is not idempotent "
-                f"for provider {provider_id}"
-            )
+
+    second = apply_fn(result, **kwargs) if (
+        "options" in signature.parameters
+        or any(parameter.kind == parameter.VAR_KEYWORD for parameter in signature.parameters.values())
+    ) else apply_fn(result)
+    if not isinstance(second, str):
+        raise TypeError(f"provider patch {patch_script} must return str on reapply")
+    if second != result:
+        ownership = f" managed_fix={managed_fix_id}" if managed_fix_id else ""
+        raise ValueError(
+            f"provider patch {patch_script} is not byte-idempotent for "
+            f"provider {provider_id}{ownership}"
+        )
+    if managed_fix_id:
         assert_single_managed_fix(second, str(managed_fix_id))
     return result
 
