@@ -24,7 +24,7 @@ critical_paths = (
     ROOT / "scripts/reapply_published_overrides.py",
     ROOT / "scripts/verify_provider_publication_fixed_point.py",
     ROOT / "scripts/run_adaptive_deep_repair.py",
-    ROOT / "scripts/purify_native_reader_repair.py",
+    ROOT / "scripts/verify_native_reader_repair.py",
     ROOT / ".github/workflows/core-media-finalize-main.yml",
 )
 for path in critical_paths:
