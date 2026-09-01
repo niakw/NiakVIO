@@ -92,10 +92,15 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
 playback = OVERRIDES.get("playback_integrity_policy") or {}
 pre = [str(value) for value in playback.get("pre_media_discovery_hooks") or []]
 post = [str(value) for value in playback.get("post_media_discovery_hooks") or []]
-if "scripts/provider_patches/hls_runtime_integrity_v1.py" not in pre:
-    errors.append("global HLS runtime integrity hook disappeared from pre-media Core")
-if "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in post:
-    errors.append("global HLS master/audio preservation hook disappeared from post-media Core")
+global_hooks = [str(value) for value in playback.get("global_discovery_hooks") or []]
+if pre:
+    errors.append(f"pre-media Core must not own HLS validation: {pre!r}")
+if post != ["scripts/provider_patches/hls_runtime_integrity_v1.py"]:
+    errors.append(f"single post-media HLS owner missing or duplicated: {post!r}")
+if "scripts/provider_patches/hls_master_audio_preserver_v1.py" in global_hooks:
+    errors.append("retired HLS audio cross-mutator reappeared in global Core")
+if "scripts/provider_patches/native_hls_integrity_budget_v1.py" in pre + post + global_hooks:
+    errors.append("retired native HLS cross-mutator reappeared in Core")
 
 assert int(FIXTURE.get("provider_count") or 0) == len(FIXTURE.get("providers") or {}), (
     "5.21.0 capability fixture count drift"
