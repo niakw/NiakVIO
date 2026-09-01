@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
+APPLY = ROOT / "scripts" / "apply_provider_overrides.py"
 TARGET = "scripts/provider_patches/nuvio_tv_target_media_v4.py"
 RECOVERY = "scripts/provider_patches/vf_catalogue_recovery.py"
 SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v5.py"
@@ -56,14 +57,21 @@ def provider_profile(scripts: list[str], provider_id: str) -> list[str]:
 def main() -> int:
     data = json.loads(CONFIG.read_text(encoding="utf-8"))
     providers = data["provider_patches"]
+    apply_source = APPLY.read_text(encoding="utf-8")
+    assert 'GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"' in apply_source
+    assert '"scope": "global_desktop_runtime_compat"' in apply_source
+    assert '"scope": "global_terminal_stream_sanitizer"' in apply_source
 
     for provider_id in ("streamzo", "frenchstream", "coflix"):
         provider = providers[provider_id]
         scripts = provider.get("patch_scripts") or []
         assert TARGET in scripts, (provider_id, scripts)
-        assert DESKTOP in scripts, (provider_id, scripts)
+        # Desktop compatibility is Core-owned. Provider rows may configure it,
+        # but must not materialize the managed Core brick in patch_scripts.
+        assert DESKTOP not in scripts, (provider_id, scripts)
+        desktop = (provider.get("patch_script_options") or {}).get(DESKTOP) or {}
+        assert desktop.get("normalize_missing_episodes") is True, (provider_id, desktop)
         assert OLD_DIRECT not in scripts, (provider_id, scripts)
-        assert scripts.index(TARGET) < scripts.index(DESKTOP), (provider_id, scripts)
         provider_profile(scripts, provider_id)
         options = target_options(provider)
         assert options.get("force_rewrap_target_media") is True, (provider_id, options)
@@ -72,7 +80,8 @@ def main() -> int:
     coflix = providers["coflix"]
     scripts = coflix.get("patch_scripts") or []
     coflix_profile = provider_profile(scripts, "coflix")
-    assert coflix_profile == [RECOVERY, COFLIX_EXACT, TARGET, STRICT_SANITIZER, DESKTOP], scripts
+    assert coflix_profile == [RECOVERY, COFLIX_EXACT, TARGET], scripts
+    assert STRICT_SANITIZER not in scripts, scripts
     recovery = (coflix.get("patch_script_options") or {}).get(RECOVERY) or {}
     assert recovery.get("strategy") == "html", recovery
     official_site = coflix.get("official_site")
@@ -102,14 +111,14 @@ def main() -> int:
     fs_scripts = frenchstream.get("patch_scripts") or []
     fs_profile = provider_profile(fs_scripts, "frenchstream")
     assert FRENCHSTREAM_RAW_TV in fs_profile, fs_scripts
-    assert fs_profile[-5:] == [FRENCHSTREAM_RAW_TV, TARGET, SANITIZER, DESKTOP, QUARANTINE], fs_scripts
+    assert fs_profile[-4:] == [FRENCHSTREAM_RAW_TV, TARGET, SANITIZER, QUARANTINE], fs_scripts
     assert frenchstream.get("manifest_overrides", {}).get("enabled") is False, frenchstream
     assert "s1.fsvid.lol" in (target_options(frenchstream).get("blocked_hosts") or []), target_options(frenchstream)
 
     streamzo = providers["streamzo"]
     sz_scripts = streamzo.get("patch_scripts") or []
     sz_profile = provider_profile(sz_scripts, "streamzo")
-    assert sz_profile == [TARGET, SANITIZER, DESKTOP, TV_PLAYABLE_FIRST], sz_scripts
+    assert sz_profile == [TARGET, SANITIZER, TV_PLAYABLE_FIRST], sz_scripts
     assert not [path for path in sz_scripts if "/streamzo_" in path], sz_scripts
     shared = (streamzo.get("patch_script_options") or {}).get("scripts/provider_patches/global_catalogue_alias_recovery_v2.py") or {}
     assert shared.get("mirror_routes") == ["/api/mirrors/film/{id}"], shared
