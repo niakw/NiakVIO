@@ -20,8 +20,8 @@ substring search. A provider or another wrapper may coincidentally define the
 same function, causing V5 to skip the alias inside the sanitizer and fail at
 runtime with ``ReferenceError: probe is not defined``. V6 verifies the alias in
 the sanitizer's own lexical region and injects it there when needed. Detection
-is structural rather than formatting-dependent because Terser may compact an
-already-published sanitizer before the next Core reconstruction.
+is structural rather than formatting-dependent because already-published legacy
+bundles may have compact formatting before the next Core reconstruction.
 """
 from __future__ import annotations
 
