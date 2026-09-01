@@ -245,6 +245,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       var result=await original.apply(this,arguments);
       var slot=streamSlot(result);
       if(!slot)return [];
+      if(!slot.list.length)return result;
       var rows=slot.list,seen=Object.create(null),candidates=[],probeCount=0;
       for(var i=0;i<rows.length;i++){
         var stream=rows[i],url=urlOf(stream);
