@@ -1061,34 +1061,12 @@ def main() -> int:
             }]
         patched = security_hardened
         assert_hardened(patched.decode("utf-8", errors="strict"))
-        # Final provider bytes are purified only after every Core/provider/runtime
-        # transform. These exact validated bytes are content-addressed and later
-        # proved by Deep and native Labs.
-        purified, purification = purify_bytes(patched)
-        # Provenance describes net published-byte changes, not transient
-        # intermediate normalization. A provider may already be the canonical
-        # purified fixed point even when an earlier hardening pass temporarily
-        # rewrites formatting before purification restores the exact original
-        # bytes. Recording that transient pass would mutate PROVENANCE.json on
-        # every verification run and break publication idempotence.
-        if purification["applied"] and purified != original:
-            records = list(records) + [{
-                "type": "provider_purification",
-                "phase": "final-post-transform",
-                "revision": 2,
-                "tool": "terser",
-                "tool_version": str(purification.get("toolVersion") or ""),
-                "mode": str(purification.get("mode") or ""),
-                "mangle": False,
-                "fixed_point_verified": bool(purification.get("fixedPointVerified")),
-                "conservative_compression": bool(purification.get("conservativeCompression")),
-                "risk_flags": list(purification.get("riskFlags") or []),
-                "source_sha256": purification["sourceSha256"],
-                "output_sha256": purification["candidateSha256"],
-                "bytes_before": purification["bytesBefore"],
-                "bytes_after": purification["bytesAfter"],
-            }]
-        patched = purified
+        # No JS optimizer/minifier is allowed while runtime behavior is being
+        # stabilized. Validate the exact post-Core bytes and preserve them verbatim.
+        verified_bytes, byte_stability = verify_bytes(patched)
+        if verified_bytes != patched:
+            raise AssertionError(f"{provider_id}: raw-byte verifier rewrote provider bytes")
+        patched = verified_bytes
         assert_hardened(patched.decode("utf-8", errors="strict"))
         changed = patched != original
         # Validate every final published artifact, not only bundles whose bytes changed.
