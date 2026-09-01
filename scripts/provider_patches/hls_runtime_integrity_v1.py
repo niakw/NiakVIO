@@ -298,7 +298,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   async function filterRows(value){
     if(nativeHlsHost())return value;
     var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
-    if(!rows)return value;
+    if(!rows||!rows.length)return value;
     var checks=await Promise.all(rows.map(async function(stream){
       if(!config.probeAllUrls&&!hlsHint(stream))return stream;
       var output=await validateOrRecover(stream);
