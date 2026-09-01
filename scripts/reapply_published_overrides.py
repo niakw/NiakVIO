@@ -25,9 +25,8 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
-from provider_purification import TERSER_VERSION, purify_bytes
+from provider_purification import BYTE_STABILITY_VERSION, verify_bytes
 from provider_security_hardening import assert_hardened, harden_bytes
-from provider_purification import purify_bytes
 from provider_engine_normalizer import (
     _host,
     _host_belongs,
@@ -637,7 +636,6 @@ PUBLICATION_CONTRACT_FILES = (
     "scripts/provider_security_hardening.py",
     "scripts/provider_purification.py",
     "scripts/validate_provider_artifact.cjs",
-    "engine_v2/scripts/purify-provider.mjs",
     "package-lock.json",
     "provider-version-floors.json",
 )
@@ -805,8 +803,10 @@ def fast_fixed_point_check(
             return False, f"missing-fixed-point-proof:{provider_id}"
         if proof.get("verified") is not True or proof.get("mangle") is not False:
             return False, f"invalid-fixed-point-proof:{provider_id}"
-        if str(proof.get("tool_version") or "") != TERSER_VERSION:
+        if str(proof.get("tool") or "") != "raw-bytes":
             return False, f"fixed-point-tool-changed:{provider_id}"
+        if str(proof.get("tool_version") or "") != BYTE_STABILITY_VERSION:
+            return False, f"fixed-point-tool-version-changed:{provider_id}"
         if str(proof.get("sha256") or "").casefold() != actual_public_sha:
             return False, f"fixed-point-proof-sha-drift:{provider_id}"
 
@@ -1093,9 +1093,9 @@ def main() -> int:
             "base_sha256": provider_base_sha,
             "final_fixed_point": {
                 "schema_version": 1,
-                "verified": bool(purification.get("fixedPointVerified", True)),
-                "tool": "terser",
-                "tool_version": str(purification.get("toolVersion") or TERSER_VERSION),
+                "verified": bool(byte_stability.get("fixedPointVerified", True)),
+                "tool": "raw-bytes",
+                "tool_version": str(byte_stability.get("toolVersion") or BYTE_STABILITY_VERSION),
                 "mangle": False,
                 "sha256": digest,
             },
