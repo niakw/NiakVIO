@@ -9,6 +9,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 PATCH = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
 # The native budget layers, synchronous-target traversal and final runtime
