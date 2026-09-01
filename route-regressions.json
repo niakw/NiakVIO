@@ -5,17 +5,17 @@
       "provider": "kurage",
       "host": "kurage.live",
       "stage": "search",
-      "requests": 67,
-      "obsolete_responses": 67,
+      "requests": 100,
+      "obsolete_responses": 100,
       "obsolete_ratio": 1.0,
       "path_patterns": [
         {
-          "pattern": "/search?query={value}",
-          "count": 34
+          "pattern": "/search?q={value}",
+          "count": 50
         },
         {
-          "pattern": "/search?q={value}",
-          "count": 33
+          "pattern": "/search?query={value}",
+          "count": 50
         }
       ],
       "configured_route_replacements": {},

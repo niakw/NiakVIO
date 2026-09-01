@@ -337,29 +337,6 @@
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
-    "vixsrc": {
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "notes": [
-        "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation.",
-        "Quarantined after a playable HLS advertised as the 169-minute Interstellar measured only 4765.75 seconds (ratio 0.470). The bundle is inert for cache-safe client behavior."
-      ],
-      "capability": "quarantined",
-      "profiles": [],
-      "manifest_overrides": {
-        "enabled": false
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/quarantine_provider_v1.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ],
-      "patch_script_options": {
-        "scripts/provider_patches/quarantine_provider_v1.py": {
-          "reason": "interstellar_duration_mismatch"
-        }
-      }
-    },
     "mallumv": {
       "replacements": {
         "mallumv.gay": "mallumv.space",
@@ -856,24 +833,6 @@
       "capability": "api_stream_resolver",
       "profiles": []
     },
-    "allanime": {
-      "capability": "direct_media",
-      "profiles": [],
-      "replacements": {
-        "ww2.aniwatch.fit": "aniwatchtv.watch"
-      },
-      "runtime_domain_replacements": {
-        "ww2.aniwatch.fit": "aniwatchtv.watch"
-      },
-      "official_hub": "https://allanime.sa.com/",
-      "official_site": "https://aniwatchtv.watch",
-      "required_values": [],
-      "patch_script_options": {},
-      "patch_scripts": [
-        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ]
-    },
     "allwish": {
       "capability": "html_scraper",
       "patch_scripts": [
@@ -1323,29 +1282,6 @@
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
       ]
     },
-    "moviebox": {
-      "capability": "quarantined",
-      "profiles": [],
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "official_hub": "https://moviiebox.lol/",
-      "official_site": "https://moviebox.yachts",
-      "required_values": [],
-      "manifest_overrides": {
-        "enabled": false
-      },
-      "patch_script_options": {
-        "scripts/provider_patches/quarantine_provider_v1.py": {
-          "reason": "non_playable_html_output"
-        }
-      },
-      "patch_scripts": [
-        "scripts/provider_patches/quarantine_provider_v1.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ],
-      "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
-    },
     "movies4u": {
       "capability": "html_scraper",
       "profiles": [],
@@ -1536,14 +1472,6 @@
     "vidrock": {
       "capability": "html_scraper",
       "manifest_overrides": {},
-      "patch_scripts": [
-        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
-        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
-      ]
-    },
-    "vidsrc": {
-      "capability": "mixed_embed_resolver",
-      "profiles": [],
       "patch_scripts": [
         "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
         "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
@@ -1784,9 +1712,6 @@
     "4KHDHUB": {
       "capability": "mixed_embed_resolver"
     },
-    "ALLANIME": {
-      "capability": "direct_media"
-    },
     "ALLMOVIELAND": {
       "capability": "html_scraper"
     },
@@ -1868,9 +1793,6 @@
     "MOVIEBLAST": {
       "capability": "html_scraper"
     },
-    "MOVIEBOX": {
-      "capability": "html_scraper"
-    },
     "MOVIES4U": {
       "capability": "mixed_embed_resolver"
     },
@@ -1930,12 +1852,6 @@
     },
     "VIDROCK": {
       "capability": "html_scraper"
-    },
-    "VIDSRC": {
-      "capability": "mixed_embed_resolver"
-    },
-    "VIXSRC": {
-      "capability": "direct_media"
     },
     "VOIRANIME": {
       "capability": "mixed_embed_resolver"
@@ -2170,6 +2086,27 @@
         "/api/streams/warm"
       ]
     },
+    "allanime": {
+      "capability": "direct_media",
+      "profiles": [],
+      "replacements": {
+        "ww2.aniwatch.fit": "aniwatchtv.watch"
+      },
+      "runtime_domain_replacements": {
+        "ww2.aniwatch.fit": "aniwatchtv.watch"
+      },
+      "official_hub": "https://allanime.sa.com/",
+      "official_site": "https://aniwatchtv.watch",
+      "required_values": [],
+      "patch_script_options": {},
+      "patch_scripts": [
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ]
+    },
+    "ALLANIME": {
+      "capability": "direct_media"
+    },
     "frenchstream": {
       "notes": [
         "Resolve the current terminal site from fstream.org before applying the provider.",
@@ -2279,6 +2216,32 @@
     "FRENCHSTREAM": {
       "capability": "mixed_embed_resolver"
     },
+    "moviebox": {
+      "capability": "quarantined",
+      "profiles": [],
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "official_hub": "https://moviiebox.lol/",
+      "official_site": "https://moviebox.yachts",
+      "required_values": [],
+      "manifest_overrides": {
+        "enabled": false
+      },
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "non_playable_html_output"
+        }
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ],
+      "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof."
+    },
+    "MOVIEBOX": {
+      "capability": "html_scraper"
+    },
     "netmirror": {
       "capability": "quarantined",
       "replacements": {},
@@ -2304,6 +2267,43 @@
     },
     "NETMIRROR": {
       "capability": "mixed_embed_resolver"
+    },
+    "vidsrc": {
+      "capability": "mixed_embed_resolver",
+      "profiles": [],
+      "patch_scripts": [
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ]
+    },
+    "VIDSRC": {
+      "capability": "mixed_embed_resolver"
+    },
+    "vixsrc": {
+      "replacements": {},
+      "runtime_domain_replacements": {},
+      "notes": [
+        "Automatically migrated sub.wyzie.ru to sub.wyzie.io after French ISP DNS/HTTP preflight redirect validation.",
+        "Quarantined after a playable HLS advertised as the 169-minute Interstellar measured only 4765.75 seconds (ratio 0.470). The bundle is inert for cache-safe client behavior."
+      ],
+      "capability": "quarantined",
+      "profiles": [],
+      "manifest_overrides": {
+        "enabled": false
+      },
+      "patch_scripts": [
+        "scripts/provider_patches/quarantine_provider_v1.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_minified_v5.py",
+        "scripts/provider_patches/native_sync_fetch_target_order_v1.py"
+      ],
+      "patch_script_options": {
+        "scripts/provider_patches/quarantine_provider_v1.py": {
+          "reason": "interstellar_duration_mismatch"
+        }
+      }
+    },
+    "VIXSRC": {
+      "capability": "direct_media"
     }
   },
   "route_override_defaults": {
@@ -2484,7 +2484,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://new5.hdhub4u.cl",
+        "https://hdhub4u.bi",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -2519,7 +2519,7 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://ww2.aniwatch.fit",
+        "https://aniwatchtv.watch",
         "https://graphql.anili",
         "https://allanime.day",
         "https://allanime.sa.com",
@@ -2548,6 +2548,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://megaplay.buzz",
+        "https://all-wish.me",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -2559,6 +2560,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
+        "https://anidb.pics",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -2915,7 +2917,7 @@
         "https://arm.haglund.dev",
         "https://v3-cinemeta.strem.io",
         "https://kitsu.io",
-        "https://coflix.esq",
+        "https://coflix.group",
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
@@ -3049,7 +3051,7 @@
         "https://vidoza.net",
         "https://lecteurvideo.com",
         "https://up4fun.top",
-        "https://ww547.wiflix-hd.vip",
+        "https://flemmix.men",
         "https://npms.io",
         "https://kitsu.io",
         "https://arm.haglund.dev",
@@ -3057,7 +3059,6 @@
         "https://lodash.com",
         "https://openjsf.org",
         "http://underscorejs.org",
-        "http://ww547.wiflix-hd.vip",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -3154,7 +3155,7 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://download.hdghartv.com.pk",
+        "https://hdghartv.cc",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
@@ -3284,7 +3285,7 @@
       "requires_direct_media": false,
       "observed_origins": [
         "https://mdrive.lol",
-        "https://new3.moviesdrive.christmas",
+        "https://moviesdrives.cfd",
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
