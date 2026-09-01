@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from provider_patch_blocks import render_managed_fix  # noqa: E402
-from provider_purification import (  # noqa: E402
+from provider_byte_stability import (  # noqa: E402
     BYTE_STABILITY_VERSION,
     split_owned_prefix_bootstraps,
     split_provider_core_tail,
@@ -20,7 +20,7 @@ assert not (ROOT / "engine_v2/scripts/terser-clean.mjs").exists()
 # Critical publication/runtime paths must contain no Terser implementation or
 # metadata. Provider optimization stays disabled until runtime is stable.
 critical_paths = (
-    ROOT / "scripts/provider_purification.py",
+    ROOT / "scripts/provider_byte_stability.py",
     ROOT / "scripts/reapply_published_overrides.py",
     ROOT / "scripts/verify_provider_publication_fixed_point.py",
     ROOT / "scripts/run_adaptive_deep_repair.py",
