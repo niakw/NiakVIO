@@ -27,12 +27,16 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
-from provider_patch_blocks import render_managed_fix, strip_managed_fix
-
 ROOT = Path(__file__).resolve().parent
+SCRIPTS = ROOT.parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from provider_patch_blocks import render_managed_fix, strip_managed_fix
 V5_PATH = ROOT / "stream_output_sanitizer_v5.py"
 MARKER = "/* NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6 */"
 MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"
