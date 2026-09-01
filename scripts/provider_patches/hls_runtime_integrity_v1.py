@@ -19,6 +19,14 @@ MARKER = "NUVIO_HLS_RUNTIME_INTEGRITY_V1"
 MANAGED_FIX_ID = "CORE.HLS_RUNTIME_INTEGRITY.V1"
 
 
+def _layer_position(text: str, managed_id: str, legacy_marker: str) -> int:
+    """Locate the whole managed brick boundary, falling back only for legacy JS."""
+    managed = text.find(f"/* START NIAKVIO_FIX:{managed_id} */")
+    if managed >= 0:
+        return managed
+    return text.find(legacy_marker)
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = dict(options or {})
     timeout_ms = max(1500, min(int(cfg.get("timeout_ms", 6500)), 12000))
@@ -297,17 +305,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     core_layers = [
         position
         for position in (
-            text.find("/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
-            text.find("/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
-            text.find("/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
+            _layer_position(text, "CORE.STREAM_FACTS.V1", "/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
+            _layer_position(text, "CORE.STREAM_IDENTITY.V1", "/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
+            _layer_position(text, "CORE.STREAM_PRESENTATION.V1", "/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
         )
         if position >= 0
     ]
     recovery_layers = [
         position
         for position in (
-            text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
-            text.find("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
+            _layer_position(text, "CORE.MEDIA_ENRICHMENT.V1", "/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
+            _layer_position(text, "CORE.RUNTIME_MEDIA_SAFETY.V4", "/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
         )
         if position >= 0
     ]
