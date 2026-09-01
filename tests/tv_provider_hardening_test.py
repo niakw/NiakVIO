@@ -5,9 +5,11 @@ import importlib.util
 import json
 import subprocess
 import tempfile
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 overrides = json.loads((ROOT / 'provider-overrides.json').read_text(encoding='utf-8'))
 policy = json.loads((ROOT / 'provider-type-policy.json').read_text(encoding='utf-8'))['providers']
 manifest = json.loads((ROOT / 'manifest.json').read_text(encoding='utf-8'))['scrapers']

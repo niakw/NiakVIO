@@ -5,9 +5,11 @@ import importlib.util
 import json
 import subprocess
 import tempfile
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 BRANDING_FILE = ROOT / "assets/providers/emojis.json"
 PATCH_FILE = ROOT / "scripts/provider_patches/global_provider_branding_v1.py"
 

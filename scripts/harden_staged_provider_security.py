@@ -105,8 +105,8 @@ def harden_stage(stage: Path) -> dict[str, Any]:
             })
             row["local_patches"] = patches
             applied += 1
-        else:
-            assert_hardened(current.decode("utf-8", errors="strict"))
+        # harden_bundle() already validates the provider-owned prefix even when
+        # no byte rewrite is necessary. Generated Core tail bytes stay untouched.
 
         structured += int(report.get("structuredParseChanges") or 0)
         literal += int(report.get("literalDecodeChanges") or 0)

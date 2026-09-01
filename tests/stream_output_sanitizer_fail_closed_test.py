@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import sys
+
 import importlib.util
 import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 PATCH = ROOT / "scripts" / "provider_patches" / "stream_output_sanitizer_v6.py"
 
 spec = importlib.util.spec_from_file_location("stream_output_sanitizer_v6_test", PATCH)
