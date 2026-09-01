@@ -1135,6 +1135,30 @@ def _discover_api_probe_routes(site_url: str, site_document: str, api_origin: st
                 return found
     return found
 
+def retained_lkg_site(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any]) -> str | None:
+    """Return the last safe provider terminal without treating it as fresh proof.
+
+    Authoritative hubs may be temporarily unavailable or may render their current
+    address dynamically. A failed refresh must never erase the last published
+    terminal or make downstream rebuilds behave as if no route had ever existed.
+    """
+    candidates: list[str] = []
+    current = history_row.get("current") if isinstance(history_row, dict) else None
+    if isinstance(current, dict) and is_http_url(current.get("url")):
+        candidates.append(str(current.get("url")))
+    published = cfg.get("_published_official_site")
+    if is_http_url(published):
+        candidates.append(str(published))
+    for raw in candidates:
+        value = raw.rstrip("/")
+        if (
+            is_provider_terminal_site_url(value)
+            and same_brand(provider_id, value, cfg)
+        ):
+            return value
+    return None
+
+
 def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any], mode: str, timeout: float) -> dict[str, Any]:
     item: dict[str, Any] = {"provider_id": provider_id, "status": "inconclusive"}
     candidates, source_observations = gather_candidates(provider_id, cfg, history_row, mode, timeout)
@@ -1171,8 +1195,15 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
 
     if not selected:
         if has_authoritative_hub_source(cfg):
-            item["status"] = "hub_unresolved"
-            item["reason"] = "authoritative_hub_no_terminal_candidate"
+            retained = retained_lkg_site(provider_id, cfg, history_row)
+            if retained:
+                item["status"] = "retained_last_known_good"
+                item["official_site"] = retained
+                item["reason"] = "authoritative_hub_unresolved_preserved_last_known_good"
+                item["fresh_validation"] = False
+            else:
+                item["status"] = "hub_unresolved"
+                item["reason"] = "authoritative_hub_no_terminal_candidate_or_lkg"
             return item
         if has_authoritative_direct_source(cfg):
             item["status"] = "direct_unresolved"
@@ -1375,6 +1406,14 @@ def main() -> int:
         if not args.include_disabled and disabled:
             continue
         effective_cfg = dict(cfg)
+        provider_patch = (
+            config.get("provider_patches", {}).get(provider_id, {})
+            if isinstance(config.get("provider_patches"), dict)
+            else {}
+        )
+        if isinstance(provider_patch, dict) and is_http_url(provider_patch.get("official_site")):
+            # Read-only handoff: this is fallback/LKG state, never fresh hub proof.
+            effective_cfg["_published_official_site"] = str(provider_patch["official_site"]).rstrip("/")
         if args.search_disabled and disabled:
             effective_cfg["search_when_disabled"] = True
         work.append((provider_id, effective_cfg, history_providers.setdefault(provider_id, {})))
