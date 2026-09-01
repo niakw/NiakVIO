@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
-from provider_purification import split_owned_prefix_bootstraps
+from provider_byte_stability import split_owned_prefix_bootstraps
 from provider_patch_blocks import strip_all_managed_fixes
 
 ROOT = Path(__file__).resolve().parents[1]
