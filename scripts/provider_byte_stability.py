@@ -3,8 +3,7 @@
 """Raw provider-byte stability verifier.
 
 Provider optimization/minification is deliberately disabled while NiakVIO runtime
-semantics are being stabilized. This module preserves the historical call surface
-used by Deep/native/publication code, but it never rewrites JavaScript bytes.
+semantics are being stabilized. This module is the single Deep/native/publication byte-validation boundary and it never rewrites JavaScript bytes.
 
 Every checked artifact is validated structurally/syntactically, hashed, and
 returned byte-for-byte. Core START/END Lego ownership therefore cannot be altered
