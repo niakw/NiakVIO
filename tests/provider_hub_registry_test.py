@@ -262,6 +262,22 @@ lkg_only_cfg = {'hub': None, 'sources': [], 'direct_candidates': []}
 lkg_seed = resolver._seed_known_candidates(lkg_only_cfg, authority_history)
 assert [row['source_type'] for row in lkg_seed] == ['history_lkg']
 
+# A temporary authoritative-hub outage preserves the last published terminal as
+# LKG without pretending it was freshly validated. This is the Purstream failure
+# mode observed on Nuvio: dynamic/empty hub HTML must not become an empty route.
+purstream_retained_cfg = copy.deepcopy(hubs['purstream'])
+purstream_retained_cfg['_published_official_site'] = 'https://purstream.id'
+assert resolver.retained_lkg_site('purstream', purstream_retained_cfg, {}) == 'https://purstream.id'
+purstream_history = {
+    'current': {
+        'url': 'https://purstream.id',
+        'host': 'purstream.id',
+        'source_type': 'hub',
+        'source': 'https://purstream.wiki/',
+    }
+}
+assert resolver.retained_lkg_site('purstream', purstream_retained_cfg, purstream_history) == 'https://purstream.id'
+
 # A successful fresh always replaces the current route. The former route is
 # history only; it is never allowed to remain current after hub/direct moved.
 fresh_history = {
