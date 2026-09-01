@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-"""Global TMDB/IMDb-first catalogue fallback for HTML/mixed providers.
+"""Positive-output catalogue identity guard for HTML/mixed providers.
 
-Native provider resolution always wins. This wrapper only runs when native
-resolution returns no streams. Numeric TMDB IDs are consumed directly; IMDb
-``tt...`` IDs are resolved through TMDB's external-ID endpoint. Only then are
-localized/original/alternative titles used internally to search a target site's
-HTML catalogue. No provider title or work ID is hard-coded in this engine.
+Core never fabricates provider output after a zero-stream result. Provider-specific
+catalogue recovery belongs inside the provider/repair brick itself. This shared
+layer only inspects streams that the provider actually returned and rejects rows
+with conclusive content-identity contradictions using Core-owned metadata.
 """
 from __future__ import annotations
 
@@ -91,7 +90,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "mirrorRoutes": [str(v) for v in cfg.get("mirror_routes", []) if str(v).strip()],
         "mirrorTypes": [str(v).strip().lower() for v in cfg.get("mirror_types", ["movie"]) if str(v).strip().lower() in {"movie", "tv", "anime"}],
         "mirrorAllowEpisodic": bool(cfg.get("mirror_allow_episodic", False)),
-        "implementationRevision": "core-tmdb-context-global-deadline-v5",
+        "implementationRevision": "positive-output-identity-filter-v6",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
