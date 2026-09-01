@@ -210,9 +210,17 @@ jobs:
             if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
               # Deep is explicit. A validated publication may legitimately change
               # PROVENANCE/provider-bases; that must not recursively schedule
-              # another Deep. One-shot reconstruction runs when its trigger is
-              # created/edited, then remains pending without hijacking unrelated pushes.
-              if git diff --name-only "$BEFORE" "$AFTER" | grep -Eq '^(\.github/triggers/deep-provider-repair|\.github/triggers/force-clean-provider-reconstruction\.json)
+              # another Deep. One-shot reconstruction runs only when its trigger
+              # file is created/edited, then remains pending without hijacking
+              # unrelated pushes.
+              if git diff --name-only "$BEFORE" "$AFTER" | grep -Eq '^(\.github/triggers/deep-provider-repair|\.github/triggers/force-clean-provider-reconstruction\.json)$'; then
+                MODE=deep
+              fi
+            fi
+          fi
+          echo "validation_mode=${MODE}" >> "$GITHUB_OUTPUT"
+          echo "Resolved validation mode: ${MODE}"
+
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
