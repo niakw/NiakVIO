@@ -112,6 +112,40 @@ assert any(
     for source in purstream_sources
 )
 
+# Root-only API discovery must not erase a proven provider base path.
+purstream_route_config = {
+    'provider_patches': {
+        'purstream': {
+            'official_site': 'https://purstream.id',
+            'official_api': 'https://api.purstream.id/api/v1',
+            'replacements': {},
+            'runtime_domain_replacements': {},
+            'fixed_endpoint': {
+                'resolver_function': 'detectPurstreamDomain',
+                'api': 'https://api.purstream.id/api/v1',
+                'referer': 'https://purstream.id/',
+            },
+            'api_recipe': {
+                'base': 'https://api.purstream.id/api/v1',
+                'referer': 'https://purstream.id/',
+                'movieRoute': '/media/{id}/sheet',
+            },
+        }
+    }
+}
+resolver.update_provider_patch(
+    purstream_route_config,
+    'purstream',
+    hubs['purstream'],
+    'https://purstream.id',
+    'https://api.purstream.id',
+    {},
+)
+purstream_route_patch = purstream_route_config['provider_patches']['purstream']
+assert purstream_route_patch['official_api'] == 'https://api.purstream.id/api/v1'
+assert purstream_route_patch['fixed_endpoint']['api'] == 'https://api.purstream.id/api/v1'
+assert purstream_route_patch['api_recipe']['base'] == 'https://api.purstream.id/api/v1'
+
 # Telegram selection must use the highest message id rather than document
 # position. This remains correct with pinned or reordered messages.
 wooka_html = '''
