@@ -18,7 +18,7 @@ import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
 from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
-from provider_byte_stability import purify_candidate, purify_registry  # noqa: E402
+from provider_byte_stability import verify_candidate, verify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
@@ -49,7 +49,7 @@ def _profiled_create(stage, candidate, profile_name, round_number):
     # strict deep retest. The deep result therefore proves the exact raw bytes,
     # not the larger pre-validation candidate.
     try:
-        repaired, _byte_stability = purify_candidate(Path(stage), repaired)
+        repaired, _byte_stability = verify_candidate(Path(stage), repaired)
     except Exception as exc:
         try:
             target = (Path(stage).resolve() / str(repaired.get("local_path") or "")).resolve()
@@ -114,7 +114,7 @@ def main() -> int:
         # are validated byte-for-byte after known patches/profiles, then that exact registry becomes
         # baseline input. Repairs generated later in this same loop are validated again
         # by _profiled_create before their own retest.
-        byte_stability = purify_registry(stage, output / "provider-byte-stability.json")
+        byte_stability = verify_registry(stage, output / "provider-byte-stability.json")
         print(
             "FIELD_PROVIDER_BYTE_STABILITY_DEEP "
             f"candidates={byte_stability['candidateCount']} applied={byte_stability['appliedCount']} "
