@@ -119,7 +119,7 @@ jobs:
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/global_stream_identity_test.py
-          python tests/provider_purification_contract_test.py
+          python tests/provider_byte_stability_contract_test.py
           python tests/provider_base_layering_contract_test.py
           python tests/provider_artifact_validation_modes_test.py
           python tests/publication_contract_fingerprint_test.py
@@ -212,7 +212,7 @@ jobs:
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/tv_provider_hardening_test.py
           python tests/provider_security_hardening_test.py
-          python tests/provider_purification_contract_test.py
+          python tests/provider_byte_stability_contract_test.py
           python tests/prune_unreferenced_providers_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
@@ -291,7 +291,7 @@ jobs:
           python tests/provider_wrapper_isolation_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/provider_security_hardening_test.py
-          python tests/provider_purification_contract_test.py
+          python tests/provider_byte_stability_contract_test.py
           python tests/prune_unreferenced_providers_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
@@ -306,7 +306,7 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          from scripts.provider_purification import BYTE_STABILITY_VERSION, verify_bytes
+          from scripts.provider_byte_stability import BYTE_STABILITY_VERSION, verify_bytes
           root = Path('.')
           rows = json.loads((root / 'manifest.json').read_text(encoding='utf-8')).get('scrapers') or []
           checked = 0
