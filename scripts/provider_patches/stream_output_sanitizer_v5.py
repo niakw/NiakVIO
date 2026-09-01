@@ -304,10 +304,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
 
     install_anchor = "  function install(container,key){\n"
     probe_wrapper = '  async function probe(stream,url){return await probeResolved(stream,url,0,"")}\n'
-    if probe_wrapper not in patched:
-        if install_anchor not in patched:
-            raise ValueError("stream sanitizer install anchor not found")
-        patched = patched.replace(install_anchor, probe_wrapper + install_anchor, 1)
+
+    # Scope alias detection to the sanitizer wrapper itself. Provider code may
+    # legitimately define the same helper text; that must never change how the
+    # sanitizer builder materializes its own lexical function.
+    sanitizer_start = patched.rfind("/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:")
+    install_pos = patched.find(install_anchor, sanitizer_start if sanitizer_start >= 0 else 0)
+    if sanitizer_start < 0 or install_pos < 0:
+        raise ValueError("stream sanitizer local install anchor not found")
+    local_region = patched[sanitizer_start:install_pos]
+    if probe_wrapper not in local_region:
+        patched = patched[:install_pos] + probe_wrapper + patched[install_pos:]
 
     # Mirror legacy headers before ranking/probing so both the sanitizer and the
     # actual Nuvio reader use the same request contract.
