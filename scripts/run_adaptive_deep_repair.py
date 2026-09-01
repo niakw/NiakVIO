@@ -18,7 +18,7 @@ import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
 from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
-from provider_purification import purify_candidate, purify_registry  # noqa: E402
+from provider_byte_stability import purify_candidate, purify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
