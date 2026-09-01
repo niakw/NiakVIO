@@ -36,7 +36,7 @@ SCRIPTS = ROOT.parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from provider_patch_blocks import render_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, render_managed_fix, replace_managed_fix, strip_managed_fix
 V5_PATH = ROOT / "stream_output_sanitizer_v5.py"
 MARKER = "/* NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6 */"
 MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"
@@ -169,10 +169,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     if int(cfg.get("max_probes") or 0) <= 0:
         raise ValueError("stream sanitizer v6 requires max_probes>0")
 
-    # One public owner. Remove a current managed V6 block first, then migrate any
-    # pre-managed V4/V5/V6 materialization as one legacy sanitizer unit.
-    source = strip_managed_fix(text, MANAGED_FIX_ID)
-    if _sanitizer_position(source) >= 0:
+    # Generate from a source view without the owned sanitizer, while preserving
+    # the original bundle so an existing START/END block can be replaced in place.
+    owned = has_managed_fix(text, MANAGED_FIX_ID)
+    source = strip_managed_fix(text, MANAGED_FIX_ID) if owned else text
+    if not owned and _sanitizer_position(source) >= 0:
         source = _strip_existing_sanitizer(source)
 
     # V4/V5 are implementation builders only. Their temporary compatibility
@@ -194,13 +195,22 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "minVodDurationSeconds": int(cfg.get("min_vod_duration_seconds") or 60),
         "implementationRevision": "terminal-single-owner-v6",
     }
-    managed = render_managed_fix(
-        MANAGED_FIX_ID,
-        sanitizer_unit,
-        data=managed_data,
-    )
-
-    output = (body.rstrip() + "\n" if body else "") + managed.strip() + "\n"
+    if owned:
+        if body.rstrip() != source.rstrip():
+            raise ValueError("managed sanitizer rebuild mutated bytes outside its owned block")
+        output = replace_managed_fix(
+            text,
+            MANAGED_FIX_ID,
+            sanitizer_unit,
+            data=managed_data,
+        )
+    else:
+        managed = render_managed_fix(
+            MANAGED_FIX_ID,
+            sanitizer_unit,
+            data=managed_data,
+        )
+        output = (body.rstrip() + "\n" if body else "") + managed.strip() + "\n"
     sanitizer = output.find(f"/* START NIAKVIO_FIX:{MANAGED_FIX_ID} */")
     predecessor = _latest_predecessor_position(output)
     if sanitizer < 0 or (predecessor >= 0 and sanitizer <= predecessor):

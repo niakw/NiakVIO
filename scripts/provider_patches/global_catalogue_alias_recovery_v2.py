@@ -13,7 +13,7 @@ import hashlib
 import json
 from typing import Any
 
-from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix, strip_managed_fix
 
 MARKER = "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2"
 MANAGED_FIX_ID = "CORE.CATALOGUE_ALIAS_RECOVERY.V2"
@@ -59,22 +59,23 @@ def _strip_legacy_v1(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = dict(options or {})
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = _strip_legacy_v1(text)
+    owned = has_managed_fix(text, MANAGED_FIX_ID)
+    if not owned:
+        text = _strip_legacy_v1(text)
 
-    # One-time migration from the pre-managed V2 wrapper. New revisions replace
-    # the complete owned block instead of editing an existing wrapper in place.
-    old = text.find(f"/* {MARKER}:")
-    if old >= 0:
-        call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
-        end = text.find(");", call) if call >= 0 else -1
-        if call < 0 or end < 0:
-            raise ValueError("unterminated global catalogue alias recovery wrapper")
-        text = (text[:old] + text[end + 2 :]).rstrip()
+        # One-time migration from the pre-managed V2 wrapper. Managed revisions
+        # are replaced in place and never lose their canonical slot.
+        old = text.find(f"/* {MARKER}:")
+        if old >= 0:
+            call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
+            end = text.find(");", call) if call >= 0 else -1
+            if call < 0 or end < 0:
+                raise ValueError("unterminated global catalogue alias recovery wrapper")
+            text = (text[:old] + text[end + 2 :]).rstrip()
 
     base_url = str(cfg.get("base_url") or "").rstrip("/")
     if not base_url:
-        return text
+        return strip_managed_fix(text, MANAGED_FIX_ID) if owned else text
     payload = {
         "baseUrl": base_url,
         "providerName": str(cfg.get("provider_name") or "Provider"),

@@ -27,7 +27,7 @@ from typing import Any
 SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
-from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix
 
 MARKER = "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"
 MANAGED_FIX_ID = "CORE.MEDIA_TYPE_RESOLUTION.V1"
@@ -96,11 +96,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    # This resolver is the outermost request layer. Managed publication strips
-    # the entire owned block first; the legacy marker stripper only handles
-    # bundles produced before BEGIN/END ownership existed.
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = _strip_existing(text)
+    # Existing managed ownership is updated in place. Legacy stripping is only
+    # a one-time migration for pre-START/END bundles.
+    if not has_managed_fix(text, MANAGED_FIX_ID):
+        text = _strip_existing(text)
 
     js = r'''
 /* MARKER_PLACEHOLDER */

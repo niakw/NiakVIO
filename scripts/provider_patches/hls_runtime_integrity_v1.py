@@ -13,7 +13,7 @@ import hashlib
 import json
 from typing import Any
 
-from provider_patch_blocks import render_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, render_managed_fix, replace_managed_fix
 
 MARKER = "NUVIO_HLS_RUNTIME_INTEGRITY_V1"
 MANAGED_FIX_ID = "CORE.HLS_RUNTIME_INTEGRITY.V1"
@@ -55,17 +55,18 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
+    owned = has_managed_fix(text, MANAGED_FIX_ID)
 
-    # One-time migration from the pre-managed HLS wrapper. All future updates
-    # replace the complete owned brick and then place that brick canonically.
-    old = text.find(f"/* {MARKER}:")
-    if old >= 0:
-        call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
-        end = text.find(");", call) if call >= 0 else -1
-        if call < 0 or end < 0:
-            raise ValueError("unterminated HLS runtime integrity wrapper")
-        text = (text[:old] + text[end + 2 :]).rstrip()
+    # One-time migration from the pre-managed HLS wrapper. Managed revisions are
+    # replaced in place and never moved relative to recovery/safety/Core layers.
+    if not owned:
+        old = text.find(f"/* {MARKER}:")
+        if old >= 0:
+            call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
+            end = text.find(");", call) if call >= 0 else -1
+            if call < 0 or end < 0:
+                raise ValueError("unterminated HLS runtime integrity wrapper")
+            text = (text[:old] + text[end + 2 :]).rstrip()
 
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
@@ -319,6 +320,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
         if position >= 0
     ]
+    if owned:
+        return replace_managed_fix(
+            text,
+            MANAGED_FIX_ID,
+            wrapper,
+            data=payload_config,
+        )
     managed = render_managed_fix(MANAGED_FIX_ID, wrapper, data=payload_config)
     if core_layers and (not recovery_layers or max(recovery_layers) < min(core_layers)):
         insertion = min(core_layers)

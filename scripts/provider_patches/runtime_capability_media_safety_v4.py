@@ -24,7 +24,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix
 
 ROOT = Path(__file__).resolve().parents[2]
 COLLISION_FIXTURES = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
@@ -173,8 +173,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     payload = json.dumps(config, separators=(",", ":"), ensure_ascii=False)
     marker = "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:" + hashlib.sha256(payload.encode()).hexdigest()[:12]
     wrapper = WRAPPER.replace("SAFETY_MARKER", marker).replace("CONFIG", payload)
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = _strip_previous(text)
+    if not has_managed_fix(text, MANAGED_FIX_ID):
+        text = _strip_previous(text)
     return replace_managed_fix(
         text,
         MANAGED_FIX_ID,

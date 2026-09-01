@@ -13,7 +13,7 @@ from typing import Any
 SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
-from provider_patch_blocks import replace_managed_fix, strip_legacy_iife, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix, strip_legacy_iife
 
 MARKER = "NUVIO_GLOBAL_RUNTIME_COMPAT_V1"
 MANAGED_FIX_ID = "CORE.RUNTIME_COMPAT.V1"
@@ -23,8 +23,8 @@ REVISION = 1
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     del options
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = strip_legacy_iife(text, f"/* {MARKER} */")
+    if not has_managed_fix(text, MANAGED_FIX_ID):
+        text = strip_legacy_iife(text, f"/* {MARKER} */")
 
     wrapper = r'''
 /* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */

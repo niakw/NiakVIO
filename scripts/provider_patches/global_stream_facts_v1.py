@@ -10,7 +10,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
-from provider_patch_blocks import replace_managed_fix, strip_legacy_iife, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix, strip_legacy_iife
 
 MARKER = "NUVIO_GLOBAL_STREAM_FACTS_V1"
 MANAGED_FIX_ID = "CORE.STREAM_FACTS.V1"
@@ -18,8 +18,8 @@ MANAGED_FIX_ID = "CORE.STREAM_FACTS.V1"
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     marker = f"{MARKER}:{hashlib.sha256(b'global-facts-v1').hexdigest()[:12]}"
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = strip_legacy_iife(text, f"/* {marker} */")
+    if not has_managed_fix(text, MANAGED_FIX_ID):
+        text = strip_legacy_iife(text, f"/* {marker} */")
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g){"use strict";

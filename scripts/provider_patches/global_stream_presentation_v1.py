@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix
 
 MARKER = "NUVIO_GLOBAL_STREAM_PRESENTATION_V1"
 MANAGED_FIX_ID = "CORE.STREAM_PRESENTATION.V1"
@@ -98,8 +98,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = _strip_existing(text)
+    if not has_managed_fix(text, MANAGED_FIX_ID):
+        text = _strip_existing(text)
 
     wrapper = r'''
 /* MARKER_PLACEHOLDER */

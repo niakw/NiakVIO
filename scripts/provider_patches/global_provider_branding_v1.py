@@ -14,7 +14,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix, strip_managed_fix
 
 MARKER = "NUVIO_GLOBAL_PROVIDER_BRANDING_V1"
 MANAGED_FIX_ID = "CORE.PROVIDER_BRANDING.V1"
@@ -60,16 +60,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
     provider_id = str(context.get("provider_id") or "").strip().casefold()
 
-    # Optional brick: absence of committed branding means no branding at all.
-    # Remove any previous managed/legacy instance first so a stale label cannot
-    # survive after a provider leaves the committed branding registry.
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = _strip_existing(text)
+    # Optional brick: keep an existing owned block in place while branding is
+    # configured; remove it only if branding ceases to exist for this provider.
+    owned = has_managed_fix(text, MANAGED_FIX_ID)
+    if not owned:
+        text = _strip_existing(text)
     if not provider_id:
-        return text
+        return strip_managed_fix(text, MANAGED_FIX_ID) if owned else text
     row = _load_provider(provider_id)
     if row is None:
-        return text
+        return strip_managed_fix(text, MANAGED_FIX_ID) if owned else text
     payload = {
         "providerId": provider_id,
         "providerName": row["name"],

@@ -22,7 +22,7 @@ import hashlib
 import json
 from typing import Any
 
-from provider_patch_blocks import render_managed_fix, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, render_managed_fix, replace_managed_fix
 
 MARKER = "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1"
 MANAGED_FIX_ID = "CORE.MEDIA_ENRICHMENT.V1"
@@ -72,8 +72,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = _strip_existing_wrapper(text)
+    owned = has_managed_fix(text, MANAGED_FIX_ID)
+    if not owned:
+        text = _strip_existing_wrapper(text)
 
     js = r'''
 /* MARKER_PLACEHOLDER */
@@ -183,5 +184,12 @@ function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalMediaEn
 var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
+    if owned:
+        return replace_managed_fix(
+            text,
+            MANAGED_FIX_ID,
+            js,
+            data=payload,
+        )
     managed = render_managed_fix(MANAGED_FIX_ID, js, data=payload)
     return _insert_before_runtime_safety(text, managed)

@@ -18,7 +18,7 @@ from typing import Any
 SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
 if str(SCRIPTS_ROOT) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_ROOT))
-from provider_patch_blocks import replace_managed_fix, strip_legacy_iife, strip_managed_fix
+from provider_patch_blocks import has_managed_fix, replace_managed_fix, strip_legacy_iife
 
 MARKER_PREFIX = "NUVIO_DESKTOP_RUNTIME_COMPAT_V1"
 MANAGED_FIX_ID = "CORE.DESKTOP_RUNTIME_COMPAT.V1"
@@ -45,12 +45,12 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     payload = json.dumps(config, separators=(",", ":"))
     marker = f"{MARKER_PREFIX}:{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:12]}"
 
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    legacy = re.findall(r"/\\* " + re.escape(MARKER_PREFIX) + r":[0-9a-f]{12} \\*/", text)
-    if len(legacy) > 1:
-        raise ValueError("duplicate legacy desktop runtime compatibility blocks")
-    if legacy:
-        text = strip_legacy_iife(text, legacy[0])
+    if not has_managed_fix(text, MANAGED_FIX_ID):
+        legacy = re.findall(r"/\\* " + re.escape(MARKER_PREFIX) + r":[0-9a-f]{12} \\*/", text)
+        if len(legacy) > 1:
+            raise ValueError("duplicate legacy desktop runtime compatibility blocks")
+        if legacy:
+            text = strip_legacy_iife(text, legacy[0])
 
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
