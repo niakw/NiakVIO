@@ -13,7 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_purification import TERSER_VERSION
+from provider_purification import BYTE_STABILITY_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -74,8 +74,8 @@ def main() -> int:
         if proof.get("verified") is not True:
             raise ValueError(f"{provider_id}: final fixed point is not verified")
         if proof.get("mangle") is not False:
-            raise ValueError(f"{provider_id}: unexpected Terser mangle policy")
-        if str(proof.get("tool") or "") != "terser":
+            raise ValueError(f"{provider_id}: unexpected raw-byte mangle policy")
+        if str(proof.get("tool") or "") != "raw-bytes":
             raise ValueError(f"{provider_id}: unexpected fixed-point tool")
         if str(proof.get("tool_version") or "") != TERSER_VERSION:
             raise ValueError(f"{provider_id}: stale fixed-point Terser version")
