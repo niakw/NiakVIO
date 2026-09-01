@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Consume explicit one-shot ProviderBase reconstruction requests after publication.
 
-A one-shot request is consumed only after the canonical publication transaction
-has durably installed the exact forced ProviderBase SHA in PROVENANCE and
-provider-bases/. A staged seed alone is never enough: if strict Deep proof keeps
-the production LKG, the request remains active for a later proof attempt.
+A one-shot request is consumed after the canonical publication transaction has
+durably installed the exact forced clean ProviderBase SHA in PROVENANCE and
+provider-bases/. Runtime activation stays separate: an unverified clean candidate
+may keep the production LKG until strict Deep proof succeeds.
 """
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 from provider_base_store import (
+    CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
     CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
     CLEAN_RECONSTRUCTION_SOURCE,
     build_base_from_seed,
@@ -84,11 +85,23 @@ def durable_base_matches(
 ) -> bool:
     if not isinstance(provenance_row, dict) or not expected_hashes:
         return False
-    if str(provenance_row.get("base_source") or "") != CLEAN_RECONSTRUCTION_SOURCE:
-        return False
-    if provenance_row.get("clean_reconstruction_verified") is not True:
-        return False
-    if provenance_row.get("clean_reconstruction_required") is True:
+    source = str(provenance_row.get("base_source") or "")
+    verified = (
+        source == CLEAN_RECONSTRUCTION_SOURCE
+        and provenance_row.get("clean_reconstruction_verified") is True
+        and provenance_row.get("clean_reconstruction_required") is not True
+    )
+    materialized_candidate = (
+        source == CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE
+        and provenance_row.get("clean_reconstruction_candidate") is True
+        and provenance_row.get("clean_reconstruction_verified") is not True
+        and provenance_row.get("clean_reconstruction_required") is True
+        and int(provenance_row.get("clean_reconstruction_authoring_version") or 0)
+        >= CLEAN_RECONSTRUCTION_AUTHORING_VERSION
+        and provenance_row.get("legacy_provider_js_executed_for_reconstruction") is False
+        and provenance_row.get("upstream_code_executed") is False
+    )
+    if not (verified or materialized_candidate):
         return False
     digest = str(provenance_row.get("base_sha256") or "").strip()
     relative = str(provenance_row.get("base_filename") or "").strip()

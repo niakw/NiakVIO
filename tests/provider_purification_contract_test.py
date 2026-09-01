@@ -124,6 +124,7 @@ assert second_report.get("ownedPrefixPreserved") is True
 # Generated Core Lego is not provider source. Once the canonical Core boundary
 # starts, purification must preserve the entire tail byte-for-byte, including
 # transactional START/END ownership and deterministic data markers.
+core_boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
 managed_core = render_managed_fix(
     "CORE.TEST.PURIFICATION.V1",
     "globalThis.__nuvioPurificationManagedTest=1;",

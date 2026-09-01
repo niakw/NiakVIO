@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from consume_force_reconstruction_trigger import consume  # noqa: E402
 from provider_base_store import (  # noqa: E402
+    CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
     CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
     CLEAN_RECONSTRUCTION_SOURCE,
     build_base_from_seed,
@@ -117,7 +118,7 @@ with tempfile.TemporaryDirectory() as tmp:
     assert persisted_trigger["consumedProviders"] == ["alpha"]
 
     # Staging alone must never consume beta: the one-shot remains active until
-    # canonical Deep publication installs the exact verified ProviderBase SHA.
+    # the exact deterministic clean ProviderBase is durable in repository state.
     (stage / candidates[1]["local_path"]).write_text("// staged clean seed\n", encoding="utf-8")
     consumed, remaining = consume(trigger, registry, provenance, overrides, root)
     assert consumed == [], (consumed, remaining)
@@ -138,18 +139,21 @@ with tempfile.TemporaryDirectory() as tmp:
     beta_rel = f"provider-bases/beta--base--{beta_digest[:16]}.js"
     (root / beta_rel).write_bytes(beta_base)
     provenance_rows["beta"] = {
-        "base_source": CLEAN_RECONSTRUCTION_SOURCE,
+        "base_source": CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE,
         "base_filename": beta_rel,
         "base_sha256": beta_digest,
-        "clean_reconstruction_candidate": False,
-        "clean_reconstruction_verified": True,
-        "clean_reconstruction_required": False,
+        "clean_reconstruction_candidate": True,
+        "clean_reconstruction_verified": False,
+        "clean_reconstruction_required": True,
+        "clean_reconstruction_authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
+        "legacy_provider_js_executed_for_reconstruction": False,
+        "upstream_code_executed": False,
     }
     provenance.write_text(json.dumps({"providers": provenance_rows}), encoding="utf-8")
 
     consumed, remaining = consume(trigger, registry, provenance, overrides, root)
     assert consumed == ["beta"], (consumed, remaining)
     assert remaining == []
-    assert not trigger.exists(), "one-shot trigger must disappear only after verified durable publication"
+    assert not trigger.exists(), "one-shot trigger must disappear after exact durable materialization"
 
 print("force reconstruction trigger lifecycle passed")
