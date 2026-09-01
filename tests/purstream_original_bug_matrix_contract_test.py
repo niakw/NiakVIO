@@ -57,7 +57,7 @@ assert "alternative_titles" in tmdb_block
 # The global provider budget must exist before canonical Core/TMDB resolution.
 media_resolution = (SCRIPTS / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
 install_block = media_resolution.split("var wrap=async function(){", 1)[1].split("wrap.__nuvioMediaTypeResolutionV1=true", 1)[0]
-deadline_anchor = "requestDeadline=Date.now()+c.providerTimeoutMs"
+deadline_anchor = "requestDeadline=Date.now()+providerBudgetMs()"
 resolve_anchor = "var a=preflight?await resolve(originalArgs):provisional(originalArgs)"
 verify_anchor = "var verified=await resolve(originalArgs)"
 assert deadline_anchor in install_block
@@ -129,11 +129,14 @@ assert '!= CLEAN_RECONSTRUCTION_SOURCE' in consume_trigger
 assert 'clean_reconstruction_verified") is not True' in consume_trigger
 assert 'clean_reconstruction_required") is True' in consume_trigger
 
-# Explicit one-shot migrations must force canonical Deep proof before publication.
+# Explicit one-shot migrations force Deep only when their trigger changes.
+# A pending request must not hijack every unrelated push, and publication changes
+# to PROVENANCE/provider-bases must not recursively schedule another Deep.
 sync_workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
-assert "if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then" in sync_workflow
-deep_trigger_block = sync_workflow.split("if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then", 1)[1].split("fi", 1)[0]
-assert "MODE=deep" in deep_trigger_block
+assert r"\.github/triggers/force-clean-provider-reconstruction\.json" in sync_workflow
+assert r"PROVENANCE\.json|provider-bases/" not in sync_workflow.split("Resolve validation mode", 1)[1].split("Set up Python", 1)[0]
+assert "if [ -s .github/triggers/force-clean-provider-reconstruction.json ]; then" not in sync_workflow
+assert "MODE=deep" in sync_workflow.split("Resolve validation mode", 1)[1].split("Set up Python", 1)[0]
 
 # Explicit one-shot migration remains bounded to explicitly named provider(s)
 # until their clean base is durably materialized. This contract is global and
