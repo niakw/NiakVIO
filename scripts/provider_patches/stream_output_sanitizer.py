@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "timeoutMs": timeout_ms,
             "minVodDurationSeconds": min_vod_duration,
             "blockedPathPatterns": blocked_paths,
-            "implementationVersion": 8,
+            "implementationVersion": 9,
         },
         separators=(",", ":"),
     )
@@ -86,6 +86,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 /* MARKER_PLACEHOLDER */
 ;(function(g,config){
   "use strict";
+  function nativeHost(){try{return typeof g.__native_fetch==="function"}catch(_e){return false}}
+  function providerDeadlineExpired(){try{var d=Number(g&&g.__nuvioProviderDeadlineMs);return Number.isFinite(d)&&d>0&&Date.now()>=d}catch(_e){return false}}
   function hostOf(raw){try{return new URL(String(raw)).hostname.toLowerCase()}catch(_e){return ""}}
   function blocked(raw){
     var host=hostOf(raw);
@@ -189,6 +191,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   }
   function isEbml(bytes){return bytes.length>=4&&bytes[0]===0x1a&&bytes[1]===0x45&&bytes[2]===0xdf&&bytes[3]===0xa3}
   async function probe(stream,url){
+    if(providerDeadlineExpired())return null;
     if(typeof g.fetch!=="function")return true;
     var controller=typeof AbortController!=="undefined"?new AbortController():{signal:void 0,abort:function(){}};
     var timer=setTimeout(function(){try{controller.abort()}catch(_e){}},config.timeoutMs);
@@ -253,11 +256,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       for(var c=0;c<candidates.length;c++){
         candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;
       }
-      var checked=await Promise.all(candidates.map(async function(item){
+      async function checkItem(item){
         if(!item.probe)return item.stream;
         var verdict=await probe(item.stream,item.url);
         return verdict===false?null:item.stream;
-      }));
+      }
+      var checked=[];
+      if(nativeHost()){
+        for(var p=0;p<candidates.length;p++)checked.push(await checkItem(candidates[p]));
+      }else{
+        checked=await Promise.all(candidates.map(checkItem));
+      }
       return rebuild(result,slot,checked.filter(Boolean));
     };
     wrapped.__nuvioSanitized=true;
