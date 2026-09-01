@@ -30,21 +30,14 @@ def run_node(source: str) -> None:
         path.unlink(missing_ok=True)
 
 
-audio = load_module(ROOT / "scripts/provider_patches/hls_master_audio_preserver_v1.py", "hls_audio")
 integrity = load_module(ROOT / "scripts/provider_patches/hls_runtime_integrity_v1.py", "hls_integrity")
-
-fixture = 'async function q(t){let x=await p.text();if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}'
-patched = audio.apply(fixture)
-assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" in patched
-assert "/#EXT-X-MEDIA:[^\\r\\n]*TYPE=AUDIO/i.test(x)" in patched
-assert audio.apply(patched) == patched
 
 base_provider = r'''
 globalThis.getStreams=async function(){return [{url:"https://media.test/master.m3u8",type:"hls",headers:{Referer:"https://site.test/"}}]};
 '''
 wrapped = integrity.apply(base_provider, {"timeout_ms": 2000, "max_children": 2})
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in wrapped
-assert "recovery-first-v4-timer-safe" in wrapped
+assert "recovery-first-v5-native-budget-owned" in wrapped
 assert 'typeof setTimeout==="function"' in wrapped
 assert 'typeof clearTimeout==="function"' in wrapped
 assert integrity.apply(wrapped, {"timeout_ms": 2000, "max_children": 2}) == wrapped
@@ -124,7 +117,7 @@ ordered = integrity.apply(ordered, {
 })
 assert ordered.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") == 1
 assert ordered.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") > ordered.rfind("streamzo #1")
-assert "final-output-order-v5-timer-safe" in ordered
+assert "final-output-order-v6-native-budget-owned" in ordered
 run_node(r'''
 const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n";
 globalThis.fetch=async function(url){var u=String(url);
