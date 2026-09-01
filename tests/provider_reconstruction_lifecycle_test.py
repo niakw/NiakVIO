@@ -148,7 +148,8 @@ forced = discovery.executable_seed(
 assert forced[1] == "new-niakvio-clean-seed"
 assert b"NIAKVIO_PROVIDER_BASE_OWNED_V2" in forced[0]
 assert forced[4].get("historicalKnowledgeMerged") is True
-assert forced[5]["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
+expected_purstream_api = overrides["provider_patches"]["purstream"]["api_recipe"]["base"]
+assert forced[5]["apiRecipe"]["base"] == expected_purstream_api
 assert forced[5]["apiRecipe"]["movieRoute"] == "/media/{id}/sheet"
 assert forced[5]["apiRecipe"]["episodeRoute"] == (
     "/stream/{id}/episode?season={season}&episode={episode}"
