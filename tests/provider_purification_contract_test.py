@@ -6,7 +6,12 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from provider_purification import (  # noqa: E402\n    purify_bytes,\n    split_owned_prefix_bootstraps,\n    split_provider_core_tail,\n)\nfrom provider_patch_blocks import render_managed_fix  # noqa: E402
+from provider_purification import (  # noqa: E402
+    purify_bytes,
+    split_owned_prefix_bootstraps,
+    split_provider_core_tail,
+)
+from provider_patch_blocks import render_managed_fix  # noqa: E402
 
 node_path = ROOT / "engine_v2/scripts/purify-provider.mjs"
 cleaner_path = ROOT / "engine_v2/scripts/terser-clean.mjs"
