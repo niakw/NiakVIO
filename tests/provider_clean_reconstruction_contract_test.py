@@ -260,7 +260,9 @@ assert 'bool(decision.get("strict_activation_eligible", False))' in promoter
 sync_workflow = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 assert "'PROVENANCE.json'" in sync_workflow
 assert "'provider-bases/**'" in sync_workflow
-assert "PROVENANCE\\.json|provider-bases/" in sync_workflow
+assert "PROVENANCE\\.json|provider-bases/" not in sync_workflow
+assert ".github/triggers/deep-provider-repair" in sync_workflow
+assert ".github/triggers/force-clean-provider-reconstruction\\.json" in sync_workflow
 
 materializer = (ROOT / "scripts" / "materialize_clean_provider_reconstruction.py").read_text(encoding="utf-8")
 assert 'for provider_id in sorted(candidates):' in materializer, (
