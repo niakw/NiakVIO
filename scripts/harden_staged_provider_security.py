@@ -15,7 +15,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-from provider_security_hardening import assert_hardened, harden_bytes
+from provider_patches.global_provider_security_hardening_v1 import harden_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR = ROOT / "scripts" / "validate_provider_artifact.cjs"
@@ -75,14 +75,15 @@ def harden_stage(stage: Path) -> dict[str, Any]:
         if expected and sha256(current) != expected:
             raise ValueError(f"candidate hash mismatch before security hardening: {row.get('key')}")
 
-        hardened, report = harden_bytes(current)
+        current_text = current.decode("utf-8", errors="strict")
+        hardened_text, report = harden_bundle(current_text)
+        hardened = hardened_text.encode("utf-8")
         if report.get("alreadyHardened"):
             already += 1
         if hardened != current:
             path.write_bytes(hardened)
             try:
                 _validate(path)
-                assert_hardened(hardened.decode("utf-8", errors="strict"))
             except Exception:
                 path.write_bytes(current)
                 raise

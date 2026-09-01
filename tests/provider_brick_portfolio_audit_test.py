@@ -13,7 +13,7 @@ SCRIPTS = ROOT / "scripts"
 sys.path.insert(0, str(SCRIPTS))
 
 from apply_provider_overrides import apply_overrides
-from provider_base_store import canonical_id, requires_clean_reconstruction, resolve_runtime_base
+from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS, canonical_id, requires_clean_reconstruction, resolve_runtime_base
 from provider_patch_blocks import validate_managed_fixes
 
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
@@ -179,11 +179,20 @@ def main() -> int:
                 portfolio_errors.append(f"{provider_id}: staging provider file missing: {local_path}")
                 continue
             first_text = target.read_text(encoding="utf-8", errors="strict")
+            clean_seed_origin = str(candidate.get("candidate_code_origin") or "") in {
+                "new-niakvio-clean-seed",
+                "pending-niakvio-clean-reconstruction-v2",
+            }
             try:
                 second, records = apply_overrides(
                     provider_id,
                     first_text.encode("utf-8"),
                     phase="discovery",
+                    excluded_patch_scripts=(
+                        CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS
+                        if clean_seed_origin
+                        else None
+                    ),
                 )
                 second_text = second.decode("utf-8", errors="strict") if isinstance(second, bytes) else str(second)
                 errors, record_paths = audit_composed(provider_id, first_text, second_text, records)

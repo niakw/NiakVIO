@@ -53,10 +53,10 @@ def _split_trusted_core_tail(text: str) -> tuple[str, str]:
     return text[:start], text[start:]
 
 
-def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
-    del options
+def harden_bundle(text: str) -> tuple[str, dict[str, Any]]:
+    """Harden provider-owned bytes while preserving the generated Core tail byte-for-byte."""
     provider_text, trusted_tail = _split_trusted_core_tail(text)
-    hardened, _report = harden_text(provider_text)
+    hardened, report = harden_text(provider_text)
     assert_hardened(hardened)
     if HOOK_BOUNDARY not in hardened:
         # Deliberate observable assignment: unlike a comment or standalone string,
@@ -65,4 +65,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             f"\n/* {HOOK_MARKER} */\n"
             f"globalThis.{HOOK_BOUNDARY}=true;\n"
         )
-    return hardened + trusted_tail
+    return hardened + trusted_tail, report
+
+
+def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+    del options
+    hardened, _report = harden_bundle(text)
+    return hardened

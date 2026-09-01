@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from provider_security_hardening import MARKER, harden_text, known_unsafe_findings
 from harden_staged_provider_security import harden_stage
+from provider_patches.global_provider_security_hardening_v1 import harden_bundle
 
 
 def js_ok(text: str) -> None:
@@ -175,6 +176,22 @@ assert re_report["hostnameChanges"] == 1, re_report
 assert '__nuvioHostMatches(u,"evil.example")' in rehardened
 assert rehardened.count("function __nuvioHostMatches(") == 1
 js_ok(rehardened)
+
+# Security hardening owns provider bytes only. Generated Core bricks after the
+# explicit boundary are immutable inputs to this transform; otherwise a later
+# Lego reapply changes their bytes and breaks whole-provider idempotence.
+core_tail = '''/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */
+ /* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
+function coreHlsLog(v){console.warn("trusted-core-hls",v)}
+ /* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
+'''
+provider_prefix = 'function p(u){console.warn(u)};globalThis.getStreams=async function(){return []};\n'
+secured_bundle, bundle_report = harden_bundle(provider_prefix + core_tail)
+assert "__nuvioProviderSilentLog" in secured_bundle.split(core_tail, 1)[0]
+assert secured_bundle.endswith(core_tail), secured_bundle[-len(core_tail):]
+assert 'console.warn("trusted-core-hls",v)' in secured_bundle
+assert bundle_report["consoleSinkChanges"] == 1, bundle_report
+
 print("provider security hardening tests passed")
 
 with tempfile.TemporaryDirectory() as raw:
