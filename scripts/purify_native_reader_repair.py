@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Purify native-reader Brain sandbox candidates before official-client retest."""
+"""Validate native-reader Brain sandbox candidates without rewriting JS bytes."""
 from __future__ import annotations
 
 import argparse
@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_byte_stability import purify_file, sha256
+from provider_purification import purify_file, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
