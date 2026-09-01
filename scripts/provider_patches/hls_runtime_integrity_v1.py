@@ -13,7 +13,7 @@ import hashlib
 import json
 from typing import Any
 
-from provider_patch_blocks import has_managed_fix, render_managed_fix, replace_managed_fix
+from provider_patch_blocks import has_managed_fix, owned_span, render_managed_fix, replace_managed_fix, strip_managed_fix
 
 MARKER = "NUVIO_HLS_RUNTIME_INTEGRITY_V1"
 MANAGED_FIX_ID = "CORE.HLS_RUNTIME_INTEGRITY.V1"
@@ -25,6 +25,33 @@ def _layer_position(text: str, managed_id: str, legacy_marker: str) -> int:
     if managed >= 0:
         return managed
     return text.find(legacy_marker)
+
+
+POST_HLS_MARKERS = (
+    "/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */",
+    "/* START NIAKVIO_FIX:CORE.RUNTIME_COMPAT.V1 */",
+    "/* START NIAKVIO_FIX:CORE.STREAM_FACTS.V1 */",
+    "/* START NIAKVIO_FIX:CORE.STREAM_IDENTITY.V1 */",
+    "/* START NIAKVIO_FIX:CORE.STREAM_PRESENTATION.V1 */",
+    "/* START NIAKVIO_FIX:CORE.PROVIDER_BRANDING.V1 */",
+    "/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */",
+    "/* START NIAKVIO_FIX:CORE.MEDIA_TYPE_RESOLUTION.V1 */",
+)
+
+
+def _owned_hls_slot_is_stale(text: str) -> bool:
+    """Detect only provable HLS order drift without guessing provider semantics."""
+    span = owned_span(text, MANAGED_FIX_ID)
+    if span is None:
+        return False
+    start, end = span
+    positions = [text.find(marker) for marker in POST_HLS_MARKERS]
+    positions = [position for position in positions if position >= 0]
+    if any(position < start for position in positions):
+        return True
+    after = [position for position in positions if position >= end]
+    boundary = min(after) if after else len(text)
+    return bool(text[end:boundary].strip())
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -56,6 +83,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     payload = json.dumps(payload_config, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
     owned = has_managed_fix(text, MANAGED_FIX_ID)
+    relocate_owned = owned and _owned_hls_slot_is_stale(text)
 
     # One-time migration from the pre-managed HLS wrapper. Managed revisions are
     # replaced in place and never moved relative to recovery/safety/Core layers.
@@ -300,12 +328,24 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", payload)
-    # Once an old/misordered wrapper has been removed, put the HLS validator after
-    # media recovery/safety but before Core facts/identity/presentation. This is the
-    # same canonical slot checked above, so reapplication converges in one pass.
-    core_layers = [
+    # Keep an already-canonical HLS brick byte-stable. If a later provider/media
+    # wrapper has provably appeared after HLS, relocate the whole owned brick once
+    # so HLS remains the single post-media validator.
+    if owned and not relocate_owned:
+        return replace_managed_fix(
+            text,
+            MANAGED_FIX_ID,
+            wrapper,
+            data=payload_config,
+        )
+    if relocate_owned:
+        text = strip_managed_fix(text, MANAGED_FIX_ID)
+
+    post_layers = [
         position
         for position in (
+            text.find("/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */"),
+            _layer_position(text, "CORE.RUNTIME_COMPAT.V1", "/* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */"),
             _layer_position(text, "CORE.STREAM_FACTS.V1", "/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
             _layer_position(text, "CORE.STREAM_IDENTITY.V1", "/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
             _layer_position(text, "CORE.STREAM_PRESENTATION.V1", "/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
@@ -320,16 +360,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
         if position >= 0
     ]
-    if owned:
-        return replace_managed_fix(
-            text,
-            MANAGED_FIX_ID,
-            wrapper,
-            data=payload_config,
-        )
     managed = render_managed_fix(MANAGED_FIX_ID, wrapper, data=payload_config)
-    if core_layers and (not recovery_layers or max(recovery_layers) < min(core_layers)):
-        insertion = min(core_layers)
+    if post_layers and (not recovery_layers or max(recovery_layers) < min(post_layers)):
+        insertion = min(post_layers)
         return (
             text[:insertion].rstrip()
             + "\n"

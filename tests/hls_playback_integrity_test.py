@@ -119,8 +119,9 @@ ordered = integrity.apply(ordered, {
     "probe_all_urls": True,
     "fail_closed_unknown": True,
 })
-assert ordered.count("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") == 1
-assert ordered.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1:") > ordered.rfind("streamzo #1")
+assert ordered.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert ordered.count("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert ordered.rfind("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") > ordered.rfind("streamzo #1")
 assert "final-output-order-v6-native-budget-owned" in ordered
 run_node(r'''
 const media="#EXTM3U\n#EXT-X-TARGETDURATION:6\n#EXTINF:6,\nseg.ts\n#EXT-X-ENDLIST\n";
