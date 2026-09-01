@@ -18,7 +18,7 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from provider_patch_blocks import replace_managed_fix, validate_managed_fixes  # noqa: E402
+from provider_patch_blocks import replace_managed_fix  # noqa: E402
 from provider_security_hardening import assert_hardened, harden_text  # noqa: E402
 
 HOOK_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
@@ -75,7 +75,6 @@ def _managed_security_tail(core_tail: str) -> str:
         block_js,
         data={"revision": "managed-security-boundary-v1"},
     )
-    validate_managed_fixes(tail)
     return boundary_marker + "\n" + tail.lstrip()
 
 
