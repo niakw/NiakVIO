@@ -13,7 +13,10 @@ import hashlib
 import json
 from typing import Any
 
+from provider_patch_blocks import render_managed_fix, strip_managed_fix
+
 MARKER = "NUVIO_HLS_RUNTIME_INTEGRITY_V1"
+MANAGED_FIX_ID = "CORE.HLS_RUNTIME_INTEGRITY.V1"
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -44,34 +47,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
-    marker_comment = f"/* {marker} */"
-    current = text.find(marker_comment)
-    recovery_layers = [
-        position
-        for position in (
-            text.find("/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:"),
-            text.find("/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:"),
-        )
-        if position >= 0
-    ]
-    core_layers = [
-        position
-        for position in (
-            text.find("/* NUVIO_GLOBAL_STREAM_FACTS_V1:"),
-            text.find("/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:"),
-            text.find("/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:"),
-        )
-        if position >= 0
-    ]
-    # Canonical order is recovery/media safety -> HLS validation -> Core metadata
-    # projection/identity/presentation. The Core layers do not alter URL/headers,
-    # while HLS remains the terminal playback validator. If the exact wrapper is
-    # already in that slot, preserve the bytes instead of removing/re-appending it.
-    after_recovery = not recovery_layers or current > max(recovery_layers)
-    before_core = not core_layers or current < min(core_layers)
-    if current >= 0 and after_recovery and before_core:
-        return text
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
 
+    # One-time migration from the pre-managed HLS wrapper. All future updates
+    # replace the complete owned brick and then place that brick canonically.
     old = text.find(f"/* {MARKER}:")
     if old >= 0:
         call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
@@ -332,13 +311,14 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
         if position >= 0
     ]
+    managed = render_managed_fix(MANAGED_FIX_ID, wrapper, data=payload_config)
     if core_layers and (not recovery_layers or max(recovery_layers) < min(core_layers)):
         insertion = min(core_layers)
         return (
             text[:insertion].rstrip()
             + "\n"
-            + wrapper.strip()
+            + managed.strip()
             + "\n"
             + text[insertion:].lstrip()
         ).rstrip() + "\n"
-    return text.rstrip() + "\n" + wrapper.strip() + "\n"
+    return text.rstrip() + "\n" + managed.strip() + "\n"
