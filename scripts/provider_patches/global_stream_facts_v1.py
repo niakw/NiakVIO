@@ -41,4 +41,9 @@ function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamF
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this);
 '''.replace("MARKER_PLACEHOLDER", marker)
-    return replace_managed_fix(\n        text,\n        MANAGED_FIX_ID,\n        wrapper,\n        data={"revision": "global-facts-v1"},\n    )\n
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        wrapper,
+        data={"revision": "global-facts-v1"},
+    )
