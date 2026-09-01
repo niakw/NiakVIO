@@ -238,6 +238,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/provider_base_store.py repair-legacy
+          python scripts/provider_base_store.py repair-derived
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_521_capability_regression_test.py
