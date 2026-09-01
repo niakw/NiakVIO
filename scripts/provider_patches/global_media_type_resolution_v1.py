@@ -91,7 +91,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v19-launch-nonzero-gate",
+        "revision": "tmdb-api-first-semantic-transport-split-v20-event-launch-nonzero-gate",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -473,15 +473,15 @@ function install(o,k){
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
       if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
-      var providerLaunched=true;
+      var providerEvent="launch";
       var value=await native.apply(this,a);
       if(deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       // Hard launch/output gate: provider post-processing is allowed only for the
-      // current launched invocation and only when at least one real stream exists.
+      // current "launch" invocation and only when at least one real stream exists.
       // [] and {streams/results/data: []} exit immediately with no deferred TMDB,
       // presentation or later Core work.
-      if(!providerLaunched||!hasProviderOutput(value))return [];
+      if(providerEvent!=="launch"||!hasProviderOutput(value))return [];
       // Ordinary numeric-ID providers avoid a redundant TMDB preflight. Positive
       // output is still verified before it can escape, preserving anime/type safety.
       if(!preflight){
