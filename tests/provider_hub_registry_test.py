@@ -278,6 +278,60 @@ purstream_history = {
 }
 assert resolver.retained_lkg_site('purstream', purstream_retained_cfg, purstream_history) == 'https://purstream.id'
 
+
+# Discovery sources are not terminals, even when an official Telegram post names
+# the hub itself with strong brand/address wording. This reproduces the
+# 2026-09-01 Purstream contamination path exactly.
+polluted_purstream_history = {
+    'current': {
+        'url': 'https://purstream.wiki',
+        'host': 'purstream.wiki',
+        'source_type': 'telegram_public',
+        'source': 'https://t.me/s/purstreamm',
+    }
+}
+assert resolver.retained_lkg_site(
+    'purstream',
+    purstream_retained_cfg,
+    polluted_purstream_history,
+) == 'https://purstream.id'
+
+_original_telegram_links = resolver.telegram_links
+try:
+    resolver.telegram_links = lambda _document, _base: [{
+        'url': 'https://purstream.wiki',
+        'label': 'Purstream site officiel',
+        'context': 'Purstream nouvelle adresse officielle',
+        'message_id': 999,
+        'document_index': 0,
+    }]
+    telegram_cfg = copy.deepcopy(hubs['purstream'])
+    telegram_cfg['resolver'] = 'latest_telegram_domain'
+    candidates, selected = resolver.choose_official(
+        'purstream',
+        telegram_cfg,
+        'https://t.me/s/purstreamm',
+        '<html></html>',
+    )
+    assert candidates == []
+    assert selected is None
+finally:
+    resolver.telegram_links = _original_telegram_links
+
+try:
+    resolver.update_provider_patch(
+        {'provider_patches': {'purstream': {}}},
+        'purstream',
+        purstream_retained_cfg,
+        'https://purstream.wiki',
+        None,
+        {},
+    )
+except ValueError:
+    pass
+else:
+    raise AssertionError('Purstream discovery hub must never be publishable as terminal')
+
 # A successful fresh always replaces the current route. The former route is
 # history only; it is never allowed to remain current after hub/direct moved.
 fresh_history = {
