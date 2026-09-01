@@ -4,10 +4,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 HLS_PATCH = ROOT / "scripts" / "provider_patches" / "hls_master_audio_preserver_v1.py"
 SAFETY_PATCH = ROOT / "scripts" / "provider_patches" / "runtime_capability_media_safety_v4.py"
 
