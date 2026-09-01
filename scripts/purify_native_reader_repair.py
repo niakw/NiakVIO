@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_purification import purify_file, sha256
+from provider_byte_stability import purify_file, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
