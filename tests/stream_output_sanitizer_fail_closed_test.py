@@ -40,7 +40,8 @@ def main() -> int:
     first = module.apply(source, options=options)
     second = module.apply(first, options=options)
     assert second == first, "fail-closed sanitizer must be byte-idempotent"
-    assert first.count(module.MARKER) == 1
+    assert first.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    assert module.MARKER not in first
     assert '"probeAllUrls":true' in first
     assert '"maxProbes":20' in first
     assert module.NEW in first
@@ -74,7 +75,8 @@ def main() -> int:
     assert '"maxProbes":12' in changed
     assert '"maxProbes":20' not in changed
     assert module.apply(changed, options=changed_options) == changed
-    assert changed.count(module.MARKER) == 1
+    assert changed.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    assert module.MARKER not in changed
     assert module.NEW in changed
     assert module.PROBE_ALIAS_RE.search(sanitizer_region(changed))
 
@@ -87,7 +89,8 @@ def main() -> int:
     target_pos = relocated.rfind("/* NUVIO_TV_TARGET_MEDIA_V3:fixture */")
     assert target_pos >= 0 and sanitizer_pos > target_pos, (target_pos, sanitizer_pos)
     assert relocated.count(module.SANITIZER_PREFIX) == 1
-    assert relocated.count(module.MARKER) == 1
+    assert relocated.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    assert module.MARKER not in relocated
     assert module.PROBE_ALIAS_RE.search(sanitizer_region(relocated))
     assert module.apply(relocated, options=options) == relocated
 
