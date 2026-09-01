@@ -6,17 +6,25 @@ It does not resolve provider domains, alter stream rows, or invent provider data
 """
 from __future__ import annotations
 
+import sys
+from pathlib import Path
 from typing import Any
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+from provider_patch_blocks import replace_managed_fix, strip_legacy_iife, strip_managed_fix
+
 MARKER = "NUVIO_GLOBAL_RUNTIME_COMPAT_V1"
+MANAGED_FIX_ID = "CORE.RUNTIME_COMPAT.V1"
 RESERVED_KEY = "__nuvioGlobalRuntimeCompatV1"
 REVISION = 1
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     del options
-    if MARKER in text or RESERVED_KEY in text:
-        return text
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
+    text = strip_legacy_iife(text, f"/* {MARKER} */")
 
     wrapper = r'''
 /* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */
@@ -130,4 +138,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   if(typeof g.clearInterval!=="function")g.clearInterval=function(){};
 })(typeof globalThis!=="undefined"?globalThis:this);
 '''
-    return text.rstrip() + "\n" + wrapper.lstrip()
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        wrapper.lstrip(),
+        data={"revision": REVISION},
+    )
