@@ -353,7 +353,7 @@ with tempfile.TemporaryDirectory(dir=ROOT) as tmp_raw:
     candidate = ROOT / proposal["candidateFile"]
     assert candidate.is_file(), proposal
     text = candidate.read_text(encoding="utf-8")
-    assert "scoped-playback-context-v6-direct-safe-opaque-media" in text
+    assert "scoped-playback-context-v7-provider-deadline" in text
     serialized_report = json.dumps(report).lower()
     assert "http://" not in serialized_report and "https://" not in serialized_report, report
 
