@@ -14,7 +14,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+
 MARKER = "NUVIO_GLOBAL_STREAM_PRESENTATION_V1"
+MANAGED_FIX_ID = "CORE.STREAM_PRESENTATION.V1"
 FACTS_PATH = Path(__file__).with_name("global_stream_facts_v1.py")
 IDENTITY_PATH = Path(__file__).with_name("global_stream_identity_v1.py")
 PROVIDER_CATALOG_PATH = Path(__file__).resolve().parents[2] / "provider_catalog.json"
@@ -95,8 +98,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    if f"/* {marker} */" in text:
-        return text
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
     text = _strip_existing(text)
 
     wrapper = r'''
@@ -146,4 +148,9 @@ installJvmSafeStreamStringify();
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
-    return text.rstrip() + "\n" + wrapper.lstrip()
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        wrapper,
+        data=payload,
+    )
