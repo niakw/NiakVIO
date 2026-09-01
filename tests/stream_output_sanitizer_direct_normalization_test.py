@@ -41,7 +41,7 @@ module.exports={getStreams:async function(){return [
             "min_vod_duration_seconds": 0,
         },
     )
-    assert '"implementationVersion":8' in patched
+    assert '"implementationVersion":9' in patched
     assert "NUVIO_STREAM_OUTPUT_HLS_HTML_REPAIR_V7" in patched
     assert "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" in patched
 
