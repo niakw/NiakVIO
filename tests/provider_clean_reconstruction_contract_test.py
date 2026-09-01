@@ -183,7 +183,14 @@ purstream_model = discover_module.clean_provider_model(
     contract_overrides,
     "https://purstream.id",
 )
-assert purstream_model["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
+purstream_patch = (contract_overrides.get("provider_patches") or {}).get("purstream") or {}
+purstream_recipe = purstream_patch.get("api_recipe") or {}
+purstream_fixed = purstream_patch.get("fixed_endpoint") or {}
+expected_purstream_api = str(purstream_patch.get("official_api") or "")
+assert expected_purstream_api
+assert purstream_recipe.get("base") == expected_purstream_api
+assert purstream_fixed.get("api") == expected_purstream_api
+assert purstream_model["apiRecipe"]["base"] == expected_purstream_api
 purstream_origin_hosts = {
     (urllib.parse.urlparse(value).hostname or "").casefold()
     for value in purstream_model["origins"]
@@ -192,7 +199,8 @@ purstream_observed_hosts = {
     (urllib.parse.urlparse(value).hostname or "").casefold()
     for value in purstream_model["observedUrls"]
 }
-assert "api.purstream.id" in purstream_origin_hosts
+expected_purstream_api_host = (urllib.parse.urlparse(expected_purstream_api).hostname or "").casefold()
+assert expected_purstream_api_host in purstream_origin_hosts
 assert purstream_origin_hosts.isdisjoint({"api.purstream", "old.invalid"})
 assert purstream_observed_hosts.isdisjoint({"old.invalid", "raw.githubu"})
 
