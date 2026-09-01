@@ -224,7 +224,7 @@ jobs:
           node engine_v2/tests/resolver-core.test.mjs
           node engine_v2/tests/provider-catalog.test.mjs
 
-      - name: Prove every published provider is final Terser fixed-point
+      - name: Prove every published provider is raw-byte fixed-point
         shell: bash
         run: |
           set -euo pipefail
@@ -319,9 +319,9 @@ jobs:
               data = (root / relative).read_bytes()
               chosen, report = purify_bytes(data)
               if chosen != data:
-                  raise SystemExit(f'post-publish provider not Terser fixed-point: {row.get("id")}')
+                  raise SystemExit(f'post-publish provider raw bytes changed: {row.get("id")}')
               checked += 1
-          print(f'FIELD_POST_PUBLISH_TERSER_FIXED_POINT providers={checked} version={TERSER_VERSION}')
+          print(f'FIELD_POST_PUBLISH_RAW_BYTE_FIXED_POINT providers={checked} version={TERSER_VERSION}')
           PY
           git diff --exit-code
 
