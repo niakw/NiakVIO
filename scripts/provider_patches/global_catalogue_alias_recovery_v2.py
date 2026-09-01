@@ -13,7 +13,11 @@ import hashlib
 import json
 from typing import Any
 
+from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+
 MARKER = "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2"
+MANAGED_FIX_ID = "CORE.CATALOGUE_ALIAS_RECOVERY.V2"
+MANAGED_FIX_OPTIONAL = True
 LEGACY_MARKER = "/* NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V1:"
 WRAPPER_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 
@@ -55,7 +59,19 @@ def _strip_legacy_v1(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = dict(options or {})
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
     text = _strip_legacy_v1(text)
+
+    # One-time migration from the pre-managed V2 wrapper. New revisions replace
+    # the complete owned block instead of editing an existing wrapper in place.
+    old = text.find(f"/* {MARKER}:")
+    if old >= 0:
+        call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
+        end = text.find(");", call) if call >= 0 else -1
+        if call < 0 or end < 0:
+            raise ValueError("unterminated global catalogue alias recovery wrapper")
+        text = (text[:old] + text[end + 2 :]).rstrip()
+
     base_url = str(cfg.get("base_url") or "").rstrip("/")
     if not base_url:
         return text
@@ -78,16 +94,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    if marker in text:
-        return _upgrade_existing_search_priority(text)
-
-    old = text.find(f"/* {MARKER}:")
-    if old >= 0:
-        call = text.find('})(typeof globalThis!=="undefined"?globalThis:this,', old)
-        end = text.find(");", call) if call >= 0 else -1
-        if call < 0 or end < 0:
-            raise ValueError("unterminated global catalogue alias recovery wrapper")
-        text = (text[:old] + text[end + 2 :]).rstrip()
 
     js = r'''
 /* MARKER_PLACEHOLDER */
@@ -122,4 +128,9 @@ function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalCatalog
 var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
-    return _upgrade_existing_search_priority(text.rstrip() + "\n" + js.lstrip())
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        js,
+        data=payload,
+    )
