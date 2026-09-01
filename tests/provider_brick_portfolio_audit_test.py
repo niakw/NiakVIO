@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -37,6 +38,32 @@ CORE_ORDER = [
 checked = 0
 managed_counts: dict[str, int] = {}
 applied_script_counts: dict[str, int] = {}
+portfolio_errors: list[str] = []
+
+BLOCK_START = re.compile(r"/\* START NIAKVIO_FIX:([^*]+?) \*/")
+
+
+def block_fingerprints(text: str) -> dict[str, str]:
+    result: dict[str, str] = {}
+    for match in BLOCK_START.finditer(text):
+        fix_id = match.group(1).strip()
+        end_marker = f"/* END NIAKVIO_FIX:{fix_id} */"
+        end = text.find(end_marker, match.end())
+        if end < 0:
+            result[fix_id] = "unterminated"
+            continue
+        body = text[match.start(): end + len(end_marker)]
+        result[fix_id] = hashlib.sha256(body.encode("utf-8")).hexdigest()[:12]
+    return result
+
+
+def first_diff(left: str, right: str) -> tuple[int, str, str]:
+    limit = min(len(left), len(right))
+    idx = next((i for i in range(limit) if left[i] != right[i]), limit)
+    lo = max(0, idx - 120)
+    hi_left = min(len(left), idx + 240)
+    hi_right = min(len(right), idx + 240)
+    return idx, left[lo:hi_left].replace("\n", "\\n"), right[lo:hi_right].replace("\n", "\\n")
 
 for entry in MANIFEST.get("scrapers") or []:
     if not isinstance(entry, dict):
@@ -68,7 +95,30 @@ for entry in MANIFEST.get("scrapers") or []:
     second_text = second.decode("utf-8", errors="strict") if isinstance(second, bytes) else str(second)
 
     if second_text != first_text:
-        raise AssertionError(f"{provider_id}: full Lego composition is not byte-idempotent")
+        idx, left_ctx, right_ctx = first_diff(first_text, second_text)
+        first_blocks = block_fingerprints(first_text)
+        second_blocks = block_fingerprints(second_text)
+        changed_blocks = sorted(
+            fix_id
+            for fix_id in set(first_blocks) | set(second_blocks)
+            if first_blocks.get(fix_id) != second_blocks.get(fix_id)
+        )
+        first_paths = [
+            str(record.get("path") or "")
+            for record in records
+            if isinstance(record, dict) and record.get("type") == "patch_script"
+        ]
+        second_paths = [
+            str(record.get("path") or "")
+            for record in second_records
+            if isinstance(record, dict) and record.get("type") == "patch_script"
+        ]
+        portfolio_errors.append(
+            f"{provider_id}: non_idempotent offset={idx} "
+            f"changed_blocks={','.join(changed_blocks) or 'none'} "
+            f"first_scripts={first_paths} second_scripts={second_paths} "
+            f"first_ctx={left_ctx!r} second_ctx={right_ctx!r}"
+        )
 
     if hashlib.sha256(base_path.read_bytes()).hexdigest() != original_sha:
         raise AssertionError(f"{provider_id}: ProviderBase source mutated during compilation")
@@ -106,6 +156,13 @@ for entry in MANIFEST.get("scrapers") or []:
 expected = len([x for x in MANIFEST.get("scrapers") or [] if isinstance(x, dict) and str(x.get("id") or "").strip()])
 if checked != expected:
     raise AssertionError(f"portfolio audit incomplete: checked={checked} expected={expected}")
+
+if portfolio_errors:
+    for error in portfolio_errors:
+        print("FIELD_PROVIDER_BRICK_NON_IDEMPOTENT " + error)
+    raise AssertionError(
+        f"provider brick portfolio non-idempotent providers={len(portfolio_errors)}"
+    )
 
 print(
     "FIELD_PROVIDER_BRICK_AUDIT "
