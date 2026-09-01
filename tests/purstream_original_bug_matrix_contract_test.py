@@ -16,7 +16,14 @@ playback = overrides.get("playback_integrity_policy") or {}
 # Original P0 identity failures: provider-owned search must be strict and typed.
 assert purstream.get("patch_scripts") == [], purstream.get("patch_scripts")
 assert purstream.get("published_types") == ["movie", "tv", "anime"]
-assert recipe.get("base") == "https://api.purstream.id/api/v1"
+fixed = purstream.get("fixed_endpoint") or {}
+official_api = str(purstream.get("official_api") or "")
+official_site = str(purstream.get("official_site") or "").rstrip("/") + "/"
+assert official_api
+assert recipe.get("base") == official_api
+assert fixed.get("api") == official_api
+assert recipe.get("referer") == official_site
+assert fixed.get("referer") == official_site
 assert recipe.get("searchRoute") == "/search-bar/search/{query}"
 assert recipe.get("movieRoute") == "/media/{id}/sheet"
 assert recipe.get("episodeRoute") == "/stream/{id}/episode?season={season}&episode={episode}"
