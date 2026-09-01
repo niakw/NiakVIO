@@ -159,13 +159,7 @@ def verify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
     return data, report
 
 
-# Compatibility surface for existing Deep/native callers. These functions are
-# intentionally byte-preserving; there is no optimizer/minifier behind them.
-def purify_bytes(data: bytes) -> tuple[bytes, dict[str, Any]]:
-    return verify_bytes(data)
-
-
-def purify_file(path: Path) -> dict[str, Any]:
+def verify_file(path: Path) -> dict[str, Any]:
     original = path.resolve().read_bytes()
     chosen, report = verify_bytes(original)
     if chosen != original:
@@ -173,7 +167,7 @@ def purify_file(path: Path) -> dict[str, Any]:
     return report
 
 
-def purify_candidate(stage: Path, candidate: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+def verify_candidate(stage: Path, candidate: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
     local_path = str(candidate.get("local_path") or "").strip()
     if not local_path:
         raise ValueError("candidate local_path is required")
@@ -207,7 +201,7 @@ def write_json(path: Path, value: Any) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
-def purify_registry(stage: Path, report_path: Path) -> dict[str, Any]:
+def verify_registry(stage: Path, report_path: Path) -> dict[str, Any]:
     stage = stage.resolve()
     registry_path = stage / "candidates.json"
     registry = load_json(registry_path)
@@ -215,7 +209,7 @@ def purify_registry(stage: Path, report_path: Path) -> dict[str, Any]:
     output_candidates: list[dict[str, Any]] = []
     rows: list[dict[str, Any]] = []
     for candidate in candidates:
-        updated, report = purify_candidate(stage, candidate)
+        updated, report = verify_candidate(stage, candidate)
         output_candidates.append(updated)
         rows.append({
             "key": candidate.get("key"),
@@ -257,7 +251,7 @@ def main() -> int:
     parser.add_argument("--stage", type=Path, default=ROOT / "staging")
     parser.add_argument("--report", type=Path, default=ROOT / "health-output/provider-byte-stability.json")
     args = parser.parse_args()
-    payload = purify_registry(args.stage, args.report)
+    payload = verify_registry(args.stage, args.report)
     print(
         "FIELD_PROVIDER_BYTE_STABILITY "
         f"candidates={payload['candidateCount']} validated={payload['candidateCount']} "
