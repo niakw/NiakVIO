@@ -18,7 +18,12 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 from override_text_utils import replace_literal
-from provider_patch_blocks import (\n    assert_single_managed_fix,\n    render_managed_fix,\n    replace_managed_fix_in_place,\n)
+from provider_patch_blocks import (
+    assert_single_managed_fix,
+    decode_managed_data,
+    render_managed_fix,
+    replace_managed_fix_in_place,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
