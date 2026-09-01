@@ -1,6 +1,6 @@
 {
   "schema_version": 64,
-  "generated_at": "2026-09-01T09:21:10.919240+00:00",
+  "generated_at": "2026-09-01T20:34:19.429175+00:00",
   "test_environment": "github-actions-node",
   "test_mode": "deep",
   "upstream_manifest_count": 3,
@@ -19,15 +19,15 @@
   "strictly_validated_enabled_providers": 0,
   "strict_grace_enabled_providers": 0,
   "runtime_evidence_enabled_providers": 0,
-  "ci_inconclusive_disabled_providers": 32,
+  "ci_inconclusive_disabled_providers": 31,
   "status_counts": {
-    "healthy": 1,
+    "healthy": 2,
     "reachable": 0,
-    "blocked": 8,
+    "blocked": 9,
     "degraded": 0,
-    "no_streams": 32,
-    "provider_unreachable": 39,
-    "runtime_error": 1,
+    "no_streams": 50,
+    "provider_unreachable": 20,
+    "runtime_error": 0,
     "unavailable": 15,
     "excluded": 0
   },
@@ -312,12 +312,14 @@
             "provider_server_successful_response": true,
             "provider_server_hosts": [
               "anime-sama.store",
-              "arm.haglund.dev",
-              "www.myvi.ru"
+              "anime-sama.wiki",
+              "sendvid.com",
+              "streamtape.com"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              404,
+              502
             ]
           },
           "threshold": {
@@ -340,7 +342,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/anime-sama--nuvio--019ceb757d6207fe.js",
+      "published_filename": "providers/anime-sama--nuvio--317bc7b90e4dc18e.js",
       "variant_count": 1,
       "manifest_position": 1
     },
@@ -535,8 +537,8 @@
             "provider_status": "blocked",
             "provider_server_successful_response": false,
             "provider_server_hosts": [
-              "api.pur",
-              "api.purstream.id"
+              "api.purstream.id",
+              "purstream.id"
             ],
             "provider_server_http_statuses": [
               403
@@ -562,7 +564,7 @@
         }
       },
       "observed_status": "blocked",
-      "published_filename": "providers/purstream--nuvio--35a6f1b84a4015c2.js",
+      "published_filename": "providers/purstream--nuvio--a106f14ad5cf6dda.js",
       "variant_count": 1,
       "manifest_position": 2
     },
@@ -780,7 +782,7 @@
         }
       },
       "observed_status": "blocked",
-      "published_filename": "providers/flemmix--nuvio--1ef4b5734f07e045.js",
+      "published_filename": "providers/flemmix--nuvio--ecfdf06a218d1c2d.js",
       "variant_count": 1,
       "manifest_position": 3
     },
@@ -968,6 +970,7 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
+              "mmodlist.org",
               "uhdmovies.autos"
             ],
             "provider_server_http_statuses": [
@@ -996,7 +999,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/uhdmovies--nuvio--34196304f4897f66.js",
+      "published_filename": "providers/uhdmovies--nuvio--03e5d6d551ddabfd.js",
       "variant_count": 1,
       "manifest_position": 4
     },
@@ -1208,7 +1211,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/movieshunt--nuvio--ffc75c376a9b4bd1.js",
+      "published_filename": "providers/movieshunt--nuvio--c79ee14dea9ebed0.js",
       "variant_count": 1,
       "manifest_position": 5
     },
@@ -1428,7 +1431,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/zinkmovies--published-baseline--66d564c745417cce.js",
+      "published_filename": "providers/zinkmovies--published-baseline--4383c50e59d3dd77.js",
       "variant_count": 1,
       "manifest_position": 6
     },
@@ -1617,7 +1620,8 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "1vegamovies.me"
+              "1vegamovies.me",
+              "1vegamovies.tw"
             ],
             "provider_server_http_statuses": [
               200,
@@ -1644,7 +1648,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/vegamovies--nuvio--78443de62ecc7edf.js",
+      "published_filename": "providers/vegamovies--nuvio--633586a1abea0919.js",
       "variant_count": 1,
       "manifest_position": 7
     },
@@ -1836,7 +1840,7 @@
               "hindmovie.fit",
               "hshare.ink",
               "mvlink.blog",
-              "old.invalid"
+              "t.me"
             ],
             "provider_server_http_statuses": [
               200
@@ -1862,7 +1866,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/hindmoviez--nuvio--9c69dd8407bccfd3.js",
+      "published_filename": "providers/hindmoviez--nuvio--553399f7d7d0886e.js",
       "variant_count": 1,
       "manifest_position": 8
     },
@@ -2075,7 +2079,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/4khdhub--nuvio--8df1ea0787fd35d4.js",
+      "published_filename": "providers/4khdhub--nuvio--e55f85c209a6e149.js",
       "variant_count": 1,
       "manifest_position": 9
     },
@@ -2109,7 +2113,7 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "unavailable",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
@@ -2119,8 +2123,8 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "unavailable",
+            "stream_status": "unavailable"
           },
           "threshold": "provider runtime/API reachable"
         },
@@ -2128,7 +2132,7 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 15
           },
           "threshold": 55
         },
@@ -2265,10 +2269,14 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
+            "provider_status": "unavailable",
             "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_server_hosts": [
+              "persianstremio.vercel.app"
+            ],
+            "provider_server_http_statuses": [
+              404
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -2278,7 +2286,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "unavailable",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -2289,8 +2297,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/persianstremio--nuvio--8e9d9565c254cf2e.js",
+      "observed_status": "unavailable",
+      "published_filename": "providers/persianstremio--nuvio--a027ea7315d7dc87.js",
       "variant_count": 1,
       "manifest_position": 10
     },
@@ -2508,7 +2516,7 @@
         }
       },
       "observed_status": "unavailable",
-      "published_filename": "providers/desiflix--nuvio--b3b33dbc951fb610.js",
+      "published_filename": "providers/desiflix--nuvio--af63b5a3386bf288.js",
       "variant_count": 1,
       "manifest_position": 11
     },
@@ -2635,7 +2643,7 @@
           "scope": "stream",
           "evidence": {
             "effective_max_height": 1080,
-            "max_bandwidth": 990979,
+            "max_bandwidth": 2672800,
             "manifest_effective_height": null,
             "manifest_curation_score": 3,
             "manifest_quality_signals": [],
@@ -2682,8 +2690,8 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "playable_identity_verified_streams": 2,
-            "playable_identity_unverified_streams": 2,
+            "playable_identity_verified_streams": 1,
+            "playable_identity_unverified_streams": 3,
             "playable_identity_contradiction_count": 0,
             "playable_duration_identity_mismatch_count": 0,
             "rejected_identity_streams": 0,
@@ -2763,7 +2771,7 @@
             "fixture_phase": "primary",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 6,
+            "stream_count": 5,
             "error": null
           },
           {
@@ -2787,7 +2795,7 @@
             "fixture_phase": "fallback",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 6,
+            "stream_count": 4,
             "error": null
           }
         ]
@@ -2836,8 +2844,8 @@
         "stream_quality_score": 81,
         "streams_playable": 4,
         "payload_verified_streams": 4,
-        "identity_verified_streams": 2,
-        "identity_unverified_streams": 2,
+        "identity_verified_streams": 1,
+        "identity_unverified_streams": 3,
         "identity_contradiction_count": 0,
         "duration_identity_mismatch_count": 0,
         "playable_identity_contradiction_count": 0,
@@ -2854,7 +2862,7 @@
         "verified_max_height": 1080,
         "reported_max_height": null,
         "effective_max_height": 1080,
-        "max_bandwidth": 990979,
+        "max_bandwidth": 2672800,
         "audio_languages": [
           "vf"
         ],
@@ -2863,8 +2871,8 @@
         "accepted_subtitle_languages": [],
         "accepted_subtitles_advertised": 0,
         "accepted_subtitles_reachable": 0,
-        "provider_median_latency_ms": 7504,
-        "stream_median_latency_ms": 514,
+        "provider_median_latency_ms": 9642,
+        "stream_median_latency_ms": 653,
         "disallowed_streams": 0,
         "provider_server_accessible": true,
         "provider_server_successful_response": true,
@@ -2903,7 +2911,7 @@
             "fixture_phase": "primary",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 6,
+            "stream_count": 5,
             "error": null
           },
           {
@@ -2927,7 +2935,7 @@
             "fixture_phase": "fallback",
             "profile": "empty",
             "setting_keys": [],
-            "stream_count": 6,
+            "stream_count": 4,
             "error": null
           }
         ],
@@ -2943,8 +2951,8 @@
         "performance": {
           "scope": "provider",
           "passed": true,
-          "provider_median_latency_ms": 7504,
-          "stream_median_latency_ms": 514,
+          "provider_median_latency_ms": 9642,
+          "stream_median_latency_ms": 653,
           "maximum_provider_median_latency_ms": 15000,
           "maximum_stream_median_latency_ms": 12000
         },
@@ -3173,7 +3181,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/4khdhubnew--nuvio--e5115eb4d991273f.js",
+      "published_filename": "providers/4khdhubnew--nuvio--34a182b83d89a352.js",
       "variant_count": 1,
       "manifest_position": 13
     },
@@ -3388,7 +3396,7 @@
         }
       },
       "observed_status": "blocked",
-      "published_filename": "providers/allmovieland--published-baseline--7a2ab81cdf7c0a65.js",
+      "published_filename": "providers/allmovieland--published-baseline--b896af7ac8c96316.js",
       "variant_count": 1,
       "manifest_position": 14
     },
@@ -3602,7 +3610,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/anidb--published-baseline--6287315e07f0cb5e.js",
+      "published_filename": "providers/anidb--published-baseline--a9943fe6d7a56a1f.js",
       "variant_count": 1,
       "manifest_position": 15
     },
@@ -3787,10 +3795,15 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "anikototv.to"
+              "aiometadata.elfhosted.com",
+              "anikototv.to",
+              "api4.thetvdb.com",
+              "arm.haglund.dev",
+              "streamingsiteshub.com"
             ],
             "provider_server_http_statuses": [
               200,
+              401,
               404
             ]
           },
@@ -3814,7 +3827,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/anikototv--nuvio--ab692eee2ef1d051.js",
+      "published_filename": "providers/anikototv--nuvio--74bf870a35325341.js",
       "variant_count": 1,
       "manifest_position": 16
     },
@@ -3848,7 +3861,7 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "unavailable",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
@@ -3858,8 +3871,8 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "unavailable",
+            "stream_status": "unavailable"
           },
           "threshold": "provider runtime/API reachable"
         },
@@ -3867,7 +3880,7 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 15
           },
           "threshold": 55
         },
@@ -4003,10 +4016,15 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
+            "provider_status": "unavailable",
             "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_server_hosts": [
+              "www3.anikai.cc"
+            ],
+            "provider_server_http_statuses": [
+              502,
+              504
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -4016,7 +4034,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "unavailable",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -4027,8 +4045,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/animekai--nuvio--d0c4f97107486653.js",
+      "observed_status": "unavailable",
+      "published_filename": "providers/animekai--nuvio--5775fe75b2a7d664.js",
       "variant_count": 1,
       "manifest_position": 17
     },
@@ -4062,7 +4080,7 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "unavailable",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
@@ -4072,8 +4090,8 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "unavailable",
+            "stream_status": "unavailable"
           },
           "threshold": "provider runtime/API reachable"
         },
@@ -4081,7 +4099,7 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 15
           },
           "threshold": 55
         },
@@ -4224,10 +4242,14 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
+            "provider_status": "unavailable",
             "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_server_hosts": [
+              "id-mapping-api-malid.hf.space"
+            ],
+            "provider_server_http_statuses": [
+              400
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -4237,7 +4259,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "unavailable",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -4248,8 +4270,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/animepahe--published-baseline--f739e8e44813f0a3.js",
+      "observed_status": "unavailable",
+      "published_filename": "providers/animepahe--published-baseline--2829809fc8a41a0c.js",
       "variant_count": 1,
       "manifest_position": 18
     },
@@ -4463,7 +4485,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/animesalt--published-baseline--7ff83dee02093552.js",
+      "published_filename": "providers/animesalt--published-baseline--c8db2e2e5853ba28.js",
       "variant_count": 1,
       "manifest_position": 19
     },
@@ -4649,12 +4671,14 @@
             "provider_server_successful_response": true,
             "provider_server_hosts": [
               "anime-sama.store",
-              "arm.haglund.dev",
-              "www.myvi.ru"
+              "anime-sama.wiki",
+              "sendvid.com",
+              "streamtape.com"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              404,
+              502
             ]
           },
           "threshold": {
@@ -4677,7 +4701,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/animesama-co--nuvio--7ee4447fd3732b79.js",
+      "published_filename": "providers/animesama-co--nuvio--18aff6b50c0a5a0f.js",
       "variant_count": 1,
       "manifest_position": 20
     },
@@ -4862,13 +4886,15 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
-              "v2.animesultra.org",
-              "www.myvi.ru"
+              "npms.io",
+              "sendvid.com",
+              "streamtape.com",
+              "v2.animesultra.org"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              404,
+              502
             ]
           },
           "threshold": {
@@ -4891,7 +4917,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/animesultra--published-baseline--cd9c7127ac4b31f9.js",
+      "published_filename": "providers/animesultra--published-baseline--8033d895200d260b.js",
       "variant_count": 1,
       "manifest_position": 21
     },
@@ -4904,47 +4930,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "blocked",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "blocked",
-            "stream_status": "blocked"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 30
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -5079,16 +5098,21 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "blocked",
-            "provider_server_successful_response": false,
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "api4.thetvdb.com"
+              "aiometadata.elfhosted.com",
+              "animetsu.live",
+              "api4.thetvdb.com",
+              "swiftstream.top"
             ],
             "provider_server_http_statuses": [
+              200,
               401,
+              404,
               405
             ]
           },
@@ -5100,7 +5124,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "blocked",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -5111,8 +5135,8 @@
           }
         }
       },
-      "observed_status": "blocked",
-      "published_filename": "providers/animetsu--published-baseline--2814249816f1269a.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/animetsu--published-baseline--86d09c522e1c1cc7.js",
       "variant_count": 1,
       "manifest_position": 22
     },
@@ -5297,14 +5321,15 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
               "gmpg.org",
-              "v2.animevostfr.org",
-              "www.myvi.ru"
+              "npms.io",
+              "sendvid.com",
+              "streamtape.com",
+              "v2.animevostfr.org"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              502
             ]
           },
           "threshold": {
@@ -5327,7 +5352,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/animevostfr--nuvio--a337a9c8fb38316c.js",
+      "published_filename": "providers/animevostfr--nuvio--e386ab3474e77398.js",
       "variant_count": 1,
       "manifest_position": 23
     },
@@ -5361,7 +5386,7 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "blocked",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
@@ -5371,8 +5396,8 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "blocked",
+            "stream_status": "blocked"
           },
           "threshold": "provider runtime/API reachable"
         },
@@ -5380,7 +5405,7 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 30
           },
           "threshold": 55
         },
@@ -5518,10 +5543,14 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
+            "provider_status": "blocked",
             "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_server_hosts": [
+              "1.animezey23112022.workers.dev"
+            ],
+            "provider_server_http_statuses": [
+              429
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -5531,7 +5560,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "blocked",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -5542,8 +5571,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/animezey--nuvio--5f97aaaac25fd50d.js",
+      "observed_status": "blocked",
+      "published_filename": "providers/animezey--nuvio--ec6012061f341f59.js",
       "variant_count": 1,
       "manifest_position": 24
     },
@@ -5556,47 +5585,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "unavailable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "stream_status": "unavailable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 15
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -5729,17 +5751,26 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "provider_server_successful_response": false,
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
-              "www.myvi.ru"
+              "animoflix.to",
+              "fsvid.lol",
+              "my.mail.ru",
+              "sendvid.com",
+              "streamtape.com",
+              "video.sibnet.ru",
+              "vidmoly.to",
+              "vidzy.live"
             ],
             "provider_server_http_statuses": [
-              404
+              200,
+              403,
+              404,
+              502
             ]
           },
           "threshold": {
@@ -5750,7 +5781,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "unavailable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -5761,8 +5792,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/animoflix--nuvio--36ea9bdfaac728c6.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/animoflix--nuvio--cc799d9b2f89351e.js",
       "variant_count": 1,
       "manifest_position": 25
     },
@@ -5977,7 +6008,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/anizone--published-baseline--354eb51e6e37e4aa.js",
+      "published_filename": "providers/anizone--published-baseline--8e961cfdfbea753c.js",
       "variant_count": 1,
       "manifest_position": 26
     },
@@ -5990,47 +6021,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "unavailable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "stream_status": "unavailable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 15
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -6163,15 +6187,16 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "provider_server_successful_response": false,
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
               "api.hlowb.com"
             ],
             "provider_server_http_statuses": [
+              200,
               404
             ]
           },
@@ -6183,7 +6208,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "unavailable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -6194,8 +6219,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/castle--nuvio--0c1fe72386137e6f.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/castle--nuvio--d9a518dc4c18fe14.js",
       "variant_count": 1,
       "manifest_position": 27
     },
@@ -6409,7 +6434,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/cineby--nuvio--d93f668e6fec9ae9.js",
+      "published_filename": "providers/cineby--nuvio--d3be6d273f555b50.js",
       "variant_count": 1,
       "manifest_position": 28
     },
@@ -6625,7 +6650,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/cinemacity--published-baseline--020bfdf1b8942bde.js",
+      "published_filename": "providers/cinemacity--published-baseline--c09ef5992c930db1.js",
       "variant_count": 1,
       "manifest_position": 29
     },
@@ -6810,7 +6835,8 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "cinemm.com"
+              "cinemm.com",
+              "v3-cinemeta.strem.io"
             ],
             "provider_server_http_statuses": [
               200,
@@ -6837,7 +6863,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/cinemm--published-baseline--c14ac31a0f90ff0a.js",
+      "published_filename": "providers/cinemm--published-baseline--a73f82d3bb192404.js",
       "variant_count": 1,
       "manifest_position": 30
     },
@@ -7024,14 +7050,35 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "cloudflareinsights.com",
+              "bingezove.com",
               "coflix.group",
-              "static.cloudflareinsights.com"
+              "darkibox.com",
+              "download.megaup.net",
+              "dsvplay.com",
+              "emmmmbed.com",
+              "filemoon.sx",
+              "lecteur1.xtremestream.xyz",
+              "lecteurvideo.com",
+              "listeamed.net",
+              "lulustream.com",
+              "luluvdo.com",
+              "megaup.net",
+              "minochinos.com",
+              "static.veevcdn.co",
+              "tracylocalschool.com",
+              "uqload.cx",
+              "veev.to",
+              "vidmoly.me",
+              "vidoza.net",
+              "voe.sx",
+              "waaw.to",
+              "wishonly.site"
             ],
             "provider_server_http_statuses": [
               200,
-              404,
-              405
+              206,
+              403,
+              404
             ]
           },
           "threshold": {
@@ -7054,7 +7101,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/coflix--nuvio--f366cf818acc91b1.js",
+      "published_filename": "providers/coflix--nuvio--49450df5f0c8c08b.js",
       "variant_count": 1,
       "manifest_position": 31
     },
@@ -7271,7 +7318,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/dooflix--published-baseline--b509865333a7d0bf.js",
+      "published_filename": "providers/dooflix--published-baseline--9990f10a71e75228.js",
       "variant_count": 1,
       "manifest_position": 32
     },
@@ -7284,47 +7331,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "unavailable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "stream_status": "unavailable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 15
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -7457,15 +7497,22 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "provider_server_successful_response": false,
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "www.myvi.ru"
+              "npms.io",
+              "sendvid.com",
+              "streamtape.com",
+              "www.dulourd.hair"
             ],
-            "provider_server_http_statuses": []
+            "provider_server_http_statuses": [
+              200,
+              403,
+              502
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -7475,7 +7522,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "unavailable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -7486,8 +7533,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/dulourd--published-baseline--81afc9754829b0c6.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/dulourd--published-baseline--088ba27bfd715b73.js",
       "variant_count": 1,
       "manifest_position": 33
     },
@@ -7672,13 +7719,14 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
-              "w16.french-manga.net",
-              "www.myvi.ru"
+              "npms.io",
+              "sendvid.com",
+              "streamtape.com",
+              "w16.french-manga.net"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              502
             ]
           },
           "threshold": {
@@ -7701,7 +7749,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/french-manga--nuvio--beb3cf10c869d862.js",
+      "published_filename": "providers/french-manga--nuvio--2ecdfe393fa52ee1.js",
       "variant_count": 1,
       "manifest_position": 34
     },
@@ -7923,7 +7971,7 @@
         }
       },
       "observed_status": "unavailable",
-      "published_filename": "providers/goated--nuvio--bd3e902a6d72aaf7.js",
+      "published_filename": "providers/goated--nuvio--251ea3dbc7a3e6a5.js",
       "variant_count": 1,
       "manifest_position": 35
     },
@@ -8141,7 +8189,7 @@
         }
       },
       "observed_status": "blocked",
-      "published_filename": "providers/hdghartv--nuvio--5c80a591c6e85c36.js",
+      "published_filename": "providers/hdghartv--nuvio--bfa7e2ddfcd24614.js",
       "variant_count": 1,
       "manifest_position": 36
     },
@@ -8328,8 +8376,8 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "greenmountmotors.com",
               "hubcloud.cx",
+              "new1.hdhub4u.cl",
               "new5.hdhub4u.cl",
               "www.imdb.com"
             ],
@@ -8360,7 +8408,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/hdhub4u--published-baseline--af3650f62e0bdb23.js",
+      "published_filename": "providers/hdhub4u--published-baseline--067160b75a1a83a0.js",
       "variant_count": 1,
       "manifest_position": 37
     },
@@ -8576,7 +8624,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/hianime--nuvio--897d0d5b69214183.js",
+      "published_filename": "providers/hianime--nuvio--82c87fa02804fe93.js",
       "variant_count": 1,
       "manifest_position": 38
     },
@@ -8603,7 +8651,7 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "no_streams",
+            "status": "unavailable",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
@@ -8614,7 +8662,7 @@
           "scope": "provider",
           "evidence": {
             "provider_status": "reachable",
-            "stream_status": "no_streams"
+            "stream_status": "unavailable"
           },
           "threshold": "provider runtime/API reachable"
         },
@@ -8764,11 +8812,11 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
+              "arm.haglund.dev",
               "kurage.live"
             ],
             "provider_server_http_statuses": [
               200,
-              206,
               404
             ]
           },
@@ -8780,7 +8828,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "no_streams",
+            "stream_status": "unavailable",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -8791,8 +8839,8 @@
           }
         }
       },
-      "observed_status": "no_streams",
-      "published_filename": "providers/kurage--nuvio--26b1da47105b7762.js",
+      "observed_status": "unavailable",
+      "published_filename": "providers/kurage--nuvio--e03cf05a7d991248.js",
       "variant_count": 1,
       "manifest_position": 39
     },
@@ -9012,7 +9060,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/movieblast--nuvio--5e856aff70e7082f.js",
+      "published_filename": "providers/movieblast--nuvio--94904c9a0e3e4046.js",
       "variant_count": 1,
       "manifest_position": 40
     },
@@ -9201,12 +9249,17 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
+              "hc-zf3c.vercel.app",
+              "lucky-star-3059.salman-sohail93.workers.dev",
               "movies4u.review",
+              "movies4u.tube",
               "new2.movies4u.finance"
             ],
             "provider_server_http_statuses": [
               200,
-              403
+              402,
+              403,
+              404
             ]
           },
           "threshold": {
@@ -9229,7 +9282,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/movies4u--nuvio--d66285f375df62b1.js",
+      "published_filename": "providers/movies4u--nuvio--90161cc30b6fb082.js",
       "variant_count": 1,
       "manifest_position": 41
     },
@@ -9418,7 +9471,8 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "moviesdrives.cfd"
+              "moviesdrives.cfd",
+              "moviesdrives.mov"
             ],
             "provider_server_http_statuses": [
               200,
@@ -9445,7 +9499,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/moviesdrive--nuvio--d660602b6c7b9606.js",
+      "published_filename": "providers/moviesdrive--nuvio--25192322cb8973ee.js",
       "variant_count": 1,
       "manifest_position": 42
     },
@@ -9659,7 +9713,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/moviesmod--published-baseline--199ce44104a897b9.js",
+      "published_filename": "providers/moviesmod--published-baseline--69db1f3d41f925e1.js",
       "variant_count": 1,
       "manifest_position": 43
     },
@@ -9881,7 +9935,7 @@
         }
       },
       "observed_status": "blocked",
-      "published_filename": "providers/movix--nuvio--570b20c2d05d71fa.js",
+      "published_filename": "providers/movix--nuvio--fd1e2179737f6d9a.js",
       "variant_count": 1,
       "manifest_position": 44
     },
@@ -10069,12 +10123,16 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "www.mugiwara-no-streaming.com",
-              "www.myvi.ru"
+              "sendvid.com",
+              "streaminganime.fr",
+              "streamtape.com",
+              "www.mugiwara-no-streaming.com"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              403,
+              404,
+              502
             ]
           },
           "threshold": {
@@ -10097,7 +10155,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/mugiwarastream--nuvio--d1a315c5dd951767.js",
+      "published_filename": "providers/mugiwarastream--nuvio--2f35f3f9089fc5f0.js",
       "variant_count": 1,
       "manifest_position": 45
     },
@@ -10293,7 +10351,7 @@
             "provider_status": "unavailable",
             "provider_server_successful_response": false,
             "provider_server_hosts": [
-              "api.nakio"
+              "api.nakios.live"
             ],
             "provider_server_http_statuses": []
           },
@@ -10317,7 +10375,7 @@
         }
       },
       "observed_status": "unavailable",
-      "published_filename": "providers/nakios--nuvio--8b82b154baacde1b.js",
+      "published_filename": "providers/nakios--nuvio--eab961783f4ecf9f.js",
       "variant_count": 1,
       "manifest_position": 46
     },
@@ -10531,7 +10589,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/neko-sama--nuvio--328594b754b8cda7.js",
+      "published_filename": "providers/neko-sama--nuvio--7bdff61418809558.js",
       "variant_count": 1,
       "manifest_position": 47
     },
@@ -10577,7 +10635,7 @@
           "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 100
+            "provider_score": 85
           },
           "threshold": 55
         },
@@ -10721,7 +10779,9 @@
             "provider_server_successful_response": true,
             "provider_server_hosts": [
               "arm.haglund.dev",
-              "papadustream-v2.watch"
+              "papadustream-v2.watch",
+              "papadustream.club",
+              "papadustream.info"
             ],
             "provider_server_http_statuses": [
               200,
@@ -10748,7 +10808,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/papadustream--published-baseline--7c2b73487816d8aa.js",
+      "published_filename": "providers/papadustream--published-baseline--9bfe0467146ed343.js",
       "variant_count": 1,
       "manifest_position": 48
     },
@@ -10968,7 +11028,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/peachify--nuvio--250cc2703881c276.js",
+      "published_filename": "providers/peachify--nuvio--587f977978fca49a.js",
       "variant_count": 1,
       "manifest_position": 49
     },
@@ -11002,7 +11062,7 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "unavailable",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
@@ -11012,8 +11072,8 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "unavailable",
+            "stream_status": "unavailable"
           },
           "threshold": "provider runtime/API reachable"
         },
@@ -11021,7 +11081,7 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 15
           },
           "threshold": 55
         },
@@ -11161,10 +11221,14 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
+            "provider_status": "unavailable",
             "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_server_hosts": [
+              "streamdata.vaplayer.ru"
+            ],
+            "provider_server_http_statuses": [
+              404
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -11174,7 +11238,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "unavailable",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -11185,8 +11249,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/playimdb--nuvio--506a5799df1826ce.js",
+      "observed_status": "unavailable",
+      "published_filename": "providers/playimdb--nuvio--bbdd400e7b113372.js",
       "variant_count": 1,
       "manifest_position": 50
     },
@@ -11375,10 +11439,13 @@
             "provider_server_hosts": [
               "arm.haglund.dev",
               "discord.com",
+              "kitsu.io",
+              "npms.io",
               "sekai.one"
             ],
             "provider_server_http_statuses": [
               200,
+              400,
               404
             ]
           },
@@ -11402,7 +11469,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/sekai--nuvio--331dfbeb4093b020.js",
+      "published_filename": "providers/sekai--nuvio--c0934f4b4c1abaad.js",
       "variant_count": 1,
       "manifest_position": 51
     },
@@ -11415,47 +11482,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "unavailable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "stream_status": "unavailable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 15
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -11590,15 +11650,17 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "provider_server_successful_response": false,
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "api"
+              "api.streamflix.app"
             ],
-            "provider_server_http_statuses": []
+            "provider_server_http_statuses": [
+              200
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -11608,7 +11670,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "unavailable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -11619,8 +11681,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/streamflix--published-baseline--a9682f136740211f.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/streamflix--published-baseline--2f661fe004f4462f.js",
       "variant_count": 1,
       "manifest_position": 52
     },
@@ -11806,13 +11868,21 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "streamzo.fr"
+              "fonts.googleapis.com",
+              "hu.receptssnoozes.cfd",
+              "sendvid.com",
+              "streamtape.com",
+              "streamzo.fr",
+              "video.sibnet.ru",
+              "vidzy.live"
             ],
             "provider_server_http_statuses": [
               200,
               206,
+              403,
               404,
-              429
+              429,
+              502
             ]
           },
           "threshold": {
@@ -11835,7 +11905,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/streamzo--nuvio--510b1d19e94c0be8.js",
+      "published_filename": "providers/streamzo--nuvio--5ebe870fac7a3bbb.js",
       "variant_count": 1,
       "manifest_position": 53
     },
@@ -12023,7 +12093,8 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "api.tfx05.lol"
+              "api.tfx05.lol",
+              "apis.wavewatch.xyz"
             ],
             "provider_server_http_statuses": [
               200
@@ -12049,7 +12120,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/toflix--nuvio--2df539bc30ea8b6d.js",
+      "published_filename": "providers/toflix--nuvio--25c569ca98ae4454.js",
       "variant_count": 1,
       "manifest_position": 54
     },
@@ -12062,47 +12133,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -12235,13 +12299,21 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
+            "provider_server_hosts": [
+              "api.speedracelight.com",
+              "player.videasy.to",
+              "www.videasy.to",
+              "www.vidking.net"
+            ],
+            "provider_server_http_statuses": [
+              200,
+              404
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -12251,7 +12323,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -12262,8 +12334,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/videasy--nuvio--9c27bb8c3bb8e559.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/videasy--nuvio--584d5d91f5d15568.js",
       "variant_count": 1,
       "manifest_position": 55
     },
@@ -12276,47 +12348,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -12449,13 +12514,19 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
+            "provider_server_hosts": [
+              "enc-dec.app",
+              "vidfast.vc"
+            ],
+            "provider_server_http_statuses": [
+              200,
+              404
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -12465,7 +12536,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -12476,8 +12547,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/vidfast--nuvio--ddbda358e4c229a6.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/vidfast--nuvio--224add5d69939e24.js",
       "variant_count": 1,
       "manifest_position": 56
     },
@@ -12490,47 +12561,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -12663,13 +12727,17 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
+            "provider_server_hosts": [
+              "enc-dec.app"
+            ],
+            "provider_server_http_statuses": [
+              200
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -12679,7 +12747,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -12690,8 +12758,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/vidlink--published-baseline--671d4623ca17f915.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/vidlink--published-baseline--2e4ba86491cd33fc.js",
       "variant_count": 1,
       "manifest_position": 57
     },
@@ -12907,7 +12975,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/vidrock--nuvio--d4eedcbd81b89fe3.js",
+      "published_filename": "providers/vidrock--nuvio--52526d5667850ff3.js",
       "variant_count": 1,
       "manifest_position": 58
     },
@@ -13093,13 +13161,20 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
+              "fsvid.lol",
+              "my.mail.ru",
+              "sendvid.com",
+              "streamtape.com",
+              "video.sibnet.ru",
+              "vidmoly.to",
               "voiranime.homes",
-              "www.myvi.ru"
+              "voiranime.org.uk"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              403,
+              404,
+              502
             ]
           },
           "threshold": {
@@ -13122,7 +13197,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/voiranime--nuvio--0f644a1d1a73ce36.js",
+      "published_filename": "providers/voiranime--nuvio--84e17fff15b9c97e.js",
       "variant_count": 1,
       "manifest_position": 59
     },
@@ -13135,47 +13210,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "unavailable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "stream_status": "unavailable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 15
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -13308,17 +13376,20 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "provider_server_successful_response": false,
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
-              "www.myvi.ru"
+              "npms.io",
+              "sendvid.com",
+              "streamtape.com",
+              "voiranime.homes"
             ],
             "provider_server_http_statuses": [
-              404
+              200,
+              502
             ]
           },
           "threshold": {
@@ -13329,7 +13400,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "unavailable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -13340,8 +13411,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/voiranime-homes--nuvio--5bf11dae8bddea54.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/voiranime-homes--nuvio--aa20a65e1d15a12b.js",
       "variant_count": 1,
       "manifest_position": 60
     },
@@ -13526,13 +13597,14 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
-              "voiranime.rip",
-              "www.myvi.ru"
+              "npms.io",
+              "sendvid.com",
+              "streamtape.com",
+              "voiranime.rip"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              502
             ]
           },
           "threshold": {
@@ -13555,7 +13627,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/voiranime-rip--nuvio--fd89e6d5ab244604.js",
+      "published_filename": "providers/voiranime-rip--nuvio--26881628f978be40.js",
       "variant_count": 1,
       "manifest_position": 61
     },
@@ -13568,47 +13640,40 @@
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
-      "activation_blockers": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
-        "00_provider_specific_access"
-      ],
+      "activation_blockers": [],
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "unavailable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "stream_status": "unavailable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 15
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -13741,17 +13806,21 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "unavailable",
-            "provider_server_successful_response": false,
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
-              "www.myvi.ru"
+              "ipv4.vostfree.ws",
+              "sendvid.com",
+              "streamtape.com",
+              "video.sibnet.ru"
             ],
             "provider_server_http_statuses": [
-              404
+              200,
+              403,
+              502
             ]
           },
           "threshold": {
@@ -13762,7 +13831,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "unavailable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -13773,8 +13842,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/vostfree--published-baseline--695442d4c92fe950.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/vostfree--published-baseline--fdff484c763e5d0b.js",
       "variant_count": 1,
       "manifest_position": 62
     },
@@ -13959,13 +14028,20 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "arm.haglund.dev",
-              "wookafr.blog",
-              "www.myvi.ru"
+              "fsvid.lol",
+              "sendvid.com",
+              "streamtape.com",
+              "t.me",
+              "video.sibnet.ru",
+              "vidmoly.me",
+              "vidzy.live",
+              "wookafr.blog"
             ],
             "provider_server_http_statuses": [
               200,
-              404
+              403,
+              404,
+              502
             ]
           },
           "threshold": {
@@ -13988,7 +14064,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/wookafr--nuvio--af41f17412968db9.js",
+      "published_filename": "providers/wookafr--nuvio--d15c2a6cdb292594.js",
       "variant_count": 1,
       "manifest_position": 63
     },
@@ -14173,10 +14249,12 @@
             "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
+              "1moviesz.to",
               "enc-dec.app"
             ],
             "provider_server_http_statuses": [
-              200
+              200,
+              404
             ]
           },
           "threshold": {
@@ -14199,7 +14277,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/yflix--published-baseline--a0e0b95e02263781.js",
+      "published_filename": "providers/yflix--published-baseline--30f1ae36b535e575.js",
       "variant_count": 1,
       "manifest_position": 64
     },
@@ -14210,15 +14288,12 @@
       "activation_eligible": false,
       "activation_mode": "catalogue_audit_safety_quarantine",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
       "activation_blockers": [
@@ -14230,26 +14305,26 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -14386,13 +14461,25 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
+            "provider_server_hosts": [
+              "api.viduki.net",
+              "gd.kmhd.eu",
+              "layla.wtf",
+              "pixeldrain.com",
+              "streamtape.com",
+              "www.1shows.org"
+            ],
+            "provider_server_http_statuses": [
+              200,
+              403,
+              404,
+              405
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -14402,7 +14489,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -14413,7 +14500,7 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
+      "observed_status": "no_streams",
       "published_filename": "providers/1shows--nuvio-audit-quarantine--7947316d3cbed215.js",
       "variant_count": 1,
       "manifest_position": 65
@@ -14811,8 +14898,8 @@
           }
         }
       },
-      "observed_status": "blocked",
-      "published_filename": "providers/allwish--nuvio--4ce4dfa3d2ba3860.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/allwish--nuvio--fdb156bb52165519.js",
       "variant_count": 1,
       "manifest_position": 67
     },
@@ -15001,8 +15088,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/anime-ultime--nuvio--370c10b61202363c.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/anime-ultime--nuvio--4b894dd65617ddc6.js",
       "variant_count": 1,
       "manifest_position": 68
     },
@@ -15191,7 +15278,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/animevost-fr--nuvio--0f6449362f895f7a.js",
+      "published_filename": "providers/animevost-fr--nuvio--2310c2eaa28ddb1b.js",
       "variant_count": 1,
       "manifest_position": 69
     },
@@ -15380,7 +15467,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/animeworld--nuvio--2988d2276557b82f.js",
+      "published_filename": "providers/animeworld--nuvio--d4f30572259c3455.js",
       "variant_count": 1,
       "manifest_position": 70
     },
@@ -15785,7 +15872,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/cinevibe--nuvio--8a24b01bfe6e6fc6.js",
+      "published_filename": "providers/cinevibe--nuvio--7984d63144d496ce.js",
       "variant_count": 1,
       "manifest_position": 72
     },
@@ -15974,7 +16061,7 @@
         }
       },
       "observed_status": "unavailable",
-      "published_filename": "providers/ctgmovies--nuvio--ac7e426cbdb229db.js",
+      "published_filename": "providers/ctgmovies--nuvio--7c0bc2865718aa6b.js",
       "variant_count": 1,
       "manifest_position": 73
     },
@@ -16389,8 +16476,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/einthusan--nuvio--88a2841ab9a8d365.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/einthusan--nuvio--061fa236ac9c2829.js",
       "variant_count": 1,
       "manifest_position": 75
     },
@@ -16576,26 +16663,19 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/fibwatch--nuvio--d387e55d5e03c5eb.js",
+      "observed_status": "blocked",
+      "published_filename": "providers/fibwatch--nuvio--8f20de7b50ad030c.js",
       "variant_count": 1,
       "manifest_position": 76
     },
     {
       "id": "frenchstream",
-      "action": "preserved-conclusive-safety-quarantine-ci-uncertain",
+      "action": "preserved-published-state-clean-candidate-pending",
       "enabled": false,
       "activation_eligible": false,
+      "strict_activation_eligible": false,
       "activation_mode": "configured_safety_quarantine",
-      "failed_gates": [
-        "04_fixture_and_type_coverage",
-        "05_stream_and_fixture_coverage",
-        "06_distinct_host_diversity",
-        "07_verified_payload_playability",
-        "08_quality_and_bitrate",
-        "10_content_identity_integrity",
-        "00_current_playable_stream"
-      ],
+      "failed_gates": [],
       "activation_blockers": [
         "02_healthy_functional_status",
         "03_minimum_score",
@@ -16611,41 +16691,30 @@
       "activation_gates": {
         "01_policy_safe_no_p2p": {
           "passed": true,
-          "scope": "stream",
           "evidence": {
-            "status": "runtime_error",
-            "rejected_policy_streams": 0,
-            "exposed_disallowed_streams": 0
+            "status": "healthy",
+            "disallowed_streams": 0
           },
-          "threshold": "no disallowed P2P/torrent output survives stream sanitization"
+          "threshold": "no disallowed P2P/torrent output"
         },
         "02_healthy_functional_status": {
           "passed": true,
-          "scope": "provider",
-          "evidence": {
-            "provider_status": "reachable",
-            "stream_status": "runtime_error"
-          },
-          "threshold": "provider runtime/API reachable"
+          "evidence": "healthy",
+          "threshold": "healthy or reachable server/API"
         },
         "03_minimum_score": {
           "passed": true,
-          "scope": "provider",
-          "evidence": {
-            "provider_score": 100
-          },
+          "evidence": 80,
           "threshold": 55
         },
         "04_fixture_and_type_coverage": {
-          "passed": false,
-          "scope": "type",
+          "passed": true,
           "evidence": {
-            "healthy_fixtures": 0,
-            "fixtures_tested": 9,
-            "healthy_fixture_ratio": 0.0,
+            "healthy_fixtures": 2,
+            "fixtures_tested": 2,
+            "healthy_fixture_ratio": 1,
             "required_categories": [
               "anime",
-              "movie",
               "tv"
             ],
             "original_required_categories": [
@@ -16653,9 +16722,15 @@
               "movie",
               "tv"
             ],
-            "healthy_categories": [],
-            "activation_supported_types": [],
-            "type_scope_applied": false
+            "healthy_categories": [
+              "anime",
+              "tv"
+            ],
+            "activation_supported_types": [
+              "anime",
+              "tv"
+            ],
+            "type_scope_applied": true
           },
           "threshold": {
             "minimum_healthy_fixtures": 1,
@@ -16665,11 +16740,10 @@
           }
         },
         "05_stream_and_fixture_coverage": {
-          "passed": false,
-          "scope": "stream",
+          "passed": true,
           "evidence": {
-            "playable_streams": 0,
-            "playable_fixtures": 0
+            "playable_streams": 3,
+            "playable_fixtures": 2
           },
           "threshold": {
             "minimum_playable_streams": 1,
@@ -16677,20 +16751,22 @@
           }
         },
         "06_distinct_host_diversity": {
-          "passed": false,
-          "scope": "stream",
+          "passed": true,
           "evidence": {
-            "distinct_reachable_hosts": 0,
-            "reachable_hosts": []
+            "distinct_reachable_hosts": 3,
+            "reachable_hosts": [
+              "strm1.uqload.is",
+              "u14.vidzy.cc",
+              "v6.vidzy.cc"
+            ]
           },
           "threshold": 1
         },
         "07_verified_payload_playability": {
-          "passed": false,
-          "scope": "stream",
+          "passed": true,
           "evidence": {
-            "payload_verified_streams": 0,
-            "playable_streams": 0
+            "payload_verified_streams": 3,
+            "playable_streams": 3
           },
           "threshold": {
             "minimum_payload_verified_streams": 1,
@@ -16698,21 +16774,23 @@
           }
         },
         "08_quality_and_bitrate": {
-          "passed": false,
-          "scope": "stream",
+          "passed": true,
           "evidence": {
-            "effective_max_height": null,
-            "max_bandwidth": null,
+            "effective_max_height": 488,
+            "max_bandwidth": 991332,
             "manifest_effective_height": null,
-            "manifest_curation_score": 5,
-            "manifest_quality_signals": [],
+            "manifest_curation_score": 6,
+            "manifest_quality_signals": [
+              "declared_by_multiple_manifests"
+            ],
             "manifest_formats": [
               "m3u8",
               "mkv",
               "mp4"
             ],
             "manifest_sources": [
-              "gowaru"
+              "gowaru",
+              "published-baseline"
             ]
           },
           "threshold": {
@@ -16723,13 +16801,20 @@
         },
         "09_language_and_subtitle_integrity": {
           "passed": true,
-          "scope": "stream",
           "evidence": {
-            "accepted_audio_languages": [],
-            "accepted_subtitle_languages": [],
+            "accepted_audio_languages": [
+              "fr"
+            ],
+            "accepted_subtitle_languages": [
+              "fr"
+            ],
             "accepted_subtitles_advertised": 0,
             "accepted_subtitles_reachable": 0,
-            "runtime_observed_languages": [],
+            "runtime_observed_languages": [
+              "fr",
+              "vf",
+              "vostfr"
+            ],
             "manifest_accepted_languages": [
               "fr"
             ],
@@ -16747,38 +16832,41 @@
             "reachable_advertised_subtitle_required": true
           }
         },
-        "10_content_identity_integrity": {
-          "passed": false,
-          "scope": "stream",
+        "00_dns_or_alternative_domain": {
+          "passed": true,
           "evidence": {
-            "playable_identity_verified_streams": 0,
-            "playable_identity_unverified_streams": 0,
-            "playable_identity_contradiction_count": 0,
-            "playable_duration_identity_mismatch_count": 0,
-            "rejected_identity_streams": 0,
-            "rejected_duration_streams": 0,
-            "rejected_unreachable_streams": 0
+            "dns_status": "inconclusive"
           },
           "threshold": {
-            "minimum_surviving_playable_streams": 1,
-            "maximum_playable_identity_contradictions": 0,
-            "maximum_playable_duration_identity_mismatches": 0,
-            "rejected_streams_do_not_disable_healthy_provider": true,
-            "unknown_identity_is_not_ui_unknown_quality": true
+            "required": "DNS resolution or validated alternative domain"
           }
         },
         "00_provider_specific_access": {
           "passed": true,
-          "scope": "provider",
           "evidence": {
-            "provider_status": "reachable",
             "provider_server_successful_response": true,
             "provider_server_hosts": [
-              "fs16.lol"
+              "1.multiup.us",
+              "arm.haglund.dev",
+              "french-stream.club)",
+              "fs16.lol",
+              "fsvid.lol",
+              "kakaflix.lol",
+              "strm1.uqload.is",
+              "strm2.uqload.is",
+              "strm7.uqload.is",
+              "u14.vidzy.cc",
+              "uqload.is",
+              "v3-cinemeta.strem.io",
+              "v6.vidzy.cc",
+              "vidzy.cc",
+              "vidzy.org",
+              "www.fstream.org"
             ],
             "provider_server_http_statuses": [
               200,
-              429
+              206,
+              404
             ]
           },
           "threshold": {
@@ -16786,21 +16874,19 @@
           }
         },
         "00_current_playable_stream": {
-          "passed": false,
-          "scope": "stream",
+          "passed": true,
           "evidence": {
-            "stream_status": "runtime_error",
-            "streams_playable": 0,
-            "payload_verified_streams": 0,
-            "healthy_fixtures": 0
+            "status": "healthy",
+            "streams_playable": 3,
+            "healthy_fixtures": 2,
+            "effective_max_height": 488
           },
           "threshold": {
-            "required_for": "first_activation_only",
-            "already_proven_provider_kept_on_per_work_zero_stream": true
+            "required": "at least one currently playable stream"
           }
         }
       },
-      "observed_status": "runtime_error",
+      "observed_status": "healthy",
       "published_filename": "providers/frenchstream--published-baseline--4651c83c32fff552.js",
       "variant_count": 1,
       "manifest_position": 77
@@ -16989,7 +17075,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/fullanime--nuvio--c91cd3635fb316f3.js",
+      "published_filename": "providers/fullanime--nuvio--ecea18661ed7c4bf.js",
       "variant_count": 1,
       "manifest_position": 78
     },
@@ -17177,7 +17263,7 @@
         }
       },
       "observed_status": "unavailable",
-      "published_filename": "providers/goatapi--nuvio--5f10adaa9b691f0d.js",
+      "published_filename": "providers/goatapi--nuvio--93d70ad7b15c2660.js",
       "variant_count": 1,
       "manifest_position": 79
     },
@@ -17363,8 +17449,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/gramcinema--nuvio--8a36d83e42bd961f.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/gramcinema--nuvio--2b14329dcd5e5116.js",
       "variant_count": 1,
       "manifest_position": 80
     },
@@ -17553,7 +17639,7 @@
         }
       },
       "observed_status": "blocked",
-      "published_filename": "providers/kisskh--nuvio--aa16aefabd678c2b.js",
+      "published_filename": "providers/kisskh--nuvio--bba8c224f8068a78.js",
       "variant_count": 1,
       "manifest_position": 81
     },
@@ -17745,7 +17831,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/mallumv--nuvio--eba0fe2b87daf37c.js",
+      "published_filename": "providers/mallumv--nuvio--387c671579e85696.js",
       "variant_count": 1,
       "manifest_position": 82
     },
@@ -17935,8 +18021,8 @@
           }
         }
       },
-      "observed_status": "unavailable",
-      "published_filename": "providers/moonflix--nuvio--aa5f4cd88274fb74.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/moonflix--nuvio--5915918d748da835.js",
       "variant_count": 1,
       "manifest_position": 83
     },
@@ -17947,15 +18033,12 @@
       "activation_eligible": false,
       "activation_mode": "configured_safety_quarantine",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
       "activation_blockers": [
@@ -17974,26 +18057,26 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -18131,13 +18214,22 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
+            "provider_server_hosts": [
+              "moviebox.yachts",
+              "moviiebox.lol",
+              "pengu.uk",
+              "stremio-moviebox-1.onrender.com"
+            ],
+            "provider_server_http_statuses": [
+              200,
+              404,
+              500
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -18147,7 +18239,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -18158,7 +18250,7 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
+      "observed_status": "no_streams",
       "published_filename": "providers/moviebox--published-baseline--19a7b7bbaa035869.js",
       "variant_count": 1,
       "manifest_position": 84
@@ -18345,7 +18437,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/mycima--nuvio--ca5e89b240a4d2ef.js",
+      "published_filename": "providers/mycima--nuvio--28aa2dc3849df678.js",
       "variant_count": 1,
       "manifest_position": 85
     },
@@ -18759,8 +18851,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/onlykdrama--nuvio--71d055b4af3deec5.js",
+      "observed_status": "no_streams",
+      "published_filename": "providers/onlykdrama--nuvio--5788dcc50a1d4a5e.js",
       "variant_count": 1,
       "manifest_position": 87
     },
@@ -18946,8 +19038,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/showbox--nuvio--b0a6af18e53634a7.js",
+      "observed_status": "unavailable",
+      "published_filename": "providers/showbox--nuvio--dbebe934bf6df117.js",
       "variant_count": 1,
       "manifest_position": 88
     },
@@ -19355,7 +19447,7 @@
         }
       },
       "observed_status": "no_streams",
-      "published_filename": "providers/vidlove--nuvio--7c505281c2619f29.js",
+      "published_filename": "providers/vidlove--nuvio--d7d00de33e0ad431.js",
       "variant_count": 1,
       "manifest_position": 90
     },
@@ -19542,8 +19634,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/vidnest--nuvio--83020d34485f8a72.js",
+      "observed_status": "unavailable",
+      "published_filename": "providers/vidnest--nuvio--d0de7c23267d08a6.js",
       "variant_count": 1,
       "manifest_position": 91
     },
@@ -19732,7 +19824,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/vidnest-anime--nuvio--a13e4215d902906d.js",
+      "published_filename": "providers/vidnest-anime--nuvio--87879d67fce1e438.js",
       "variant_count": 1,
       "manifest_position": 92
     },
@@ -19743,15 +19835,12 @@
       "activation_eligible": false,
       "activation_mode": "catalogue_audit_safety_quarantine",
       "failed_gates": [
-        "02_healthy_functional_status",
-        "03_minimum_score",
         "04_fixture_and_type_coverage",
         "05_stream_and_fixture_coverage",
         "06_distinct_host_diversity",
         "07_verified_payload_playability",
         "08_quality_and_bitrate",
         "10_content_identity_integrity",
-        "00_provider_specific_access",
         "00_current_playable_stream"
       ],
       "activation_blockers": [
@@ -19771,26 +19860,26 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "no_streams",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
           "threshold": "no disallowed P2P/torrent output survives stream sanitization"
         },
         "02_healthy_functional_status": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "reachable",
+            "stream_status": "no_streams"
           },
           "threshold": "provider runtime/API reachable"
         },
         "03_minimum_score": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 100
           },
           "threshold": 55
         },
@@ -19925,13 +20014,17 @@
           }
         },
         "00_provider_specific_access": {
-          "passed": false,
+          "passed": true,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "provider_server_successful_response": false,
-            "provider_server_hosts": [],
-            "provider_server_http_statuses": []
+            "provider_status": "reachable",
+            "provider_server_successful_response": true,
+            "provider_server_hosts": [
+              "vidsrc.me"
+            ],
+            "provider_server_http_statuses": [
+              200
+            ]
           },
           "threshold": {
             "required": "successful provider-owned HTTP response"
@@ -19941,7 +20034,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "no_streams",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -19952,7 +20045,7 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
+      "observed_status": "no_streams",
       "published_filename": "providers/vidsrc--nuvio-audit-quarantine--7947316d3cbed215.js",
       "variant_count": 1,
       "manifest_position": 93
@@ -19992,7 +20085,7 @@
           "passed": true,
           "scope": "stream",
           "evidence": {
-            "status": "provider_unreachable",
+            "status": "unavailable",
             "rejected_policy_streams": 0,
             "exposed_disallowed_streams": 0
           },
@@ -20002,8 +20095,8 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
-            "stream_status": "provider_unreachable"
+            "provider_status": "unavailable",
+            "stream_status": "unavailable"
           },
           "threshold": "provider runtime/API reachable"
         },
@@ -20011,7 +20104,7 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_score": 0
+            "provider_score": 15
           },
           "threshold": 55
         },
@@ -20150,9 +20243,11 @@
           "passed": false,
           "scope": "provider",
           "evidence": {
-            "provider_status": "provider_unreachable",
+            "provider_status": "unavailable",
             "provider_server_successful_response": false,
-            "provider_server_hosts": [],
+            "provider_server_hosts": [
+              "komiknostalgia.id"
+            ],
             "provider_server_http_statuses": []
           },
           "threshold": {
@@ -20163,7 +20258,7 @@
           "passed": false,
           "scope": "stream",
           "evidence": {
-            "stream_status": "provider_unreachable",
+            "stream_status": "unavailable",
             "streams_playable": 0,
             "payload_verified_streams": 0,
             "healthy_fixtures": 0
@@ -20174,7 +20269,7 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
+      "observed_status": "unavailable",
       "published_filename": "providers/vixsrc--nuvio--d6a63066fef51c8d.js",
       "variant_count": 1,
       "manifest_position": 94
@@ -20363,7 +20458,7 @@
         }
       },
       "observed_status": "provider_unreachable",
-      "published_filename": "providers/waveanime--nuvio--730fe567b5b68866.js",
+      "published_filename": "providers/waveanime--nuvio--b7016a1b9ff97095.js",
       "variant_count": 1,
       "manifest_position": 95
     },
@@ -20552,8 +20647,8 @@
           }
         }
       },
-      "observed_status": "provider_unreachable",
-      "published_filename": "providers/xpass--nuvio--c9335c125d523bf7.js",
+      "observed_status": "blocked",
+      "published_filename": "providers/xpass--nuvio--e722bafb1c6f24af.js",
       "variant_count": 1,
       "manifest_position": 96
     }

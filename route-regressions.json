@@ -1,27 +1,6 @@
 {
   "schema_version": 3,
-  "regressions": [
-    {
-      "provider": "kurage",
-      "host": "kurage.live",
-      "stage": "search",
-      "requests": 69,
-      "obsolete_responses": 69,
-      "obsolete_ratio": 1.0,
-      "path_patterns": [
-        {
-          "pattern": "/search?query={value}",
-          "count": 35
-        },
-        {
-          "pattern": "/search?q={value}",
-          "count": 34
-        }
-      ],
-      "configured_route_replacements": {},
-      "action": "the bounded deep-repair loop should try every structurally compatible runtime profile; add a reusable profile only when no generic strategy matches"
-    }
-  ],
+  "regressions": [],
   "instrumentation_gaps": [],
   "provider_specific_rules": false
 }
