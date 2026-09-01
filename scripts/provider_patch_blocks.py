@@ -162,6 +162,23 @@ def replace_managed_fix(
     return output.rstrip() + "\n"
 
 
+def replace_managed_fix_in_place(
+    text: str,
+    fix_id: str,
+    javascript: str,
+    *,
+    data: dict[str, Any] | None = None,
+) -> tuple[str, bool]:
+    """Replace an existing managed block at the same byte position."""
+    span = _owned_span(text, fix_id)
+    if span is None:
+        return text, False
+    block = render_managed_fix(fix_id, javascript, data=data)
+    output = text[:span[0]] + block + text[span[1]:]
+    assert_single_managed_fix(output, fix_id)
+    return output, True
+
+
 def assert_single_managed_fix(text: str, fix_id: str) -> None:
     span = _owned_span(text, fix_id)
     if span is None:
