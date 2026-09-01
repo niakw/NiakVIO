@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
-from provider_purification import split_owned_prefix_bootstraps
+from provider_purification import split_owned_prefix_bootstraps\nfrom provider_patch_blocks import strip_all_managed_fixes
 
 ROOT = Path(__file__).resolve().parents[1]
 BASES = ROOT / "provider-bases"
@@ -239,16 +239,21 @@ def resolve_runtime_base(
 
 
 def clean_base_from_published(provider_id: str, published_data: bytes) -> tuple[bytes, bool]:
-    """Remove every owned derived layer while preserving durable provider logic."""
+    """Dismantle every owned derived brick before recovering durable provider logic."""
     published_text = published_data.decode("utf-8", errors="strict")
-    base_text, stripped_core = _strip_generated_core_tail(published_text)
+    base_text, managed_fixes = strip_all_managed_fixes(
+        published_text,
+        restore_replaced_source=True,
+        require_provider_base_restore=True,
+    )
+    base_text, stripped_core = _strip_generated_core_tail(base_text)
     base_text, stripped_adaptive = strip_adaptive_runtime_wrappers(base_text)
     base_data = base_text.encode("utf-8")
     prefix, body = split_owned_prefix_bootstraps(base_data)
     if prefix:
         base_data = body
     assert_base_layering(base_data, provider_id)
-    return base_data, bool(stripped_core or stripped_adaptive or prefix)
+    return base_data, bool(managed_fixes or stripped_core or stripped_adaptive or prefix)
 
 
 def persist_base_from_published(provider_id: str, published_data: bytes) -> tuple[str, str, bool]:
