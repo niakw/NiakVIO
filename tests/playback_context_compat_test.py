@@ -4,8 +4,13 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
+
+
+ROOT = ROOT
+sys.path.insert(0, str(ROOT / "scripts"))
 
 
 def load_module(path: Path, name: str):
@@ -124,7 +129,7 @@ function resp(url,status,ct,body,setCookie){return{ok:status>=200&&status<300,st
 
 
 def main() -> None:
-    root = Path(__file__).resolve().parents[1]
+    root = ROOT
     test_hls_hook_keeps_runtime_safety_ownership_separate(root)
     test_embed_cookie_and_header_inheritance(root)
     test_cookie_scope_does_not_leak(root)
