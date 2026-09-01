@@ -1091,11 +1091,11 @@ def _provider_export_floor(text: str) -> int:
 def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
     """Recover provider bytes without ever cutting before the export bridge.
 
-    Terser is allowed to preserve comments while changing their attachment to
-    AST nodes. Therefore a Core boundary/marker found before the provider export
-    is stale metadata, not a truncation point. Stale boundary comments are
-    removed, then only markers at or after the export floor may delimit the
-    generated Core tail. Unknown export shapes fail closed and retain all bytes.
+    Legacy flattened artifacts may contain stale generated comments before the
+    provider export. Those comments are metadata, not a truncation point. Remove
+    stale boundary comments, then only markers at or after the export floor may
+    delimit the generated Core tail. Unknown export shapes fail closed and retain
+    all bytes.
     """
     original = text
     boundary_needle = f"/* {CORE_START_MARKER} */"
