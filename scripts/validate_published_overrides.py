@@ -5,10 +5,16 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path
+from typing import Any
+
+SCRIPT_DIR = Path(__file__).resolve().parent
+if str(SCRIPT_DIR) not in sys.path:
+    sys.path.insert(0, str(SCRIPT_DIR))
+
 from override_text_utils import contains_literal
 from provider_patch_blocks import validate_managed_fixes
-from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
