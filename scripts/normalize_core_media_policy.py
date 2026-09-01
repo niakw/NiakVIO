@@ -235,7 +235,7 @@ def main() -> int:
     print(
         "FIELD_CORE_MEDIA_POLICY "
         f"provider_specific_media_repairs=0 changed={len(changed) + len(source_changes)} "
-        "identity=global_runtime presentation=global_core_v12 branding=post_presentation_global_core "
+        "identity=global_runtime presentation=global_core_v17 branding=post_presentation_global_core "
         "compatibility=shared security=global_core"
     )
     return 0
