@@ -76,7 +76,7 @@ assert config["activation"]["deep_learning_may_fallback_after_zero_stream"] is T
 # namespaces, including anime movies transported as movie.
 assert "delete g.__nuvioMediaContext" in media
 assert "__nuvioProviderRequestToken" in media
-assert "requestDeadline=Date.now()+c.providerTimeoutMs" in media
+assert "requestDeadline=Date.now()+providerBudgetMs()" in media
 assert "g.__nuvioProviderRequestToken!==requestToken" in media
 assert 'return["movie","tv"]' in media
 assert 'return["tv","movie"]' in media
