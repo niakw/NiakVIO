@@ -1008,6 +1008,27 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
                     parsed_api.params, parsed_api.query, parsed_api.fragment,
                 )).rstrip("/")
 
+    # ProviderBase reconstruction consumes api_recipe as structured knowledge.
+    # Keeping it pinned to yesterday's terminal makes a later deep rebuild
+    # faithfully reconstruct the wrong route even when the hub resolver already
+    # learned a newer one. Routing metadata and reconstruction knowledge must
+    # therefore move atomically.
+    api_recipe = patch.get("api_recipe")
+    if isinstance(api_recipe, dict):
+        api_recipe["referer"] = site_url.rstrip("/") + "/"
+        if api_url:
+            api_recipe["base"] = api_url.rstrip("/")
+        else:
+            existing_base = str(api_recipe.get("base") or "")
+            existing_base_host = host(existing_base)
+            if existing_base_host.startswith("api.") and new_site_host:
+                parsed_base = urllib.parse.urlparse(existing_base)
+                derived_host = "api." + new_site_host
+                api_recipe["base"] = urllib.parse.urlunparse((
+                    parsed_base.scheme or "https", derived_host, parsed_base.path,
+                    parsed_base.params, parsed_base.query, parsed_base.fragment,
+                )).rstrip("/")
+
     script_options = patch.setdefault("patch_script_options", {})
     toflix_script = "scripts/provider_patches/toflix_official_endpoint.py"
     if toflix_script in (patch.get("patch_scripts") or []):
@@ -1019,7 +1040,7 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
     if recovery_script in (patch.get("patch_scripts") or []):
         options = script_options.setdefault(recovery_script, {})
         options["base_url"] = site_url.rstrip("/")
-        if str(options.get("strategy") or "") == "api_discovery":
+        if str(options.get("strategy") or "") in {"api_discovery", "api_fixed"}:
             if api_url:
                 options["api_url"] = api_url.rstrip("/")
             else:
