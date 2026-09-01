@@ -18,7 +18,7 @@ import runtime_repair  # noqa: E402
 import deep_repair_loop as loop  # noqa: E402
 import brain_repair_runtime as brain  # noqa: E402
 from guard_nuvio_client_brain_compat import guard as guard_nuvio_client_brain_compat  # noqa: E402
-from provider_purification import purify_candidate, purify_registry  # noqa: E402
+from provider_byte_stability import purify_candidate, purify_registry  # noqa: E402
 from repair_identity_gate import automatic_repair_identity_gate  # noqa: E402
 from repair_profile_persistence import ensure_repair_profile  # noqa: E402
 
@@ -45,11 +45,11 @@ def _profiled_create(stage, candidate, profile_name, round_number):
     repaired, error = _base_create(stage, candidate, profile_name, round_number)
     if not isinstance(repaired, dict):
         return repaired, error
-    # Any Brain/runtime mutation must immediately re-enter purification before its
-    # strict deep retest. The deep result therefore proves the exact optimized bytes,
-    # not the larger pre-purification candidate.
+    # Any Brain/runtime mutation must immediately re-enter byte_stability before its
+    # strict deep retest. The deep result therefore proves the exact exact raw bytes,
+    # not the larger pre-byte_stability candidate.
     try:
-        repaired, _purification = purify_candidate(Path(stage), repaired)
+        repaired, _byte_stability = purify_candidate(Path(stage), repaired)
     except Exception as exc:
         try:
             target = (Path(stage).resolve() / str(repaired.get("local_path") or "")).resolve()
@@ -57,7 +57,7 @@ def _profiled_create(stage, candidate, profile_name, round_number):
             target.unlink(missing_ok=True)
         except (ValueError, OSError):
             pass
-        return None, f"purification_failed:{type(exc).__name__}:{exc}"
+        return None, f"byte_stability_failed:{type(exc).__name__}:{exc}"
     return ensure_repair_profile(repaired, profile_name), error
 
 
@@ -107,18 +107,18 @@ def main() -> int:
         # Provider repair logic is valid only against a conclusively known official
         # Nuvio runtime contract. Safe unrelated client updates may proceed; hard or
         # semantic runtime drift and transport-inconclusive checks fail closed before
-        # any provider JS mutation or purification is attempted.
+        # any provider JS mutation or byte_stability is attempted.
         guard_nuvio_client_brain_compat(output / "nuvio-client-upstream-status.json")
 
-        # Deep is the authoritative purification phase: all effective staged bundles
-        # are optimized after known patches/profiles, then that exact registry becomes
+        # Deep is the authoritative byte_stability phase: all effective staged bundles
+        # are validated byte-for-byte after known patches/profiles, then that exact registry becomes
         # baseline input. Repairs generated later in this same loop are purified again
         # by _profiled_create before their own retest.
-        purification = purify_registry(stage, output / "provider-purification.json")
+        byte_stability = purify_registry(stage, output / "provider-byte_stability.json")
         print(
-            "FIELD_PROVIDER_PURIFICATION_DEEP "
-            f"candidates={purification['candidateCount']} applied={purification['appliedCount']} "
-            f"bytes_saved={purification['bytesSaved']} saving_percent={purification['savingPercent']}"
+            "FIELD_PROVIDER_BYTE_STABILITY_DEEP "
+            f"candidates={byte_stability['candidateCount']} applied={byte_stability['appliedCount']} "
+            f"bytes_saved={byte_stability['bytesSaved']} saving_percent={byte_stability['savingPercent']}"
         )
 
         loop.compare_results = _identity_safe_compare
