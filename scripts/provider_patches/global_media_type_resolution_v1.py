@@ -20,10 +20,17 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+
 MARKER = "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"
+MANAGED_FIX_ID = "CORE.MEDIA_TYPE_RESOLUTION.V1"
 ROOT = Path(__file__).resolve().parents[2]
 RUNTIME_KEY_PATH = ROOT / "runtime" / "tmdb-runtime-key.json"
 
@@ -89,9 +96,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
-    # This resolver is the outermost request layer. Even when the exact marker
-    # already exists, strip and re-append it so any Core layer rebuilt during
-    # the same pass cannot move outside the canonical media-type boundary.
+    # This resolver is the outermost request layer. Managed publication strips
+    # the entire owned block first; the legacy marker stripper only handles
+    # bundles produced before BEGIN/END ownership existed.
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
     text = _strip_existing(text)
 
     js = r'''
@@ -480,7 +488,12 @@ try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
 
-    return text.rstrip() + "\n" + js.lstrip()
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        js.lstrip(),
+        data=payload,
+    )
 
 
 if __name__ == "__main__":
