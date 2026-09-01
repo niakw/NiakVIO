@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_byte_stability import purify_file, sha256
+from provider_byte_stability import verify_file, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -56,7 +56,7 @@ def main() -> int:
         if expected and sha256(before) != expected:
             raise ValueError(f"reader repair hash mismatch before byte stability: {provider}")
 
-        byte_stability = purify_file(path)
+        byte_stability = verify_file(path)
         after = path.read_bytes()
         if byte_stability["applied"]:
             applied += 1
