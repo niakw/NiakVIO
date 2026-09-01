@@ -21,10 +21,10 @@ ROWS = PROVENANCE.get("providers") or {}
 CORE_ORDER = [
     # Textual/materialization order. getStreams wrapper execution is the reverse:
     # media-type is intentionally outermost and executes first.
-    "CORE.HLS_RUNTIME_INTEGRITY.V1",
     "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
     "CORE.MEDIA_ENRICHMENT.V1",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
+    "CORE.HLS_RUNTIME_INTEGRITY.V1",
     "CORE.RUNTIME_COMPAT.V1",
     "CORE.STREAM_FACTS.V1",
     "CORE.STREAM_IDENTITY.V1",
