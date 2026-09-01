@@ -195,7 +195,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     try{
       var response=await g.fetch(url,{method:"GET",headers:headersFor(stream),redirect:"follow",signal:controller.signal});
       var finalUrl=response&&response.url?String(response.url):url;
-      if(!response)return null;\n      if(blocked(finalUrl))return false;\n      if(!response.ok){\n        var status=Number(response.status||0);\n        if(status===403||status===404||status===410)return false;\n        return null;\n      }
+      if(!response)return null;
+      if(blocked(finalUrl))return false;
+      if(!response.ok){
+        var status=Number(response.status||0);
+        if(status===403||status===404||status===410)return false;
+        return null;
+      }
       var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
       var disposition=String(response.headers&&response.headers.get?response.headers.get("content-disposition")||"":"");
       var bytes=await prefixBytes(response,controller),text=ascii(bytes);
@@ -249,7 +255,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       }
       var checked=await Promise.all(candidates.map(async function(item){
         if(!item.probe)return item.stream;
-        var verdict=await probe(item.stream,item.url);\n        return verdict===false?null:item.stream;
+        var verdict=await probe(item.stream,item.url);
+        return verdict===false?null:item.stream;
       }));
       return rebuild(result,slot,checked.filter(Boolean));
     };
