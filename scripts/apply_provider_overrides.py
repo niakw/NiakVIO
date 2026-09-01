@@ -30,6 +30,7 @@ CONFIG = ROOT / "provider-overrides.json"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
 GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
+GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
 GLOBAL_STREAM_SANITIZER = "scripts/provider_patches/stream_output_sanitizer_v6.py"
 CORE_MANAGED_SANITIZER_SCRIPTS = {
@@ -1230,7 +1231,7 @@ def apply_overrides(
     script_options = specific.get("patch_script_options") or {}
     if not isinstance(script_options, dict):
         raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
-    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_MEDIA_TYPE_RESOLUTION}
+    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_DESKTOP_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_MEDIA_TYPE_RESOLUTION}
     leaked_core_scripts = sorted(set(patch_scripts) & reserved_core_scripts)
     if leaked_core_scripts:
         raise ValueError(
@@ -1298,6 +1299,32 @@ def apply_overrides(
                         "phase": phase,
                         "scope": "global_playback_integrity",
                     })
+
+        # Desktop compatibility is Core-owned but provider-configurable. Apply it
+        # once, in the historical pre-catalogue slot, so provider-specific options
+        # survive without allowing the managed brick to move between layers on
+        # repeated full compositions.
+        desktop_options = script_options.get(GLOBAL_DESKTOP_RUNTIME_COMPAT)
+        if desktop_options is not None:
+            if not isinstance(desktop_options, dict):
+                raise ValueError(
+                    f"provider_patches.{provider_id}.patch_script_options[{GLOBAL_DESKTOP_RUNTIME_COMPAT!r}] must be an object"
+                )
+            before = text
+            text = _apply_patch_script(
+                text,
+                provider_id,
+                GLOBAL_DESKTOP_RUNTIME_COMPAT,
+                dict(desktop_options),
+                None,
+            )
+            if text != before:
+                applied.append({
+                    "type": "patch_script",
+                    "path": GLOBAL_DESKTOP_RUNTIME_COMPAT,
+                    "phase": phase,
+                    "scope": "global_desktop_runtime_compat",
+                })
 
         _apply_playback_stage(pre_media_hooks)
         capability = str(specific.get("capability") or "").strip().casefold()
