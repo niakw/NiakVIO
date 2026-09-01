@@ -80,6 +80,11 @@ def _owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
     return current or legacy
 
 
+def has_managed_fix(text: str, fix_id: str) -> bool:
+    """Return True only when exactly one valid owned block already exists."""
+    return _owned_span(str(text or ""), fix_id) is not None
+
+
 def strip_managed_fix(text: str, fix_id: str) -> str:
     span = _owned_span(text, fix_id)
     if span is None:
