@@ -39,6 +39,7 @@ CORE_MANAGED_SANITIZER_SCRIPTS = {
     "scripts/provider_patches/stream_output_sanitizer_v6.py",
 }
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
+# Managed Core bricks are composed only at whole START/END boundaries; provider rows may supply data/options, never brick ownership.
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
 GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
