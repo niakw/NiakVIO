@@ -38,6 +38,17 @@ module.assert_base_layering(
     "synthetic-security-normalized",
 )
 
+contaminated_tail = (
+    valid
+    + b"/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:fixture */\n"
+    + b";(function(g,c){g.__derived=true})(globalThis,{});\n"
+)
+cleaned_tail, stripped_tail = module.clean_base_from_published("synthetic-tail", contaminated_tail)
+assert stripped_tail is True
+assert cleaned_tail == valid.rstrip()
+module.assert_base_layering(cleaned_tail, "synthetic-tail")
+
+
 for marker in sorted(required):
     contaminated = (f"/* {marker} */\n").encode() + valid
     try:
@@ -125,11 +136,15 @@ assert "legacy-providerbase-compatibility-only" in promoter_source
 assert "compatibility/LKG JavaScript cannot seed or replace ProviderBase" in promoter_source
 assert "refusing legacy ProviderBase fallback" in promoter_source
 assert "python scripts/provider_base_store.py repair-legacy" not in core_workflow_source
+assert "python scripts/provider_base_store.py repair-derived" in core_workflow_source
+assert core_workflow_source.index("python scripts/provider_base_store.py repair-derived") < core_workflow_source.index("python scripts/provider_base_store.py validate")
 assert "python scripts/provider_base_store.py validate" in core_workflow_source
 assert "git diff --exit-code -- provider-bases" in core_workflow_source
 assert "python scripts/provider_base_store.py repair-legacy" in sync_workflow_source
-assert sync_workflow_source.index("python scripts/provider_base_store.py repair-legacy") < sync_workflow_source.index(
+assert "python scripts/provider_base_store.py repair-derived" in sync_workflow_source
+assert sync_workflow_source.index("python scripts/provider_base_store.py repair-legacy") < sync_workflow_source.index("python scripts/provider_base_store.py repair-derived") < sync_workflow_source.index(
     "python scripts/provider_base_store.py validate"
 )
+assert "def repair_derived_base_tails()" in base_store_source
 
 print("ProviderBase layering contract tests passed")
