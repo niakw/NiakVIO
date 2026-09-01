@@ -73,6 +73,33 @@ def strip_managed_fix(text: str, fix_id: str) -> str:
     return before or after
 
 
+def strip_legacy_iife(
+    text: str,
+    marker: str,
+    *,
+    invocation_anchor: str = '})(typeof globalThis!=="undefined"?globalThis:this',
+) -> str:
+    """Remove one pre-managed marker-owned IIFE as one indivisible legacy block."""
+    positions = [match.start() for match in re.finditer(re.escape(marker), text)]
+    if not positions:
+        return text
+    if len(positions) != 1:
+        raise ValueError(f"legacy fix marker duplicated: {marker}")
+    start = positions[0]
+    call = text.find(invocation_anchor, start)
+    if call < 0:
+        raise ValueError(f"legacy fix marker has no owned invocation: {marker}")
+    end = text.find(");", call + len(invocation_anchor))
+    if end < 0:
+        raise ValueError(f"legacy fix marker has unterminated invocation: {marker}")
+    end += 2
+    before = text[:start].rstrip()
+    after = text[end:].lstrip()
+    if before and after:
+        return before + "\n" + after
+    return before or after
+
+
 def render_managed_fix(
     fix_id: str,
     javascript: str,
