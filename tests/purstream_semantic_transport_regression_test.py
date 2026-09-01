@@ -30,6 +30,11 @@ media_patch = load_module("global_media_type_resolution_purstream_regression", M
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 patch = overrides["provider_patches"]["purstream"]
 capability = overrides["provider_capabilities"]["purstream"]
+expected_site = str(patch.get("official_site") or "")
+expected_api = str(patch.get("official_api") or "")
+assert expected_site and expected_api
+expected_site_host = discover.urllib.parse.urlparse(expected_site).hostname
+expected_api_host = discover.urllib.parse.urlparse(expected_api).hostname
 
 # Deliberately polluted historical knowledge reproduces the old candidate that
 # contained stale/incomplete hosts. Corrective reconstruction may learn static
@@ -55,7 +60,7 @@ model = discover.clean_provider_model(
     "purstream",
     knowledge,
     overrides,
-    "https://purstream.id",
+    expected_site,
 )
 origin_hosts = {
     discover.urllib.parse.urlparse(value).hostname
@@ -65,14 +70,14 @@ observed_hosts = {
     discover.urllib.parse.urlparse(value).hostname
     for value in model.get("observedUrls") or []
 }
-assert model["apiRecipe"]["base"] == "https://api.purstream.id/api/v1"
+assert model["apiRecipe"]["base"] == expected_api
 assert model["apiRecipe"]["searchRoute"] == "/search-bar/search/{query}"
 assert model["apiRecipe"]["movieRoute"] == "/media/{id}/sheet"
 assert model["apiRecipe"]["episodeRoute"] == "/stream/{id}/episode?season={season}&episode={episode}"
 assert model["apiRecipe"]["strictIdentity"] is True
 assert model["apiRecipe"]["directSourcesOnly"] is True
-assert "api.purstream.id" in origin_hosts
-assert "purstream.id" in origin_hosts
+assert expected_api_host in origin_hosts
+assert expected_site_host in origin_hosts
 assert origin_hosts.isdisjoint({"api.purstream", "old.invalid", "raw.githubu"})
 assert observed_hosts.isdisjoint({"api.purstream", "old.invalid", "raw.githubu"})
 
@@ -91,7 +96,7 @@ assert reconstructed_entry["canonicalSupportedTypes"] == ["movie", "tv", "anime"
 seed = base_store.build_clean_provider_seed(
     "purstream",
     reconstructed_entry,
-    known_site="https://purstream.id",
+    known_site=expected_site,
     provider_model=model,
 ).decode("utf-8")
 assert '"supportedTypes":["movie","tv","anime"]' in seed
