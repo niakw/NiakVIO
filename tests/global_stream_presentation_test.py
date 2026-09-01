@@ -4,10 +4,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 PATCHES = ROOT / "scripts" / "provider_patches"
 NORMALIZER = ROOT / "scripts" / "normalize_stream_presentation_v12.py"
 
