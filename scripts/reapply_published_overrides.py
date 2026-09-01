@@ -25,7 +25,7 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, load_overrides
-from provider_purification import BYTE_STABILITY_VERSION, verify_bytes
+from provider_byte_stability import BYTE_STABILITY_VERSION, verify_bytes
 from provider_security_hardening import assert_hardened, harden_bytes
 from provider_engine_normalizer import (
     _host,
@@ -634,7 +634,7 @@ PUBLICATION_CONTRACT_FILES = (
     "scripts/override_text_utils.py",
     "scripts/provider_engine_normalizer.py",
     "scripts/provider_security_hardening.py",
-    "scripts/provider_purification.py",
+    "scripts/provider_byte_stability.py",
     "scripts/validate_provider_artifact.cjs",
     "package-lock.json",
     "provider-version-floors.json",
