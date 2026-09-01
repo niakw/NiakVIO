@@ -24,13 +24,13 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=True)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-title-quality-ordered-description-runtime-tmdb-fail-open-v16-jvm-json-utf8"
+assert presentation.REVISION == "all-providers-shared-tmdb-cache-native-zero-extra-fetch-v17-jvm-json-utf8"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-title-quality-ordered-description-runtime-tmdb-fail-open-v16-jvm-json-utf8" in patched
+    assert "all-providers-shared-tmdb-cache-native-zero-extra-fetch-v17-jvm-json-utf8" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -161,4 +161,17 @@ assert desktop_native["calls"] == 0, desktop_native
 assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native
 assert desktop_native["row"]["url"] == "https://x.example/a.mp4", desktop_native
 
-print("global stream presentation V16 JVM-safe JSON contract tests passed")
+
+# Native composition: media_type has already populated the verified TMDB base
+# cache. Presentation may use it, but must not spend another synchronous native
+# bridge request on ratings/runtime decoration.
+native_cached = run(
+    "module.exports={getStreams:async()=>[{name:'Cineby',url:'https://x.example/a.mp4',quality:'1080p',language:'VO'}]};\n",
+    "cineby",
+    "global.TMDB_API_KEY='native-key';global.__native_fetch=async()=>{throw new Error('unused')};global.__nuvioTmdbMetadataCacheV1={'movie:157336':{state:'ok',metadata:{id:157336,title:'Interstellar',release_date:'2014-11-05',runtime:169}}};let calls=0;global.fetch=async()=>{calls++;throw new Error('presentation must use cache on native runtime')};p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify({row:v[0],calls})))",
+)
+assert native_cached["calls"] == 0, native_cached
+assert native_cached["row"]["duration"] == 169, native_cached
+assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
+
+print("global stream presentation V17 JVM-safe JSON contract tests passed")
