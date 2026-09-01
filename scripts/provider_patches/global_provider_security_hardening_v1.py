@@ -1,18 +1,14 @@
 #!/usr/bin/env python3
-"""Core-wide final security transform for every reconstructed provider bundle.
+"""Core-wide provider security hardening with managed Core ownership.
 
-The underlying transformations live in ``provider_security_hardening.py`` so the
-same deterministic implementation is shared by staging, Brain repair candidates,
-publication reconstruction and security audits. This adapter exists only to make
-that implementation composable through the normal provider Core hook scheduler.
-
-The final statement emitted by this hook is also the durable Core-tail boundary.
-It is an observable assignment to a NiakVIO-owned global marker rather than a
-comment or an unused literal expression: conservative Terser cannot discard or
-reattach it, and statement order remains stable across repeated reconstruction.
+Provider-owned bytes are hardened deterministically. The observable security
+boundary is a normal NiakVIO Lego brick with transactional START/END ownership,
+placed after the canonical Core boundary. Existing legacy flat boundary markers
+are removed during migration.
 """
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,11 +18,13 @@ SCRIPTS = ROOT / "scripts"
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
+from provider_patch_blocks import replace_managed_fix, validate_managed_fixes  # noqa: E402
 from provider_security_hardening import assert_hardened, harden_text  # noqa: E402
 
 HOOK_MARKER = "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1"
 HOOK_BOUNDARY = "__nuvioGlobalProviderSecurityBoundaryV1"
 CORE_START_BOUNDARY = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
+MANAGED_FIX_ID = "CORE.PROVIDER_SECURITY_BOUNDARY.V1"
 TRUSTED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
@@ -36,12 +34,12 @@ TRUSTED_CORE_TAIL_MARKERS = (
 
 def _split_trusted_core_tail(text: str) -> tuple[str, str]:
     """Separate provider-owned source from every NiakVIO Core brick."""
-    boundary = text.find(f"/* {CORE_START_BOUNDARY} */")
+    boundary_marker = f"/* {CORE_START_BOUNDARY} */"
+    boundary = text.find(boundary_marker)
     if boundary >= 0:
         return text[:boundary], text[boundary:]
 
-    # Compatibility only for pre-boundary bundles. New reconstruction always
-    # emits CORE_START_BOUNDARY before any Core hook and must never harden Core.
+    # Compatibility only for pre-boundary bundles.
     starts = [
         index
         for marker in TRUSTED_CORE_TAIL_MARKERS
@@ -53,19 +51,42 @@ def _split_trusted_core_tail(text: str) -> tuple[str, str]:
     return text[:start], text[start:]
 
 
+def _strip_legacy_flat_boundary(text: str) -> str:
+    pattern = re.compile(
+        r"/\*\s*" + re.escape(HOOK_MARKER) + r"\s*\*/\s*"
+        + r"globalThis\." + re.escape(HOOK_BOUNDARY) + r"\s*=\s*true\s*;\s*"
+    )
+    return pattern.sub("", text)
+
+
+def _managed_security_tail(core_tail: str) -> str:
+    boundary_marker = f"/* {CORE_START_BOUNDARY} */"
+    tail = core_tail
+    if tail.startswith(boundary_marker):
+        tail = tail[len(boundary_marker):]
+    tail = _strip_legacy_flat_boundary(tail).lstrip()
+    block_js = (
+        f"/* {HOOK_MARKER} */\n"
+        f"globalThis.{HOOK_BOUNDARY}=true;"
+    )
+    tail = replace_managed_fix(
+        tail,
+        MANAGED_FIX_ID,
+        block_js,
+        data={"revision": "managed-security-boundary-v1"},
+    )
+    validate_managed_fixes(tail)
+    return boundary_marker + "\n" + tail.lstrip()
+
+
 def harden_bundle(text: str) -> tuple[str, dict[str, Any]]:
-    """Harden provider-owned bytes while preserving the generated Core tail byte-for-byte."""
+    """Harden provider bytes and preserve/recompose the managed Core tail."""
     provider_text, trusted_tail = _split_trusted_core_tail(text)
+    provider_text = _strip_legacy_flat_boundary(provider_text)
     hardened, report = harden_text(provider_text)
     assert_hardened(hardened)
-    if HOOK_BOUNDARY not in hardened:
-        # Deliberate observable assignment: unlike a comment or standalone string,
-        # this cannot be dropped/re-attached by Terser without changing semantics.
-        hardened = hardened.rstrip() + (
-            f"\n/* {HOOK_MARKER} */\n"
-            f"globalThis.{HOOK_BOUNDARY}=true;\n"
-        )
-    return hardened + trusted_tail, report
+    core_tail = _managed_security_tail(trusted_tail)
+    return hardened.rstrip() + "\n" + core_tail, report
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
