@@ -269,15 +269,15 @@
       "patch_script_options": {},
       "manifest_overrides": {},
       "official_site": "https://purstream.id",
-      "official_api": "https://api.purstream.id/api/v1",
+      "official_api": "https://api.purstream.id",
       "fixed_endpoint": {
         "resolver_function": "detectPurstreamDomain",
-        "api": "https://api.purstream.id/api/v1",
+        "api": "https://api.purstream.id",
         "referer": "https://purstream.id/"
       },
       "required_values": [],
       "api_recipe": {
-        "base": "https://api.purstream.id/api/v1",
+        "base": "https://api.purstream.id",
         "referer": "https://purstream.id/",
         "searchRoute": "/search-bar/search/{query}",
         "movieRoute": "/media/{id}/sheet",
@@ -315,8 +315,22 @@
         "strictIdentity": true,
         "directSourcesOnly": true
       },
-      "replacements": {},
-      "runtime_domain_replacements": {}
+      "replacements": {
+        "purstream.art": "purstream.id",
+        "purstream.club": "purstream.id",
+        "purstream.wiki": "purstream.id",
+        "api.purstream.art": "api.purstream.id",
+        "api.purstream.club": "api.purstream.id",
+        "api.purstream.wiki": "api.purstream.id"
+      },
+      "runtime_domain_replacements": {
+        "purstream.art": "purstream.id",
+        "purstream.club": "purstream.id",
+        "purstream.wiki": "purstream.id",
+        "api.purstream.art": "api.purstream.id",
+        "api.purstream.club": "api.purstream.id",
+        "api.purstream.wiki": "api.purstream.id"
+      }
     },
     "vidfast": {
       "replacements": {
