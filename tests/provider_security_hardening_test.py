@@ -187,9 +187,16 @@ function coreHlsLog(v){console.warn("trusted-core-hls",v)}
 '''
 provider_prefix = 'function p(u){console.warn(u)};globalThis.getStreams=async function(){return []};\n'
 secured_bundle, bundle_report = harden_bundle(provider_prefix + core_tail)
-assert "__nuvioProviderSilentLog" in secured_bundle.split(core_tail, 1)[0]
-assert secured_bundle.endswith(core_tail), secured_bundle[-len(core_tail):]
-assert 'console.warn("trusted-core-hls",v)' in secured_bundle
+boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+assert "__nuvioProviderSilentLog" in secured_bundle.split(boundary, 1)[0]
+# Security owns only its own managed brick. Existing Core bytes remain untouched,
+# even when a legacy fixture has not yet been upgraded to transactional data markers.
+assert 'function coreHlsLog(v){console.warn("trusted-core-hls",v)}' in secured_bundle
+assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+assert secured_bundle.index("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") < secured_bundle.index("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */")
 assert bundle_report["consoleSinkChanges"] == 1, bundle_report
 
 print("provider security hardening tests passed")
