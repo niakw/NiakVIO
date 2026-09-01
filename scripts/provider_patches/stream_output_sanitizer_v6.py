@@ -196,7 +196,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "minVodDurationSeconds": int(cfg.get("min_vod_duration_seconds") or 60),
         "implementationRevision": "terminal-single-owner-v6",
     }
-    if body.rstrip() != source.rstrip():
+    if owned and body.rstrip() != source.rstrip():
         raise ValueError("managed sanitizer rebuild mutated bytes outside its owned block")
 
     if owned and not relocate_owned:
