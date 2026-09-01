@@ -323,6 +323,12 @@ jobs:
           python scripts/normalize_terminal_quarantine_stage.py --stage staging
           python scripts/validate_override_pipeline.py --stage staging
 
+      - name: Audit reconstructed provider Lego composition
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_brick_portfolio_audit_test.py --stage staging --require-all
+
       - name: Repair unresolved provider structures
         env:
           NUVIO_WORKER_MEMORY_MB: "1024"
