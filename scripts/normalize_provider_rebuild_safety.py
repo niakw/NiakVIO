@@ -79,12 +79,12 @@ def normalized(text: str) -> str:
 def normalized_hls(text: str) -> str:
     """Make HLS wrapper insertion byte-stable across Core/Terser reapplication."""
     expected_occurrences = 2
-    current_occurrences = text.count("wrapper.rstrip()")
+    current_occurrences = text.count("managed.rstrip()")
     if current_occurrences not in (0, expected_occurrences):
         raise ValueError(
-            f"unexpected HLS wrapper separator shape: wrapper.rstrip occurrences={current_occurrences}"
+            f"unexpected HLS managed-brick separator shape: managed.rstrip occurrences={current_occurrences}"
         )
-    return text.replace("wrapper.rstrip()", "wrapper.strip()")
+    return text.replace("managed.rstrip()", "managed.strip()")
 
 
 def normalized_reapply_diagnostics(text: str) -> str:
@@ -253,8 +253,8 @@ def main() -> int:
         for needle in required:
             if needle not in current:
                 raise SystemExit(f"missing provider rebuild safety guard: {needle}")
-        if hls_current.count("wrapper.strip()") != 2 or "wrapper.rstrip()" in hls_current:
-            raise SystemExit("HLS wrapper separator must be owned by one explicit newline")
+        if hls_current.count("managed.strip()") != 2 or "managed.rstrip()" in hls_current:
+            raise SystemExit("HLS managed-brick separator must be owned by one explicit newline")
         print("provider rebuild safety contract verified")
         return 0
 
