@@ -28,11 +28,11 @@ assert policy.get("global_discovery_hooks") == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
     "scripts/provider_patches/global_provider_security_hardening_v1.py",
 ]
-assert policy.get("pre_media_discovery_hooks") == [
+assert policy.get("pre_media_discovery_hooks") == []
+assert policy.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
+assert policy.get("post_media_discovery_hooks") == [
     "scripts/provider_patches/hls_runtime_integrity_v1.py",
 ]
-assert policy.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
-assert policy.get("post_media_discovery_hooks") == []
 
 for provider_id, row in (cfg.get("provider_patches") or {}).items():
     if not isinstance(row, dict):
@@ -73,8 +73,8 @@ wanted = [
     }
 ]
 assert wanted == [
-    "scripts/provider_patches/hls_runtime_integrity_v1.py",
     "scripts/provider_patches/global_media_enrichment_v1.py",
+    "scripts/provider_patches/hls_runtime_integrity_v1.py",
     "scripts/provider_patches/global_provider_security_hardening_v1.py",
     module.GLOBAL_STREAM_PRESENTATION,
 ], wanted
