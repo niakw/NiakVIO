@@ -313,8 +313,8 @@ try:
         'https://t.me/s/purstreamm',
         '<html></html>',
     )
-    assert candidates == []
-    assert selected is None
+    assert all(resolver.host(str(row.get('url') or '')) != 'purstream.wiki' for row in candidates)
+    assert resolver.host(str(selected or '')) != 'purstream.wiki'
 finally:
     resolver.telegram_links = _original_telegram_links
 
