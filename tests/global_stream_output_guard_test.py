@@ -30,12 +30,19 @@ for row in rows:
     source = (ROOT / relative).read_bytes()
     patched, _records = apply_overrides(provider_id, source, phase="discovery")
     text = patched.decode("utf-8")
-    if "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" not in text:
+    managed = "/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */"
+    if text.count(managed) != 1:
         missing.append(provider_id)
+    if "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" in text:
+        weak.append(provider_id)
+    branding = text.rfind("/* START NIAKVIO_FIX:CORE.PROVIDER_BRANDING.V1 */")
+    sanitizer = text.rfind(managed)
+    if branding >= 0 and sanitizer <= branding:
+        weak.append(provider_id)
     compact = "".join(text.split())
     if "if(!item.probe)returnconfig.probeAllUrls?null:item.stream;" not in compact:
         weak.append(provider_id)
 
 assert not missing, f"providers missing terminal sanitizer V6: {missing}"
 assert not weak, f"providers still pass unprobed stream rows: {weak}"
-print(f"global stream output guard passed: providers={len(rows)} fail_closed_v6={len(rows)}")
+print(f"global stream output guard passed: providers={len(rows)} managed_terminal_sanitizer={len(rows)}")
