@@ -54,7 +54,7 @@ def main() -> int:
         before = path.read_bytes()
         expected = str(proposal.get("candidateSha256") or "")
         if expected and sha256(before) != expected:
-            raise ValueError(f"reader repair hash mismatch before byte_stability: {provider}")
+            raise ValueError(f"reader repair hash mismatch before byte stability: {provider}")
 
         byte_stability = purify_file(path)
         after = path.read_bytes()
@@ -78,7 +78,7 @@ def main() -> int:
 
     report["schemaVersion"] = max(4, int(report.get("schemaVersion") or 0))
     report["byte_stability"] = {
-        "phase": "provider-byte_stability-v1",
+        "phase": "provider-byte-stability-v1",
         "tool": "raw-bytes",
         "toolVersion": "raw-v1",
         "mangle": False,
@@ -89,8 +89,8 @@ def main() -> int:
     }
     policy = report.setdefault("policy", {})
     if isinstance(policy, dict):
-        policy["providerByte stabilityRequiredBeforeRetest"] = True
-        policy["byte_stabilityMangleAllowed"] = False
+        policy["providerByteStabilityRequiredBeforeRetest"] = True
+        policy["byteTransformAllowed"] = False
 
     write_json(manifest_path, manifest)
     write_json(report_path, report)
