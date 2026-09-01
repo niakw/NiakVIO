@@ -182,10 +182,9 @@ for provider_id in ('frenchstream', 'movix', 'coflix', 'flemmix'):
     scripts = patch.get('patch_scripts', [])
     assert recovery in scripts, provider_id
     if provider_id == 'coflix':
-        # Coflix is NuvioTV-reachable while desktop/mobile remain blocked, so it
-        # must use the explicit fail-closed successor. V6 embeds V5 and rejects
-        # any all-URL probe overflow instead of publishing an unproven row.
-        assert sanitizer_v6 in scripts, provider_id
+        # V6 is a Core-owned terminal brick. Coflix may declare stricter options,
+        # but must never own/reapply the sanitizer itself from patch_scripts.
+        assert sanitizer_v6 not in scripts, provider_id
         assert sanitizer_v5 not in scripts, provider_id
         strict = patch.get('patch_script_options', {}).get(sanitizer_v6, {})
         assert strict.get('probe_all_urls') is True, provider_id
