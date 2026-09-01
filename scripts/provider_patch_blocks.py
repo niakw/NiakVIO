@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Transactional BEGIN/END ownership for NiakVIO JavaScript fix blocks.
+"""Transactional START/END ownership for NiakVIO JavaScript fix blocks.
 
 Every managed fix owns exactly one contiguous block in a published provider
 bundle. Reapplying a fix replaces that whole block; it never searches/replaces
@@ -28,22 +28,33 @@ def _fix_id(value: str) -> str:
 
 
 def begin_marker(fix_id: str) -> str:
-    return f"/* {_PREFIX}_BEGIN:{_fix_id(fix_id)} */"
+    return f"/* START {_PREFIX}:{_fix_id(fix_id)} */"
 
 
 def end_marker(fix_id: str) -> str:
+    return f"/* END {_PREFIX}:{_fix_id(fix_id)} */"
+
+
+def legacy_begin_marker(fix_id: str) -> str:
+    return f"/* {_PREFIX}_BEGIN:{_fix_id(fix_id)} */"
+
+
+def legacy_end_marker(fix_id: str) -> str:
     return f"/* {_PREFIX}_END:{_fix_id(fix_id)} */"
 
 
-def data_marker(fix_id: str, data: dict[str, Any] | None) -> str:
+def data_markers(fix_id: str, data: dict[str, Any] | None) -> tuple[str, str, str]:
     payload = json.dumps(data or {}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     encoded = base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii")
-    return f"/* {_PREFIX}_DATA:{_fix_id(fix_id)}:{encoded} */"
+    fid = _fix_id(fix_id)
+    return (
+        f"/* START {_PREFIX}_DATA:{fid} */",
+        f"/* {_PREFIX}_DATA_PAYLOAD:{fid}:{encoded} */",
+        f"/* END {_PREFIX}_DATA:{fid} */",
+    )
 
 
-def _owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
-    begin = begin_marker(fix_id)
-    end = end_marker(fix_id)
+def _span_for_markers(text: str, fix_id: str, begin: str, end: str) -> tuple[int, int] | None:
     starts = [match.start() for match in re.finditer(re.escape(begin), text)]
     ends = [match.start() for match in re.finditer(re.escape(end), text)]
     if not starts and not ends:
@@ -51,15 +62,22 @@ def _owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
     if len(starts) != 1 or len(ends) != 1:
         raise ValueError(
             f"managed fix {fix_id} marker cardinality invalid: "
-            f"begin={len(starts)} end={len(ends)}"
+            f"start={len(starts)} end={len(ends)}"
         )
     if starts[0] >= ends[0]:
-        raise ValueError(f"managed fix {fix_id} END precedes BEGIN")
-    nested_begin = text.find("/* NIAKVIO_FIX_BEGIN:", starts[0] + len(begin), ends[0])
-    nested_end = text.find("/* NIAKVIO_FIX_END:", starts[0] + len(begin), ends[0])
-    if nested_begin >= 0 or nested_end >= 0:
+        raise ValueError(f"managed fix {fix_id} END precedes START")
+    inner = text[starts[0] + len(begin):ends[0]]
+    if "/* START NIAKVIO_FIX:" in inner or "/* END NIAKVIO_FIX:" in inner:
         raise ValueError(f"managed fix {fix_id} contains nested managed markers")
     return starts[0], ends[0] + len(end)
+
+
+def _owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
+    current = _span_for_markers(text, fix_id, begin_marker(fix_id), end_marker(fix_id))
+    legacy = _span_for_markers(text, fix_id, legacy_begin_marker(fix_id), legacy_end_marker(fix_id))
+    if current and legacy:
+        raise ValueError(f"managed fix {fix_id} has both current and legacy ownership blocks")
+    return current or legacy
 
 
 def strip_managed_fix(text: str, fix_id: str) -> str:
@@ -110,12 +128,20 @@ def render_managed_fix(
     body = str(javascript or "").strip()
     if not body:
         raise ValueError(f"managed fix {fix_id} has empty JavaScript body")
-    if begin_marker(fix_id) in body or end_marker(fix_id) in body:
+    if (
+        begin_marker(fix_id) in body
+        or end_marker(fix_id) in body
+        or legacy_begin_marker(fix_id) in body
+        or legacy_end_marker(fix_id) in body
+    ):
         raise ValueError(f"managed fix {fix_id} body contains ownership marker")
+    data_start, data_payload, data_end = data_markers(fix_id, data)
     return "\n".join(
         (
             begin_marker(fix_id),
-            data_marker(fix_id, data),
+            data_start,
+            data_payload,
+            data_end,
             body,
             end_marker(fix_id),
         )
@@ -141,9 +167,22 @@ def assert_single_managed_fix(text: str, fix_id: str) -> None:
     if span is None:
         raise ValueError(f"managed fix {fix_id} missing after application")
     block = text[span[0] : span[1]]
-    data_prefix = f"/* {_PREFIX}_DATA:{_fix_id(fix_id)}:"
-    if block.count(data_prefix) != 1:
-        raise ValueError(f"managed fix {fix_id} must contain exactly one data marker")
+    fid = _fix_id(fix_id)
+    current_data = (
+        block.count(f"/* START {_PREFIX}_DATA:{fid} */"),
+        block.count(f"/* {_PREFIX}_DATA_PAYLOAD:{fid}:"),
+        block.count(f"/* END {_PREFIX}_DATA:{fid} */"),
+    )
+    legacy_data_count = block.count(f"/* {_PREFIX}_DATA:{fid}:")
+    if current_data == (1, 1, 1):
+        return
+    if legacy_data_count == 1:
+        return
+    raise ValueError(
+        f"managed fix {fix_id} data block invalid: "
+        f"start={current_data[0]} payload={current_data[1]} end={current_data[2]} "
+        f"legacy={legacy_data_count}"
+    )
 
 
 def decode_managed_data(text: str, fix_id: str) -> dict[str, Any]:
@@ -151,12 +190,18 @@ def decode_managed_data(text: str, fix_id: str) -> dict[str, Any]:
     if span is None:
         raise ValueError(f"managed fix {fix_id} missing")
     block = text[span[0] : span[1]]
-    pattern = re.compile(
-        re.escape(f"/* {_PREFIX}_DATA:{_fix_id(fix_id)}:")
+    fid = _fix_id(fix_id)
+    current_pattern = re.compile(
+        re.escape(f"/* {_PREFIX}_DATA_PAYLOAD:{fid}:")
         + r"([A-Za-z0-9_=-]+)"
         + re.escape(" */")
     )
-    matches = pattern.findall(block)
+    legacy_pattern = re.compile(
+        re.escape(f"/* {_PREFIX}_DATA:{fid}:")
+        + r"([A-Za-z0-9_=-]+)"
+        + re.escape(" */")
+    )
+    matches = current_pattern.findall(block) or legacy_pattern.findall(block)
     if len(matches) != 1:
         raise ValueError(f"managed fix {fix_id} data marker invalid")
     try:
