@@ -68,7 +68,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "timeoutMs": timeout_ms,
             "minVodDurationSeconds": min_vod_duration,
             "blockedPathPatterns": blocked_paths,
-            "implementationVersion": 7,
+            "implementationVersion": 8,
         },
         separators=(",", ":"),
     )
@@ -195,7 +195,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     try{
       var response=await g.fetch(url,{method:"GET",headers:headersFor(stream),redirect:"follow",signal:controller.signal});
       var finalUrl=response&&response.url?String(response.url):url;
-      if(!response||!response.ok||blocked(finalUrl))return false;
+      if(!response)return null;\n      if(blocked(finalUrl))return false;\n      if(!response.ok){\n        var status=Number(response.status||0);\n        if(status===403||status===404||status===410)return false;\n        return null;\n      }
       var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
       var disposition=String(response.headers&&response.headers.get?response.headers.get("content-disposition")||"":"");
       var bytes=await prefixBytes(response,controller),text=ascii(bytes);
@@ -226,7 +226,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         return true;
       }
       return bytes.length>0;
-    }catch(_error){return false}
+    }catch(_error){return null}
     finally{clearTimeout(timer);try{controller.abort()}catch(_e){}}
   }
   function install(container,key){
@@ -249,7 +249,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       }
       var checked=await Promise.all(candidates.map(async function(item){
         if(!item.probe)return item.stream;
-        return await probe(item.stream,item.url)?item.stream:null;
+        var verdict=await probe(item.stream,item.url);\n        return verdict===false?null:item.stream;
       }));
       return rebuild(result,slot,checked.filter(Boolean));
     };

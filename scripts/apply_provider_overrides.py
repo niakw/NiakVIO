@@ -1325,9 +1325,12 @@ def apply_overrides(
             })
 
         # Terminal stream validation is a Core-wide publication boundary.
-        # Every returned URL is probed with the exact stream headers; unprobed
-        # overflow rows are dropped, never passed through. Therefore zero
-        # validated streams becomes [] and N validated streams becomes exactly N.
+        # Every returned URL within the bounded probe budget is checked with the
+        # exact stream headers. Conclusive invalidity (403/404/410, blocked host,
+        # HTML/error payload or malformed media) is dropped. Transport uncertainty
+        # (DNS, timeout, TLS/network failure or transient server error) is preserved
+        # because Core must never disable a client-visible stream without proof.
+        # Unprobed overflow rows remain fail-closed and are not passed through.
         terminal_policy = playback_policy.get("terminal_stream_sanitizer") or {}
         if not isinstance(terminal_policy, dict):
             raise ValueError("playback_integrity_policy.terminal_stream_sanitizer must be an object")
