@@ -19,13 +19,19 @@ PROVENANCE = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
 ROWS = PROVENANCE.get("providers") or {}
 
 CORE_ORDER = [
-    "CORE.MEDIA_TYPE_RESOLUTION.V1",
+    # Textual/materialization order. getStreams wrapper execution is the reverse:
+    # media-type is intentionally outermost and executes first.
+    "CORE.HLS_RUNTIME_INTEGRITY.V1",
+    "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
+    "CORE.MEDIA_ENRICHMENT.V1",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
     "CORE.RUNTIME_COMPAT.V1",
     "CORE.STREAM_FACTS.V1",
     "CORE.STREAM_IDENTITY.V1",
     "CORE.STREAM_PRESENTATION.V1",
     "CORE.PROVIDER_BRANDING.V1",
+    "CORE.STREAM_SANITIZER.V6",
+    "CORE.MEDIA_TYPE_RESOLUTION.V1",
 ]
 
 checked = 0
