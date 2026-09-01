@@ -17,7 +17,6 @@ def load_apply(rel):
     spec.loader.exec_module(mod)
     return mod.apply
 
-hls_apply = load_apply("scripts/provider_patches/hls_master_audio_preserver_v1.py")
 safety_apply = load_apply("scripts/provider_patches/runtime_capability_media_safety_v4.py")
 media_apply = load_apply("scripts/provider_patches/global_media_enrichment_v1.py")
 hls_runtime_apply = load_apply("scripts/provider_patches/hls_runtime_integrity_v1.py")
@@ -25,8 +24,7 @@ base = 'globalThis.getStreams=async function(){return [{url:"https://media.inval
 
 def safety_then_hls(source, provider_id, options=None):
     opts = dict(options or {})
-    output = safety_apply(source, options=opts, context={"provider_id":provider_id})
-    return hls_apply(output, options=opts, context={"provider_id":provider_id})
+    return safety_apply(source, options=opts, context={"provider_id":provider_id})
 
 ordinary = safety_then_hls(base, "ordinary")
 assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in ordinary
@@ -73,10 +71,7 @@ assert '"defaultUserAgent":"UA-STREAMZO-2"' in changed_context
 # in any patch order must converge to this one byte-stable representation.
 canonical = media_apply(base, options={"default_user_agent":"UA-STREAMZO"})
 canonical = safety_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
-canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 canonical = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
-# hls_apply is the final ordering normalizer when all three layers exist.
-canonical = hls_apply(canonical, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
 media_pos = canonical.index("NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1")
 safety_pos = canonical.index("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1")
 hls_pos = canonical.index("NUVIO_HLS_RUNTIME_INTEGRITY_V1")
@@ -84,12 +79,12 @@ assert media_pos < safety_pos < hls_pos, (media_pos, safety_pos, hls_pos)
 canonical_again = hls_runtime_apply(canonical, options={"probe_all_urls": True, "fail_closed_unknown": False})
 canonical_again = media_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"})
 canonical_again = safety_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
-canonical_again = hls_apply(canonical_again, options={"default_user_agent":"UA-STREAMZO"}, context={"provider_id":"streamzo"})
+canonical_again = hls_runtime_apply(canonical_again, options={"probe_all_urls": True, "fail_closed_unknown": False})
 assert canonical_again == canonical
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 sopts = cfg["provider_patches"]["streamzo"]["patch_script_options"]
-assert sopts["scripts/provider_patches/hls_master_audio_preserver_v1.py"]["default_user_agent"]
+assert "scripts/provider_patches/hls_master_audio_preserver_v1.py" not in sopts
 assert sopts["scripts/provider_patches/global_media_enrichment_v1.py"]["default_user_agent"]
 assert sopts["scripts/provider_patches/hls_runtime_integrity_v1.py"]["fail_closed_unknown"] is False
 
@@ -112,7 +107,6 @@ print("scoped playback context regression tests passed")
 # Integration contract: global media enrichment must receive provider-scoped
 # options. This is what lets StreamZo retain its proven browser context without
 # synthesizing the same headers for unrelated providers.
-import sys
 sys.path.insert(0, str(ROOT / 'scripts'))
 spec = importlib.util.spec_from_file_location('apply_provider_overrides_scoped_test', ROOT/'scripts/apply_provider_overrides.py')
 assert spec and spec.loader
