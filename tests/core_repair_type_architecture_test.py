@@ -53,7 +53,9 @@ assert provisional_anchor in media_resolution_source
 assert verify_anchor in media_resolution_source
 assert media_resolution_source.index(deadline_anchor) < media_resolution_source.index(provisional_anchor) < media_resolution_source.index(verify_anchor)
 playback = overrides.get("playback_integrity_policy") or {}
-assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" in (playback.get("pre_media_discovery_hooks") or [])
+assert playback.get("pre_media_discovery_hooks") == [], playback
+assert playback.get("post_media_discovery_hooks") == ["scripts/provider_patches/hls_runtime_integrity_v1.py"], playback
+assert "scripts/provider_patches/native_hls_integrity_budget_v1.py" not in (playback.get("pre_media_discovery_hooks") or []), playback
 assert playback.get("native_hls_probe_policy") == "skip_additional_integrity_network_probes_on_native_host_bridge"
 worker_source = (ROOT / "scripts/provider_worker.cjs").read_text(encoding="utf-8")
 assert "fixture.tmdbMetadata = fixtureMetadata" in worker_source
