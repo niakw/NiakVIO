@@ -23,6 +23,7 @@ from provider_patch_blocks import (
     decode_managed_data,
     render_managed_fix,
     replace_managed_fix_in_place,
+    validate_managed_fixes,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -198,6 +199,12 @@ def _apply_patch_script(
         result = apply_fn(text)
     if not isinstance(result, str):
         raise TypeError(f"provider patch {patch_script} must return str")
+    try:
+        validate_managed_fixes(result)
+    except ValueError as exc:
+        raise ValueError(
+            f"provider={provider_id} patch={patch_script} corrupted managed brick layout: {exc}"
+        ) from exc
 
     # Every active brick must be byte-idempotent. Reapply/deep may execute the
     # same declared fix more than once; a second application with identical
@@ -217,6 +224,12 @@ def _apply_patch_script(
     ) else apply_fn(result)
     if not isinstance(second, str):
         raise TypeError(f"provider patch {patch_script} must return str on reapply")
+    try:
+        validate_managed_fixes(second)
+    except ValueError as exc:
+        raise ValueError(
+            f"provider={provider_id} patch={patch_script} corrupted managed brick layout on reapply: {exc}"
+        ) from exc
     if second != result:
         ownership = f" managed_fix={managed_fix_id}" if managed_fix_id else ""
         raise ValueError(
