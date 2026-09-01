@@ -1,12 +1,3 @@
-Trigger file for the strict provider-agnostic deep repair and publication workflow.
-Update this file to start a deep validation run on main.
-
-last_trigger: 2026-08-30T19:16:00+02:00
-reason: final-deep-after-pending-v2-activation-lkg-preservation-fix
-pretag_source_ref: bbb6f82f9db30748f1c42a5d10254d2d83cd7ccb
-validation_policy:
-  pending_clean_v2_is_not_disablement_evidence: true
-  activation_lkg_restored_without_conclusive_veto: true
-  configured_quarantine_remains_derived_publication_state: true
-  strict_deep_required_for_verified_v2: true
-  routine_repair_mutates_parent_providerbase: true
+reason=post-rollback-provider-rematerialization
+scope=all-providers
+requirements=providerbase-overrides-version-floors-tristate-sanitizer
