@@ -51,6 +51,7 @@ SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 OVERRIDES = ROOT / "provider-overrides.json"
+VERSION_FLOORS = ROOT / "provider-version-floors.json"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
 ADAPTIVE_MARKER_V5 = "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
 ADAPTIVE_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
@@ -109,12 +110,51 @@ def safe_fragment(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9._-]+", "-", str(value).strip()).strip(".-")[:120] or "provider"
 
 
-def bump_provider_version(value: str) -> str:
+def _semver_tuple(value: str) -> tuple[int, int, int] | None:
     match = re.fullmatch(r"(\d+)\.(\d+)\.(\d+)", str(value or "").strip())
     if not match:
-        return "1.0.1"
-    major, minor, patch = (int(part) for part in match.groups())
-    return f"{major}.{minor}.{patch + 1}"
+        return None
+    return tuple(int(part) for part in match.groups())
+
+
+def bump_provider_version(value: str, floor: str | None = None) -> str:
+    """Return a strictly monotonic provider version.
+
+    floor is the highest version already exposed to clients. A rollback may
+    restore an older manifest, but rebuilt bytes must never reuse or regress
+    below a version a client may already have cached.
+    """
+    current = _semver_tuple(value) or (1, 0, 0)
+    exposed = _semver_tuple(floor or "")
+    base = max(current, exposed) if exposed is not None else current
+    return f"{base[0]}.{base[1]}.{base[2] + 1}"
+
+
+def load_provider_version_floors() -> dict[str, str]:
+    if not VERSION_FLOORS.is_file():
+        return {}
+    payload = json.loads(VERSION_FLOORS.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or int(payload.get("schema_version") or 0) != 1:
+        raise ValueError("invalid provider-version-floors.json")
+    providers = payload.get("providers")
+    if not isinstance(providers, dict):
+        raise ValueError("provider-version-floors.json providers must be an object")
+    result: dict[str, str] = {}
+    for provider_id, version in providers.items():
+        key = str(provider_id or "").strip().casefold()
+        value = str(version or "").strip()
+        if not key or _semver_tuple(value) is None:
+            raise ValueError(f"invalid provider version floor: {provider_id}={version}")
+        result[key] = value
+    return result
+
+
+def version_is_strictly_above_floor(value: str, floor: str | None) -> bool:
+    if not floor:
+        return True
+    current = _semver_tuple(value)
+    exposed = _semver_tuple(floor)
+    return current is not None and exposed is not None and current > exposed
 
 
 def runtime_base_is_clean_v2(
@@ -599,6 +639,7 @@ PUBLICATION_CONTRACT_FILES = (
     "scripts/validate_provider_artifact.cjs",
     "engine_v2/scripts/purify-provider.mjs",
     "package-lock.json",
+    "provider-version-floors.json",
 )
 
 
@@ -717,6 +758,7 @@ def fast_fixed_point_check(
         return False, "sanitized-config-stale"
 
     rows = provenance["providers"]
+    version_floors = load_provider_version_floors()
     contract_sha = publication_contract_sha(config)
     contract_meta = provenance.get("provider_publication_contract")
     if not isinstance(contract_meta, dict):
@@ -735,6 +777,9 @@ def fast_fixed_point_check(
         if not provider_id or not relative.startswith("providers/"):
             return False, f"invalid-primary-row:{provider_id or 'missing-id'}"
         primary_by_id[provider_id] = entry
+        floor = version_floors.get(provider_id)
+        if floor and not version_is_strictly_above_floor(str(entry.get("version") or ""), floor):
+            return False, f"provider-version-floor:{provider_id}:{entry.get('version')}<={floor}"
         row = rows.get(provider_id)
         if not isinstance(row, dict):
             return False, f"missing-provenance:{provider_id}"
@@ -875,6 +920,7 @@ def main() -> int:
             return 0
         print(f"FIELD_PROVIDER_FAST_FIXED_POINT status=miss reason={fast_reason}")
 
+    version_floors = load_provider_version_floors()
     publication_contract = publication_contract_sha(override_config)
     removed_wrappers_total = 0
     for entry in primary["scrapers"]:
@@ -1057,7 +1103,10 @@ def main() -> int:
         old_paths.add(relative)
         entry["filename"] = new_relative
         if relative != new_relative or types_changed or manifest_changed:
-            entry["version"] = bump_provider_version(str(entry.get("version") or "1.0.0"))
+            entry["version"] = bump_provider_version(
+                str(entry.get("version") or "1.0.0"),
+                version_floors.get(provider_id),
+            )
         provenance_updates[provider_id] = {
             "old": relative,
             "new": new_relative,
