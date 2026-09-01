@@ -7,6 +7,7 @@ import hashlib
 import json
 from pathlib import Path
 from override_text_utils import contains_literal
+from provider_patch_blocks import validate_managed_fixes
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -173,6 +174,11 @@ def main() -> int:
 
         target_label = root_relative(target)
         text = target.read_text(encoding="utf-8", errors="strict")
+        try:
+            validate_managed_fixes(text)
+        except ValueError as exc:
+            errors.append(f"{cid}: malformed managed fix layout in {target_label}: {exc}")
+            continue
         cfg = patches.get(cid) if isinstance(patches.get(cid), dict) else {}
         provider_provenance = provenance_by_id.get(cid) or {}
         audit_quarantine = str(provider_provenance.get("activation_mode") or "") == AUDIT_QUARANTINE_MODE
