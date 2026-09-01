@@ -172,6 +172,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     # Generate from a source view without the owned sanitizer, while preserving
     # the original bundle so an existing START/END block can be replaced in place.
     owned = has_managed_fix(text, MANAGED_FIX_ID)
+    relocate_owned = owned and _needs_relocation(text)
     source = strip_managed_fix(text, MANAGED_FIX_ID) if owned else text
     if not owned and _sanitizer_position(source) >= 0:
         source = _strip_existing_sanitizer(source)
@@ -195,9 +196,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "minVodDurationSeconds": int(cfg.get("min_vod_duration_seconds") or 60),
         "implementationRevision": "terminal-single-owner-v6",
     }
-    if owned:
-        if body.rstrip() != source.rstrip():
-            raise ValueError("managed sanitizer rebuild mutated bytes outside its owned block")
+    if body.rstrip() != source.rstrip():
+        raise ValueError("managed sanitizer rebuild mutated bytes outside its owned block")
+
+    if owned and not relocate_owned:
         output = replace_managed_fix(
             text,
             MANAGED_FIX_ID,
@@ -205,6 +207,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
             data=managed_data,
         )
     else:
+        # Initial materialization or one-time repair of a provably stale terminal
+        # position. Once appended after all predecessors, subsequent applies are
+        # strict in-place replacements.
         managed = render_managed_fix(
             MANAGED_FIX_ID,
             sanitizer_unit,
