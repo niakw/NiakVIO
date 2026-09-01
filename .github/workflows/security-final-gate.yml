@@ -25,10 +25,10 @@ on:
       - 'scripts/reapply_published_overrides.py'
       - 'scripts/apply_provider_overrides.py'
       - 'scripts/harden_staged_provider_security.py'
-      - 'scripts/provider_purification.py'
+      - 'scripts/provider_byte_stability.py'
       - 'scripts/provider_patches/runtime_capability_media_safety_v4.py'
       - 'tests/provider_security_hardening_test.py'
-      - 'tests/provider_purification_contract_test.py'
+      - 'tests/provider_byte_stability_contract_test.py'
       - 'tests/core_media_policy_test.py'
       - 'tests/runtime_capability_media_safety_v4_test.py'
       - 'tests/native_corpus_device_lab_test.py'
@@ -79,7 +79,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_security_hardening_test.py
-          python tests/provider_purification_contract_test.py
+          python tests/provider_byte_stability_contract_test.py
           python tests/core_media_policy_test.py
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/native_corpus_device_lab_test.py
