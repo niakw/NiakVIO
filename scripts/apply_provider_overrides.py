@@ -222,11 +222,14 @@ def _normalize_profile_names(values: Iterable[str] | None) -> set[str]:
     return {str(value) for value in (values or []) if str(value).strip()}
 
 
-def _replace_named_function(text: str, function_name: str, replacement: str) -> tuple[str, bool]:
-    """Replace a classic named JavaScript function using balanced braces."""
-    match = re.search(rf"function\s+{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text)
-    if not match:
-        return text, False
+def _named_function_span(text: str, function_name: str) -> tuple[int, int] | None:
+    """Return the exact span of one classic named JavaScript function."""
+    matches = list(re.finditer(rf"function\s+{re.escape(function_name)}\s*\([^)]*\)\s*\{{", text))
+    if not matches:
+        return None
+    if len(matches) != 1:
+        raise ValueError(f"ambiguous named function {function_name}: matches={len(matches)}")
+    match = matches[0]
     start = match.start()
     brace = text.find("{", match.start(), match.end())
     depth = 0
@@ -266,10 +269,17 @@ def _replace_named_function(text: str, function_name: str, replacement: str) -> 
             elif char == "}":
                 depth -= 1
                 if depth == 0:
-                    return text[:start] + replacement + text[index + 1 :], True
+                    return start, index + 1
         index += 1
     raise ValueError(f"unterminated function body: {function_name}")
 
+
+def _replace_named_function(text: str, function_name: str, replacement: str) -> tuple[str, bool]:
+    """Replace exactly one classic named JavaScript function."""
+    span = _named_function_span(text, function_name)
+    if span is None:
+        return text, False
+    return text[:span[0]] + replacement + text[span[1]:], True
 
 def _managed_fix_component(value: str) -> str:
     component = re.sub(r"[^A-Z0-9_.:-]+", "_", str(value or "").strip().upper()).strip("_.:-")
@@ -303,16 +313,40 @@ def _apply_fixed_endpoint(text: str, provider_id: str, config: dict[str, Any]) -
         f"return Promise.resolve({{api:{json.dumps(api)},referer:{json.dumps(referer)}}});"
         "}"
     )
+
+    existing_data: dict[str, Any] | None = None
+    try:
+        existing_data = decode_managed_data(text, fix_id)
+    except ValueError:
+        existing_data = None
+
+    if existing_data is not None:
+        restore_source = existing_data.get("restore_source")
+        restore_kind = str(existing_data.get("restore_source_kind") or "").strip()
+        if not isinstance(restore_source, str) or not restore_source:
+            raise ValueError(f"managed fixed endpoint {fix_id} is missing restore_source")
+        if not restore_kind:
+            raise ValueError(f"managed fixed endpoint {fix_id} is missing restore_source_kind")
+    else:
+        span = _named_function_span(text, function_name)
+        if span is None:
+            return text, None
+        restore_source = text[span[0]:span[1]]
+        restore_kind = (
+            "legacy_fixed_endpoint"
+            if "NUVIO_FIXED_ENDPOINT:" in restore_source
+            else "provider_base"
+        )
+
     fix_data = {
         "provider_id": provider_id,
         "resolver_function": function_name,
         "api": api,
         "referer": referer,
+        "restore_source": restore_source,
+        "restore_source_kind": restore_kind,
     }
 
-    # Once a provider function is owned, only that exact START/END block may be
-    # refreshed. Hub/domain changes therefore update data + function atomically
-    # without touching ProviderBase or any unrelated fix.
     output, owned = replace_managed_fix_in_place(
         text,
         fix_id,
@@ -329,10 +363,9 @@ def _apply_fixed_endpoint(text: str, provider_id: str, config: dict[str, Any]) -
             "resolver_function": function_name,
             "api": api,
             "referer": referer,
+            "restore_source_kind": restore_kind,
         }
 
-    # One-time migration from an upstream/legacy function. Replace the whole
-    # function with one owned unit in place; never append a competing resolver.
     managed = render_managed_fix(fix_id, javascript, data=fix_data)
     output, changed = _replace_named_function(text, function_name, managed)
     if not changed:
@@ -344,6 +377,7 @@ def _apply_fixed_endpoint(text: str, provider_id: str, config: dict[str, Any]) -
         "resolver_function": function_name,
         "api": api,
         "referer": referer,
+        "restore_source_kind": restore_kind,
     }
 
 def _scan_runtime_domain_iife_end(text: str, start: int) -> int | None:
