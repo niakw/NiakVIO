@@ -18,6 +18,7 @@ import re
 from pathlib import Path
 from typing import Any, Iterable
 from override_text_utils import replace_literal
+from provider_patch_blocks import assert_single_managed_fix
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
@@ -190,6 +191,25 @@ def _apply_patch_script(
         result = apply_fn(text)
     if not isinstance(result, str):
         raise TypeError(f"provider patch {patch_script} must return str")
+
+    # Managed patch modules own one full BEGIN/END block. The dispatcher proves
+    # cardinality and byte-idempotence centrally so a provider-specific script
+    # cannot silently stack, partially replace, or duplicate a fix.
+    managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
+    if managed_fix_id:
+        assert_single_managed_fix(result, str(managed_fix_id))
+        second = apply_fn(result, **kwargs) if (
+            "options" in signature.parameters
+            or any(parameter.kind == parameter.VAR_KEYWORD for parameter in signature.parameters.values())
+        ) else apply_fn(result)
+        if not isinstance(second, str):
+            raise TypeError(f"managed provider patch {patch_script} must return str")
+        if second != result:
+            raise ValueError(
+                f"managed provider patch {patch_script} is not idempotent "
+                f"for provider {provider_id}"
+            )
+        assert_single_managed_fix(second, str(managed_fix_id))
     return result
 
 
