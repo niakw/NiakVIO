@@ -44,7 +44,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Durable fixed-point normalization + final Terser + complete repository suite."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Durable fixed-point normalization + raw-byte provider validation + complete repository suite."
 
       - name: Checkout exact event generation
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -306,7 +306,7 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          from scripts.provider_purification import TERSER_VERSION, purify_bytes
+          from scripts.provider_purification import BYTE_STABILITY_VERSION, verify_bytes
           root = Path('.')
           rows = json.loads((root / 'manifest.json').read_text(encoding='utf-8')).get('scrapers') or []
           checked = 0
@@ -317,11 +317,11 @@ jobs:
               if not relative.startswith('providers/'):
                   continue
               data = (root / relative).read_bytes()
-              chosen, report = purify_bytes(data)
+              chosen, report = verify_bytes(data)
               if chosen != data:
                   raise SystemExit(f'post-publish provider raw bytes changed: {row.get("id")}')
               checked += 1
-          print(f'FIELD_POST_PUBLISH_RAW_BYTE_FIXED_POINT providers={checked} version={TERSER_VERSION}')
+          print(f'FIELD_POST_PUBLISH_RAW_BYTE_FIXED_POINT providers={checked} version={BYTE_STABILITY_VERSION}')
           PY
           git diff --exit-code
 
@@ -332,7 +332,7 @@ jobs:
         shell: bash
         run: |
           SHA="$(git rev-parse HEAD)"
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Final main ${SHA}; fixed-point + Terser 5.50.0 + repository suite passed."
+          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Final main ${SHA}; raw-byte fixed-point + repository suite passed."
 
       - name: Report Core failure
         if: failure()
