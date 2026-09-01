@@ -943,8 +943,46 @@ def _hostish(value: str) -> bool:
     return bool(re.fullmatch(r"[a-z0-9.-]+", value.casefold())) and "." in value and "/" not in value
 
 
+def preserve_published_api_path(patch: dict[str, Any], api_url: str | None) -> str | None:
+    """Keep a proven API base path when discovery only proves a new/root host.
+
+    Hub discovery commonly finds an API origin while route probing validates
+    endpoints beneath it. A root-only discovery is not evidence that an existing
+    base path such as /api/v1 disappeared. Explicit non-root discovered paths win.
+    """
+    if not api_url:
+        return None
+    incoming = urllib.parse.urlparse(str(api_url))
+    if incoming.path not in {"", "/"}:
+        return str(api_url).rstrip("/")
+
+    candidates: list[str] = []
+    recipe = patch.get("api_recipe")
+    if isinstance(recipe, dict):
+        candidates.append(str(recipe.get("base") or ""))
+    fixed = patch.get("fixed_endpoint")
+    if isinstance(fixed, dict):
+        candidates.append(str(fixed.get("api") or ""))
+    candidates.append(str(patch.get("official_api") or ""))
+
+    for existing in candidates:
+        parsed = urllib.parse.urlparse(existing)
+        if parsed.path in {"", "/"}:
+            continue
+        return urllib.parse.urlunparse((
+            incoming.scheme or parsed.scheme or "https",
+            incoming.netloc,
+            parsed.path,
+            parsed.params,
+            parsed.query if parsed.query else "",
+            parsed.fragment if parsed.fragment else "",
+        )).rstrip("/")
+    return str(api_url).rstrip("/")
+
+
 def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dict[str, Any], site_url: str, api_url: str | None, history_row: dict[str, Any] | None = None) -> list[dict[str, str]]:
     patch = config.setdefault("provider_patches", {}).setdefault(provider_id, {})
+    api_url = preserve_published_api_path(patch, api_url)
     replacements = patch.setdefault("replacements", {})
     runtime = patch.setdefault("runtime_domain_replacements", {})
     changes: list[dict[str, str]] = []
