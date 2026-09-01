@@ -455,6 +455,48 @@ const provider=require(process.argv[2]);
 
 
 
+# TV uses a shorter Core provider budget because its QuickJS native fetch bridge
+# is synchronous/non-preemptable. One slow native call may consume the budget, but
+# once it returns the provider must not start a second network hop.
+tv_timeout_bounded = mod.apply(
+    TIMEOUT_BASE,
+    options={
+        "semantic_types": ["movie"],
+        "provider_timeout_ms": 25000,
+        "tv_provider_timeout_ms": 6000,
+    },
+)
+run_case(tv_timeout_bounded, r"""
+let now=1000;
+let providerCalls=[];
+Date.now=()=>now;
+Object.defineProperty(global,'navigator',{value:{userAgent:'NuvioTV'},configurable:true});
+global.fetch=async(url)=>{
+  url=String(url);
+  if(url.includes("api.themoviedb.org/3/movie/157336")){
+    return{ok:true,status:200,json:async()=>({
+      id:157336,title:"Interstellar",release_date:"2014-11-05",
+      genres:[{id:18,name:"Drama"}],original_language:"en",
+      production_countries:[{iso_3166_1:"US"}],keywords:{keywords:[]}
+    })};
+  }
+  providerCalls.push(url);
+  if(url.includes("slow-first")){
+    now=8000;
+    return{ok:true,status:200,text:async()=>"#EXTM3U"};
+  }
+  throw new Error("TV provider issued request after TV budget: "+url);
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("157336","movie");
+  if(!Array.isArray(value)||value.length!==0)throw new Error("expired TV provider budget must fail closed");
+  if(providerCalls.length!==1||!providerCalls[0].includes("slow-first"))
+    throw new Error("TV budget allowed chained request: "+providerCalls.join(","));
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+
 # Request context must never stick across one long-lived native JS instance.
 # This reproduces the real Android TV failure: first work type used to poison
 # every later getStreams call until app cache/process reset.
