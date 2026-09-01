@@ -248,21 +248,6 @@ jobs:
           python tests/purstream_original_bug_matrix_contract_test.py
           node tests/tmdb_media_type_resolution.test.mjs
 
-      - name: Validate ARCHI2 control plane
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm test
-
-      - name: Validate compatibility execution primitives
-        shell: bash
-        run: |
-          set -euo pipefail
-          python tests/general_manifest_runtime_profiles_test.py
-          python scripts/validate_platform_runtime_policy.py
-          python scripts/validate_nuvio_tv_runtime_policy.py
-          python tests/nuvio_client_upstream_drift_guard_test.py
-
       - name: Release stale non-safety activation vetoes
         shell: bash
         run: |
@@ -328,6 +313,24 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_brick_portfolio_audit_test.py --stage staging --require-all
+
+      # Forced reconstruction must be materialized and Lego-audited before the
+      # full ARCHI2 suite. Otherwise a stale harness can prevent the explicit
+      # 96/96 request from ever reaching Discover/reconstruction.
+      - name: Validate ARCHI2 control plane
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm test
+
+      - name: Validate compatibility execution primitives
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/general_manifest_runtime_profiles_test.py
+          python scripts/validate_platform_runtime_policy.py
+          python scripts/validate_nuvio_tv_runtime_policy.py
+          python tests/nuvio_client_upstream_drift_guard_test.py
 
       - name: Repair unresolved provider structures
         env:
