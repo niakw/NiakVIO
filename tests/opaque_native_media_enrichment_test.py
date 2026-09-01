@@ -25,7 +25,7 @@ globalThis.getStreams = async function(){
 };
 '''
 patched = module.apply(base, options={"default_user_agent": "FALLBACK-UA"})
-assert "scoped-playback-context-v6-direct-safe-opaque-media" in patched
+assert "scoped-playback-context-v7-provider-deadline" in patched
 assert "content-disposition" in patched
 assert "metadataKind" in patched
 assert "declaredDirect" in patched
