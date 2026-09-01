@@ -42,8 +42,9 @@ module.exports={getStreams:async function(){return [
         },
     )
     assert '"implementationVersion":9' in patched
-    assert "NUVIO_STREAM_OUTPUT_HLS_HTML_REPAIR_V7" in patched
-    assert "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" in patched
+    assert patched.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    assert "NUVIO_STREAM_OUTPUT_HLS_HTML_REPAIR_V7" not in patched
+    assert "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" not in patched
 
     runner = r'''
 const vm=require('vm');
@@ -175,6 +176,62 @@ module.exports={getStreams:async function(){return [
     assert process.returncode == 0, process.stderr
     all_bad_payload = json.loads(process.stdout.strip())
     assert all_bad_payload["rows"] == [], all_bad_payload["rows"]
+
+    # Native runtime: probes are serialized. Once the provider-wide deadline is
+    # consumed by the first synchronous-host-like request, no second network call
+    # is started. A conclusive 403 is removed; the unprobed-after-deadline row is
+    # kept as transport-uncertain rather than guessed dead.
+    native_source = r'''
+module.exports={getStreams:async function(){return [
+  {name:"first-403",url:"https://native.example/first.mp4"},
+  {name:"second-uncertain",url:"https://native.example/second.mp4"}
+]}};
+'''
+    native_patched = module.apply(
+        native_source,
+        options={
+            "probe_direct_media": True,
+            "probe_all_urls": True,
+            "max_probes": 2,
+            "probe_timeout_ms": 2000,
+            "min_vod_duration_seconds": 0,
+        },
+    )
+    native_runner = r'''
+const vm=require('vm');
+const source=process.argv[2];
+let calls=0,active=0,maxActive=0;
+const sandbox={module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,encodeURIComponent};
+sandbox.globalThis=sandbox;
+sandbox.__native_fetch=function(){};
+sandbox.__nuvioProviderDeadlineMs=Date.now()+5;
+sandbox.fetch=async function(url){
+  calls++;active++;maxActive=Math.max(maxActive,active);
+  await new Promise(resolve=>setTimeout(resolve,20));
+  active--;
+  const u=String(url);
+  if(u.indexOf('/first.mp4')>=0)return {ok:false,status:403,url:u,headers:{get:()=>''},body:{getReader:()=>({read:async()=>({done:true}),cancel:async()=>{}})}};
+  throw new Error('second native fetch must not start after provider deadline');
+};
+vm.runInNewContext(source,sandbox,{timeout:5000});
+sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie'}).then(rows=>{
+  console.log(JSON.stringify({rows,calls,maxActive}));
+}).catch(error=>{console.error(error);process.exit(1)});
+'''
+    with tempfile.TemporaryDirectory() as directory:
+        runner_path = Path(directory) / "sanitizer-native-deadline-test.cjs"
+        runner_path.write_text(native_runner, encoding="utf-8")
+        process = subprocess.run(
+            ["node", str(runner_path), native_patched],
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+    assert process.returncode == 0, process.stderr
+    native_payload = json.loads(process.stdout.strip())
+    assert native_payload["calls"] == 1, native_payload
+    assert native_payload["maxActive"] == 1, native_payload
+    assert [row["name"] for row in native_payload["rows"]] == ["second-uncertain"], native_payload
 
     print("stream output sanitizer direct normalization tests passed")
     return 0
