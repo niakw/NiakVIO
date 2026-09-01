@@ -95,7 +95,7 @@ finally:
 
 # A real published provider proves the ordering contract end-to-end: quality and
 # language are extracted from the original upstream stream name first, then the
-# local row name/title are replaced by committed provider branding. V12 keeps
+# local row name/title are replaced by committed provider branding. V17 keeps
 # quality in the title and canonicalizes generic French/VFF evidence to VF.
 # The transport is a deterministic local fetch stub returning a valid playlist.
 raw = b'''globalThis.getStreams=async function(){return [{url:"https://example.invalid/video.m3u8",name:"1080p VFF",title:"raw upstream title"}]};\n'''
@@ -123,4 +123,4 @@ try:
 finally:
     artifact.unlink(missing_ok=True)
 
-print("Core media/branding/security policy V12 test passed: provider facts preserved before committed final branding")
+print("Core media/branding/security policy V17 test passed: provider facts preserved before committed final branding")
