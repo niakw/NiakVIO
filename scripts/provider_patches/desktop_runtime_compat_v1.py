@@ -10,9 +10,18 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
+import sys
+from pathlib import Path
 from typing import Any
 
+SCRIPTS_ROOT = Path(__file__).resolve().parents[1]
+if str(SCRIPTS_ROOT) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS_ROOT))
+from provider_patch_blocks import replace_managed_fix, strip_legacy_iife, strip_managed_fix
+
 MARKER_PREFIX = "NUVIO_DESKTOP_RUNTIME_COMPAT_V1"
+MANAGED_FIX_ID = "CORE.DESKTOP_RUNTIME_COMPAT.V1"
 PATCH_REVISION = 5
 
 
@@ -35,8 +44,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }
     payload = json.dumps(config, separators=(",", ":"))
     marker = f"{MARKER_PREFIX}:{hashlib.sha256(payload.encode('utf-8')).hexdigest()[:12]}"
-    if marker in text:
-        return text
+
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
+    legacy = re.findall(r"/\\* " + re.escape(MARKER_PREFIX) + r":[0-9a-f]{12} \\*/", text)
+    if len(legacy) > 1:
+        raise ValueError("duplicate legacy desktop runtime compatibility blocks")
+    if legacy:
+        text = strip_legacy_iife(text, legacy[0])
 
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
@@ -129,4 +143,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   }catch(_error){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("CONFIG_PLACEHOLDER", payload).replace("MARKER_PLACEHOLDER", marker)
-    return text.rstrip() + "\n" + wrapper.lstrip()
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        wrapper.lstrip(),
+        data=config,
+    )
