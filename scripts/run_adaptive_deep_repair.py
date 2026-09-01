@@ -107,14 +107,14 @@ def main() -> int:
         # Provider repair logic is valid only against a conclusively known official
         # Nuvio runtime contract. Safe unrelated client updates may proceed; hard or
         # semantic runtime drift and transport-inconclusive checks fail closed before
-        # any provider JS mutation or byte_stability is attempted.
+        # any provider JS mutation or raw-byte validation is attempted.
         guard_nuvio_client_brain_compat(output / "nuvio-client-upstream-status.json")
 
-        # Deep is the authoritative byte_stability phase: all effective staged bundles
+        # Deep is the authoritative raw-byte validation phase: all effective staged bundles
         # are validated byte-for-byte after known patches/profiles, then that exact registry becomes
-        # baseline input. Repairs generated later in this same loop are purified again
+        # baseline input. Repairs generated later in this same loop are validated again
         # by _profiled_create before their own retest.
-        byte_stability = purify_registry(stage, output / "provider-byte_stability.json")
+        byte_stability = purify_registry(stage, output / "provider-byte-stability.json")
         print(
             "FIELD_PROVIDER_BYTE_STABILITY_DEEP "
             f"candidates={byte_stability['candidateCount']} applied={byte_stability['appliedCount']} "
