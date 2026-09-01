@@ -26,7 +26,9 @@ module.exports={getStreams:async function(){return [
   {name:"html-embed",url:"https://media.example/embed/abc"},
   {name:"json-resolver",url:"https://media.example/api-resolver"},
   {name:"forbidden-403",url:"https://media.example/forbidden.mp4"},
-  {name:"html-error",url:"https://media.example/not-media"},\n  {name:"dns-inconclusive",url:"https://media.example/dns.mp4"},\n  {name:"server-503-inconclusive",url:"https://media.example/server-503.mp4"}
+  {name:"html-error",url:"https://media.example/not-media"},
+  {name:"dns-inconclusive",url:"https://media.example/dns.mp4"},
+  {name:"server-503-inconclusive",url:"https://media.example/server-503.mp4"}
 ]}};
 '''
     patched = module.apply(
@@ -78,7 +80,9 @@ const responses={
   'https://media.example/api-resolver':()=>makeResponse('https://media.example/api-resolver','application/json',enc('{"file":"https://cdn.example/resolved/movie.mp4"}')),
   'https://cdn.example/resolved/movie.mp4':()=>makeResponse('https://cdn.example/resolved/movie.mp4','video/mp4',[0,0,0,24,102,116,121,112,5,6,7,8]),
   'https://media.example/forbidden.mp4':()=>({ok:false,status:403,url:'https://media.example/forbidden.mp4',headers:{get:()=>''},body:{getReader:()=>({read:async()=>({done:true}),cancel:async()=>{}})}}),
-  'https://media.example/not-media':()=>makeResponse('https://media.example/not-media','text/html',enc('<html><body>error</body></html>')),\n  'https://media.example/dns.mp4':()=>{throw new Error('dns lookup failed')},\n  'https://media.example/server-503.mp4':()=>({ok:false,status:503,url:'https://media.example/server-503.mp4',headers:{get:()=>''},body:{getReader:()=>({read:async()=>({done:true}),cancel:async()=>{}})}})
+  'https://media.example/not-media':()=>makeResponse('https://media.example/not-media','text/html',enc('<html><body>error</body></html>')),
+  'https://media.example/dns.mp4':()=>{throw new Error('dns lookup failed')},
+  'https://media.example/server-503.mp4':()=>({ok:false,status:503,url:'https://media.example/server-503.mp4',headers:{get:()=>''},body:{getReader:()=>({read:async()=>({done:true}),cancel:async()=>{}})}})
 };
 const calls=[];
 const sandbox={module:{exports:{}},exports:{},URL,AbortController,setTimeout,clearTimeout,Uint8Array,encodeURIComponent,
@@ -137,7 +141,9 @@ sandbox.module.exports.getStreams({tmdbId:'1',mediaType:'movie'})
     assert resolved["isDirect"] is True
 
     assert "forbidden-403" not in by_name
-    assert "html-error" not in by_name\n    assert by_name["dns-inconclusive"]["url"] == "https://media.example/dns.mp4"\n    assert by_name["server-503-inconclusive"]["url"] == "https://media.example/server-503.mp4"
+    assert "html-error" not in by_name
+    assert by_name["dns-inconclusive"]["url"] == "https://media.example/dns.mp4"
+    assert by_name["server-503-inconclusive"]["url"] == "https://media.example/server-503.mp4"
 
     # All invalid streams must collapse to an empty array; no dead row may leak.
     all_bad_source = r'''
