@@ -1366,6 +1366,102 @@ def repair_legacy_bases() -> dict[str, Any]:
         "reconstruction_required": reconstruction_required,
     }
 
+def repair_derived_base_tails() -> dict[str, Any]:
+    """Remove leaked publication-only tails from canonical ProviderBase files.
+
+    This is a layering repair only. It never promotes a pending clean candidate,
+    never changes the preserved production LKG reference, and never invents
+    provider logic. If a previously verified canonical base must change, its
+    clean proof is invalidated and it returns to pending canonical Deep proof.
+    """
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
+    rows = provenance.get("providers")
+    if not isinstance(rows, dict):
+        raise ValueError("PROVENANCE.providers must be an object")
+
+    repaired: list[str] = []
+    invalidated: list[str] = []
+    repaired_at = datetime.now(timezone.utc).isoformat()
+
+    for entry in manifest.get("scrapers") or []:
+        if not isinstance(entry, dict):
+            continue
+        provider_id = canonical_id(str(entry.get("id") or ""))
+        if not provider_id:
+            continue
+        row = rows.get(provider_id)
+        if not isinstance(row, dict):
+            raise ValueError(f"{provider_id}: missing provenance row")
+        path, _digest = resolve_base(provider_id, row, require=True)
+        assert path is not None
+        data = path.read_bytes()
+        leaked = forbidden_base_markers(data)
+        if not leaked:
+            continue
+
+        clean, stripped = clean_base_from_published(provider_id, data)
+        if not stripped or clean == data:
+            raise ValueError(
+                f"{provider_id}: derived ProviderBase layer detected but deterministic strip made no change: "
+                + ",".join(leaked)
+            )
+        validate_base(clean, provider_id)
+        relative, digest = write_base(provider_id, clean)
+
+        was_verified = is_clean_reconstructed(row)
+        row["base_filename"] = relative
+        row["base_sha256"] = digest
+        row["base_migration_stripped_generated_core"] = True
+        row["base_layering_repaired_at"] = repaired_at
+        row["base_layering_repair"] = {
+            "schema_version": 1,
+            "mode": "strip-derived-publication-tail-only",
+            "removed_markers": leaked,
+        }
+        if was_verified:
+            row["base_source"] = CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE
+            row["clean_reconstruction_candidate"] = True
+            row["clean_reconstruction_verified"] = False
+            row["clean_reconstruction_required"] = True
+            row["clean_reconstruction_candidate_role"] = "pending-pipeline-proof"
+            row["legacy_provider_base_role"] = "superseded-by-clean-candidate"
+            invalidated.append(provider_id)
+        repaired.append(provider_id)
+
+    provider_ids = [
+        canonical_id(str(entry.get("id") or ""))
+        for entry in manifest.get("scrapers") or []
+        if isinstance(entry, dict) and canonical_id(str(entry.get("id") or ""))
+    ]
+    clean_count = sum(1 for provider_id in provider_ids if is_clean_reconstructed(rows.get(provider_id)))
+    store = provenance.get("provider_base_store")
+    if not isinstance(store, dict):
+        store = {}
+        provenance["provider_base_store"] = store
+    store.update(
+        provider_base_store_metadata(
+            provider_count=len(provider_ids),
+            unique_base_count=len(provider_ids),
+            clean_reconstructed=clean_count,
+            reconstruction_required=len(provider_ids) - clean_count,
+            previous_store=store,
+        )
+    )
+    if repaired:
+        PROVENANCE.write_text(
+            json.dumps(provenance, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+    return {
+        "providers": len(provider_ids),
+        "repaired": len(repaired),
+        "repaired_ids": repaired,
+        "invalidated": len(invalidated),
+        "invalidated_ids": invalidated,
+    }
+
+
 def migrate_existing() -> dict[str, Any]:
     """Disabled legacy migration entry point.
 
@@ -1422,6 +1518,7 @@ def main() -> int:
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("migrate-existing")
     sub.add_parser("repair-legacy")
+    sub.add_parser("repair-derived")
     validate_parser = sub.add_parser("validate")
     validate_parser.add_argument(
         "--artifacts",
@@ -1440,6 +1537,13 @@ def main() -> int:
         print(
             f"FIELD_PROVIDER_BASE_REPAIR providers={result['providers']} "
             f"clean={result['clean_reconstructed']} required={result['reconstruction_required']}"
+        )
+    elif args.command == "repair-derived":
+        result = repair_derived_base_tails()
+        print(
+            f"FIELD_PROVIDER_BASE_DERIVED_REPAIR providers={result['providers']} "
+            f"repaired={result['repaired']} invalidated={result['invalidated']} "
+            f"ids={','.join(result['repaired_ids']) or 'none'}"
         )
     else:
         result = validate_all(validate_artifacts=bool(args.artifacts))
