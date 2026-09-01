@@ -91,7 +91,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v17-tv-bounded-provider-budget",
+        "revision": "tmdb-api-first-semantic-transport-split-v18-native-deferred-verification",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -293,7 +293,14 @@ function provisional(a){
   var raw=s(input).toLowerCase(),namespace=namespaceOf(input);
   var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
   var type=raw==="anime"?"anime":namespace;
-  if(semantic.length&&semantic.indexOf(type)<0)return null;
+  // Native Nuvio bridges may expose only a non-abortable host fetch. For a
+  // numeric TMDB id, let a semantic-anime provider run provisionally even when
+  // the client transports the work as tv/movie; authoritative TMDB verification
+  // still happens before any positive output can escape.
+  if(semantic.length&&semantic.indexOf(type)<0){
+    if(semantic.indexOf("anime")>=0&&(namespace==="tv"||namespace==="movie"))type="anime";
+    else return null;
+  }
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
   var providerType=providerTransport(type,namespace);
   var resolvedTmdbId=/^\d+$/.test(id)?id:"";
@@ -324,11 +331,25 @@ function provisional(a){
   }
   var out=Array.prototype.slice.call(a);out[1]=providerType;out.__nuvioContext=context;return out;
 }
+function nativeBridgeCannotAbort(){
+  try{
+    return !!(
+      g&&typeof g.__native_fetch==="function"&&
+      (typeof AbortSignal==="undefined"||typeof AbortSignal.timeout!=="function")
+    );
+  }catch(_){return false}
+}
 function preflightRequired(a){
-  if(c.preflightTmdb!==false)return true;
   var first=a[0],obj=objectRequest(first),q=obj?first:null;
   if(obj&&hasTmdbMetadata(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q))return true;
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
+  // TV/Desktop native plugin bridges currently cannot abort their host fetch
+  // from JS. Repeating TMDB before dozens of providers can therefore occupy the
+  // native worker pool for tens of seconds. Numeric ids are safe to defer:
+  // zero-output providers cause no TMDB request, while every positive candidate
+  // is still resolved and capability-checked before it is returned.
+  if(/^\d+$/.test(id)&&nativeBridgeCannotAbort())return false;
+  if(c.preflightTmdb!==false)return true;
   return !/^\d+$/.test(id);
 }
 function hasProviderOutput(value){

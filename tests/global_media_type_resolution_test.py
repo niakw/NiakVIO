@@ -168,6 +168,74 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+
+# Official Nuvio TV/Desktop bridges expose __native_fetch but currently no
+# AbortSignal.timeout(). Numeric-id requests must therefore defer configured
+# TMDB preflight even for anime/catalogue-capable providers. Empty providers do
+# not pay a metadata request; positive output remains fail-closed behind TMDB.
+native_zero = mod.apply(
+    ZERO_BASE,
+    options={"semantic_types": ["anime"], "preflight_tmdb": True},
+)
+run_case(native_zero, r"""
+let calls=0;
+global.__native_fetch=function(){throw new Error('host bridge must not be reached by this fixture')};
+global.AbortSignal=function(){};
+global.fetch=async()=>{calls++;throw new Error('TMDB must be deferred on non-abortable native bridge')};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('280049','tv',1,12);
+  if(!Array.isArray(value)||value.length!==0)throw new Error('native zero-output provider changed');
+  if(calls!==0)throw new Error('native zero-output provider performed TMDB preflight');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+native_anime_positive = mod.apply(
+    BASE,
+    options={"semantic_types": ["anime"], "preflight_tmdb": True},
+)
+run_case(native_anime_positive, r"""
+let calls=0;
+global.__native_fetch=function(){};
+global.AbortSignal=function(){};
+global.fetch=async(url)=>{
+  calls++;
+  if(!String(url).includes('/tv/280049?'))throw new Error('unexpected TMDB endpoint '+url);
+  return{ok:true,status:200,json:async()=>({
+    id:280049,name:'Hell Mode',genres:[{id:16,name:'Animation'}],
+    original_language:'ja',origin_country:['JP'],keywords:{results:[{name:'anime'}]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('280049','tv',1,12);
+  if(!Array.isArray(value)||!value.length)throw new Error('native deferred anime result lost');
+  if(value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='anime')
+    throw new Error('native anime semantic verification failed: '+JSON.stringify(value));
+  if(calls!==1)throw new Error('native positive anime output must be TMDB-verified exactly once');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+run_case(native_anime_positive, r"""
+let calls=0;
+global.__native_fetch=function(){};
+global.AbortSignal=function(){};
+global.fetch=async(url)=>{
+  calls++;
+  if(!String(url).includes('/tv/62425?'))throw new Error('unexpected TMDB endpoint '+url);
+  return{ok:true,status:200,json:async()=>({
+    id:62425,name:'Dark Matter',genres:[{id:18,name:'Drama'}],
+    original_language:'en',origin_country:['CA'],keywords:{results:[]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('62425','tv',2,1);
+  if(!Array.isArray(value)||value.length!==0)throw new Error('anime-only provider leaked ordinary TV after deferred verification');
+  if(calls!==1)throw new Error('ordinary TV candidate must still be verified exactly once');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 anime_only = mod.apply(BASE, options={"semantic_types": ["anime"]})
 run_case(anime_only, r"""
 global.fetch=async()=>({ok:true,status:200,json:async()=>({
