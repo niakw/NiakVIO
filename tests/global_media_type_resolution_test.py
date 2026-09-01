@@ -128,6 +128,28 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+EMPTY_ENVELOPE_BASE = r"""
+"use strict";
+async function getStreams() {
+  return { streams: [] };
+}
+module.exports = { getStreams };
+"""
+deferred_empty_envelope = mod.apply(
+    EMPTY_ENVELOPE_BASE,
+    options={"semantic_types": ["movie", "tv"], "preflight_tmdb": False},
+)
+run_case(deferred_empty_envelope, r"""
+let calls=0;
+global.fetch=async()=>{calls++;throw new Error('TMDB must not run for empty stream envelope')};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('1396','series',1,1);
+  if(!Array.isArray(value)||value.length!==0)throw new Error('empty stream envelope must exit as []');
+  if(calls!==0)throw new Error('empty stream envelope caused deferred TMDB work');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 deferred_positive = mod.apply(
     BASE,
     options={"semantic_types": ["movie", "tv"], "preflight_tmdb": False},
