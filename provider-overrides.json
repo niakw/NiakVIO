@@ -268,17 +268,17 @@
       "patch_scripts": [],
       "patch_script_options": {},
       "manifest_overrides": {},
-      "official_site": "https://purstream.wiki",
-      "official_api": "https://purstream.wiki/api",
+      "official_site": "https://purstream.id",
+      "official_api": "https://api.purstream.id/api/v1",
       "fixed_endpoint": {
         "resolver_function": "detectPurstreamDomain",
-        "api": "https://purstream.wiki/api",
-        "referer": "https://purstream.wiki/"
+        "api": "https://api.purstream.id/api/v1",
+        "referer": "https://purstream.id/"
       },
       "required_values": [],
       "api_recipe": {
-        "base": "https://purstream.wiki/api",
-        "referer": "https://purstream.wiki/",
+        "base": "https://api.purstream.id/api/v1",
+        "referer": "https://purstream.id/",
         "searchRoute": "/search-bar/search/{query}",
         "movieRoute": "/media/{id}/sheet",
         "episodeRoute": "/stream/{id}/episode?season={season}&episode={episode}",
@@ -315,24 +315,8 @@
         "strictIdentity": true,
         "directSourcesOnly": true
       },
-      "replacements": {
-        "purstream.art": "purstream.wiki",
-        "purstream.club": "purstream.wiki",
-        "purstream.id": "purstream.wiki",
-        "api.purstream.art": "purstream.wiki",
-        "api.purstream.club": "purstream.wiki",
-        "api.purstream.id": "purstream.wiki",
-        "api.purstream.wiki": "purstream.wiki"
-      },
-      "runtime_domain_replacements": {
-        "purstream.art": "purstream.wiki",
-        "purstream.club": "purstream.wiki",
-        "purstream.id": "purstream.wiki",
-        "api.purstream.art": "purstream.wiki",
-        "api.purstream.club": "purstream.wiki",
-        "api.purstream.id": "purstream.wiki",
-        "api.purstream.wiki": "purstream.wiki"
-      }
+      "replacements": {},
+      "runtime_domain_replacements": {}
     },
     "vidfast": {
       "replacements": {
