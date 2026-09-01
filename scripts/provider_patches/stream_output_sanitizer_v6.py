@@ -30,9 +30,12 @@ import re
 from pathlib import Path
 from typing import Any
 
+from provider_patch_blocks import render_managed_fix, strip_managed_fix
+
 ROOT = Path(__file__).resolve().parent
 V5_PATH = ROOT / "stream_output_sanitizer_v5.py"
 MARKER = "/* NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6 */"
+MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"
 OLD = "if(!item.probe)return item.stream;"
 NEW = "if(!item.probe)return config.probeAllUrls?null:item.stream;"
 SANITIZER_PREFIX = "/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:"
@@ -135,6 +138,26 @@ def _ensure_local_probe_alias(text: str) -> str:
     return text[:install.start()] + PROBE_ALIAS + text[install.start():]
 
 
+def _extract_sanitizer_unit(text: str) -> tuple[str, str]:
+    """Split the generated sanitizer IIFE from untouched provider/Core bytes."""
+    start = _sanitizer_position(text)
+    if start < 0:
+        raise ValueError("generated stream sanitizer wrapper not found")
+    call = text.find(SANITIZER_CALL, start)
+    end = text.find(");", call) if call >= 0 else -1
+    if call < 0 or end < 0:
+        raise ValueError("unterminated generated stream sanitizer wrapper")
+    end += 2
+    unit = text[start:end].strip()
+    body = (text[:start] + text[end:]).strip()
+    for marker in (*V5_MARKERS, MARKER):
+        body = body.replace(marker, "")
+    body = body.strip()
+    if SANITIZER_PREFIX in body:
+        raise ValueError("multiple sanitizer wrappers after extraction")
+    return body, unit
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     cfg = dict(options or {})
     if not bool(cfg.get("probe_all_urls")):
@@ -142,34 +165,45 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     if int(cfg.get("max_probes") or 0) <= 0:
         raise ValueError("stream sanitizer v6 requires max_probes>0")
 
-    relocated = _needs_relocation(text)
-    source = _strip_existing_sanitizer(text) if relocated else text
+    # One public owner. Remove a current managed V6 block first, then migrate any
+    # pre-managed V4/V5/V6 materialization as one legacy sanitizer unit.
+    source = strip_managed_fix(text, MANAGED_FIX_ID)
+    if _sanitizer_position(source) >= 0:
+        source = _strip_existing_sanitizer(source)
 
-    # V5 owns the content-addressed configuration. Always let it run first so
-    # changing blocked paths or probe policy cannot be hidden by a static V6
-    # marker from an older materialization.
+    # V4/V5 are implementation builders only. Their temporary compatibility
+    # markers never escape this function into the published Lego bundle.
     patched = V5_APPLY(source, options=cfg, **kwargs)
     patched = _ensure_local_probe_alias(patched)
-    if not relocated and patched == text and MARKER in text:
-        return text
-
     patched = patched.replace(MARKER, "").rstrip()
+
     if NEW not in patched:
         if OLD not in patched:
             raise ValueError("stream sanitizer all-URL overflow hook not found")
         patched = patched.replace(OLD, NEW, 1)
 
-    # The actual sanitizer IIFE—not a trailing compatibility marker—must be
-    # installed after every stream-transform predecessor (target-media,
-    # presentation and branding) so the exact client-visible row is validated.
-    sanitizer = _sanitizer_position(patched)
-    predecessor = _latest_predecessor_position(patched)
+    body, sanitizer_unit = _extract_sanitizer_unit(patched)
+    managed_data = {
+        "probeAllUrls": True,
+        "maxProbes": max(1, int(cfg.get("max_probes") or 1)),
+        "probeTimeoutMs": int(cfg.get("probe_timeout_ms") or 6500),
+        "minVodDurationSeconds": int(cfg.get("min_vod_duration_seconds") or 60),
+        "implementationRevision": "terminal-single-owner-v6",
+    }
+    managed = render_managed_fix(
+        MANAGED_FIX_ID,
+        sanitizer_unit,
+        data=managed_data,
+    )
+
+    output = (body.rstrip() + "\n" if body else "") + managed.strip() + "\n"
+    sanitizer = output.find(f"/* START NIAKVIO_FIX:{MANAGED_FIX_ID} */")
+    predecessor = _latest_predecessor_position(output)
     if sanitizer < 0 or (predecessor >= 0 and sanitizer <= predecessor):
         raise ValueError(
             f"stream sanitizer terminal order invalid: sanitizer={sanitizer} predecessor={predecessor}"
         )
-
-    return patched.rstrip() + "\n" + MARKER + "\n"
+    return output
 
 
 if __name__ == "__main__":
