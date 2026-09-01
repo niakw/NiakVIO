@@ -27,6 +27,7 @@ from provider_patch_blocks import render_managed_fix, strip_managed_fix
 MARKER = "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1"
 MANAGED_FIX_ID = "CORE.MEDIA_ENRICHMENT.V1"
 SAFETY_MARKER = "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1"
+SAFETY_MANAGED_START = "/* START NIAKVIO_FIX:CORE.RUNTIME_MEDIA_SAFETY.V4 */"
 
 
 def _strip_existing_wrapper(text: str) -> str:
@@ -47,7 +48,9 @@ def _insert_before_runtime_safety(text: str, wrapper: str) -> str:
     safety guard validates rows produced by enrichment, so enrichment must be
     installed before that guard when it is already present.
     """
-    safety = text.find(f"/* {SAFETY_MARKER}:")
+    safety = text.find(SAFETY_MANAGED_START)
+    if safety < 0:
+        safety = text.find(f"/* {SAFETY_MARKER}:")
     clean_wrapper = wrapper.lstrip().rstrip()
     if safety < 0:
         return text.rstrip() + "\n" + clean_wrapper + "\n"
