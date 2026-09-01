@@ -234,4 +234,69 @@ def decode_managed_data(text: str, fix_id: str) -> dict[str, Any]:
 def managed_fix_ids(text: str) -> list[str]:
     """Return every managed fix id after proving global marker consistency."""
     source = str(text or "")
-    patterns = (\n        re.compile(r"/\\* START NIAKVIO_FIX:([A-Z0-9_.:-]+) \\*/"),\n        re.compile(r"/\\* END NIAKVIO_FIX:([A-Z0-9_.:-]+) \\*/"),\n        re.compile(r"/\\* NIAKVIO_FIX_BEGIN:([A-Z0-9_.:-]+) \\*/"),\n        re.compile(r"/\\* NIAKVIO_FIX_END:([A-Z0-9_.:-]+) \\*/"),\n    )\n    seen: set[str] = set()\n    for pattern in patterns:\n        for value in pattern.findall(source):\n            seen.add(_fix_id(value))\n    for fix_id in sorted(seen):\n        assert_single_managed_fix(source, fix_id)\n        decode_managed_data(source, fix_id)\n    reserved = re.findall(r"/\\*\\s*(?:START|END)?\\s*NIAKVIO_FIX(?:_BEGIN|_END)?[^*]*\\*/", source)\n    expected = 0\n    for fix_id in seen:\n        span = _owned_span(source, fix_id)\n        if span is not None:\n            block = source[span[0]:span[1]]\n            expected += block.count("/* START NIAKVIO_FIX:")\n            expected += block.count("/* END NIAKVIO_FIX:")\n            expected += block.count("/* NIAKVIO_FIX_BEGIN:")\n            expected += block.count("/* NIAKVIO_FIX_END:")\n    ownership_reserved = [marker for marker in reserved if "NIAKVIO_FIX_DATA" not in marker]\n    if len(ownership_reserved) != expected:\n        raise ValueError(\n            f"malformed managed fix ownership marker(s): parsed={expected} raw={len(ownership_reserved)}"\n        )\n    return sorted(seen)\n\n\ndef validate_managed_fixes(text: str) -> list[str]:\n    """Fail closed on duplicate, nested, malformed or undecodable fix blocks."""\n    return managed_fix_ids(text)\n\n\ndef strip_all_managed_fixes(text: str, *, restore_replaced_source: bool = True) -> tuple[str, list[str]]:\n    """Remove all managed fixes and restore source explicitly owned by replacing fixes."""\n    source = str(text or "")\n    fix_ids = validate_managed_fixes(source)\n    spans: list[tuple[int, int, str, str]] = []\n    for fix_id in fix_ids:\n        span = _owned_span(source, fix_id)\n        if span is None:\n            continue\n        data = decode_managed_data(source, fix_id)\n        restore = data.get("restore_source", "") if restore_replaced_source else ""\n        if restore is None:\n            restore = ""\n        if not isinstance(restore, str):\n            raise ValueError(f"managed fix {fix_id} restore_source must be a string")\n        spans.append((span[0], span[1], fix_id, restore))\n    output = source\n    for start, end, _fix_id_value, restore in sorted(spans, reverse=True):\n        output = output[:start] + restore + output[end:]\n    return output, fix_ids\n
+    patterns = (
+        re.compile(r"/\* START NIAKVIO_FIX:([A-Z0-9_.:-]+) \*/"),
+        re.compile(r"/\* END NIAKVIO_FIX:([A-Z0-9_.:-]+) \*/"),
+        re.compile(r"/\* NIAKVIO_FIX_BEGIN:([A-Z0-9_.:-]+) \*/"),
+        re.compile(r"/\* NIAKVIO_FIX_END:([A-Z0-9_.:-]+) \*/"),
+    )
+    seen: set[str] = set()
+    for pattern in patterns:
+        for value in pattern.findall(source):
+            seen.add(_fix_id(value))
+
+    for fix_id in sorted(seen):
+        assert_single_managed_fix(source, fix_id)
+        decode_managed_data(source, fix_id)
+
+    ownership_markers = re.findall(
+        r"/\*\s*(?:(?:START|END)\s+NIAKVIO_FIX:[^*]+|NIAKVIO_FIX_(?:BEGIN|END):[^*]+)\*/",
+        source,
+    )
+    if len(ownership_markers) != 2 * len(seen):
+        raise ValueError(
+            f"malformed managed fix ownership marker(s): "
+            f"expected={2 * len(seen)} raw={len(ownership_markers)}"
+        )
+    return sorted(seen)
+
+
+def validate_managed_fixes(text: str) -> list[str]:
+    """Fail closed on duplicate, nested, malformed or undecodable fix blocks."""
+    return managed_fix_ids(text)
+
+
+def strip_all_managed_fixes(
+    text: str,
+    *,
+    restore_replaced_source: bool = True,
+    require_provider_base_restore: bool = False,
+) -> tuple[str, list[str]]:
+    """Remove all managed fixes and optionally restore exact provider-base source."""
+    source = str(text or "")
+    fix_ids = validate_managed_fixes(source)
+    spans: list[tuple[int, int, str, str]] = []
+
+    for fix_id in fix_ids:
+        span = _owned_span(source, fix_id)
+        if span is None:
+            continue
+        data = decode_managed_data(source, fix_id)
+        restore = data.get("restore_source", "") if restore_replaced_source else ""
+        if restore is None:
+            restore = ""
+        if not isinstance(restore, str):
+            raise ValueError(f"managed fix {fix_id} restore_source must be a string")
+        if restore and require_provider_base_restore:
+            restore_kind = str(data.get("restore_source_kind") or "").strip()
+            if restore_kind != "provider_base":
+                raise ValueError(
+                    f"managed fix {fix_id} cannot seed ProviderBase from "
+                    f"restore_source_kind={restore_kind}"
+                )
+        spans.append((span[0], span[1], fix_id, restore))
+
+    output = source
+    for span_start, span_end, _fix_id_value, restore in sorted(spans, reverse=True):
+        output = output[:span_start] + restore + output[span_end:]
+    return output, fix_ids
