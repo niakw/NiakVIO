@@ -85,6 +85,11 @@ def has_managed_fix(text: str, fix_id: str) -> bool:
     return _owned_span(str(text or ""), fix_id) is not None
 
 
+def owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
+    """Public exact span for one validated managed brick."""
+    return _owned_span(str(text or ""), fix_id)
+
+
 def strip_managed_fix(text: str, fix_id: str) -> str:
     span = _owned_span(text, fix_id)
     if span is None:
