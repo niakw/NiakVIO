@@ -12,7 +12,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_purification import BYTE_STABILITY_VERSION
+from provider_byte_stability import BYTE_STABILITY_VERSION
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
