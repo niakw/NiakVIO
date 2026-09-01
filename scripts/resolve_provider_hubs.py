@@ -523,11 +523,22 @@ def merge_hub_registry(config: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return merged
 
 
+def discovery_source_hosts(cfg: dict[str, Any]) -> set[str]:
+    """Hosts used only to discover a provider address; never valid terminals."""
+    return {
+        host(str(source.get("url")))
+        for source in cfg.get("sources") or []
+        if source.get("url")
+        and str(source.get("type") or "").strip().casefold() in {"hub", "telegram_public"}
+        and host(str(source.get("url")))
+    }
+
+
 def candidate_score(provider_id: str, cfg: dict[str, Any], url: str, label: str, index: int, total: int) -> int:
     candidate_host = host(url)
     if not candidate_host or not is_public_url(url):
         return -1
-    hub_hosts = {host(str(source.get("url"))) for source in cfg.get("sources") or [] if source.get("type") in {"hub", "telegram_public"}}
+    hub_hosts = discovery_source_hosts(cfg)
     if candidate_host in hub_hosts:
         return -1
     if candidate_host.endswith(SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES):
@@ -618,7 +629,14 @@ def choose_official(provider_id: str, cfg: dict[str, Any], hub_url: str, documen
                 # provider mention and an address announcement in that case.
                 if score < 0 and context_bonus >= 25:
                     candidate_host = host(url)
-                    if candidate_host and not candidate_host.endswith(SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES):
+                    source_hosts = discovery_source_hosts(cfg)
+                    if (
+                        candidate_host
+                        and candidate_host not in source_hosts
+                        and not candidate_host.endswith(
+                            SOCIAL_HOST_SUFFIXES + SEARCH_HOST_SUFFIXES + INFRASTRUCTURE_HOST_SUFFIXES
+                        )
+                    ):
                         score = 45 + context_bonus
                 elif score >= 0:
                     score += context_bonus
@@ -719,11 +737,7 @@ def validate_terminal(provider_id: str, cfg: dict[str, Any], candidate: str, tim
     lowered = re.sub(r"\s+", " ", document[:150_000].casefold())
     if ok and any(marker in lowered for marker in PARKING_MARKERS):
         ok = False
-    source_hosts = {
-        host(str(source.get("url")))
-        for source in cfg.get("sources") or []
-        if source.get("url") and source.get("type") in {"hub", "telegram_public"}
-    }
+    source_hosts = discovery_source_hosts(cfg)
     # Address hubs and public announcement channels are discovery sources, never
     # catalogue origins. A 200 response or a cached history entry must not turn
     # the hub itself into the provider terminal route.
@@ -935,6 +949,10 @@ def update_provider_patch(config: dict[str, Any], provider_id: str, hub_cfg: dic
     runtime = patch.setdefault("runtime_domain_replacements", {})
     changes: list[dict[str, str]] = []
     new_site_host = host(site_url)
+    if not new_site_host or new_site_host in discovery_source_hosts(hub_cfg):
+        raise ValueError(
+            f"{provider_id}: discovery hub/channel cannot be published as terminal site: {site_url}"
+        )
 
     # A domain that becomes current must never remain a replacement source,
     # otherwise a later fs16 -> fs03 style rollback creates a migration cycle.
@@ -1154,6 +1172,7 @@ def retained_lkg_site(provider_id: str, cfg: dict[str, Any], history_row: dict[s
         if (
             is_provider_terminal_site_url(value)
             and same_brand(provider_id, value, cfg)
+            and host(value) not in discovery_source_hosts(cfg)
         ):
             return value
     return None
@@ -1189,6 +1208,7 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
             and validation.get("final_url")
             and validation.get("brand_match") is True
             and is_provider_terminal_site_url(str(validation.get("final_url")))
+            and host(str(validation.get("final_url"))) not in discovery_source_hosts(cfg)
             and not is_forbidden_terminal_content_type(str(validation.get("content_type") or ""))
             and validation.get("attachment") is not True
         ), None)
