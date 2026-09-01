@@ -14,7 +14,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from provider_patch_blocks import replace_managed_fix, strip_managed_fix
+
 MARKER = "NUVIO_GLOBAL_PROVIDER_BRANDING_V1"
+MANAGED_FIX_ID = "CORE.PROVIDER_BRANDING.V1"
 ROOT = Path(__file__).resolve().parents[2]
 BRANDING = ROOT / "assets" / "providers" / "emojis.json"
 
@@ -71,6 +74,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
     text = _strip_existing(text)
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
@@ -84,4 +88,9 @@ function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProvide
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", serialized)
-    return text.rstrip() + "\n" + wrapper.strip() + "\n"
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        wrapper,
+        data=payload,
+    )
