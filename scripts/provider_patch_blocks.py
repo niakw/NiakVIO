@@ -155,8 +155,16 @@ def replace_managed_fix(
     *,
     data: dict[str, Any] | None = None,
 ) -> str:
-    base = strip_managed_fix(str(text or ""), fix_id).rstrip()
+    """Replace an owned brick in place; append only on its first materialization."""
+    source = str(text or "")
+    span = _owned_span(source, fix_id)
     block = render_managed_fix(fix_id, javascript, data=data)
+    if span is not None:
+        output = source[:span[0]] + block + source[span[1]:]
+        assert_single_managed_fix(output, fix_id)
+        return output
+
+    base = source.rstrip()
     output = (base + "\n" + block).lstrip() if base else block
     assert_single_managed_fix(output, fix_id)
     return output.rstrip() + "\n"
