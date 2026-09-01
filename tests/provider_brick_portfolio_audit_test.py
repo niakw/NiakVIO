@@ -28,6 +28,7 @@ CORE_ORDER = [
     "CORE.MEDIA_ENRICHMENT.V1",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
     "CORE.HLS_RUNTIME_INTEGRITY.V1",
+    "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
     "CORE.RUNTIME_COMPAT.V1",
     "CORE.STREAM_FACTS.V1",
     "CORE.STREAM_IDENTITY.V1",
@@ -38,6 +39,17 @@ CORE_ORDER = [
 ]
 
 BLOCK_START = re.compile(r"/\* START NIAKVIO_FIX:([^*]+?) \*/")
+
+UNIVERSAL_CORE_IDS = {
+    "CORE.RUNTIME_MEDIA_SAFETY.V4",
+    "CORE.PROVIDER_SECURITY_BOUNDARY.V1",
+    "CORE.RUNTIME_COMPAT.V1",
+    "CORE.STREAM_PRESENTATION.V1",
+    "CORE.PROVIDER_BRANDING.V1",
+    "CORE.STREAM_SANITIZER.V6",
+    "CORE.MEDIA_TYPE_RESOLUTION.V1",
+}
+CORE_BOUNDARY = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
 
 
 def forced_ids() -> set[str]:
@@ -104,11 +116,23 @@ def audit_order(provider_id: str, text: str) -> None:
 
 
 def audit_composed(provider_id: str, first_text: str, second_text: str, records: list[dict]) -> tuple[list[str], list[str]]:
-    validate_managed_fixes(first_text)
-    validate_managed_fixes(second_text)
+    first_ids = validate_managed_fixes(first_text)
+    second_ids = validate_managed_fixes(second_text)
     audit_order(provider_id, first_text)
 
     errors: list[str] = []
+    if first_text.count(CORE_BOUNDARY) != 1:
+        errors.append(
+            f"{provider_id}: canonical Core boundary count={first_text.count(CORE_BOUNDARY)} expected=1"
+        )
+    missing = sorted(UNIVERSAL_CORE_IDS - set(first_ids))
+    if missing:
+        errors.append(f"{provider_id}: missing universal Core bricks={','.join(missing)}")
+    if first_ids != second_ids:
+        errors.append(
+            f"{provider_id}: managed Core id set changed on reapply "
+            f"first={','.join(first_ids)} second={','.join(second_ids)}"
+        )
     if second_text != first_text:
         idx, left_ctx, right_ctx = first_diff(first_text, second_text)
         first_blocks = block_fingerprints(first_text)
