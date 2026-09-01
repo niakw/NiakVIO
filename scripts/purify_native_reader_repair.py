@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from provider_purification import purify_file, sha256
+from provider_byte_stability import purify_file, sha256
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -54,13 +54,13 @@ def main() -> int:
         before = path.read_bytes()
         expected = str(proposal.get("candidateSha256") or "")
         if expected and sha256(before) != expected:
-            raise ValueError(f"reader repair hash mismatch before purification: {provider}")
+            raise ValueError(f"reader repair hash mismatch before byte_stability: {provider}")
 
-        purification = purify_file(path)
+        byte_stability = purify_file(path)
         after = path.read_bytes()
-        if purification["applied"]:
+        if byte_stability["applied"]:
             applied += 1
-            bytes_saved += int(purification["bytesSaved"])
+            bytes_saved += int(byte_stability["bytesSaved"])
             new_sha = sha256(after)
             new_path = path.with_name(f"{path.stem.split('--brain-reader--', 1)[0]}--brain-reader--{new_sha[:16]}.js")
             if new_path != path:
@@ -73,14 +73,14 @@ def main() -> int:
             manifest_row = manifest_rows.get(provider)
             if manifest_row is not None:
                 manifest_row["filename"] = relative
-        proposal["purification"] = purification
+        proposal["byte_stability"] = byte_stability
         proposal["requiresFreshNativeReaderProof"] = True
 
     report["schemaVersion"] = max(4, int(report.get("schemaVersion") or 0))
-    report["purification"] = {
-        "phase": "provider-purification-v1",
-        "tool": "terser",
-        "toolVersion": "5.50.0",
+    report["byte_stability"] = {
+        "phase": "provider-byte_stability-v1",
+        "tool": "raw-bytes",
+        "toolVersion": "raw-v1",
         "mangle": False,
         "proposalCount": int(report.get("proposalCount") or 0),
         "appliedCount": applied,
@@ -89,15 +89,15 @@ def main() -> int:
     }
     policy = report.setdefault("policy", {})
     if isinstance(policy, dict):
-        policy["providerPurificationRequiredBeforeRetest"] = True
-        policy["purificationMangleAllowed"] = False
+        policy["providerByte stabilityRequiredBeforeRetest"] = True
+        policy["byte_stabilityMangleAllowed"] = False
 
     write_json(manifest_path, manifest)
     write_json(report_path, report)
     print(
-        "FIELD_NATIVE_READER_REPAIR_PURIFICATION "
+        "FIELD_NATIVE_READER_REPAIR_BYTE_STABILITY "
         f"proposals={report.get('proposalCount', 0)} applied={applied} bytes_saved={bytes_saved} "
-        "mangle=false fresh_reader_retest_required=true"
+        "transform_enabled=false fresh_reader_retest_required=true"
     )
     return 0
 
