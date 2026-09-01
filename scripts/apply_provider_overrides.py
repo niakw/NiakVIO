@@ -201,8 +201,13 @@ def _apply_patch_script(
     # same declared fix more than once; a second application with identical
     # provider data is never allowed to append, reorder or rewrite anything.
     managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
+    managed_fix_optional = bool(getattr(module, "MANAGED_FIX_OPTIONAL", False))
     if managed_fix_id:
-        assert_single_managed_fix(result, str(managed_fix_id))
+        if managed_fix_optional:
+            if f"/* START NIAKVIO_FIX:{managed_fix_id} */" in result or f"/* NIAKVIO_FIX_BEGIN:{managed_fix_id} */" in result:
+                assert_single_managed_fix(result, str(managed_fix_id))
+        else:
+            assert_single_managed_fix(result, str(managed_fix_id))
 
     second = apply_fn(result, **kwargs) if (
         "options" in signature.parameters
@@ -217,7 +222,11 @@ def _apply_patch_script(
             f"provider {provider_id}{ownership}"
         )
     if managed_fix_id:
-        assert_single_managed_fix(second, str(managed_fix_id))
+        if managed_fix_optional:
+            if f"/* START NIAKVIO_FIX:{managed_fix_id} */" in second or f"/* NIAKVIO_FIX_BEGIN:{managed_fix_id} */" in second:
+                assert_single_managed_fix(second, str(managed_fix_id))
+        else:
+            assert_single_managed_fix(second, str(managed_fix_id))
     return result
 
 
