@@ -1,25 +1,22 @@
 #!/usr/bin/env python3
-"""Apply mandatory provider-wide security hardening to a staged registry.
+"""Verify mandatory provider-wide security hardening on a staged registry.
 
-This is a deterministic pre-runtime normalization. It never decides whether a
-provider is healthy or publishable; it only rewrites known unsafe code shapes,
-validates the resulting JavaScript, updates content hashes, and leaves the
-existing Brain/health/native gates to accept or reject the artifact.
+Provider/Core composition owns all byte mutation before this step. This stage is
+therefore fail-closed and validation-only: if the deterministic security transform
+would change a staged bundle, composition is incomplete and publication stops.
+Generated Core Lego bytes are never rewritten here.
 """
 from __future__ import annotations
 
 import argparse
 import hashlib
 import json
-import subprocess
 from pathlib import Path
 from typing import Any
 
 from provider_patches.global_provider_security_hardening_v1 import harden_bundle
 
 ROOT = Path(__file__).resolve().parents[1]
-VALIDATOR = ROOT / "scripts" / "validate_provider_artifact.cjs"
-
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
@@ -30,23 +27,6 @@ def _load(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path}: expected JSON object")
     return value
-
-
-def _validate(path: Path) -> None:
-    completed = subprocess.run(
-        ["node", str(VALIDATOR), str(path)],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=45,
-        check=False,
-    )
-    if completed.returncode:
-        details = "\n".join(
-            part.strip() for part in (completed.stdout, completed.stderr)
-            if part and part.strip()
-        )
-        raise RuntimeError(f"security-hardened provider rejected by validator: {details[-1600:]}")
 
 
 def harden_stage(stage: Path) -> dict[str, Any]:
@@ -77,36 +57,11 @@ def harden_stage(stage: Path) -> dict[str, Any]:
 
         current_text = current.decode("utf-8", errors="strict")
         hardened_text, report = harden_bundle(current_text)
-        hardened = hardened_text.encode("utf-8")
-        if report.get("alreadyHardened"):
-            already += 1
-        if hardened != current:
-            path.write_bytes(hardened)
-            try:
-                _validate(path)
-            except Exception:
-                path.write_bytes(current)
-                raise
-            output_sha = sha256(hardened)
-            row["sha256"] = output_sha
-            row["bytes"] = len(hardened)
-            patches = list(row.get("local_patches") or [])
-            patches.append({
-                "type": "provider_security_hardening",
-                "phase": "pre-runtime",
-                "revision": 1,
-                "scope": "global",
-                "source_sha256": sha256(current),
-                "output_sha256": output_sha,
-                "structured_parse_changes": int(report.get("structuredParseChanges") or 0),
-                "literal_decode_changes": int(report.get("literalDecodeChanges") or 0),
-                "hostname_changes": int(report.get("hostnameChanges") or 0),
-                "console_shadow": bool(report.get("consoleShadow")),
-            })
-            row["local_patches"] = patches
-            applied += 1
-        # harden_bundle() already validates the provider-owned prefix even when
-        # no byte rewrite is necessary. Generated Core tail bytes stay untouched.
+        if hardened_text != current_text:
+            raise ValueError(
+                f"staged candidate is not security-normalized before validation: {row.get('key')}"
+            )
+        already += 1
 
         structured += int(report.get("structuredParseChanges") or 0)
         literal += int(report.get("literalDecodeChanges") or 0)
@@ -124,7 +79,7 @@ def harden_stage(stage: Path) -> dict[str, Any]:
         "literal_decode_changes": literal,
         "hostname_changes": hosts,
         "console_shadows": consoles,
-        "requires_runtime_retest": True,
+        "requires_runtime_retest": False,
     }
     registry["provider_security_hardening"] = summary
     registry_path.write_text(json.dumps(registry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -141,7 +96,7 @@ def main() -> int:
         f"candidates={summary['candidate_count']} applied={summary['applied_count']} "
         f"already={summary['already_hardened_count']} structured={summary['structured_parse_changes']} "
         f"literal={summary['literal_decode_changes']} hosts={summary['hostname_changes']} "
-        f"console={summary['console_shadows']} runtime_retest_required=true"
+        f"console={summary['console_shadows']} runtime_retest_required=false validation_only=true"
     )
     return 0
 

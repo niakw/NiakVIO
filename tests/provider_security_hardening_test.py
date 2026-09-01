@@ -198,10 +198,6 @@ with tempfile.TemporaryDirectory() as raw:
     stage = Path(raw)
     (stage / "providers").mkdir()
     source = stage / "providers" / "one.js"
-    # Stage hardening validates the resulting artifact with the same provider
-    # validator used by production. Keep the fixture intentionally unsafe while
-    # still exposing the mandatory getStreams contract; otherwise this test would
-    # be testing an invalid pseudo-provider rather than the hardening pipeline.
     original = (
         b'function f(u){return u.includes("example.com"),console.log(u)};'
         b'globalThis.getStreams=async function(){return []}'
@@ -217,13 +213,36 @@ with tempfile.TemporaryDirectory() as raw:
             "local_patches": [],
         }]
     }
-    (stage / "candidates.json").write_text(json.dumps(registry), encoding="utf-8")
+    registry_path = stage / "candidates.json"
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+    # Staging is validation-only: an unsafe/uncomposed provider must fail closed
+    # and must never be rewritten behind the Lego compositor's back.
+    rejected = False
+    try:
+        harden_stage(stage)
+    except ValueError as exc:
+        rejected = "not security-normalized" in str(exc)
+    assert rejected
+    assert source.read_bytes() == original
+
+    secured_text, _secured_report = harden_bundle(original.decode("utf-8"))
+    secured = secured_text.encode("utf-8")
+    source.write_bytes(secured)
+    registry["candidates"][0]["sha256"] = hashlib.sha256(secured).hexdigest()
+    registry["candidates"][0]["bytes"] = len(secured)
+    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+
+    before = source.read_bytes()
     summary = harden_stage(stage)
-    assert summary["candidate_count"] == 1 and summary["applied_count"] == 1, summary
-    updated = json.loads((stage / "candidates.json").read_text())["candidates"][0]
-    data = source.read_bytes()
-    assert updated["sha256"] == hashlib.sha256(data).hexdigest()
-    assert updated["sha256"] != hashlib.sha256(original).hexdigest()
-    assert any(record.get("type") == "provider_security_hardening" for record in updated["local_patches"])
-    assert known_unsafe_findings(data.decode("utf-8")) == []
-print("staged provider security hardening tests passed")
+    after = source.read_bytes()
+    assert summary["candidate_count"] == 1, summary
+    assert summary["applied_count"] == 0, summary
+    assert summary["already_hardened_count"] == 1, summary
+    assert summary["requires_runtime_retest"] is False, summary
+    assert before == after == secured
+    updated = json.loads(registry_path.read_text())["candidates"][0]
+    assert updated["sha256"] == hashlib.sha256(secured).hexdigest()
+    assert updated["local_patches"] == []
+    assert known_unsafe_findings(secured_text) == []
+print("staged provider security validation-only tests passed")
