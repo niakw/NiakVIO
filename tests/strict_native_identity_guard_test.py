@@ -2,10 +2,12 @@
 from __future__ import annotations
 import importlib.util
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 PATCH = ROOT / "scripts/provider_patches/global_catalogue_alias_recovery_v2.py"
 spec = importlib.util.spec_from_file_location("global_alias_identity", PATCH)
 assert spec and spec.loader
