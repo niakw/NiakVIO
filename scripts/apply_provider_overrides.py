@@ -1231,7 +1231,7 @@ def apply_overrides(
     script_options = specific.get("patch_script_options") or {}
     if not isinstance(script_options, dict):
         raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
-    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_DESKTOP_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_MEDIA_TYPE_RESOLUTION}
+    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_DESKTOP_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_STREAM_SANITIZER, GLOBAL_MEDIA_TYPE_RESOLUTION}
     leaked_core_scripts = sorted(set(patch_scripts) & reserved_core_scripts)
     if leaked_core_scripts:
         raise ValueError(
