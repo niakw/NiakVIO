@@ -18,6 +18,7 @@ from provider_patch_blocks import replace_managed_fix, strip_managed_fix
 
 MARKER = "NUVIO_GLOBAL_PROVIDER_BRANDING_V1"
 MANAGED_FIX_ID = "CORE.PROVIDER_BRANDING.V1"
+MANAGED_FIX_OPTIONAL = True
 ROOT = Path(__file__).resolve().parents[2]
 BRANDING = ROOT / "assets" / "providers" / "emojis.json"
 
@@ -58,13 +59,16 @@ def _strip_existing(text: str) -> str:
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
     provider_id = str(context.get("provider_id") or "").strip().casefold()
+
+    # Optional brick: absence of committed branding means no branding at all.
+    # Remove any previous managed/legacy instance first so a stale label cannot
+    # survive after a provider leaves the committed branding registry.
+    text = strip_managed_fix(text, MANAGED_FIX_ID)
+    text = _strip_existing(text)
     if not provider_id:
         return text
     row = _load_provider(provider_id)
     if row is None:
-        # Discovery may encounter a provider before the next one-shot registry
-        # refresh. Never synthesize recurring branding; leave its stream output
-        # untouched until committed branding exists.
         return text
     payload = {
         "providerId": provider_id,
@@ -74,8 +78,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
-    text = strip_managed_fix(text, MANAGED_FIX_ID)
-    text = _strip_existing(text)
     wrapper = r'''
 /* MARKER_PLACEHOLDER */
 ;(function(g,c){"use strict";
