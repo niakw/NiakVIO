@@ -12,7 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
-from provider_purification import split_owned_prefix_bootstraps\nfrom provider_patch_blocks import strip_all_managed_fixes
+from provider_purification import split_owned_prefix_bootstraps
+from provider_patch_blocks import strip_all_managed_fixes
 
 ROOT = Path(__file__).resolve().parents[1]
 BASES = ROOT / "provider-bases"
@@ -39,6 +40,7 @@ CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS = DERIVED_PATCH_SCRIPTS | {
 # ProviderBase owns durable provider logic. Everything below is derived publication
 # state and must never become an input to the next Core build.
 DERIVED_BASE_MARKERS = (
+    "NIAKVIO_FIX",
     "NUVIO_PROVIDER_QUARANTINE_V1",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
