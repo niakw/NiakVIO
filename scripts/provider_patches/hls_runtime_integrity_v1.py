@@ -29,7 +29,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "maxChildren": max_children,
         "maxRecoveryPages": max_recovery_pages,
         "maxRecoveryCandidates": max_recovery_candidates,
-        "implementationRevision": "recovery-first-v4-timer-safe",
+        "implementationRevision": "recovery-first-v5-native-budget-owned",
     }
     # Preserve byte-for-byte idempotence for the repository-wide default. Only
     # providers which explicitly require a strict final-output gate receive the
@@ -39,7 +39,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             {
                 "probeAllUrls": probe_all_urls,
                 "failClosedUnknown": fail_closed_unknown,
-                "implementationRevision": "final-output-order-v5-timer-safe",
+                "implementationRevision": "final-output-order-v6-native-budget-owned",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -84,6 +84,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 /* MARKER_PLACEHOLDER */
 ;(function(g,config){
   "use strict";
+  function nativeHlsHost(){try{return typeof g.__native_fetch==="function"}catch(_e){return false}}
   function clean(v){return String(v==null?"":v).replace(/^\uFEFF/,"").replace(/^ï»¿/,"").trim()}
   function hlsHint(stream){
     if(!stream||typeof stream!=="object")return false;
@@ -279,6 +280,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return null;
   }
   async function filterRows(value){
+    if(nativeHlsHost())return value;
     var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
     if(!rows)return value;
     var checks=await Promise.all(rows.map(async function(stream){
