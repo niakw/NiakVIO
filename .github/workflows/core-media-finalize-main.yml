@@ -17,6 +17,11 @@ on:
       - 'scripts/normalize_provider_branding_pipeline.py'
       - 'scripts/provider_patches/global_*'
       - 'scripts/provider_patches/stream_output_sanitizer*.py'
+      - 'scripts/provider_byte_stability.py'
+      - 'scripts/reapply_published_overrides.py'
+      - 'tests/provider_byte_stability_contract_test.py'
+      - 'tests/published_provider_lego_contract_test.py'
+      - 'tests/provider_brick_portfolio_audit_test.py'
 
 permissions:
   actions: write
@@ -107,6 +112,7 @@ jobs:
             scripts/apply_provider_overrides.py \
             scripts/provider_engine_normalizer.py \
             scripts/reapply_published_overrides.py \
+            scripts/provider_byte_stability.py \
             scripts/provider_base_store.py \
             scripts/provider_compiler.py \
             scripts/promote_candidates.py \
@@ -213,6 +219,10 @@ jobs:
           python tests/tv_provider_hardening_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_byte_stability_contract_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/global_catalogue_alias_recovery_test.py
+          python tests/provider_brick_portfolio_audit_test.py
+          python tests/published_provider_lego_contract_test.py
           python tests/prune_unreferenced_providers_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
@@ -292,6 +302,10 @@ jobs:
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/provider_security_hardening_test.py
           python tests/provider_byte_stability_contract_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/global_catalogue_alias_recovery_test.py
+          python tests/provider_brick_portfolio_audit_test.py
+          python tests/published_provider_lego_contract_test.py
           python tests/prune_unreferenced_providers_test.py
           python tests/nuvio_client_upstream_drift_guard_test.py
           python tests/badge_asset_contract_test.py
