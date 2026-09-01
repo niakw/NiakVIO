@@ -39,7 +39,7 @@ options = {
 patched = module.apply(base, options)
 
 assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" in patched
-assert '"implementationRevision":"core-tmdb-context-global-deadline-v5"' in patched
+assert '"implementationRevision":"positive-output-identity-filter-v6"' in patched
 assert "function providerDeadline()" in patched
 assert "function workDeadline()" in patched
 assert "__nuvioProviderDeadlineMs" in patched
@@ -115,10 +115,8 @@ PATCHED_SOURCE
     mediaType:'movie',
     tmdbMetadata:metadata,
   });
-  assert(Array.isArray(rows) && rows.length === 1, JSON.stringify(rows));
-  assert.strictEqual(rows[0].url, 'https://player.example/e/abc');
-  assert(calls.includes('https://catalog.example/api/mirrors/film/77'), calls.join('\n'));
-  assert(!calls.some(x => x.includes('themoviedb.org')), calls.join('\n'));
+  assert(Array.isArray(rows) && rows.length === 0, JSON.stringify(rows));
+  assert.strictEqual(calls.length, 0, 'zero provider output must not trigger catalogue recovery');
 
   // Opaque provider/player URLs are not content identity evidence. Technical
   // embed/html tokens must not make Core discard an otherwise valid native row.
@@ -165,7 +163,7 @@ PATCHED_SOURCE
   assert(Array.isArray(episodic) && episodic.length === 0, JSON.stringify(episodic));
   assert(!calls.some(x => x.includes('/api/mirrors/film/')), calls.join('\n'));
 
-  console.log('global catalogue recovery consumes Core TMDB context and declarative mirrors');
+  console.log('global catalogue layer preserves zero-output exit and filters positive rows only');
 })().catch(err => { console.error(err); process.exit(1); });
 '''.replace("PATCHED_SOURCE", patched)
 
