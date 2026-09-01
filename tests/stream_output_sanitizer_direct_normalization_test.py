@@ -8,9 +8,9 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PATCH = ROOT / "scripts" / "provider_patches" / "stream_output_sanitizer_v5.py"
+PATCH = ROOT / "scripts" / "provider_patches" / "stream_output_sanitizer_v6.py"
 
-spec = importlib.util.spec_from_file_location("stream_output_sanitizer_v5_direct", PATCH)
+spec = importlib.util.spec_from_file_location("stream_output_sanitizer_v6_direct", PATCH)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
@@ -43,6 +43,7 @@ module.exports={getStreams:async function(){return [
     )
     assert '"implementationVersion":8' in patched
     assert "NUVIO_STREAM_OUTPUT_HLS_HTML_REPAIR_V7" in patched
+    assert "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" in patched
 
     runner = r'''
 const vm=require('vm');
