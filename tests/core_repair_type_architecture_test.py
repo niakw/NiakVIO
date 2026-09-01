@@ -40,7 +40,10 @@ assert "contains Core-global modules" in apply_source
 media_resolution_source = (ROOT / "scripts/provider_patches/global_media_type_resolution_v1.py").read_text(encoding="utf-8")
 assert "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1" in media_resolution_source
 assert "budgetedFetch" in media_resolution_source
-deadline_anchor = "requestDeadline=Date.now()+c.providerTimeoutMs"
+assert "function providerBudgetMs()" in media_resolution_source
+assert "c.tvProviderTimeoutMs" in media_resolution_source
+assert "c.providerTimeoutMs" in media_resolution_source
+deadline_anchor = "requestDeadline=Date.now()+providerBudgetMs()"
 provisional_anchor = "var a=preflight?await resolve(originalArgs):provisional(originalArgs)"
 verify_anchor = "var verified=await resolve(originalArgs)"
 assert deadline_anchor in media_resolution_source
