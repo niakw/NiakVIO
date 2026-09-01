@@ -39,7 +39,10 @@ options = {
 patched = module.apply(base, options)
 
 assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" in patched
-assert '"implementationRevision":"core-tmdb-context-declarative-mirrors-v4"' in patched
+assert '"implementationRevision":"core-tmdb-context-global-deadline-v5"' in patched
+assert "function providerDeadline()" in patched
+assert "function workDeadline()" in patched
+assert "__nuvioProviderDeadlineMs" in patched
 assert "api.themoviedb.org" not in patched
 assert "TMDB_API_KEY" not in patched
 assert "__nuvioMediaContext" in patched
