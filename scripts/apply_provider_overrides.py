@@ -1511,7 +1511,7 @@ def apply_overrides(
             options.update(
                 _provider_core_options("catalogue_alias_recovery")
             )
-            options.update({"base_url": official_site, "provider_name": provider_id})
+            options.update({"provider_name": provider_id})
             before = text
             text = _apply_patch_script(text, provider_id, patch_script, options, None)
             if text != before:

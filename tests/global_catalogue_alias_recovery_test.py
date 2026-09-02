@@ -37,9 +37,12 @@ options = {
     "mirror_allow_episodic": False,
 }
 patched = module.apply(base, options)
+assert '"baseUrl":""' in patched
+assert "function baseUrl()" in patched
+assert "https://catalog.example" not in patched
 
 assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" in patched
-assert '"implementationRevision":"positive-output-identity-filter-v6"' in patched
+assert '"implementationRevision":"authoritative-recovery-v11-runtime-provider-site"' in patched
 assert "function providerDeadline()" in patched
 assert "function workDeadline()" in patched
 assert "__nuvioProviderDeadlineMs" in patched
@@ -86,6 +89,7 @@ const metadata = {
   __nuvioTmdbNamespace:'movie',
   __nuvioTmdbId:'424242'
 };
+global.NIAKVIO_PROVIDER_MODEL = {officialSite:'https://catalog.example'};
 global.__nuvioMediaContext = {
   tmdbId:'424242',
   imdbId:'tt1234567',
