@@ -122,6 +122,7 @@ def main() -> int:
         "package.json": expected,
         "manifest.json": load("manifest.json").get("version"),
         "vf/manifest.json": load("vf/manifest.json").get("version"),
+        "vf-no-anime/manifest.json": load("vf-no-anime/manifest.json").get("version"),
         "sources.json.manifest_version": sources.get("manifest_version"),
         "sources.json.repository.manifest_version": (sources.get("repository") or {}).get("manifest_version"),
     }
@@ -146,6 +147,7 @@ def main() -> int:
 
     errors.extend(validate_manifest_paths("manifest.json", nested=False))
     errors.extend(validate_manifest_paths("vf/manifest.json", nested=True))
+    errors.extend(validate_manifest_paths("vf-no-anime/manifest.json", nested=True))
     errors.extend(validate_activation_preservation())
     errors.extend(validate_hash_inventory(expected))
 
