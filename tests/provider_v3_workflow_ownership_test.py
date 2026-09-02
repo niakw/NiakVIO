@@ -7,6 +7,8 @@ policy=json.loads((ROOT/"automation/provider-v3-architecture.json").read_text(en
 sync=(ROOT/".github/workflows/sync.yml").read_text(encoding="utf-8")
 learn=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
 manual=(ROOT/".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8") if (ROOT/".github/workflows/provider-v3-reconstruct-all.yml").exists() else ""
+core=(ROOT/".github/workflows/core-media-finalize-main.yml").read_text(encoding="utf-8")
+domain=(ROOT/".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
 for mode in ("quick","deep"):
     assert policy["routine"][mode]["repair_allowed"] is False
     assert policy["routine"][mode]["provider_fix_mutation_allowed"] is False
@@ -32,4 +34,10 @@ for required in ("run_brain_learning_queue.py","build_brain_repair_proposal.py",
 if manual:
     for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py","96"):
         assert required in manual
+for forbidden in ("--apply","git push origin HEAD:main","reapply_published_overrides.py\n"):
+    assert forbidden not in core, f"Core gate must be read-only: {forbidden}"
+assert "contents: write" not in core
+assert "--apply" not in domain
+assert "contents: write" not in domain
+assert "git push" not in domain
 print("provider v3 workflow ownership contract passed")

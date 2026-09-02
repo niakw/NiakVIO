@@ -46,3 +46,6 @@ Last updated: 2026-09-03
 - Routine validation builds a temporary stage from the exact 96 published JS bytes; no discovery/promotion/repair.
 - Domain/hub checks are read-only in routine runs.
 - Manual full reconstruction workflow: `.github/workflows/provider-v3-reconstruct-all.yml`; it refuses direct commits to main and proves 96/96 reverse rebuild before an optional branch commit.
+
+- Core finalizer is now a read-only Provider v3 fixed-point gate.
+- Domain refresh is now read-only hub/DNS observation; it never writes provider DATA or provider JS.

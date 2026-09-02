@@ -1,359 +1,80 @@
-name: CORE - Media Finalizer
+name: CORE - Provider v3 Fixed-Point Gate
 
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'manifest.json'
+      - 'providers/**'
+      - 'provider-overrides.json'
+      - 'provider_catalog.json'
+      - 'provider-type-policy.json'
+      - 'scripts/provider_patches/**'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/verify_provider_v3_reverse_rebuild.py'
+      - 'scripts/provider_base_store.py'
+      - 'scripts/provider_patch_blocks.py'
+      - 'scripts/provider_byte_stability.py'
+      - 'tests/**'
+      - 'automation/provider-v3-architecture.json'
+      - '.github/workflows/core-media-finalize-main.yml'
   push:
     branches: [main]
     paths:
+      - 'manifest.json'
+      - 'providers/**'
+      - 'provider-overrides.json'
+      - 'scripts/provider_patches/**'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/verify_provider_v3_reverse_rebuild.py'
       - '.github/workflows/core-media-finalize-main.yml'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'engine_v2/src/**'
-      - 'engine_v2/scripts/**'
-      - 'scripts/core_rebuild_safety.py'
-      - 'scripts/normalize_core_fixed_point_contract.py'
-      - 'scripts/normalize_core_media_policy.py'
-      - 'scripts/normalize_runtime_repository_dependencies.py'
-      - 'scripts/normalize_provider_rebuild_safety.py'
-      - 'scripts/normalize_provider_branding_pipeline.py'
-      - 'scripts/provider_patches/global_*'
-      - 'scripts/provider_patches/stream_output_sanitizer*.py'
-      - 'scripts/provider_byte_stability.py'
-      - 'scripts/reapply_published_overrides.py'
-      - 'tests/provider_byte_stability_contract_test.py'
-      - 'tests/repository_hygiene_contract_test.py'
-      - 'tests/published_provider_lego_contract_test.py'
-      - 'tests/provider_brick_portfolio_audit_test.py'
 
 permissions:
-  actions: write
-  contents: write
-  issues: write
+  contents: read
 
-# Push generations are latest-wins so obsolete Core work cannot pile up. Explicit
-# Core fixed-point publisher: runtime TMDB identity v6 / presentation v16 and current shared media policy.
-# workflow_dispatch runs keep an isolated group because the final orchestrator may
-# watch one exact dispatch as authoritative evidence.
 concurrency:
-  # Core generations are latest-wins. Provider P2 has its own publication lane,
-  # so a stale Core must never consume runner time behind a newer Core generation.
-  group: nuvio-provider-publish-main
+  group: provider-v3-fixed-point-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  finalize-main:
-    if: ${{ github.event_name != 'push' || !contains(github.event.head_commit.message, '[publish-only]') }}
+  gate:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 35
     steps:
-      - name: Announce exact Core run
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer started: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. Durable fixed-point normalization + raw-byte provider validation + complete repository suite."
-
-      - name: Checkout exact event generation
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
-
-      - name: Cancel stale Core generation before work
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Verify architecture and raw-byte fixed point
         run: |
           set -euo pipefail
-          git fetch origin main
-          current="$(git rev-parse origin/main)"
-          if [ "$current" != "$GITHUB_SHA" ]; then
-            echo "FIELD_CORE_STALE_GENERATION event=$GITHUB_SHA current=$current action=cancel"
-            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/cancel" >/dev/null
-            exit 0
-          fi
-          echo "FIELD_CORE_GENERATION_ACTIVE sha=$GITHUB_SHA"
-
-      - name: Capture publication baseline
-        shell: bash
-        run: git show HEAD:manifest.json > "$RUNNER_TEMP/manifest-before.json"
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with:
-          python-version: '3.12'
-
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: '24'
-          package-manager-cache: false
-
-      - name: Install locked runtime dependencies
-        run: npm ci --ignore-scripts --no-audit --no-fund
-
-      - name: Normalize durable Core fixed-point contracts
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/normalize_repository_docs.py --apply
-          python scripts/normalize_runtime_repository_dependencies.py --apply
-          python scripts/normalize_provider_rebuild_safety.py --apply
-          python scripts/normalize_core_fixed_point_contract.py --apply
-          python scripts/normalize_provider_branding_pipeline.py --apply
-          python -m py_compile \
-            scripts/normalize_repository_docs.py \
-            scripts/normalize_runtime_repository_dependencies.py \
-            scripts/normalize_provider_rebuild_safety.py \
-            scripts/normalize_provider_branding_pipeline.py \
-            scripts/normalize_terminal_quarantine_stage.py \
-            scripts/harden_staged_provider_security.py \
-            scripts/core_rebuild_safety.py \
-            scripts/normalize_core_fixed_point_contract.py \
-            scripts/normalize_core_media_policy.py \
-            scripts/apply_provider_overrides.py \
-            scripts/provider_engine_normalizer.py \
-            scripts/reapply_published_overrides.py \
-            scripts/provider_byte_stability.py \
-            scripts/provider_base_store.py \
-            scripts/provider_compiler.py \
-            scripts/promote_candidates.py \
-            scripts/verify_provider_publication_fixed_point.py \
-            scripts/provider_patches/global_provider_branding_v1.py \
-            scripts/provider_patches/stream_output_sanitizer_v6.py
-          python tests/core_terminal_export_floor_test.py
-          python tests/provider_wrapper_isolation_test.py
-          python tests/stream_output_sanitizer_fail_closed_test.py
-          python tests/global_playback_integrity_policy_test.py
-          python tests/global_stream_identity_test.py
-          python tests/provider_byte_stability_contract_test.py
-          python tests/provider_base_layering_contract_test.py
-          python tests/provider_artifact_validation_modes_test.py
-          python tests/publication_contract_fingerprint_test.py
-          python tests/prune_unreferenced_providers_test.py
-          python scripts/normalize_repository_docs.py --check
-          python scripts/normalize_runtime_repository_dependencies.py --check
-          python scripts/normalize_provider_rebuild_safety.py --check
-          python scripts/normalize_core_fixed_point_contract.py --check
-          python scripts/normalize_provider_branding_pipeline.py --check
-
-      - name: Normalize Core media architecture
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/provider_base_store.py repair-derived
+          python tests/provider_v3_workflow_ownership_test.py
           python scripts/provider_base_store.py validate
-          python scripts/normalize_core_media_policy.py --apply
-          python scripts/apply_runtime_capability_upgrade_v4.py
-          python scripts/build_provider_runtime_profiles.py
-          converged=0
-          if python scripts/reapply_published_overrides.py --check; then
-            converged=1
-            echo "FIELD_PROVIDER_REBUILD_MODE mode=verify-only reason=already-fixed-point"
-          else
-            echo "FIELD_PROVIDER_REBUILD_MODE mode=materialize reason=stale-provider-or-core-contract"
-            for pass in 1 2 3 4 5 6; do
-              echo "FIELD_PROVIDER_REBUILD_CONVERGENCE pass=${pass}"
-              python scripts/reapply_published_overrides.py
-              if python scripts/reapply_published_overrides.py --check; then
-                converged=1
-                echo "FIELD_PROVIDER_REBUILD_CONVERGENCE converged_at=${pass}"
-                break
-              fi
-            done
-          fi
-          if [[ "$converged" -ne 1 ]]; then
-            echo 'provider publication failed to converge within 6 passes' >&2
-            exit 1
-          fi
-          python scripts/generate_language_manifests.py
-          python scripts/prune_unreferenced_providers.py
-          # ProviderBase is owned exclusively by the provider pipeline. Core may
-          # derive public artifacts from it, but must never rewrite the base layer.
-          git diff --exit-code -- provider-bases
-          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
-          node engine_v2/scripts/bootstrap-provider-catalog.mjs --general manifest.json --vf vf/manifest.json --output provider_catalog.json
-          node engine_v2/scripts/render-manifests-from-catalog.mjs --catalog provider_catalog.json --general manifest.json --vf vf/manifest.json
-          python scripts/generate_language_manifests.py
-          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before.json"
-          python scripts/prune_unreferenced_providers.py
-
-      - name: Cancel stale Core generation before heavy repository suite
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          current="$(git rev-parse origin/main)"
-          if [ "$current" != "$GITHUB_SHA" ]; then
-            echo "FIELD_CORE_STALE_BEFORE_SUITE event=$GITHUB_SHA current=$current action=cancel"
-            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/cancel" >/dev/null
-            exit 0
-          fi
-          echo "FIELD_CORE_SUITE_GENERATION_ACTIVE sha=$GITHUB_SHA"
-
-      - name: Verify Core and native media contracts
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/normalize_repository_docs.py --check
           python scripts/normalize_runtime_repository_dependencies.py --check
           python scripts/normalize_provider_rebuild_safety.py --check
           python scripts/normalize_core_fixed_point_contract.py --check
           python scripts/normalize_provider_branding_pipeline.py --check
           python scripts/normalize_core_media_policy.py --check
-          python scripts/provider_base_store.py validate
-          python scripts/enforce_main_only_repository_policy.py --check
-          python tests/core_terminal_export_floor_test.py
-          python tests/core_media_policy_test.py
-          python tests/provider_branding_contract_test.py
-          python tests/global_core_presentation_pipeline_test.py
-          python tests/native_sync_fetch_target_order_test.py
-          python tests/runtime_capability_media_safety_v4_test.py
-          python tests/global_playback_integrity_policy_test.py
-          python tests/global_stream_identity_test.py
+          python tests/provider_clean_reconstruction_contract_test.py
+          python tests/provider_base_layering_contract_test.py
+          python tests/provider_wrapper_isolation_test.py
+          python tests/provider_byte_stability_contract_test.py
+          python tests/provider_brick_portfolio_audit_test.py
+          python tests/published_provider_lego_contract_test.py
+          python tests/global_media_type_resolution_test.py
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
-          python tests/provider_specific_adapters_test.py
-          python tests/provider_wrapper_isolation_test.py
-          python tests/stream_output_sanitizer_fail_closed_test.py
-          python tests/tv_provider_hardening_test.py
-          python tests/provider_security_hardening_test.py
-          python tests/provider_byte_stability_contract_test.py
-          python tests/global_media_type_resolution_test.py
-          python tests/global_catalogue_alias_recovery_test.py
-          python tests/provider_brick_portfolio_audit_test.py
-          python tests/published_provider_lego_contract_test.py
-          python tests/prune_unreferenced_providers_test.py
-          python tests/nuvio_client_upstream_drift_guard_test.py
-          python tests/badge_asset_contract_test.py
-          python tests/repository_hygiene_contract_test.py
-          python scripts/reapply_published_overrides.py --check
-          node engine_v2/tests/contracts.test.mjs
-          node engine_v2/tests/stream-presentation.test.mjs
-          node engine_v2/tests/media-validator.test.mjs
-          node engine_v2/tests/resolver-core.test.mjs
-          node engine_v2/tests/provider-catalog.test.mjs
-
-      - name: Prove every published provider is raw-byte fixed-point
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/verify_provider_publication_fixed_point.py
-
-      - name: Validate complete repository suite
-        run: npm test
-
-      - name: Rebuild release integrity inventories
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-
-      - name: Publish exact finalized tree to main
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          current="$(git rev-parse origin/main)"
-          if [ "$current" != "$GITHUB_SHA" ]; then
-            echo "FIELD_CORE_STALE_PUBLICATION event=$GITHUB_SHA current=$current action=cancel"
-            gh api --method POST "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/cancel" >/dev/null
-            exit 0
-          fi
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          if git diff --cached --quiet; then
-            echo 'Core media policy already fully materialized on main.'
-          else
-            git commit -m 'chore: materialize global Core media policy'
-            python scripts/generate_release_hashes.py
-            python scripts/validate_release_integrity.py
-            git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-            if ! git diff --cached --quiet; then git commit --amend --no-edit; fi
-            git push origin HEAD:main
-          fi
-
-      - name: Verify exact resulting main
-        shell: bash
-        run: |
-          set -euo pipefail
-          git fetch origin main
-          git reset --hard origin/main
-          git clean -fdx
-          npm ci --ignore-scripts --no-audit --no-fund
-          python scripts/normalize_repository_docs.py --check
-          python scripts/normalize_runtime_repository_dependencies.py --check
-          python scripts/normalize_provider_rebuild_safety.py --check
-          python scripts/normalize_core_fixed_point_contract.py --check
-          python scripts/normalize_provider_branding_pipeline.py --check
-          python scripts/normalize_core_media_policy.py --check
-          python scripts/enforce_main_only_repository_policy.py --check
-          python tests/core_terminal_export_floor_test.py
-          python tests/core_media_policy_test.py
-          python tests/provider_branding_contract_test.py
-          python tests/global_playback_integrity_policy_test.py
           python tests/global_stream_identity_test.py
           python tests/runtime_capability_media_safety_v4_test.py
-          python tests/provider_wrapper_isolation_test.py
+          python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
-          python tests/provider_security_hardening_test.py
-          python tests/provider_byte_stability_contract_test.py
-          python tests/global_media_type_resolution_test.py
-          python tests/global_catalogue_alias_recovery_test.py
-          python tests/provider_brick_portfolio_audit_test.py
-          python tests/published_provider_lego_contract_test.py
-          python tests/prune_unreferenced_providers_test.py
-          python tests/nuvio_client_upstream_drift_guard_test.py
-          python tests/badge_asset_contract_test.py
-          python tests/repository_hygiene_contract_test.py
-          python scripts/reapply_published_overrides.py --check
-          python scripts/validate_release_integrity.py
-          node engine_v2/tests/contracts.test.mjs
-          node engine_v2/tests/stream-presentation.test.mjs
-          node engine_v2/tests/media-validator.test.mjs
-          node engine_v2/tests/resolver-core.test.mjs
-          node engine_v2/tests/provider-catalog.test.mjs
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          from scripts.provider_byte_stability import BYTE_STABILITY_VERSION, verify_bytes
-          root = Path('.')
-          rows = json.loads((root / 'manifest.json').read_text(encoding='utf-8')).get('scrapers') or []
-          checked = 0
-          for row in rows:
-              if not isinstance(row, dict):
-                  continue
-              relative = str(row.get('filename') or '')
-              if not relative.startswith('providers/'):
-                  continue
-              data = (root / relative).read_bytes()
-              chosen, report = verify_bytes(data)
-              if chosen != data:
-                  raise SystemExit(f'post-publish provider raw bytes changed: {row.get("id")}')
-              checked += 1
-          print(f'FIELD_POST_PUBLISH_RAW_BYTE_FIXED_POINT providers={checked} version={BYTE_STABILITY_VERSION}')
-          PY
-          git diff --exit-code
-
-      - name: Report Core success
-        if: success()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          SHA="$(git rev-parse HEAD)"
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer succeeded: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Final main ${SHA}; raw-byte fixed-point + repository suite passed."
-
-      - name: Report Core failure
-        if: failure()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          gh issue comment 69 --repo "$GITHUB_REPOSITORY" --body "Core finalizer FAILED: https://github.com/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID} on ${GITHUB_SHA}. #69 remains open."
+          python scripts/verify_provider_v3_reverse_rebuild.py
+      - name: Prove gate is read-only
+        run: git diff --exit-code
