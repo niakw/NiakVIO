@@ -111,9 +111,9 @@ for workflow in workflow_dir.iterdir():
         )
 
 materializer = ROOT / "scripts/materialize_core_fixed_point_hardening.py"
-assert materializer.is_file()
+assert not materializer.exists(), "legacy Core hardening materializer must remain absent in clean-v3"
 provider_safety = (ROOT / "scripts/normalize_provider_rebuild_safety.py").read_text(encoding="utf-8")
-assert "materialize_core_fixed_point_hardening.py" in provider_safety
+assert "materialize_core_fixed_point_hardening.py" not in provider_safety
 assert "harden_core_fixed_point_normalizer_once.py" not in provider_safety
 
 for rel in (
