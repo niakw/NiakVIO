@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "branch_contract": "provider-v3-clean-architecture",
+  "provider_source_of_truth": {
+    "runtime_artifacts": "providers/*.js",
+    "reconstruction_inputs": [
+      "manifest.json",
+      "provider-overrides.json",
+      "provider_catalog.json",
+      "provider-type-policy.json",
+      "scripts/provider_patches/**"
+    ],
+    "reconstruction_rule": "ProviderBase + structured DATA + owned Core/Provider Lego only",
+    "legacy_provider_js_seed_allowed": false,
+    "upstream_provider_js_seed_allowed": false
+  },
+  "routine": {
+    "deep": {
+      "repair_allowed": false,
+      "provider_fix_mutation_allowed": false,
+      "provider_reconstruction_allowed": false,
+      "responsibilities": [
+        "validate domains/hubs",
+        "run Core/provider tests",
+        "run deep health observation",
+        "verify 96/96 reverse rebuild",
+        "regenerate manifest projections",
+        "regenerate integrity inventories",
+        "publish reports/manifests only"
+      ]
+    },
+    "learning": {
+      "repair_allowed": true,
+      "production_write_allowed": false,
+      "proposal_pr_only": true,
+      "responsibilities": [
+        "observe failures",
+        "attempt sandbox repairs of owned fix blocks",
+        "validate repaired candidate",
+        "persist sanitized learning",
+        "open/refresh repair PR for human merge"
+      ]
+    }
+  },
+  "manual_reconstruction": {
+    "full_catalogue": true,
+    "expected_provider_count": 96,
+    "command": "python scripts/materialize_provider_v3_all.py && python scripts/verify_provider_v3_reverse_rebuild.py",
+    "requires_byte_identical_reverse_proof": true
+  },
+  "native_labs": [
+    "TVAndroid",
+    "MobileAndroid",
+    "MobileIOS",
+    "DesktopMACOS",
+    "DesktopWindows"
+  ],
+  "minifier": {
+    "enabled_in_production": false,
+    "comment_architecture_must_be_preserved": true,
+    "managed_markers_must_be_preserved": true,
+    "byte_equivalence_tests_required_before_enablement": true
+  }
+}
