@@ -238,6 +238,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     }catch(_error){return null}
     finally{clearTimeout(timer);try{controller.abort()}catch(_e){}}
   }
+  function coreMediaProof(stream,url){
+    var proof=stream&&stream.__nuvioCoreMediaProofV1;
+    if(!proof||typeof proof!=="object")return false;
+    var kind=String(proof.kind||"").toLowerCase();
+    return String(proof.url||"")===String(url||"")&&/^(?:hls|dash|mp4|mkv|webm|mpegts|video)$/.test(kind);
+  }
+  function clearCoreMediaProof(stream){
+    if(stream&&typeof stream==="object")try{delete stream.__nuvioCoreMediaProofV1}catch(_e){}
+    return stream;
+  }
   function install(container,key){
     if(!container||typeof container[key]!=="function"||container[key].__nuvioSanitized)return false;
     var original=container[key];
@@ -258,9 +268,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;
       }
       async function checkItem(item){
-        if(!item.probe)return item.stream;
+        if(!item.probe||coreMediaProof(item.stream,item.url))return clearCoreMediaProof(item.stream);
         var verdict=await probe(item.stream,item.url);
-        return verdict===false?null:item.stream;
+        return verdict===false?null:clearCoreMediaProof(item.stream);
       }
       var checked=[];
       if(nativeHost()){

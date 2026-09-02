@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
-"""Replace a proven content-mismatch provider with a fail-safe empty export.
+"""Fail-safe provider quarantine as one owned Core Lego.
 
-This is deliberately stronger than a manifest activation flag. Nuvio clients
-may preserve an existing local enabled state across a manifest refresh, so a
-provider which has returned unrelated content must also be inert at runtime.
+The quarantine never replaces or rewrites ProviderBase/provider DATA. It owns one
+STARTFIX/CLOSEFIX block which makes the already-composed provider inert at runtime.
 """
 from __future__ import annotations
 
 from typing import Any
 
+from provider_patch_blocks import replace_managed_fix
+
 MARKER = "NUVIO_PROVIDER_QUARANTINE_V1"
+MANAGED_FIX_ID = "CORE.PROVIDER_QUARANTINE.V1"
 
 
-def apply(_text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
+def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = dict(options or {})
     reason = str(cfg.get("reason") or "content_identity_mismatch").strip()
-    return f'''/* {MARKER}: {reason} */
-"use strict";
-async function getStreams(){{return [];}}
-if(typeof globalThis!=="undefined")globalThis.getStreams=getStreams;
-if(typeof module!=="undefined"&&module&&module.exports)module.exports={{getStreams:getStreams}};
-'''
+    wrapper = f'''/* {MARKER}: {reason} */
+;(function(g){{
+  "use strict";
+  async function quarantinedGetStreams(){{return [];}}
+  try{{if(g)g.getStreams=quarantinedGetStreams}}catch(_e){{}}
+  try{{if(typeof module!=="undefined"&&module&&module.exports)module.exports.getStreams=quarantinedGetStreams}}catch(_e){{}}
+  try{{if(typeof exports!=="undefined")exports.getStreams=quarantinedGetStreams}}catch(_e){{}}
+}})(typeof globalThis!=="undefined"?globalThis:this);'''
+    return replace_managed_fix(
+        text,
+        MANAGED_FIX_ID,
+        wrapper,
+        data={"reason": reason, "mode": "terminal-provider-quarantine"},
+    )
 
 
 if __name__ == "__main__":

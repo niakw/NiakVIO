@@ -13,34 +13,43 @@ from typing import Any
 
 from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
 from provider_byte_stability import split_owned_prefix_bootstraps
-from provider_patch_blocks import strip_all_managed_fixes
+from provider_patch_blocks import (
+    PROVIDER_BEGIN_MARKER,
+    PROVIDER_END_MARKER,
+    render_managed_fix,
+    strip_all_managed_fixes,
+    validate_managed_fixes,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 BASES = ROOT / "provider-bases"
 MANIFEST = ROOT / "manifest.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
-DYNAMIC_DOMAIN_PATCH = "scripts/provider_patches/runtime_repository_domain_materializer_v1.py"
-DERIVED_PATCH_SCRIPTS = {
-    QUARANTINE_PATCH,
-    DYNAMIC_DOMAIN_PATCH,
+
+# Read-only migration identifiers. These files are intentionally absent from the
+# clean-v3 patch surface; their names may still appear in historical provenance.
+LEGACY_SOURCE_PATCH_PATHS = {
+    "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
     "scripts/provider_patches/adaptive_domain_recovery.py",
     "scripts/provider_patches/adaptive_runtime_recovery.py",
     "scripts/provider_patches/adaptive_runtime_recovery_v4.py",
     "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
-}
-
-# Legacy source-shape patches are valid compatibility tools for pre-v2 bundles
-# but must never be replayed against a fresh NiakVIO-owned clean ProviderBase.
-# Their durable behavior belongs in the structured provider model / Core.
-CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS = DERIVED_PATCH_SCRIPTS | {
     "scripts/provider_patches/castle_strict_identity_v1.py",
 }
+DERIVED_PATCH_SCRIPTS = {QUARANTINE_PATCH}
+
+# Clean reconstruction never replays historical source-shape patch paths.
+CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS = (
+    DERIVED_PATCH_SCRIPTS | LEGACY_SOURCE_PATCH_PATHS
+)
 
 # ProviderBase owns durable provider logic. Everything below is derived publication
 # state and must never become an input to the next Core build.
 DERIVED_BASE_MARKERS = (
     "NIAKVIO_FIX",
+    "NUVIO_PROVIDER_SECURITY_HARDENING_V1",
+    "NUVIO_PROVIDER_CONSOLE_SHADOW_V1",
     "NUVIO_PROVIDER_QUARANTINE_V1",
     "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
@@ -67,10 +76,13 @@ DERIVED_BASE_MARKERS = (
     "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1",
 )
 
-CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v2"
-CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE = "niakvio-clean-reconstruction-v2-candidate"
-CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 2
-INITIAL_RECONSTRUCTION_SCOPE = 95
+CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v3"
+CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE = "niakvio-clean-reconstruction-v3-candidate"
+CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 3
+PROVIDER_BASE_OWNED_MARKER = "NIAKVIO_PROVIDER_BASE_OWNED_V3"
+CURRENT_PROVIDER_MODEL_AUTHORING = "niakvio-owned-v3"
+PROVIDER_BASE_AUTHORING_MARKER = f"NIAKVIO_PROVIDER_BASE_AUTHORING:{CURRENT_PROVIDER_MODEL_AUTHORING}"
+INITIAL_RECONSTRUCTION_SCOPE = 96
 
 
 def is_clean_reconstructed(provenance_row: dict[str, Any] | None) -> bool:
@@ -131,11 +143,45 @@ def forbidden_base_markers(data: bytes) -> list[str]:
 
 
 def assert_base_layering(data: bytes, provider_id: str) -> None:
+    """ProviderBase is common code only: no envelope, DATA, Provider/Core Lego or derived tail."""
     markers = forbidden_base_markers(data)
     if markers:
         raise ValueError(
-            f"{provider_id}: ProviderBase contains derived publication layer(s): "
+            f"{provider_id}: ProviderBase contains derived/composed layer(s): "
             + ",".join(markers)
+        )
+    text = data.decode("utf-8", errors="strict")
+    if PROVIDER_BEGIN_MARKER in text or PROVIDER_END_MARKER in text:
+        raise ValueError(f"{provider_id}: ProviderBase must not contain the Provider envelope")
+    fix_ids = validate_managed_fixes(text)
+    if fix_ids:
+        raise ValueError(
+            f"{provider_id}: ProviderBase must not contain managed Lego: "
+            + ",".join(fix_ids)
+        )
+    if "NIAKVIO_PROVIDER_ID:" in text:
+        raise ValueError(f"{provider_id}: ProviderBase must not contain provider identity DATA")
+    if "NIAKVIO_PROVIDER_MODEL = Object.freeze(" in text:
+        raise ValueError(f"{provider_id}: ProviderBase must not contain provider model DATA")
+
+
+def assert_clean_provider_base(
+    data: bytes,
+    provider_id: str,
+    *,
+    require_current_authoring: bool = True,
+) -> None:
+    """Fail closed unless bytes are the common, owned, non-derived ProviderBase."""
+    assert_base_layering(data, provider_id)
+    text = data.decode("utf-8", errors="strict")
+    if PROVIDER_BASE_OWNED_MARKER not in text:
+        raise ValueError(
+            f"{provider_id}: clean ProviderBase missing owned marker {PROVIDER_BASE_OWNED_MARKER}"
+        )
+    if require_current_authoring and PROVIDER_BASE_AUTHORING_MARKER not in text:
+        raise ValueError(
+            f"{provider_id}: clean ProviderBase authoring drift "
+            f"expected={CURRENT_PROVIDER_MODEL_AUTHORING}"
         )
 
 
@@ -244,8 +290,16 @@ def resolve_runtime_base(
 
 
 def clean_base_from_published(provider_id: str, published_data: bytes) -> tuple[bytes, bool]:
-    """Dismantle every owned derived brick before recovering durable provider logic."""
+    """Legacy-only recovery path.
+
+    ProviderBase v3 is never recovered from a published bundle. Its sole source
+    is the common NiakVIO skeleton plus persisted provider DATA/fix bricks.
+    """
     published_text = published_data.decode("utf-8", errors="strict")
+    if "NIAKVIO_PROVIDER_BASE_OWNED_V3" in published_text or PROVIDER_BEGIN_MARKER in published_text:
+        raise ValueError(
+            f"{provider_id}: ProviderBase v3 reverse recovery from published JS is forbidden"
+        )
     base_text, managed_fixes = strip_all_managed_fixes(
         published_text,
         restore_replaced_source=True,
@@ -275,7 +329,16 @@ def build_base_from_seed(
     *,
     overrides_path: Path | None = None,
 ) -> tuple[bytes, bool]:
-    """Return clean ProviderBase bytes without writing repository state."""
+    """Return common ProviderBase bytes without composing provider DATA or Lego."""
+    if PROVIDER_BASE_OWNED_MARKER.encode("utf-8") in seed_data:
+        # Clean v3 seeds are already the immutable common skeleton. Nothing may
+        # patch, strip or infer provider-specific behavior from these bytes.
+        assert_clean_provider_base(seed_data, provider_id)
+        validate_base(seed_data, provider_id)
+        return seed_data, False
+
+    # Compatibility-only path for pre-v3 seeds. It may recover historical base
+    # code, but a current clean ProviderBase is never reverse-engineered.
     rebuilt, _records = apply_overrides(
         provider_id,
         seed_data,
@@ -310,21 +373,39 @@ def persist_base_from_seed(
     return relative, digest, stripped
 
 
-def build_clean_provider_seed(
+
+def _normalize_identity_input(value: Any) -> dict[str, Any]:
+    """Normalize the explicit DATA execution contract; runtime never infers it."""
+    raw = value if isinstance(value, dict) else {}
+    mode = str(raw.get("mode") or "tmdb_direct").strip().casefold()
+    if mode not in {"tmdb_direct", "catalog_search", "external_id"}:
+        raise ValueError(f"invalid provider identityInput.mode: {mode}")
+    required = bool(raw.get("requiresTmdbBeforeRun", mode != "tmdb_direct"))
+    fields = [
+        str(item).strip()
+        for item in raw.get("requiredFields") or []
+        if str(item).strip()
+    ]
+    if not fields:
+        fields = (
+            ["title", "year", "mediaType"]
+            if required
+            else ["tmdbId", "mediaType"]
+        )
+    return {
+        "mode": mode,
+        "requiresTmdbBeforeRun": required,
+        "requiredFields": list(dict.fromkeys(fields)),
+    }
+
+def build_provider_data_model(
     provider_id: str,
     manifest_entry: dict[str, Any] | None = None,
     *,
     known_site: str | None = None,
     provider_model: dict[str, Any] | None = None,
-) -> bytes:
-    """Build a fresh NiakVIO-owned provider implementation from structured knowledge.
-
-    The structured model may contain observed routes/domains/capability metadata,
-    but never executable upstream source. The generated JavaScript is authored by
-    NiakVIO and uses one common deterministic resolver skeleton. Learning may then
-    specialize the model/runtime and must prove the resulting ProviderBase before
-    publication.
-    """
+) -> dict[str, Any]:
+    """Normalize all provider-specific differences into deterministic structured DATA."""
     entry = manifest_entry if isinstance(manifest_entry, dict) else {}
     semantic_values = (
         entry.get("canonicalSupportedTypes")
@@ -339,7 +420,7 @@ def build_clean_provider_seed(
     supported = list(dict.fromkeys(supported))
     display_name = str(entry.get("name") or provider_id).strip() or provider_id
     incoming_model = provider_model if isinstance(provider_model, dict) else {}
-    model = {
+    return {
         "providerId": canonical_id(provider_id),
         "displayName": display_name,
         "knownSite": str(known_site or incoming_model.get("knownSite") or "").strip() or None,
@@ -369,20 +450,71 @@ def build_clean_provider_seed(
             if isinstance(incoming_model.get("apiRecipe"), dict)
             else None
         ),
+        "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),
+        "strictIdentity": bool(incoming_model.get("strictIdentity", False)),
+        "strictHtmlIdentity": bool(incoming_model.get("strictHtmlIdentity", False)),
+        "outputUrlHostRewrites": [
+            {
+                "fromHost": str(row.get("fromHost") or "").strip().casefold(),
+                "toHost": str(row.get("toHost") or "").strip().casefold(),
+            }
+            for row in incoming_model.get("outputUrlHostRewrites") or []
+            if isinstance(row, dict)
+            and str(row.get("fromHost") or "").strip()
+            and str(row.get("toHost") or "").strip()
+        ][:16],
+        "outputLanguageRules": [
+            {
+                "language": str(row.get("language") or "").strip().casefold(),
+                "hostPrefix": str(row.get("hostPrefix") or "").strip().casefold(),
+            }
+            for row in incoming_model.get("outputLanguageRules") or []
+            if isinstance(row, dict)
+            and str(row.get("language") or "").strip()
+            and str(row.get("hostPrefix") or "").strip()
+        ][:16],
+        "domainSubstitutions": {
+            str(old).strip().casefold(): str(new).strip().casefold()
+            for old, new in (
+                incoming_model.get("domainSubstitutions")
+                if isinstance(incoming_model.get("domainSubstitutions"), dict)
+                else {}
+            ).items()
+            if str(old).strip() and str(new).strip()
+        },
         "reconstructionState": "learning-clean-seed",
         "runtimeRole": "reader",
         "runtimeDiscovery": False,
-        "routePlanVersion": 2,
-        "modelSchemaVersion": 3,
-        "authoring": "niakvio-owned-v3",
+        "routePlanVersion": 3,
+        "modelSchemaVersion": 4,
+        "authoring": CURRENT_PROVIDER_MODEL_AUTHORING,
         "upstreamCodeEmbedded": False,
         "upstreamCodeExecuted": False,
     }
-    payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    template = r'''"use strict";
 
-/* NIAKVIO_PROVIDER_BASE_OWNED_V2 */
-const NIAKVIO_PROVIDER_MODEL = Object.freeze(__MODEL_JSON__);
+
+def provider_data_sha256(model: dict[str, Any]) -> str:
+    payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def build_clean_provider_seed(
+    provider_id: str,
+    manifest_entry: dict[str, Any] | None = None,
+    *,
+    known_site: str | None = None,
+    provider_model: dict[str, Any] | None = None,
+) -> bytes:
+    """Build the immutable common ProviderBase skeleton.
+
+    Arguments are retained for call-site compatibility, but they MUST NOT affect
+    ProviderBase bytes. Provider identity/routes/types/endpoints are materialized
+    later as structured DATA by compose_provider_bundle().
+    """
+    del provider_id, manifest_entry, known_site, provider_model
+    template = r'''/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
+/* NIAKVIO_PROVIDER_BASE_AUTHORING:niakvio-owned-v3 */
+"use strict";
 
 function _uniq(values) {
   return [...new Set((values || []).filter(Boolean))];
@@ -390,8 +522,25 @@ function _uniq(values) {
 function _origin(value) {
   try { return new URL(value).origin; } catch (_) { return ""; }
 }
+function _substituteDomain(raw) {
+  const value = _text(raw).trim();
+  if (!value) return value;
+  try {
+    const parsed = new URL(value);
+    const mapping = NIAKVIO_PROVIDER_MODEL.domainSubstitutions &&
+      typeof NIAKVIO_PROVIDER_MODEL.domainSubstitutions === "object"
+      ? NIAKVIO_PROVIDER_MODEL.domainSubstitutions
+      : {};
+    const host = _text(parsed.hostname).toLowerCase();
+    const target = _text(mapping[host]).toLowerCase();
+    if (target) parsed.hostname = target;
+    return parsed.toString();
+  } catch (_) {
+    return value;
+  }
+}
 function _absolute(value, base) {
-  try { return new URL(value, base).toString(); } catch (_) { return ""; }
+  try { return _substituteDomain(new URL(value, base).toString()); } catch (_) { return ""; }
 }
 function _text(value) {
   return String(value == null ? "" : value);
@@ -627,7 +776,7 @@ function _runtimeBases() {
     NIAKVIO_PROVIDER_MODEL.officialSite,
     NIAKVIO_PROVIDER_MODEL.knownSite,
     ...(NIAKVIO_PROVIDER_MODEL.origins || [])
-  ]).filter(value => /^https?:/i.test(value));
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
 }
 function _searchBases() {
   return _runtimeBases();
@@ -637,16 +786,17 @@ function _searchUrls(meta, mediaType, season, episode) {
 }
 function _runtimePlanAvailable() {
   if (NIAKVIO_PROVIDER_MODEL.apiRecipe) return true;
-  if (NIAKVIO_PROVIDER_MODEL.fixedApi || NIAKVIO_PROVIDER_MODEL.officialApi) return true;
   if ((NIAKVIO_PROVIDER_MODEL.observedUrls || []).some(value => /api|stream|source|embed|player/i.test(_text(value)))) return true;
   return (NIAKVIO_PROVIDER_MODEL.routes || []).some(route => ["search","detail","player","api"].includes(_routeKind(route)));
 }
 function _apiUrls(tmdbId, mediaType, season, episode) {
+  const configuredBases = NIAKVIO_PROVIDER_MODEL.allowGenericApiBase === true
+    ? [NIAKVIO_PROVIDER_MODEL.fixedApi, NIAKVIO_PROVIDER_MODEL.officialApi]
+    : [];
   const bases = _uniq([
-    NIAKVIO_PROVIDER_MODEL.fixedApi,
-    NIAKVIO_PROVIDER_MODEL.officialApi,
+    ...configuredBases,
     ...(NIAKVIO_PROVIDER_MODEL.observedUrls || []).filter(value => /api|stream|source|embed|player/i.test(value))
-  ]);
+  ].map(_substituteDomain));
   const out = [];
   for (const base of bases) {
     if (!/^https?:/i.test(base)) continue;
@@ -658,12 +808,16 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
     out.push(url);
     try {
       const parsed = new URL(url);
-      if (!parsed.searchParams.size) {
-        parsed.searchParams.set("tmdbId", tmdbId || "");
-        parsed.searchParams.set("type", mediaType || "movie");
-        if (season != null) parsed.searchParams.set("season", String(season));
-        if (episode != null) parsed.searchParams.set("episode", String(episode));
-        out.push(parsed.toString());
+      if (!parsed.search) {
+        const params = [
+          ["tmdbId", tmdbId || ""],
+          ["type", mediaType || "movie"]
+        ];
+        if (season != null) params.push(["season", String(season)]);
+        if (episode != null) params.push(["episode", String(episode)]);
+        out.push(parsed.origin + parsed.pathname + "?" + params
+          .map(pair => encodeURIComponent(pair[0]) + "=" + encodeURIComponent(pair[1]))
+          .join("&") + (parsed.hash || ""));
       }
     } catch (_) {}
   }
@@ -679,10 +833,12 @@ function _directPlayerUrls(tmdbId, mediaType) {
   const out = [];
   for (const base of _searchBases()) {
     try {
-      const url = new URL("/player", base);
-      url.searchParams.set("m", transportType);
-      url.searchParams.set("id", _text(tmdbId));
-      out.push(url.toString());
+      const parsed = new URL("/player", base);
+      out.push(
+        parsed.origin + parsed.pathname
+        + "?m=" + encodeURIComponent(transportType)
+        + "&id=" + encodeURIComponent(_text(tmdbId))
+      );
     } catch (_) {}
   }
   return _uniq(out);
@@ -709,6 +865,7 @@ function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
     let target;
     try { target = new URL(path, player.origin); } catch (_) { continue; }
     let missing = false;
+    const query = [];
     for (const key of keys) {
       const lower = key.toLowerCase();
       let value = player.searchParams.get(key);
@@ -717,9 +874,12 @@ function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
       if (value == null && /^(?:season|s)$/.test(lower) && season != null) value = _text(season);
       if (value == null && /^(?:episode|e)$/.test(lower) && episode != null) value = _text(episode);
       if (value == null || value === "") { missing = true; break; }
-      target.searchParams.set(key, value);
+      query.push(encodeURIComponent(key) + "=" + encodeURIComponent(_text(value)));
     }
-    if (!missing) out.push({ url: target.toString(), referer: player.toString() });
+    if (!missing) {
+      const targetUrl = target.origin + target.pathname + (query.length ? "?" + query.join("&") : "");
+      out.push({ url: targetUrl, referer: player.toString() });
+    }
   }
   const seen = new Set();
   return out.filter(row => row.url && !seen.has(row.url) && seen.add(row.url));
@@ -758,16 +918,52 @@ function _sourceUrls(value, base, out) {
   }
   return out;
 }
+function _rewriteOutputUrl(raw) {
+  const value = _substituteDomain(_text(raw).trim());
+  if (!/^https?:\/\//i.test(value)) return value;
+  try {
+    const parsed = new URL(value);
+    const host = _text(parsed.hostname).toLowerCase();
+    for (const rule of NIAKVIO_PROVIDER_MODEL.outputUrlHostRewrites || []) {
+      const fromHost = _text(rule && rule.fromHost).toLowerCase();
+      const toHost = _text(rule && rule.toHost).toLowerCase();
+      if (!fromHost || !toHost || host !== fromHost) continue;
+      parsed.hostname = toHost;
+      return parsed.toString();
+    }
+  } catch (_) {}
+  return value;
+}
+function _outputLanguage(url) {
+  try {
+    const host = new URL(_text(url)).hostname.toLowerCase();
+    for (const rule of NIAKVIO_PROVIDER_MODEL.outputLanguageRules || []) {
+      const prefix = _text(rule && rule.hostPrefix).toLowerCase();
+      const language = _text(rule && rule.language).toLowerCase();
+      if (prefix && language && host.startsWith(prefix)) return language;
+    }
+  } catch (_) {}
+  return "";
+}
 function _streams(urls, referer, extraHeaders) {
   const headers = Object.assign({}, extraHeaders || {});
   if (referer) headers.Referer = referer;
   const hasHeaders = Object.keys(headers).length > 0;
-  return _uniq(urls).slice(0, 40).map((url, index) => ({
-    name: NIAKVIO_PROVIDER_MODEL.displayName,
-    title: NIAKVIO_PROVIDER_MODEL.displayName + (index ? " #" + (index + 1) : ""),
-    url,
-    headers: hasHeaders ? Object.assign({}, headers) : undefined
-  }));
+  return _uniq(urls)
+    .map(_rewriteOutputUrl)
+    .filter(Boolean)
+    .filter((url, index, list) => list.indexOf(url) === index)
+    .slice(0, 40)
+    .map((url, index) => {
+      const language = _outputLanguage(url);
+      return {
+        name: NIAKVIO_PROVIDER_MODEL.displayName,
+        title: NIAKVIO_PROVIDER_MODEL.displayName + (index ? " #" + (index + 1) : ""),
+        url,
+        language: language || undefined,
+        headers: hasHeaders ? Object.assign({}, headers) : undefined
+      };
+    });
 }
 function _recipeValue(row, fields) {
   if (!row || typeof row !== "object") return "";
@@ -825,7 +1021,8 @@ function _recipeScore(row, meta, recipe, expectedMedia) {
 
   if (recipe.strictIdentity) {
     if (!providerId || !title || !expectedTitles.length || !expectedTitles.includes(title)) return -1;
-    if (!actualMedia || !expectedMedia || actualMedia !== expectedMedia) return -1;
+    if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
+    if (recipe.requireProviderTypeEvidence === true && (!actualMedia || !expectedMedia)) return -1;
     if (expectedYear) {
       if (!year || !/^\d{4}$/.test(year)) return -1;
       if (Math.abs(Number(year) - Number(expectedYear)) > 1) return -1;
@@ -874,17 +1071,33 @@ function _recipeUrl(pattern, values, base) {
     return value == null ? "" : encodeURIComponent(_text(value));
   });
   let url;
-  try { url = new URL(route, base).toString(); } catch (_) { return ""; }
+  try {
+    if (/^https?:\/\//i.test(route)) {
+      url = new URL(route).toString();
+    } else {
+      const parsedBase = new URL(_text(base).trim());
+      const basePath = _text(parsedBase.pathname || "").replace(/\/+$/, "");
+      const prefix = parsedBase.origin + (basePath && basePath !== "/" ? basePath : "");
+      url = prefix + "/" + route.replace(/^\/+/, "");
+    }
+  } catch (_) { return ""; }
+  // NuvioTV's QuickJS URL polyfill does not synchronize URL.href after
+  // searchParams mutations. Rebuild the query explicitly instead of relying
+  // on mutating searchParams before toString().
   try {
     const parsed = new URL(url);
-    for (const key of ["season","episode","source"]) {
-      if (values[key] == null || values[key] === "") {
-        for (const param of [...parsed.searchParams.keys()]) {
-          if (param.toLowerCase() === key) parsed.searchParams.delete(param);
-        }
-      }
-    }
-    return parsed.toString();
+    const remove = new Set(
+      ["season","episode","source"].filter(key => values[key] == null || values[key] === "")
+    );
+    if (!remove.size) return parsed.toString();
+    const query = _text(parsed.search || "").replace(/^\?/, "");
+    const kept = query ? query.split("&").filter(part => {
+      const rawKey = part.split("=", 1)[0] || "";
+      let key = rawKey;
+      try { key = decodeURIComponent(rawKey); } catch (_) {}
+      return !remove.has(_text(key).toLowerCase());
+    }) : [];
+    return parsed.origin + parsed.pathname + (kept.length ? "?" + kept.join("&") : "") + _text(parsed.hash || "");
   } catch (_) {
     return url;
   }
@@ -894,6 +1107,15 @@ async function _recipePayload(url, recipe, body) {
   if (recipe.referer) headers.Referer = recipe.referer;
   if (recipe.origin) headers.Origin = recipe.origin;
   const options = { headers };
+  const requestTimeoutMs = Math.max(0, Number(recipe.requestTimeoutMs || 0) || 0);
+  if (requestTimeoutMs > 0) {
+    try {
+      let timeoutMs = requestTimeoutMs;
+      const deadline = Number(globalThis && globalThis.__nuvioProviderDeadlineMs);
+      if (Number.isFinite(deadline) && deadline > 0) timeoutMs = Math.max(1, Math.min(timeoutMs, deadline - Date.now()));
+      if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) options.signal = AbortSignal.timeout(timeoutMs);
+    } catch (_) {}
+  }
   if (body != null) {
     options.method = "POST";
     headers["Content-Type"] = "application/json";
@@ -906,16 +1128,54 @@ async function _recipePayload(url, recipe, body) {
   try { return { value: JSON.parse(text), base: response.url || url }; }
   catch (_) { return { value: text, base: response.url || url }; }
 }
+function _recipeField(value,path){var cur=value;for(const part of _text(path).split(".").filter(Boolean)){if(!cur||typeof cur!=="object")return"";cur=cur[part]}return _text(cur)}
+function _recipeStatusBase(domain,recipe){
+  let raw=_text(domain).replace(/^https?:\/\//i,"").replace(/\/+$/,"");
+  if(!raw)return"";
+  let host=raw.split("/")[0];
+  const prefix=_text(recipe.statusApiPrefix);
+  if(prefix&&host.toLowerCase().indexOf(prefix.toLowerCase())!==0)host=prefix+host;
+  const suffix=_text(recipe.statusApiSuffix);
+  return "https://"+host+(suffix?(suffix.charAt(0)==="/"?suffix:"/"+suffix):"");
+}
+function _recipeStaticBases(recipe){
+  const explicitFallbackBases=Array.isArray(recipe.fallbackBases)?recipe.fallbackBases:[];
+  const modelFallbackBases=recipe.allowModelBases===true
+    ? [NIAKVIO_PROVIDER_MODEL.fixedApi,NIAKVIO_PROVIDER_MODEL.officialApi,..._runtimeBases()]
+    : [];
+  return _uniq([
+    recipe.base,
+    ...explicitFallbackBases,
+    ...modelFallbackBases
+  ]).filter(value=>/^https?:/i.test(_text(value)));
+}
+async function _recipeStatusDynamicBase(recipe){
+  if(!/^https?:\/\//i.test(_text(recipe.statusUrl))||!recipe.statusDomainField)return"";
+  try{
+    const statusOptions={headers:{Accept:"application/json,text/plain,*/*"}};
+    try{
+      const requestTimeoutMs=Math.max(0,Number(recipe.requestTimeoutMs||0)||0);
+      if(requestTimeoutMs>0&&typeof AbortSignal!=="undefined"&&AbortSignal.timeout)statusOptions.signal=AbortSignal.timeout(requestTimeoutMs);
+    }catch(_){}
+    const response=await _fetch(_text(recipe.statusUrl),statusOptions);
+    let value=null;
+    const type=_text(response.headers&&response.headers.get?response.headers.get("content-type"):"").toLowerCase();
+    if(type.includes("json"))value=await response.json();
+    else{
+      const body=await response.text();
+      try{value=JSON.parse(body)}catch(_){value=null}
+    }
+    return _recipeStatusBase(_recipeField(value,recipe.statusDomainField),recipe);
+  }catch(_){return""}
+}
+async function _recipeBases(recipe){
+  return _recipeStaticBases(recipe);
+}
 async function _resolveApiRecipe(meta, mediaType, season, episode) {
   const recipe = NIAKVIO_PROVIDER_MODEL.apiRecipe;
   if (!recipe || typeof recipe !== "object") return [];
   const media = _mediaNamespace(mediaType);
-  const bases = _uniq([
-    recipe.base,
-    NIAKVIO_PROVIDER_MODEL.fixedApi,
-    NIAKVIO_PROVIDER_MODEL.officialApi,
-    ..._runtimeBases()
-  ]).filter(value => /^https?:/i.test(_text(value)));
+  const bases = await _recipeBases(recipe);
   if (!bases.length) return [];
   const values = {
     query: _text(meta && meta.title),
@@ -929,29 +1189,36 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
 
   if (recipe.directRoute) {
     const streams = [];
-    const sources = Array.isArray(recipe.sources) && recipe.sources.length ? recipe.sources : [null];
+    const sources = Array.isArray(recipe.sources) && recipe.sources.length ? recipe.sources.slice(0, 12) : [null];
+    const batchSize = Math.max(1, Math.min(Number(recipe.sourceBatchSize || 4) || 4, 6));
+    const minStreamsBeforeStop = Math.max(1, Math.min(Number(recipe.minStreamsBeforeStop || 1) || 1, 20));
     for (const base of bases.slice(0, 2)) {
-      for (const source of sources.slice(0, 12)) {
-        values.source = source;
-        const url = _recipeUrl(recipe.directRoute, values, base);
-        if (!url) continue;
-        try {
-          const payload = await _recipePayload(url, recipe, null);
-          if (typeof payload.value === "string") {
-            streams.push(..._streams(
-              _extractUrls(payload.value, payload.base).filter(_directMedia),
-              recipe.referer || base,
-              Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
-            ));
-          } else {
-            streams.push(..._streams(
+      for (let offset = 0; offset < sources.length; offset += batchSize) {
+        const batch = sources.slice(offset, offset + batchSize);
+        const batchRows = await Promise.all(batch.map(async source => {
+          const localValues = Object.assign({}, values, { source });
+          const url = _recipeUrl(recipe.directRoute, localValues, base);
+          if (!url) return [];
+          try {
+            const payload = await _recipePayload(url, recipe, null);
+            if (typeof payload.value === "string") {
+              return _streams(
+                _extractUrls(payload.value, payload.base).filter(_directMedia),
+                recipe.referer || base,
+                Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+              );
+            }
+            return _streams(
               _recipeSourceUrls(payload.value, payload.base, recipe),
               recipe.referer || base,
               Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
-            ));
+            );
+          } catch (_) {
+            return [];
           }
-        } catch (_) {}
-        if (streams.length >= 20) break;
+        }));
+        for (const rows of batchRows) streams.push(...rows);
+        if (streams.length >= minStreamsBeforeStop) break;
       }
       if (streams.length) break;
     }
@@ -959,55 +1226,95 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
   }
 
   if (!recipe.searchRoute) return [];
-  let providerId = "";
   const searchQueries = _uniq([
     meta && meta.title,
     ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])
   ].map(_text).filter(Boolean));
-  for (const query of searchQueries.slice(0, 3)) {
-    values.query = query;
-    for (const base of bases.slice(0, 3)) {
-      const url = _recipeUrl(recipe.searchRoute, values, base);
+
+  let statusFallbackBlocked = false;
+  async function findProvider(baseList) {
+    const blockedBases = new Set();
+    const skipStatuses = new Set(
+      (Array.isArray(recipe.skipStatusOnHttpStatuses) ? recipe.skipStatusOnHttpStatuses : [])
+        .map(value => Number(value))
+        .filter(value => Number.isFinite(value))
+    );
+    const candidates = baseList.slice(0, 3);
+    for (const query of searchQueries.slice(0, 3)) {
+      values.query = query;
+      for (const base of candidates) {
+        if (blockedBases.has(base)) continue;
+        const url = _recipeUrl(recipe.searchRoute, values, base);
+        if (!url) continue;
+        try {
+          const payload = await _recipePayload(url, recipe, null);
+          if (!payload.value || typeof payload.value === "string") continue;
+          const rows = _recipeObjects(payload.value, [])
+            .map(row => ({ row, score: _recipeScore(row, meta, recipe, media) }))
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score);
+          if (!rows.length) continue;
+          const id = _recipeValue(rows[0].row, recipe.idFields || ["id","_id","media_id","post_id"]);
+          if (id) return { id, base };
+        } catch (error) {
+          const match = _text(error && error.message).match(/provider_http_(\d+)/i);
+          const status = match ? Number(match[1]) : 0;
+          if (status && skipStatuses.has(status)) blockedBases.add(base);
+        }
+      }
+    }
+    if (candidates.length && candidates.every(base => blockedBases.has(base))) statusFallbackBlocked = true;
+    return null;
+  }
+
+  let providerMatch = await findProvider(bases);
+  let dynamicStatusBase = "";
+  if (!providerMatch && !statusFallbackBlocked) {
+    dynamicStatusBase = await _recipeStatusDynamicBase(recipe);
+    if (dynamicStatusBase && !bases.includes(dynamicStatusBase)) {
+      providerMatch = await findProvider([dynamicStatusBase]);
+    }
+  }
+  if (!providerMatch) return [];
+
+  values.providerId = providerMatch.id;
+  const route = media === "movie" ? recipe.movieRoute : (recipe.episodeRoute || recipe.movieRoute);
+  if (!route) return [];
+
+  async function resolveRoute(baseList) {
+    for (const base of baseList.slice(0, 3)) {
+      const url = _recipeUrl(route, values, base);
       if (!url) continue;
       try {
         const payload = await _recipePayload(url, recipe, null);
-        if (!payload.value || typeof payload.value === "string") continue;
-        const rows = _recipeObjects(payload.value, [])
-          .map(row => ({ row, score: _recipeScore(row, meta, recipe, media) }))
-          .filter(item => item.score > 0)
-          .sort((a, b) => b.score - a.score);
-        if (!rows.length) continue;
-        providerId = _recipeValue(rows[0].row, recipe.idFields || ["id","_id","media_id","post_id"]);
-        if (providerId) break;
+        if (typeof payload.value === "string") {
+          const urls = _extractUrls(payload.value, payload.base).filter(_directMedia);
+          if (urls.length) return _streams(
+            urls,
+            recipe.referer || base,
+            Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+          );
+        } else {
+          const urls = _recipeSourceUrls(payload.value, payload.base, recipe);
+          if (urls.length) return _streams(
+            urls,
+            recipe.referer || base,
+            Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
+          );
+        }
       } catch (_) {}
     }
-    if (providerId) break;
+    return [];
   }
-  if (!providerId) return [];
-  values.providerId = providerId;
-  const route = media === "movie" ? recipe.movieRoute : (recipe.episodeRoute || recipe.movieRoute);
-  if (!route) return [];
-  for (const base of bases.slice(0, 3)) {
-    const url = _recipeUrl(route, values, base);
-    if (!url) continue;
-    try {
-      const payload = await _recipePayload(url, recipe, null);
-      if (typeof payload.value === "string") {
-        const urls = _extractUrls(payload.value, payload.base).filter(_directMedia);
-        if (urls.length) return _streams(
-          urls,
-          recipe.referer || base,
-          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
-        );
-      } else {
-        const urls = _recipeSourceUrls(payload.value, payload.base, recipe);
-        if (urls.length) return _streams(
-          urls,
-          recipe.referer || base,
-          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
-        );
-      }
-    } catch (_) {}
+
+  const routeBases = _uniq([providerMatch.base, ...bases]);
+  let resolved = await resolveRoute(routeBases);
+  if (resolved.length) return resolved;
+
+  if (!dynamicStatusBase) dynamicStatusBase = await _recipeStatusDynamicBase(recipe);
+  if (dynamicStatusBase && !routeBases.includes(dynamicStatusBase)) {
+    resolved = await resolveRoute([dynamicStatusBase]);
+    if (resolved.length) return resolved;
   }
   return [];
 }
@@ -1075,6 +1382,25 @@ async function _resolveKnownPlayer(tmdbId, mediaType, season, episode) {
   }
   return [];
 }
+function _strictHtmlIdentityOk(html, meta) {
+  if (!NIAKVIO_PROVIDER_MODEL.strictHtmlIdentity) return true;
+  if (!meta || !meta.title) return false;
+  const visible = _text(html)
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ");
+  const normalized = _slug(visible);
+  const titles = _uniq([meta.title, ...((Array.isArray(meta.aliases) ? meta.aliases : []))])
+    .map(_slug)
+    .filter(Boolean);
+  if (!titles.length || !titles.some(title => normalized.includes(title))) return false;
+  const year = _text(meta.year).slice(0, 4);
+  if (year && /^\d{4}$/.test(year)) {
+    const years = _text(html).match(/\b(?:19|20)\d{2}\b/g) || [];
+    if (years.length && !years.includes(year)) return false;
+  }
+  return true;
+}
 async function _resolveHtml(meta, mediaType, season, episode) {
   if (!meta || (!meta.title && !meta.tmdbId)) return [];
   const candidates = [];
@@ -1103,6 +1429,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
     try {
       const response = await _fetch(detailUrl);
       const html = await response.text();
+      if (!_strictHtmlIdentityOk(html, meta)) continue;
       let urls = _extractUrls(html, response.url || detailUrl);
       if (mediaType !== "movie" && season != null && episode != null) {
         const token = new RegExp("(?:s(?:eason)?\\s*0*" + Number(season) + "[^\\n]{0,80}e(?:pisode)?\\s*0*" + Number(episode) + "|0*" + Number(season) + "x0*" + Number(episode) + ")", "i");
@@ -1190,6 +1517,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
     };
     const recipe = await _resolveApiRecipe(recipeMeta, type, season, episode);
     if (recipe.length) return recipe;
+    if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
   }
 
   // Reader fast path: consume already learned ID/API/player routes before any
@@ -1223,10 +1551,59 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   }
   return [];
 }
-module.exports = { getStreams, __niakvioProviderBase: NIAKVIO_PROVIDER_MODEL };
+module.exports = {
+  getStreams,
+  get __niakvioProviderBase(){ return NIAKVIO_PROVIDER_MODEL; }
+};
 '''
-    source = template.replace("__MODEL_JSON__", payload)
+    return template.encode("utf-8")
+
+
+def compose_provider_bundle(
+    provider_id: str,
+    base_data: bytes,
+    provider_data: dict[str, Any],
+) -> bytes:
+    """Compose one Provider envelope from common Base + DATA; Core Lego comes later."""
+    assert_clean_provider_base(base_data, provider_id)
+    if not isinstance(provider_data, dict):
+        raise ValueError(f"{provider_id}: provider DATA must be an object")
+    model = dict(provider_data)
+    canonical = canonical_id(provider_id)
+    if str(model.get("providerId") or "") != canonical:
+        raise ValueError(
+            f"{provider_id}: provider DATA id mismatch actual={model.get('providerId')!r}"
+        )
+    if str(model.get("authoring") or "") != CURRENT_PROVIDER_MODEL_AUTHORING:
+        raise ValueError(
+            f"{provider_id}: provider DATA authoring mismatch "
+            f"actual={model.get('authoring')!r}"
+        )
+    payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    fix_component = canonical.upper()
+    config_id = f"PROVIDER.{fix_component}.CONFIG.V1"
+    config_block = render_managed_fix(
+        config_id,
+        f"const NIAKVIO_PROVIDER_MODEL = Object.freeze({payload});",
+        data=model,
+    )
+    base_text = base_data.decode("utf-8", errors="strict").rstrip()
+    source = (
+        f"{PROVIDER_BEGIN_MARKER}\n"
+        f"/* NIAKVIO_PROVIDER_ID:{canonical} */\n"
+        f"{base_text}\n\n"
+        f"{config_block}\n"
+        f"{PROVIDER_END_MARKER}\n"
+    )
+    fix_ids = validate_managed_fixes(source)
+    if fix_ids != [config_id]:
+        raise ValueError(f"{provider_id}: invalid initial Provider Lego layout: {fix_ids}")
+    if source.count(PROVIDER_BEGIN_MARKER) != 1 or source.count(PROVIDER_END_MARKER) != 1:
+        raise ValueError(f"{provider_id}: composed Provider envelope cardinality invalid")
+    if not source.rstrip().endswith(PROVIDER_END_MARKER):
+        raise ValueError(f"{provider_id}: bytes found after END PROVIDER")
     return source.encode("utf-8")
+
 
 def persist_clean_provider_seed(
     provider_id: str,

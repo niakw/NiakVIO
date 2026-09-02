@@ -13,29 +13,29 @@ import hashlib
 import json
 from typing import Any
 
-from provider_patch_blocks import has_managed_fix, owned_span, render_managed_fix, replace_managed_fix, strip_managed_fix
+from provider_patch_blocks import begin_marker, has_managed_fix, owned_span, render_managed_fix, replace_managed_fix, strip_managed_fix
 
 MARKER = "NUVIO_HLS_RUNTIME_INTEGRITY_V1"
 MANAGED_FIX_ID = "CORE.HLS_RUNTIME_INTEGRITY.V1"
 
 
 def _layer_position(text: str, managed_id: str, legacy_marker: str) -> int:
-    """Locate the whole managed brick boundary, falling back only for legacy JS."""
-    managed = text.find(f"/* START NIAKVIO_FIX:{managed_id} */")
-    if managed >= 0:
-        return managed
+    """Locate the whole owned Lego boundary, falling back only for legacy JS."""
+    span = owned_span(text, managed_id)
+    if span is not None:
+        return span[0]
     return text.find(legacy_marker)
 
 
 POST_HLS_MARKERS = (
     "/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */",
-    "/* START NIAKVIO_FIX:CORE.RUNTIME_COMPAT.V1 */",
-    "/* START NIAKVIO_FIX:CORE.STREAM_FACTS.V1 */",
-    "/* START NIAKVIO_FIX:CORE.STREAM_IDENTITY.V1 */",
-    "/* START NIAKVIO_FIX:CORE.STREAM_PRESENTATION.V1 */",
-    "/* START NIAKVIO_FIX:CORE.PROVIDER_BRANDING.V1 */",
-    "/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */",
-    "/* START NIAKVIO_FIX:CORE.MEDIA_TYPE_RESOLUTION.V1 */",
+    begin_marker("CORE.RUNTIME_COMPAT.V1"),
+    begin_marker("CORE.STREAM_FACTS.V1"),
+    begin_marker("CORE.STREAM_IDENTITY.V1"),
+    begin_marker("CORE.STREAM_PRESENTATION.V1"),
+    begin_marker("CORE.PROVIDER_BRANDING.V1"),
+    begin_marker("CORE.STREAM_SANITIZER.V6"),
+    begin_marker("CORE.MEDIA_TYPE_RESOLUTION.V1"),
 )
 
 
@@ -82,6 +82,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(payload.encode()).hexdigest()[:12]}"
+    is_v3 = (
+        text.count("/* BEGIN NIAKVIO_PROVIDER */") == 1
+        and text.count("/* END NIAKVIO_PROVIDER */") == 1
+        and "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+    )
     owned = has_managed_fix(text, MANAGED_FIX_ID)
     relocate_owned = owned and _owned_hls_slot_is_stale(text)
 
@@ -328,9 +333,17 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   install();
 })(typeof globalThis!=="undefined"?globalThis:this,CONFIG_PLACEHOLDER);
 '''.replace("MARKER_PLACEHOLDER", marker).replace("CONFIG_PLACEHOLDER", payload)
-    # Keep an already-canonical HLS brick byte-stable. If a later provider/media
-    # wrapper has provably appeared after HLS, relocate the whole owned brick once
-    # so HLS remains the single post-media validator.
+    # Clean v3 placement is compositor-owned. The HLS Lego can only replace its
+    # own STARTFIX/CLOSEFIX rectangle; it is never allowed to move itself.
+    if is_v3:
+        return replace_managed_fix(
+            text,
+            MANAGED_FIX_ID,
+            wrapper,
+            data=payload_config,
+        )
+
+    # Legacy-only migration may still repair historical flattened ordering.
     if owned and not relocate_owned:
         return replace_managed_fix(
             text,

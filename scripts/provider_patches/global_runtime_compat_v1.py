@@ -18,7 +18,7 @@ from provider_patch_blocks import has_managed_fix, replace_managed_fix, strip_le
 MARKER = "NUVIO_GLOBAL_RUNTIME_COMPAT_V1"
 MANAGED_FIX_ID = "CORE.RUNTIME_COMPAT.V1"
 RESERVED_KEY = "__nuvioGlobalRuntimeCompatV1"
-REVISION = 1
+REVISION = 2
 
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
@@ -31,7 +31,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
 ;(function(g){
   "use strict";
   if(!g||g.__nuvioGlobalRuntimeCompatV1)return;
-  g.__nuvioGlobalRuntimeCompatV1={revision:1};
+  g.__nuvioGlobalRuntimeCompatV1={revision:2};
 
   // NuvioDesktop's current URL polyfill stores href independently from hostname,
   // host, pathname, search and hash. Replacing hostname therefore leaves
@@ -51,7 +51,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
           host=String(u.hostname||"")+(u.port?":"+String(u.port):"");
         }
         var hierarchical=protocol&&host?protocol+"//"+host:"";
-        return hierarchical+String(u.pathname||"")+String(u.search||"")+String(u.hash||"");
+        var pathname=String(u.pathname||"");
+        var search=String(u.search||"");
+        var hash=String(u.hash||"");
+        var rendered=hierarchical+pathname+search+hash;
+        if(rendered)return rendered;
+        // Some official QuickJS URL polyfills expose a correct href for
+        // new URL(relative, base) while leaving protocol/host/pathname empty.
+        // Fall back to href only when there is nothing mutable to reconstruct.
+        return String(u.href||"");
       }catch(_error){
         try{return String(u.href||"");}catch(_ignored){return "";}
       }
