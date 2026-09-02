@@ -1,5 +1,4 @@
-name: CORE - Provider Pipeline
-# Route authority: official hub > explicit direct > history fallback only when neither current source exists.
+name: CORE - Provider Verify & Publish
 
 on:
   workflow_dispatch:
@@ -9,148 +8,41 @@ on:
         required: true
         default: quick
         type: choice
-        options:
-          - quick
-          - deep
-      phase:
-        description: Pipeline phase
-        required: true
-        default: full
-        type: choice
-        options:
-          - full
-          - publish-only
-      source_run_id:
-        description: Successful P1 run id to reuse for publish-only
-        required: false
-        type: string
-      source_sha:
-        description: SHA validated by the successful P1 run
-        required: false
-        type: string
-      source_mode:
-        description: Validation mode of the reused P1 artifact
-        required: false
-        default: deep
-        type: choice
-        options:
-          - quick
-          - deep
+        options: [quick, deep]
   pull_request:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'tests/**'
-      - '.github/workflows/sync.yml'
-      - '.github/triggers/force-clean-provider-reconstruction.json'
-      - 'provider_catalog.json'
-      - 'engine_v2/src/tmdb-metadata.mjs'
-      - 'scripts/provider_patches/global_media_type_resolution_v1.py'
-      - 'scripts/provider_patches/global_runtime_compat_v1.py'
-      - 'scripts/native_media_type_contract.py'
-      - 'scripts/quarantine_catalogue_audit_failures.py'
-      - 'scripts/audit_catalogue_identity_media.py'
-      - 'scripts/generate_language_manifests.py'
-      - 'scripts/build_provider_runtime_profiles.py'
-      - 'scripts/adaptive_runtime/brain_repair_runtime.py'
-      - 'scripts/brain_repair_runtime.py'
-      - 'scripts/provider_patches/runtime_repository_domain_materializer_v1.py'
-      - 'scripts/normalize_runtime_repository_dependencies.py'
-      - 'scripts/resolve_provider_hubs.py'
-      - 'provider-hubs.json'
-      - 'engine_v2/**'
-      - 'scripts/run_adaptive_quick_repair.py'
-      - 'scripts/guard_nuvio_client_brain_compat.py'
-      - 'scripts/run_adaptive_deep_repair.py'
-      - 'scripts/promote_refresh_candidates.py'
-      - 'scripts/promote_candidates.py'
-      - 'scripts/runtime_repair.py'
-      - 'scripts/adaptive_runtime/runtime_repair.py'
-      - 'scripts/provider_engine_normalizer.py'
-      - 'scripts/provider_evidence_model.py'
-      - 'scripts/release_evidence_fence.py'
-      - 'scripts/sync_release_versions.py'
-      - 'scripts/reapply_published_overrides.py'
-      - 'scripts/activation_preservation_core_rehash.py'
-      - 'scripts/apply_provider_overrides.py'
-      - 'scripts/provider_base_store.py'
-      - 'scripts/provider_compiler.py'
-      - 'scripts/materialize_clean_provider_reconstruction.py'
+      - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'no-anime/manifest.json'
+      - 'vf-no-anime/manifest.json'
+      - 'providers/**'
       - 'provider-overrides.json'
-      - 'PROVENANCE.json'
-      - 'provider-bases/**'
-      - 'provider-security-revocations.json'
+      - 'provider_catalog.json'
+      - 'provider-hubs.json'
       - 'provider-type-policy.json'
-      - 'scripts/network_guard.cjs'
+      - 'scripts/provider_patches/**'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/verify_provider_v3_reverse_rebuild.py'
+      - 'scripts/build_published_provider_stage.py'
+      - 'scripts/build_observational_health_report.py'
+      - 'scripts/resolve_provider_hubs.py'
       - 'scripts/health_check.mjs'
-      - 'scripts/provider_semantics.cjs'
-      - 'scripts/nuvio_client_lab.cjs'
-      - 'health-config.json'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'scripts/validate_activation_preservation.py'
-      - 'scripts/provider_patches/adaptive_runtime_recovery_v5.py'
-      - 'scripts/nuvio_client_activation_ids.py'
+      - 'tests/**'
+      - 'automation/provider-v3-architecture.json'
+      - '.github/workflows/sync.yml'
   push:
-    branches:
-      - main
+    branches: [main]
     paths:
-      - 'tests/**'
-      - '.github/triggers/force-clean-provider-reconstruction.json'
-      - 'engine_v2/src/tmdb-metadata.mjs'
-      - 'scripts/provider_patches/global_media_type_resolution_v1.py'
-      - 'scripts/provider_patches/vf_catalogue_recovery.py'
-      - 'scripts/provider_patches/global_runtime_compat_v1.py'
-      - 'scripts/native_media_type_contract.py'
-      - '.github/triggers/deep-provider-repair'
-      - '.github/triggers/publish-provider-transaction.json'
+      - '.github/triggers/deep-provider-verify'
       - '.github/workflows/sync.yml'
-      - 'provider_catalog.json'
-      - 'scripts/quarantine_catalogue_audit_failures.py'
-      - 'scripts/audit_catalogue_identity_media.py'
-      - 'scripts/generate_language_manifests.py'
-      - 'scripts/build_provider_runtime_profiles.py'
-      - 'scripts/adaptive_runtime/brain_repair_runtime.py'
-      - 'scripts/brain_repair_runtime.py'
-      - 'scripts/provider_patches/runtime_repository_domain_materializer_v1.py'
-      - 'scripts/normalize_runtime_repository_dependencies.py'
-      - 'scripts/resolve_provider_hubs.py'
-      - 'provider-hubs.json'
-      - 'engine_v2/src/**'
-      - 'engine_v2/scripts/**'
-      - 'engine_v2/config/**'
-      - 'scripts/run_adaptive_quick_repair.py'
-      - 'scripts/guard_nuvio_client_brain_compat.py'
-      - 'scripts/run_adaptive_deep_repair.py'
-      - 'scripts/promote_refresh_candidates.py'
-      - 'scripts/promote_candidates.py'
-      - 'scripts/runtime_repair.py'
-      - 'scripts/adaptive_runtime/runtime_repair.py'
-      - 'scripts/provider_engine_normalizer.py'
-      - 'scripts/provider_evidence_model.py'
-      - 'scripts/release_evidence_fence.py'
-      - 'scripts/sync_release_versions.py'
-      - 'scripts/reapply_published_overrides.py'
-      - 'scripts/activation_preservation_core_rehash.py'
-      - 'scripts/apply_provider_overrides.py'
-      - 'scripts/provider_base_store.py'
-      - 'scripts/provider_compiler.py'
-      - 'scripts/materialize_clean_provider_reconstruction.py'
+      - 'manifest.json'
+      - 'providers/**'
       - 'provider-overrides.json'
-      - 'PROVENANCE.json'
-      - 'provider-bases/**'
-      - 'provider-security-revocations.json'
-      - 'provider-type-policy.json'
-      - 'scripts/network_guard.cjs'
-      - 'scripts/health_check.mjs'
-      - 'scripts/provider_semantics.cjs'
-      - 'scripts/nuvio_client_lab.cjs'
-      - 'health-config.json'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'runtime/tmdb-runtime-key.json'
-      - 'scripts/provider_patches/adaptive_runtime_recovery_v5.py'
-      - 'scripts/nuvio_client_activation_ids.py'
+      - 'provider-hubs.json'
+      - 'scripts/provider_patches/**'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'scripts/verify_provider_v3_reverse_rebuild.py'
   schedule:
     - cron: '17 5 * * 0,1,3,4,6'
     - cron: '47 4 * * 2,5'
@@ -158,652 +50,164 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: provider-v3-verify-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  stage-and-test:
-    if: ${{ (github.event_name != 'push' || (!contains(github.event.head_commit.message, '[sync-control-only]') && !contains(github.event.head_commit.message, '[publish-only]'))) && (github.event_name != 'workflow_dispatch' || inputs.phase != 'publish-only') }}
-    name: Discover, repair and validate providers
-    concurrency:
-      # Scheduled Quick/Deep observation must never cancel an explicit push/deep
-      # validation already checking ProviderBase state. Publication remains
-      # serialized below and rejects stale validated SHAs before applying.
-      group: nuvio-provider-stage-${{ github.event_name == 'schedule' && 'scheduled' || (github.event_name == 'pull_request' && github.event.pull_request.number || github.sha) }}
-      cancel-in-progress: true
+  verify:
+    name: Verify published Provider v3
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    permissions:
+      contents: read
+    outputs:
+      validation_mode: ${{ steps.mode.outputs.validation_mode }}
+      validated_sha: ${{ steps.sha.outputs.sha }}
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-    permissions:
-      contents: read
-    outputs:
-      validation_mode: ${{ steps.resolve-mode.outputs.validation_mode }}
-      validated_sha: ${{ steps.validated-tree.outputs.sha }}
-
     steps:
-      - name: Checkout without persisted credentials
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          # Queued main writers must validate the main tree that exists when
-          # execution actually starts, not a stale event SHA from before a
-          # previous serialized publication. PRs still validate their own head.
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || 'main' }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
-
-      - name: Capture validated main tree
-        id: validated-tree
-        shell: bash
+      - id: sha
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-
-      - name: Resolve validation mode
-        id: resolve-mode
+      - id: mode
         shell: bash
         run: |
           MODE=quick
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            MODE="${{ github.event.inputs.mode }}"
-          elif [ "${{ github.event.schedule }}" = "47 4 * * 2,5" ]; then
-            MODE=deep
-          elif [ "${{ github.event_name }}" = "push" ]; then
-            BEFORE="${{ github.event.before }}"
-            AFTER="${{ github.sha }}"
-            if [ -n "$BEFORE" ] && git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
-              # Deep is explicit: publication changes to ProviderBase/provenance
-              # must not recursively turn every unrelated push into Deep.
-              if git diff --name-only "$BEFORE" "$AFTER" | grep -Eq '^(\.github/triggers/deep-provider-repair|\.github/triggers/force-clean-provider-reconstruction\.json)$'; then
-                MODE=deep
-              fi
-            fi
-          fi
-          echo "validation_mode=${MODE}" >> "$GITHUB_OUTPUT"
-          echo "Resolved validation mode: ${MODE}"
-
-      - name: Set up Python
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with:
-          python-version: '3.12'
-
-      - name: Set up Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: '24'
-          package-manager-cache: false
-
-      - name: Install pinned runtime dependencies
-        run: |
-          npm ci --ignore-scripts --no-audit --no-fund
-
-      - name: Validate ProviderBase migration state (no routine rebuild)
-        shell: bash
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then MODE="${{ inputs.mode }}"; fi
+          if [ "${{ github.event.schedule }}" = "47 4 * * 2,5" ]; then MODE=deep; fi
+          if [ -e .github/triggers/deep-provider-verify ]; then MODE=deep; fi
+          echo "validation_mode=$MODE" >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_VERIFY_MODE mode=$MODE repair=false"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate Provider v3 architecture
         run: |
           set -euo pipefail
-          python scripts/provider_base_store.py repair-legacy
-          python scripts/provider_base_store.py repair-derived
+          python tests/provider_v3_workflow_ownership_test.py
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
+          python tests/provider_brick_portfolio_audit_test.py
           python tests/provider_521_capability_regression_test.py
-          python tests/provider_tmdb_runtime_key_contract_test.py
-          python tests/native_media_type_resolution_test.py
           python tests/global_media_type_resolution_test.py
-          python tests/purstream_semantic_transport_regression_test.py
-          python tests/purstream_original_bug_matrix_contract_test.py
-          node tests/tmdb_media_type_resolution.test.mjs
-
-      - name: Release stale non-safety activation vetoes
-        shell: bash
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/global_stream_identity_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/stream_output_sanitizer_fail_closed_test.py
+          python scripts/verify_provider_v3_reverse_rebuild.py
+      - name: Build exact published-provider observation stage
+        run: python scripts/build_published_provider_stage.py --stage staging-published
+      - name: Verify current domains and hubs without mutation
         run: |
-          set -euo pipefail
-          python scripts/normalize_provider_activation_overrides.py
-
-      - name: Resolve current provider routes
+          python scripts/resolve_provider_hubs.py             --mode "${{ steps.mode.outputs.validation_mode }}"             --include-disabled --workers 8 --timeout 8             --output health-output/provider-hub-report.json
+          git diff --exit-code -- provider-overrides.json provider-domain-history.json providers provider-bases
+      - name: Observe published providers
         shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/resolve_provider_hubs.py --apply --mode "${{ steps.resolve-mode.outputs.validation_mode }}" --include-disabled --workers 8 --timeout 8 --output health-output/provider-hub-report.json
-
-      - name: Discover all non-P2P candidates before triage
-        shell: bash
-        run: |
-          set -euo pipefail
-          # Routine publication never reconstructs an existing clean candidate; rebuilds are explicit one-shot only. Final main validation marker.
-          # An explicit one-shot trigger may name a bounded provider set for corrective
-          # reconstruction; the trigger is removed after the new candidates are materialized.
-          args=(--require-all-upstreams)
-          FORCE_TRIGGER=".github/triggers/force-clean-provider-reconstruction.json"
-          if [ -s "$FORCE_TRIGGER" ]; then
-            while IFS= read -r provider; do
-              [ -n "$provider" ] && args+=(--force-clean-reconstruction "$provider")
-            done < <(python - "$FORCE_TRIGGER" <<'PY'
-          import json, sys
-          payload = json.load(open(sys.argv[1], encoding="utf-8"))
-          if payload.get("mode") != "explicit-one-shot":
-              raise SystemExit("invalid force reconstruction trigger mode")
-          providers = payload.get("providers")
-          if not isinstance(providers, list) or not providers:
-              raise SystemExit("force reconstruction trigger requires providers")
-          seen = set()
-          for raw in providers:
-              value = str(raw or "").strip().casefold()
-              if not value or value in seen:
-                  continue
-              seen.add(value)
-              print(value)
-          PY
-            )
-          fi
-          python scripts/discover_candidates.py "${args[@]}"
-
-      - name: Enforce canonical catalog preservation
-        shell: bash
-        run: |
-          set -euo pipefail
-          node engine_v2/scripts/validate-stage-against-catalog.mjs --catalog provider_catalog.json --stage staging/candidates.json
-
-      - name: Apply known runtime profiles before repair
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/build_provider_runtime_profiles.py
-          python scripts/reapply_published_overrides.py
-          python scripts/build_provider_runtime_profiles.py --stage staging --apply-stage
-          python scripts/normalize_terminal_quarantine_stage.py --stage staging
-          python scripts/validate_override_pipeline.py --stage staging
-
-      - name: Audit reconstructed provider Lego composition
-        shell: bash
-        run: |
-          set -euo pipefail
-          python tests/provider_brick_portfolio_audit_test.py --stage staging --require-all
-
-      # Forced reconstruction must be materialized and Lego-audited before the
-      # full ARCHI2 suite. Otherwise a stale harness can prevent the explicit
-      # 96/96 request from ever reaching Discover/reconstruction.
-      - name: Validate ARCHI2 control plane
-        shell: bash
-        run: |
-          set -euo pipefail
-          npm test
-
-      - name: Validate compatibility execution primitives
-        shell: bash
-        run: |
-          set -euo pipefail
-          python tests/general_manifest_runtime_profiles_test.py
-          python scripts/validate_platform_runtime_policy.py
-          python scripts/validate_nuvio_tv_runtime_policy.py
-          python tests/nuvio_client_upstream_drift_guard_test.py
-
-      - name: Repair unresolved provider structures
         env:
-          NUVIO_WORKER_MEMORY_MB: "1024"
-        shell: bash
+          NUVIO_STAGE: staging-published
+          NUVIO_CANDIDATES_PATH: staging-published/candidates.json
+          NUVIO_HEALTH_OUTPUT: health-output
+          NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
+          NUVIO_WORKER_MEMORY_MB: '1024'
         run: |
           set -euo pipefail
-          if [ "${{ steps.resolve-mode.outputs.validation_mode }}" = "deep" ]; then
-            python scripts/run_adaptive_deep_repair.py --stage staging --output health-output --max-rounds 1
+          if [ "${{ steps.mode.outputs.validation_mode }}" = deep ]; then
+            node scripts/health_check.mjs --deep
           else
-            python scripts/run_adaptive_quick_repair.py --stage staging --output health-output --max-rounds 1
+            node scripts/health_check.mjs
           fi
-          python scripts/validate_automatic_repair_results.py --stage staging --health health-output/health-results.json --repairs health-output/repair-report.json
-
-      - name: Validate deep evidence integrity
-        if: steps.resolve-mode.outputs.validation_mode == 'deep'
-        shell: bash
+          python scripts/build_observational_health_report.py             --results health-output/health-results.json             --manifest manifest.json             --output health-output/health-report.json
+          python scripts/generate_diagnostics.py             --results health-output/health-results.json             --output health-output
+          test -s health-output/health-report.json
+          test -s health-output/diagnostics-report.json
+      - name: Prove routine validation never mutates Provider v3
         run: |
-          set -euo pipefail
-          python scripts/validate_deep_evidence_integrity.py --stage staging --health health-output/health-results.json --repairs health-output/repair-report.json
-
-      - name: Generate diagnostics after repair
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/generate_diagnostics.py --results health-output/health-results.json --output health-output
-          python scripts/validate_route_overrides.py \
-            --config provider-overrides.json \
-            --results health-output/health-results.json \
-            --report health-output/route-regressions.json
-          test -s health-output/route-regressions.json
-
-      - name: Upload validated staging transaction
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+          git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json
+          python scripts/verify_provider_v3_reverse_rebuild.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: nuvio-validation-stage-${{ github.run_id }}
+          name: provider-v3-observation-${{ github.run_id }}
           path: |
-            staging
-            health-output
-            provider-overrides.json
-            provider-domain-history.json
-          retention-days: 7
+            health-output/health-results.json
+            health-output/health-report.json
+            health-output/provider-hub-report.json
+            health-output/diagnostics-report.json
+            health-output/diagnostics-report.html
+          retention-days: 8
           if-no-files-found: error
 
-  resolve-publish-source:
-    name: Resolve validated P1 artifact
-    needs: stage-and-test
-    if: ${{ always() && github.event_name != 'pull_request' && (needs.stage-and-test.result == 'success' || (github.event_name == 'workflow_dispatch' && inputs.phase == 'publish-only') || (github.event_name == 'push' && contains(github.event.head_commit.message, '[publish-only]'))) }}
-    concurrency:
-      # Publication-source resolution must never cancel provider validation.
-      group: nuvio-provider-publish-source-main
-      cancel-in-progress: true
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    outputs:
-      publish_only: ${{ steps.source.outputs.publish_only }}
-      artifact_run_id: ${{ steps.source.outputs.artifact_run_id }}
-      validated_sha: ${{ steps.source.outputs.validated_sha }}
-      validation_mode: ${{ steps.source.outputs.validation_mode }}
-    steps:
-      - name: Checkout current main
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: main
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Resolve publication source
-        id: source
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message || '' }}
-          DISPATCH_PHASE: ${{ inputs.phase || 'full' }}
-          DISPATCH_SOURCE_RUN_ID: ${{ inputs.source_run_id || '' }}
-          DISPATCH_SOURCE_SHA: ${{ inputs.source_sha || '' }}
-          DISPATCH_SOURCE_MODE: ${{ inputs.source_mode || 'deep' }}
-          STAGE_RUN_ID: ${{ github.run_id }}
-          STAGE_VALIDATED_SHA: ${{ needs.stage-and-test.outputs.validated_sha }}
-          STAGE_VALIDATION_MODE: ${{ needs.stage-and-test.outputs.validation_mode }}
-        run: |
-          set -euo pipefail
-          publish_only=false
-          artifact_run_id="$STAGE_RUN_ID"
-          validated_sha="$STAGE_VALIDATED_SHA"
-          validation_mode="$STAGE_VALIDATION_MODE"
-
-          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ "$DISPATCH_PHASE" = "publish-only" ]; then
-            publish_only=true
-            artifact_run_id="$DISPATCH_SOURCE_RUN_ID"
-            validated_sha="$DISPATCH_SOURCE_SHA"
-            validation_mode="$DISPATCH_SOURCE_MODE"
-          elif [ "$EVENT_NAME" = "push" ] && [[ "$COMMIT_MESSAGE" == *"[publish-only]"* ]]; then
-            publish_only=true
-            test -s .github/triggers/publish-provider-transaction.json
-            artifact_run_id="$(python -c 'import json; print(json.load(open(".github/triggers/publish-provider-transaction.json"))["source_run_id"])')"
-            validated_sha="$(python -c 'import json; print(json.load(open(".github/triggers/publish-provider-transaction.json"))["source_sha"])')"
-            validation_mode="$(python -c 'import json; print(json.load(open(".github/triggers/publish-provider-transaction.json")).get("mode","deep"))')"
-          fi
-
-          if [ "$publish_only" = true ]; then
-            [[ "$artifact_run_id" =~ ^[0-9]+$ ]]
-            [[ "$validated_sha" =~ ^[0-9a-f]{40}$ ]]
-            [[ "$validation_mode" = "quick" || "$validation_mode" = "deep" ]]
-          else
-            test -n "$validated_sha"
-            test -n "$validation_mode"
-          fi
-
-          echo "publish_only=$publish_only" >> "$GITHUB_OUTPUT"
-          echo "artifact_run_id=$artifact_run_id" >> "$GITHUB_OUTPUT"
-          echo "validated_sha=$validated_sha" >> "$GITHUB_OUTPUT"
-          echo "validation_mode=$validation_mode" >> "$GITHUB_OUTPUT"
-          echo "FIELD_PROVIDER_PUBLISH_SOURCE publish_only=$publish_only artifact_run_id=$artifact_run_id validated_sha=$validated_sha mode=$validation_mode"
-
   publish:
-    name: Publish validated provider transaction
-    needs:
-      - stage-and-test
-      - resolve-publish-source
-    if: ${{ always() && github.event_name != 'pull_request' && needs.resolve-publish-source.result == 'success' && (needs.resolve-publish-source.outputs.publish_only == 'true' || needs.stage-and-test.result == 'success') }}
-    concurrency:
-      # Serialize only Provider publications. Other applications/workflows
-      # prepare and publish independently and rely on git freshness/rebase.
-      group: niakvio-provider-publication-main
-      cancel-in-progress: true
+    name: Publish verified reports and manifest projections
+    needs: verify
+    if: ${{ github.event_name != 'pull_request' && needs.verify.result == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 25
     permissions:
       contents: write
       actions: read
-    env:
-      NUVIO_VALIDATION_MODE: ${{ needs.resolve-publish-source.outputs.validation_mode }}
+    concurrency:
+      group: provider-v3-report-publication-main
+      cancel-in-progress: true
     steps:
-      - name: Checkout current published repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
           fetch-depth: 0
-
-      - name: Reject stale validated transaction
-        id: freshness
-        shell: bash
+      - name: Reject stale verification
         env:
-          VALIDATED_SHA: ${{ needs.resolve-publish-source.outputs.validated_sha }}
-          PUBLISH_ONLY: ${{ needs.resolve-publish-source.outputs.publish_only }}
+          VALIDATED_SHA: ${{ needs.verify.outputs.validated_sha }}
         run: |
-          set -euo pipefail
-          CURRENT_SHA="$(git rev-parse HEAD)"
-          if [ "$CURRENT_SHA" = "$VALIDATED_SHA" ]; then
-            echo "stale=false" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          if [ "$PUBLISH_ONLY" != "true" ]; then
-            echo "stale=true" >> "$GITHUB_OUTPUT"
-            echo "FIELD_PROVIDER_PUBLICATION_SKIPPED reason=main_advanced validated=$VALIDATED_SHA current=$CURRENT_SHA"
-            exit 0
-          fi
-
-          git merge-base --is-ancestor "$VALIDATED_SHA" "$CURRENT_SHA"
-          git diff --name-only "$VALIDATED_SHA..$CURRENT_SHA" > "$RUNNER_TEMP/publish-only-diff.txt"
-          python - <<'PY'
-          from pathlib import Path
-          allowed_files = {
-              "scripts/promote_candidates.py",
-              "scripts/reapply_published_overrides.py",
-              "scripts/activation_preservation_core_rehash.py",
-              "scripts/validate_activation_preservation.py",
-              "scripts/consume_force_reconstruction_trigger.py",
-              "tests/activation_preservation_core_rehash_test.py",
-              "tests/force_reconstruction_trigger_test.py",
-              "tests/provider_clean_reconstruction_contract_test.py",
-              "tests/core_repair_type_architecture_test.py",
-          }
-          allowed_prefixes = (
-              ".github/workflows/",
-              ".github/triggers/",
-          )
-          changed = [
-              line.strip()
-              for line in Path(__import__("os").environ["RUNNER_TEMP"], "publish-only-diff.txt").read_text().splitlines()
-              if line.strip()
-          ]
-          unexpected = sorted(
-              path
-              for path in set(changed)
-              if path not in allowed_files
-              and not any(path.startswith(prefix) for prefix in allowed_prefixes)
-          )
-          print("FIELD_PROVIDER_PUBLISH_ONLY_DIFF changed=" + ",".join(changed))
-          if unexpected:
-              raise SystemExit("publish-only source invalidated by P1-sensitive changes: " + ",".join(unexpected))
-          PY
-          echo "stale=false" >> "$GITHUB_OUTPUT"
-          echo "FIELD_PROVIDER_PUBLICATION_RESUME validated=$VALIDATED_SHA current=$CURRENT_SHA"
-
-      - name: Capture published manifest baseline
-        if: steps.freshness.outputs.stale != 'true'
-        shell: bash
-        run: |
-          NUVIO_PUBLISHED_MANIFEST_BASELINE="$RUNNER_TEMP/published-manifest.json"
-          echo "NUVIO_PUBLISHED_MANIFEST_BASELINE=$NUVIO_PUBLISHED_MANIFEST_BASELINE" >> "$GITHUB_ENV"
-          git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
-
-      - name: Set up Python
-        if: steps.freshness.outputs.stale != 'true'
-        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+          test "$(git rev-parse HEAD)" = "$VALIDATED_SHA"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
-          python-version: '3.12'
-
-      - name: Set up Node.js
-        if: steps.freshness.outputs.stale != 'true'
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: '24'
-          package-manager-cache: false
-
-      - name: Install pinned runtime dependencies
-        if: steps.freshness.outputs.stale != 'true'
+          name: provider-v3-observation-${{ github.run_id }}
+          path: checked-observation
+      - name: Restore verified reports
         run: |
-          npm ci --ignore-scripts --no-audit --no-fund
-
-      - name: Download validated staging transaction
-        if: steps.freshness.outputs.stale != 'true'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          name: nuvio-validation-stage-${{ needs.resolve-publish-source.outputs.artifact_run_id }}
-          path: checked-artifact
-          github-token: ${{ github.token }}
-          repository: ${{ github.repository }}
-          run-id: ${{ needs.resolve-publish-source.outputs.artifact_run_id }}
-
-      - name: Restore validated routing state
-        if: steps.freshness.outputs.stale != 'true'
+          cp checked-observation/health-report.json health-report.json
+          cp checked-observation/provider-hub-report.json provider-hub-report.json
+          cp checked-observation/diagnostics-report.json diagnostics-report.json
+          cp checked-observation/diagnostics-report.html diagnostics-report.html
+      - name: Reproject manifests on Deep only
+        if: needs.verify.outputs.validation_mode == 'deep'
         run: |
-          cp checked-artifact/provider-overrides.json provider-overrides.json
-          cp checked-artifact/provider-domain-history.json provider-domain-history.json
-          python scripts/build_provider_runtime_profiles.py
-          python scripts/reapply_published_overrides.py
-
-      - name: Promote only proven candidates
-        if: steps.freshness.outputs.stale != 'true'
-        env:
-          NUVIO_STAGE: checked-artifact/staging
-          NUVIO_HEALTH_RESULTS: checked-artifact/health-output/health-results.json
-        shell: bash
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_language_projection.py
+      - name: Verify no runtime/data mutation during publication
         run: |
-          if [ "${{ needs.resolve-publish-source.outputs.validation_mode }}" = "quick" ]; then
-            python scripts/promote_refresh_candidates.py
-          else
-            python scripts/promote_candidates.py
-          fi
-
-      - name: Reapply durable overrides after candidate promotion
-        if: steps.freshness.outputs.stale != 'true'
+          git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json
+          python scripts/verify_provider_v3_reverse_rebuild.py
+      - name: Refresh integrity inventories
         run: |
-          python scripts/reapply_published_overrides.py --primary manifest.next.json --skip-secondary
-
-      - name: Consume successful one-shot reconstruction requests
-        if: steps.freshness.outputs.stale != 'true'
-        shell: bash
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Publish observation transaction
         run: |
-          set -euo pipefail
-          python scripts/consume_force_reconstruction_trigger.py \
-            --trigger .github/triggers/force-clean-provider-reconstruction.json \
-            --stage-registry checked-artifact/staging/candidates.json \
-            --provenance PROVENANCE.json \
-            --overrides provider-overrides.json \
-            --root .
-
-      - name: Finalize upstream last-known-good snapshots
-        if: steps.freshness.outputs.stale != 'true'
-        run: |
-          test -f checked-artifact/staging/upstream-lkg-pending.json
-          python scripts/finalize_upstream_lkg.py \
-            --pending checked-artifact/staging/upstream-lkg-pending.json \
-            --keep-generations 2
-
-      - name: Prune stale bundles and validate overrides
-        if: steps.freshness.outputs.stale != 'true'
-        run: |
-          python scripts/prune_unreferenced_providers.py
-          python scripts/validate_published_overrides.py
-
-      - name: Restore validated reports
-        if: steps.freshness.outputs.stale != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          cp checked-artifact/health-output/provider-hub-report.json provider-hub-report.json
-          cp checked-artifact/health-output/diagnostics-report.json diagnostics-report.json
-          cp checked-artifact/health-output/diagnostics-report.html diagnostics-report.html
-          cp checked-artifact/health-output/route-regressions.json route-regressions.json
-          cp checked-artifact/health-output/repair-report.json repair-report.json
-
-      - name: Build canonical publication transaction
-        if: steps.freshness.outputs.stale != 'true'
-        shell: bash
-        run: |
-          set -euo pipefail
-          test -f manifest.next.json
-          mv manifest.next.json manifest.json
-          python scripts/build_provider_runtime_profiles.py
-          python scripts/reapply_published_overrides.py
-          python scripts/generate_language_manifests.py
-          python scripts/prune_unreferenced_providers.py
-
-          # First pass catches promoter/repair changes before content audit.
-          python scripts/sync_release_versions.py \
-            --manifest manifest.json \
-            --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
-
-          python scripts/activation_preservation_core_rehash.py
-          python scripts/validate_language_projection.py
-
-          # Compatibility promoters emit a candidate manifest. ARCHI2 imports
-          # that transaction into the canonical catalog, then manifests are
-          # rendered back from the catalog before publication.
-          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
-            --general manifest.json \
-            --vf vf/manifest.json \
-            --output provider_catalog.json
-          node engine_v2/scripts/render-manifests-from-catalog.mjs \
-            --catalog provider_catalog.json \
-            --general manifest.json \
-            --vf vf/manifest.json
-          node engine_v2/tests/provider-catalog.test.mjs
-          python tests/language_manifest_metadata_consistency_test.py
-
-          python scripts/release_evidence_fence.py fingerprint \
-            --manifest manifest.json \
-            --root . \
-            --output "$RUNNER_TEMP/release-generation.json"
-
-      - name: Audit content identity and media
-        if: steps.freshness.outputs.stale != 'true' && needs.stage-and-test.outputs.validation_mode == 'deep'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/audit_catalogue_media.py \
-            --manifest manifest.json \
-            --stage checked-artifact/staging \
-            --health checked-artifact/health-output/health-results.json \
-            --output /tmp/catalogue-media-audit.json
-          python scripts/quarantine_catalogue_audit_failures.py \
-            --audit /tmp/catalogue-media-audit.json \
-            --manifest manifest.json \
-            --overrides provider-overrides.json
-          python scripts/build_provider_runtime_profiles.py
-          python scripts/reapply_published_overrides.py
-          python scripts/generate_language_manifests.py
-          python scripts/prune_unreferenced_providers.py
-          python scripts/sync_release_versions.py \
-            --manifest manifest.json \
-            --previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"
-          python scripts/activation_preservation_core_rehash.py
-          python scripts/validate_language_projection.py
-          node engine_v2/scripts/bootstrap-provider-catalog.mjs \
-            --general manifest.json \
-            --vf vf/manifest.json \
-            --output provider_catalog.json
-          node engine_v2/scripts/render-manifests-from-catalog.mjs \
-            --catalog provider_catalog.json \
-            --general manifest.json \
-            --vf vf/manifest.json
-          node engine_v2/tests/provider-catalog.test.mjs
-          python scripts/release_evidence_fence.py fingerprint \
-            --manifest manifest.json \
-            --root . \
-            --output "$RUNNER_TEMP/release-generation.json"
-
-      - name: Upload catalogue/media audit
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: catalogue-media-audit-${{ github.run_id }}
-          path: /tmp/catalogue-media-audit.json
-          retention-days: 7
-          if-no-files-found: warn
-
-      - name: Measure Interstellar real coverage
-        if: steps.freshness.outputs.stale != 'true'
-        continue-on-error: true
-        run: |
-          python scripts/interstellar_nuvio_matrix.py \
-            --workers 8 \
-            --timeout 90 \
-            --minimum-automatic 0 \
-            --output /tmp/interstellar-nuvio-matrix.json
-
-      - name: Upload real coverage diagnostics
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-        with:
-          name: interstellar-real-coverage-${{ github.run_id }}
-          path: /tmp/interstellar-nuvio-matrix.json
-          retention-days: 7
-          if-no-files-found: warn
-
-      - name: Publish atomic ARCHI2 transaction
-        if: steps.freshness.outputs.stale != 'true'
-        shell: bash
-        run: |
-          python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json \
-            --root . \
-            --evidence "$RUNNER_TEMP/release-generation.json"
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-          node engine_v2/tests/provider-catalog.test.mjs
-
-          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json provider_catalog.json \
-            package.json package-lock.json sources.json nuvio-client-id-state.json \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
-            PROVENANCE.json provider-overrides.json provider-domain-history.json \
-            upstream-lkg.json upstream-lkg/ health-report.json health-history.json \
-            provider-hub-report.json diagnostics-report.json \
-            diagnostics-report.html route-regressions.json repair-report.json
-          git add -A providers
-          git add -A provider-bases
-              if git ls-files --error-unmatch .github/triggers/force-clean-provider-reconstruction.json >/dev/null 2>&1 \
-             || [ -e .github/triggers/force-clean-provider-reconstruction.json ]; then
-            git add -A -- .github/triggers/force-clean-provider-reconstruction.json
+          git add health-report.json provider-hub-report.json diagnostics-report.json diagnostics-report.html             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if [ "${{ needs.verify.outputs.validation_mode }}" = deep ]; then
+            git add vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
           fi
-
           if git diff --cached --quiet; then
-            echo 'No validated provider change.'
+            echo "No report/manifest projection change."
             exit 0
           fi
-
-          git commit -m "chore: publish validated ARCHI2 provider transaction"
-          git reset --hard HEAD
-          git clean -fdx
-          git fetch origin main
-          git rebase origin/main
-
-          # The rebase can import concurrent README/config/cleanup changes after
-          # the publication hashes were first generated. Rebuild the inventories
-          # on the exact rebased tree so a provider transaction can never publish
-          # stale checksums for files that were changed or removed concurrently.
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-          git add FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          if ! git diff --cached --quiet; then
-            git commit --amend --no-edit
-          fi
-
-          python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json \
-            --root . \
-            --evidence "$RUNNER_TEMP/release-generation.json"
+          git commit -m "chore: publish Provider v3 ${{ needs.verify.outputs.validation_mode }} verification"
           git push origin HEAD:main
-
-      - name: Verify exact published main
-        if: steps.freshness.outputs.stale != 'true'
-        shell: bash
-        run: |
-          git fetch origin main
-          git reset --hard origin/main
-          git clean -fdx
-          npm ci --ignore-scripts --no-audit --no-fund
-          npm test
-          node engine_v2/tests/provider-catalog.test.mjs
-          python scripts/activation_preservation_core_rehash.py
-          python scripts/validate_language_projection.py
-          python scripts/validate_release_integrity.py
-          python scripts/release_evidence_fence.py validate \
-            --manifest manifest.json \
-            --root . \
-            --evidence "$RUNNER_TEMP/release-generation.json"
-          git diff --exit-code
