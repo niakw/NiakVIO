@@ -1219,6 +1219,12 @@ def retained_lkg_site(provider_id: str, cfg: dict[str, Any], history_row: dict[s
 def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any], mode: str, timeout: float) -> dict[str, Any]:
     item: dict[str, Any] = {"provider_id": provider_id, "status": "inconclusive"}
     candidates, source_observations = gather_candidates(provider_id, cfg, history_row, mode, timeout)
+    if bool(cfg.get("_domain_only")):
+        allowed_source_types = {"hub", "telegram_public", "redirect"}
+        candidates = [
+            candidate for candidate in candidates
+            if str(candidate.get("source_type") or "") in allowed_source_types
+        ]
     item["sources"] = source_observations
     item["site_candidates"] = candidates
     validations: list[dict[str, Any]] = []
@@ -1477,6 +1483,8 @@ def main() -> int:
             continue
         effective_cfg = dict(cfg)
         if args.domain_only:
+            if not has_authoritative_hub_source(cfg):
+                continue
             effective_cfg["_domain_only"] = True
         provider_patch = (
             config.get("provider_patches", {}).get(provider_id, {})

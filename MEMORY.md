@@ -49,3 +49,4 @@ Last updated: 2026-09-03
 
 - Core finalizer is now a read-only Provider v3 fixed-point gate.
 - Domain Refresh is the one routine write exception: daily hub observation may update only `provider_patches.<id>.official_site` plus domain history on main, then deterministically rematerialize only affected Provider v3 artifacts. It may not alter API/routes/replacements/fix/options.
+- Domain Refresh `--domain-only` filters to providers with an authoritative hub and hub/telegram/redirect-derived candidates only; direct/search fallback cannot change `official_site`.
