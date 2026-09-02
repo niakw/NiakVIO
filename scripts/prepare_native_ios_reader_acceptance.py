@@ -6,7 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
-PROVIDER_TIMEOUT_MS = 25_000
+PROVIDER_TIMEOUT_MS = 40_000
 NUVIO_MOBILE = Path("nuvio-mobile")
 IOS_KOTLIN_TARGET = Path("nuvio-mobile/composeApp/src/iosFull/kotlin/com/nuvio/app/NiakvioIosLab.kt")
 

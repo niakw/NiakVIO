@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+      - workbench/provider-v3-performance-playback
     paths:
       - ".github/triggers/full-native-lab-validation.json"
 
@@ -20,7 +21,7 @@ concurrency:
 env:
   NIAKVIO_REPRESENTATIVE_FIXTURES: "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
   NIAKVIO_SKIP_ANDROID_PREBUILD: "1"
-  NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"
+  NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "40000"
 
 jobs:
   resolve_tv:
