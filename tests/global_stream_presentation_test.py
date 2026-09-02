@@ -26,7 +26,7 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=True)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-shared-tmdb-cache-native-zero-extra-fetch-v17-jvm-json-utf8"
+assert presentation.REVISION == "all-providers-standard-fields-url-facts-v18"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
@@ -152,6 +152,23 @@ assert "🎬 Sinners • 2025" in sparse["description"]
 assert "Unknown" not in sparse["description"]
 assert "BLU-RAY" not in sparse["description"]
 
+url_quality = run(
+    "module.exports={getStreams:async()=>[{name:'Kehflix',url:'https://cdn.example/interstellar/FHD/main.m3u8',quality:'Unknown'}]};\n",
+    "kehflix",
+    "p.getStreams({mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert url_quality["quality"] == "1080p", url_quality
+assert url_quality["title"].endswith(" - 1080p"), url_quality
+assert "1080p-full-hd" in url_quality["badgeIds"], url_quality
+
+numeric_height = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://cdn.example/master.m3u8',height:2160}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert numeric_height["quality"] == "2160p", numeric_height
+assert numeric_height["title"].endswith(" - 4K"), numeric_height
+
 # Native Desktop bridge: optional TMDB enrichment is skipped when the client does
 # not expose a runtime-owned TMDB_API_KEY. Provider streams must return immediately.
 desktop_native = run(
@@ -176,4 +193,4 @@ assert native_cached["calls"] == 0, native_cached
 assert native_cached["row"]["duration"] == 169, native_cached
 assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
 
-print("global stream presentation V17 JVM-safe JSON contract tests passed")
+print("global stream presentation V18 standard-field and URL fact tests passed")

@@ -82,15 +82,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             semantic_types.append(item)
     payload = {
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
-        "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 18_000)), 120_000)),
-        "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 10_000)), 30_000)),
+        "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 30_000)), 120_000)),
+        "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 25_000)), 30_000)),
         "semanticTypes": semantic_types,
         "requestTypeAliases": {
             str(key).strip().lower(): str(value).strip().lower()
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v24-hard-fetch-deadline",
+        "revision": "tmdb-data-contract-launch-gate-v25-client-budget-aligned",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -414,7 +414,7 @@ var requestSerial=0;
 function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
 function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
 function tvRuntime(){try{var ua=s(g&&g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_){return false}}
-function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||10000):Number(c.providerTimeoutMs||18000)}
+function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||25000):Number(c.providerTimeoutMs||30000)}
 function budgetedFetch(original,deadline){
   if(typeof original!=="function")return original;
   var base=original.__nuvioProviderExecutionBudgetBase||original;

@@ -502,6 +502,11 @@ const provider=require(process.argv[2]);
 """)
 
 
+default_budget = mod.apply("module.exports={getStreams:async()=>[]};\n", options={"semantic_types":["movie"]})
+assert '"providerTimeoutMs":30000' in default_budget
+assert '"tvProviderTimeoutMs":25000' in default_budget
+assert '"revision":"tmdb-data-contract-launch-gate-v25-client-budget-aligned"' in default_budget
+
 # The JS-side budget cannot preempt a non-cooperative native bridge, but once a
 # native request returns after the deadline it must fail closed immediately and
 # must never let the provider chain another stale network request.
