@@ -40,3 +40,9 @@ Last updated: 2026-09-03
 4. Run/inspect TVAndroid, MobileAndroid, MobileIOS, DesktopMACOS, DesktopWindows labs against workbench.
 5. Harden stream metadata/badges and playback-readability issues found by labs.
 6. Develop NiakVIO JS minifizer only after architecture/runtime gates are stable; preserve all BEGIN/END and STARTFIX/CLOSEFIX comments exactly and prove semantic/runtime parity before enablement.
+
+## Architecture update
+- Quick and Deep are verification-only on the workbench since commit `b45048241b1857a7be2a02a2c6ab6340fc0dbe5c`.
+- Routine validation builds a temporary stage from the exact 96 published JS bytes; no discovery/promotion/repair.
+- Domain/hub checks are read-only in routine runs.
+- Manual full reconstruction workflow: `.github/workflows/provider-v3-reconstruct-all.yml`; it refuses direct commits to main and proves 96/96 reverse rebuild before an optional branch commit.

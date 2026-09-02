@@ -349,9 +349,13 @@ def materialize_all(
     )
     write_json(source_manifest_path, manifest)
 
+    context = str(os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") or "workspace").strip().casefold()
+    if context not in {"workspace", "release", "main"}:
+        raise ValueError(f"invalid NUVIO_PROVIDER_V3_CONTEXT: {context}")
     report = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "sourceSha": os.environ.get("GITHUB_SHA") or "",
+        "context": context,
         "generation": generation,
         "providerCount": len(report_rows),
         "expectedProviderCount": EXPECTED_PROVIDER_COUNT,
@@ -362,8 +366,8 @@ def materialize_all(
             "perDeviceProviderForkAllowed": False,
             "clientManifestProjectionAllowed": True,
         },
-        "publication": True,
-        "mainTouched": True,
+        "publication": context in {"release", "main"},
+        "mainTouched": context == "main",
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
     }

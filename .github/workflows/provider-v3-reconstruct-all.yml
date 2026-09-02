@@ -1,0 +1,119 @@
+name: MANUAL - Reconstruct Provider v3 96/96
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_reconstruction:
+        description: Commit the verified reconstruction back to the selected non-main branch
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-v3-manual-reconstruction-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  reconstruct:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Refuse direct main mutation
+        if: inputs.commit_reconstruction
+        shell: bash
+        run: |
+          test "${GITHUB_REF_NAME}" != "main" || {
+            echo "Manual Provider v3 reconstruction may never commit directly to main; use a branch + PR." >&2
+            exit 1
+          }
+      - name: Validate reconstruction inputs
+        run: |
+          set -euo pipefail
+          python tests/provider_v3_workflow_ownership_test.py
+          python scripts/provider_base_store.py validate
+          python tests/provider_clean_reconstruction_contract_test.py
+          python tests/provider_brick_portfolio_audit_test.py
+          python tests/provider_521_capability_regression_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/global_stream_presentation_test.py
+      - name: Reconstruct all 96 providers from DATA + Lego
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_v3_all.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          r=json.loads(Path("provider-v3-materialization.json").read_text(encoding="utf-8"))
+          rows=m.get("scrapers") or []
+          assert len(rows)==96, len(rows)
+          assert r.get("providerCount")==96, r.get("providerCount")
+          assert r.get("context")=="workspace", r.get("context")
+          assert r.get("publication") is False
+          assert r.get("mainTouched") is False
+          assert all(str(x.get("filename") or "").startswith("providers/") for x in rows)
+          print("FIELD_MANUAL_RECONSTRUCTION providers=96 context=workspace mainTouched=false")
+          PY
+      - name: Validate reconstructed runtime and release integrity
+        run: |
+          set -euo pipefail
+          python tests/global_media_type_resolution_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/global_stream_identity_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/stream_output_sanitizer_fail_closed_test.py
+          python tests/published_provider_lego_contract_test.py
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-v3-reconstruction-96-${{ github.run_id }}
+          path: |
+            manifest.json
+            vf/manifest.json
+            no-anime/manifest.json
+            vf-no-anime/manifest.json
+            providers/
+            provider-v3-materialization.json
+            FILE-HASHES.json
+            PATCH-SHA256SUMS.txt
+            SHA256SUMS.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Commit verified reconstruction to selected branch
+        if: inputs.commit_reconstruction
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             providers provider-v3-materialization.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if git diff --cached --quiet; then
+            echo "Reconstruction already byte-identical; nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore: reconstruct Provider v3 96/96"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
