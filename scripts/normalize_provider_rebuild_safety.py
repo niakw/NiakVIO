@@ -1,15 +1,11 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: GPL-3.0-only
-"""Materialize fail-closed rebuild safety around provider-derived bytes.
+"""Validate clean-v3 provider rebuild safety without rewriting Provider JS bytes.
 
-Minifiers may preserve NUVIO comments while moving or reformatting their owning
-statements. Comments alone therefore never authorize deleting bytes through a
-later wrapper terminator; relocated metadata is stripped without touching the
-provider body. This normalizer protects wrapper isolation, wires the durable
-``core_rebuild_safety`` parser into the owning fixed-point normalizer, owns
-canonical single-newline separation for the global HLS runtime hook, and keeps
-provider rebuild transitions observable when a content-addressed fixed point
-fails to converge.
+Provider v3 publication is raw-byte fixed-point: Core composition owns managed
+Lego boundaries, while this normalizer keeps wrapper isolation, HLS separator
+stability and rebuild diagnostics deterministic. Historical Core hardening
+materializers are intentionally not invoked.
 """
 from __future__ import annotations
 
@@ -22,12 +18,8 @@ from textwrap import dedent
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_engine_normalizer.py"
 REAPPLY = ROOT / "scripts" / "reapply_published_overrides.py"
-CORE_NORMALIZER = ROOT / "scripts" / "normalize_core_fixed_point_contract.py"
-CORE_MATERIALIZER = ROOT / "scripts" / "materialize_core_fixed_point_hardening.py"
-CORE_SAFETY = ROOT / "scripts" / "core_rebuild_safety.py"
 RUNTIME_DOMAIN_NORMALIZER = ROOT / "scripts" / "normalize_runtime_domain_fixed_point.py"
 HLS_RUNTIME = ROOT / "scripts" / "provider_patches" / "hls_runtime_integrity_v1.py"
-CORE_HARDENING_MARKER = "return harden_generated_apply(text)"
 REAPPLY_DIAGNOSTIC_MARKER = "FIELD_PROVIDER_REF_CHANGES"
 REAPPLY_ROOT_DIAGNOSTIC_MARKER = "FIELD_PROVIDER_FIXED_POINT_ROOT"
 
@@ -197,18 +189,6 @@ def _materialize_runtime_domain_fixed_point(*, check: bool) -> None:
     subprocess.run([sys.executable, str(RUNTIME_DOMAIN_NORMALIZER), mode], cwd=ROOT, check=True)
 
 
-def _materialize_core_hardening() -> None:
-    if not CORE_SAFETY.is_file():
-        raise SystemExit("durable Core rebuild safety module is missing")
-    if not CORE_MATERIALIZER.is_file():
-        raise SystemExit("durable Core fixed-point materializer is missing")
-    if CORE_HARDENING_MARKER in CORE_NORMALIZER.read_text(encoding="utf-8"):
-        return
-    subprocess.run([sys.executable, str(CORE_MATERIALIZER)], cwd=ROOT, check=True)
-    if CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
-        raise SystemExit("Core fixed-point hardening did not materialize")
-
-
 def _materialize_reapply_diagnostics() -> bool:
     current = REAPPLY.read_text(encoding="utf-8")
     expected = normalized_reapply_diagnostics(current)
@@ -229,12 +209,9 @@ def main() -> int:
     diagnostics_changed = False
     if args.apply:
         _materialize_runtime_domain_fixed_point(check=False)
-        _materialize_core_hardening()
         diagnostics_changed = _materialize_reapply_diagnostics()
     else:
         _materialize_runtime_domain_fixed_point(check=True)
-        if not CORE_SAFETY.is_file() or CORE_HARDENING_MARKER not in CORE_NORMALIZER.read_text(encoding="utf-8"):
-            raise SystemExit("Core fixed-point bounded parser is not materialized")
 
     current = TARGET.read_text(encoding="utf-8")
     expected = normalized(current)
