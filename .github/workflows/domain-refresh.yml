@@ -1,4 +1,4 @@
-name: ROUTE - Provider Domain/Hub Verify
+name: CORE - Domain Refresh
 
 on:
   workflow_dispatch:
@@ -15,6 +15,8 @@ on:
       - '.github/triggers/domain-refresh'
       - '.github/workflows/domain-refresh.yml'
       - 'scripts/resolve_provider_hubs.py'
+      - 'scripts/validate_domain_refresh_scope.py'
+      - 'scripts/materialize_provider_v3_route_refresh.py'
       - 'scripts/provider_dns_preflight.mjs'
       - 'provider-hubs.json'
       - 'domain-observation-config.json'
@@ -25,20 +27,24 @@ on:
     - cron: '23 3 * * *'
 
 permissions:
-  contents: read
+  contents: write
+  actions: write
 
 concurrency:
-  group: provider-domain-hub-observation
+  group: niakvio-core-domain-refresh-main
   cancel-in-progress: true
 
 jobs:
-  observe:
+  refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 50
+    timeout-minutes: 70
+    permissions:
+      contents: write
+      actions: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: main
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -46,32 +52,72 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
       - run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Resolve authoritative routes without applying them
+      - name: Resolve and apply validated route DATA
         shell: bash
         run: |
           set -euo pipefail
           MODE="${{ github.event.inputs.mode || 'quick' }}"
           mkdir -p health-output
-          python scripts/resolve_provider_hubs.py             --mode "$MODE"             --include-disabled             --workers 8             --timeout 8             --output health-output/provider-hub-report.json
-      - name: Observe provider domains through DNS
+          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
+          cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
+          python scripts/resolve_provider_hubs.py             --mode "$MODE" --include-disabled --workers 8 --timeout 8 --apply             --output health-output/provider-hub-report.json
+          python scripts/validate_domain_refresh_scope.py             --before "$RUNNER_TEMP/provider-overrides.before.json"             --after provider-overrides.json             --output health-output/domain-route-changes.json
+      - name: Diagnose observed domains through DNS
         env:
           GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
           node scripts/provider_dns_preflight.mjs             --manifest manifest.json             --hub-report health-output/provider-hub-report.json             --config domain-observation-config.json             --all-domains             --output health-output/dns-preflight-report.json
-      - name: Validate read-only route contracts
+      - name: Rebuild only route-affected Provider v3 artifacts
+        shell: bash
         run: |
           set -euo pipefail
-          test -s health-output/provider-hub-report.json
-          test -s health-output/dns-preflight-report.json
+          python scripts/materialize_provider_v3_route_refresh.py             --changes health-output/domain-route-changes.json
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+      - name: Validate route publication scope
+        run: |
+          set -euo pipefail
           python tests/provider_hub_registry_test.py
           node tests/dns_preflight.test.mjs
           python tests/domain_refresh_workflow_test.py
-          git diff --exit-code -- provider-overrides.json provider-domain-history.json providers provider-bases manifest.json
+          python tests/provider_v3_workflow_ownership_test.py
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          git diff --exit-code -- scripts/provider_patches provider-bases provider_catalog.json provider-type-policy.json
+      - name: Publish validated route availability update
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add provider-overrides.json provider-domain-history.json             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider-v3-materialization.json providers/             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          if git diff --cached --quiet; then
+            echo "No validated route availability change."
+            exit 0
+          fi
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced validated=$BASE_SHA current=$CURRENT_SHA"
+            gh workflow run domain-refresh.yml --ref main -f mode=quick
+            exit 0
+          fi
+          git commit -m "chore(domains): publish validated Provider v3 routes"
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
+          gh workflow run sync.yml --ref main -f mode=quick
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
         with:
-          name: provider-domain-observation-${{ github.run_id }}
+          name: provider-domain-refresh-${{ github.run_id }}
           path: |
             health-output/provider-hub-report.json
             health-output/dns-preflight-report.json
+            health-output/domain-route-changes.json
           retention-days: 8
-          if-no-files-found: error
+          if-no-files-found: warn
