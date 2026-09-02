@@ -37,7 +37,11 @@ if manual:
 for forbidden in ("--apply","git push origin HEAD:main","reapply_published_overrides.py\n"):
     assert forbidden not in core, f"Core gate must be read-only: {forbidden}"
 assert "contents: write" not in core
-assert "--apply" not in domain
-assert "contents: write" not in domain
-assert "git push" not in domain
+assert "--apply --domain-only" in domain
+assert "contents: write" in domain
+assert "git push" in domain
+for forbidden in ("run_adaptive_deep_repair.py","run_adaptive_quick_repair.py","promote_candidates.py","promote_refresh_candidates.py"):
+    assert forbidden not in domain
+assert "validate_domain_refresh_scope.py" in domain
+assert "materialize_provider_v3_domain_refresh.py" in domain
 print("provider v3 workflow ownership contract passed")

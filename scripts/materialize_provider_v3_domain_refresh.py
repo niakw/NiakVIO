@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild only route-affected published Provider v3 artifacts, proving all others stable."""
+"""Rebuild only domain-affected published Provider v3 artifacts, proving all others stable."""
 from __future__ import annotations
 import argparse, hashlib, json, os, shutil, tempfile
 from pathlib import Path
@@ -21,19 +21,19 @@ def main()->int:
     args=p.parse_args()
     requested={str(v).strip().casefold() for v in (load(args.changes).get("changed") or []) if str(v).strip()}
     if not requested:
-        print("FIELD_PROVIDER_V3_ROUTE_REFRESH providers=0 changed=0")
+        print("FIELD_PROVIDER_V3_DOMAIN_REFRESH providers=0 changed=0")
         return 0
     current=load(args.manifest)
     current_rows={str(r.get("id") or "").casefold():r for r in current.get("scrapers") or [] if isinstance(r,dict)}
     if len(current_rows)!=96: raise SystemExit(f"expected 96 providers, got {len(current_rows)}")
     unknown=sorted(requested-set(current_rows))
-    if unknown: raise SystemExit(f"route refresh unknown providers: {unknown}")
+    if unknown: raise SystemExit(f"domain refresh unknown providers: {unknown}")
     old_files={pid:ROOT/str(row["filename"]) for pid,row in current_rows.items()}
     old_hash={pid:sha(path) for pid,path in old_files.items()}
     old_context=os.environ.get("NUVIO_PROVIDER_V3_CONTEXT")
     try:
         os.environ["NUVIO_PROVIDER_V3_CONTEXT"]="main"
-        with tempfile.TemporaryDirectory(prefix="niakvio-route-refresh-") as raw:
+        with tempfile.TemporaryDirectory(prefix="niakvio-domain-refresh-") as raw:
             tmp=Path(raw)
             tm=tmp/"manifest.json"
             tm.write_bytes(args.manifest.read_bytes())
@@ -52,7 +52,7 @@ def main()->int:
                 if digest!=old_hash[pid]: changed.add(pid)
             unexpected=sorted(changed-requested)
             if unexpected:
-                raise SystemExit("route refresh changed non-requested providers: "+",".join(unexpected))
+                raise SystemExit("domain refresh changed non-requested providers: "+",".join(unexpected))
             # A route DATA update may be metadata-only for a provider; that's valid.
             for pid in changed:
                 new_row=rebuilt_rows[pid]
@@ -68,7 +68,7 @@ def main()->int:
                 rel=str(old.relative_to(ROOT)).replace("\\","/")
                 if rel not in referenced and old.exists(): old.unlink()
             print(
-                f"FIELD_PROVIDER_V3_ROUTE_REFRESH providers={len(requested)} "
+                f"FIELD_PROVIDER_V3_DOMAIN_REFRESH providers={len(requested)} "
                 f"changed={len(changed)} generation={str(report.get('generation') or '')[:16]} "
                 "repair=false"
             )

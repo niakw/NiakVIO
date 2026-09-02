@@ -48,4 +48,4 @@ Last updated: 2026-09-03
 - Manual full reconstruction workflow: `.github/workflows/provider-v3-reconstruct-all.yml`; it refuses direct commits to main and proves 96/96 reverse rebuild before an optional branch commit.
 
 - Core finalizer is now a read-only Provider v3 fixed-point gate.
-- Domain refresh is now read-only hub/DNS observation; it never writes provider DATA or provider JS.
+- Domain Refresh is the one routine write exception: daily hub observation may update only `provider_patches.<id>.official_site` plus domain history on main, then deterministically rematerialize only affected Provider v3 artifacts. It may not alter API/routes/replacements/fix/options.

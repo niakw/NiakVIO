@@ -1,46 +1,19 @@
 #!/usr/bin/env python3
-"""Fail closed unless provider-overrides drift is strictly route-maintenance DATA."""
+"""Fail closed unless Domain Refresh changed only the provider primary site URL."""
 from __future__ import annotations
 import argparse, copy, json
 from pathlib import Path
 from typing import Any
-
-ROUTE_KEYS={
-    "official_hub","official_site","official_api","replacements",
-    "runtime_domain_replacements","fixed_endpoint","api_recipe",
-}
-ROUTE_OPTION_FIELDS={
-    "scripts/provider_patches/toflix_official_endpoint.py":{"site","fallback_api"},
-    "scripts/provider_patches/vf_catalogue_recovery.py":{"base_url","api_url"},
-}
 
 def load(path:Path)->dict[str,Any]:
     value=json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(value,dict): raise SystemExit(f"{path}: object required")
     return value
 
-def scrub(row:dict[str,Any])->dict[str,Any]:
+def strip_domain(row:dict[str,Any])->dict[str,Any]:
     out=copy.deepcopy(row)
-    for key in ROUTE_KEYS:
-        out.pop(key,None)
-    options=out.get("patch_script_options")
-    if isinstance(options,dict):
-        for script,fields in ROUTE_OPTION_FIELDS.items():
-            cfg=options.get(script)
-            if isinstance(cfg,dict):
-                for field in fields: cfg.pop(field,None)
-                if not cfg: options.pop(script,None)
-        if not options: out.pop("patch_script_options",None)
-    mo=out.get("manifest_overrides")
-    if isinstance(mo,dict):
-        mo.pop("logo",None)
-        if not mo: out.pop("manifest_overrides",None)
+    out.pop("official_site",None)
     return out
-
-def required_values_safe(before:dict[str,Any],after:dict[str,Any])->bool:
-    b=[str(v) for v in before.get("required_values") or []]
-    a=[str(v) for v in after.get("required_values") or []]
-    return set(a).issubset(set(b))
 
 def main()->int:
     p=argparse.ArgumentParser()
@@ -61,18 +34,17 @@ def main()->int:
         if b==a: continue
         if not isinstance(b,dict) or not isinstance(a,dict):
             raise SystemExit(f"{pid}: provider patch object shape changed")
-        if b.get("patch_scripts")!=a.get("patch_scripts"):
-            raise SystemExit(f"{pid}: domain refresh changed patch_scripts")
-        if not required_values_safe(b,a):
-            raise SystemExit(f"{pid}: domain refresh added required_values")
-        bs=scrub(b); ass=scrub(a)
-        bs.pop("required_values",None); ass.pop("required_values",None)
-        if bs!=ass:
-            raise SystemExit(f"{pid}: domain refresh changed non-route Provider DATA")
-        changed.append(pid)
+        if strip_domain(b)!=strip_domain(a):
+            raise SystemExit(f"{pid}: domain refresh changed DATA beyond official_site")
+        before_site=str(b.get("official_site") or "").rstrip("/")
+        after_site=str(a.get("official_site") or "").rstrip("/")
+        if not after_site:
+            raise SystemExit(f"{pid}: domain refresh may not clear official_site")
+        if before_site!=after_site:
+            changed.append(pid)
     args.output.parent.mkdir(parents=True,exist_ok=True)
-    args.output.write_text(json.dumps({"changed":changed},indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
-    print(f"FIELD_DOMAIN_REFRESH_SCOPE providers={len(changed)} fix_mutation=false")
+    args.output.write_text(json.dumps({"changed":changed,"field":"official_site"},indent=2,ensure_ascii=False)+"\n",encoding="utf-8")
+    print(f"FIELD_DOMAIN_REFRESH_SCOPE providers={len(changed)} field=official_site fix_mutation=false")
     return 0
 if __name__=="__main__":
     raise SystemExit(main())

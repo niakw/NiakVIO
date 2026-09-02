@@ -71,5 +71,18 @@
     "comment_architecture_must_be_preserved": true,
     "managed_markers_must_be_preserved": true,
     "byte_equivalence_tests_required_before_enablement": true
+  },
+  "domain_refresh": {
+    "schedule": "daily",
+    "autonomous_main_write": true,
+    "allowed_provider_data_fields": [
+      "official_site"
+    ],
+    "history_write_allowed": true,
+    "repair_allowed": false,
+    "provider_fix_mutation_allowed": false,
+    "api_mutation_allowed": false,
+    "route_mutation_allowed": false,
+    "deterministic_rematerialization_of_affected_provider": true
   }
 }
