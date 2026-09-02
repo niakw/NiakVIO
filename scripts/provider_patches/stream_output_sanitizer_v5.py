@@ -174,9 +174,22 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         return output;
       }finally{try{await reader.cancel()}catch(_e){};try{controller.abort()}catch(_e){}}
     }
-    var buffer=await response.arrayBuffer();
+    if(typeof response.arrayBuffer==="function"){
+      var buffer=await response.arrayBuffer();
+      try{controller.abort()}catch(_e){}
+      return new Uint8Array(buffer.slice(0,32768));
+    }
+    // NuvioTV's QuickJS fetch Response is text/json-only. Preserve strict HLS
+    // validation there without requiring TextEncoder (also absent on TV).
+    if(typeof response.text==="function"){
+      var text=String(await response.text()||""),length=Math.min(text.length,32768);
+      var output=new Uint8Array(length);
+      for(var i=0;i<length;i++)output[i]=text.charCodeAt(i)&255;
+      try{controller.abort()}catch(_e){}
+      return output;
+    }
     try{controller.abort()}catch(_e){}
-    return new Uint8Array(buffer.slice(0,32768));
+    return new Uint8Array(0);
   }
 '''
     patched = _replace_once(patched, old_prefix, new_prefix, "bounded response preview")

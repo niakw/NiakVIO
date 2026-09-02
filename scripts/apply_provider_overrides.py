@@ -21,13 +21,18 @@ from override_text_utils import replace_literal
 from provider_patch_blocks import (
     assert_single_managed_fix,
     decode_managed_data,
+    has_managed_fix,
+    owned_span,
     render_managed_fix,
     replace_managed_fix_in_place,
+    strip_managed_fix,
     validate_managed_fixes,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "provider-overrides.json"
+GLOBAL_STREAM_FACTS = "scripts/provider_patches/global_stream_facts_v1.py"
+GLOBAL_STREAM_IDENTITY = "scripts/provider_patches/global_stream_identity_v1.py"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
 GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
@@ -42,6 +47,8 @@ CORE_MANAGED_SANITIZER_SCRIPTS = {
 GLOBAL_MEDIA_TYPE_RESOLUTION = "scripts/provider_patches/global_media_type_resolution_v1.py"
 # Managed Core bricks are composed only at whole START/END boundaries; provider rows may supply data/options, never brick ownership.
 CORE_START_MARKER = "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1"
+PROVIDER_BEGIN_MARKER = "/* BEGIN NIAKVIO_PROVIDER */"
+PROVIDER_END_MARKER = "/* END NIAKVIO_PROVIDER */"
 GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
@@ -100,38 +107,6 @@ def _provider_semantic_types(provider_id: str, specific: dict[str, Any]) -> list
     return list(_semantic_types_index().get(provider_id.casefold()) or [])
 
 
-def _tmdb_preflight_required(
-    provider_id: str,
-    specific: dict[str, Any],
-    provider_capability: dict[str, Any],
-    config: dict[str, Any],
-) -> bool:
-    """Use TMDB before provider execution only when provider semantics need it.
-
-    Anime-capable providers need the movie|tv|anime distinction before their
-    business logic. Catalogue/title recovery also consumes Core TMDB metadata
-    before search. Ordinary numeric-ID/direct resolvers can run first and pay
-    the TMDB verification cost only when they actually return a candidate.
-    """
-    semantic_types = _provider_semantic_types(provider_id, specific)
-    if "anime" in semantic_types:
-        return True
-
-    capability = str(
-        provider_capability.get("strategy") or specific.get("capability") or ""
-    ).strip().casefold()
-    catalogue_policy = config.get("catalogue_resolution_policy") or {}
-    if not isinstance(catalogue_policy, dict) or not catalogue_policy.get("enabled", False):
-        return False
-    catalogue_capabilities = {
-        str(value).strip().casefold()
-        for value in catalogue_policy.get("capabilities", [])
-        if str(value).strip()
-    }
-    official_site = str(specific.get("official_site") or "").strip()
-    return bool(official_site and capability in catalogue_capabilities)
-
-
 def load_overrides(path: Path | None = None) -> dict[str, Any]:
     config_path = (path or CONFIG).resolve()
     if not config_path.exists():
@@ -174,6 +149,76 @@ def profile_matches(text: str, profile: dict[str, Any]) -> bool:
     return bool(all_markers or any_markers or profile.get("auto_apply"))
 
 
+def _only_whitespace_gap_diff(left: str, right: str) -> bool:
+    """Allow only separator whitespace at one insertion/removal seam."""
+    if left == right:
+        return True
+    prefix = 0
+    limit = min(len(left), len(right))
+    while prefix < limit and left[prefix] == right[prefix]:
+        prefix += 1
+    suffix = 0
+    while (
+        suffix < len(left) - prefix
+        and suffix < len(right) - prefix
+        and left[len(left) - 1 - suffix] == right[len(right) - 1 - suffix]
+    ):
+        suffix += 1
+    left_mid = left[prefix:len(left) - suffix if suffix else len(left)]
+    right_mid = right[prefix:len(right) - suffix if suffix else len(right)]
+    return not left_mid.strip() and not right_mid.strip()
+
+
+def _assert_v3_patch_ownership(
+    before: str,
+    after: str,
+    patch_script: str,
+    managed_fix_id: str | None,
+) -> None:
+    """A v3 patch may alter only its own STARTFIX/CLOSEFIX rectangle."""
+    is_v3 = (
+        before.count(PROVIDER_BEGIN_MARKER) == 1
+        and before.count(PROVIDER_END_MARKER) == 1
+        and "NIAKVIO_PROVIDER_BASE_OWNED_V3" in before
+    )
+    if not is_v3 or after == before:
+        return
+    if not managed_fix_id:
+        raise ValueError(
+            f"v3 patch changed provider bytes without MANAGED_FIX_ID: {patch_script}"
+        )
+    fix_id = str(managed_fix_id).strip().upper()
+    if not (fix_id.startswith("PROVIDER.") or fix_id.startswith("CORE.")):
+        raise ValueError(
+            f"v3 patch has invalid Lego ownership id {fix_id}: {patch_script}"
+        )
+    new_span = owned_span(after, fix_id)
+    if new_span is None or not has_managed_fix(after, fix_id):
+        raise ValueError(
+            f"v3 patch changed bytes without STARTFIX/CLOSEFIX block {fix_id}: {patch_script}"
+        )
+
+    old_span = owned_span(before, fix_id)
+    if old_span is not None:
+        if before[:old_span[0]] != after[:new_span[0]]:
+            raise ValueError(
+                f"v3 patch mutated bytes before owned fix {fix_id}: {patch_script}"
+            )
+        if before[old_span[1]:] != after[new_span[1]:]:
+            raise ValueError(
+                f"v3 patch mutated bytes after owned fix {fix_id}: {patch_script}"
+            )
+        return
+
+    # New Lego insertion: deleting the new rectangle must recover the previous
+    # provider byte-for-byte, except for separator newlines at the insertion seam.
+    without_new = after[:new_span[0]] + after[new_span[1]:]
+    if not _only_whitespace_gap_diff(before, without_new):
+        raise ValueError(
+            f"v3 patch mutated bytes outside new owned fix {fix_id}: {patch_script}"
+        )
+
+
 def _apply_patch_script(
     text: str,
     provider_id: str,
@@ -199,6 +244,11 @@ def _apply_patch_script(
         result = apply_fn(text)
     if not isinstance(result, str):
         raise TypeError(f"provider patch {patch_script} must return str")
+
+    managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
+    managed_fix_optional = bool(getattr(module, "MANAGED_FIX_OPTIONAL", False))
+    _assert_v3_patch_ownership(text, result, patch_script, managed_fix_id)
+
     try:
         validate_managed_fixes(result)
     except ValueError as exc:
@@ -206,24 +256,22 @@ def _apply_patch_script(
             f"provider={provider_id} patch={patch_script} corrupted managed brick layout: {exc}"
         ) from exc
 
-    # Every active brick must be byte-idempotent. Reapply/deep may execute the
-    # same declared fix more than once; a second application with identical
-    # provider data is never allowed to append, reorder or rewrite anything.
-    managed_fix_id = getattr(module, "MANAGED_FIX_ID", None)
-    managed_fix_optional = bool(getattr(module, "MANAGED_FIX_OPTIONAL", False))
     if managed_fix_id:
         if managed_fix_optional:
-            if f"/* START NIAKVIO_FIX:{managed_fix_id} */" in result or f"/* NIAKVIO_FIX_BEGIN:{managed_fix_id} */" in result:
+            if has_managed_fix(result, str(managed_fix_id)):
                 assert_single_managed_fix(result, str(managed_fix_id))
         else:
             assert_single_managed_fix(result, str(managed_fix_id))
 
+    # Every active Lego is byte-idempotent. A second application may replace
+    # only the same STARTFIX/CLOSEFIX rectangle and must end on identical bytes.
     second = apply_fn(result, **kwargs) if (
         "options" in signature.parameters
         or any(parameter.kind == parameter.VAR_KEYWORD for parameter in signature.parameters.values())
     ) else apply_fn(result)
     if not isinstance(second, str):
         raise TypeError(f"provider patch {patch_script} must return str on reapply")
+    _assert_v3_patch_ownership(result, second, patch_script, managed_fix_id)
     try:
         validate_managed_fixes(second)
     except ValueError as exc:
@@ -238,12 +286,11 @@ def _apply_patch_script(
         )
     if managed_fix_id:
         if managed_fix_optional:
-            if f"/* START NIAKVIO_FIX:{managed_fix_id} */" in second or f"/* NIAKVIO_FIX_BEGIN:{managed_fix_id} */" in second:
+            if has_managed_fix(second, str(managed_fix_id)):
                 assert_single_managed_fix(second, str(managed_fix_id))
         else:
             assert_single_managed_fix(second, str(managed_fix_id))
     return result
-
 
 def _normalize_profile_names(values: Iterable[str] | None) -> set[str]:
     return {str(value) for value in (values or []) if str(value).strip()}
@@ -481,7 +528,7 @@ def _scan_runtime_domain_iife_end(text: str, start: int) -> int | None:
 
 
 def _runtime_domain_wrapper_span_from_key(text: str, key_index: int) -> tuple[int, int] | None:
-    """Own a markerless/minified bootstrap only through its reserved runtime key."""
+    """Own a markerless legacy bootstrap only through its reserved runtime key."""
     window_start = max(0, key_index - 768)
     starts = [
         window_start + match.start()
@@ -655,9 +702,9 @@ def _strip_runtime_domain_orphan_calls(
 
 
 def _inject_runtime_domain_overrides(text: str, replacements: dict[str, Any]) -> tuple[str, int]:
-    """Embed one canonical host-rewrite bootstrap, including after Terser strips its marker.
+    """Embed one canonical host-rewrite bootstrap for legacy pre-v3 bundles.
 
-    The stable reserved key survives compression even when the comment does not.
+    The stable reserved key identifies historical markerless copies when the comment is absent.
     Every occurrence must belong to the exact bounded IIFE shape; an unowned key
     fails closed. All proven duplicates are removed and one canonical bootstrap is
     placed at the earliest owned position, so repeated rebuilds cannot grow bytes.
@@ -1097,6 +1144,21 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
     delimit the generated Core tail. Unknown export shapes fail closed and retain
     all bytes.
     """
+    # Clean v3: never infer Core boundaries from interior marker comments.
+    # Remove only complete owned CORE.* STARTFIX/CLOSEFIX rectangles.
+    is_v3 = (
+        "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+        and text.count(PROVIDER_BEGIN_MARKER) == 1
+        and text.count(PROVIDER_END_MARKER) == 1
+    )
+    if is_v3:
+        fix_ids = validate_managed_fixes(text)
+        core_ids = [fix_id for fix_id in fix_ids if fix_id.startswith("CORE.")]
+        output = text
+        for fix_id in core_ids:
+            output = strip_managed_fix(output, fix_id)
+        return output, output != text
+
     original = text
     boundary_needle = f"/* {CORE_START_MARKER} */"
     floor = _provider_export_floor(text)
@@ -1164,112 +1226,194 @@ def apply_overrides(
     if not isinstance(provider_capability, dict):
         raise ValueError(f"provider_capabilities.{provider_id} must be an object")
 
-    replacements = dict(config.get("domain_replacements") or {})
-    replacements.update(specific.get("replacements") or {})
-    replacements.update(specific.get("route_replacements") or {})
-    for old, new in replacements.items():
-        old_text, new_text = str(old), str(new)
-        text, count = replace_literal(text, old_text, new_text)
-        if count:
-            applied.append({
-                "type": "replace",
-                "from": old_text,
-                "to": new_text,
-                "count": count,
-                "phase": phase,
-            })
+    provider_v3 = (
+        "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+        and text.count(PROVIDER_BEGIN_MARKER) == 1
+        and text.count(PROVIDER_END_MARKER) == 1
+    )
 
-    text, fixed_record = _apply_fixed_endpoint(text, provider_id, specific)
-    if fixed_record:
-        fixed_record["phase"] = phase
-        applied.append(fixed_record)
+    if not provider_v3:
+        replacements = dict(config.get("domain_replacements") or {})
+        replacements.update(specific.get("replacements") or {})
+        replacements.update(specific.get("domain_substitutions") or {})
+        replacements.update(specific.get("route_replacements") or {})
+        for old, new in replacements.items():
+            old_text, new_text = str(old), str(new)
+            text, count = replace_literal(text, old_text, new_text)
+            if count:
+                applied.append({
+                    "type": "replace",
+                    "from": old_text,
+                    "to": new_text,
+                    "count": count,
+                    "phase": phase,
+                })
 
-    runtime_replacements = specific.get("runtime_domain_replacements") or {}
-    if not isinstance(runtime_replacements, dict):
-        raise ValueError(f"provider_patches.{provider_id}.runtime_domain_replacements must be an object")
-    text, runtime_rule_count = _inject_runtime_domain_overrides(text, runtime_replacements)
-    if runtime_rule_count:
-        applied.append({"type": "runtime_domain_overrides", "count": runtime_rule_count, "phase": phase})
+        text, fixed_record = _apply_fixed_endpoint(text, provider_id, specific)
+        if fixed_record:
+            fixed_record["phase"] = phase
+            applied.append(fixed_record)
 
-    text, removed_guards = _strip_legacy_global_stream_guards(text)
-    if removed_guards:
-        applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
+        runtime_replacements = specific.get("runtime_domain_replacements")
+        if runtime_replacements is None:
+            runtime_replacements = specific.get("domain_substitutions") or {}
+        if not isinstance(runtime_replacements, dict):
+            raise ValueError(f"provider_patches.{provider_id}.runtime_domain_replacements must be an object")
+        text, runtime_rule_count = _inject_runtime_domain_overrides(text, runtime_replacements)
+        if runtime_rule_count:
+            applied.append({"type": "runtime_domain_overrides", "count": runtime_rule_count, "phase": phase})
 
-    profiles = config.get("patch_profiles") or {}
-    if not isinstance(profiles, dict):
-        raise ValueError("patch_profiles must be an object")
+        text, removed_guards = _strip_legacy_global_stream_guards(text)
+        if removed_guards:
+            applied.append({"type": "remove_legacy_global_stream_guard", "count": removed_guards, "phase": phase})
 
-    explicitly_requested = _normalize_profile_names(profile_names)
-    explicitly_requested.update(str(value) for value in (specific.get("profiles") or []))
-    unknown = explicitly_requested - set(profiles)
-    if unknown:
-        raise ValueError("unknown patch profile(s): " + ", ".join(sorted(unknown)))
+        profiles = config.get("patch_profiles") or {}
+        if not isinstance(profiles, dict):
+            raise ValueError("patch_profiles must be an object")
 
-    for profile_name, profile in profiles.items():
-        if not isinstance(profile, dict):
-            continue
-        profile_phase = str(profile.get("phase") or "discovery")
-        requested = profile_name in explicitly_requested and profile_phase == phase
-        automatic = bool(profile.get("auto_apply")) and profile_phase == phase
-        if not (requested or automatic):
-            continue
-        if not profile_matches(text, profile):
-            continue
-        patch_script = profile.get("patch_script")
-        if not patch_script:
-            raise ValueError(f"patch profile {profile_name} has no patch_script")
-        options = dict(profile.get("options") or {})
-        options.setdefault("detect_all", profile.get("detect_all") or [])
-        options.setdefault("detect_any", profile.get("detect_any") or [])
-        before = text
-        text = _apply_patch_script(text, provider_id, str(patch_script), options, str(profile_name))
-        if text != before:
-            applied.append({
-                "type": "patch_profile",
-                "profile": str(profile_name),
-                "path": str(patch_script),
-                "phase": profile_phase,
-            })
+        explicitly_requested = _normalize_profile_names(profile_names)
+        explicitly_requested.update(str(value) for value in (specific.get("profiles") or []))
+        unknown = explicitly_requested - set(profiles)
+        if unknown:
+            raise ValueError("unknown patch profile(s): " + ", ".join(sorted(unknown)))
 
-    patch_scripts: list[str] = []
-    excluded_scripts = {str(value) for value in (excluded_patch_scripts or []) if str(value).strip()}
-    configured_scripts = specific.get("patch_scripts")
-    if configured_scripts is not None:
-        if not isinstance(configured_scripts, list):
-            raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
-        patch_scripts.extend(str(value) for value in configured_scripts if str(value).strip())
-    legacy_patch_script = specific.get("patch_script")
-    if legacy_patch_script and str(legacy_patch_script) not in patch_scripts:
-        patch_scripts.append(str(legacy_patch_script))
+        for profile_name, profile in profiles.items():
+            if not isinstance(profile, dict):
+                continue
+            profile_phase = str(profile.get("phase") or "discovery")
+            requested = profile_name in explicitly_requested and profile_phase == phase
+            automatic = bool(profile.get("auto_apply")) and profile_phase == phase
+            if not (requested or automatic):
+                continue
+            if not profile_matches(text, profile):
+                continue
+            patch_script = profile.get("patch_script")
+            if not patch_script:
+                raise ValueError(f"patch profile {profile_name} has no patch_script")
+            options = dict(profile.get("options") or {})
+            options.setdefault("detect_all", profile.get("detect_all") or [])
+            options.setdefault("detect_any", profile.get("detect_any") or [])
+            before = text
+            text = _apply_patch_script(text, provider_id, str(patch_script), options, str(profile_name))
+            if text != before:
+                applied.append({
+                    "type": "patch_profile",
+                    "profile": str(profile_name),
+                    "path": str(patch_script),
+                    "phase": profile_phase,
+                })
 
-    script_options = specific.get("patch_script_options") or {}
-    if not isinstance(script_options, dict):
-        raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
-    reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_DESKTOP_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_STREAM_SANITIZER, GLOBAL_MEDIA_TYPE_RESOLUTION}
-    leaked_core_scripts = sorted(set(patch_scripts) & reserved_core_scripts)
-    if leaked_core_scripts:
-        raise ValueError(
-            f"provider_patches.{provider_id}.patch_scripts contains Core-global modules: " + ", ".join(leaked_core_scripts)
-        )
-    for patch_script in patch_scripts if phase == "discovery" else []:
-        if patch_script in excluded_scripts:
-            continue
-        # Stream-output sanitization is now one Core-owned terminal layer.
-        # Historical per-provider entries remain as declarative option sources
-        # during migration, but must never install a second wrapper.
-        if include_global_core and patch_script in CORE_MANAGED_SANITIZER_SCRIPTS:
-            continue
-        per_script_options = script_options.get(patch_script)
-        if per_script_options is None:
-            per_script_options = specific.get("patch_options") or {}
-        if not isinstance(per_script_options, dict):
+        patch_scripts: list[str] = []
+        excluded_scripts = {str(value) for value in (excluded_patch_scripts or []) if str(value).strip()}
+        configured_scripts = specific.get("patch_scripts")
+        if configured_scripts is not None:
+            if not isinstance(configured_scripts, list):
+                raise ValueError(f"provider_patches.{provider_id}.patch_scripts must be an array")
+            patch_scripts.extend(str(value) for value in configured_scripts if str(value).strip())
+        legacy_patch_script = specific.get("patch_script")
+        if legacy_patch_script and str(legacy_patch_script) not in patch_scripts:
+            patch_scripts.append(str(legacy_patch_script))
+
+        script_options = specific.get("patch_script_options") or {}
+        if not isinstance(script_options, dict):
+            raise ValueError(f"provider_patches.{provider_id}.patch_script_options must be an object")
+        reserved_core_scripts = {GLOBAL_RUNTIME_MEDIA_SAFETY, GLOBAL_RUNTIME_COMPAT, GLOBAL_DESKTOP_RUNTIME_COMPAT, GLOBAL_STREAM_PRESENTATION, GLOBAL_PROVIDER_BRANDING, GLOBAL_STREAM_SANITIZER, GLOBAL_MEDIA_TYPE_RESOLUTION}
+        leaked_core_scripts = sorted(set(patch_scripts) & reserved_core_scripts)
+        if leaked_core_scripts:
             raise ValueError(
-                f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+                f"provider_patches.{provider_id}.patch_scripts contains Core-global modules: " + ", ".join(leaked_core_scripts)
             )
-        before = text
-        text = _apply_patch_script(text, provider_id, patch_script, dict(per_script_options), None)
-        if text != before:
-            applied.append({"type": "patch_script", "path": patch_script, "phase": phase})
+        for patch_script in patch_scripts if phase == "discovery" else []:
+            if patch_script in excluded_scripts:
+                continue
+            # Stream-output sanitization is Core-owned in every phase. Historical
+            # per-provider entries remain declarative option sources only; they must
+            # never be materialized into ProviderBase when global Core is disabled.
+            if patch_script in CORE_MANAGED_SANITIZER_SCRIPTS:
+                continue
+            per_script_options = script_options.get(patch_script)
+            if per_script_options is None:
+                per_script_options = specific.get("patch_options") or {}
+            if not isinstance(per_script_options, dict):
+                raise ValueError(
+                    f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
+                )
+            before = text
+            text = _apply_patch_script(text, provider_id, patch_script, dict(per_script_options), None)
+            if text != before:
+                applied.append({"type": "patch_script", "path": patch_script, "phase": phase})
+
+
+    else:
+        # Provider v3 bytes are generated from the common skeleton + persisted
+        # provider DATA. Legacy patch_scripts are migration evidence only and are
+        # never executed against v3. Runtime-specific behavior must be explicitly
+        # promoted to provider_lego_scripts with PROVIDER.<ID>.* ownership.
+        provider_lego_scripts = specific.get("provider_lego_scripts") or []
+        if not isinstance(provider_lego_scripts, list):
+            raise ValueError(f"provider_patches.{provider_id}.provider_lego_scripts must be an array")
+        provider_lego_options = specific.get("provider_lego_options") or {}
+        if not isinstance(provider_lego_options, dict):
+            raise ValueError(f"provider_patches.{provider_id}.provider_lego_options must be an object")
+        excluded_scripts = {
+            str(value)
+            for value in (excluded_patch_scripts or [])
+            if str(value).strip()
+        }
+        expected_prefix = f"PROVIDER.{provider_id.upper()}."
+        for patch_script in [
+            str(value) for value in provider_lego_scripts if str(value).strip()
+        ]:
+            if patch_script in excluded_scripts:
+                continue
+            module = _load_patch_module(patch_script, provider_id)
+            managed_fix_id = str(getattr(module, "MANAGED_FIX_ID", "") or "").strip().upper()
+            if not managed_fix_id:
+                raise ValueError(
+                    f"provider={provider_id} v3 Lego has no MANAGED_FIX_ID: {patch_script}"
+                )
+            if not managed_fix_id.startswith(expected_prefix):
+                raise ValueError(
+                    f"provider={provider_id} v3 Lego ownership must start with "
+                    f"{expected_prefix}: {patch_script} owns {managed_fix_id}"
+                )
+            options = provider_lego_options.get(patch_script)
+            if options is None:
+                options = {}
+            if not isinstance(options, dict):
+                raise ValueError(
+                    f"provider_patches.{provider_id}.provider_lego_options[{patch_script!r}] "
+                    "must be an object"
+                )
+            before = text
+            text = _apply_patch_script(
+                text,
+                provider_id,
+                patch_script,
+                dict(options),
+                "provider_lego",
+            )
+            if text != before:
+                applied.append({
+                    "type": "provider_lego",
+                    "path": patch_script,
+                    "phase": phase,
+                    "scope": managed_fix_id,
+                })
+
+    core_options = specific.get("core_options") or {}
+    if not isinstance(core_options, dict):
+        raise ValueError(f"provider_patches.{provider_id}.core_options must be an object")
+
+    def _provider_core_options(name: str) -> dict[str, Any]:
+        value = core_options.get(name)
+        if value is None:
+            return {}
+        if not isinstance(value, dict):
+            raise ValueError(
+                f"provider_patches.{provider_id}.core_options[{name!r}] must be an object"
+            )
+        return dict(value)
 
     if phase == "discovery" and include_global_core:
         playback_policy = config.get("playback_integrity_policy") or {}
@@ -1286,10 +1430,27 @@ def apply_overrides(
         if not isinstance(global_options, dict):
             raise ValueError("playback_integrity_policy.hls_runtime_options must be an object")
 
-        provider_floor = _provider_export_floor(text)
-        boundary_needle = f"/* {CORE_START_MARKER} */"
-        if provider_floor >= 0 and text.find(boundary_needle, provider_floor) < 0:
-            text = text.rstrip() + f"\n{boundary_needle}\n"
+        # Canonical published layout is one single Provider envelope:
+        # BEGIN PROVIDER
+        #   ProviderBase + DATA + PROVIDER.* Lego
+        #   CORE.* Lego
+        # END PROVIDER
+        # No second Core envelope and no generated Core separator are needed:
+        # ownership/order is carried by the Lego IDs themselves.
+        text = (
+            text.replace("/* BEGIN NIAKVIO_CORE */", "")
+            .replace("/* END NIAKVIO_CORE */", "")
+            .replace(f"/* {CORE_START_MARKER} */", "")
+        )
+        if text.count(PROVIDER_BEGIN_MARKER) == 0 and text.count(PROVIDER_END_MARKER) == 0:
+            text = (
+                f"{PROVIDER_BEGIN_MARKER}\n"
+                f"/* NIAKVIO_PROVIDER_ID:{provider_id} */\n"
+                + text.strip()
+                + f"\n{PROVIDER_END_MARKER}\n"
+            )
+        if text.count(PROVIDER_BEGIN_MARKER) != 1 or text.count(PROVIDER_END_MARKER) != 1:
+            raise ValueError(f"{provider_id}: malformed Provider envelope before Core composition")
 
         def _apply_playback_stage(hooks: list[str]) -> None:
             nonlocal text
@@ -1297,13 +1458,8 @@ def apply_overrides(
                 return
             for patch_script in [str(value) for value in hooks if str(value).strip()]:
                 options = dict(global_options) if patch_script.endswith("hls_runtime_integrity_v1.py") else {}
-                provider_options = script_options.get(patch_script)
-                if provider_options is not None:
-                    if not isinstance(provider_options, dict):
-                        raise ValueError(
-                            f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
-                        )
-                    options.update(provider_options)
+                if patch_script.endswith("hls_runtime_integrity_v1.py"):
+                    options.update(_provider_core_options("hls_runtime_integrity"))
                 before = text
                 text = _apply_patch_script(text, provider_id, patch_script, options, None)
                 if text != before:
@@ -1318,12 +1474,8 @@ def apply_overrides(
         # once, in the historical pre-catalogue slot, so provider-specific options
         # survive without allowing the managed brick to move between layers on
         # repeated full compositions.
-        desktop_options = script_options.get(GLOBAL_DESKTOP_RUNTIME_COMPAT)
-        if desktop_options is not None:
-            if not isinstance(desktop_options, dict):
-                raise ValueError(
-                    f"provider_patches.{provider_id}.patch_script_options[{GLOBAL_DESKTOP_RUNTIME_COMPAT!r}] must be an object"
-                )
+        desktop_options = _provider_core_options("desktop_runtime_compat")
+        if desktop_options:
             before = text
             text = _apply_patch_script(
                 text,
@@ -1356,13 +1508,9 @@ def apply_overrides(
             if not patch_script:
                 raise ValueError("catalogue_resolution_policy.global_discovery_hook is required")
             options = dict(catalogue_policy.get("options") or {})
-            provider_options = script_options.get(patch_script)
-            if provider_options is not None:
-                if not isinstance(provider_options, dict):
-                    raise ValueError(
-                        f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
-                    )
-                options.update(provider_options)
+            options.update(
+                _provider_core_options("catalogue_alias_recovery")
+            )
             options.update({"base_url": official_site, "provider_name": provider_id})
             before = text
             text = _apply_patch_script(text, provider_id, patch_script, options, None)
@@ -1387,13 +1535,9 @@ def apply_overrides(
             if not patch_script:
                 raise ValueError("media_enrichment_policy.global_discovery_hook is required")
             options = dict(media_policy.get("options") or {})
-            provider_options = script_options.get(patch_script)
-            if provider_options is not None:
-                if not isinstance(provider_options, dict):
-                    raise ValueError(
-                        f"provider_patches.{provider_id}.patch_script_options[{patch_script!r}] must be an object"
-                    )
-                options.update(provider_options)
+            options.update(
+                _provider_core_options("media_enrichment")
+            )
             before = text
             text = _apply_patch_script(text, provider_id, patch_script, options, None)
             if text != before:
@@ -1454,6 +1598,23 @@ def apply_overrides(
                 "scope": "global_runtime_compat",
             })
 
+        # Facts and identity are independent owned Core Lego. Apply each one
+        # explicitly so the v3 ownership guard can prove that a patch only mutates
+        # the block it declares.
+        for patch_script, scope in (
+            (GLOBAL_STREAM_FACTS, "global_stream_facts"),
+            (GLOBAL_STREAM_IDENTITY, "global_stream_identity"),
+        ):
+            before = text
+            text = _apply_patch_script(text, provider_id, patch_script, {}, None)
+            if text != before:
+                applied.append({
+                    "type": "patch_script",
+                    "path": patch_script,
+                    "phase": phase,
+                    "scope": scope,
+                })
+
         # Presentation is a Core-wide finalization layer, not a provider capability.
         # Apply it after catalogue/media/playback recovery to every reconstructed
         # provider bundle. It only normalizes structured facts and optionally enriches
@@ -1494,17 +1655,11 @@ def apply_overrides(
             raise ValueError("playback_integrity_policy.terminal_stream_sanitizer must be an object")
         if terminal_policy.get("enabled", True):
             sanitizer_options = dict(terminal_policy.get("options") or {})
-            # Preserve provider-specific blocked hosts/paths when they exist, but
-            # Core owns the fail-closed semantics and cannot be weakened.
-            for legacy_script in (
-                GLOBAL_STREAM_SANITIZER,
-                "scripts/provider_patches/stream_output_sanitizer_v5.py",
-                "scripts/provider_patches/stream_output_sanitizer.py",
-            ):
-                provider_options = script_options.get(legacy_script)
-                if isinstance(provider_options, dict):
-                    for key, value in provider_options.items():
-                        sanitizer_options.setdefault(key, value)
+            # Provider tuning is declarative Core policy. Core still owns the
+            # fail-closed semantics and forces all-URL probing below.
+            provider_sanitizer = _provider_core_options("stream_sanitizer")
+            for key, value in provider_sanitizer.items():
+                sanitizer_options.setdefault(key, value)
             sanitizer_options["probe_direct_media"] = True
             sanitizer_options["probe_all_urls"] = True
             sanitizer_options["max_probes"] = max(
@@ -1535,12 +1690,6 @@ def apply_overrides(
         semantic_types = _provider_semantic_types(provider_id, specific)
         media_type_options = {
             "semantic_types": semantic_types,
-            "preflight_tmdb": _tmdb_preflight_required(
-                provider_id,
-                specific,
-                provider_capability,
-                config,
-            ),
             "request_type_aliases": {
                 str(key).strip().casefold(): str(value).strip().casefold()
                 for key, value in (provider_capability.get("request_type_aliases") or {}).items()
@@ -1561,6 +1710,9 @@ def apply_overrides(
                 "phase": phase,
                 "scope": "global_media_type_resolution",
             })
+
+        # END PROVIDER is the final byte boundary.
+        # Every CORE.* Lego is inserted immediately before it, after PROVIDER.* Lego.
 
     # A terminal quarantine is an inert publication state. Once the provider
     # has been replaced by the quarantine artifact, historical route/domain

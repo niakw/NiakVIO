@@ -84,14 +84,13 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 18_000)), 120_000)),
         "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 10_000)), 30_000)),
-        "preflightTmdb": bool(cfg.get("preflight_tmdb", True)),
         "semanticTypes": semantic_types,
         "requestTypeAliases": {
             str(key).strip().lower(): str(value).strip().lower()
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-api-first-semantic-transport-split-v20-event-launch-nonzero-gate",
+        "revision": "tmdb-data-contract-launch-gate-v24-hard-fetch-deadline",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -298,7 +297,9 @@ function provisional(a){
   // the client transports the work as tv/movie; authoritative TMDB verification
   // still happens before any positive output can escape.
   if(semantic.length&&semantic.indexOf(type)<0){
-    if(semantic.indexOf("anime")>=0&&(namespace==="tv"||namespace==="movie"))type="anime";
+    if(semantic.indexOf(namespace)>=0)type=namespace;
+    else if(semantic.indexOf("anime")>=0&&(namespace==="tv"||namespace==="movie"))type="anime";
+    else if(semantic.length===1)type=semantic[0];
     else return null;
   }
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
@@ -331,27 +332,6 @@ function provisional(a){
   }
   var out=Array.prototype.slice.call(a);out[1]=providerType;out.__nuvioContext=context;return out;
 }
-function nativeBridgeCannotAbort(){
-  try{
-    return !!(
-      g&&typeof g.__native_fetch==="function"&&
-      (typeof AbortSignal==="undefined"||typeof AbortSignal.timeout!=="function")
-    );
-  }catch(_){return false}
-}
-function preflightRequired(a){
-  var first=a[0],obj=objectRequest(first),q=obj?first:null;
-  if(obj&&hasTmdbMetadata(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q))return true;
-  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
-  // TV/Desktop native plugin bridges currently cannot abort their host fetch
-  // from JS. Repeating TMDB before dozens of providers can therefore occupy the
-  // native worker pool for tens of seconds. Numeric ids are safe to defer:
-  // zero-output providers cause no TMDB request, while every positive candidate
-  // is still resolved and capability-checked before it is returned.
-  if(/^\d+$/.test(id)&&nativeBridgeCannotAbort())return false;
-  if(c.preflightTmdb!==false)return true;
-  return !/^\d+$/.test(id);
-}
 function hasProviderOutput(value){
   if(Array.isArray(value))return value.length>0;
   if(!value||typeof value!=="object")return false;
@@ -364,6 +344,26 @@ function hasProviderOutput(value){
   if(url&&typeof url==="object"&&typeof url.url==="string"&&s(url.url))return true;
   return false;
 }
+function invocationEvent(a){
+  var first=a[0],obj=objectRequest(first),settings=obj?first:(a[4]&&typeof a[4]==="object"?a[4]:null),event="";
+  try{event=s(settings&&(settings.providerEvent||settings.event)||"")}catch(_){}
+  try{if(!event&&g)event=s(g.__nuvioProviderEvent||g.__nuvioEvent||"")}catch(_){}
+  event=event.toLowerCase();
+  return event||"launch";
+}
+function providerNeedsTmdbBeforeStreams(container){
+  try{
+    var model=container&&container.__niakvioProviderBase;
+    var contract=model&&model.identityInput;
+    if(!contract||contract.requiresTmdbBeforeRun!==true)return false;
+    var mode=s(contract.mode).toLowerCase();
+    return mode==="catalog_search"||mode==="external_id";
+  }catch(_){return false}
+}
+function hasResolvedTmdbMetadata(args){
+  try{return !!(args&&args.__nuvioContext&&args.__nuvioContext.tmdbMetadata)}catch(_){return false}
+}
+
 async function resolve(a){
   var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
   var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
@@ -426,7 +426,20 @@ function budgetedFetch(original,deadline){
       if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(remaining)}catch(_){}}
       args[1]=init;
     }
-    var value=await base.apply(this,args);
+    if(remaining<=0)return await base.apply(this,args);
+    var timer=null;
+    var timeoutPromise=new Promise(function(_resolve,reject){
+      if(typeof setTimeout!=="function")return;
+      timer=setTimeout(function(){reject(providerTimeoutError())},remaining);
+    });
+    var value;
+    try{
+      value=typeof setTimeout==="function"
+        ? await Promise.race([base.apply(this,args),timeoutPromise])
+        : await base.apply(this,args);
+    }finally{
+      try{if(timer!=null&&typeof clearTimeout==="function")clearTimeout(timer)}catch(_){}
+    }
     if(deadlineExpired(deadline))throw providerTimeoutError();
     return value;
   };
@@ -443,6 +456,11 @@ function install(o,k){
   if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
   var native=o[k];
   var wrap=async function(){
+    var originalArgs=Array.prototype.slice.call(arguments);
+    var providerEvent=invocationEvent(originalArgs);
+    // Absolute first gate: non-launch invocations do not touch provider runtime state.
+    if(providerEvent!=="launch")return [];
+
     var requestToken=0,requestDeadline=0,hadFetch=false,previousFetch,fetchBase,budgetFetchInstalled=false;
     try{
       // Hard-reset media context at every provider invocation. This prevents
@@ -466,32 +484,56 @@ function install(o,k){
         g.__nuvioProviderDeadlineMs=requestDeadline;
         if(typeof fetchBase==="function"){g.fetch=budgetedFetch(fetchBase,requestDeadline);budgetFetchInstalled=g.fetch!==fetchBase;}
       }
-      var originalArgs=Array.prototype.slice.call(arguments);
-      var preflight=preflightRequired(originalArgs);
-      var a=preflight?await resolve(originalArgs):provisional(originalArgs);
+      // Gate 2: build request-local provisional transport without TMDB by default.
+      // A provider whose declared DATA contract requires a title-based catalogue
+      // lookup is the only exception: resolve TMDB once before its first call.
+      var a=provisional(originalArgs);
       if(!a||deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
       if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
-      var providerEvent="launch";
+
+      var verified=null;
+      var tmdbBeforeStreams=providerNeedsTmdbBeforeStreams(o);
+      if(tmdbBeforeStreams){
+        verified=await resolve(originalArgs);
+        if(!verified||deadlineExpired(requestDeadline))return [];
+        if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+        if(!hasResolvedTmdbMetadata(verified))return [];
+        if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
+        if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
+        a=verified;
+      }
+
       var value=await native.apply(this,a);
       if(deadlineExpired(requestDeadline))return [];
       if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
-      // Hard launch/output gate: provider post-processing is allowed only for the
-      // current "launch" invocation and only when at least one real stream exists.
-      // [] and {streams/results/data: []} exit immediately with no deferred TMDB,
-      // presentation or later Core work.
-      if(providerEvent!=="launch"||!hasProviderOutput(value))return [];
-      // Ordinary numeric-ID providers avoid a redundant TMDB preflight. Positive
-      // output is still verified before it can escape, preserving anime/type safety.
-      if(!preflight){
-        var verified=await resolve(originalArgs);
+      if(!hasProviderOutput(value))return [];
+
+      // Gate 3: ordinary providers pay TMDB/type cost only after positive output.
+      // Providers which required TMDB to execute their declared plan already ran
+      // with verified context, so the same verified object is reused with no
+      // second metadata call.
+      if(!verified){
+        verified=await resolve(originalArgs);
         if(!verified||deadlineExpired(requestDeadline))return [];
-        var provisionalContext=a.__nuvioContext||{},verifiedContext=verified.__nuvioContext||{};
-        if(
-          s(provisionalContext.providerMediaType)!==s(verifiedContext.providerMediaType)
-          || s(provisionalContext.tmdbNamespace)!==s(verifiedContext.tmdbNamespace)
-        )return [];
+        if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+      }
+      var provisionalContext=a.__nuvioContext||{},verifiedContext=verified.__nuvioContext||{};
+      var rerun=(
+        s(provisionalContext.canonicalMediaType)!==s(verifiedContext.canonicalMediaType)
+        || s(provisionalContext.providerMediaType)!==s(verifiedContext.providerMediaType)
+        || s(provisionalContext.tmdbNamespace)!==s(verifiedContext.tmdbNamespace)
+        || s(provisionalContext.tmdbId)!==s(verifiedContext.tmdbId)
+        || s(provisionalContext.tmdbIdentity)!==s(verifiedContext.tmdbIdentity)
+      );
+      if(rerun){
+        if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
+        if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
+        value=await native.apply(this,verified);
+        if(deadlineExpired(requestDeadline))return [];
+        if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+        if(!hasProviderOutput(value))return [];
       }
       return value;
     }catch(error){

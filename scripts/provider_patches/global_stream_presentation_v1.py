@@ -83,8 +83,16 @@ def _strip_existing(text: str) -> str:
 
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
     context = kwargs.get("context") if isinstance(kwargs.get("context"), dict) else {}
-    text = _apply_facts(text, context)
-    text = _apply_identity(text, context)
+    # In clean Provider v3, STREAM_FACTS and STREAM_IDENTITY are separate owned
+    # Core Lego composed explicitly by apply_provider_overrides. Keep legacy
+    # standalone application behavior for non-v3 callers/tests only.
+    clean_v3 = (
+        text.count("/* BEGIN NIAKVIO_PROVIDER */") == 1
+        and text.count("/* END NIAKVIO_PROVIDER */") == 1
+    )
+    if not clean_v3:
+        text = _apply_facts(text, context)
+        text = _apply_identity(text, context)
     cfg = dict(options or {})
     provider_id = str(context.get("provider_id") or "").strip().casefold()
     language_profile = _provider_language_profile(provider_id)

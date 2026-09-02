@@ -36,12 +36,17 @@ SCRIPTS = ROOT.parent
 if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
-from provider_patch_blocks import has_managed_fix, render_managed_fix, replace_managed_fix, strip_managed_fix
+from provider_patch_blocks import begin_marker, has_managed_fix, owned_span, render_managed_fix, replace_managed_fix, strip_managed_fix
 V5_PATH = ROOT / "stream_output_sanitizer_v5.py"
 MARKER = "/* NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6 */"
 MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"
-OLD = "if(!item.probe)return item.stream;"
-NEW = "if(!item.probe)return config.probeAllUrls?null:item.stream;"
+OLD_LEGACY = "if(!item.probe)return item.stream;"
+NEW_LEGACY = "if(!item.probe)return config.probeAllUrls?null:item.stream;"
+OLD_CURRENT = "if(!item.probe||coreMediaProof(item.stream,item.url))return clearCoreMediaProof(item.stream);"
+NEW_CURRENT = "if(coreMediaProof(item.stream,item.url))return clearCoreMediaProof(item.stream);if(!item.probe)return config.probeAllUrls?null:clearCoreMediaProof(item.stream);"
+# Public test aliases retain the current builder shape.
+OLD = OLD_CURRENT
+NEW = NEW_CURRENT
 SANITIZER_PREFIX = "/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:"
 SANITIZER_CALL = '})(typeof globalThis!=="undefined"?globalThis:this,'
 V5_MARKERS = (
@@ -183,10 +188,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     patched = _ensure_local_probe_alias(patched)
     patched = patched.replace(MARKER, "").rstrip()
 
-    if NEW not in patched:
-        if OLD not in patched:
-            raise ValueError("stream sanitizer all-URL overflow hook not found")
-        patched = patched.replace(OLD, NEW, 1)
+    # V6 is a strict fail-closed policy overlay over the current V4/V5 builder.
+    # Support both the historical hook and the current checkItem() shape, but do
+    # not require any legacy provider bytes to exist in a clean v3 bundle.
+    if NEW_CURRENT not in patched and NEW_LEGACY not in patched:
+        if OLD_CURRENT in patched:
+            patched = patched.replace(OLD_CURRENT, NEW_CURRENT, 1)
+        elif OLD_LEGACY in patched:
+            patched = patched.replace(OLD_LEGACY, NEW_LEGACY, 1)
+        else:
+            raise ValueError("stream sanitizer all-URL fail-closed hook not found")
 
     body, sanitizer_unit = _extract_sanitizer_unit(patched)
     managed_data = {
@@ -199,7 +210,14 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     if owned and body.rstrip() != source.rstrip():
         raise ValueError("managed sanitizer rebuild mutated bytes outside its owned block")
 
-    if owned and not relocate_owned:
+    is_v3 = (
+        text.count("/* BEGIN NIAKVIO_PROVIDER */") == 1
+        and text.count("/* END NIAKVIO_PROVIDER */") == 1
+        and "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+    )
+    if is_v3 or (owned and not relocate_owned):
+        # Clean v3 always delegates placement to the compositor/owned Lego helper.
+        # The sanitizer never appends bytes after END PROVIDER.
         output = replace_managed_fix(
             text,
             MANAGED_FIX_ID,
@@ -207,16 +225,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
             data=managed_data,
         )
     else:
-        # Initial materialization or one-time repair of a provably stale terminal
-        # position. Once appended after all predecessors, subsequent applies are
-        # strict in-place replacements.
+        # Legacy-only initial materialization / ordering repair.
         managed = render_managed_fix(
             MANAGED_FIX_ID,
             sanitizer_unit,
             data=managed_data,
         )
         output = (body.rstrip() + "\n" if body else "") + managed.strip() + "\n"
-    sanitizer = output.find(f"/* START NIAKVIO_FIX:{MANAGED_FIX_ID} */")
+    sanitizer_span = owned_span(output, MANAGED_FIX_ID)
+    sanitizer = sanitizer_span[0] if sanitizer_span is not None else -1
     predecessor = _latest_predecessor_position(output)
     if sanitizer < 0 or (predecessor >= 0 and sanitizer <= predecessor):
         raise ValueError(

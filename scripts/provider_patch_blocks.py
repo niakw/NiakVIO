@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Transactional START/END ownership for NiakVIO JavaScript fix blocks.
+"""Transactional STARTFIX/CLOSEFIX ownership for NiakVIO JavaScript fix blocks.
 
-Every managed fix owns exactly one contiguous block in a published provider
-bundle. Reapplying a fix replaces that whole block; it never searches/replaces
-fragments inside its previous implementation.
+Every managed fix owns exactly one contiguous STARTFIX/CLOSEFIX block in a published provider
+bundle. In clean v3 the owned rectangle includes the line terminator immediately
+following CLOSEFIX when one is present. Reapplying or deleting a fix therefore
+round-trips the surrounding provider bytes exactly; it never trims neighbors or
+searches/replaces fragments inside its previous implementation.
 
 Provider-specific configuration is rendered before the JavaScript body and
 recorded as a deterministic base64 JSON data marker. Malformed, nested or
@@ -17,7 +19,20 @@ import re
 from typing import Any
 
 _PREFIX = "NIAKVIO_FIX"
+_CURRENT_START_PREFIX = "STARTFIX"
+_CURRENT_CLOSE_PREFIX = "CLOSEFIX"
 _FIX_ID_RE = re.compile(r"^[A-Z0-9][A-Z0-9_.:-]{2,95}$")
+PROVIDER_BEGIN_MARKER = "/* BEGIN NIAKVIO_PROVIDER */"
+PROVIDER_END_MARKER = "/* END NIAKVIO_PROVIDER */"
+
+def _is_clean_v3_provider(text: str) -> bool:
+    source = str(text or "")
+    return (
+        "NIAKVIO_PROVIDER_BASE_OWNED_V3" in source
+        and source.count(PROVIDER_BEGIN_MARKER) == 1
+        and source.count(PROVIDER_END_MARKER) == 1
+    )
+
 
 
 def _fix_id(value: str) -> str:
@@ -28,30 +43,33 @@ def _fix_id(value: str) -> str:
 
 
 def begin_marker(fix_id: str) -> str:
-    return f"/* START {_PREFIX}:{_fix_id(fix_id)} */"
+    return f"/* {_CURRENT_START_PREFIX}:{_fix_id(fix_id)} */"
 
 
 def end_marker(fix_id: str) -> str:
-    return f"/* END {_PREFIX}:{_fix_id(fix_id)} */"
+    return f"/* {_CURRENT_CLOSE_PREFIX}:{_fix_id(fix_id)} */"
 
 
 def legacy_begin_marker(fix_id: str) -> str:
-    return f"/* {_PREFIX}_BEGIN:{_fix_id(fix_id)} */"
+    return f"/* START {_PREFIX}:{_fix_id(fix_id)} */"
 
 
 def legacy_end_marker(fix_id: str) -> str:
+    return f"/* END {_PREFIX}:{_fix_id(fix_id)} */"
+
+
+def legacy_v1_begin_marker(fix_id: str) -> str:
+    return f"/* {_PREFIX}_BEGIN:{_fix_id(fix_id)} */"
+
+
+def legacy_v1_end_marker(fix_id: str) -> str:
     return f"/* {_PREFIX}_END:{_fix_id(fix_id)} */"
 
 
-def data_markers(fix_id: str, data: dict[str, Any] | None) -> tuple[str, str, str]:
+def data_marker(fix_id: str, data: dict[str, Any] | None) -> str:
     payload = json.dumps(data or {}, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
     encoded = base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii")
-    fid = _fix_id(fix_id)
-    return (
-        f"/* START {_PREFIX}_DATA:{fid} */",
-        f"/* {_PREFIX}_DATA_PAYLOAD:{fid}:{encoded} */",
-        f"/* END {_PREFIX}_DATA:{fid} */",
-    )
+    return f"/* FIXDATA:{_fix_id(fix_id)}:{encoded} */"
 
 
 def _span_for_markers(text: str, fix_id: str, begin: str, end: str) -> tuple[int, int] | None:
@@ -67,17 +85,34 @@ def _span_for_markers(text: str, fix_id: str, begin: str, end: str) -> tuple[int
     if starts[0] >= ends[0]:
         raise ValueError(f"managed fix {fix_id} END precedes START")
     inner = text[starts[0] + len(begin):ends[0]]
-    if "/* START NIAKVIO_FIX:" in inner or "/* END NIAKVIO_FIX:" in inner:
+    if (
+        "/* STARTFIX:" in inner
+        or "/* CLOSEFIX:" in inner
+        or "/* START NIAKVIO_FIX:" in inner
+        or "/* END NIAKVIO_FIX:" in inner
+        or "/* NIAKVIO_FIX_BEGIN:" in inner
+        or "/* NIAKVIO_FIX_END:" in inner
+        or "/* STARTFIXDATA:" in inner
+        or "/* CLOSEFIXDATA:" in inner
+    ):
         raise ValueError(f"managed fix {fix_id} contains nested managed markers")
-    return starts[0], ends[0] + len(end)
+    owned_end = ends[0] + len(end)
+    if begin.startswith("/* STARTFIX:") and _is_clean_v3_provider(text):
+        if text.startswith("\r\n", owned_end):
+            owned_end += 2
+        elif owned_end < len(text) and text[owned_end] in "\r\n":
+            owned_end += 1
+    return starts[0], owned_end
 
 
 def _owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
     current = _span_for_markers(text, fix_id, begin_marker(fix_id), end_marker(fix_id))
     legacy = _span_for_markers(text, fix_id, legacy_begin_marker(fix_id), legacy_end_marker(fix_id))
-    if current and legacy:
-        raise ValueError(f"managed fix {fix_id} has both current and legacy ownership blocks")
-    return current or legacy
+    legacy_v1 = _span_for_markers(text, fix_id, legacy_v1_begin_marker(fix_id), legacy_v1_end_marker(fix_id))
+    present = [span for span in (current, legacy, legacy_v1) if span is not None]
+    if len(present) > 1:
+        raise ValueError(f"managed fix {fix_id} has multiple ownership block syntaxes")
+    return present[0] if present else None
 
 
 def has_managed_fix(text: str, fix_id: str) -> bool:
@@ -91,14 +126,12 @@ def owned_span(text: str, fix_id: str) -> tuple[int, int] | None:
 
 
 def strip_managed_fix(text: str, fix_id: str) -> str:
-    span = _owned_span(text, fix_id)
+    """Delete exactly one owned rectangle; never trim or rewrite neighboring bytes."""
+    source = str(text or "")
+    span = _owned_span(source, fix_id)
     if span is None:
-        return text
-    before = text[: span[0]].rstrip()
-    after = text[span[1] :].lstrip()
-    if before and after:
-        return before + "\n" + after
-    return before or after
+        return source
+    return source[:span[0]] + source[span[1]:]
 
 
 def strip_legacy_iife(
@@ -138,24 +171,36 @@ def render_managed_fix(
     body = str(javascript or "").strip()
     if not body:
         raise ValueError(f"managed fix {fix_id} has empty JavaScript body")
-    if (
-        begin_marker(fix_id) in body
-        or end_marker(fix_id) in body
-        or legacy_begin_marker(fix_id) in body
-        or legacy_end_marker(fix_id) in body
+    if any(
+        marker in body
+        for marker in (
+            "/* STARTFIX:",
+            "/* CLOSEFIX:",
+            "/* START NIAKVIO_FIX:",
+            "/* END NIAKVIO_FIX:",
+            "/* NIAKVIO_FIX_BEGIN:",
+            "/* NIAKVIO_FIX_END:",
+        )
     ):
-        raise ValueError(f"managed fix {fix_id} body contains ownership marker")
-    data_start, data_payload, data_end = data_markers(fix_id, data)
+        raise ValueError(f"managed fix {fix_id} body contains nested ownership marker")
     return "\n".join(
         (
             begin_marker(fix_id),
-            data_start,
-            data_payload,
-            data_end,
+            data_marker(fix_id, data),
             body,
             end_marker(fix_id),
         )
     )
+
+
+def _render_current_owned_fix(
+    fix_id: str,
+    javascript: str,
+    *,
+    data: dict[str, Any] | None = None,
+) -> str:
+    """Render one current v3 rectangle including its owned CLOSEFIX line ending."""
+    return render_managed_fix(fix_id, javascript, data=data) + "\n"
 
 
 def replace_managed_fix(
@@ -165,20 +210,160 @@ def replace_managed_fix(
     *,
     data: dict[str, Any] | None = None,
 ) -> str:
-    """Replace an owned brick in place; append only on its first materialization."""
+    """Replace one whole Lego block.
+
+    In Provider architecture v3 every managed Lego lives inside the single
+    BEGIN/END PROVIDER envelope. PROVIDER.* bricks stay before the Core boundary;
+    CORE.* bricks stay after it. No managed brick may escape the provider.
+    """
     source = str(text or "")
-    span = _owned_span(source, fix_id)
-    block = render_managed_fix(fix_id, javascript, data=data)
+    fid = _fix_id(fix_id)
+    has_provider_envelope = (
+        source.count(PROVIDER_BEGIN_MARKER) == 1
+        and source.count(PROVIDER_END_MARKER) == 1
+    )
+    if has_provider_envelope:
+        if fid.startswith("PROVIDER."):
+            return replace_provider_fix(source, fid, javascript, data=data)
+        if fid.startswith("CORE."):
+            return replace_core_fix(source, fid, javascript, data=data)
+        raise ValueError(f"v3 managed Lego must be PROVIDER.* or CORE.*: {fid}")
+
+    span = _owned_span(source, fid)
+    block = (
+        _render_current_owned_fix(fid, javascript, data=data)
+        if span is not None
+        and _is_clean_v3_provider(source)
+        and source[span[0]:].startswith(begin_marker(fid))
+        else render_managed_fix(fid, javascript, data=data)
+    )
     if span is not None:
         output = source[:span[0]] + block + source[span[1]:]
-        assert_single_managed_fix(output, fix_id)
+        assert_single_managed_fix(output, fid)
         return output
 
     base = source.rstrip()
     output = (base + "\n" + block).lstrip() if base else block
-    assert_single_managed_fix(output, fix_id)
+    assert_single_managed_fix(output, fid)
     return output.rstrip() + "\n"
 
+
+def _first_core_fix_start(text: str, begin: int, provider_end: int) -> int:
+    starts: list[int] = []
+    for fix_id in managed_fix_ids(text):
+        if not fix_id.startswith("CORE."):
+            continue
+        span = _owned_span(text, fix_id)
+        if span is not None and begin < span[0] < span[1] <= provider_end:
+            starts.append(span[0])
+    return min(starts) if starts else provider_end
+
+
+def replace_provider_fix(
+    text: str,
+    fix_id: str,
+    javascript: str,
+    *,
+    data: dict[str, Any] | None = None,
+) -> str:
+    """Own one PROVIDER.* Lego before every CORE.* Lego, inside Provider."""
+    source = str(text or "")
+    fid = _fix_id(fix_id)
+    if not fid.startswith("PROVIDER."):
+        raise ValueError(f"provider Lego id must start with PROVIDER.: {fid}")
+    if source.count(PROVIDER_BEGIN_MARKER) != 1 or source.count(PROVIDER_END_MARKER) != 1:
+        raise ValueError("provider Lego requires exactly one Provider envelope")
+    begin = source.index(PROVIDER_BEGIN_MARKER)
+    provider_end = source.index(PROVIDER_END_MARKER)
+    if provider_end <= begin:
+        raise ValueError("Provider envelope is malformed")
+    provider_limit = _first_core_fix_start(source, begin, provider_end)
+    span = _owned_span(source, fid)
+    clean_v3 = _is_clean_v3_provider(source)
+    block = (
+        _render_current_owned_fix(fid, javascript, data=data)
+        if clean_v3
+        else render_managed_fix(fid, javascript, data=data)
+    )
+    if span is not None:
+        if not (begin < span[0] < span[1] <= provider_limit):
+            raise ValueError(f"provider Lego escaped provider section: {fid}")
+        output = source[:span[0]] + block + source[span[1]:]
+    else:
+        before = source[:provider_limit]
+        after = source[provider_limit:]
+        if clean_v3:
+            if before and not before.endswith(("\n", "\r")):
+                raise ValueError(
+                    f"provider Lego insertion point is not a line boundary: {fid}"
+                )
+            output = before + block + after
+        else:
+            lead = "" if not before or before.endswith(("\n", "\r")) else "\n"
+            tail = "" if not after or after.startswith(("\n", "\r")) else "\n"
+            output = before + lead + block + tail + after
+    assert_single_managed_fix(output, fid)
+    return output
+
+
+def replace_core_fix(
+    text: str,
+    fix_id: str,
+    javascript: str,
+    *,
+    data: dict[str, Any] | None = None,
+) -> str:
+    """Own one CORE.* Lego after all PROVIDER.* Lego and before END PROVIDER."""
+    source = str(text or "")
+    fid = _fix_id(fix_id)
+    if not fid.startswith("CORE."):
+        raise ValueError(f"Core Lego id must start with CORE.: {fid}")
+    if source.count(PROVIDER_BEGIN_MARKER) != 1 or source.count(PROVIDER_END_MARKER) != 1:
+        raise ValueError("Core Lego requires exactly one Provider envelope")
+    begin = source.index(PROVIDER_BEGIN_MARKER)
+    provider_end = source.index(PROVIDER_END_MARKER)
+    if provider_end <= begin:
+        raise ValueError("Provider envelope is malformed")
+
+    # A CORE Lego is always appended at the end of the generated Lego chain.
+    # Reapplication replaces the complete owned block in place.
+    span = _owned_span(source, fid)
+    clean_v3 = _is_clean_v3_provider(source)
+    block = (
+        _render_current_owned_fix(fid, javascript, data=data)
+        if clean_v3
+        else render_managed_fix(fid, javascript, data=data)
+    )
+    if span is not None:
+        if not (begin < span[0] < span[1] <= provider_end):
+            raise ValueError(f"Core Lego escaped Provider envelope: {fid}")
+        output = source[:span[0]] + block + source[span[1]:]
+    else:
+        before = source[:provider_end]
+        after = source[provider_end:]
+        if clean_v3:
+            if before and not before.endswith(("\n", "\r")):
+                raise ValueError(
+                    f"Core Lego insertion point is not a line boundary: {fid}"
+                )
+            output = before + block + after
+        else:
+            lead = "" if not before or before.endswith(("\n", "\r")) else "\n"
+            tail = "" if not after or after.startswith(("\n", "\r")) else "\n"
+            output = before + lead + block + tail + after
+    assert_single_managed_fix(output, fid)
+
+    # Once any CORE.* Lego exists, no PROVIDER.* Lego may appear after it.
+    out_begin = output.index(PROVIDER_BEGIN_MARKER)
+    out_end = output.index(PROVIDER_END_MARKER)
+    first_core = _first_core_fix_start(output, out_begin, out_end)
+    for owned_id in managed_fix_ids(output):
+        if not owned_id.startswith("PROVIDER."):
+            continue
+        owned = _owned_span(output, owned_id)
+        if owned is None or owned[1] > first_core:
+            raise ValueError(f"Provider Lego ordered after Core Lego: {owned_id}")
+    return output
 
 def replace_managed_fix_in_place(
     text: str,
@@ -191,7 +376,13 @@ def replace_managed_fix_in_place(
     span = _owned_span(text, fix_id)
     if span is None:
         return text, False
-    block = render_managed_fix(fix_id, javascript, data=data)
+    fid = _fix_id(fix_id)
+    block = (
+        _render_current_owned_fix(fid, javascript, data=data)
+        if _is_clean_v3_provider(text)
+        and text[span[0]:].startswith(begin_marker(fid))
+        else render_managed_fix(fid, javascript, data=data)
+    )
     output = text[:span[0]] + block + text[span[1]:]
     assert_single_managed_fix(output, fix_id)
     return output, True
@@ -203,20 +394,18 @@ def assert_single_managed_fix(text: str, fix_id: str) -> None:
         raise ValueError(f"managed fix {fix_id} missing after application")
     block = text[span[0] : span[1]]
     fid = _fix_id(fix_id)
-    current_data = (
-        block.count(f"/* START {_PREFIX}_DATA:{fid} */"),
-        block.count(f"/* {_PREFIX}_DATA_PAYLOAD:{fid}:"),
-        block.count(f"/* END {_PREFIX}_DATA:{fid} */"),
+    current_data_count = block.count(f"/* FIXDATA:{fid}:")
+    legacy_data_count = (
+        block.count(f"/* {_PREFIX}_DATA:{fid}:")
+        + block.count(f"/* {_PREFIX}_DATA_PAYLOAD:{fid}:")
     )
-    legacy_data_count = block.count(f"/* {_PREFIX}_DATA:{fid}:")
-    if current_data == (1, 1, 1):
+    if current_data_count == 1:
         return
     if legacy_data_count == 1:
         return
     raise ValueError(
-        f"managed fix {fix_id} data block invalid: "
-        f"start={current_data[0]} payload={current_data[1]} end={current_data[2]} "
-        f"legacy={legacy_data_count}"
+        f"managed fix {fix_id} data marker invalid: "
+        f"current={current_data_count} legacy={legacy_data_count}"
     )
 
 
@@ -227,6 +416,11 @@ def decode_managed_data(text: str, fix_id: str) -> dict[str, Any]:
     block = text[span[0] : span[1]]
     fid = _fix_id(fix_id)
     current_pattern = re.compile(
+        re.escape(f"/* FIXDATA:{fid}:")
+        + r"([A-Za-z0-9_=-]+)"
+        + re.escape(" */")
+    )
+    legacy_payload_pattern = re.compile(
         re.escape(f"/* {_PREFIX}_DATA_PAYLOAD:{fid}:")
         + r"([A-Za-z0-9_=-]+)"
         + re.escape(" */")
@@ -236,7 +430,11 @@ def decode_managed_data(text: str, fix_id: str) -> dict[str, Any]:
         + r"([A-Za-z0-9_=-]+)"
         + re.escape(" */")
     )
-    matches = current_pattern.findall(block) or legacy_pattern.findall(block)
+    matches = (
+        current_pattern.findall(block)
+        or legacy_payload_pattern.findall(block)
+        or legacy_pattern.findall(block)
+    )
     if len(matches) != 1:
         raise ValueError(f"managed fix {fix_id} data marker invalid")
     try:
@@ -250,31 +448,49 @@ def decode_managed_data(text: str, fix_id: str) -> dict[str, Any]:
 
 
 def managed_fix_ids(text: str) -> list[str]:
-    """Return every managed fix id after proving global marker consistency."""
+    """Return every fix id after proving exact STARTFIX/CLOSEFIX ownership."""
     source = str(text or "")
-    patterns = (
-        re.compile(r"/\* START NIAKVIO_FIX:([A-Z0-9_.:-]+) \*/"),
-        re.compile(r"/\* END NIAKVIO_FIX:([A-Z0-9_.:-]+) \*/"),
-        re.compile(r"/\* NIAKVIO_FIX_BEGIN:([A-Z0-9_.:-]+) \*/"),
-        re.compile(r"/\* NIAKVIO_FIX_END:([A-Z0-9_.:-]+) \*/"),
+    syntax_pairs = (
+        (
+            re.compile(r"/\* STARTFIX:([A-Z0-9_.:-]+) \*/"),
+            re.compile(r"/\* CLOSEFIX:([A-Z0-9_.:-]+) \*/"),
+            "current",
+        ),
+        (
+            re.compile(r"/\* START NIAKVIO_FIX:([A-Z0-9_.:-]+) \*/"),
+            re.compile(r"/\* END NIAKVIO_FIX:([A-Z0-9_.:-]+) \*/"),
+            "legacy",
+        ),
+        (
+            re.compile(r"/\* NIAKVIO_FIX_BEGIN:([A-Z0-9_.:-]+) \*/"),
+            re.compile(r"/\* NIAKVIO_FIX_END:([A-Z0-9_.:-]+) \*/"),
+            "legacy-v1",
+        ),
     )
     seen: set[str] = set()
-    for pattern in patterns:
-        for value in pattern.findall(source):
-            seen.add(_fix_id(value))
+    raw_markers = 0
+    syntax_by_id: dict[str, set[str]] = {}
+    for starts, closes, syntax in syntax_pairs:
+        start_ids = [_fix_id(value) for value in starts.findall(source)]
+        close_ids = [_fix_id(value) for value in closes.findall(source)]
+        raw_markers += len(start_ids) + len(close_ids)
+        for value in start_ids + close_ids:
+            seen.add(value)
+            syntax_by_id.setdefault(value, set()).add(syntax)
 
     for fix_id in sorted(seen):
+        syntaxes = syntax_by_id.get(fix_id, set())
+        if len(syntaxes) != 1:
+            raise ValueError(
+                f"managed fix {fix_id} mixes ownership syntaxes: {sorted(syntaxes)}"
+            )
         assert_single_managed_fix(source, fix_id)
         decode_managed_data(source, fix_id)
 
-    ownership_markers = re.findall(
-        r"/\*\s*(?:(?:START|END)\s+NIAKVIO_FIX:[^*]+|NIAKVIO_FIX_(?:BEGIN|END):[^*]+)\*/",
-        source,
-    )
-    if len(ownership_markers) != 2 * len(seen):
+    if raw_markers != 2 * len(seen):
         raise ValueError(
-            f"malformed managed fix ownership marker(s): "
-            f"expected={2 * len(seen)} raw={len(ownership_markers)}"
+            "malformed managed fix ownership marker(s): "
+            f"expected={2 * len(seen)} raw={raw_markers}"
         )
     return sorted(seen)
 
