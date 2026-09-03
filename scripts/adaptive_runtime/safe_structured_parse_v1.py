@@ -12,10 +12,10 @@ MARKER = "/* NUVIO_SAFE_STRUCTURED_PARSE_V1 */"
 
 _ASSIGN = re.compile(
     r"(?P<prefix>\b(?:const|let|var)\s+(?P<name>[A-Za-z_$][\w$]*)\s*=\s*)"
-    r"(?P<raw>[A-Za-z_$][\w$]*)\.replace\(\/\\\\\.\)\/g,\s*[\"']\$1[\"']\s*\)"
+    r"(?P<raw>[A-Za-z_$][\w$]*)\.replace\(/\\\\\(\.\)/g,\s*[\"']\$1[\"']\s*\)"
 )
 _INLINE = re.compile(
-    r"JSON\.parse\(\s*(?P<raw>[A-Za-z_$][\w$]*)\.replace\(\/\\\\\.\)\/g,\s*[\"']\$1[\"']\s*\)\s*\)"
+    r"JSON\.parse\(\s*(?P<raw>[A-Za-z_$][\w$]*)\.replace\(/\\\\\(\.\)/g,\s*[\"']\$1[\"']\s*\)\s*\)"
 )
 
 
