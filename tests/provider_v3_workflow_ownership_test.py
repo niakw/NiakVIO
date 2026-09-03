@@ -46,6 +46,7 @@ assert "--include-disabled" in learn or "including disabled providers" in learn
 for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py","96"):
     assert required in manual
 assert "Refuse direct main mutation" in manual
+assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
 
 assert "--apply" in domain and "--domain-only" in domain
 assert "update_provider_v3_domain_config.py" in domain

@@ -378,3 +378,13 @@ Keep it disabled in production until all proofs are green.
 - A regression test covers workspace acceptance, production rejection of stale enabled reports, and production acceptance when both baseline and current report are disabled.
 - No activation flag, provider runtime, or main byte is changed. Next controlled reconstruction: retry 19.
 
+## 2026-09-03 — retry 19 completed and committed the canonical 96/96 workspace
+- Retry 19 completed successfully end-to-end.
+- ProviderBase v3 remained clean and artifact-valid; all 96 providers were reconstructed from DATA + owned Lego at generation `949d251de7e3cb4d`.
+- Reverse reconstruction remained byte-identical 96/96.
+- Runtime/release post-gates all passed, including published brick audit, Provider v3 static audit, media-type v26, presentation V18/pipeline, stream identity, runtime media safety, playback integrity, terminal sanitizer, published Provider Lego contract, release hashes and release integrity.
+- The verified reconstruction artifact uploaded successfully.
+- GitHub committed the reconstructed workspace as `72a99271f59c81a64fd8c9a353b6ba86827f39ac` with message `chore: reconstruct Provider v3 96/96`.
+- Main remains untouched.
+- Because the verified provider commit is emitted by GitHub Actions and therefore does not cascade another push workflow, a provider-byte-neutral ownership-test hardening commit is used to trigger CORE Quick while preserving the exact reconstructed provider bytes.
+
