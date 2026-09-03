@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and TV-only TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "ba44afb080d878ba123c978e791be8115e324fe9",
+  "source_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -33,10 +33,13 @@
     "tmdb_api_key_global": true,
     "text_encoder_decoder": false,
     "webassembly": false,
-    "subtitles_projected": false,
+    "subtitles_projected": true,
     "headers_projected_to_behavior_hints": true,
     "stream_session_teardown_guaranteed": false,
-    "navigation_cancels_inflight_native_execution": false
+    "navigation_cancels_inflight_native_execution": false,
+    "stream_title_projection": "LocalScraperResult title/name/quality retained; toStream appends quality only when not already present",
+    "stream_description_projection": "LocalScraperResult has no description field; Stream.description is projected from size",
+    "stream_badges_projection": "provider badgeIds/displayBadges are not parsed; StreamBadgeRules re-matches textual Stream fields"
   },
   "manifest_platform_filtering": {
     "fields_parsed": [
@@ -47,20 +50,20 @@
     "consequence": "Do not rely on manifest platform fields to hide an unsafe provider from NuvioTV; the provider output itself must be strict-media safe or globally disabled."
   },
   "audit": {
-    "date": "2026-08-26",
-    "previous_ref": "188efb59dc8a30b62332f330dfc16941ff1f6f7e",
-    "audited_ref": "ba44afb080d878ba123c978e791be8115e324fe9",
+    "date": "2026-09-03",
+    "previous_ref": "ba44afb080d878ba123c978e791be8115e324fe9",
+    "audited_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
     "hard_contract_paths_changed": true,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "PluginRuntime remains unchanged for positional getStreams, SCRAPER_ID/SCRAPER_SETTINGS/TMDB_API_KEY injection, Proxy.NO_PROXY fetch and LocalScraperResult mapping",
-      "PluginManager bounds scraper async/launch orchestration to Dispatchers.IO.limitedParallelism(MAX_CONCURRENT_SCRAPERS) to prevent low-RAM native thread exhaustion",
-      "PluginManager skips duplicate repository insertion when the normalized repository URL already exists",
-      "repository/addon persistence skips unchanged writes without altering provider request arguments or returned stream mapping",
-      "LocalScraperResult still preserves URL, headers, seeders, peers and infoHash but has no subtitles field",
-      "headers are still projected into behaviorHints.proxyHeaders.request for playback"
+      "PluginRuntime positional getStreams, SCRAPER_ID/SCRAPER_SETTINGS/TMDB_API_KEY injection and native fetch semantics remain unchanged",
+      "LocalScraperResult now preserves provider-returned subtitles and parseJsonResults projects them",
+      "LocalScraperResult still preserves URL, title, name, quality, size, language, headers, seeders, peers and infoHash",
+      "Stream.description is still projected from LocalScraperResult.size",
+      "Stream badge presentation re-matches regex rules against textual Stream fields rather than consuming provider badgeIds/displayBadges",
+      "headers remain projected into behaviorHints.proxyHeaders.request for playback"
     ],
     "runtime_reproof_required": false
   },
@@ -68,12 +71,12 @@
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
     "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract.",
     "NuvioTV injects TMDB_API_KEY into the plugin runtime; Mobile/Desktop do not expose that runtime global.",
-    "NuvioTV currently does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime and LocalScraperResult does not preserve provider-returned subtitles.",
     "Provider extraction still uses positional getStreams and preserves returned URL/header material; playback networking consumes behaviorHints/proxyHeaders.",
     "NuvioTV parses supportedPlatforms/disabledPlatforms in the manifest model but PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
     "Promoted direct-media wrappers require strict HLS, DASH or real container evidence.",
-    "Cross-work infinite loading that clears immediately after restarting NuvioTV is classified as client lifecycle/executor exhaustion evidence, not provider disablement proof."
+    "Cross-work infinite loading that clears immediately after restarting NuvioTV is classified as client lifecycle/executor exhaustion evidence, not provider disablement proof.",
+    "NuvioTV still does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime; subtitles are now preserved by LocalScraperResult."
   ]
 }
