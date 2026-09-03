@@ -517,7 +517,9 @@
           "https://vcloud.zip/",
           "https://movieshunt.run/"
         ],
-        "routes": [],
+        "routes": [
+          "/?s={query}"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -762,7 +764,9 @@
           "https://hdhub4u.bi",
           "https://4khdhub.one/"
         ],
-        "routes": [],
+        "routes": [
+          "/?s={query}"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -907,7 +911,8 @@
         ],
         "observedUrls": [
           "https://kehflix.com/",
-          "https://kehflix.wiki/"
+          "https://kehflix.wiki/",
+          "https://www.youtube.com/"
         ],
         "routes": [
           "/title/movie/{id}-{slug}",
@@ -932,7 +937,8 @@
       "knowledge": {
         "hosts": [
           "kehflix.com",
-          "kehflix.wiki"
+          "kehflix.wiki",
+          "www.youtube.com"
         ],
         "routes": [
           "/player",
@@ -968,7 +974,8 @@
         ],
         "observedUrls": [
           "https://kehflix.com/",
-          "https://kehflix.wiki/"
+          "https://kehflix.wiki/",
+          "https://www.youtube.com/"
         ],
         "decodedStaticStringCount": 0
       },
@@ -978,7 +985,7 @@
           "sourceName": "Last published local artifact",
           "upstreamId": "KEHFLIX",
           "manifestOrigin": "",
-          "upstreamSha256": "a88ffe2b3ac3dc0500a3b5727943648b6b57187a29d9d0d8b13e1f4b76771765",
+          "upstreamSha256": "b5097e247075a069de218c1e130ff5e46eacb8742f06f67d9e28bb7e06439e31",
           "codeRole": "knowledge-only",
           "codeExecuted": false
         }
@@ -988,7 +995,7 @@
     },
     "4khdhubnew": {
       "model": {
-        "knownSite": null,
+        "knownSite": "https://4khdhub.one",
         "strategy": "html_scraper",
         "officialSite": null,
         "officialHub": null,
@@ -997,7 +1004,9 @@
         "origins": [
           "https://4khdhub.one"
         ],
-        "observedUrls": [],
+        "observedUrls": [
+          "https://4khdhub.one/"
+        ],
         "routes": [
           "/player",
           "/season/",
@@ -1006,7 +1015,9 @@
         "apiRecipe": null
       },
       "knowledge": {
-        "hosts": [],
+        "hosts": [
+          "4khdhub.one"
+        ],
         "routes": [
           "/player",
           "/season/",
@@ -1017,7 +1028,9 @@
           "/season/",
           "/episode/"
         ],
-        "observedUrls": [],
+        "observedUrls": [
+          "https://4khdhub.one/"
+        ],
         "decodedStaticStringCount": 0
       },
       "sources": [
@@ -1026,7 +1039,7 @@
           "sourceName": "Last published local artifact",
           "upstreamId": "4KHDHUBNEW",
           "manifestOrigin": "",
-          "upstreamSha256": "62afa096b1d868c65b603b26e539100e43f644bc9471f6ea3b4d857d0b9a9dd7",
+          "upstreamSha256": "e16d3cfd2af82a674564ce04fb573beacf072e727987cd46528014ce04c1d379",
           "codeRole": "knowledge-only",
           "codeExecuted": false
         }
@@ -2338,17 +2351,17 @@
     },
     "cineby": {
       "model": {
-        "knownSite": "https://cineby.top",
+        "knownSite": "https://www.cineby.at",
         "strategy": "api_stream_resolver",
-        "officialSite": "https://cineby.top",
+        "officialSite": "https://www.cineby.at",
         "officialHub": "https://warflix.cv/",
         "officialApi": "https://api.speedracelight.com",
         "fixedApi": null,
         "origins": [
-          "https://cineby.top",
+          "https://www.cineby.at",
           "https://warflix.cv",
           "https://api.speedracelight.com",
-          "https://www.cineby.at"
+          "https://cineby.top"
         ],
         "observedUrls": [
           "https://cineby.top",
@@ -2357,6 +2370,7 @@
           "https://api.speedracelight.com/"
         ],
         "routes": [
+          "/seed?mediaId={id}",
           "/cdn/sources-with-title"
         ],
         "apiRecipe": null
@@ -2396,7 +2410,7 @@
       "model": {
         "knownSite": "https://cinemacity.cc",
         "strategy": "direct_media",
-        "officialSite": null,
+        "officialSite": "https://cinemacity.cc",
         "officialHub": null,
         "officialApi": null,
         "fixedApi": null,
@@ -2409,6 +2423,9 @@
           "https://cinemacity.cc/"
         ],
         "routes": [
+          "/news_pages.xml",
+          "/movies/{id}-{slug}.html",
+          "/tv-series/{id}-{slug}.html",
           "/season/"
         ],
         "apiRecipe": null
@@ -2457,7 +2474,8 @@
           "https://v3-cinemeta.strem.io"
         ],
         "observedUrls": [
-          "https://cinemm.com/"
+          "https://cinemm.com/",
+          "https://v3-cinemeta.strem.io/"
         ],
         "routes": [
           "/player",
@@ -2468,7 +2486,8 @@
       },
       "knowledge": {
         "hosts": [
-          "cinemm.com"
+          "cinemm.com",
+          "v3-cinemeta.strem.io"
         ],
         "routes": [
           "/player",
@@ -2481,7 +2500,8 @@
           "/episode/"
         ],
         "observedUrls": [
-          "https://cinemm.com/"
+          "https://cinemm.com/",
+          "https://v3-cinemeta.strem.io/"
         ],
         "decodedStaticStringCount": 0
       },
@@ -2491,7 +2511,7 @@
           "sourceName": "Last published local artifact",
           "upstreamId": "CINEMM",
           "manifestOrigin": "",
-          "upstreamSha256": "955cac2fb795bb082c0a3a0e8e988ad30d6125baeaba862e24c3f156dc3863ba",
+          "upstreamSha256": "f1666fe7991b528ca6591899afa9fb49affcbc5aae60449389016f14594daed0",
           "codeRole": "knowledge-only",
           "codeExecuted": false
         }
@@ -3423,7 +3443,9 @@
           "https://m4uplay.store/",
           "https://new2.movies4u.clinic/"
         ],
-        "routes": [],
+        "routes": [
+          "/?s={query}"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -3527,7 +3549,9 @@
         "observedUrls": [
           "https://moviesmod.cc/"
         ],
-        "routes": [],
+        "routes": [
+          "/search/{query}"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -3856,24 +3880,27 @@
     },
     "nakios": {
       "model": {
-        "knownSite": "https://nakios.live",
+        "knownSite": "https://nakios.store",
         "strategy": "api_stream_resolver",
-        "officialSite": "https://nakios.live",
+        "officialSite": "https://nakios.store",
         "officialHub": "https://nakios.org/",
-        "officialApi": null,
+        "officialApi": "https://api.nakios.store",
         "fixedApi": null,
         "origins": [
-          "https://nakios.live",
-          "https://nakios.org",
-          "https://api.nakios.live",
           "https://nakios.store",
-          "https://api.nakios.store"
+          "https://nakios.org",
+          "https://api.nakios.store",
+          "https://nakios.live",
+          "https://api.nakios.live"
         ],
         "observedUrls": [
           "https://nakios.store/",
           "https://api.nakios.store/"
         ],
-        "routes": [],
+        "routes": [
+          "/api/sources/movie/{id}",
+          "/api/sources/tv/{id}/{season}/{episode}"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -4042,7 +4069,7 @@
       "model": {
         "knownSite": "https://peachify.top",
         "strategy": "mixed_embed_resolver",
-        "officialSite": null,
+        "officialSite": "https://peachify.top",
         "officialHub": null,
         "officialApi": null,
         "fixedApi": null,
@@ -4056,7 +4083,13 @@
           "https://usa.eat-peach.sbs/",
           "https://peachify.top/"
         ],
-        "routes": [],
+        "routes": [
+          "/moviebox/{media}/{id}",
+          "/air/{media}/{id}",
+          "/holly/{media}/{id}",
+          "/multi/{media}/{id}",
+          "/net/{media}/{id}"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -4092,9 +4125,9 @@
       "model": {
         "knownSite": "https://nextgencloudfabric.com",
         "strategy": "direct_media",
-        "officialSite": null,
+        "officialSite": "https://nextgencloudfabric.com",
         "officialHub": null,
-        "officialApi": null,
+        "officialApi": "https://streamdata.vaplayer.ru",
         "fixedApi": null,
         "origins": [
           "https://nextgencloudfabric.com",
@@ -4105,6 +4138,8 @@
           "https://nextgencloudfabric.com/"
         ],
         "routes": [
+          "/api.php?tmdb={id}&type={media}",
+          "/api.php?tmdb={id}&type={media}&season={season}&episode={episode}",
           "/api.php",
           "/episode/",
           "/season/"
@@ -4240,7 +4275,7 @@
         "strategy": "api_stream_resolver",
         "officialSite": "https://streamflix.mom",
         "officialHub": null,
-        "officialApi": null,
+        "officialApi": "https://api.streamflix.app",
         "fixedApi": null,
         "origins": [
           "https://streamflix.mom",
@@ -4249,7 +4284,10 @@
         "observedUrls": [
           "https://api.streamflix.app/"
         ],
-        "routes": [],
+        "routes": [
+          "/data.json",
+          "/config/config-streamflixapp.json"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -4445,7 +4483,8 @@
           "https://api.tfx05.lol/toflix_api.php",
           "https://tfx05.lol/",
           "https://api.tfx05.lol/",
-          "https://toflix.wiki/"
+          "https://toflix.wiki/",
+          "https://apis.wavewatch.xyz/"
         ],
         "routes": [
           "/toflix_api.php",
@@ -4459,7 +4498,8 @@
         "hosts": [
           "api.tfx05.lol",
           "tfx05.lol",
-          "toflix.wiki"
+          "toflix.wiki",
+          "apis.wavewatch.xyz"
         ],
         "routes": [
           "/toflix_api.php",
@@ -4476,7 +4516,8 @@
           "https://api.tfx05.lol/toflix_api.php",
           "https://tfx05.lol/",
           "https://api.tfx05.lol/",
-          "https://toflix.wiki/"
+          "https://toflix.wiki/",
+          "https://apis.wavewatch.xyz/"
         ],
         "decodedStaticStringCount": 0
       },
@@ -4486,7 +4527,7 @@
           "sourceName": "Last published local artifact",
           "upstreamId": "TOFLIX",
           "manifestOrigin": "",
-          "upstreamSha256": "b6580c201c370cc888893f7bec41760b47168fb4f08b1dd12ab86b38a3e76091",
+          "upstreamSha256": "5d7d64e3c97ee59af4939f02651f39eecfe14fcba1635678af0057efbb5fd189",
           "codeRole": "knowledge-only",
           "codeExecuted": false
         }
@@ -4496,16 +4537,15 @@
     },
     "videasy": {
       "model": {
-        "knownSite": "https://player.videasy.to/fr",
+        "knownSite": "https://www.vidking.net",
         "strategy": "api_stream_resolver",
-        "officialSite": "https://player.videasy.to/fr",
+        "officialSite": "https://www.vidking.net",
         "officialHub": "https://www.videasy.to/docs",
-        "officialApi": null,
+        "officialApi": "https://api.speedracelight.com",
         "fixedApi": null,
         "origins": [
-          "https://player.videasy.to",
-          "https://www.videasy.to",
           "https://www.vidking.net",
+          "https://www.videasy.to",
           "https://api.speedracelight.com"
         ],
         "observedUrls": [
@@ -4513,6 +4553,17 @@
           "https://api.speedracelight.com/"
         ],
         "routes": [
+          "/seed?mediaId={id}",
+          "/cdn/sources-with-title",
+          "/tejo/sources-with-title",
+          "/neon2/sources-with-title",
+          "/downloader2/sources-with-title",
+          "/ym/sources-with-title",
+          "/mb-flix/sources-with-title",
+          "/lamovie/sources-with-title",
+          "/m4uhd/sources-with-title",
+          "/superflix/sources-with-title",
+          "/1movies/sources-with-title",
           "/season/",
           "/tv/",
           "/episode/"
@@ -6171,7 +6222,7 @@
       "model": {
         "knownSite": "https://cinevibe.asia",
         "strategy": "direct_media",
-        "officialSite": null,
+        "officialSite": "https://cinevibe.asia",
         "officialHub": null,
         "officialApi": null,
         "fixedApi": null,
@@ -6181,7 +6232,9 @@
         "observedUrls": [
           "https://cinevibe.asia/"
         ],
-        "routes": [],
+        "routes": [
+          "/api/stream/fetch?server=cinebox-1&type={media}&mediaId={id}&title={title}&releaseYear={year}"
+        ],
         "apiRecipe": null
       },
       "knowledge": {
@@ -6453,14 +6506,14 @@
     "frenchstream": {
       "model": {
         "knownSite": "https://fs16.lol",
-        "strategy": "quarantined",
+        "strategy": "mixed_embed_resolver",
         "officialSite": "https://fs16.lol",
-        "officialHub": "https://fstream.org/",
+        "officialHub": "https://fstream.website/",
         "officialApi": null,
         "fixedApi": null,
         "origins": [
           "https://fs16.lol",
-          "https://fstream.org",
+          "https://fstream.website",
           "https://npms.io",
           "https://video.sibnet.ru",
           "https://vidmoly.to",
@@ -6482,6 +6535,7 @@
           "https://openjsf.org",
           "http://underscorejs.org",
           "https://www.fstream.org",
+          "https://fstream.org",
           "https://underscorejs.org",
           "https://french-stream.one"
         ],
@@ -6735,7 +6789,7 @@
     },
     "goatapi": {
       "model": {
-        "knownSite": null,
+        "knownSite": "https://goatapi.imreallydagoatt.workers.dev",
         "strategy": "html_scraper",
         "officialSite": null,
         "officialHub": null,
@@ -6744,7 +6798,9 @@
         "origins": [
           "https://goatapi.imreallydagoatt.workers.dev"
         ],
-        "observedUrls": [],
+        "observedUrls": [
+          "https://goatapi.imreallydagoatt.workers.dev/"
+        ],
         "routes": [
           "/player",
           "/season/",
@@ -6753,7 +6809,9 @@
         "apiRecipe": null
       },
       "knowledge": {
-        "hosts": [],
+        "hosts": [
+          "goatapi.imreallydagoatt.workers.dev"
+        ],
         "routes": [
           "/player",
           "/season/",
@@ -6764,7 +6822,9 @@
           "/season/",
           "/episode/"
         ],
-        "observedUrls": [],
+        "observedUrls": [
+          "https://goatapi.imreallydagoatt.workers.dev/"
+        ],
         "decodedStaticStringCount": 0
       },
       "sources": [
@@ -6773,7 +6833,7 @@
           "sourceName": "Last published local artifact",
           "upstreamId": "goatapi",
           "manifestOrigin": "",
-          "upstreamSha256": "5a4266fb4dec84c0ad315f8cec1e73dbb598bbc22c4d5f00911e2083df236be3",
+          "upstreamSha256": "5d26b55b2eeb7e16baebf8e645fe47977b0385ed58150412566e8c85877e38ee",
           "codeRole": "knowledge-only",
           "codeExecuted": false
         }
@@ -7486,16 +7546,16 @@
     },
     "vidnest": {
       "model": {
-        "knownSite": "https://first.vidnest.fun",
+        "knownSite": "https://vidnest.fun",
         "strategy": "direct_media",
-        "officialSite": null,
+        "officialSite": "https://vidnest.fun",
         "officialHub": null,
-        "officialApi": null,
+        "officialApi": "https://first.vidnest.fun",
         "fixedApi": null,
         "origins": [
+          "https://vidnest.fun",
           "https://first.vidnest.fun",
           "https://vidnest.animanga.fun",
-          "https://vidnest.fun",
           "https://aesdec.nuvioapp.space",
           "https://flashstream.cc",
           "https://lethe399key.com"
@@ -7509,6 +7569,12 @@
           "https://lethe399key.com/"
         ],
         "routes": [
+          "/hollymoviehd/{media}/{id}/{season}/{episode}",
+          "/primesrc/{media}/{id}/{season}/{episode}",
+          "/ophim/{media}/{id}/{season}/{episode}",
+          "/flixhq/{media}/{id}/{season}/{episode}?server=upcloud",
+          "/vidlink/{media}/{id}/{season}/{episode}",
+          "/rogflix/{media}/{id}/{season}/{episode}",
           "/proxy",
           "/decrypt",
           "/streamsvr/",
@@ -7561,16 +7627,16 @@
     },
     "vidnest-anime": {
       "model": {
-        "knownSite": "https://aesdec.nuvioapp.space",
+        "knownSite": "https://vidnest.fun",
         "strategy": "api_stream_resolver",
-        "officialSite": null,
+        "officialSite": "https://vidnest.fun",
         "officialHub": null,
-        "officialApi": null,
+        "officialApi": "https://backend.vidnest.fun",
         "fixedApi": null,
         "origins": [
-          "https://aesdec.nuvioapp.space",
-          "https://backend.vidnest.fun",
           "https://vidnest.fun",
+          "https://backend.vidnest.fun",
+          "https://aesdec.nuvioapp.space",
           "https://api.ani.zip"
         ],
         "observedUrls": [
@@ -7580,6 +7646,11 @@
           "https://api.ani.zip/mappings?anilist_id=${anilistId}"
         ],
         "routes": [
+          "/animeworld/{id}/{episode}/server/my%20server",
+          "/satoru/{id}/{episode}",
+          "/aniwave/{id}/{episode}/{media}/wave",
+          "/aniwave/{id}/{episode}/{media}/pahe",
+          "/aniwave/{id}/{episode}/{media}/anya",
           "/decrypt",
           "/mappings?anilist_id=${anilistId}"
         ],
