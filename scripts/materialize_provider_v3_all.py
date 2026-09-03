@@ -34,6 +34,7 @@ from provider_base_store import (  # noqa: E402
 )
 from apply_provider_overrides import apply_overrides  # noqa: E402
 from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
+from provider_v3_minimizer import minimize_text, validate_transform  # noqa: E402
 
 DEFAULT_SOURCE_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
@@ -345,6 +346,20 @@ def materialize_all(
         if core_fix_positions and min(core_fix_positions) <= boundary_at:
             raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
 
+        minimized = minimize_text(text)
+        validate_transform(text, minimized.text)
+        text = minimized.text
+        bundle = text.encode("utf-8")
+
+        # Prove minimization kept Lego ownership and envelope byte-addressable.
+        minimized_fix_ids = validate_managed_fixes(text)
+        if minimized_fix_ids != fix_ids:
+            raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
+        if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1 or text.count("/* END NIAKVIO_PROVIDER */") != 1:
+            raise ValueError(f"{provider_id}: minimizer changed Provider v3 envelope")
+        if text.count(boundary) != 1:
+            raise ValueError(f"{provider_id}: minimizer changed Core boundary")
+
         digest = hashlib.sha256(bundle).hexdigest()
         filename = f"{provider_id}-{digest[:16]}.js"
         relative = f"providers/{filename}"
@@ -375,6 +390,12 @@ def materialize_all(
             "devices": ["tv", "mobile", "desktop"],
             "legacyProviderJsExecuted": False,
             "upstreamJsExecuted": False,
+            "minimizer": {
+                "enabled": True,
+                "savedBytes": minimized.saved_bytes,
+                "transformedLines": minimized.transformed_lines,
+                "skippedReason": minimized.skipped_reason,
+            },
         })
 
     generation = aggregate.hexdigest()
