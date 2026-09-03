@@ -213,3 +213,9 @@ Provider JavaScript is treated as untrusted input. NiakVIO applies bounded worke
 NiakVIO is an independent community project and is not affiliated with Nuvio or referenced third-party services. It does not determine the legal status, rights or authorization of third-party content/services. Use must comply with applicable law, third-party rights and relevant service terms.
 
 See [`TESTING_NOTICE.md`](TESTING_NOTICE.md), [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) and [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+### Durable maintenance workflows
+
+- `weekly-upstream-provider-discovery.yml` — weekly read-only upstream discovery.
+- `purge-actions-history.yml` — scheduled GitHub Actions history retention cleanup.
+- `brain-branch-maintenance.yml` — maintenance for durable Learning/proposal branches; it never publishes Provider JS directly.
+
