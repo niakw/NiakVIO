@@ -14,6 +14,7 @@ health = (ROOT / "HEALTH-CHECK.md").read_text(encoding="utf-8")
 contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
 install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
 security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
 upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
 engine = (ROOT / "engine_v2/README.md").read_text(encoding="utf-8")
 sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
@@ -43,6 +44,7 @@ for text, label in (
     (contributing, "CONTRIBUTING"),
     (install, "INSTALL"),
     (security, "SECURITY"),
+    (validation, "VALIDATION"),
     (upstreams, "UPSTREAMS"),
     (engine, "engine_v2/README"),
 ):
@@ -55,6 +57,8 @@ for text, label in (
         "canonical production control plane",
         "maintenance courante, repair-first",
         "Une correction générique appartient à ARCHI 2",
+        "10 providers dont 3 VF",
+        "audit/preview-only",
     ):
         assert forbidden not in text, f"{label}: stale architecture contract: {forbidden}"
 
@@ -86,16 +90,21 @@ assert machine["native_labs"] == [
     "DesktopMACOS",
     "DesktopWindows",
 ]
-assert machine["minifier"]["enabled_in_production"] is False
-assert machine["minifier"]["phase"] == "audit-only"
-assert machine["minifier"]["audit_tool"] == "scripts/provider_v3_minimizer.py"
-assert machine["minifier"]["transformations_enabled"] == []
+assert machine["minifier"]["enabled_in_production"] is True
+assert machine["minifier"]["phase"] == "pre-hash-safe-whitespace"
+assert machine["minifier"]["tool"] == "scripts/provider_v3_minimizer.py"
+assert machine["minifier"]["transformations_enabled"] == ["code-line-leading-indentation"]
+assert machine["minifier"]["newline_asi_contract"] == "preserve every line terminator"
 assert machine["minifier"]["terser_allowed"] is False
-assert machine["reference_reconstruction"]["retry"] == 21
-assert machine["reference_reconstruction"]["generation"] == "9ddd9f969838d444"
-assert machine["reference_reconstruction"]["reconstruction_sha"] == "8e3f40c318d923e83b1dc49320fc1e4b68efe2cd"
+assert machine["reference_reconstruction"]["retry"] == 25
+assert machine["reference_reconstruction"]["generation"] == "8e354389b41b2498"
+assert machine["reference_reconstruction"]["reconstruction_sha"] == "bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb"
 assert machine["reference_reconstruction"]["reverse_byte_identical"] == "96/96"
 assert machine["reference_reconstruction"]["release_integrity"] is True
+assert machine["reference_reconstruction"]["executable_provider_plans"] == 91
+assert machine["reference_reconstruction"]["quarantined_provider_plans"] == 5
+assert machine["provider_plan_contract"]["disabled_providers_are_audited"] is True
+assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is False
 lab = machine["native_lab_contract"]
 assert lab["provider_count"] == 96
 assert lab["declared_routes"] == 214
