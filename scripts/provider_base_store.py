@@ -902,6 +902,16 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
     ...(NIAKVIO_PROVIDER_MODEL.observedUrls || []).filter(value => /api|stream|source|embed|player/i.test(value))
   ].map(_substituteDomain));
   const out = [];
+  // Route DATA is executable knowledge. API-family providers commonly persist
+  // only a relative route plus one trusted origin; consume that plan directly
+  // instead of requiring an observed full endpoint URL.
+  out.push(..._learnedUrls(
+    "api",
+    { tmdbId: _text(tmdbId), title: "" },
+    mediaType,
+    season,
+    episode
+  ));
   for (const base of bases) {
     if (!/^https?:/i.test(base)) continue;
     let url = base
