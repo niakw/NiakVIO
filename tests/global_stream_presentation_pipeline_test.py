@@ -7,7 +7,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from apply_provider_overrides import apply_overrides, GLOBAL_STREAM_PRESENTATION  # noqa: E402
+from apply_provider_overrides import (  # noqa: E402
+    apply_overrides,
+    GLOBAL_MEDIA_TYPE_RESOLUTION,
+    GLOBAL_STREAM_PRESENTATION,
+)
 
 
 def clean_v3_fixture(source: str) -> str:
@@ -36,7 +40,13 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
     assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in output, provider
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in output, provider
     assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
-    assert output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1"), provider
+    assert output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"), provider
+    assert output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1") < output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1"), provider
+    assert any(
+        row.get("path") == GLOBAL_MEDIA_TYPE_RESOLUTION
+        and row.get("scope") == "global_media_type_resolution"
+        for row in records
+    ), (provider, records)
     assert any(
         row.get("path") == GLOBAL_STREAM_PRESENTATION
         and row.get("scope") == "global_stream_presentation"
@@ -48,6 +58,7 @@ first, _ = apply("cineby", "module.exports={getStreams:async()=>[]};\n")
 second, _ = apply("cineby", first)
 assert second.count("NUVIO_GLOBAL_STREAM_FACTS_V1") == 1
 assert second.count("NUVIO_GLOBAL_STREAM_IDENTITY_V1") == 1
+assert second.count("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1") == 1
 assert second.count("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") == 1
 
 apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
