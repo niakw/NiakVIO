@@ -23,7 +23,7 @@ def load_path(path: Path, name: str):
 
 
 normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
-normalizer.normalize(apply=True)
+normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
 assert presentation.REVISION == "all-providers-standard-fields-url-facts-v18"
@@ -32,7 +32,7 @@ assert presentation.REVISION == "all-providers-standard-fields-url-facts-v18"
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-shared-tmdb-cache-native-zero-extra-fetch-v17-jvm-json-utf8" in patched
+    assert "all-providers-standard-fields-url-facts-v18" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
