@@ -960,7 +960,35 @@
       "capability": "api_stream_resolver",
       "official_hub": null,
       "official_site": "https://streamflix.mom",
-      "manifest_overrides": {}
+      "manifest_overrides": {},
+      "official_api": "https://api.streamflix.app",
+      "learned_routes": [
+        "/data.json",
+        "/config/config-streamflixapp.json"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/streamflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/streamflix_runtime_v1.py": {
+          "api_base": "https://api.streamflix.app",
+          "firebase_base": "https://chilflix-410be-default-rtdb.asia-southeast1.firebasedatabase.app"
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 StreamFlix uses HTTP catalogue/config DATA plus bounded Firebase REST for one requested episode.",
+        "The historical 30-second Firebase WebSocket path is intentionally not carried into native QuickJS.",
+        "TMDB title/year come only from Core metadata; no provider-side TMDB key/network call is embedded."
+      ]
     },
     "streamzo": {
       "notes": [
@@ -2439,7 +2467,11 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/data.json",
+        "/config/config-streamflixapp.json"
+      ]
     },
     "streamzo": {
       "strategy": "mixed_embed_resolver",
