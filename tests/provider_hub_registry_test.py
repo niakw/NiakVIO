@@ -455,9 +455,13 @@ for provider_id, row in registry['providers'].items():
 
 sync = (ROOT / '.github' / 'workflows' / 'sync.yml').read_text()
 domain_refresh = (ROOT / '.github' / 'workflows' / 'domain-refresh.yml').read_text()
-assert sync.index('resolve_provider_hubs.py') < sync.index('discover_candidates.py')
-assert 'finalize_upstream_lkg.py' in sync
-assert '--apply' in sync
+# CORE Verify & Publish is validation/observation only. Authoritative
+# domain mutation belongs exclusively to CORE Domain Refresh.
+assert 'resolve_provider_hubs.py' in sync
+assert '--mode deep' in sync
+assert 'discover_candidates.py' not in sync
+assert 'finalize_upstream_lkg.py' not in sync
+assert '--apply' not in sync
 assert '--apply' in domain_refresh, 'CORE Domain Refresh must apply validated route changes'
 assert 'push origin HEAD:main' in domain_refresh and 'git commit' in domain_refresh
 assert 'provider-domain-history.json' in domain_refresh
