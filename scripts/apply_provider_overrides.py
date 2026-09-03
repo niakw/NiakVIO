@@ -1162,7 +1162,16 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
         if boundary_count > 1:
             raise ValueError(f"Provider v3 contains duplicate Core boundaries: {boundary_count}")
         if boundary_count == 1:
-            output = output.replace(boundary_needle, "", 1)
+            boundary_at = output.index(boundary_needle)
+            boundary_end = boundary_at + len(boundary_needle)
+            # The boundary owns the newline that follows it. Consuming that
+            # newline restores the exact pre-Core composed Provider bytes, so
+            # reapplying Core cannot accumulate blank lines before the boundary.
+            if output.startswith("\r\n", boundary_end):
+                boundary_end += 2
+            elif boundary_end < len(output) and output[boundary_end] in "\r\n":
+                boundary_end += 1
+            output = output[:boundary_at] + output[boundary_end:]
         return output, output != text
 
     original = text
