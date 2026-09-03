@@ -99,7 +99,7 @@ global.fetch=async function(url){
     return {
       ok:true,status:200,url:url,
       headers:{get:function(name){return String(name).toLowerCase()==='content-type'?'application/vnd.apple.mpegurl':null;}},
-      text:async()=> '#EXTM3U\\n#EXT-X-TARGETDURATION:6\\n#EXTINF:6,\\nhttps://media.example/seg.ts\\n#EXT-X-ENDLIST'
+      text:async()=> '#EXTM3U\\n#EXT-X-TARGETDURATION:120\\n#EXTINF:120,\\nhttps://media.example/seg.ts\\n#EXT-X-ENDLIST'
     };
   }
   throw new Error('unexpected fetch '+url);
