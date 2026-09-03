@@ -1642,6 +1642,35 @@ def apply_overrides(
                     "scope": scope,
                 })
 
+        # Media-type resolution is the outermost request-side wrapper. Provider/core
+        # request logic below receives canonical movie|tv|anime identity, while
+        # output-only presentation/branding/sanitization remain outside it so
+        # deferred positive-result TMDB verification is visible to finalization.
+        before = text
+        semantic_types = _provider_semantic_types(provider_id, specific)
+        media_type_options = {
+            "semantic_types": semantic_types,
+            "request_type_aliases": {
+                str(key).strip().casefold(): str(value).strip().casefold()
+                for key, value in (provider_capability.get("request_type_aliases") or {}).items()
+                if str(key).strip() and str(value).strip()
+            },
+        }
+        text = _apply_patch_script(
+            text,
+            provider_id,
+            GLOBAL_MEDIA_TYPE_RESOLUTION,
+            media_type_options,
+            None,
+        )
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_MEDIA_TYPE_RESOLUTION,
+                "phase": phase,
+                "scope": "global_media_type_resolution",
+            })
+
         # Presentation is a Core-wide finalization layer, not a provider capability.
         # Apply it after catalogue/media/playback recovery to every reconstructed
         # provider bundle. It only normalizes structured facts and optionally enriches
@@ -1709,34 +1738,6 @@ def apply_overrides(
                     "phase": phase,
                     "scope": "global_terminal_stream_sanitizer",
                 })
-
-        # Media-type resolution must be the outermost request wrapper so every
-        # inner Core/provider layer receives the same canonical movie|tv|anime
-        # identity. Client aliases remain input-only.
-        before = text
-        semantic_types = _provider_semantic_types(provider_id, specific)
-        media_type_options = {
-            "semantic_types": semantic_types,
-            "request_type_aliases": {
-                str(key).strip().casefold(): str(value).strip().casefold()
-                for key, value in (provider_capability.get("request_type_aliases") or {}).items()
-                if str(key).strip() and str(value).strip()
-            },
-        }
-        text = _apply_patch_script(
-            text,
-            provider_id,
-            GLOBAL_MEDIA_TYPE_RESOLUTION,
-            media_type_options,
-            None,
-        )
-        if text != before:
-            applied.append({
-                "type": "patch_script",
-                "path": GLOBAL_MEDIA_TYPE_RESOLUTION,
-                "phase": phase,
-                "scope": "global_media_type_resolution",
-            })
 
         # END PROVIDER is the final byte boundary.
         # Every CORE.* Lego is inserted immediately before it, after PROVIDER.* Lego.
