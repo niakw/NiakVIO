@@ -129,6 +129,8 @@ The Labs distinguish provider extraction problems, runtime errors, player/client
 
 Canonical acceptance is exactly **five first-class Labs**: TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows. The final matrix covers **96 providers / 214 declared routes** (`82 movie + 92 tv + 40 anime`), with disabled providers still audited. The representative fixtures are Interstellar, Breaking Bad S01E01 and Jujutsu Kaisen S01E01. Labs are observational: they consume exact Provider JS bytes and never repair, reconstruct or mutate them.
 
+Coverage is **1/1/1 per provider by declared type**: one representative movie, TV and/or anime route is executed for each type the provider declares; a missing declared route makes the native matrix incomplete.
+
 Named movies, series and anime in Lab configurations are **test fixtures**, not catalogue entries. Public evidence is intentionally minimized and sanitized. See [`TESTING_NOTICE.md`](TESTING_NOTICE.md).
 
 ---
