@@ -84,7 +84,7 @@ NiakVIO audits the current official client HEADs and treats each client as a sep
 
 ## Provider v3 architecture
 
-NiakVIO's executable provider source is **ProviderBase v3 + structured DATA + owned Lego**. Published `providers/*.js` files are generated, content-addressed client artifacts and are never reused as reconstruction seeds.
+NiakVIO's executable provider source is **ProviderBase v3 + structured DATA/static knowledge + owned Lego + the NiakVIO-safe minimizer**. Published `providers/*.js` files are generated, content-addressed client artifacts and are never reused as reconstruction seeds.
 
 The canonical Provider JS envelope is:
 
@@ -98,7 +98,9 @@ BEGIN NIAKVIO_PROVIDER
 END NIAKVIO_PROVIDER
 ```
 
-The forced 96/96 reconstruction lives only in `.github/workflows/provider-v3-reconstruct-all.yml` and requires a byte-identical reverse rebuild. Upstream code is knowledge/provenance, not executable canonical source.
+The forced 96/96 reconstruction lives only in `.github/workflows/provider-v3-reconstruct-all.yml`. It requires the full strategy/plan contract (`91` executable non-quarantined + `5` explicit quarantines at the retry-25 reference), minimizer/security gates and a byte-identical reverse rebuild. Upstream code is knowledge/provenance, not executable canonical source.
+
+Terser is forbidden. `scripts/provider_v3_minimizer.py` runs before content hashing and only removes leading indentation on lines proven to begin in ordinary JavaScript code state; it preserves every line terminator, managed marker, literal and expression.
 
 See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full contract.
 
@@ -125,7 +127,7 @@ NiakVIO validates real paths on official Nuvio clients:
 
 The Labs distinguish provider extraction problems, runtime errors, player/client incompatibility, transport failures, missing media and wrong-media identity.
 
-Canonical acceptance is exactly **five first-class Labs**: TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows. The representative corpus is Interstellar, Breaking Bad S01E01 and Jujutsu Kaisen S01E01. Labs are observational: they consume exact Provider JS bytes and never repair, reconstruct or mutate them.
+Canonical acceptance is exactly **five first-class Labs**: TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows. The final matrix covers **96 providers / 214 declared routes** (`82 movie + 92 tv + 40 anime`), with disabled providers still audited. The representative fixtures are Interstellar, Breaking Bad S01E01 and Jujutsu Kaisen S01E01. Labs are observational: they consume exact Provider JS bytes and never repair, reconstruct or mutate them.
 
 Named movies, series and anime in Lab configurations are **test fixtures**, not catalogue entries. Public evidence is intentionally minimized and sanitized. See [`TESTING_NOTICE.md`](TESTING_NOTICE.md).
 
