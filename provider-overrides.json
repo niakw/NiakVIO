@@ -857,10 +857,12 @@
         "logo": "https://nakios.live/favicon.ico"
       },
       "notes": [
-        "Use the catalogue/streaming service identified by nakios.org rather than the retired .store route."
+        "Clean v3 Nakios is a direct API DATA plan; historical JavaScript is knowledge-only.",
+        "Movie and TV routes use TMDB identity directly against api.nakios.store; no provider-side TMDB lookup is required.",
+        "Final stream URL filtering remains Core-owned."
       ],
       "official_hub": "https://nakios.org/",
-      "official_site": "https://nakios.live",
+      "official_site": "https://nakios.store",
       "published_types": [
         "movie",
         "tv",
@@ -869,6 +871,19 @@
       "domain_substitutions": {
         "nakios.store": "nakios.live",
         "api.nakios.store": "api.nakios.live"
+      },
+      "official_api": "https://api.nakios.store",
+      "learned_routes": [
+        "/api/sources/movie/{id}",
+        "/api/sources/tv/{id}/{season}/{episode}"
+      ],
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
       }
     },
     "neko-sama": {
@@ -916,7 +931,25 @@
       "manifest_overrides": {}
     },
     "playimdb": {
-      "capability": "direct_media"
+      "capability": "api_stream_resolver",
+      "official_site": "https://nextgencloudfabric.com",
+      "official_api": "https://streamdata.vaplayer.ru",
+      "learned_routes": [
+        "/api.php?tmdb={id}&type={media}",
+        "/api.php?tmdb={id}&type={media}&season={season}&episode={episode}"
+      ],
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 PlayIMDB executes the statically recovered vaplayer API route as DATA; historical JavaScript is knowledge-only.",
+        "TV appends season/episode; movie transport uses the same TMDB-direct endpoint without provider-side metadata lookup."
+      ]
     },
     "sekai": {
       "capability": "html_scraper",
@@ -2300,6 +2333,10 @@
         "movie",
         "tv",
         "anime"
+      ],
+      "routes": [
+        "/api/sources/movie/{id}",
+        "/api/sources/tv/{id}/{season}/{episode}"
       ]
     },
     "neko-sama": {
@@ -2353,7 +2390,7 @@
       "generated_from_manifest_or_stage": true
     },
     "playimdb": {
-      "strategy": "direct_media",
+      "strategy": "api_stream_resolver",
       "validation": "media_url",
       "allow_html_url": false,
       "requires_direct_media": true,
@@ -2363,7 +2400,11 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/api.php?tmdb={id}&type={media}",
+        "/api.php?tmdb={id}&type={media}&season={season}&episode={episode}"
+      ]
     },
     "sekai": {
       "strategy": "html_scraper",
