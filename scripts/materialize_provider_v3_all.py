@@ -17,6 +17,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -69,21 +70,69 @@ def origin(value: object) -> str:
         return ""
 
 
-def identity_input(patch: dict[str, Any]) -> dict[str, Any]:
+def _identity_route_allowed(value: object) -> bool:
+    text = str(value or "").strip()
+    lowered = text.casefold()
+    if not text or "${" in text or "encodeuricomponent(" in lowered:
+        return False
+    if re.search(r"(?:[?&])q=ponyfill(?:&|$)", lowered):
+        return False
+    return lowered.rstrip("/") not in {"/license", "license"}
+
+
+def _identity_mode_from_plan(
+    routes: list[str],
+    api_recipe: dict[str, Any] | None,
+) -> str:
+    candidates: list[str] = []
+    if isinstance(api_recipe, dict):
+        for key in ("searchRoute", "search_route", "directRoute", "direct_route"):
+            value = str(api_recipe.get(key) or "").strip()
+            if value:
+                candidates.append(value)
+    candidates.extend(str(value or "").strip() for value in routes)
+    candidates = [value for value in candidates if _identity_route_allowed(value)]
+
+    # External identifiers are derived by Core from the same authoritative TMDB
+    # metadata request. They therefore need metadata before the provider runs.
+    if any(
+        re.search(r"\{imdb(?:_?id)?\}|(?:[?&])imdb(?:_?id)?=", value, re.I)
+        for value in candidates
+    ):
+        return "external_id"
+
+    # Only plans that actually consume title/query/slug metadata are catalogue
+    # plans. Merely knowing an official site/API must never force a TMDB
+    # preflight across every provider.
+    if any(
+        re.search(
+            r"\{(?:query|title|slug)\}"
+            r"|/(?:search|recherche)(?:[/?#]|$)"
+            r"|(?:[?&])(?:s|q|query|keyword|search)=",
+            value,
+            re.I,
+        )
+        for value in candidates
+    ):
+        return "catalog_search"
+
+    return "tmdb_direct"
+
+
+def identity_input(
+    patch: dict[str, Any],
+    routes: list[str] | None = None,
+    api_recipe: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     raw = patch.get("identity_input")
     if not isinstance(raw, dict):
-        mode = "catalog_search" if (
-            patch.get("api_recipe")
-            or patch.get("official_site")
-            or patch.get("learned_urls")
-            or patch.get("learned_routes")
-        ) else "tmdb_direct"
+        mode = _identity_mode_from_plan(list(routes or []), api_recipe)
         return {
             "mode": mode,
             "requiresTmdbBeforeRun": mode != "tmdb_direct",
             "requiredFields": (
                 ["title", "year", "mediaType"]
-                if mode != "tmdb_direct"
+                if mode == "catalog_search"
                 else ["tmdbId", "mediaType"]
             ),
         }
@@ -105,7 +154,7 @@ def identity_input(patch: dict[str, Any]) -> dict[str, Any]:
         ),
         "requiredFields": required or (
             ["title", "year", "mediaType"]
-            if mode != "tmdb_direct"
+            if mode == "catalog_search"
             else ["tmdbId", "mediaType"]
         ),
     }
@@ -150,6 +199,12 @@ def provider_model(
         if item and item != "/" and item not in routes:
             routes.append(item)
 
+    api_recipe = (
+        patch.get("api_recipe")
+        if isinstance(patch.get("api_recipe"), dict)
+        else static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
+    )
+
     return {
         "knownSite": official_site,
         "strategy": str(
@@ -166,12 +221,8 @@ def provider_model(
         "origins": origins,
         "observedUrls": observed_urls,
         "routes": routes,
-        "apiRecipe": (
-            patch.get("api_recipe")
-            if isinstance(patch.get("api_recipe"), dict)
-            else static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
-        ),
-        "identityInput": identity_input(patch),
+        "apiRecipe": api_recipe,
+        "identityInput": identity_input(patch, routes, api_recipe),
         "strictIdentity": bool(patch.get("strict_identity", False)),
         "strictHtmlIdentity": bool(patch.get("strict_html_identity", False)),
         "outputUrlHostRewrites": patch.get("output_url_host_rewrites") or [],
