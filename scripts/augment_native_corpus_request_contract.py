@@ -123,8 +123,8 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         begin = f'        emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")'
         text = replace_once(text, begin, f"        launchClientUi()\n{begin}", "ui launch")
 
-    loop = "        for (provider in providers) {\n            val started = System.currentTimeMillis()"
-    replacement = f'''        for (provider in providers) {{\n            val logoProbe = probeLogo(provider.logo, providers.size == 1)\n            emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")\n            val requestRoutes = requestRoutesFor(provider.id, mediaType)\n            if (requestRoutes.isEmpty()) {{\n                emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                continue\n            }}\n            for (requestRoute in requestRoutes) {{\n                val requestMediaType = requestRoute.mediaType\n                val routeMode = "declared"\n                val started = System.currentTimeMillis()\n                emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} request_type=$requestMediaType route_mode=$routeMode declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")'''
+    loop = "        for (providerBatch in providers.chunked(6)) {\n            val providerJobs = providerBatch.map { provider ->\n                async(Dispatchers.IO) {\n                    val started = System.currentTimeMillis()"
+    replacement = f'''        for (providerBatch in providers.chunked(6)) {{\n            val providerJobs = providerBatch.map {{ provider ->\n                async(Dispatchers.IO) {{\n                    val logoProbe = probeLogo(provider.logo, providers.size == 1)\n                    emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")\n                    val requestRoutes = requestRoutesFor(provider.id, mediaType)\n                    if (requestRoutes.isEmpty()) {{\n                        emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                        return@async\n                    }}\n                    for (requestRoute in requestRoutes) {{\n                        val requestMediaType = requestRoute.mediaType\n                        val routeMode = "declared"\n                        val started = System.currentTimeMillis()\n                        emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} request_type=$requestMediaType route_mode=$routeMode declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")'''
     text = replace_once(text, loop, replacement, "provider loop")
     text = replace_once(text, "                    mediaType = mediaType,", "                    mediaType = requestMediaType,", "runtime media type")
 
@@ -147,8 +147,13 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
             f'                    emit("FIELD_NATIVE_PLAYER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index")\n' + reader_needle,
         )
 
-    end_anchor = '        }\n        emit("FIELD_NATIVE_CORPUS_END client=' + client
-    text = replace_once(text, end_anchor, '            }\n        }\n        emit("FIELD_NATIVE_CORPUS_END client=' + client, "nested request loop close")
+    end_anchor = '                }\n            }\n            providerJobs.awaitAll()\n        }\n        emit("FIELD_NATIVE_CORPUS_END client=' + client
+    text = replace_once(
+        text,
+        end_anchor,
+        '                    }\n                }\n            }\n            providerJobs.awaitAll()\n        }\n        emit("FIELD_NATIVE_CORPUS_END client=' + client,
+        "nested request loop close",
+    )
 
     path.write_text(text, encoding="utf-8")
     print(
