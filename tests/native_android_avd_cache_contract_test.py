@@ -29,9 +29,15 @@ assert "Execute movie TV anime in one TV boot" in TV
 assert "Execute movie TV anime in one Mobile Android boot" in ANDROID
 
 for suite in (tv_suite, mobile_suite):
-    assert 'PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"' in suite
-    assert 'REQUIRE_READER_SUCCESS=0' in suite
+    # Reader/playback outcomes are observational evidence. The suite may fail
+    # only on the production smoke gate or declared-provider matrix, not on a
+    # retired global reader-success switch.
+    assert 'reader_outcome=observational' in suite
     assert 'blocking=false' in suite
+    assert 'FINAL_STATUS=$SMOKE_STATUS' in suite
+    assert 'if [[ "$MATRIX_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi' in suite
+    assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE" not in suite
+    assert "REQUIRE_READER_SUCCESS" not in suite
 assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE: \"1\"" not in TV
 assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE: \"1\"" not in ANDROID
 
