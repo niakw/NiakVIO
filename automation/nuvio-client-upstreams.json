@@ -118,14 +118,14 @@
     "nuvio-desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
       "branch": "Dev",
-      "verified_ref": "9390d5844e53d1f4d9829490d6f3deb057d7ab14",
+      "verified_ref": "b17687e37b1eb7a9ae98aad302cb94b65eed26d9",
       "platforms": [
         "windows",
         "macos",
         "linux"
       ],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-09-03: Desktop runtime re-audited at Dev HEAD 9390d5844e53. Shared QuickJS/result projection remains aligned with Mobile; Desktop keeps its async native fetch/JVM OkHttp transport differences documented in automation/platform-runtime-contracts.json.",
+      "audit_note": "2026-09-03: Desktop runtime contract advanced to Dev HEAD b17687e37b1e after diff review. Changes are limited to desktop window maximize bounds/multi-monitor DPI handling; QuickJS, native fetch, PluginRuntimeResult and StreamItem projection paths are unchanged.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -202,12 +202,12 @@
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "verified_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
+      "verified_ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
       "platforms": [
         "android-tv"
       ],
       "contract": "automation/nuvio-tv-runtime-contract.json",
-      "audit_note": "2026-09-03: TV runtime re-audited at dev HEAD 49c753de3f19. Positional getStreams, Proxy.NO_PROXY/IPv4FirstDns transport, TMDB_API_KEY injection and LocalScraperResult mapping remain compatible; subtitles are retained while TextEncoder/TextDecoder and WebAssembly remain absent as documented by the TV and cross-client contracts.",
+      "audit_note": "2026-09-03: TV runtime contract advanced to dev HEAD 4f37e9491997 after diff review. The intervening commits only change ASS/SSA subtitle styling/focus in the player UI; PluginRuntime, provider repository, IPv4/NO_PROXY transport, TMDB_API_KEY injection and stream projection paths are unchanged.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",
