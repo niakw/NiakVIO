@@ -140,8 +140,12 @@ def _route_placeholder(key: str) -> str | None:
     key = key.casefold()
     if key in {"q", "query", "search", "keyword", "s"}:
         return "{query}"
-    if key in {"id", "tmdb", "tmdbid", "tmdb_id"}:
+    if key == "id":
         return "{id}"
+    if key in {"tmdb", "tmdbid", "tmdb_id"}:
+        return "{tmdbId}"
+    if key in {"imdb", "imdbid", "imdb_id"}:
+        return "{imdbId}"
     if key in {"media", "type", "media_type", "m"}:
         return "{media}"
     if key in {"season", "saison"}:
