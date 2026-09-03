@@ -329,3 +329,13 @@ Keep it disabled in production until all proofs are green.
 - The run then entered `Reconstruct all 96 providers from DATA + Lego` for the first time.
 - Its first failure was in the materializer boundary assertion itself, not Anime-Sama/runtime: the new assertion reconstructed an obsolete `START NIAKVIO_FIX` marker string while Provider v3 uses canonical `STARTFIX/CLOSEFIX`.
 - `materialize_provider_v3_all.py` now imports and uses `provider_patch_blocks.owned_span()` for all Provider/Core Lego positions. Boundary validation and reverse-code ownership therefore share one parser/source of truth.
+
+## 2026-09-03 — first full 96/96 generation + reverse proof
+- Retry 11 successfully materialized all 96 providers:
+  - generation `949d251de7e3cb4d`
+  - `FIELD_PROVIDER_V3_ALL_MATERIALIZED providers=96`
+  - reverse reconstruction `PROVIDER_V3_REVERSE_REBUILD_OK providers=96 generation=949d251de7e3cb4d byte_identical=96/96`
+  - workspace context only; mainTouched=false.
+- The subsequent published-byte portfolio gate found all 96 non-idempotent only because a second Core recomposition accumulated one blank line before `NUVIO_GLOBAL_CORE_START_BOUNDARY_V1`; `changed_blocks=none` on every reported provider.
+- `apply_provider_overrides._strip_generated_core_tail()` now removes the Core boundary together with its owned following newline, restoring the exact pre-Core Provider bytes before recomposition.
+- This is a byte-idempotence fix only; no Provider/Core Lego behavior changed.
