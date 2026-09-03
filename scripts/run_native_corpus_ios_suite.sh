@@ -110,7 +110,9 @@ PY
   xcrun simctl bootstatus "$UDID" -b
   xcrun simctl install "$UDID" "$APP"
 
-  # CoreSimulatorBridge defaults to a 120s launch retry window. On fresh
+  # Full 96/214 corpus runs may legitimately need many per-route watchdog resumes.
+# The restart budget is therefore route-scale (240) rather than a small infra retry cap.
+# CoreSimulatorBridge defaults to a 120s launch retry window. On fresh
   # macOS runners the first iOS boot can spend longer than that in app/runtime
   # initialization even after bootstatus is terminal, causing simctl to detach
   # just as the Lab begins. Keep this launch-only allowance separate from the
@@ -146,7 +148,7 @@ rm -f "$LOG"
 RESUME_FIXTURE=""
 RESUME_AFTER_PROVIDER=""
 WATCHDOG_RESTARTS=0
-MAX_WATCHDOG_RESTARTS="${NIAKVIO_IOS_MAX_WATCHDOG_RESTARTS:-12}"
+MAX_WATCHDOG_RESTARTS="${NIAKVIO_IOS_MAX_WATCHDOG_RESTARTS:-240}"
 LAUNCH_PID=""
 
 launch_lab() {
