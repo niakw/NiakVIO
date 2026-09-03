@@ -395,3 +395,10 @@ Keep it disabled in production until all proofs are green.
 - The shared five-lab trigger is now advanced once for TVAndroid, MobileAndroid, MobileIOS, DesktopMACOS and DesktopWindows. All five labs must observe these same Provider JS bytes; Labs remain observational evidence only and never repair/reconstruct.
 - Main remains untouched.
 
+## 2026-09-03 — Desktop lab preflight stale mutation contract removed
+- The first five-lab trigger reached Desktop only as far as the resolve/preflight job. It failed before any official Desktop client execution because `tests/nuvio_client_upstream_drift_guard_test.py` still required the retired mutating Desktop canary sequence (`normalize_* --apply` / Core rematerialization).
+- This contradicted the current Lab architecture: native Labs are observational and must consume the exact already-materialized Provider JS bytes.
+- The drift-guard regression now requires the read-only Desktop contract checks, official-client drift/HEAD resolution and native reader execution, and explicitly forbids mutation/reapply/reconstruction commands in the Desktop Lab.
+- A Desktop-only trigger path is added so macOS/Windows can be re-run after Desktop-specific Lab fixes without cancelling/re-running Android/iOS. The shared five-lab trigger remains the canonical full acceptance trigger.
+- No provider bytes or main bytes are changed.
+
