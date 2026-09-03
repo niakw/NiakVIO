@@ -23,7 +23,7 @@ on:
       - 'provider-type-policy.json'
       - 'scripts/provider_patches/**'
       - 'scripts/materialize_provider_v3_all.py'
-      - 'scripts/verify_provider_v3_reverse_rebuild.py'
+      - 'scripts/audit_provider_v3_static.py'
       - 'scripts/build_published_provider_stage.py'
       - 'scripts/build_observational_health_report.py'
       - 'scripts/resolve_provider_hubs.py'
@@ -42,7 +42,7 @@ on:
       - 'provider-hubs.json'
       - 'scripts/provider_patches/**'
       - 'scripts/materialize_provider_v3_all.py'
-      - 'scripts/verify_provider_v3_reverse_rebuild.py'
+      - 'scripts/audit_provider_v3_static.py'
   schedule:
     - cron: '17 5 * * 0,1,3,4,6'
     - cron: '47 4 * * 2,5'
@@ -105,7 +105,7 @@ jobs:
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
-          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/audit_provider_v3_static.py
       - name: Build exact published-provider observation stage
         run: python scripts/build_published_provider_stage.py --stage staging-published
       - name: Verify current domains and hubs without mutation
@@ -134,7 +134,7 @@ jobs:
       - name: Prove routine validation never mutates Provider v3
         run: |
           git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json
-          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/audit_provider_v3_static.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: provider-v3-observation-${{ github.run_id }}
@@ -192,7 +192,7 @@ jobs:
       - name: Verify no runtime/data mutation during publication
         run: |
           git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json
-          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/audit_provider_v3_static.py
       - name: Refresh integrity inventories
         run: |
           python scripts/generate_release_hashes.py

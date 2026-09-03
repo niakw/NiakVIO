@@ -27,7 +27,8 @@
         "regenerate manifest projections",
         "regenerate integrity inventories",
         "publish reports/manifests only"
-      ]
+      ],
+      "static_published_byte_audit": true
     },
     "learning": {
       "repair_allowed": true,
@@ -39,7 +40,9 @@
         "validate repaired candidate",
         "persist sanitized learning",
         "open/refresh repair PR for human merge"
-      ]
+      ],
+      "exclusive_code_evolution_owner": true,
+      "includes_disabled_providers": true
     },
     "quick": {
       "repair_allowed": false,
@@ -50,7 +53,8 @@
         "run fast Core/provider tests",
         "observe exact published Provider v3 bytes",
         "publish reports only"
-      ]
+      ],
+      "static_published_byte_audit": true
     }
   },
   "manual_reconstruction": {
@@ -83,6 +87,9 @@
     "provider_fix_mutation_allowed": false,
     "api_mutation_allowed": false,
     "route_mutation_allowed": false,
-    "deterministic_rematerialization_of_affected_provider": true
+    "deterministic_rematerialization_of_affected_provider": false,
+    "provider_config_data_update_only": true,
+    "provider_js_structure_must_remain_byte_identical_outside_config": true,
+    "content_addressed_filename_refresh": true
   }
 }

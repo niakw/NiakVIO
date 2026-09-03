@@ -12,7 +12,7 @@ on:
       - 'provider-type-policy.json'
       - 'scripts/provider_patches/**'
       - 'scripts/materialize_provider_v3_all.py'
-      - 'scripts/verify_provider_v3_reverse_rebuild.py'
+      - 'scripts/audit_provider_v3_static.py'
       - 'scripts/provider_base_store.py'
       - 'scripts/provider_patch_blocks.py'
       - 'scripts/provider_byte_stability.py'
@@ -27,7 +27,7 @@ on:
       - 'provider-overrides.json'
       - 'scripts/provider_patches/**'
       - 'scripts/materialize_provider_v3_all.py'
-      - 'scripts/verify_provider_v3_reverse_rebuild.py'
+      - 'scripts/audit_provider_v3_static.py'
       - '.github/workflows/core-media-finalize-main.yml'
 
 permissions:
@@ -75,6 +75,6 @@ jobs:
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
-          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/audit_provider_v3_static.py
       - name: Prove gate is read-only
         run: git diff --exit-code

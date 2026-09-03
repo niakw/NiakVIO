@@ -50,3 +50,9 @@ Last updated: 2026-09-03
 - Core finalizer is now a read-only Provider v3 fixed-point gate.
 - Domain Refresh is the one routine write exception: daily hub observation may update only `provider_patches.<id>.official_site` plus domain history on main, then deterministically rematerialize only affected Provider v3 artifacts. It may not alter API/routes/replacements/fix/options.
 - Domain Refresh `--domain-only` filters to providers with an authoritative hub and hub/telegram/redirect-derived candidates only; direct/search fallback cannot change `official_site`.
+
+## Immutability model finalized
+- Quick, Deep and Core never reconstruct Provider JS. They audit the exact published 96 bytes with `scripts/audit_provider_v3_static.py`.
+- Domain Refresh is not reconstruction: authoritative hub proof may change only `provider-overrides.<id>.official_site`; `update_provider_v3_domain_config.py` replaces only that provider CONFIG Lego, proves all bytes outside CONFIG identical, refreshes the content-addressed filename/manifest/materialization inventory, and never executes a patch/Core generator.
+- Full 96/96 reconstruction is manual-only.
+- LEARN is the exclusive code evolution/repair owner, including disabled providers, and outputs review-only PRs.
