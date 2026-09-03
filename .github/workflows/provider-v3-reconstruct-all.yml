@@ -114,6 +114,8 @@ jobs:
           python tests/provider_521_capability_regression_test.py
           python tests/global_media_type_resolution_test.py
           python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/native_hls_integrity_budget_test.py
       - name: Reconstruct all 96 providers from DATA + Lego
         run: |
           set -euo pipefail
