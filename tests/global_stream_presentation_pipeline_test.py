@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import json
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +55,78 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
         and row.get("scope") == "global_stream_presentation"
         for row in records
     ), (provider, records)
+
+
+# Native scalar contract: presentation is output-only and must run after deferred
+# positive-result TMDB verification. This reproduces the official 4-argument
+# getStreams(tmdbId, mediaType, season, episode) clients.
+native_source, _ = apply(
+    "generic-core-test",
+    "module.exports={getStreams:async()=>[{name:'Source 1080p WEB-DL HEVC E-AC3 5.1',url:'https://media.example/master.m3u8'}]};\n",
+)
+with tempfile.TemporaryDirectory(prefix="niakvio-presentation-order-") as raw:
+    root = Path(raw)
+    provider = root / "provider.cjs"
+    runner = root / "runner.cjs"
+    provider.write_text(native_source, encoding="utf-8")
+    runner.write_text(
+        """
+global.__native_fetch=function(){};
+let tmdbCalls=0;
+let mediaCalls=0;
+global.fetch=async function(url){
+  url=String(url);
+  if(url.includes('api.themoviedb.org/3/movie/157336')){
+    tmdbCalls++;
+    return {
+      ok:true,status:200,url:url,
+      headers:{get:function(){return 'application/json';}},
+      json:async()=>({
+        id:157336,title:'Interstellar',release_date:'2014-11-05',runtime:169,
+        genres:[{id:18,name:'Drama'}],original_language:'en',
+        production_countries:[{iso_3166_1:'US'}],keywords:{keywords:[]},
+        release_dates:{results:[{iso_3166_1:'FR',release_dates:[{certification:'-12'}]}]}
+      }),
+      text:async()=>''
+    };
+  }
+  if(url.includes('media.example/master.m3u8')){
+    mediaCalls++;
+    return {
+      ok:true,status:200,url:url,
+      headers:{get:function(name){return String(name).toLowerCase()==='content-type'?'application/vnd.apple.mpegurl':null;}},
+      text:async()=> '#EXTM3U\\n#EXT-X-TARGETDURATION:6\\n#EXTINF:6,\\nhttps://media.example/seg.ts\\n#EXT-X-ENDLIST'
+    };
+  }
+  throw new Error('unexpected fetch '+url);
+};
+const p=require(""" + json.dumps(str(provider)) + """);
+p.getStreams('157336','movie',undefined,undefined).then(function(rows){
+  const row=rows[0]||{};
+  console.log(JSON.stringify({row:row,tmdbCalls:tmdbCalls,mediaCalls:mediaCalls}));
+}).catch(function(error){console.error(error&&error.stack||error);process.exit(1);});
+""",
+        encoding="utf-8",
+    )
+    completed = subprocess.run(
+        ["node", str(runner)],
+        text=True,
+        encoding="utf-8",
+        capture_output=True,
+        timeout=20,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    native = json.loads(completed.stdout.strip())
+    assert native["tmdbCalls"] == 1, native
+    assert native["row"]["title"].endswith(" - 1080p"), native
+    assert native["row"]["duration"] == 169, native
+    assert "Interstellar • 2014" in native["row"]["description"], native
+    assert "⏱ 2h49" in native["row"]["description"], native
+    assert "🔞 -12" in native["row"]["description"], native
+    assert {"1080p-full-hd", "webdl", "hevc", "dolby-digital-plus", "5.1"}.issubset(
+        set(native["row"]["badgeIds"])
+    ), native
 
 # Reapplication is idempotent: global Core wrappers are replaced/reused, never stacked.
 first, _ = apply("cineby", "module.exports={getStreams:async()=>[]};\n")
