@@ -41,7 +41,7 @@ native_patched = module.apply(base, native_options)
 assert '"probeFirstSegmentNative":true' in native_patched
 assert '"nativeProbeMaxRows":3' in native_patched
 assert '"nativeProbeTimeoutMs":1500' in native_patched
-assert '"implementationRevision":"native-first-segment-container-proof-v7"' in native_patched
+assert '"implementationRevision":"native-first-segment-container-proof-v8-tv-byte-capability"' in native_patched
 assert module.apply(native_patched, native_options) == native_patched
 
 cfg = json.loads(OVERRIDES.read_text(encoding="utf-8"))
@@ -142,6 +142,40 @@ PATCHED
   if(calls!==2)throw new Error("unexpected malformed probe count "+calls);
 })().catch(function(e){console.error(e);process.exit(1)});
 '''.replace("PATCHED", native_patched)
+)
+
+# Android TV contract: fetch exposes text()/json() but no body/arrayBuffer and
+# TextEncoder/TextDecoder are absent. Lack of readable segment bytes is unknown,
+# not positive malformed-media evidence, so the stream must survive.
+run_node(
+    r\'''\
+globalThis.TextEncoder=undefined;
+globalThis.TextDecoder=undefined;
+let calls=0;
+globalThis.__native_fetch=function(){};
+globalThis.fetch=async function(url){
+  calls++;
+  if(url.endsWith("media.m3u8"))return {
+    ok:true,status:200,url,
+    headers:{get:function(){return "application/vnd.apple.mpegurl";}},
+    text:async function(){return "#EXTM3U\\n#EXTINF:6,\\nseg-1.ts\\n";},
+    json:async function(){return null;}
+  };
+  if(url.endsWith("seg-1.ts"))return {
+    ok:true,status:200,url,
+    headers:{get:function(){return "video/mp2t";}},
+    text:async function(){return "binary-not-byte-addressable-on-tv";},
+    json:async function(){return null;}
+  };
+  throw new Error("unexpected "+url);
+};
+PATCHED
+(async function(){
+  const rows=await globalThis.getStreams("1","movie");
+  if(!Array.isArray(rows)||rows.length!==1)throw new Error("TV byte-unavailable HLS row rejected");
+  if(calls!==2)throw new Error("unexpected TV probe count "+calls);
+})().catch(function(e){console.error(e);process.exit(1)});
+\'''.replace("PATCHED", native_patched)
 )
 
 # Network uncertainty must not become a false stream rejection.
