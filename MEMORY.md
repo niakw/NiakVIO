@@ -442,3 +442,18 @@ Keep it disabled in production until all proofs are green.
 - Full acceptance has a bounded watchdog restart budget; targeted Learning mode remains fail-fast instead of hiding a hang.
 - A dedicated `native-ios-lab-validation.json` trigger permits iOS-only acceptance reruns without repeating the four already-green Android/Desktop Labs.
 
+## 2026-09-03 — retry 21 fully green after HLS/Core cleanup
+- Manual reconstruction run `33733218590` / retry 21 completed successfully end-to-end on workbench source commit `fb1d8b5ea40c6515842949f5e980735166d82dcc`.
+- All 96 ProviderBase v3 inputs remained clean; all 96 providers were materialized at generation `9ddd9f969838d444`.
+- Reverse reconstruction was byte-identical 96/96 immediately after materialization and again in the final post-gates.
+- Published brick portfolio, Provider v3 static audit, Media Type v26, Stream Presentation V18/pipeline, stream identity, runtime media safety, playback integrity, terminal sanitizer, release hashes and release integrity all passed.
+- GitHub committed the verified reconstructed workspace as `8e3f40c318d923e83b1dc49320fc1e4b68efe2cd` with message `chore: reconstruct Provider v3 96/96`.
+- CORE Quick 1787 failed only because it started concurrently before reconstruction and therefore audited the previous published HLS bytes; documentation and iOS watchdog contracts were already green. A provider-byte-neutral documentation commit must now trigger the authoritative Quick on the new bytes.
+- Main remains untouched.
+
+## 2026-09-03 — final documentation cleanup prepared after retry 21
+- `INSTALL.md` no longer describes Quick as repair-first or Deep as a reconstruction engine; it documents manual Provider v3 reconstruction, five native Labs and 8-day current native artifacts.
+- `SECURITY.md` now states that published Provider JS are rebuilt from ProviderBase v3 + structured DATA + owned Lego, never hand-edited or seeded from upstream/published JS.
+- `UPSTREAMS.md` now reflects reality: weekly upstream discovery is read-only; existing `upstream-lkg` snapshots are historical provenance/knowledge and are not refreshed by CORE Deep or used as executable reconstruction seeds.
+- These secondary docs are added to the fail-closed documentation drift contract.
+

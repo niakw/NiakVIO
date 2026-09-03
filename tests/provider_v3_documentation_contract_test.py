@@ -12,6 +12,9 @@ readme = (ROOT / "README.md").read_text(encoding="utf-8")
 readme_fr = (ROOT / "README.fr.md").read_text(encoding="utf-8")
 health = (ROOT / "HEALTH-CHECK.md").read_text(encoding="utf-8")
 contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
+security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
 engine = (ROOT / "engine_v2/README.md").read_text(encoding="utf-8")
 sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
@@ -38,6 +41,9 @@ for text, label in (
     (readme_fr, "README.fr"),
     (health, "HEALTH-CHECK"),
     (contributing, "CONTRIBUTING"),
+    (install, "INSTALL"),
+    (security, "SECURITY"),
+    (upstreams, "UPSTREAMS"),
     (engine, "engine_v2/README"),
 ):
     for forbidden in (
@@ -47,6 +53,8 @@ for text, label in (
         "Quick est une maintenance **réparatrice",
         "Quick handles routine maintenance such as hub/domain refresh, canonical provider validation and bounded repairs",
         "canonical production control plane",
+        "maintenance courante, repair-first",
+        "Une correction générique appartient à ARCHI 2",
     ):
         assert forbidden not in text, f"{label}: stale architecture contract: {forbidden}"
 
@@ -80,8 +88,18 @@ assert machine["native_labs"] == [
 ]
 assert machine["minifier"]["enabled_in_production"] is False
 assert machine["minifier"]["terser_allowed"] is False
+assert machine["reference_reconstruction"]["retry"] == 21
+assert machine["reference_reconstruction"]["generation"] == "9ddd9f969838d444"
+assert machine["reference_reconstruction"]["reconstruction_sha"] == "8e3f40c318d923e83b1dc49320fc1e4b68efe2cd"
+assert machine["reference_reconstruction"]["reverse_byte_identical"] == "96/96"
+assert machine["reference_reconstruction"]["release_integrity"] is True
 
 # Dead orchestration trigger from the old repair world must not silently return.
+assert "exactement cinq Labs" in install
+assert "8 jours" in install
+assert "ProviderBase v3 + structured DATA + owned Lego" in security
+assert "ne sont **pas** rafraîchis par CORE Deep" in upstreams
+assert "jamais une seed JavaScript exécutable" in upstreams
 assert not (ROOT / ".github/triggers/deep-provider-repair").exists()
 
 # Active workflows may use bounded repair primitives only in the Learning world;

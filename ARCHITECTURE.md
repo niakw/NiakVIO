@@ -169,7 +169,7 @@ Les Labs :
 - ne réparent, ne reconstruisent et ne réécrivent jamais Provider v3 ;
 - conservent uniquement des preuves sanitizées.
 
-Les retests ciblés peuvent relancer un device sans invalider les autres. Desktop dispose d'un trigger ciblé macOS/Windows pour les corrections propres au Lab.
+Les retests ciblés peuvent relancer un device sans invalider les autres. Desktop dispose d'un trigger ciblé macOS/Windows ; iOS dispose d'un trigger ciblé et d'un watchdog de session reprenable afin qu'un provider QuickJS non-cancellable ne bloque pas le corpus complet.
 
 ## 10. Minification
 
@@ -193,18 +193,22 @@ Tout futur minimizer doit être NiakVIO-aware et prouver qu'il conserve :
 
 ## 12. État de référence du chantier Provider v3
 
-Le 3 septembre 2026, la reconstruction contrôlée retry 19 a établi :
+Le 3 septembre 2026, **retry 21** est la reconstruction de référence après le clean d'architecture et le durcissement HLS :
 
 - 96/96 ProviderBase v3 propres ;
 - 96/96 providers matérialisés ;
-- génération `949d251de7e3cb4d` ;
-- reverse rebuild 96/96 byte-identical ;
-- post-gates structure/runtime/release verts ;
-- commit de reconstruction `72a99271f59c81a64fd8c9a353b6ba86827f39ac` ;
-- CORE Quick 1783 vert sur les mêmes bytes providers ;
-- CORE Quick 1784 vert après le nettoyage du contrat Desktop.
+- génération `9ddd9f969838d444` ;
+- reverse rebuild 96/96 byte-identical, vérifié une première fois après matérialisation puis à nouveau dans les post-gates ;
+- portfolio Lego publié 96/96 vert ;
+- audit statique Provider v3 vert ;
+- Media Type Core v26 vert ;
+- Stream Presentation V18 / identity / runtime media safety / playback integrity / sanitizer verts ;
+- release hashes et release integrity verts ;
+- commit de reconstruction `8e3f40c318d923e83b1dc49320fc1e4b68efe2cd`.
 
-Ce jalon prouve que les artefacts publiés sont reconstructibles depuis le modèle Provider v3 sans réutiliser leur propre JavaScript comme seed.
+Retry 19 reste le premier jalon ayant prouvé la reconstruction complète sans seed JS publiée/upstream. Retry 21 confirme la même propriété après les changements Core/DATA ultérieurs, notamment le contrôle HLS premier segment.
+
+Le CORE Quick doit ensuite être exécuté sur **ces mêmes bytes reconstruits** via un commit provider-byte-neutral avant l'acceptation finale des cinq Labs.
 
 ## 13. Fichiers de référence
 

@@ -42,16 +42,20 @@ npm run diagnostics
 
 ## Publication
 
-Il n'existe qu'un orchestrateur de production : **`Niakvio provider pipeline`** (`.github/workflows/sync.yml`).
+Le workflow routine unique est **CORE - Verify & Publish** (`.github/workflows/sync.yml`).
 
-Il expose deux profondeurs :
+Il expose deux profondeurs de vérification :
 
-- `quick` : maintenance courante, repair-first, capable de publier une amélioration prouvée sans attendre Deep ;
-- `deep` : reconstruction et preuve large pour changements structurels, nouvelles intégrations et apprentissage/persistance des recipes.
+- `quick` : gate rapide et déterministe sur les bytes Provider v3 exacts et les contrats Core critiques ; aucun repair, aucune reconstruction, aucune mutation Provider/DATA/Core ;
+- `deep` : vérification structurelle complète + observation réseau read-only + re-projection des manifests/reports/hashes ; toujours aucun repair ni reconstruction provider.
 
-Ne modifiez pas manuellement `manifest.json` et `vf/manifest.json` comme deux sources autonomes. La source publiée canonique est `provider_catalog.json` ; les manifests sont des projections rendues et revalidées depuis ce catalogue dans la transaction de publication.
+La reconstruction forcée 96/96 appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main et doit prouver un reverse rebuild byte-identical.
 
-Le pipeline régénère également les versions, projections de langue, provenance, LKG et empreintes (`FILE-HASHES.json`, `SHA256SUMS.json`, `PATCH-SHA256SUMS.txt`) avant un commit atomique. Les bundles providers hashés sont immuables ; leur historique suit une rétention glissante de 10 générations par provider, sans supprimer une génération encore référencée par un manifest, le LKG ou la provenance publiée.
+Le Learning (`brain-learning-lab.yml`) est le seul monde d'expérimentation de repair ; il travaille en sandbox et ne publie pas directement. `domain-refresh.yml` est séparément limité au CONFIG `official_site` validé.
+
+Ne modifiez pas manuellement `manifest.json` et `vf/manifest.json` comme deux sources autonomes. La source publiée canonique de métadonnées/projections est `provider_catalog.json` ; les manifests sont des projections rendues et revalidées dans la transaction autorisée.
+
+Les bundles providers hashés sont immuables et adressés par contenu. Le code durable reste ProviderBase v3 + DATA/CONFIG + Lego `PROVIDER.*` / `CORE.*`.
 
 ## Vérification runtime
 
@@ -62,14 +66,14 @@ Une modification du chemin de playback partagé doit être suivie des preuves na
 - Nuvio Desktop macOS/Windows : `.github/workflows/native-desktop-reader-acceptance.yml` ;
 - corpus natif ciblé : `.github/workflows/native-corpus-device-targeted.yml`.
 
-Le corpus de référence est versionné dans `.github/triggers/nuvio-client-lab.json`. Le Lab standard utilise au maximum **une fixture film, une fixture série et une fixture anime par provider selon ses types déclarés** ; les autres œuvres restent disponibles pour les diagnostics ciblés. Les Labs utilisent les dépôts clients Nuvio officiels uniquement comme baselines de lecture : NiakVIO ne modifie pas ces dépôts. Les preuves natives lourdes s'exécutent sur `main` ou manuellement et ne constituent pas un verrou de publication.
+Le corpus de référence est versionné dans `.github/triggers/nuvio-client-lab.json` et couvre Interstellar, Breaking Bad S01E01 et Jujutsu Kaisen S01E01. La surface d'acceptation est exactement cinq Labs : TV Android, Mobile Android, Mobile iOS, Desktop macOS et Desktop Windows. Les Labs consomment les bytes NiakVIO exacts et les clients Nuvio officiels sans réparer, reconstruire ou réécrire les providers.
 
 ## Maintenance GitHub Actions
 
 `.github/workflows/purge-actions-history.yml` effectue chaque semaine une maintenance automatique : les runs terminés de plus de **7 jours** sont supprimés avec leurs artifacts. Le workflow conserve aussi un mode manuel pour une purge ponctuelle des logs seuls ou des runs complets.
 
-Les artifacts temporaires des Labs natifs sont conservés **1 jour**. Le cache Gradle est désactivé sur les Labs natifs afin de préserver le quota de cache GitHub Actions ; les snapshots AVD TV/Mobile restent conservés lorsqu'ils apportent un gain de démarrage significatif.
+Les artifacts temporaires des Labs natifs sont actuellement conservés **8 jours**. Le cache Gradle reste désactivé lorsque le workflow le prévoit afin de préserver le quota GitHub Actions ; les preuves persistées doivent rester sanitizées.
 
 ## Règle de maintenance
 
-Une correction générique appartient à ARCHI 2. Les scripts historiques encore présents ne sont que des primitives de compatibilité derrière le plan de contrôle V2 ; ils ne doivent pas recréer un second pipeline, un second manifest canonique ou une politique d'activation concurrente.
+Une correction générique appartient au Provider v3/Core approprié. Les scripts historiques encore présents ne sont que des primitives de compatibilité ou de Learning ; ils ne doivent jamais recréer un second pipeline de publication, un second manifest canonique ou une politique d'activation concurrente.
