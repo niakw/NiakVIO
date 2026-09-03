@@ -142,6 +142,103 @@ def forbidden_base_markers(data: bytes) -> list[str]:
     return [marker for marker in DERIVED_BASE_MARKERS if marker in text]
 
 
+def _strip_leaked_provider_model_data(text: str) -> tuple[str, bool]:
+    """Remove only the serialized Provider DATA declaration from a contaminated base.
+
+    References to NIAKVIO_PROVIDER_MODEL are part of the common skeleton and are
+    preserved. This helper never derives code from a published provider and never
+    rewrites executable logic outside the single declaration statement.
+    """
+    prefixes = (
+        "const NIAKVIO_PROVIDER_MODEL = Object.freeze(",
+        "let NIAKVIO_PROVIDER_MODEL = Object.freeze(",
+        "var NIAKVIO_PROVIDER_MODEL = Object.freeze(",
+    )
+    starts = [(text.find(prefix), prefix) for prefix in prefixes if text.find(prefix) >= 0]
+    if not starts:
+        return text, False
+    if len(starts) != 1:
+        raise ValueError("ProviderBase contains multiple provider model DATA declarations")
+    start, prefix = starts[0]
+    open_paren = start + len(prefix) - 1
+    depth = 0
+    quote = ""
+    escaped = False
+    end = None
+    for index in range(open_paren, len(text)):
+        ch = text[index]
+        if quote:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == quote:
+                quote = ""
+            continue
+        if ch in ("'", '"', "`"):
+            quote = ch
+            continue
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                cursor = index + 1
+                while cursor < len(text) and text[cursor] in " \t":
+                    cursor += 1
+                if cursor >= len(text) or text[cursor] != ";":
+                    raise ValueError("ProviderBase provider model DATA declaration has no terminating semicolon")
+                cursor += 1
+                if cursor < len(text) and text[cursor] == "\r":
+                    cursor += 1
+                if cursor < len(text) and text[cursor] == "\n":
+                    cursor += 1
+                end = cursor
+                break
+    if end is None:
+        raise ValueError("ProviderBase provider model DATA declaration is unterminated")
+    cleaned = text[:start] + text[end:]
+    return cleaned, True
+
+
+def _strip_leaked_provider_identity_data(text: str) -> tuple[str, bool]:
+    """Remove only a standalone generated NIAKVIO_PROVIDER_ID comment."""
+    pattern = re.compile(r"(?m)^\s*/\*\s*NIAKVIO_PROVIDER_ID:[^*]+\*/\s*\r?\n?")
+    cleaned, count = pattern.subn("", text)
+    if count > 1:
+        raise ValueError("ProviderBase contains multiple provider identity DATA comments")
+    return cleaned, bool(count)
+
+
+def clean_derived_provider_base(provider_id: str, data: bytes) -> tuple[bytes, bool]:
+    """Strip only generated/composed layers from an existing ProviderBase.
+
+    This is the manual reconstruction cleanup path. It never consults published
+    Provider JS, upstream JS, snapshots or Git history.
+    """
+    text = data.decode("utf-8", errors="strict")
+    if PROVIDER_BEGIN_MARKER in text or PROVIDER_END_MARKER in text:
+        raise ValueError(f"{provider_id}: ProviderBase envelope contamination requires Learning review")
+    text, model_stripped = _strip_leaked_provider_model_data(text)
+    text, identity_stripped = _strip_leaked_provider_identity_data(text)
+    text, managed_fixes = strip_all_managed_fixes(
+        text,
+        restore_replaced_source=True,
+        require_provider_base_restore=True,
+    )
+    text, stripped_core = _strip_generated_core_tail(text)
+    text, stripped_adaptive = strip_adaptive_runtime_wrappers(text)
+    data_out = text.encode("utf-8")
+    prefix, body = split_owned_prefix_bootstraps(data_out)
+    if prefix:
+        data_out = body
+    assert_base_layering(data_out, provider_id)
+    return data_out, bool(
+        model_stripped or identity_stripped or managed_fixes
+        or stripped_core or stripped_adaptive or prefix
+    )
+
+
 def assert_base_layering(data: bytes, provider_id: str) -> None:
     """ProviderBase is common code only: no envelope, DATA, Provider/Core Lego or derived tail."""
     markers = forbidden_base_markers(data)
@@ -1773,11 +1870,16 @@ def repair_derived_base_tails() -> dict[str, Any]:
         path, _digest = resolve_base(provider_id, row, require=True)
         assert path is not None
         data = path.read_bytes()
+        text = data.decode("utf-8", errors="strict")
         leaked = forbidden_base_markers(data)
+        if "NIAKVIO_PROVIDER_MODEL = Object.freeze(" in text:
+            leaked.append("NIAKVIO_PROVIDER_MODEL_DATA")
+        if "NIAKVIO_PROVIDER_ID:" in text:
+            leaked.append("NIAKVIO_PROVIDER_ID_DATA")
         if not leaked:
             continue
 
-        clean, stripped = clean_base_from_published(provider_id, data)
+        clean, stripped = clean_derived_provider_base(provider_id, data)
         if not stripped or clean == data:
             raise ValueError(
                 f"{provider_id}: derived ProviderBase layer detected but deterministic strip made no change: "
