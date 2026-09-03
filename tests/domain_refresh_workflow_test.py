@@ -9,9 +9,13 @@ assert text.startswith("name: CORE - Domain Refresh")
 assert "23 3 * * *" in text
 assert "contents: write" in text
 assert "--apply" in text and "--domain-only" in text
-assert "materialize_provider_v3_domain_refresh.py" in text
+assert "update_provider_v3_domain_config.py" in text
 assert "domain-site-changes.json" in text
-assert "verify_provider_v3_reverse_rebuild.py" in text
+assert "generate_language_manifests.py" in text
+assert "audit_provider_v3_static.py" in text
+assert "prune_unreferenced_providers.py" in text
+assert "generate_release_hashes.py" in text
+assert "validate_release_integrity.py" in text
 assert "provider_dns_preflight.mjs" in text
 assert 'git commit -m \'chore(domains): publish validated Provider v3 primary domains\'' in text
 assert "push origin HEAD:main" in text
