@@ -502,3 +502,30 @@ Keep it disabled in production until all proofs are green.
 - After the stricter strategy audit, additional false-positive plans were exposed: Cineby, CinemaCity, Nakios, Peachify, PlayIMDB, StreamFlix, VidEasy, Vidnest and Vidnest-Anime. These must be closed before the next 96/96 reconstruction.
 - Statically recovered contracts include CinemaCity `https://cinemacity.cc` + `/news_pages.xml` via `https://cc.realbestia.com`; Nakios `/api/sources/movie/{id}` and `/api/sources/tv/{id}/{season}/{episode}` at `https://api.nakios.store`; PlayIMDB `https://streamdata.vaplayer.ru/api.php?tmdb={id}&type={media}&season={season}&episode={episode}`; StreamFlix catalog/config at `https://api.streamflix.app`; VidEasy/Cineby share the speedracelight/Wings seed + encrypted-source family.
 - Main remains untouched; all work continues only on `workbench/provider-v3-performance-playback`.
+
+## 2026-09-03 — retry 25 closed structural Provider v3; final security/minimizer rematerialization pending
+- Retry 25 / run `33745927664` completed the full manual Provider v3 reconstruction successfully.
+- Reference generation before final security/minimizer rematerialization: `8e354389b41b2498`; reconstruction commit `bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb`; subsequent CORE Quick green `28d98a54264f7d24379c62b310a81b2e60dd7b4b`.
+- Reverse reconstruction is 96/96 byte-identical; release integrity and the full Provider v3 structural post-gates passed.
+- Full catalogue contract is 96 providers, disabled included. Current plan contract is 91 non-quarantined executable providers + 5 explicit quarantines: DVDPLAY, MOVIEBOX, NETMIRROR, TOPCARTOONS, VIXSRC.
+- Frenchstream is no longer a runtime quarantine: `provider_patches.frenchstream.capability=mixed_embed_resolver`, `https://fstream.website/` is the maintenance/discovery hub, and the historical wrong-duration evidence remains stream-level. The immutable 5.21 production floor remains separately recorded in `provider_capabilities`.
+- Shared resolver improvements now execute persisted API routes and resolve Abhilinks/HubCloud/VCloud/Driveseed-style intermediates. Clean provider-owned runtimes exist for CineVibe, StreamFlix, CinemaCity, Peachify, Vidnest, Vidnest-Anime, Cineby and VidEasy; Nakios/PlayIMDB use generic API DATA plans.
+- Five native Labs were triggered on the reconstructed bytes. Historical baseline is extremely weak functionally despite coverage greens: TV Android 2/214 non-empty, macOS 3/214, Windows 3/214, iOS 0/214; the old Mobile Android run failed before corpus staging. The Mobile Android harness has since been corrected to launch official MainActivity explicitly.
+
+## 2026-09-03 — 25 CodeQL High alerts share one ProviderBase HTML-regex root cause
+- The 25 user-reported main alerts (#158-#182) are all CodeQL `Bad HTML filtering regexp` findings in generated provider bundles.
+- The common generated source is `_strictHtmlIdentityOk()` in `scripts/provider_base_store.py`, which used generic regex HTML stripping. All 25 corresponding active workbench providers still inherited the same shape before this fix.
+- ProviderBase now uses deterministic scanner `_htmlVisibleText()` instead of regex HTML stripping.
+- `CORE.CATALOGUE_ALIAS_RECOVERY.V2` also had a second generic tag-strip pattern (visible on Frenchstream); it now uses deterministic `plainHtml()` and revision `authoritative-recovery-v12-html-scanner`.
+- `tests/provider_html_filter_security_test.py` gates both generator sources and, after reconstruction, all 96 published bundles. The test is wired into manual reconstruction, CORE Quick and SEC Final Gate.
+- Final requirement before merge: reconstruct all 96 again so the active content-addressed provider filenames no longer contain the old regex, then run CodeQL/security on the final branch/PR SHA.
+
+## 2026-09-03 — NiakVIO-safe minimizer finished and integrated
+- The earlier MEMORY entry describing the minimizer as audit-only is superseded.
+- Terser remains forbidden.
+- `scripts/provider_v3_minimizer.py` is now production-enabled and integrated into `materialize_provider_v3_all.py` before digest/filename generation.
+- The only transformation is removal of leading spaces/tabs on lines whose initial lexical state is ordinary JavaScript code.
+- Every line terminator is preserved; identifiers, expressions, regexes, strings and literals are never rewritten. Any provider containing a template literal is left completely byte-stable.
+- After minimization, managed Lego ownership, Provider BEGIN/END envelope and Core boundary are revalidated before hashing.
+- Gates: `provider_v3_minimizer_contract_test.py`, `provider_v3_minimizer_preview_test.py` (96 previews parsed by Node), `provider_v3_minimizer_published_test.py` (96 fixed-points), plus reverse reconstruction 96/96.
+- `automation/provider-v3-architecture.json`, `ARCHITECTURE.md`, `VALIDATION.md`, README EN/FR and documentation drift tests are being updated in the same transaction.
