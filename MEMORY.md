@@ -303,3 +303,11 @@ Keep it disabled in production until all proofs are green.
 - `provider_brick_portfolio_audit_test.py --published --require-all` audits the exact JS referenced by the current manifest. Quick and post-reconstruction validation use this mode; bare ProviderBase is no longer confused with a composed provider.
 - `materialize_provider_v3_all.py` and `audit_provider_v3_static.py` both fail closed unless all PROVIDER.* blocks are before the Core boundary and every CORE.* block is after it.
 - Workbench HEAD at this checkpoint: `559eed2ad529f95c9f7bfe10ad425ba3d8c36bad`.
+
+## 2026-09-03 — Core unit-contract cleanup before 96/96 rebuild
+- The 5.21.0 capability gate now records Purstream's intentional current semantic scope as movie/tv while preserving historical 5.21.0 types for audit context.
+- CORE.MEDIA_TYPE_RESOLUTION.V1 moved to revision `tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile`.
+- v26 fixes deferred-TMDB positive-output reconciliation: if TMDB confirms the same canonical/provider transport, NiakVIO does NOT execute the provider a second time. It promotes the authoritative context and reconciles only diagnostic fields already present in returned rows.
+- A dedicated unit test proves stable Dark Matter TV verification performs exactly one provider execution and one TMDB request while clearing `degraded`.
+- `normalize_stream_presentation_v12.py` is now a compatibility validator for committed V18, not a mutating normalizer. It validates `all-providers-standard-fields-url-facts-v18` read-only.
+- `global_stream_presentation_test.py` now validates V18 fixed-point directly with no apply/mutation semantics.
