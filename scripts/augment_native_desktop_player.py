@@ -38,6 +38,8 @@ import javax.swing.SwingUtilities
 """
 
 HELPERS = r'''
+    private val desktopPlayerProbeLock = Any()
+
     data class DesktopNativePlayerProbe(
         val state: String,
         val errorClass: String,
@@ -226,15 +228,17 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
         r'''                \}\n'''
     )
     replacement = f'''                {reader_iter} {{ index, row ->
-                    emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index entry=PlatformPlayerSurface")
-                    captureDesktopPhase("player-start", fixtureSlug)
-                    val reader = probeDesktopProductionPlayer(row.url, row.headers, row.type, {expected_minutes})
-                    emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-desktop-production http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64(reader.exceptionChain)}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
-                    captureDesktopPhase("player-result", fixtureSlug)
-                    // Independent transport diagnostics run only after the production
-                    // player has reached a terminal observation for this source.
-                    val transport = probeTransport(row.url, row.headers)
-                    emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
+                    synchronized(desktopPlayerProbeLock) {{
+                        emit("FIELD_NATIVE_PLAYER_BEGIN client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index entry=PlatformPlayerSurface")
+                        captureDesktopPhase("player-start", fixtureSlug)
+                        val reader = probeDesktopProductionPlayer(row.url, row.headers, row.type, {expected_minutes})
+                        emit("FIELD_NATIVE_PLAYER client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{reader.state}} engine=nuvio-desktop-production http_status=${{reader.httpStatus}} failure_stage=${{reader.failureStage}} duration_seconds=${{reader.durationSeconds ?: 0.0}} host64=${{b64(hostOnly(row.url))}} error_class64=${{b64(reader.errorClass)}} error_code64=${{b64(reader.errorCode)}} exception_chain64=${{b64(reader.exceptionChain)}} response_header_names64=${{b64("")}} load_bytes=0 load_duration_ms=0 media_data_type=-1 track_type=-1")
+                        captureDesktopPhase("player-result", fixtureSlug)
+                        // Independent transport diagnostics run only after the production
+                        // player has reached a terminal observation for this source.
+                        val transport = probeTransport(row.url, row.headers)
+                        emit("FIELD_NATIVE_TRANSPORT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} request_type=$requestMediaType route_mode=$routeMode index=$index state=${{transport.state}} kind=${{transport.kind}} status=${{transport.status}} content_type64=${{b64(transport.contentType)}} extm3u=${{transport.extm3u}} duration_seconds=${{transport.durationSeconds ?: 0.0}} host64=${{b64(transport.host)}} media_hint64=${{b64(transport.mediaHint)}}")
+                    }}
                 }}
 '''
     text, changed = transport_pattern.subn(replacement, text, count=1)
