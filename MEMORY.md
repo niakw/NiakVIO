@@ -56,3 +56,10 @@ Last updated: 2026-09-03
 - Domain Refresh is not reconstruction: authoritative hub proof may change only `provider-overrides.<id>.official_site`; `update_provider_v3_domain_config.py` replaces only that provider CONFIG Lego, proves all bytes outside CONFIG identical, refreshes the content-addressed filename/manifest/materialization inventory, and never executes a patch/Core generator.
 - Full 96/96 reconstruction is manual-only.
 - LEARN is the exclusive code evolution/repair owner, including disabled providers, and outputs review-only PRs.
+
+## Routine workflow simplification
+- Quick/Deep/Core are consolidated into one workflow: `.github/workflows/sync.yml` / `CORE - Verify & Publish`.
+- The old `.github/workflows/core-media-finalize-main.yml` is deleted.
+- There is one daily cron only. It runs Quick normally and Deep on Tuesday/Friday UTC.
+- Push/PR use Quick; manual dispatch can select Quick or Deep.
+- The single routine workflow may publish reports/hashes, and Deep may reproject language manifests. It never stages Provider JS, Provider DATA, Core/Fix scripts or reconstruction outputs.

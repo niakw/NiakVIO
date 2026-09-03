@@ -1,4 +1,4 @@
-name: CORE - Provider Verify & Publish
+name: CORE - Verify & Publish
 
 on:
   workflow_dispatch:
@@ -22,79 +22,93 @@ on:
       - 'provider-hubs.json'
       - 'provider-type-policy.json'
       - 'scripts/provider_patches/**'
-      - 'scripts/materialize_provider_v3_all.py'
       - 'scripts/audit_provider_v3_static.py'
       - 'scripts/build_published_provider_stage.py'
       - 'scripts/build_observational_health_report.py'
-      - 'scripts/resolve_provider_hubs.py'
       - 'scripts/health_check.mjs'
       - 'tests/**'
       - 'automation/provider-v3-architecture.json'
       - '.github/workflows/sync.yml'
   push:
-    branches: [main]
+    branches:
+      - main
+      - workbench/provider-v3-performance-playback
     paths:
-      - '.github/triggers/deep-provider-verify'
-      - '.github/workflows/sync.yml'
       - 'manifest.json'
+      - 'vf/manifest.json'
+      - 'no-anime/manifest.json'
+      - 'vf-no-anime/manifest.json'
       - 'providers/**'
       - 'provider-overrides.json'
+      - 'provider_catalog.json'
       - 'provider-hubs.json'
+      - 'provider-type-policy.json'
       - 'scripts/provider_patches/**'
-      - 'scripts/materialize_provider_v3_all.py'
       - 'scripts/audit_provider_v3_static.py'
+      - 'scripts/build_published_provider_stage.py'
+      - 'scripts/build_observational_health_report.py'
+      - 'scripts/health_check.mjs'
+      - 'tests/**'
+      - 'automation/provider-v3-architecture.json'
+      - '.github/workflows/sync.yml'
   schedule:
-    - cron: '17 5 * * 0,1,3,4,6'
-    - cron: '47 4 * * 2,5'
+    - cron: '17 5 * * *'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: provider-v3-verify-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
+  group: provider-v3-core-${{ github.event_name == 'pull_request' && github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  verify:
-    name: Verify published Provider v3
+  verify-and-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
-    permissions:
-      contents: read
-    outputs:
-      validation_mode: ${{ steps.mode.outputs.validation_mode }}
-      validated_sha: ${{ steps.sha.outputs.sha }}
+    timeout-minutes: 95
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - name: Checkout exact validation ref
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - id: sha
-        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - id: mode
+
+      - name: Select Quick or Deep profile
+        id: mode
         shell: bash
         run: |
+          set -euo pipefail
           MODE=quick
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then MODE="${{ inputs.mode }}"; fi
-          if [ "${{ github.event.schedule }}" = "47 4 * * 2,5" ]; then MODE=deep; fi
-          if [ -e .github/triggers/deep-provider-verify ]; then MODE=deep; fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            MODE="${{ inputs.mode }}"
+          elif [ "${{ github.event_name }}" = "schedule" ]; then
+            DOW="$(date -u +%u)"
+            if [ "$DOW" = "2" ] || [ "$DOW" = "5" ]; then MODE=deep; fi
+          fi
           echo "validation_mode=$MODE" >> "$GITHUB_OUTPUT"
-          echo "FIELD_PROVIDER_VERIFY_MODE mode=$MODE repair=false"
+          echo "FIELD_PROVIDER_VERIFY_MODE mode=$MODE repair=false reconstruction=false"
+
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with: {python-version: '3.12'}
+        with:
+          python-version: '3.12'
+
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with: {node-version: '24', package-manager-cache: false}
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Validate Provider v3 architecture
+
+      - name: Architecture and published-byte gate
         run: |
           set -euo pipefail
           python tests/provider_v3_workflow_ownership_test.py
           python scripts/provider_base_store.py validate
+          python scripts/audit_provider_v3_static.py
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_brick_portfolio_audit_test.py
           python tests/provider_521_capability_regression_test.py
@@ -105,21 +119,38 @@ jobs:
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
+
+      - name: Deep-only structural contracts
+        if: steps.mode.outputs.validation_mode == 'deep'
+        run: |
+          set -euo pipefail
+          python tests/provider_base_layering_contract_test.py
+          python tests/provider_wrapper_isolation_test.py
+          python tests/provider_byte_stability_contract_test.py
+          python tests/published_provider_lego_contract_test.py
+          python tests/repository_hygiene_contract_test.py
+          python tests/global_catalogue_alias_recovery_test.py
+          python tests/global_core_presentation_pipeline_test.py
+          python tests/provider_v3_workflow_ownership_test.py
           python scripts/audit_provider_v3_static.py
+
       - name: Build exact published-provider observation stage
         run: python scripts/build_published_provider_stage.py --stage staging-published
-      - name: Verify current domains and hubs without mutation
+
+      - name: Read-only hub observation
         run: |
-          python scripts/resolve_provider_hubs.py             --mode "${{ steps.mode.outputs.validation_mode }}"             --include-disabled --workers 8 --timeout 8             --output health-output/provider-hub-report.json
+          mkdir -p health-output
+          python scripts/resolve_provider_hubs.py             --mode "${{ steps.mode.outputs.validation_mode }}"             --include-disabled             --workers 8             --timeout 8             --output health-output/provider-hub-report.json
           git diff --exit-code -- provider-overrides.json provider-domain-history.json providers provider-bases
-      - name: Observe published providers
-        shell: bash
+
+      - name: Observe exact published providers
         env:
           NUVIO_STAGE: staging-published
           NUVIO_CANDIDATES_PATH: staging-published/candidates.json
           NUVIO_HEALTH_OUTPUT: health-output
           NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
           NUVIO_WORKER_MEMORY_MB: '1024'
+        shell: bash
         run: |
           set -euo pipefail
           if [ "${{ steps.mode.outputs.validation_mode }}" = deep ]; then
@@ -131,13 +162,33 @@ jobs:
           python scripts/generate_diagnostics.py             --results health-output/health-results.json             --output health-output
           test -s health-output/health-report.json
           test -s health-output/diagnostics-report.json
-      - name: Prove routine validation never mutates Provider v3
+
+      - name: Deep-only manifest projection
+        if: steps.mode.outputs.validation_mode == 'deep'
         run: |
-          git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json
+          cp health-output/health-report.json health-report.json
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_language_projection.py
+
+      - name: Prove routine immutability
+        run: |
+          set -euo pipefail
           python scripts/audit_provider_v3_static.py
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+          git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json scripts/provider_patches
+
+      - name: Refresh report/integrity outputs
+        run: |
+          cp health-output/health-report.json health-report.json
+          cp health-output/provider-hub-report.json provider-hub-report.json
+          cp health-output/diagnostics-report.json diagnostics-report.json
+          cp health-output/diagnostics-report.html diagnostics-report.html
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Upload verification evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: provider-v3-observation-${{ github.run_id }}
+          name: provider-v3-${{ steps.mode.outputs.validation_mode }}-${{ github.run_id }}
           path: |
             health-output/health-results.json
             health-output/health-report.json
@@ -147,67 +198,42 @@ jobs:
           retention-days: 8
           if-no-files-found: error
 
-  publish:
-    name: Publish verified reports and manifest projections
-    needs: verify
-    if: ${{ github.event_name != 'pull_request' && needs.verify.result == 'success' }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
-    permissions:
-      contents: write
-      actions: read
-    concurrency:
-      group: provider-v3-report-publication-main
-      cancel-in-progress: true
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: main
-          fetch-depth: 0
-      - name: Reject stale verification
+      - name: Publish reports and Deep manifest projections
+        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
-          VALIDATED_SHA: ${{ needs.verify.outputs.validated_sha }}
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
-          test "$(git rev-parse HEAD)" = "$VALIDATED_SHA"
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with: {python-version: '3.12'}
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with: {node-version: '24', package-manager-cache: false}
-      - run: npm ci --ignore-scripts --no-audit --no-fund
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-        with:
-          name: provider-v3-observation-${{ github.run_id }}
-          path: checked-observation
-      - name: Restore verified reports
-        run: |
-          cp checked-observation/health-report.json health-report.json
-          cp checked-observation/provider-hub-report.json provider-hub-report.json
-          cp checked-observation/diagnostics-report.json diagnostics-report.json
-          cp checked-observation/diagnostics-report.html diagnostics-report.html
-      - name: Reproject manifests on Deep only
-        if: needs.verify.outputs.validation_mode == 'deep'
-        run: |
-          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
-          python scripts/validate_language_projection.py
-      - name: Verify no runtime/data mutation during publication
-        run: |
-          git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json
-          python scripts/audit_provider_v3_static.py
-      - name: Refresh integrity inventories
-        run: |
-          python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
-      - name: Publish observation transaction
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add health-report.json provider-hub-report.json diagnostics-report.json diagnostics-report.html             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
-          if [ "${{ needs.verify.outputs.validation_mode }}" = deep ]; then
+          set -euo pipefail
+
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+          git add             health-report.json             provider-hub-report.json             diagnostics-report.json             diagnostics-report.html             FILE-HASHES.json             PATCH-SHA256SUMS.txt             SHA256SUMS.json
+
+          if [ "${{ steps.mode.outputs.validation_mode }}" = deep ]; then
             git add vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
           fi
+
+          # Runtime/DATA are never publishable from this workflow.
+          git diff --cached --name-only | grep -Ev '^(health-report\.json|provider-hub-report\.json|diagnostics-report\.json|diagnostics-report\.html|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json)$' && {
+            echo 'Routine workflow staged a forbidden path.' >&2
+            exit 1
+          } || true
+
           if git diff --cached --quiet; then
-            echo "No report/manifest projection change."
+            echo 'No report/manifest publication change.'
             exit 0
           fi
-          git commit -m "chore: publish Provider v3 ${{ needs.verify.outputs.validation_mode }} verification"
-          git push origin HEAD:main
+
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+            echo "FIELD_CORE_PUBLICATION_SKIPPED reason=main_advanced validated=$BASE_SHA current=$CURRENT_SHA"
+            exit 0
+          fi
+
+          git commit -m "chore: publish Provider v3 ${{ steps.mode.outputs.validation_mode }} verification"
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main

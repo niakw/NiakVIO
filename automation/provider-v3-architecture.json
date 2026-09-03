@@ -91,5 +91,22 @@
     "provider_config_data_update_only": true,
     "provider_js_structure_must_remain_byte_identical_outside_config": true,
     "content_addressed_filename_refresh": true
-  }
+  },
+  "routine_workflow": {
+    "path": ".github/workflows/sync.yml",
+    "display_name": "CORE - Verify & Publish",
+    "workflow_count": 1,
+    "profiles": [
+      "quick",
+      "deep"
+    ],
+    "daily_schedule": "05:17 UTC",
+    "deep_days_utc": [
+      "Tuesday",
+      "Friday"
+    ],
+    "provider_mutation_allowed": false,
+    "provider_reconstruction_allowed": false
+  },
+  "legacy_duplicate_core_workflow_removed": true
 }
