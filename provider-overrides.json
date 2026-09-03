@@ -1168,7 +1168,35 @@
       "capability": "html_scraper"
     },
     "cinevibe": {
-      "capability": "direct_media"
+      "capability": "api_stream_resolver",
+      "official_site": "https://cinevibe.asia",
+      "learned_routes": [
+        "/api/stream/fetch?server=cinebox-1&type={media}&mediaId={id}&title={title}&releaseYear={year}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/cinevibe_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/cinevibe_runtime_v1.py": {
+          "base": "https://cinevibe.asia",
+          "fingerprint": "eyJzY3JlZW4iOiIzNjB4ODA2eDI0Iiwi",
+          "session": "pjght152dw2rb.ssst4bzleDI0Iiwibv78"
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 CineVibe uses a provider-owned tokenized API Lego; historical JavaScript is knowledge-only.",
+        "TMDB title/year come from Core metadata; no TMDB key or TMDB network call is embedded in the provider.",
+        "CineVibe currently resolves movie transport only; TV remains fail-closed until the upstream API contract supports episodes."
+      ]
     },
     "ctgmovies": {
       "capability": "direct_media"
@@ -2785,8 +2813,8 @@
       "generated_from_manifest_or_stage": true
     },
     "cinevibe": {
-      "strategy": "direct_media",
-      "validation": "media_url",
+      "strategy": "api_stream_resolver",
+      "validation": "provider_lego_tokenized_api",
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
