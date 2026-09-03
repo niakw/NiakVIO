@@ -958,8 +958,66 @@
       ]
     },
     "peachify": {
-      "capability": "mixed_embed_resolver",
-      "manifest_overrides": {}
+      "capability": "api_stream_resolver",
+      "manifest_overrides": {},
+      "official_site": "https://peachify.top",
+      "learned_routes": [
+        "/moviebox/{media}/{id}",
+        "/air/{media}/{id}",
+        "/holly/{media}/{id}",
+        "/multi/{media}/{id}",
+        "/net/{media}/{id}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/peachify_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/peachify_runtime_v1.py": {
+          "key_hex": "a8f2a1b5e9c470814f6b2c3a5d8e7f9c1a2b3c4d5e3f7a8b8cad1e2d0a4d5c5d",
+          "origin": "https://peachify.top",
+          "referer": "https://peachify.top/",
+          "servers": [
+            {
+              "label": "Iron",
+              "base": "https://uwu.eat-peach.sbs",
+              "path": "moviebox"
+            },
+            {
+              "label": "Wolf",
+              "base": "https://usa.eat-peach.sbs",
+              "path": "air"
+            },
+            {
+              "label": "Spider",
+              "base": "https://usa.eat-peach.sbs",
+              "path": "holly"
+            },
+            {
+              "label": "Multi",
+              "base": "https://usa.eat-peach.sbs",
+              "path": "multi"
+            },
+            {
+              "label": "Dark",
+              "base": "https://uwu.eat-peach.sbs",
+              "path": "net"
+            }
+          ]
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 Peachify uses five statically recovered eat-peach endpoints and pure-JS AES-256-GCM decryption.",
+        "The historical node-forge payload and embedded TMDB key are not carried into Provider v3.",
+        "Movie/TV identity is TMDB-direct; TV appends requested season/episode to each endpoint."
+      ]
     },
     "playimdb": {
       "capability": "api_stream_resolver",
@@ -2441,7 +2499,7 @@
       }
     },
     "peachify": {
-      "strategy": "mixed_embed_resolver",
+      "strategy": "api_stream_resolver",
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
@@ -2451,7 +2509,14 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/moviebox/{media}/{id}",
+        "/air/{media}/{id}",
+        "/holly/{media}/{id}",
+        "/multi/{media}/{id}",
+        "/net/{media}/{id}"
+      ]
     },
     "playimdb": {
       "strategy": "api_stream_resolver",
