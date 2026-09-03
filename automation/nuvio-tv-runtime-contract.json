@@ -6,7 +6,7 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and TV-only TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
+  "source_ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
@@ -51,19 +51,16 @@
   },
   "audit": {
     "date": "2026-09-03",
-    "previous_ref": "ba44afb080d878ba123c978e791be8115e324fe9",
-    "audited_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
-    "hard_contract_paths_changed": true,
+    "previous_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
+    "audited_ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
+    "hard_contract_paths_changed": false,
     "plugin_runtime_positional_getstreams_unchanged": true,
     "provider_stream_repository_contract_unchanged": true,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
+      "Intervening commits only modify ASS/SSA subtitle styling/focus in PlayerScreen and subtitle UI components",
       "PluginRuntime positional getStreams, SCRAPER_ID/SCRAPER_SETTINGS/TMDB_API_KEY injection and native fetch semantics remain unchanged",
-      "LocalScraperResult now preserves provider-returned subtitles and parseJsonResults projects them",
-      "LocalScraperResult still preserves URL, title, name, quality, size, language, headers, seeders, peers and infoHash",
-      "Stream.description is still projected from LocalScraperResult.size",
-      "Stream badge presentation re-matches regex rules against textual Stream fields rather than consuming provider badgeIds/displayBadges",
-      "headers remain projected into behaviorHints.proxyHeaders.request for playback"
+      "Provider repository, LocalScraperResult URL/header/subtitle projection and behaviorHints proxy-header mapping remain unchanged"
     ],
     "runtime_reproof_required": false
   },
