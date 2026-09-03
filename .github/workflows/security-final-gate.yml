@@ -34,6 +34,7 @@ on:
       - 'tests/native_corpus_device_lab_test.py'
       - 'tests/workflow_security_policy_test.py'
       - 'tests/provider_tmdb_runtime_key_contract_test.py'
+      - 'tests/provider_html_filter_security_test.py'
 
 permissions:
   contents: read
@@ -85,6 +86,7 @@ jobs:
           python tests/native_corpus_device_lab_test.py
           python tests/workflow_security_policy_test.py
           python tests/provider_tmdb_runtime_key_contract_test.py
+          python tests/provider_html_filter_security_test.py --published
           python scripts/normalize_published_security_finalization.py --check
 
       - name: Scan all published providers for known unsafe shapes
