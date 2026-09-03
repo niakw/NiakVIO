@@ -80,6 +80,8 @@ Le Provider JS est un **lecteur spécialisé**, pas un crawler ni un moteur Lear
 
 Le Core Media Type courant est `tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile`.
 
+Le Core Stream Presentation courant est **V20** (`all-providers-client-projection-name-mirror-v20`) : `title` et `name` portent tous deux `Provider - Qualité`. Cette duplication est volontaire parce que Mobile/Desktop privilégient `name` alors que d'autres surfaces peuvent privilégier `title`.
+
 ## 5. HLS et playback
 
 Une URL `.m3u8` ou un `#EXTM3U` ne suffit pas à prouver qu'un stream sera lisible.
@@ -94,6 +96,7 @@ Une URL `.m3u8` ou un `#EXTM3U` ne suffit pas à prouver qu'un stream sera lisib
 - fMP4 : signature de box `ftyp/styp/moof/moov` ;
 - HTML/JSON servi à la place d'un segment : rejet positif ;
 - chiffrement HLS ou erreur réseau/timeout : état inconclusif, pas faux rejet.
+- Android TV : si le bridge natif n'expose aucun octet lisible (`body/arrayBuffer` absents), l'état du premier segment reste inconclusif ; l'absence de byte API n'est jamais une preuve de conteneur malformé. Le contrat TV audité n'expose ni `TextEncoder/TextDecoder` ni `WebAssembly`.
 
 Cette preuve est une capacité Core générique et peut être activée par DATA provider ; elle n'est pas un patch spécifique codé en dur.
 
@@ -129,6 +132,8 @@ Deep ne répare pas et ne reconstruit pas les providers.
 ## 7. Learning
 
 `.github/workflows/brain-learning-lab.yml` est le propriétaire des expérimentations de repair/apprentissage.
+
+La mémoire/proposition durable de Learning est maintenue sur la branche `brain-learning/proposals`; elle n'est jamais une branche de production et ne remplace pas `main` comme autorité de publication.
 
 - sandbox uniquement ;
 - catalogue complet, providers désactivés inclus ;
@@ -205,22 +210,22 @@ Les gates sont `provider_v3_minimizer_contract_test.py`, `provider_v3_minimizer_
 
 ## 12. État de référence du chantier Provider v3
 
-Le 3 septembre 2026, **retry 25** est la reconstruction de référence avant la rematérialisation finale sécurité + minimizer :
+Le 3 septembre 2026, **retry 32** est la reconstruction canonique courante :
 
-- 96/96 ProviderBase v3 propres ;
-- 96/96 providers matérialisés ;
-- connaissance statique durable 96/96 ;
+- 96/96 ProviderBase v3 propres et 96/96 providers matérialisés ;
+- génération `c27ea147413fd73e` ;
+- commit de reconstruction `ced50b6b51de4838f3f94ba7b349beb81239a1d4` ;
+- reverse rebuild **96/96 byte-identical** ;
+- minimizer publié fixed-point 96/96, Terser interdit ;
+- sécurité HTML publiée : `bad_html_filter_regex=0` sur les 96 bundles ;
 - 91 plans non-quarantined exécutables + 5 quarantines explicites ;
-- génération `8e354389b41b2498` ;
-- reverse rebuild 96/96 byte-identical ;
-- portfolio Lego, static audit, Media Type v26, Stream Presentation/identity, runtime media safety, playback integrity et sanitizer verts ;
-- release hashes et release integrity verts ;
-- commit de reconstruction `bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb` ;
-- CORE Quick vert sur `28d98a54264f7d24379c62b310a81b2e60dd7b4b`.
+- Stream Presentation **V20**, pipeline Facts -> Identity -> Media Type -> Presentation -> Branding -> Sanitizer V6 vert ;
+- HLS native **V8** : byte API TV indisponible = inconclusif/non-bloquant, preuve positive HTML/JSON/conteneur invalide = rejet ;
+- refs officielles auditées : Mobile `d4891ffaaf975c77de8ea3612f37a7a2b936c79d`, Desktop `9390d5844e53d1f4d9829490d6f3deb057d7ab14`, TV `49c753de3f193e3a74ea54194df3d331ce6302f0`.
 
-Retry 19 reste le premier jalon ayant prouvé la reconstruction complète sans seed JS publiée/upstream. Retry 25 ajoute la connaissance statique durable et le contrat de plan exécutable 96/96.
+Les cinq quarantines de stratégie sont exactement `dvdplay`, `moviebox`, `netmirror`, `topcartoons` et `vixsrc`. Frenchstream n'est pas quarantiné : son plan est `mixed_embed_resolver`, son hub de maintenance/découverte est `https://fstream.website/` et son activation peut rester différée jusqu'à une preuve reader propre.
 
-Une reconstruction ultérieure doit superséder cette référence avant merge si elle incorpore les corrections finales de sécurité HTML ou le minimizer de production.
+Retry 19 reste le premier jalon ayant prouvé la reconstruction complète sans seed JS publiée/upstream ; retry 25 a ajouté la connaissance statique durable et le plan exécutable 96/96 ; retry 32 supersède ces références pour la publication finale.
 
 ## 13. Fichiers de référence
 
