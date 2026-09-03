@@ -163,6 +163,11 @@ def main() -> int:
         help="Audit already reconstructed/materialized staging candidates instead of current ProviderBase files.",
     )
     parser.add_argument(
+        "--published",
+        action="store_true",
+        help="Audit the exact Provider JS files referenced by the current manifest.",
+    )
+    parser.add_argument(
         "--require-all",
         action="store_true",
         help="Require every manifest provider to exist in the supplied staging registry.",
@@ -175,6 +180,8 @@ def main() -> int:
     applied_script_counts: dict[str, int] = {}
     portfolio_errors: list[str] = []
     force = forced_ids()
+    if args.stage and args.published:
+        raise SystemExit("--stage and --published are mutually exclusive")
     staged = stage_rows(args.stage.resolve()) if args.stage else {}
 
     for entry in MANIFEST.get("scrapers") or []:
@@ -188,7 +195,31 @@ def main() -> int:
         if not isinstance(row, dict):
             raise AssertionError(f"{provider_id}: missing provenance row")
 
-        if args.stage:
+        if args.published:
+            local_path = str(entry.get("filename") or "").strip()
+            if not local_path:
+                portfolio_errors.append(f"{provider_id}: manifest provider filename missing")
+                continue
+            target = (ROOT / local_path).resolve()
+            providers_root = (ROOT / "providers").resolve()
+            if providers_root not in target.parents or not target.is_file():
+                portfolio_errors.append(f"{provider_id}: published provider file missing: {local_path}")
+                continue
+            first_text = target.read_text(encoding="utf-8", errors="strict")
+            try:
+                second, records = apply_overrides(
+                    provider_id,
+                    first_text.encode("utf-8"),
+                    phase="discovery",
+                )
+                second_text = second.decode("utf-8", errors="strict") if isinstance(second, bytes) else str(second)
+                errors, record_paths = audit_composed(provider_id, first_text, second_text, records)
+                portfolio_errors.extend(errors)
+                fix_ids = validate_managed_fixes(first_text)
+            except Exception as exc:
+                portfolio_errors.append(f"{provider_id}: published composition exception: {type(exc).__name__}: {exc}")
+                continue
+        elif args.stage:
             candidate = staged.get(provider_id)
             if not candidate:
                 if args.require_all:
@@ -272,7 +303,10 @@ def main() -> int:
         x for x in MANIFEST.get("scrapers") or []
         if isinstance(x, dict) and str(x.get("id") or "").strip()
     ])
-    if args.stage:
+    if args.published:
+        if args.require_all and checked != expected:
+            portfolio_errors.append(f"published audit incomplete: checked={checked} expected={expected}")
+    elif args.stage:
         if args.require_all and checked != expected:
             portfolio_errors.append(f"staging audit incomplete: checked={checked} expected={expected}")
     elif checked + deferred != expected:
@@ -285,7 +319,7 @@ def main() -> int:
             print("FIELD_PROVIDER_BRICK_ERROR " + error)
         raise AssertionError(f"provider brick portfolio errors={len(portfolio_errors)}")
 
-    scope = "staging" if args.stage else "providerbase"
+    scope = "published" if args.published else ("staging" if args.stage else "providerbase")
     print(
         "FIELD_PROVIDER_BRICK_AUDIT "
         f"scope={scope} providers={checked} deferred={deferred} "
