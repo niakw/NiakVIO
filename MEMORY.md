@@ -1,70 +1,269 @@
-# NiakVIO workbench recovery memory
+# NiakVIO — Recovery Memory
 
-Last updated: 2026-09-03
+Last authoritative rewrite: 2026-09-03.
+This file is the recovery source of truth if ChatGPT/session context is lost. Prefer the latest repository state over older chat summaries.
 
-## Hard safety rule
-- Do not write to `main` while this workbench is under development.
-- Active branch: `workbench/provider-v3-performance-playback`.
-- Stable production reference when the workbench started: `main` at `8116f02289226ab8fb823f7ae03e204f73926a83`.
-- All experiments, manifests, workflows, labs, reconstruction and minifier work stay on the workbench until final validation.
+## Hard branch safety
+- Active development branch: `workbench/provider-v3-performance-playback`.
+- DO NOT write to `main` while this workbench is being completed.
+- Production/main was intentionally frozen for user testing at SHA `8116f02289226ab8fb823f7ae03e204f73926a83`.
+- Production manifest at freeze: 5.21.31, 96 providers, MOVIX disabled, PURSTREAM restricted to movie/tv.
+- All current architecture/runtime/lab/minifier changes stay on workbench until final manual acceptance.
 
-## Provider v3 architecture
-- 96 providers.
-- Runtime JS must be reproducible from ProviderBase + structured DATA + owned Core/Provider Lego.
-- Legacy/upstream provider JS is knowledge only, never an executable reconstruction seed.
-- Full manual reconstruction must remain possible and must prove 96/96 byte-identical reverse rebuild.
-- Routine runs do not repair fix blocks.
+## Primary product goal
+Build the most stable possible NiakVIO baseline:
+1. clean Provider v3 architecture;
+2. stable structured DATA;
+3. stable shared CORE Lego;
+4. provider JS immutable during routine automation;
+5. good speed without premature provider aborts;
+6. rich standard stream metadata/badges consumed correctly by Nuvio clients;
+7. playback/readability verified on official Nuvio clients;
+8. deterministic manual full reconstruction available only when explicitly needed;
+9. LEARN is the only automated code-evolution/repair system;
+10. eventual NiakVIO-aware JS minifier that preserves the comment/Lego architecture exactly.
 
-## Workflow ownership
-- LEARN owns repair attempts. It may repair only in sandbox, validate, then propose PRs for human merge. It must not publish production runtime.
-- DEEP owns verification/publication: domain/hub checks, Core/provider contracts, deep health observation, manifest projections, integrity inventories and publication. No adaptive quick/deep repair in DEEP.
-- Native labs are observational proof on TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows.
+## Provider v3 invariant
+- Catalogue size: 96 providers.
+- A runtime Provider JS is built conceptually from:
+  - clean ProviderBase;
+  - structured provider DATA;
+  - PROVIDER.* Lego;
+  - CORE.* Lego.
+- Legacy/upstream/published old Provider JS is knowledge/reference only and must never become an executable reconstruction seed.
+- Provider envelope markers are mandatory:
+  - `/* BEGIN NIAKVIO_PROVIDER */`
+  - `/* END NIAKVIO_PROVIDER */`
+- Managed Lego markers are mandatory and ordered:
+  - PROVIDER.* blocks first;
+  - CORE.* blocks after;
+  - every managed block uses STARTFIX/CLOSEFIX and managed FIXDATA.
+- Routine automation must not modify the structure/order/content of these blocks.
 
-## Current runtime tuning
-- Commit `58425bf9c0d7b8883c05a63ef532217f3840daea` changes Provider v3 Core default budget from 10s TV / 18s others to 25s TV / 30s Mobile+Desktop.
-- Stream presentation V18 extracts quality from standard fields, URL facts, FHD/HD/SD and numeric height.
-- Goal: avoid Nuvio showing e.g. Kehflix - Inconnue when safe facts already expose quality.
-- Official clients allow substantially longer plugin execution (TV ~120s, Mobile/Desktop ~60s), so NiakVIO must not self-abort at 10s.
+## Automation ownership — simplified architecture
+There is ONE routine workflow:
+- `.github/workflows/sync.yml`
+- display name: `CORE - Verify & Publish`
 
-## Production state intentionally frozen
-- main manifest 5.21.31.
-- 96 providers published.
-- MOVIX disabled.
-- PURSTREAM movie/tv only.
-- Do not modify main until workbench is complete and manually accepted.
+### Quick profile
+Purpose: fast event-driven safety gate.
+Triggers:
+- push;
+- PR;
+- manual dispatch;
+- Domain Refresh follow-up.
+Responsibilities:
+- exact 96 published-byte static audit;
+- critical DATA/Core/runtime unit contracts;
+- playback policy / stream presentation / type safety contracts;
+- no full network health;
+- no manifest publication;
+- no provider reconstruction;
+- no repair;
+- no provider/Core/Fix mutation.
+Quick is NOT scheduled.
 
-## Remaining work
-1. Simplify DEEP to verification + manifest/report republication only.
-2. Keep repair exclusively in LEARN proposal PR path.
-3. Add manual full 96/96 reconstruction workflow.
-4. Run/inspect TVAndroid, MobileAndroid, MobileIOS, DesktopMACOS, DesktopWindows labs against workbench.
-5. Harden stream metadata/badges and playback-readability issues found by labs.
-6. Develop NiakVIO JS minifizer only after architecture/runtime gates are stable; preserve all BEGIN/END and STARTFIX/CLOSEFIX comments exactly and prove semantic/runtime parity before enablement.
+### Deep profile
+Purpose: full verification + publication, still non-repairing and non-reconstructing.
+Triggers:
+- schedule Tuesday + Friday at 04:47 UTC;
+- manual dispatch mode=deep.
+Responsibilities:
+- everything in Quick;
+- full structural contracts;
+- read-only hub observation;
+- full runtime/network health observation of the exact 96 published JS;
+- regenerate language manifest projections from observed health;
+- regenerate reports and integrity inventories;
+- publish only reports/manifests/hashes if changed.
+Deep NEVER:
+- repairs providers;
+- promotes candidates;
+- reconstructs Provider JS;
+- edits DATA/Core/Fix/runtime code.
 
-## Architecture update
-- Quick and Deep are verification-only on the workbench since commit `b45048241b1857a7be2a02a2c6ab6340fc0dbe5c`.
-- Routine validation builds a temporary stage from the exact 96 published JS bytes; no discovery/promotion/repair.
-- Domain/hub checks are read-only in routine runs.
-- Manual full reconstruction workflow: `.github/workflows/provider-v3-reconstruct-all.yml`; it refuses direct commits to main and proves 96/96 reverse rebuild before an optional branch commit.
+The removed duplicate routine workflow `.github/workflows/core-media-finalize-main.yml` must remain deleted.
 
-- Core finalizer is now a read-only Provider v3 fixed-point gate.
-- Domain Refresh is the one routine write exception: daily hub observation may update only `provider_patches.<id>.official_site` plus domain history on main, then deterministically rematerialize only affected Provider v3 artifacts. It may not alter API/routes/replacements/fix/options.
-- Domain Refresh `--domain-only` filters to providers with an authoritative hub and hub/telegram/redirect-derived candidates only; direct/search fallback cannot change `official_site`.
+## Domain Refresh — the only routine production DATA-write exception
+Workflow: `.github/workflows/domain-refresh.yml`.
+Purpose: maintain availability when an authoritative provider hub changes its PRIMARY DOMAIN.
 
-## Immutability model finalized
-- Quick, Deep and Core never reconstruct Provider JS. They audit the exact published 96 bytes with `scripts/audit_provider_v3_static.py`.
-- Domain Refresh is not reconstruction: authoritative hub proof may change only `provider-overrides.<id>.official_site`; `update_provider_v3_domain_config.py` replaces only that provider CONFIG Lego, proves all bytes outside CONFIG identical, refreshes the content-addressed filename/manifest/materialization inventory, and never executes a patch/Core generator.
-- Full 96/96 reconstruction is manual-only.
-- LEARN is the exclusive code evolution/repair owner, including disabled providers, and outputs review-only PRs.
+Strict scope:
+- may update ONLY `provider_patches.<provider>.official_site`;
+- may update domain history;
+- may update the corresponding `PROVIDER.<ID>.CONFIG.V1` officialSite value and content-addressed filename/reference;
+- must prove every byte outside that CONFIG Lego is identical;
+- must not run provider/Core repair or reconstruction;
+- must not change official_api, routes, replacements, api_recipe, patch options, patch scripts, CORE, PROVIDER fix logic or provider capabilities.
 
-## Routine workflow simplification
-- Quick/Deep/Core are consolidated into one workflow: `.github/workflows/sync.yml` / `CORE - Verify & Publish`.
-- The old `.github/workflows/core-media-finalize-main.yml` is deleted.
-- There is one daily cron only. It runs Quick normally and Deep on Tuesday/Friday UTC.
-- Push/PR use Quick; manual dispatch can select Quick or Deep.
-- The single routine workflow may publish reports/hashes, and Deep may reproject language manifests. It never stages Provider JS, Provider DATA, Core/Fix scripts or reconstruction outputs.
+Trust model:
+- provider must have an authoritative hub source;
+- domain-only resolver considers hub / public Telegram / redirect-derived authoritative candidates;
+- direct/search fallback must never autonomously replace official_site;
+- if the captured URL is not safely validated, keep the previous site;
+- if nothing changed, do nothing and do not rewrite/reapply.
 
-## Quick vs Deep definition
-- Quick is event-driven only (push/PR/manual/after Domain Refresh). It runs exact-byte static audit + critical Core/runtime unit contracts. No full network health, no manifests publication, no reconstruction.
-- Deep is the only scheduled routine run (Tuesday/Friday 04:47 UTC) or manual. It runs Quick + full structural contracts + read-only hub observation + full 96-provider runtime health, then republishes language manifests/reports/hashes if changed.
-- ProviderBase-store validity is a reconstruction concern, not a Quick gate; it remains in the manual reconstruction workflow.
+Important architectural decoupling:
+- `CORE.CATALOGUE_ALIAS_RECOVERY` no longer serializes the provider domain into CORE bytes.
+- It reads `NIAKVIO_PROVIDER_MODEL.officialSite` at runtime.
+- Commit that introduced this decoupling: `3dd72f7b90d3b46481244f3795fdaaed5898eb73`.
+
+Domain helper scripts currently present:
+- `scripts/validate_domain_refresh_scope.py`
+- `scripts/update_provider_v3_domain_config.py`
+- `scripts/audit_provider_v3_static.py`
+
+## LEARN — exclusive code evolution owner
+Workflow: `.github/workflows/brain-learning-lab.yml`.
+LEARN is the only automated component allowed to TRY to evolve/repair NiakVIO code.
+
+Responsibilities:
+- observe failing/weak providers, including disabled/off providers;
+- investigate CORE/Provider fix weaknesses;
+- attempt repairs only in Learning sandbox/workspace;
+- validate candidate changes;
+- persist sanitized learning/proposals;
+- open/refresh review PRs (brain-repair proposal flow).
+
+Hard restrictions:
+- no direct production runtime publication;
+- no direct main mutation for repair;
+- human review/merge remains the promotion gate.
+
+Provider issues remaining after the stable baseline should be handled through LEARN proposals, not daily reconstruction.
+
+## Manual reconstruction
+Workflow: `.github/workflows/provider-v3-reconstruct-all.yml`.
+This is the ONLY intended full 96/96 reconstruction path.
+It is manual-only.
+It must:
+- rebuild from clean ProviderBase + DATA + owned Lego;
+- never use legacy/upstream Provider JS as seed;
+- reconstruct all 96;
+- prove reverse reconstruction byte identity;
+- run runtime/integrity tests;
+- refuse direct commit to main;
+- optionally commit the verified reconstruction only to a selected non-main branch.
+Normal Quick/Deep/Domain/Labs must never call the full materializer.
+
+## Current runtime tuning on workbench
+Commit `58425bf9c0d7b8883c05a63ef532217f3840daea` introduced the intended shared Core tuning:
+- TV Provider v3 internal budget: 25s (was ~10s);
+- Mobile/Desktop Provider v3 internal budget: 30s (was ~18s);
+- native lab observation budget target: 40s.
+
+Why:
+- official NuvioTV plugin execution allows about 120s;
+- official NuvioMobile/NuvioDesktop execution allows about 60s;
+- NiakVIO was self-aborting too early and providers could appear red around 10–15s even though the client still allowed them to finish.
+
+Important:
+- keep individual network/fetch deadlines short;
+- the longer provider envelope budget is not permission for hung requests;
+- optimize providers to yield useful streams early rather than simply waiting longer.
+
+## Stream presentation / metadata work
+Target problem observed by user:
+- Interstellar returned only a few providers before timeout/red;
+- stream titles could show e.g. `Kehflix - Inconnue`;
+- quality and badges were often missing.
+
+Shared presentation V18 direction:
+- infer quality from normal fields AND safe URL facts;
+- inspect quality/resolution/height/width/label;
+- normalize FHD -> 1080p;
+- HD -> 720p;
+- SD -> 480p;
+- retain 2160p/4K and other numeric resolution recognition.
+Important client fact:
+- custom NiakVIO badgeIds/displayBadges alone are not enough;
+- official Nuvio clients derive much of the UI from standard stream fields/text;
+- enrich standard fields first and avoid extra network probes when facts are already locally available.
+
+## Native client labs
+Required proof platforms:
+1. TV Android (official NuvioTV);
+2. Mobile Android (official NuvioMobile);
+3. Mobile iOS (official NuvioMobile);
+4. Desktop macOS (official NuvioDesktop);
+5. Desktop Windows (official NuvioDesktop).
+
+Representative corpus currently used:
+- Interstellar (movie);
+- Breaking Bad S01E01 (series);
+- Jujutsu Kaisen S01E01 (anime).
+
+Lab goals:
+- provider discovery/latency;
+- stream count and provider count;
+- stream metadata quality/badges;
+- playable transport reach;
+- navigation/session isolation;
+- no stale result bleed between works/types;
+- exact workbench Provider JS bytes should be tested;
+- Labs are evidence, never repair engines.
+
+Known lab cleanup still required:
+- Desktop lab still contains a legacy `Materialize final Core fixed-point for Desktop canary` step that applies normalizers/reapply; REMOVE it because Labs must not mutate/reconstruct providers.
+- iOS full lab still uses 25s provider timeout; align full mode to 40s (Learning-only targeted probe may keep its separate short budget).
+- Android TV/Mobile workbench lab timeout was already raised to 40s.
+
+## Nuvio upstream issues
+Two earlier issues were auto-closed because of missing tags:
+- NuvioTV #3314
+- NuvioDesktop #569
+
+Decision as of 2026-09-03:
+- do NOT republish yet;
+- our previous 10/18s NiakVIO budget could create similar symptoms;
+- re-run navigation/session scenarios in the five labs on the corrected workbench first;
+- if the lifecycle/session problem still reproduces with fresh evidence, republish properly with labels + current logs;
+- otherwise leave closed.
+
+## Workflow simplification commits / milestones
+Useful recent workbench commits:
+- `58425bf9c0d7b8883c05a63ef532217f3840daea` — 25/30s provider budget + stream facts work.
+- `b45048241b1857a7be2a02a2c6ab6340fc0dbe5c` — Quick/Deep verification-only direction.
+- `3dd72f7b90d3b46481244f3795fdaaed5898eb73` — Core domain lookup reads Provider CONFIG runtime DATA.
+- `639b927c75881c731994274990c3dbac17026a5f` — collapse duplicate routine workflows into one CORE workflow.
+- `193a750c2d50f38ccdf26a9fc44af6971b4b7987` — Quick and Deep assigned distinct roles.
+
+## Current CI observation
+The first CORE run after `193a750...` failed before meaningful runtime tests because `tests/provider_v3_workflow_ownership_test.py` still expected the superseded cron `17 5 * * *`.
+Correct target cron is `47 4 * * 2,5`.
+This is a stale contract-test failure, not a provider/runtime failure.
+The next commit after this MEMORY rewrite fixes that assertion.
+
+Earlier Quick attempt also showed that `provider_base_store.py validate` reports historical contaminated ProviderBase state (anime-sama first). ProviderBase-store cleanup is a reconstruction concern, not a routine Quick gate. The manual reconstruction path must eventually clean/validate the reconstruction source before the one controlled workbench rebuild.
+
+## Next execution order
+1. Make CORE Quick green with the updated workflow contract.
+2. Remove all provider mutation/materialization from the native Labs.
+3. Align full iOS lab provider timeout to 40s.
+4. Harden LEARN contract so disabled/off providers are explicitly eligible for proposals and only PR output is allowed.
+5. Clean/validate ProviderBase reconstruction source in the manual reconstruction path.
+6. Execute ONE controlled full 96/96 reconstruction on the workbench to materialize current Core changes (25/30s, presentation V18, domain/Core decoupling, etc.).
+7. Prove 96/96 reverse rebuild on that one generation.
+8. Run TVAndroid / MobileAndroid / MobileIOS / DesktopMACOS / DesktopWindows labs on those exact bytes.
+9. Fix every architecture/runtime/playback/metadata issue found, using shared Core/Data where appropriate and provider-specific fixes only where truly necessary.
+10. Re-run the relevant labs until stable.
+11. Build the NiakVIO JS minifier only after runtime/architecture gates are stable.
+
+## Minifier / minifizer requirements
+Do not use generic Terser blindly.
+The future NiakVIO minifier must understand the Provider architecture and preserve:
+- BEGIN/END NIAKVIO_PROVIDER;
+- STARTFIX/CLOSEFIX markers;
+- FIXDATA blocks/payloads;
+- Provider/Core Lego ordering;
+- comments used as machine-readable ownership boundaries;
+- ability to replace/remove one managed Lego later without guessing source shape.
+It must never do unsafe global string replacement.
+It should minify only safe JS payload regions between protected architecture boundaries.
+Before enablement require:
+- byte-safe marker preservation tests;
+- parse/syntax equivalence;
+- runtime behavioral parity;
+- reconstruction/minification determinism;
+- five-client lab parity on representative corpus.
+Keep it disabled in production until all proofs are green.

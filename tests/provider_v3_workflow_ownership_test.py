@@ -14,8 +14,7 @@ legacy_core=ROOT/".github/workflows/core-media-finalize-main.yml"
 assert not legacy_core.exists(), "legacy duplicate Core finalizer workflow must stay deleted"
 assert routine.startswith("name: CORE - Verify & Publish")
 assert routine.count("schedule:")==1
-assert "17 5 * * *" in routine
-assert "date -u +%u" in routine
+assert "47 4 * * 2,5" in routine
 assert "MODE=deep" in routine
 assert "Deep-only structural contracts" in routine
 assert "Deep-only manifest projection" in routine
