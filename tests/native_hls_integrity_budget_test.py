@@ -158,7 +158,7 @@ globalThis.fetch=async function(url){
   if(url.endsWith("media.m3u8"))return {
     ok:true,status:200,url,
     headers:{get:function(){return "application/vnd.apple.mpegurl";}},
-    text:async function(){return "#EXTM3U\\n#EXTINF:6,\\nseg-1.ts\\n";},
+    text:async function(){return "#EXTM3U\n#EXTINF:6,\nseg-1.ts\n";},
     json:async function(){return null;}
   };
   if(url.endsWith("seg-1.ts"))return {
