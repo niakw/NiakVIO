@@ -13,7 +13,7 @@ for text in (android,ios,desktop):
 # 1 TV Android + 1 Mobile Android
 assert "tv-route-reader:" in android
 assert "mobile-android-reader:" in android
-assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "40000"' in android
+assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"' in android
 assert "run_native_corpus_tv_suite.sh" in android
 assert "run_native_corpus_mobile_suite.sh" in android
 assert android.count("gate_native_declared_provider_matrix.py") >= 2
