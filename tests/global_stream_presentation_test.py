@@ -27,6 +27,8 @@ normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
 assert presentation.REVISION == "all-providers-standard-fields-url-facts-v18"
+presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
+assert "\\nfunction" not in presentation_source, "raw V18 wrapper contains a literal \\n before function declaration"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
