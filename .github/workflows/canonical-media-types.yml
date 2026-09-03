@@ -122,6 +122,7 @@ jobs:
         run: |
           python3 tests/native_media_type_resolution_test.py
           python3 tests/global_media_type_resolution_test.py
+          python3 tests/provider_v3_id_provenance_contract_test.py
           node tests/tmdb_media_type_resolution.test.mjs
       - name: Validate canonical stream contract
         run: node engine_v2/tests/contracts.test.mjs
