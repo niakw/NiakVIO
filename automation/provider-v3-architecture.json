@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -8,9 +8,12 @@
       "provider-overrides.json",
       "provider_catalog.json",
       "provider-type-policy.json",
-      "scripts/provider_patches/**"
+      "automation/provider-v3-static-knowledge.json",
+      "scripts/provider_base_store.py",
+      "scripts/provider_patches/**",
+      "scripts/provider_v3_minimizer.py"
     ],
-    "reconstruction_rule": "ProviderBase + structured DATA + owned Core/Provider Lego only",
+    "reconstruction_rule": "ProviderBase + structured DATA/static knowledge + owned Core/Provider Lego + NiakVIO-safe minimizer only",
     "legacy_provider_js_seed_allowed": false,
     "upstream_provider_js_seed_allowed": false,
     "canonical_provider_base_marker": "NIAKVIO_PROVIDER_BASE_OWNED_V3",
@@ -71,7 +74,9 @@
     "requires_byte_identical_reverse_proof": true,
     "workflow": ".github/workflows/provider-v3-reconstruct-all.yml",
     "main_write_allowed": false,
-    "published_or_upstream_js_seed_allowed": false
+    "published_or_upstream_js_seed_allowed": false,
+    "executable_plan_gate": "tests/provider_v3_strategy_plan_contract_test.py",
+    "security_html_filter_gate": "tests/provider_html_filter_security_test.py --published"
   },
   "native_labs": [
     "TVAndroid",
@@ -81,18 +86,26 @@
     "DesktopWindows"
   ],
   "minifier": {
-    "enabled_in_production": false,
-    "phase": "audit-only",
-    "audit_tool": "scripts/provider_v3_minimizer.py",
-    "transformations_enabled": [],
+    "enabled_in_production": true,
+    "phase": "pre-hash-safe-whitespace",
+    "tool": "scripts/provider_v3_minimizer.py",
+    "transformations_enabled": [
+      "code-line-leading-indentation"
+    ],
     "comment_architecture_must_be_preserved": true,
     "managed_markers_must_be_preserved": true,
-    "newline_asi_contract": "preserve until semantic equivalence is proven",
+    "newline_asi_contract": "preserve every line terminator",
+    "template_literal_policy": "leave complete provider byte-stable when template literals are present",
     "identifier_renaming_allowed": false,
     "expression_reordering_allowed": false,
     "literal_rewriting_allowed": false,
-    "runtime_equivalence_tests_required_before_enablement": true,
-    "byte_equivalence_tests_required_before_enablement": true,
+    "regex_rewriting_allowed": false,
+    "required_tests": [
+      "tests/provider_v3_minimizer_contract_test.py",
+      "tests/provider_v3_minimizer_preview_test.py",
+      "tests/provider_v3_minimizer_published_test.py",
+      "scripts/verify_provider_v3_reverse_rebuild.py"
+    ],
     "terser_allowed": false
   },
   "domain_refresh": {
@@ -157,13 +170,16 @@
   },
   "reference_reconstruction": {
     "date": "2026-09-03",
-    "retry": 21,
-    "generation": "9ddd9f969838d444",
+    "retry": 25,
+    "generation": "8e354389b41b2498",
     "provider_count": 96,
+    "executable_provider_plans": 91,
+    "quarantined_provider_plans": 5,
     "reverse_byte_identical": "96/96",
-    "reconstruction_sha": "8e3f40c318d923e83b1dc49320fc1e4b68efe2cd",
+    "reconstruction_sha": "bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb",
     "release_integrity": true,
-    "quick_validation": "pending provider-byte-neutral follow-up"
+    "quick_validation_sha": "28d98a54264f7d24379c62b310a81b2e60dd7b4b",
+    "note": "Reference before final HTML-filter security + minimizer rematerialization; next reconstruction must supersede this entry."
   },
   "native_lab_contract": {
     "provider_count": 96,
@@ -178,5 +194,28 @@
     "reader_outcomes_are_observational": true,
     "external_nuvio_repo_repairs_allowed": false,
     "harness_repairs_allowed_only_when_test_plumbing_is_wrong": true
+  },
+  "provider_plan_contract": {
+    "catalogue_provider_count": 96,
+    "disabled_providers_are_audited": true,
+    "executable_non_quarantined": 91,
+    "quarantined": 5,
+    "quarantine_requires_explicit_reason": true,
+    "strategy_taxonomy": [
+      "official_domain_hub",
+      "api_stream_resolver",
+      "html_scraper",
+      "mixed_embed_resolver",
+      "direct_media",
+      "iframe_player",
+      "quarantined"
+    ]
+  },
+  "security_html_filtering": {
+    "codeql_rule_family": "Bad HTML filtering regexp",
+    "regex_html_stripping_allowed": false,
+    "provider_base_scanner": "_htmlVisibleText",
+    "catalogue_alias_scanner": "plainHtml",
+    "source_and_published_gate": "tests/provider_html_filter_security_test.py"
   }
 }
