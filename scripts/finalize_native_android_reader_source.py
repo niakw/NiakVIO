@@ -6,8 +6,9 @@ generated ephemeral instrumentation test:
 
 * the generic production-player entry marker is FIELD_NATIVE_PLAYER_ENTRY; the later
   request-contract augmenter owns the sole enriched FIELD_NATIVE_PLAYER_BEGIN marker;
-* NuvioMobile's reader probe targets the separately installed official androidApp
-  debug APK instead of the composeApp instrumentation target package.
+* NuvioMobile's reader probe starts the production MainActivity class explicitly.
+  This avoids launcher-alias/package-resolution drift while still exercising the
+  separately installed official androidApp debug APK.
 """
 from __future__ import annotations
 
@@ -19,6 +20,7 @@ MOBILE_CONTEXT_LAUNCH = "context.packageManager.getLaunchIntentForPackage(contex
 MOBILE_DEBUG_LAUNCH = (
     'context.packageManager.getLaunchIntentForPackage("' + MOBILE_DEBUG_PACKAGE + '")'
 )
+MOBILE_EXPLICIT_MAIN_ACTIVITY = "Intent(context, MainActivity::class.java)"
 
 
 def finalize_source(source: str, client: str) -> str:
@@ -36,12 +38,17 @@ def finalize_source(source: str, client: str) -> str:
     source = source.replace(GENERIC_BEGIN, GENERIC_ENTRY, 1)
 
     if client == "mobile":
-        count = source.count(MOBILE_CONTEXT_LAUNCH)
-        if count != 1:
+        # The current reader generator launches NuvioMobile's real MainActivity
+        # explicitly. Older harnesses used packageManager launcher resolution and
+        # then rewrote that package; keeping that rewrite here made the Lab fail
+        # before a single provider executed after NuvioMobile adopted icon aliases.
+        explicit_count = source.count(MOBILE_EXPLICIT_MAIN_ACTIVITY)
+        if explicit_count != 1:
             raise ValueError(
-                f"expected exactly one mobile context-package launch probe, found {count}"
+                f"expected exactly one explicit mobile MainActivity launch probe, found {explicit_count}"
             )
-        source = source.replace(MOBILE_CONTEXT_LAUNCH, MOBILE_DEBUG_LAUNCH, 1)
+        if MOBILE_CONTEXT_LAUNCH in source or MOBILE_DEBUG_LAUNCH in source:
+            raise ValueError("obsolete mobile package-launch probe survived code generation")
 
     if any(
         GENERIC_BEGIN in line and ENTRY_SUFFIX in line
@@ -53,6 +60,6 @@ def finalize_source(source: str, client: str) -> str:
         for line in source.splitlines()
     ):
         raise ValueError("FIELD_NATIVE_PLAYER_ENTRY was not materialized")
-    if client == "mobile" and MOBILE_DEBUG_LAUNCH not in source:
-        raise ValueError("official NuvioMobile debug launch package was not materialized")
+    if client == "mobile" and MOBILE_EXPLICIT_MAIN_ACTIVITY not in source:
+        raise ValueError("official NuvioMobile MainActivity launch was not materialized")
     return source
