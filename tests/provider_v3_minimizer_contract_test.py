@@ -23,6 +23,10 @@ assert report["terser_allowed"] is False
 assert report["transformations_enabled"] == []
 assert report["provider_count"] == 96
 assert len(report["providers"]) == 96
+manifest = __import__("json").loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
+expected = {str(row["filename"]).split("/")[-1] for row in manifest.get("scrapers") or []}
+observed = {row["file"] for row in report["providers"]}
+assert observed == expected
 assert report["totals"]["bytes"] > 0
 assert report["totals"]["indentation_bytes"] >= 0
 

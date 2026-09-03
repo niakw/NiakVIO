@@ -16,6 +16,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDERS = ROOT / "providers"
+MANIFEST = ROOT / "manifest.json"
 MARKERS = (
     "BEGIN NIAKVIO_PROVIDER",
     "END NIAKVIO_PROVIDER",
@@ -51,7 +52,25 @@ def audit_text(text: str) -> dict:
 
 
 def provider_files() -> list[Path]:
-    return sorted(path for path in PROVIDERS.glob("*.js") if path.is_file())
+    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    filenames = [
+        str(row.get("filename") or "").strip()
+        for row in (manifest.get("scrapers") or [])
+        if str(row.get("filename") or "").strip()
+    ]
+    if len(filenames) != 96 or len(set(filenames)) != 96:
+        raise SystemExit(
+            f"expected 96 unique manifest provider filenames, got {len(filenames)} / {len(set(filenames))}"
+        )
+    files: list[Path] = []
+    for filename in filenames:
+        path = (ROOT / filename).resolve()
+        if PROVIDERS.resolve() not in path.parents:
+            raise SystemExit(f"manifest provider path escapes providers/: {filename}")
+        if not path.is_file():
+            raise SystemExit(f"manifest provider asset missing: {filename}")
+        files.append(path)
+    return files
 
 
 def portfolio_report() -> dict:
