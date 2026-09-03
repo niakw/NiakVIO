@@ -696,17 +696,24 @@ function _mediaNamespace(mediaType) {
 function _playerLike(url) {
   try {
     const parsed = new URL(url);
-    return /\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);
+    const host = _text(parsed.hostname).toLowerCase();
+    // Shared download/intermediate hosts used by multiple catalogue providers.
+    // They are resolver pages, not playable output, so the bounded crawler may
+    // traverse them but _directMedia() must still prove the final stream.
+    if (/(?:^|\.)(?:abhilinks\.(?:site|life)|vcloud\.zip|hubcloud\.[a-z0-9.-]+|driveseed\.[a-z0-9.-]+|hubdrive\.[a-z0-9.-]+|gdflix\.[a-z0-9.-]+)$/i.test(host)) {
+      return true;
+    }
+    return /\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);
   } catch (_) {
     return false;
   }
 }
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
-  const queue = _uniq(seedUrls).filter(_playerLike).slice(0, 3).map(url => ({ url, depth: 0, referer }));
+  const queue = _uniq(seedUrls).filter(_playerLike).slice(0, 4).map(url => ({ url, depth: 0, referer }));
   const seen = new Set();
   const streams = [];
   let requests = 0;
-  while (queue.length && requests < 4 && streams.length < 12) {
+  while (queue.length && requests < 7 && streams.length < 12) {
     const row = queue.shift();
     if (!row || seen.has(row.url)) continue;
     seen.add(row.url);
@@ -1543,7 +1550,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       }
       const direct = urls.filter(_directMedia);
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
-      if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
+      if (!direct.length && /iframe|mixed_embed|html_scraper|direct_media/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
         const discoveredNested = _uniq(urls.filter(_playerLike));
         if (discoveredNested.length) {
           const runtimeCandidates = _uniq([
@@ -1569,7 +1576,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
             const crawled = await _crawlDirectMedia(
               discoveredNested,
               response.url || detailUrl,
-              1
+              2
             );
             if (crawled.length) streams.push(...crawled);
           }
