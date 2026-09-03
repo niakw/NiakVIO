@@ -148,7 +148,7 @@ PATCHED
 # TextEncoder/TextDecoder are absent. Lack of readable segment bytes is unknown,
 # not positive malformed-media evidence, so the stream must survive.
 run_node(
-    r\'''\
+    r'''
 globalThis.TextEncoder=undefined;
 globalThis.TextDecoder=undefined;
 let calls=0;
@@ -175,7 +175,7 @@ PATCHED
   if(!Array.isArray(rows)||rows.length!==1)throw new Error("TV byte-unavailable HLS row rejected");
   if(calls!==2)throw new Error("unexpected TV probe count "+calls);
 })().catch(function(e){console.error(e);process.exit(1)});
-\'''.replace("PATCHED", native_patched)
+'''.replace("PATCHED", native_patched)
 )
 
 # Network uncertainty must not become a false stream rejection.
