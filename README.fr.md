@@ -358,10 +358,12 @@ La vérité **exécutable** n'est plus un vieux Provider JS publié. Un bundle e
 
 ```text
 ProviderBase v3 propre
-  + DATA/CONFIG structurées
+  + DATA/CONFIG + connaissance statique durable
+  + type/strategy + plan exécutable
   + Lego PROVIDER.*
   + frontière Core unique
   + Lego CORE.*
+  + minimizer NiakVIO-safe pré-hash
   = providers/<id>-<hash>.js
 ```
 
@@ -369,9 +371,9 @@ Les upstreams, hubs et pages publiques servent de connaissance/provenance. Ils n
 
 Les blocs appartenant à NiakVIO utilisent exclusivement `STARTFIX:<ID>`, `FIXDATA:<ID>` et `CLOSEFIX:<ID>`. Le marqueur ProviderBase courant est `NIAKVIO_PROVIDER_BASE_OWNED_V3`.
 
-La reconstruction forcée complète appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main. Elle doit produire 96/96 providers puis prouver un reverse rebuild byte-identical 96/96.
+La reconstruction forcée complète appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main. Elle doit produire 96/96 providers, prouver les plans compatibles avec la typologie (`91` exécutables + `5` quarantined à la référence retry 25), passer les gates minimizer/sécurité puis prouver un reverse rebuild byte-identical 96/96.
 
-Le retry 19 du chantier Provider v3 a établi cette propriété avec la génération `949d251de7e3cb4d`, commitée en `72a99271f59c81a64fd8c9a353b6ba86827f39ac`.
+La référence actuelle avant la rematérialisation finale sécurité/minimizer est **retry 25** : génération `8e354389b41b2498`, reconstruction `bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb`, CORE Quick vert `28d98a54264f7d24379c62b310a81b2e60dd7b4b`.
 
 Voir [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
@@ -427,7 +429,7 @@ La surface d'acceptation native est exactement :
 4. **Desktop macOS** — NuvioDesktop officiel ;
 5. **Desktop Windows** — NuvioDesktop officiel.
 
-Le trigger commun est `.github/triggers/full-native-lab-validation.json`. Le corpus représentatif est Interstellar, Breaking Bad S01E01 et Jujutsu Kaisen S01E01.
+Le trigger commun est `.github/triggers/full-native-lab-validation.json`. La matrice finale couvre **96 providers / 214 routes déclarées** (`82 movie + 92 tv + 40 anime`), providers désactivés inclus en audit. Les fixtures représentatives sont Interstellar, Breaking Bad S01E01 et Jujutsu Kaisen S01E01.
 
 Les Labs consomment le SHA NiakVIO exact, contrôlent le drift du HEAD client officiel et observent extraction, identité, transport, session et lecture. Ils ne réparent, reconstruisent ou réécrivent jamais un provider.
 
@@ -456,7 +458,7 @@ Cette capacité Core générique est activable par DATA provider ; elle n'est pa
 
 Les Provider JS sont adressés par contenu. Une génération incohérente ne remplace jamais silencieusement une génération validée.
 
-La minification de production est désactivée ; Terser n'appartient plus au pipeline Provider v3.
+Terser reste interdit. `scripts/provider_v3_minimizer.py` est désormais le minimizer de production pré-hash : il conserve chaque retour ligne, commentaire/marker, littéral et expression, et retire uniquement l'indentation de lignes dont l'état lexical initial est prouvé comme du code JavaScript ordinaire. Preview Node 96/96, idempotence et fixed-point publié sont obligatoires.
 
 ---
 
