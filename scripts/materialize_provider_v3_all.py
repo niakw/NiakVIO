@@ -308,6 +308,26 @@ def materialize_all(
         core_ids = [fix_id for fix_id in fix_ids if fix_id.startswith("CORE.")]
         if not core_ids:
             raise ValueError(f"{provider_id}: no Core Lego materialized")
+        boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+        if text.count(boundary) != 1:
+            raise ValueError(
+                f"{provider_id}: Core boundary count={text.count(boundary)} expected=1"
+            )
+        boundary_at = text.index(boundary)
+        provider_fix_positions = [
+            text.index(f"/* START NIAKVIO_FIX:{fix_id} */")
+            for fix_id in fix_ids
+            if fix_id.startswith("PROVIDER.")
+        ]
+        core_fix_positions = [
+            text.index(f"/* START NIAKVIO_FIX:{fix_id} */")
+            for fix_id in fix_ids
+            if fix_id.startswith("CORE.")
+        ]
+        if provider_fix_positions and max(provider_fix_positions) >= boundary_at:
+            raise ValueError(f"{provider_id}: Provider Lego found after Core boundary")
+        if core_fix_positions and min(core_fix_positions) <= boundary_at:
+            raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
 
         digest = hashlib.sha256(bundle).hexdigest()
         filename = f"{provider_id}-{digest[:16]}.js"
