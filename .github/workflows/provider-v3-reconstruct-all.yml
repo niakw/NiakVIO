@@ -103,6 +103,9 @@ jobs:
           python tests/provider_v3_documentation_contract_test.py
           python tests/native_ios_watchdog_resume_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_wings_runtime_family_test.py
+          python tests/peachify_runtime_crypto_test.py
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_521_capability_regression_test.py
@@ -133,6 +136,9 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_brick_portfolio_audit_test.py --published --require-all
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_wings_runtime_family_test.py
+          python tests/peachify_runtime_crypto_test.py
           python scripts/audit_provider_v3_static.py
           python tests/global_media_type_resolution_test.py
           python tests/global_stream_presentation_test.py
