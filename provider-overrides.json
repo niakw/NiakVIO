@@ -1470,7 +1470,24 @@
           "min_vod_duration_seconds": 60
         }
       },
-      "domain_substitutions": {}
+      "domain_substitutions": {},
+      "capability_promotion": {
+        "reason": "official_hub_recovered",
+        "evidence": [
+          "https://fstream.website/"
+        ],
+        "transitions": {
+          "strategy": {
+            "from": "quarantined",
+            "to": "mixed_embed_resolver"
+          },
+          "validation": {
+            "from": "blocked_revenant_episode_duration_mismatch",
+            "to": "requires_stream_identity_and_duration_gate"
+          }
+        },
+        "activation_policy": "remain_disabled_until_native_reader_acceptance"
+      }
     },
     "fullanime": {
       "capability": "mixed_embed_resolver",
@@ -3135,7 +3152,7 @@
     },
     "cinevibe": {
       "strategy": "direct_media",
-      "validation": "provider_lego_tokenized_api",
+      "validation": "media_url",
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
