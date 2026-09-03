@@ -61,6 +61,30 @@ assert "requests < 4" in text
 assert "slice(0, 24)" not in text
 assert "function _detailGuesses" not in text
 assert "if (!_runtimePlanAvailable()) return [];" in text
+assert "NIAKVIO_PROVIDER_MODEL.observedUrls || []" not in text
+assert "function _apiBases()" in text
+assert 'const bases = kind === "api" ? _apiBases() : _searchBases();' in text
+assert '!(type === "movie" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))' not in text
+
+dirty_model = module.build_provider_data_model(
+    "synthetic",
+    {"name": "Synthetic", "supportedTypes": ["anime"]},
+    known_site="https://example.invalid",
+    provider_model={
+        "strategy": "html_scraper",
+        "officialSite": "https://example.invalid",
+        "origins": ["https://example.invalid", "https://npms.io", "https://lodash.com"],
+        "observedUrls": [
+            "https://example.invalid/watch",
+            "https://sendvid.com/embed/${token}",
+            "https://openjsf.org/",
+        ],
+        "routes": ["/?s={query}", "/embed/${token}", "/search?q=ponyfill", "/license"],
+    },
+)
+assert dirty_model["origins"] == ["https://example.invalid"]
+assert dirty_model["observedUrls"] == ["https://example.invalid/watch"]
+assert dirty_model["routes"] == ["/?s={query}"]
 module.assert_base_layering(clean, "synthetic-clean")
 with tempfile.NamedTemporaryFile(suffix=".js") as handle:
     handle.write(clean)
