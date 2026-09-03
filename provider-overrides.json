@@ -951,16 +951,36 @@
     "neko-sama": {
       "capability": "mixed_embed_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://animes-sama.su",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/anime/{slug}-saison-{season}/",
+        "/anime/{slug}/",
+        "/?s={query}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/neko_sama_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/neko_sama_runtime_v1.py": {
+          "base": "https://animes-sama.su"
+        }
+      }
     },
     "papadustream": {
       "capability": "html_scraper",
@@ -1350,18 +1370,38 @@
       "capability": "mixed_embed_resolver"
     },
     "animevost-fr": {
-      "capability": "mixed_embed_resolver",
+      "capability": "api_stream_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://animevost.fr",
+      "official_api": "https://animevost.fr",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/api/animes/search?q={query}",
+        "/api/animes/{slug}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/animevost_fr_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animevost_fr_runtime_v1.py": {
+          "base": "https://animevost.fr"
+        }
+      }
     },
     "animeworld": {
       "capability": "html_scraper",
@@ -1492,16 +1532,36 @@
     "fullanime": {
       "capability": "mixed_embed_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://www.fullanime.fr",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/search?s={query}",
+        "/voir-anime/{slug}",
+        "/voir-anime/{slug}/episode/{episode}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/fullanime_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/fullanime_runtime_v1.py": {
+          "base": "https://www.fullanime.fr"
+        }
+      }
     },
     "goatapi": {
       "capability": "html_scraper"
@@ -1706,18 +1766,39 @@
       "quarantine_reason": "interstellar_duration_mismatch"
     },
     "waveanime": {
-      "capability": "html_scraper",
+      "capability": "api_stream_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://waveanime.fr",
+      "official_api": "https://waveanime.fr",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/api/series?query={query}",
+        "/api/series/{id}",
+        "/playback/{episode}/manifest.mpd"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/waveanime_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/waveanime_runtime_v1.py": {
+          "base": "https://waveanime.fr"
+        }
+      }
     },
     "xpass": {
       "capability": "html_scraper"
@@ -2614,15 +2695,20 @@
     },
     "neko-sama": {
       "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "validation": "provider_native_and_final_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://kitsu.io",
-        "https://animes-sama.su",
-        "https://old.invalid"
+        "https://animes-sama.su"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "papadustream": {
       "strategy": "html_scraper",
@@ -3113,16 +3199,21 @@
       "generated_from_manifest_or_stage": true
     },
     "animevost-fr": {
-      "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://animevost.fr",
-        "https://kitsu.io",
-        "https://old.invalid"
+        "https://animevost.fr"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "animeworld": {
       "strategy": "html_scraper",
@@ -3250,15 +3341,20 @@
     },
     "fullanime": {
       "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "validation": "provider_native_and_final_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://kitsu.io",
-        "https://www.fullanime.fr",
-        "https://old.invalid"
+        "https://www.fullanime.fr"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "goatapi": {
       "strategy": "html_scraper",
@@ -3488,20 +3584,21 @@
       "generated_from_manifest_or_stage": true
     },
     "waveanime": {
-      "strategy": "html_scraper",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://waveanime.fr",
-        "https://kitsu.io",
-        "https://npms.io",
-        "https://lodash.com",
-        "https://openjsf.org",
-        "http://underscorejs.org",
-        "https://old.invalid"
+        "https://waveanime.fr"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "xpass": {
       "strategy": "html_scraper",
