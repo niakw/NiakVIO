@@ -504,10 +504,12 @@
     "cineby": {
       "capability": "api_stream_resolver",
       "official_hub": "https://warflix.cv/",
-      "official_site": "https://cineby.top",
+      "official_site": "https://www.cineby.at",
       "official_api": "https://api.speedracelight.com",
       "notes": [
-        "Cineby runtime domain discovery is materialized from NiakVIO's persisted terminal/API; upstream repository registries are maintenance-only and never fetched during playback."
+        "Clean v3 Cineby uses the shared Wings/speedracelight seed + mvm1 encrypted-source family through a provider-owned Lego.",
+        "The dynamic GitHub domain registry and embedded provider TMDB key are removed from playback; api.speedracelight.com is persisted DATA.",
+        "Core supplies title/year/TMDB identity; the provider performs no TMDB lookup."
       ],
       "learned_urls": [
         "https://cineby.top",
@@ -515,6 +517,35 @@
       ],
       "domain_substitutions": {
         "warflix.im": "cineby.top"
+      },
+      "learned_routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/cineby_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/cineby_runtime_v1.py": {
+          "api_base": "https://api.speedracelight.com",
+          "origin": "https://www.cineby.at",
+          "referer": "https://www.cineby.at/",
+          "endpoints": [
+            {
+              "label": "CDN",
+              "path": "cdn/sources-with-title"
+            }
+          ]
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
       }
     },
     "cinemacity": {
@@ -1177,13 +1208,48 @@
     },
     "videasy": {
       "notes": [
-        "Automatically migrated player.videasy.net to player.videasy.to after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+        "Clean v3 VidEasy uses the shared Wings/speedracelight seed + mvm1 encrypted-source family through a provider-owned Lego.",
+        "Ten statically recovered source endpoints are explicit DATA; historical obfuscated JavaScript and provider-side TMDB calls are not carried into v3.",
+        "Core supplies title/year/TMDB identity and final stream sanitation remains Core-owned."
       ],
       "capability": "api_stream_resolver",
       "official_hub": "https://www.videasy.to/docs",
-      "official_site": "https://player.videasy.to/fr",
+      "official_site": "https://www.vidking.net",
       "domain_substitutions": {
         "player.videasy.net": "player.videasy.to"
+      },
+      "official_api": "https://api.speedracelight.com",
+      "learned_routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title",
+        "/tejo/sources-with-title",
+        "/neon2/sources-with-title",
+        "/downloader2/sources-with-title",
+        "/ym/sources-with-title",
+        "/mb-flix/sources-with-title",
+        "/lamovie/sources-with-title",
+        "/m4uhd/sources-with-title",
+        "/superflix/sources-with-title",
+        "/1movies/sources-with-title"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/videasy_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/videasy_runtime_v1.py": {
+          "api_base": "https://api.speedracelight.com",
+          "origin": "https://www.vidking.net",
+          "referer": "https://www.vidking.net/"
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
       }
     },
     "vidfast": {
@@ -2191,7 +2257,11 @@
         "https://api.speedracelight.com",
         "https://old.invalid"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title"
+      ]
     },
     "cinemacity": {
       "strategy": "direct_media",
@@ -2699,7 +2769,20 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title",
+        "/tejo/sources-with-title",
+        "/neon2/sources-with-title",
+        "/downloader2/sources-with-title",
+        "/ym/sources-with-title",
+        "/mb-flix/sources-with-title",
+        "/lamovie/sources-with-title",
+        "/m4uhd/sources-with-title",
+        "/superflix/sources-with-title",
+        "/1movies/sources-with-title"
+      ]
     },
     "vidfast": {
       "strategy": "iframe_player",
