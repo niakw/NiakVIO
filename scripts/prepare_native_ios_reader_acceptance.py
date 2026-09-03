@@ -165,6 +165,8 @@ private suspend fun runLab(manifestUrl: String) {
     val mode = env("NIAKVIO_IOS_LAB_MODE").lowercase().ifBlank { "full" }
     val targetProvider = env("NIAKVIO_IOS_TARGET_PROVIDER").lowercase()
     val learning = mode == "learning" || mode == "quick"
+    val resumeFixture = env("NIAKVIO_IOS_RESUME_FIXTURE")
+    val resumeAfterProvider = env("NIAKVIO_IOS_RESUME_AFTER_PROVIDER")
     val providerTimeoutMs = envLong(
         "NIAKVIO_IOS_PROVIDER_TIMEOUT_MS",
         if (learning) LEARNING_PROVIDER_TIMEOUT_MS else FULL_PROVIDER_TIMEOUT_MS,
@@ -192,17 +194,42 @@ private suspend fun runLab(manifestUrl: String) {
             ?: "movie"
         listOf(fixtures.first { it.mediaType == firstType })
     } else fixtures
-    println("FIELD_NATIVE_CORPUS_IOS_BEGIN mode=$mode fixtures=${fixturesForRun.size} providers=${iosProviders.size} target=$targetProvider provider_timeout_ms=$providerTimeoutMs player_timeout_ms=$playerTimeoutMs")
+    val resumedFixtures = if (!learning && resumeFixture.isNotBlank()) {
+        val index = fixturesForRun.indexOfFirst { it.slug == resumeFixture }
+        if (index >= 0) fixturesForRun.drop(index) else fixturesForRun
+    } else fixturesForRun
+    println("FIELD_NATIVE_CORPUS_IOS_BEGIN mode=$mode fixtures=${resumedFixtures.size} providers=${iosProviders.size} target=$targetProvider provider_timeout_ms=$providerTimeoutMs player_timeout_ms=$playerTimeoutMs resume_fixture=$resumeFixture resume_after=$resumeAfterProvider")
 
-    fixturesForRun.forEach { fixture ->
-        val selected = iosProviders.filter { provider ->
+    resumedFixtures.forEach { fixture ->
+        val selectedBase = iosProviders.filter { provider ->
             provider.supportedTypes.any { type ->
                 normalizedType(type) == fixture.mediaType
             }
         }
+        val selected = if (!learning && fixture.slug == resumeFixture && resumeAfterProvider.isNotBlank()) {
+            val resumeIndex = selectedBase.indexOfFirst { it.id.equals(resumeAfterProvider, ignoreCase = true) }
+            if (resumeIndex >= 0) {
+                val blocked = selectedBase[resumeIndex]
+                emit(
+                    "FIELD_NATIVE_IOS_RESULT",
+                    ResultObservation(
+                        fixture = fixture.slug,
+                        provider = blocked.id,
+                        mediaType = fixture.mediaType,
+                        enabled = blocked.enabled,
+                        count = 0,
+                        durationMs = providerTimeoutMs,
+                        state = "timeout",
+                    ),
+                )
+                println("FIELD_NATIVE_IOS_PROVIDER_END fixture=${fixture.slug} provider=${blocked.id} state=watchdog_timeout duration_ms=$providerTimeoutMs")
+                selectedBase.drop(resumeIndex + 1)
+            } else selectedBase
+        } else selectedBase
         println("FIELD_NATIVE_IOS_FIXTURE_BEGIN fixture=${fixture.slug} type=${fixture.mediaType} providers=${selected.size}")
         selected.forEach { info ->
             val startedAt = TimeSource.Monotonic.markNow()
+            println("FIELD_NATIVE_IOS_PROVIDER_BEGIN fixture=${fixture.slug} provider=${info.id} type=${fixture.mediaType} enabled=${info.enabled}")
             try {
                 val code = withTimeout(providerTimeoutMs) {
                     httpGetText(codeUrl(manifestUrl, info.filename))
@@ -260,7 +287,9 @@ private suspend fun runLab(manifestUrl: String) {
                         ),
                     )
                 }
+                println("FIELD_NATIVE_IOS_PROVIDER_END fixture=${fixture.slug} provider=${info.id} state=completed duration_ms=${startedAt.elapsedNow().inWholeMilliseconds}")
             } catch (error: Throwable) {
+                println("FIELD_NATIVE_IOS_PROVIDER_END fixture=${fixture.slug} provider=${info.id} state=${if (error is TimeoutCancellationException) "timeout" else "error"} duration_ms=${startedAt.elapsedNow().inWholeMilliseconds}")
                 emit(
                     "FIELD_NATIVE_IOS_RESULT",
                     ResultObservation(

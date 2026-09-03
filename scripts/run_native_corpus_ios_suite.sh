@@ -143,16 +143,36 @@ else
 fi
 
 rm -f "$LOG"
-set +e
-SIMCTL_CHILD_NIAKVIO_IOS_LAB=1 \
-SIMCTL_CHILD_NIAKVIO_MANIFEST_URL="$MANIFEST_URL" \
-SIMCTL_CHILD_NIAKVIO_IOS_LAB_MODE="$MODE" \
-SIMCTL_CHILD_NIAKVIO_IOS_TARGET_PROVIDER="$TARGET_PROVIDER" \
-SIMCTL_CHILD_NIAKVIO_IOS_PROVIDER_TIMEOUT_MS="$PROVIDER_TIMEOUT_MS" \
-SIMCTL_CHILD_NIAKVIO_IOS_PLAYER_TIMEOUT_MS="$PLAYER_TIMEOUT_MS" \
-  xcrun simctl launch --terminate-running-process --console "$UDID" "$BUNDLE_ID" >"$LOG" 2>&1 &
-LAUNCH_PID=$!
-set -e
+RESUME_FIXTURE=""
+RESUME_AFTER_PROVIDER=""
+WATCHDOG_RESTARTS=0
+MAX_WATCHDOG_RESTARTS="${NIAKVIO_IOS_MAX_WATCHDOG_RESTARTS:-12}"
+LAUNCH_PID=""
+
+launch_lab() {
+  set +e
+  SIMCTL_CHILD_NIAKVIO_IOS_LAB=1 \
+  SIMCTL_CHILD_NIAKVIO_MANIFEST_URL="$MANIFEST_URL" \
+  SIMCTL_CHILD_NIAKVIO_IOS_LAB_MODE="$MODE" \
+  SIMCTL_CHILD_NIAKVIO_IOS_TARGET_PROVIDER="$TARGET_PROVIDER" \
+  SIMCTL_CHILD_NIAKVIO_IOS_PROVIDER_TIMEOUT_MS="$PROVIDER_TIMEOUT_MS" \
+  SIMCTL_CHILD_NIAKVIO_IOS_PLAYER_TIMEOUT_MS="$PLAYER_TIMEOUT_MS" \
+  SIMCTL_CHILD_NIAKVIO_IOS_RESUME_FIXTURE="$RESUME_FIXTURE" \
+  SIMCTL_CHILD_NIAKVIO_IOS_RESUME_AFTER_PROVIDER="$RESUME_AFTER_PROVIDER" \
+    xcrun simctl launch --terminate-running-process --console "$UDID" "$BUNDLE_ID" >>"$LOG" 2>&1 &
+  LAUNCH_PID=$!
+  set -e
+}
+
+stop_lab() {
+  xcrun simctl terminate "$UDID" "$BUNDLE_ID" >/dev/null 2>&1 || true
+  if [[ -n "${LAUNCH_PID:-}" ]]; then
+    kill "$LAUNCH_PID" >/dev/null 2>&1 || true
+    wait "$LAUNCH_PID" >/dev/null 2>&1 || true
+  fi
+}
+
+launch_lab
 
 STATUS=0
 DONE=0
@@ -169,9 +189,6 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
     STATUS=2
     break
   fi
-  # `simctl launch` may exit after returning the app PID even though the app is
-  # still running. Never use the launcher process lifetime as the Lab lifetime.
-  # Instead require periodic application log progress and terminal markers.
   SIZE="$(wc -c < "$LOG" 2>/dev/null || echo 0)"
   if [[ "$SIZE" =~ ^[0-9]+$ ]] && (( SIZE > LAST_SIZE )); then
     LAST_SIZE="$SIZE"
@@ -180,16 +197,46 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
     IDLE_SECONDS=$((IDLE_SECONDS + 1))
   fi
   if (( IDLE_SECONDS >= IDLE_TIMEOUT_SECONDS )); then
-    echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=log_idle_timeout idle_seconds=$IDLE_SECONDS mode=$MODE target=$TARGET_PROVIDER" >> "$LOG"
-    DONE=1
-    STATUS=2
-    break
+    if [[ "$MODE" != "full" ]]; then
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=log_idle_timeout idle_seconds=$IDLE_SECONDS mode=$MODE target=$TARGET_PROVIDER" >> "$LOG"
+      DONE=1
+      STATUS=2
+      break
+    fi
+    LAST_BEGIN="$(grep 'FIELD_NATIVE_IOS_PROVIDER_BEGIN ' "$LOG" 2>/dev/null | tail -n 1 || true)"
+    BLOCKED_FIXTURE="$(printf '%s\n' "$LAST_BEGIN" | sed -n 's/.* fixture=\([^ ]*\).*/\1/p')"
+    BLOCKED_PROVIDER="$(printf '%s\n' "$LAST_BEGIN" | sed -n 's/.* provider=\([^ ]*\).*/\1/p')"
+    if [[ -z "$BLOCKED_FIXTURE" || -z "$BLOCKED_PROVIDER" ]]; then
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_without_provider_context idle_seconds=$IDLE_SECONDS mode=$MODE" >> "$LOG"
+      DONE=1
+      STATUS=2
+      break
+    fi
+    if grep -Fq "FIELD_NATIVE_IOS_PROVIDER_END fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER " "$LOG"; then
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_after_provider_end fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER" >> "$LOG"
+      DONE=1
+      STATUS=2
+      break
+    fi
+    WATCHDOG_RESTARTS=$((WATCHDOG_RESTARTS + 1))
+    if (( WATCHDOG_RESTARTS > MAX_WATCHDOG_RESTARTS )); then
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=watchdog_restart_budget_exhausted restarts=$WATCHDOG_RESTARTS fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER" >> "$LOG"
+      DONE=1
+      STATUS=2
+      break
+    fi
+    echo "FIELD_NATIVE_IOS_WATCHDOG action=restart fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER idle_seconds=$IDLE_SECONDS restart=$WATCHDOG_RESTARTS" >> "$LOG"
+    stop_lab
+    RESUME_FIXTURE="$BLOCKED_FIXTURE"
+    RESUME_AFTER_PROVIDER="$BLOCKED_PROVIDER"
+    launch_lab
+    LAST_SIZE="$(wc -c < "$LOG" 2>/dev/null || echo 0)"
+    IDLE_SECONDS=0
   fi
   sleep 1
 done
 
-kill "$LAUNCH_PID" >/dev/null 2>&1 || true
-wait "$LAUNCH_PID" >/dev/null 2>&1 || true
+stop_lab
 cat "$LOG"
 
 if [[ "$DONE" -ne 1 ]]; then

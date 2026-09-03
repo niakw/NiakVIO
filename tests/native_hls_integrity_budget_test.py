@@ -26,7 +26,7 @@ base = r'''globalThis.getStreams=async function(){
 default_patched = module.apply(base, {"timeout_ms": 2000})
 assert "/* STARTFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */" in default_patched
 assert "/* CLOSEFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */" in default_patched
-assert "probeFirstSegmentNative" not in default_patched
+assert '"probeFirstSegmentNative":true' not in default_patched
 assert module.apply(default_patched, {"timeout_ms": 2000}) == default_patched
 
 # Providers with positive evidence of malformed HLS playback can opt into one

@@ -427,3 +427,18 @@ Keep it disabled in production until all proofs are green.
 - A rendered/visually checked `ARCHITECTURE.docx` projection is generated from the current architecture for human review.
 - These Core/DATA changes require a new deterministic 96/96 reconstruction. Next controlled reconstruction: retry 20 on the workbench only.
 
+## 2026-09-03 — retry 20 reconstructed 96/96; post-gate test-only red
+- Retry 20 run `33711943492` successfully materialized all 96 Provider v3 bundles after the HLS/Core cleanup at generation `9ddd9f969838d444`.
+- Reverse reconstruction was byte-identical 96/96 and the published brick portfolio/static/media-type/presentation/identity gates passed on the reconstructed workspace.
+- The run stopped only because `native_hls_integrity_budget_test.py` incorrectly asserted that the source token `probeFirstSegmentNative` must be absent from the default HLS Core. The helper exists in source regardless of configuration; the correct invariant is that serialized config does not enable `"probeFirstSegmentNative":true`.
+- CORE Quick 1785 failed for the expected pre-rematerialization reason: exact published bytes still contained the previous HLS Lego. No new Provider v3 architectural failure was found.
+- Next controlled reconstruction is retry 21 after correcting that test.
+
+## 2026-09-03 — iOS Lab watchdog made resumable
+- iOS full run `33709117670` built the official NuvioMobile device IPA and launched the simulator successfully, then produced real provider observations before stalling after Vegamovies and hitting the 120-second log-idle watchdog.
+- This is an iOS Lab/session isolation problem: the official PluginRuntime wraps execution in coroutine timeout, but a blocked native JS/QuickJS evaluation can remain non-cooperative and stop the whole process from advancing.
+- The CI-only iOS harness now emits provider BEGIN/END markers and accepts resume fixture/provider context.
+- The shell Lab watchdog can terminate only the app process, mark the blocked provider as a timeout on the resumed run, relaunch the exact same official client/manifest, and continue at the next provider without replaying already completed fixtures/providers.
+- Full acceptance has a bounded watchdog restart budget; targeted Learning mode remains fail-fast instead of hiding a hang.
+- A dedicated `native-ios-lab-validation.json` trigger permits iOS-only acceptance reruns without repeating the four already-green Android/Desktop Labs.
+
