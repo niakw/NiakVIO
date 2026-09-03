@@ -96,15 +96,22 @@
     "path": ".github/workflows/sync.yml",
     "display_name": "CORE - Verify & Publish",
     "workflow_count": 1,
-    "profiles": [
-      "quick",
-      "deep"
-    ],
-    "daily_schedule": "05:17 UTC",
-    "deep_days_utc": [
-      "Tuesday",
-      "Friday"
-    ],
+    "profiles": {
+      "quick": {
+        "purpose": "fast event-driven validation on PR/push/domain follow-up",
+        "scheduled": false,
+        "network_health": false,
+        "manifest_publication": false,
+        "provider_reconstruction": false
+      },
+      "deep": {
+        "purpose": "full scheduled/manual validation and publication",
+        "scheduled": "Tuesday and Friday 04:47 UTC",
+        "network_health": true,
+        "manifest_publication": true,
+        "provider_reconstruction": false
+      }
+    },
     "provider_mutation_allowed": false,
     "provider_reconstruction_allowed": false
   },

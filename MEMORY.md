@@ -63,3 +63,8 @@ Last updated: 2026-09-03
 - There is one daily cron only. It runs Quick normally and Deep on Tuesday/Friday UTC.
 - Push/PR use Quick; manual dispatch can select Quick or Deep.
 - The single routine workflow may publish reports/hashes, and Deep may reproject language manifests. It never stages Provider JS, Provider DATA, Core/Fix scripts or reconstruction outputs.
+
+## Quick vs Deep definition
+- Quick is event-driven only (push/PR/manual/after Domain Refresh). It runs exact-byte static audit + critical Core/runtime unit contracts. No full network health, no manifests publication, no reconstruction.
+- Deep is the only scheduled routine run (Tuesday/Friday 04:47 UTC) or manual. It runs Quick + full structural contracts + read-only hub observation + full 96-provider runtime health, then republishes language manifests/reports/hashes if changed.
+- ProviderBase-store validity is a reconstruction concern, not a Quick gate; it remains in the manual reconstruction workflow.

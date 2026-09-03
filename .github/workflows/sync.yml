@@ -45,14 +45,11 @@ on:
       - 'provider-type-policy.json'
       - 'scripts/provider_patches/**'
       - 'scripts/audit_provider_v3_static.py'
-      - 'scripts/build_published_provider_stage.py'
-      - 'scripts/build_observational_health_report.py'
-      - 'scripts/health_check.mjs'
       - 'tests/**'
       - 'automation/provider-v3-architecture.json'
       - '.github/workflows/sync.yml'
   schedule:
-    - cron: '17 5 * * *'
+    - cron: '47 4 * * 2,5'
 
 permissions:
   contents: write
@@ -76,7 +73,7 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Select Quick or Deep profile
+      - name: Select Quick or Deep
         id: mode
         shell: bash
         run: |
@@ -85,8 +82,7 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             MODE="${{ inputs.mode }}"
           elif [ "${{ github.event_name }}" = "schedule" ]; then
-            DOW="$(date -u +%u)"
-            if [ "$DOW" = "2" ] || [ "$DOW" = "5" ]; then MODE=deep; fi
+            MODE=deep
           fi
           echo "validation_mode=$MODE" >> "$GITHUB_OUTPUT"
           echo "FIELD_PROVIDER_VERIFY_MODE mode=$MODE repair=false reconstruction=false"
@@ -103,13 +99,11 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Architecture and published-byte gate
+      - name: Quick gate - exact published bytes and critical Core contracts
         run: |
           set -euo pipefail
           python tests/provider_v3_workflow_ownership_test.py
-          python scripts/provider_base_store.py validate
           python scripts/audit_provider_v3_static.py
-          python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_brick_portfolio_audit_test.py
           python tests/provider_521_capability_regression_test.py
           python tests/global_media_type_resolution_test.py
@@ -119,11 +113,13 @@ jobs:
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
+          git diff --exit-code
 
-      - name: Deep-only structural contracts
+      - name: Deep gate - full structural contracts
         if: steps.mode.outputs.validation_mode == 'deep'
         run: |
           set -euo pipefail
+          python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_base_layering_contract_test.py
           python tests/provider_wrapper_isolation_test.py
           python tests/provider_byte_stability_contract_test.py
@@ -131,64 +127,56 @@ jobs:
           python tests/repository_hygiene_contract_test.py
           python tests/global_catalogue_alias_recovery_test.py
           python tests/global_core_presentation_pipeline_test.py
-          python tests/provider_v3_workflow_ownership_test.py
           python scripts/audit_provider_v3_static.py
+          git diff --exit-code
 
-      - name: Build exact published-provider observation stage
+      - name: Deep - build exact published-provider observation stage
+        if: steps.mode.outputs.validation_mode == 'deep'
         run: python scripts/build_published_provider_stage.py --stage staging-published
 
-      - name: Read-only hub observation
+      - name: Deep - read-only authoritative hub observation
+        if: steps.mode.outputs.validation_mode == 'deep'
         run: |
           mkdir -p health-output
-          python scripts/resolve_provider_hubs.py             --mode "${{ steps.mode.outputs.validation_mode }}"             --include-disabled             --workers 8             --timeout 8             --output health-output/provider-hub-report.json
+          python scripts/resolve_provider_hubs.py             --mode deep             --include-disabled             --workers 8             --timeout 8             --output health-output/provider-hub-report.json
           git diff --exit-code -- provider-overrides.json provider-domain-history.json providers provider-bases
 
-      - name: Observe exact published providers
+      - name: Deep - observe all exact published providers
+        if: steps.mode.outputs.validation_mode == 'deep'
         env:
           NUVIO_STAGE: staging-published
           NUVIO_CANDIDATES_PATH: staging-published/candidates.json
           NUVIO_HEALTH_OUTPUT: health-output
           NUVIO_HEALTH_RESULTS_FILENAME: health-results.json
           NUVIO_WORKER_MEMORY_MB: '1024'
-        shell: bash
         run: |
           set -euo pipefail
-          if [ "${{ steps.mode.outputs.validation_mode }}" = deep ]; then
-            node scripts/health_check.mjs --deep
-          else
-            node scripts/health_check.mjs
-          fi
+          node scripts/health_check.mjs --deep
           python scripts/build_observational_health_report.py             --results health-output/health-results.json             --manifest manifest.json             --output health-output/health-report.json
           python scripts/generate_diagnostics.py             --results health-output/health-results.json             --output health-output
           test -s health-output/health-report.json
           test -s health-output/diagnostics-report.json
 
-      - name: Deep-only manifest projection
+      - name: Deep - reproject manifests and integrity inventories
         if: steps.mode.outputs.validation_mode == 'deep'
         run: |
-          cp health-output/health-report.json health-report.json
-          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
-          python scripts/validate_language_projection.py
-
-      - name: Prove routine immutability
-        run: |
           set -euo pipefail
-          python scripts/audit_provider_v3_static.py
-          git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json scripts/provider_patches
-
-      - name: Refresh report/integrity outputs
-        run: |
           cp health-output/health-report.json health-report.json
           cp health-output/provider-hub-report.json provider-hub-report.json
           cp health-output/diagnostics-report.json diagnostics-report.json
           cp health-output/diagnostics-report.html diagnostics-report.html
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_language_projection.py
+          python scripts/audit_provider_v3_static.py
+          git diff --exit-code -- providers provider-bases provider-overrides.json provider_catalog.json provider-type-policy.json scripts/provider_patches
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
 
-      - name: Upload verification evidence
+      - name: Deep - upload evidence
+        if: steps.mode.outputs.validation_mode == 'deep'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: provider-v3-${{ steps.mode.outputs.validation_mode }}-${{ github.run_id }}
+          name: provider-v3-deep-${{ github.run_id }}
           path: |
             health-output/health-results.json
             health-output/health-report.json
@@ -198,31 +186,25 @@ jobs:
           retention-days: 8
           if-no-files-found: error
 
-      - name: Publish reports and Deep manifest projections
-        if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+      - name: Deep - publish reports, manifests and hashes
+        if: steps.mode.outputs.validation_mode == 'deep' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-          git add             health-report.json             provider-hub-report.json             diagnostics-report.json             diagnostics-report.html             FILE-HASHES.json             PATCH-SHA256SUMS.txt             SHA256SUMS.json
+          git add             health-report.json             provider-hub-report.json             diagnostics-report.json             diagnostics-report.html             vf/manifest.json             no-anime/manifest.json             vf-no-anime/manifest.json             FILE-HASHES.json             PATCH-SHA256SUMS.txt             SHA256SUMS.json
 
-          if [ "${{ steps.mode.outputs.validation_mode }}" = deep ]; then
-            git add vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json
+          if git diff --cached --name-only | grep -Ev '^(health-report\.json|provider-hub-report\.json|diagnostics-report\.json|diagnostics-report\.html|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json)$'; then
+            echo 'Deep staged a forbidden runtime/DATA path.' >&2
+            exit 1
           fi
 
-          # Runtime/DATA are never publishable from this workflow.
-          git diff --cached --name-only | grep -Ev '^(health-report\.json|provider-hub-report\.json|diagnostics-report\.json|diagnostics-report\.html|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json)$' && {
-            echo 'Routine workflow staged a forbidden path.' >&2
-            exit 1
-          } || true
-
           if git diff --cached --quiet; then
-            echo 'No report/manifest publication change.'
+            echo 'No Deep publication change.'
             exit 0
           fi
 
@@ -234,6 +216,6 @@ jobs:
             exit 0
           fi
 
-          git commit -m "chore: publish Provider v3 ${{ steps.mode.outputs.validation_mode }} verification"
+          git commit -m 'chore: publish Provider v3 Deep verification'
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
