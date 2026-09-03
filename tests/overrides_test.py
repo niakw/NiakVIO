@@ -71,20 +71,13 @@ def test_staged_artifact_contract() -> None:
 
 
 def test_domain_overrides() -> None:
-    source = b"const BASE='https://french-stream.one';"
-    output, patch_records = apply_overrides(
-        "frenchstream", source, include_global_core=False
-    )
-    # Frenchstream is executable/deferred, not quarantined. Its mutable terminal
-    # domain remains DATA while fstream.website is the maintenance/discovery hub.
-    assert b"NUVIO_PROVIDER_QUARANTINE_V1" not in output
-    assert b"french-stream.one" not in output
-    assert b"fs16.lol" in output
-    assert any(
-        row.get("type") == "replace"
-        and row.get("from") == "french-stream.one"
-        for row in patch_records
-    )
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    frenchstream = config["provider_patches"]["frenchstream"]
+    assert frenchstream["capability"] == "mixed_embed_resolver"
+    assert frenchstream["official_hub"] == "https://fstream.website/"
+    assert frenchstream["official_site"] == "https://fs16.lol"
+    assert frenchstream.get("domain_substitutions") == {}
+    assert frenchstream["capability_promotion"]["activation_policy"] == "remain_disabled_until_native_reader_acceptance"
 
     movix_source = b"const A='https://api.movix.cash'; const B='https://api.movix.cloud';"
     movix_output, movix_records = apply_overrides("movix", movix_source, include_global_core=False)
