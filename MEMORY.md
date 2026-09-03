@@ -318,3 +318,14 @@ Keep it disabled in production until all proofs are green.
 - Node rejected the generated provider with `SyntaxError: Invalid or unexpected token`.
 - Commit `421bd5c62fdf431a4d557cb28e6ea5b9a83c45ff` replaces that single literal escape with a real source newline.
 - `global_stream_presentation_test.py` now statically rejects any literal `\\nfunction` in the canonical V18 patch source before executing runtime cases.
+
+## 2026-09-03 — pre-reconstruction gate fully green / canonical span fix
+- Manual reconstruction retry 10 was the first run where the complete pre-reconstruction gate passed:
+  - ProviderBase v3 store 96/96 clean + artifact-valid;
+  - clean reconstruction contract;
+  - 5.21 capability regression;
+  - media-type v26;
+  - stream presentation V18.
+- The run then entered `Reconstruct all 96 providers from DATA + Lego` for the first time.
+- Its first failure was in the materializer boundary assertion itself, not Anime-Sama/runtime: the new assertion reconstructed an obsolete `START NIAKVIO_FIX` marker string while Provider v3 uses canonical `STARTFIX/CLOSEFIX`.
+- `materialize_provider_v3_all.py` now imports and uses `provider_patch_blocks.owned_span()` for all Provider/Core Lego positions. Boundary validation and reverse-code ownership therefore share one parser/source of truth.
