@@ -370,3 +370,11 @@ Keep it disabled in production until all proofs are green.
 - The same cleanup batch aligns HLS/sanitizer assertions to canonical STARTFIX/CLOSEFIX helper markers, removes the obsolete Terser-specific test wording, and upgrades the published Lego contract from legacy marker/v20 assumptions to canonical ownership helpers + media-type v26 launch/positive-output gates.
 - No provider behavior is weakened and main remains untouched. Next controlled reconstruction: retry 18.
 
+## 2026-09-03 — retry 18 passed runtime post-gates; workspace activation report drift isolated
+- Retry 18 again materialized all 96 providers and proved generation `949d251de7e3cb4d` reverse byte identity 96/96.
+- The previously stale contracts are now proven fixed: published brick audit, static audit, media-type v26, presentation V18/pipeline, stream identity, runtime media safety, playback integrity, stream sanitizer and published Provider Lego v26 all passed on reconstructed bytes.
+- Release integrity then failed only because MOVIX is intentionally disabled in the checked-out published baseline while the committed historical Deep `health-report.json` still says `preserved-current-enabled-ci-uncertain / enabled=true`.
+- Manual Provider v3 reconstruction is a non-publishing workspace operation and does not own activation decisions. Activation preservation now defers an unchanged baseline-disabled provider in `NUVIO_PROVIDER_V3_CONTEXT=workspace` even when the historical Deep report is stale; production/Deep retains the strict requirement that its current report must also say disabled.
+- A regression test covers workspace acceptance, production rejection of stale enabled reports, and production acceptance when both baseline and current report are disabled.
+- No activation flag, provider runtime, or main byte is changed. Next controlled reconstruction: retry 19.
+
