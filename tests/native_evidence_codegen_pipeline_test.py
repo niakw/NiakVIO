@@ -73,6 +73,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert required in tv_out, required
     assert tv_out.count("FIELD_NATIVE_PLAYER_ENTRY client=tv") == 1
     assert tv_out.count("FIELD_NATIVE_PLAYER_BEGIN client=tv") == 1
+    assert "providers.chunked(6)" in tv_out
+    assert "async(Dispatchers.IO)" in tv_out
+    assert "providerJobs.awaitAll()" in tv_out
+    assert "synchronized(niakvioPlayerProbeLock)" in tv_out
     assert "ExoPlayer.Builder" not in tv_out
     assert "PluginRuntime.executePlugin(" not in tv_out
 
@@ -105,6 +109,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         assert required in mobile_out, required
     assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1
     assert mobile_out.count("FIELD_NATIVE_PLAYER_BEGIN client=mobile") == 1
+    assert "providers.chunked(6)" in mobile_out
+    assert "async(Dispatchers.IO)" in mobile_out
+    assert "providerJobs.awaitAll()" in mobile_out
+    assert "synchronized(niakvioPlayerProbeLock)" in mobile_out
     assert 'getLaunchIntentForPackage("com.nuviodebug.com")' not in mobile_out
     assert 'listOf("anime", "tv").map' not in mobile_out
     assert '"capability_probe"' not in mobile_out
@@ -141,6 +149,10 @@ with tempfile.TemporaryDirectory() as tmp_raw:
             assert "NativePlayerController(" not in desktop_out
             assert "controller.attach(" not in desktop_out
             assert "rows.take(" not in desktop_out
+            assert "providers.chunked(6)" in desktop_out
+            assert "async(Dispatchers.IO)" in desktop_out
+            assert "providerJobs.awaitAll()" in desktop_out
+            assert "synchronized(desktopPlayerProbeLock)" in desktop_out
             assert "25000L" in desktop_out
     finally:
         if original_event is not None:
