@@ -17,7 +17,10 @@ for text in (tv, mobile, desktop):
     assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE" not in text
     assert "NIAKVIO_REQUIRE_READER_SUCCESS" not in text
 
-assert "Intent(context, MainActivity::class.java)" in mobile_codegen
+assert 'Intent().setClassName(' in mobile_codegen
+assert '"com.nuviodebug.com"' in mobile_codegen
+assert "MainActivity::class.java.name" in mobile_codegen
+assert "Intent(context, MainActivity::class.java)" not in mobile_codegen
 assert "generateSequence(error) { it.cause }" in mobile_codegen
 assert "getLaunchIntentForPackage(context.packageName)" not in mobile_codegen.split("MOBILE_HELPERS =", 1)[1]
 
