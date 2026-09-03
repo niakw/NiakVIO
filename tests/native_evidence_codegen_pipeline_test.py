@@ -98,11 +98,14 @@ with tempfile.TemporaryDirectory() as tmp_raw:
         "nuvio-mobile-production",
         "FIELD_NATIVE_PLAYER_ENTRY client=mobile",
         "FIELD_NATIVE_PLAYER_BEGIN client=mobile",
-        'getLaunchIntentForPackage("com.nuviodebug.com")',
+        'Intent().setClassName(',
+        '"com.nuviodebug.com"',
+        'MainActivity::class.java.name',
     ):
         assert required in mobile_out, required
     assert mobile_out.count("FIELD_NATIVE_PLAYER_ENTRY client=mobile") == 1
     assert mobile_out.count("FIELD_NATIVE_PLAYER_BEGIN client=mobile") == 1
+    assert 'getLaunchIntentForPackage("com.nuviodebug.com")' not in mobile_out
     assert 'listOf("anime", "tv").map' not in mobile_out
     assert '"capability_probe"' not in mobile_out
     assert "ExoPlayer.Builder" not in mobile_out
