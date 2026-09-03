@@ -18,7 +18,6 @@ import hashlib
 import json
 import subprocess
 import tempfile
-from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,12 +38,21 @@ MARKERS = (
 )
 
 
-@dataclass(frozen=True)
 class MinimizeResult:
-    text: str
-    saved_bytes: int
-    transformed_lines: int
-    skipped_reason: str = ""
+    __slots__ = ("text", "saved_bytes", "transformed_lines", "skipped_reason")
+
+    def __init__(
+        self,
+        *,
+        text: str,
+        saved_bytes: int,
+        transformed_lines: int,
+        skipped_reason: str = "",
+    ) -> None:
+        self.text = text
+        self.saved_bytes = int(saved_bytes)
+        self.transformed_lines = int(transformed_lines)
+        self.skipped_reason = str(skipped_reason)
 
 
 def _split_line_ending(line: str) -> tuple[str, str]:
