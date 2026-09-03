@@ -785,6 +785,13 @@ function _candidateScore(url, meta) {
   if (/\/(?:movie|movies|film|films|series|tv|show|watch|title|media)\//i.test(path)) score += 12;
   return score;
 }
+function _identityMode() {
+  const raw = NIAKVIO_PROVIDER_MODEL && NIAKVIO_PROVIDER_MODEL.identityInput;
+  return _text(raw && raw.mode || "tmdb_direct").toLowerCase();
+}
+function _identityUsesTmdbId() {
+  return _identityMode() === "tmdb_direct";
+}
 function _expandLearnedRoute(pattern, meta, mediaType, season, episode, bases) {
   let route = _text(pattern);
   if (/\$\{|encodeURIComponent\s*\(/i.test(route)) return [];
@@ -795,8 +802,15 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode, bases) {
   const title = _text(meta && meta.title);
   const slug = _slug(title);
   const transport = mediaType === "movie" ? "movie" : "tv";
+  route = route.replace(/\{tmdb_?id\}/gi, encodeURIComponent(id));
+  // {id} has no universal meaning across providers. It can be a provider
+  // catalogue/session/file/MAL id. Only the explicit tmdb_direct identity
+  // contract permits using the incoming TMDB id as its implicit value.
+  if (/\{id\}/i.test(route)) {
+    if (!_identityUsesTmdbId()) return [];
+    route = route.replace(/\{id\}/gi, encodeURIComponent(id));
+  }
   route = route
-    .replace(/\{(?:tmdb_?id|id)\}/gi, encodeURIComponent(id))
     .replace(/\{slug\}/gi, encodeURIComponent(slug))
     .replace(/\{(?:title|query|q)\}/gi, encodeURIComponent(title))
     .replace(/\{(?:media|media_?type|type)\}/gi, encodeURIComponent(transport))
@@ -937,10 +951,15 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
     season,
     episode
   ));
+  // A bare API origin is not an executable request plan. The legacy fallback
+  // that appended ?tmdbId=... is valid only for providers explicitly classified
+  // tmdb_direct; catalogue providers must execute an observed route/search chain.
+  if (!_identityUsesTmdbId()) return _uniq(out);
   for (const base of bases) {
     if (!/^https?:/i.test(base)) continue;
     let url = base
-      .replace(/\{(?:tmdb_?id|id)\}/gi, encodeURIComponent(tmdbId || ""))
+      .replace(/\{tmdb_?id\}/gi, encodeURIComponent(tmdbId || ""))
+      .replace(/\{id\}/gi, encodeURIComponent(tmdbId || ""))
       .replace(/\{(?:media_?type|type)\}/gi, encodeURIComponent(mediaType || "movie"))
       .replace(/\{season\}/gi, encodeURIComponent(season == null ? "" : season))
       .replace(/\{episode\}/gi, encodeURIComponent(episode == null ? "" : episode));
@@ -963,7 +982,7 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
   return _uniq(out);
 }
 function _directPlayerUrls(tmdbId, mediaType) {
-  if (!tmdbId) return [];
+  if (!tmdbId || !_identityUsesTmdbId()) return [];
   const hasPlayerRoute = (NIAKVIO_PROVIDER_MODEL.routes || []).some(route =>
     /^\/player(?:[?#]|$)/i.test(_text(route))
   );
@@ -1008,7 +1027,7 @@ function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
     for (const key of keys) {
       const lower = key.toLowerCase();
       let value = player.searchParams.get(key);
-      if (value == null && lower === "id") value = _text(tmdbId);
+      if (value == null && lower === "id" && _identityUsesTmdbId()) value = _text(tmdbId);
       if (value == null && /^(?:m|media|type)$/.test(lower)) value = desiredMedia;
       if (value == null && /^(?:season|s)$/.test(lower) && season != null) value = _text(season);
       if (value == null && /^(?:episode|e)$/.test(lower) && episode != null) value = _text(episode);
