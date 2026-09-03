@@ -125,6 +125,7 @@ for workflow, marker in (
 ):
     assert "retention-days: 8" in artifact_block(workflow, marker), marker
 
+assert "LC_NUMERIC: C" in desktop_reader
 assert "mobile-android-reader:" in mobile_android
 assert "name: NATIVE - Android Reader" in mobile_android
 assert "resolve_tv:" in mobile_android and "resolve_mobile:" in mobile_android
