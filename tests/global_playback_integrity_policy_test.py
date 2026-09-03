@@ -60,7 +60,11 @@ def capture_scheduler(text, provider_id, patch_script, options, profile_name):
     return text
 module._apply_patch_script = capture_scheduler
 try:
-    module.apply_overrides("streamzo", b"globalThis.getStreams=async function(){return []};\n", phase="discovery")
+    module.apply_overrides(
+        "streamzo",
+        b"/* BEGIN NIAKVIO_PROVIDER */\nglobalThis.getStreams=async function(){return []};\n/* END NIAKVIO_PROVIDER */\n",
+        phase="discovery",
+    )
 finally:
     module._apply_patch_script = original_apply_patch_script
 wanted = [
