@@ -11,6 +11,12 @@ from apply_provider_overrides import apply_overrides, GLOBAL_STREAM_PRESENTATION
 
 
 def apply(provider: str, source: str) -> tuple[str, list[dict]]:
+    if "/* BEGIN NIAKVIO_PROVIDER */" not in source:
+        source = (
+            "/* BEGIN NIAKVIO_PROVIDER */\n"
+            + source.rstrip()
+            + "\n/* END NIAKVIO_PROVIDER */\n"
+        )
     payload, records = apply_overrides(provider, source.encode("utf-8"), phase="discovery")
     return payload.decode("utf-8"), records
 
