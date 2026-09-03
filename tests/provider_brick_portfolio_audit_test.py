@@ -22,8 +22,8 @@ ROWS = PROVENANCE.get("providers") or {}
 FORCE_TRIGGER = ROOT / ".github" / "triggers" / "force-clean-provider-reconstruction.json"
 
 CORE_ORDER = [
-    # Textual/materialization order. getStreams wrapper execution is the reverse:
-    # media-type is intentionally outermost and executes first.
+    # Textual/materialization order. Request-side media type resolution wraps
+    # provider/facts/identity; output-only presentation/branding/sanitizer wrap it.
     "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
     "CORE.MEDIA_ENRICHMENT.V1",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
@@ -32,10 +32,10 @@ CORE_ORDER = [
     "CORE.RUNTIME_COMPAT.V1",
     "CORE.STREAM_FACTS.V1",
     "CORE.STREAM_IDENTITY.V1",
+    "CORE.MEDIA_TYPE_RESOLUTION.V1",
     "CORE.STREAM_PRESENTATION.V1",
     "CORE.PROVIDER_BRANDING.V1",
     "CORE.STREAM_SANITIZER.V6",
-    "CORE.MEDIA_TYPE_RESOLUTION.V1",
 ]
 
 BLOCK_START = re.compile(r"/\* START NIAKVIO_FIX:([^*]+?) \*/")
