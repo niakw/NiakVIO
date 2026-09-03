@@ -90,7 +90,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v25-client-budget-aligned",
+        "revision": "tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -344,6 +344,33 @@ function hasProviderOutput(value){
   if(url&&typeof url==="object"&&typeof url.url==="string"&&s(url.url))return true;
   return false;
 }
+function reconcileOutputContext(value,context){
+  if(!value||!context)return value;
+  function stamp(row){
+    if(!row||typeof row!=="object")return;
+    try{
+      if(Object.prototype.hasOwnProperty.call(row,"canonicalMediaType"))row.canonicalMediaType=context.canonicalMediaType;
+      if(Object.prototype.hasOwnProperty.call(row,"providerMediaType"))row.providerMediaType=context.providerMediaType;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbNamespace"))row.tmdbNamespace=context.tmdbNamespace;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbIdentity"))row.tmdbIdentity=context.tmdbIdentity;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbId")&&context.tmdbId)row.tmdbId=context.tmdbId;
+      if(Object.prototype.hasOwnProperty.call(row,"degraded"))row.degraded=context.tmdbResolutionDegraded===true;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbResolutionDegraded"))row.tmdbResolutionDegraded=context.tmdbResolutionDegraded===true;
+    }catch(_){}
+  }
+  if(Array.isArray(value)){
+    for(var i=0;i<value.length;i++)stamp(value[i]);
+    return value;
+  }
+  if(typeof value==="object"){
+    stamp(value);
+    for(var j=0;j<3;j++){
+      var key=["streams","results","data"][j],list=value[key];
+      if(Array.isArray(list))for(var k=0;k<list.length;k++)stamp(list[k]);
+    }
+  }
+  return value;
+}
 function invocationEvent(a){
   var first=a[0],obj=objectRequest(first),settings=obj?first:(a[4]&&typeof a[4]==="object"?a[4]:null),event="";
   try{event=s(settings&&(settings.providerEvent||settings.event)||"")}catch(_){}
@@ -534,6 +561,13 @@ function install(o,k){
         if(deadlineExpired(requestDeadline))return [];
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
         if(!hasProviderOutput(value))return [];
+      }else{
+        // Identity/type stayed stable: do not execute the provider twice. Promote
+        // the authoritative TMDB context and reconcile only diagnostic fields
+        // already exposed by the returned rows.
+        if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
+        if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
+        value=reconcileOutputContext(value,verifiedContext);
       }
       return value;
     }catch(error){
