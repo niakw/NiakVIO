@@ -1,15 +1,15 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "eac69ece1da6aa5d882a846dbe4fd756c3474a9b",
+  "sourceSha": "28cc70f3e4d4cf9b3dfc4c09b77c8d69e5b9ed90",
   "context": "workspace",
-  "generation": "8e354389b41b2498a7297e89a0e6204c2bd2841fed541bd1d3c5fe6b9e827d71",
+  "generation": "c27ea147413fd73e9a219b5cc4e4a6cd81d26e9627420f3ba1eb661763297119",
   "providerCount": 96,
   "expectedProviderCount": 96,
   "providers": [
     {
       "provider": "anime-sama",
-      "file": "providers/anime-sama-297651e8b3a0afdb.js",
-      "sha256": "297651e8b3a0afdb36a5b9e197a9179e9f145411b8f7c7d8f4b912ae6779591e",
+      "file": "providers/anime-sama-56258a71775eb0ca.js",
+      "sha256": "56258a71775eb0cac6f06e9bdc0d8ec8a9364c243ef33cb9a85c6857692dd717",
       "providerDataSha256": "3aacb63a21330599724e0ed4f72d05682e6801b6c8fe50a35b5cae95c0caef95",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -79,6 +79,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -94,12 +100,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -109,12 +109,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "purstream",
-      "file": "providers/purstream-eeb670ad208af149.js",
-      "sha256": "eeb670ad208af1497ba0b06b210c8debe854834ac5fededcf0bb04f1f4c3406d",
+      "file": "providers/purstream-afb5ec34d1c9b043.js",
+      "sha256": "afb5ec34d1c9b043cd9b44f4c0ccbab5220c560a2fd40609f893ef03e962096d",
       "providerDataSha256": "cb6962f91b85104f22f2168afd7e35a2f53fa0ebc8473855adf09e1c4e62a5f8",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -170,6 +176,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -185,12 +197,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -200,12 +206,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "flemmix",
-      "file": "providers/flemmix-bb7212dc4c132907.js",
-      "sha256": "bb7212dc4c1329079191f0b45038a7030226e4c5cbecef9cad4a55a71377c348",
+      "file": "providers/flemmix-4f18ce8b566a5549.js",
+      "sha256": "4f18ce8b566a554929136a6a01e092e8a150cecb89fdfb765e2c23ae0431ced3",
       "providerDataSha256": "d540625f440cc365b226ec477216b0e0cd87e49fc0ad6075d7becddcdaed3400",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -282,6 +294,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -297,12 +315,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -312,12 +324,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "uhdmovies",
-      "file": "providers/uhdmovies-a029df736b0e82f2.js",
-      "sha256": "a029df736b0e82f278ea0ac16122dec8b43242fbcb773fcbe122c4bc74e2c4e5",
+      "file": "providers/uhdmovies-fab3cd58ff5884e7.js",
+      "sha256": "fab3cd58ff5884e785ead41c572c359b8b1124a76777f05e113e30604dcf9a67",
       "providerDataSha256": "af5f1973c4ab540f4c9057efdf6cb078cd43c78f25b51941b98b88b24436a4a6",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -387,6 +405,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -402,12 +426,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -417,12 +435,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "movieshunt",
-      "file": "providers/movieshunt-b6f7277ebb269b53.js",
-      "sha256": "b6f7277ebb269b530d807e9330e9d73b8b2ffb3a689c4cbf600ada200bad50ba",
+      "file": "providers/movieshunt-7ce13eb96c84470a.js",
+      "sha256": "7ce13eb96c84470aa18993bda0a6a30c51ab95ffcb5a9019468f65bc37df3bc8",
       "providerDataSha256": "ff040b1ce82a565e4e53ea2388d90eb7c59c65d5104ca42131059a4a5f2b44f5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -478,6 +502,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -493,12 +523,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -508,12 +532,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "zinkmovies",
-      "file": "providers/zinkmovies-951a60f2503dd686.js",
-      "sha256": "951a60f2503dd686d37afb248cb5903e48b4d95fa901f22ffd5216efb33399ba",
+      "file": "providers/zinkmovies-28d50b1100bcd70c.js",
+      "sha256": "28d50b1100bcd70c97754bc37dcd59ce6ae7bcdb25ca7d50706af6c603ff2720",
       "providerDataSha256": "423fd2894434a7f6d37f529d7cb3096f4aba584d14910a1fb4688c586f67fc88",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -569,6 +599,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -584,12 +620,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -599,12 +629,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vegamovies",
-      "file": "providers/vegamovies-59f1be96eeada2e2.js",
-      "sha256": "59f1be96eeada2e299058dab12e7733a558adc90ad74585e379360710141ca76",
+      "file": "providers/vegamovies-7de648ff8bdc06b7.js",
+      "sha256": "7de648ff8bdc06b782fa7db3059f671736a77361e701cb86a2f9e1eb4ebb63ed",
       "providerDataSha256": "27bb666d1e138f56e43ae101ed0d0298c093d5aeaee4115cdec3d6b9b95ca433",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -674,6 +710,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -689,12 +731,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -704,12 +740,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "hindmoviez",
-      "file": "providers/hindmoviez-31d02319844856e9.js",
-      "sha256": "31d02319844856e979a500d63e854c76637a87d821a6ea65a85a06b407fa817a",
+      "file": "providers/hindmoviez-84a945c567b0630b.js",
+      "sha256": "84a945c567b0630b83ef43b43c89e3ce214bf2a7e089f0c68c15d5e32fc731d7",
       "providerDataSha256": "7c64b06d0e974a1565cd767ba95a4e7df82811edd3d82944671dc4d30b6549ac",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -772,6 +814,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -787,12 +835,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -802,12 +844,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "4khdhub",
-      "file": "providers/4khdhub-fadc83d4ef6956de.js",
-      "sha256": "fadc83d4ef6956deb78eadaa3f4b6cf0f1f5475d290ba51c9aa1831bb7e0d09c",
+      "file": "providers/4khdhub-8591d269bb617afe.js",
+      "sha256": "8591d269bb617afe4756b72252121be4c53eed93dff8954cb501332fdbf6009b",
       "providerDataSha256": "b50f7e5787bbefc1e3ccab02ad202c6a67c3eae0a1e89c2dc8e1910937d0b71f",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -877,6 +925,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -892,12 +946,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -907,12 +955,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "persianstremio",
-      "file": "providers/persianstremio-512bbdaec253dcdd.js",
-      "sha256": "512bbdaec253dcdd7a857995d2a36ef379b30c0c9670bdbfb7fc11d194af9337",
+      "file": "providers/persianstremio-6580e169de4d1d6c.js",
+      "sha256": "6580e169de4d1d6cc2b72a3166299ad0d9afb9153864a88eeb3bb698660f6dc9",
       "providerDataSha256": "c3e4d47dae8388dea801d3e21fdbe77b108bac53031b1a1fe558799fd65b7b32",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -968,6 +1022,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -983,12 +1043,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -998,12 +1052,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "desiflix",
-      "file": "providers/desiflix-76d8346fa0b69fe7.js",
-      "sha256": "76d8346fa0b69fe7d8b96d9c2b68021a9f370ded2fcc10ece387975808f7d58d",
+      "file": "providers/desiflix-ddd6538c5cd05a1b.js",
+      "sha256": "ddd6538c5cd05a1b6889bbbae1d545801a4a279fb5a4d6a2bc502a1ef318f257",
       "providerDataSha256": "5a745f1ddba05197c621d842eacfc392cd8317d031ef7fd32ec76ae91606b5d4",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1066,6 +1126,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1081,12 +1147,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1096,12 +1156,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "kehflix",
-      "file": "providers/kehflix-15b6ad920658ce75.js",
-      "sha256": "15b6ad920658ce75420af5476892f205911167a0501e3618355184aac9d7f3e8",
+      "file": "providers/kehflix-60510d90694951a1.js",
+      "sha256": "60510d90694951a14a70231660cebac91173593214f488f10d021aa5178ed109",
       "providerDataSha256": "b2dac85df743374d06de5f6079a24c5776278e21f27a35939b01713b5c1ac53d",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1171,6 +1237,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1186,12 +1258,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1201,12 +1267,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "4khdhubnew",
-      "file": "providers/4khdhubnew-0930c9d03b47b28e.js",
-      "sha256": "0930c9d03b47b28e8c7d3e52d91d52d157014c5a3bd8ca6d72b9331a47fcc2b6",
+      "file": "providers/4khdhubnew-adba848072c87437.js",
+      "sha256": "adba848072c8743792a1ccf24dadf39fa8153f3fdc1709aadbc40500b1b42fce",
       "providerDataSha256": "13bc44a29b2cf1ff3e63075489413d9cb5a2cd3387e97e2b9299f1400d7f7d42",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1269,6 +1341,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1284,12 +1362,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1299,12 +1371,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "allmovieland",
-      "file": "providers/allmovieland-e7df1017fd15f211.js",
-      "sha256": "e7df1017fd15f211b382e614a7e2238969475af66919f1fcddcdd6ce3c11e6f8",
+      "file": "providers/allmovieland-af17e3172b744c16.js",
+      "sha256": "af17e3172b744c16a8efee387d89f9cecc8460703c045f6f476b0d78cd882620",
       "providerDataSha256": "147e821c4f9da88c90285ca4ad62d4d15c2bfa9d87c060dbf2732b983a8d1229",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1374,6 +1452,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1389,12 +1473,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1404,12 +1482,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "anidb",
-      "file": "providers/anidb-29c88886ebe7a9ff.js",
-      "sha256": "29c88886ebe7a9ff070324f374c7ce014ca1db1306e5ea7f1ed7e7e3c19985f5",
+      "file": "providers/anidb-7ea9cc3b664694b6.js",
+      "sha256": "7ea9cc3b664694b6a3665765370bfb70ca2fdd95f3303afefd55d9f5cb0c6677",
       "providerDataSha256": "e8213a4487b02a9d1219f12feb0b9257c9132e30e4708ad79fabc9340c47e297",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1479,6 +1563,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1494,12 +1584,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1509,12 +1593,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "anikototv",
-      "file": "providers/anikototv-2b4a479629cb3c9a.js",
-      "sha256": "2b4a479629cb3c9a3f3fe61903f2ae71dbe414a2aab3cb3aa7a3bc7daa5b1c6f",
+      "file": "providers/anikototv-ec93e7f360220f4a.js",
+      "sha256": "ec93e7f360220f4a1efd63292e48e4b0a66ca9d108b6a85537908df060667445",
       "providerDataSha256": "498e5fe2ef240739bdacd8c82080d2945892b9d4d0ae15ac0408977a0f39bc24",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1584,6 +1674,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1599,12 +1695,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1614,12 +1704,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animekai",
-      "file": "providers/animekai-c0d12433246f5f60.js",
-      "sha256": "c0d12433246f5f60b054f78bcf83fe80ae7a3b145d300f1679c8f59d4b104f7a",
+      "file": "providers/animekai-4df5bc4c32f1c427.js",
+      "sha256": "4df5bc4c32f1c4278db8d281bb7eaead4a25b50b1e1f57b5b606a51f8024632f",
       "providerDataSha256": "e68a314dddb8a046280de743ee6e61cbf1ef58db247e50378bd667e18406e517",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1682,6 +1778,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1697,12 +1799,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1712,12 +1808,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animepahe",
-      "file": "providers/animepahe-118e7076606ab1e7.js",
-      "sha256": "118e7076606ab1e742a6f8d7cfc378933db22ebc2346961e6f77337e8d8e8898",
+      "file": "providers/animepahe-c759b4d9fad24325.js",
+      "sha256": "c759b4d9fad24325b8bb24af6425a1067ebc05e45db614af655cddb2bcc4a94b",
       "providerDataSha256": "1de589dd25e014beaf09f3beb006df3690b20ea1c6c4f1a4e8a1fee4044178ea",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1780,6 +1882,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1795,12 +1903,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1810,12 +1912,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animesalt",
-      "file": "providers/animesalt-143fa914a44f8fb7.js",
-      "sha256": "143fa914a44f8fb7828b525b31d880e6d67b285198ebdf911e51cf69d6e4c47f",
+      "file": "providers/animesalt-8440a19ea48afb7d.js",
+      "sha256": "8440a19ea48afb7ddfbb4ebaed6940f335cd0dc8f413d8f3d34dc9ffefa4f827",
       "providerDataSha256": "cd238c86dd70ff02dafa1693be4c11cac8f0b6a3fa9a8e7cb5ba6b6087c55c16",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1885,6 +1993,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -1900,12 +2014,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -1915,12 +2023,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animesama-co",
-      "file": "providers/animesama-co-e031471cb73c5ec2.js",
-      "sha256": "e031471cb73c5ec281b074f5140234106e9ec44da6689a1f701bb0dcd6b1bb1a",
+      "file": "providers/animesama-co-300bfc1e7f29f279.js",
+      "sha256": "300bfc1e7f29f279f2158f61d64951af3254dc454619be3ab37c12da08738b52",
       "providerDataSha256": "2550f8a4d2c0c7806c8b1db7dbf3ac1869f92469debd1a1e55c45a6e5b49cd56",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -1990,6 +2104,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2005,12 +2125,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2020,12 +2134,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animesultra",
-      "file": "providers/animesultra-96a8fcbc4e8819bc.js",
-      "sha256": "96a8fcbc4e8819bc88e63bf5ec9cd15ddf57a73eb8f5067477ef70a73f6bd8a3",
+      "file": "providers/animesultra-bf7df1842c72939c.js",
+      "sha256": "bf7df1842c72939c671521ac08d224a5bbd420d5db8b5b4fd1c40fbb20ba1e7a",
       "providerDataSha256": "92c43047626c0c70f4cdcdc5fb0480abdd3b726efcbe127b5db8d41cd5e29f81",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2095,6 +2215,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2110,12 +2236,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2125,12 +2245,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animetsu",
-      "file": "providers/animetsu-14154b3d5a4cca0c.js",
-      "sha256": "14154b3d5a4cca0cdab76e0c1d55028ad62ba7c9461e051c0171156ec87e5321",
+      "file": "providers/animetsu-dff044f439222ae9.js",
+      "sha256": "dff044f439222ae9d1b65233c5d0b53fd43e6c0f16409711db303e46eb42d122",
       "providerDataSha256": "69b2a72b14f75bc7eecb23ddc46f5ccb89392c28610acbefd79c4a0600f2a671",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2186,6 +2312,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2201,12 +2333,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2216,12 +2342,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animevostfr",
-      "file": "providers/animevostfr-37c706339f3e5deb.js",
-      "sha256": "37c706339f3e5deb902ef4993dd97f39aaf8f1242a0e04d80703a465e1d9108e",
+      "file": "providers/animevostfr-10905d5e4bd111ac.js",
+      "sha256": "10905d5e4bd111ac23948f9ffe941bfc154ecc562de61ead69e3114791b04fc0",
       "providerDataSha256": "1c4ef093daf05b3e96bc5b21c158ac3b28d1228b28195d2eb201180eac95fc83",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2291,6 +2423,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2306,12 +2444,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2321,12 +2453,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animezey",
-      "file": "providers/animezey-72d1443b198dfc96.js",
-      "sha256": "72d1443b198dfc961b6d311ae13b13144919caa6f3a83b66adfde8a85bd7dfa9",
+      "file": "providers/animezey-ea82368c627b0b1e.js",
+      "sha256": "ea82368c627b0b1e024aae79aab310861a9022e09a86e5a7eb7c293971769c67",
       "providerDataSha256": "f4f119f70e552ed8643fffc90558dd429ae6ad1e490862e591a7942c380d5690",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2382,6 +2520,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2397,12 +2541,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2412,12 +2550,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animoflix",
-      "file": "providers/animoflix-877d7098ed005d7f.js",
-      "sha256": "877d7098ed005d7f285ee2d37af6ea07ead4b634401a3ac1cd1bdb95ee48ee3d",
+      "file": "providers/animoflix-351a66e0f34c4a19.js",
+      "sha256": "351a66e0f34c4a195295deba80a3dba0aa059bbc373c45b835458a48d99bb465",
       "providerDataSha256": "9f77277889d7a8462c29a95a175e92c48b61fbfba5ee785e550ab742787e2815",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2480,6 +2624,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2495,12 +2645,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2510,12 +2654,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "anizone",
-      "file": "providers/anizone-cbb9bcfc44355664.js",
-      "sha256": "cbb9bcfc44355664cd52ae0a0636f103e7715332a4faa83d34274bd091dec7d7",
+      "file": "providers/anizone-fb97a085874b42d6.js",
+      "sha256": "fb97a085874b42d6fd3ffdf90f7e63bdf07a7c0cd5c0a190853db6e0dcf45c8c",
       "providerDataSha256": "6b966883b085eb4e1027e7c4e47fbb960463c6bc7c1401e517501e07022c0808",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2578,6 +2728,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2593,12 +2749,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2608,12 +2758,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "castle",
-      "file": "providers/castle-0896a6db23ef8e48.js",
-      "sha256": "0896a6db23ef8e48fe67d3e9babedb1e58b513056d12d11de7b0f09b6b2910b7",
+      "file": "providers/castle-5989726c32095f4d.js",
+      "sha256": "5989726c32095f4d225963e44fe51ac1b8d422282d4f35e57f3c66e0b71c00ff",
       "providerDataSha256": "03f9781f55bb5a15fe14cb9390b2a7e92c66345283c926978009ad7276b914fb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2683,6 +2839,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2698,12 +2860,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2713,12 +2869,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "cineby",
-      "file": "providers/cineby-5606b4237a07d042.js",
-      "sha256": "5606b4237a07d04287d98abf123911ecf494006ca8bd840b8964adabba75e3a8",
+      "file": "providers/cineby-8fe8879c1ba05b8d.js",
+      "sha256": "8fe8879c1ba05b8df00c64246494858f9eea35b6718d4e3b32f0e7ab3c65016f",
       "providerDataSha256": "037468bf1965784ab6cb1df5aac65d6bffbcd5dab10d7255da312f7a9387fda5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2788,6 +2950,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2803,12 +2971,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2818,12 +2980,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "cinemacity",
-      "file": "providers/cinemacity-3971f4ffbaa0c32c.js",
-      "sha256": "3971f4ffbaa0c32c382a3bb5a307c68606f4b53aa810b12f6aec073187a22318",
+      "file": "providers/cinemacity-7dfaabb8cc31368b.js",
+      "sha256": "7dfaabb8cc31368bc3a3d052b1c7be091ae41dd93e2a586964176d803dd67b0e",
       "providerDataSha256": "7d8dd3259ed9f706c2b856d888825429d985331228e245032e555a75bd7d06dd",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2886,6 +3054,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -2901,12 +3075,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -2916,12 +3084,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "cinemm",
-      "file": "providers/cinemm-3a2c926b305298ec.js",
-      "sha256": "3a2c926b305298ec1a5c8d420ec526b0907d24ae52784c437f875f2415c04b4b",
+      "file": "providers/cinemm-a3d0c98bb79b7f9e.js",
+      "sha256": "a3d0c98bb79b7f9e7eaca2319a3369411fff296f6dc5d266d1d3bb91903712ae",
       "providerDataSha256": "24aa58b14fc9f456245c836bcaf308a08e3db6f4c20a6f0e7e1001c238d952a4",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -2991,6 +3165,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3006,12 +3186,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3021,12 +3195,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "coflix",
-      "file": "providers/coflix-86552284c4cecd92.js",
-      "sha256": "86552284c4cecd924bb997b97d6aa9445f02031ebfcff80163ac44739be0e6cf",
+      "file": "providers/coflix-e0780ddf99229d6d.js",
+      "sha256": "e0780ddf99229d6d1d0b5cd81bbc8d3127d11f234f32c5ac94ee235e7c4190d5",
       "providerDataSha256": "0e646725ed26d801be66b0936528bb43be15ad934f151304e151f03bca4e5559",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3103,6 +3283,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3118,12 +3304,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3133,12 +3313,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "dooflix",
-      "file": "providers/dooflix-849ebf16267a14af.js",
-      "sha256": "849ebf16267a14af842245af93501052f93b1f92b845084ca7d2f61d1ec2c9c1",
+      "file": "providers/dooflix-903e4174ffcb8e2b.js",
+      "sha256": "903e4174ffcb8e2bcfb4de4ee9f1c62d0e114168284daab1701139b5fab14fe2",
       "providerDataSha256": "6cc99f95f114738d54689cf0aa36116cf14046b2d78e821e333c0a0c19766197",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3201,6 +3387,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3216,12 +3408,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3231,12 +3417,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "dulourd",
-      "file": "providers/dulourd-8611eae81668ccf2.js",
-      "sha256": "8611eae81668ccf23262ced97e481be1750f6ed7fa833d7214e400ef04734621",
+      "file": "providers/dulourd-fc7353ece1c5865a.js",
+      "sha256": "fc7353ece1c5865a0465afed96a8c2017e73948efa7e04f32038e8479bcf6bbf",
       "providerDataSha256": "211463da8011b41cb164440f2243b67c5efc7d6e0bb0143967d60bf8d1d28905",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3299,6 +3491,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3314,12 +3512,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3329,12 +3521,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "french-manga",
-      "file": "providers/french-manga-6154c6f89d31412c.js",
-      "sha256": "6154c6f89d31412cbaf67c974819e20a52e58e923ec419f2c4d26d1bcd8596f3",
+      "file": "providers/french-manga-35fe5d54ae724f10.js",
+      "sha256": "35fe5d54ae724f1084ce1a364c37af0fd24aaec3635ccb6932c360062141282c",
       "providerDataSha256": "e75c530b78596060dd904e0d134e6f42e064e32baf27d6e1b3324f87b743a0aa",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3404,6 +3602,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3419,12 +3623,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3434,12 +3632,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "goated",
-      "file": "providers/goated-cdd90a4c82dd4094.js",
-      "sha256": "cdd90a4c82dd409460c563d3e176ea506752f77cf4397c68f8ab37a1313c7f39",
+      "file": "providers/goated-492a6ea3a005bb8c.js",
+      "sha256": "492a6ea3a005bb8c07e2bca14a568b3535f48037f6aa63b0df86dd528e571c92",
       "providerDataSha256": "df6d72d1877324fb3e37ee4e62a23c77b08712471197315e18badb19fba97f4c",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3502,6 +3706,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3517,12 +3727,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3532,12 +3736,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "hdghartv",
-      "file": "providers/hdghartv-1ba97e8be61be419.js",
-      "sha256": "1ba97e8be61be419bd7c8f5e6d77be463325f5eb0bd8bfec6a45cd0751275c96",
+      "file": "providers/hdghartv-127f9b9d4fdfe71b.js",
+      "sha256": "127f9b9d4fdfe71bb7ab235fbc8ea1f200de122f7027bb60823805e64bffb353",
       "providerDataSha256": "0f3ebcaef797ecedc1bbbe31547a8548a7b6a16b4958526dcab6f2b943ad984b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3607,6 +3817,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3622,12 +3838,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3637,12 +3847,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "hdhub4u",
-      "file": "providers/hdhub4u-b469087fd0d70768.js",
-      "sha256": "b469087fd0d70768eb15b126da2fad687d1e7ac4711af1017509d111ddb63e0c",
+      "file": "providers/hdhub4u-cec5adcfa4000e4c.js",
+      "sha256": "cec5adcfa4000e4c489e083689415177916bb4716d90dd8065e24a926607a3bd",
       "providerDataSha256": "56e67706c47d7d302654f4c58941f33dd8e3f0d6662a20473738f206f31b26c9",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3712,6 +3928,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3727,12 +3949,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3742,12 +3958,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "hianime",
-      "file": "providers/hianime-e26e0a6452ade529.js",
-      "sha256": "e26e0a6452ade529374553c9ac59bab9cceb8d92dba509bb1883f4a0e64db165",
+      "file": "providers/hianime-1f873166b2dc151e.js",
+      "sha256": "1f873166b2dc151e3bea3243302dd0164fca82fc2245681840522281f0c6e58e",
       "providerDataSha256": "2e870cc6b59f43b3404b27d46c95d9f78b5f906f3d076945233f44c82eb566cb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3810,6 +4032,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3825,12 +4053,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3840,12 +4062,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "kurage",
-      "file": "providers/kurage-c77aba29158bdc19.js",
-      "sha256": "c77aba29158bdc19534325483ac749795be1049d52d7e85767221eb7fc09f84b",
+      "file": "providers/kurage-b337af6b596fc8e8.js",
+      "sha256": "b337af6b596fc8e863414739f7052911a5b638402df2ffa3de50f7b72dcc24e3",
       "providerDataSha256": "b3f3de830fd68b2693e5df481d751ec2b9421e7ce5a2249e4b4a7ef55329fd27",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -3915,6 +4143,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -3930,12 +4164,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -3945,12 +4173,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "movieblast",
-      "file": "providers/movieblast-afa9df0ceb452f8e.js",
-      "sha256": "afa9df0ceb452f8ed753fc416ae6a19cf50e526aa5be8dd85d4922120281d61a",
+      "file": "providers/movieblast-b6a2b5f74eff210c.js",
+      "sha256": "b6a2b5f74eff210ca60136f3e39aa52e6b85a1d9ae90be3bec8be525a1fa3cbd",
       "providerDataSha256": "1fd89c61e6c1362c53cff35799e8c5c6b6428ff3ffeec914d4237f899605e7a6",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4013,6 +4247,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4028,12 +4268,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4043,12 +4277,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "movies4u",
-      "file": "providers/movies4u-9a06adcab8031035.js",
-      "sha256": "9a06adcab80310359aec185b74a09ebd8c08ddd678c79ef40bee711a28a3ed5c",
+      "file": "providers/movies4u-73751b38dcbc07f6.js",
+      "sha256": "73751b38dcbc07f6da503c65728deeb9b0be28addd604a1a52f4cebaa70dd2ec",
       "providerDataSha256": "5de79617c35f569e36d914f55aef4b7f4c174b3473f6c80c3c0fb89b77acbea2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4118,6 +4358,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4133,12 +4379,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4148,12 +4388,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "moviesdrive",
-      "file": "providers/moviesdrive-4f589450eadec42f.js",
-      "sha256": "4f589450eadec42fe4f3dd608a56949066560e4a5947919ee1c12589c364daf6",
+      "file": "providers/moviesdrive-164eddacf8c6d774.js",
+      "sha256": "164eddacf8c6d7748260115832df1855fdc5c7c0e063911348c6bb40a05e54bd",
       "providerDataSha256": "ac57878120e0fadac80be072c4fb30b808f093283cd93be068b7e9038fbcf9b0",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4223,6 +4469,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4238,12 +4490,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4253,12 +4499,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "moviesmod",
-      "file": "providers/moviesmod-76542d5fbfd17529.js",
-      "sha256": "76542d5fbfd1752917c9594ca0e01c6dc391a7d03f382050ac32bc40b28d6f2b",
+      "file": "providers/moviesmod-111f56948e7a627d.js",
+      "sha256": "111f56948e7a627d7ef5d322bf4612424e4f948c819bd7712643fcc699d4e026",
       "providerDataSha256": "7ffa92806d1b4d6aefb519c935dc5b20b910c0f5a43a286a9bce127480273454",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4328,6 +4580,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4343,12 +4601,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4358,12 +4610,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "movix",
-      "file": "providers/movix-200771dd53b9aee3.js",
-      "sha256": "200771dd53b9aee324e150193be8d5ce4b0b62e0e520ce10178b0443cbf260da",
+      "file": "providers/movix-e6ab624a86389ff2.js",
+      "sha256": "e6ab624a86389ff27b7ac383ac3d354d42f917c90c36613a7335cc7860c3acea",
       "providerDataSha256": "091bef1d5b2dddd6de9c07ec6e503d5fd13e79d34c954354b7cc2be5a61d3892",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4447,6 +4705,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4462,12 +4726,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4477,12 +4735,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "mugiwarastream",
-      "file": "providers/mugiwarastream-074c96a78bda6fc3.js",
-      "sha256": "074c96a78bda6fc36452f8bd14dc94dc6467ca3db2e158534a076c3c5ae1201d",
+      "file": "providers/mugiwarastream-3f45f9766a9f7043.js",
+      "sha256": "3f45f9766a9f7043afbb91d679abc8f7746c71e5b35746860bdbeee88231c0ec",
       "providerDataSha256": "cfdc05961467423443139d345447c745b5cc60c188cd1d8bcc9bd3e66d5d704a",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4552,6 +4816,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4567,12 +4837,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4582,12 +4846,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "nakios",
-      "file": "providers/nakios-c7e2bdf0c0ec282f.js",
-      "sha256": "c7e2bdf0c0ec282fca91747df7a0535324f440eee557528e41a492e0ea2f201a",
+      "file": "providers/nakios-81a086011ebba35f.js",
+      "sha256": "81a086011ebba35f9006c43af1947ff066074118f8c3babf6c5c50e7419ef544",
       "providerDataSha256": "a2cc3931ce0ca3e64d992b9e7b86864707e9eee7f27288b455b565ff79a23ab1",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4650,6 +4920,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4665,12 +4941,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4680,12 +4950,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "neko-sama",
-      "file": "providers/neko-sama-22f63b74bba9e103.js",
-      "sha256": "22f63b74bba9e1034ef601b0b89a32f25f1fb89022ddb3df557b491544cacc4c",
+      "file": "providers/neko-sama-dd77a8f1f66fc334.js",
+      "sha256": "dd77a8f1f66fc3343a75d3bee1f63ab6e9d92ad1c7b6db4a135599e809545c2f",
       "providerDataSha256": "d976aa7694f00444ddc5ad6171431d3be3a1034a85f9ac9c6f4a48b31832c761",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4748,6 +5024,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4763,12 +5045,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4778,12 +5054,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "papadustream",
-      "file": "providers/papadustream-de13b7876ee6aa47.js",
-      "sha256": "de13b7876ee6aa47d048f3651196447fa633d957d9603952ef9e480e387b929f",
+      "file": "providers/papadustream-4b2b19072bce572c.js",
+      "sha256": "4b2b19072bce572c23a4c699d82d8ce5c2de2fa62407b39c08f5eda6c0d31356",
       "providerDataSha256": "56424bd90e2ff1c20fa1a0bf38cfff664c2517471fa46662c342641b5ef9dbb0",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4853,6 +5135,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4868,12 +5156,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4883,12 +5165,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "peachify",
-      "file": "providers/peachify-07c85c827fd695ae.js",
-      "sha256": "07c85c827fd695aefff6021790b53feb5bb446f04c8001d11a82ebd140f9e66e",
+      "file": "providers/peachify-a27d69bd2d4c51b7.js",
+      "sha256": "a27d69bd2d4c51b73062db953e3ee2ee4192a19c606c6edf0bbc1b24ef3eba82",
       "providerDataSha256": "faefaa0bb1101f38c8b4ba00172c9b3caf48275b1b382ff7557982cc2b9a7d44",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -4965,6 +5253,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -4980,12 +5274,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -4995,12 +5283,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "playimdb",
-      "file": "providers/playimdb-1b773c55f8a3b4e2.js",
-      "sha256": "1b773c55f8a3b4e237bda2065e07e18f18e814941c7281a6efd66f8d17c112f4",
+      "file": "providers/playimdb-a2789c3ad02edf81.js",
+      "sha256": "a2789c3ad02edf81381c78397c0be7cbdec36ae38f8390b9f72a1e478374cbda",
       "providerDataSha256": "481b595ce27633b3ddf63dbcdb19a2f86bc30160965fb9d29e6b336229fdd82f",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5056,6 +5350,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5071,12 +5371,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5086,12 +5380,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "sekai",
-      "file": "providers/sekai-921f521e1bf04cb4.js",
-      "sha256": "921f521e1bf04cb4b31e40f08995ea538f38bb7159a09fc17b9580d4e17cdaba",
+      "file": "providers/sekai-2d258554888fa6a4.js",
+      "sha256": "2d258554888fa6a4109c2f0f25556f65b59e7a497e5ffb59be6fa8610a4c1628",
       "providerDataSha256": "7a1bfd47c90506ed7687b047943b64b253aed8015bd3df3b521896f350e04b7b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5161,6 +5461,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5176,12 +5482,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5191,12 +5491,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "streamflix",
-      "file": "providers/streamflix-5bc1210ef9e5a614.js",
-      "sha256": "5bc1210ef9e5a6149f6e4021807ce3cf429b2f9e82d736d4bcb10bc0cff8acd4",
+      "file": "providers/streamflix-b32041570bab5893.js",
+      "sha256": "b32041570bab58934280f3ff5984e7e697755d5dd94f62b02ad48f8a69a128fc",
       "providerDataSha256": "b02ddf03fefcac33e507ca8d032ec615be7ef169710093d550034f9059676362",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5266,6 +5572,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5281,12 +5593,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5296,12 +5602,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "streamzo",
-      "file": "providers/streamzo-75dfc71628ba07a8.js",
-      "sha256": "75dfc71628ba07a8c8c9de001f9570b691143bbc7d955221b78da9e5be634234",
+      "file": "providers/streamzo-24e920f85f8d9801.js",
+      "sha256": "24e920f85f8d98013f6c1248006bf410fc7a44f7859cebccb3cc05709bdf587e",
       "providerDataSha256": "2a9fc32080612c5b8591b6954078e7710926f28092ea6fae6fc9b949400740f9",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5378,6 +5690,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5393,12 +5711,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5408,12 +5720,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "toflix",
-      "file": "providers/toflix-7e8aa01563f6025a.js",
-      "sha256": "7e8aa01563f6025a52e5fde5316789aa5609261b8621624e4d22c336a1392be2",
+      "file": "providers/toflix-5e71b4503989d0ea.js",
+      "sha256": "5e71b4503989d0ea9fb0b7f168f8f6074f24d85179e365d193e7ba7a89e9a47f",
       "providerDataSha256": "df07108cf648d5a986ecc1728d7d333ee1ece4c6a7e5bd511d4e7886c35fe970",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5469,6 +5787,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5484,12 +5808,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5499,12 +5817,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "videasy",
-      "file": "providers/videasy-8ab1863d42afa71c.js",
-      "sha256": "8ab1863d42afa71c7f51390d4138d9fdf0a44163ed9c60d5f13cfb3f7fcbd12b",
+      "file": "providers/videasy-a80fb02309186bd5.js",
+      "sha256": "a80fb02309186bd523d5272880d92f5aaac42d7c5e49219f3b70cb9960394419",
       "providerDataSha256": "e94cc482b8baa8f7f6435b1d0d280499bf77fa7f2c42a3531c7272aeb3e8c27b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5574,6 +5898,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5589,12 +5919,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5604,12 +5928,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vidfast",
-      "file": "providers/vidfast-10070a09f99500f6.js",
-      "sha256": "10070a09f99500f68590efa5feef3fbd24886a8166519aa4a54771d16dcbc657",
+      "file": "providers/vidfast-85d5672f7466d56c.js",
+      "sha256": "85d5672f7466d56c82db59dd347db6ebb91a71f0d522a3e53d02f6cf29b1a0c8",
       "providerDataSha256": "db389f74be57db0353b21542d5749c9c52379c1a84047a5d5dd802812766e33e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5665,6 +5995,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5680,12 +6016,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5695,12 +6025,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vidlink",
-      "file": "providers/vidlink-b29ba42c99246ebb.js",
-      "sha256": "b29ba42c99246ebbaf1629cfc2d562a30eb1d2b57ae04c67a04d7c1c3d7cf4dc",
+      "file": "providers/vidlink-d8c74f8326801154.js",
+      "sha256": "d8c74f8326801154030b58da5f0f4678605ab2e7ea325aeef443741f6e3f626d",
       "providerDataSha256": "ee5eebbf7b1a9baca8792a77cb5e3ac1bc4d4b519b80093a55f7b152ac62e65e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5763,6 +6099,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5778,12 +6120,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5793,12 +6129,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vidrock",
-      "file": "providers/vidrock-4a10a57a0c34ccb8.js",
-      "sha256": "4a10a57a0c34ccb850ef6dcc0bf68d1fd975d76e0d64c6939abc7a1aefc27657",
+      "file": "providers/vidrock-58e173dff5da2830.js",
+      "sha256": "58e173dff5da283085bf47ee8ccc6a77b98432564314531f7693c89da6315674",
       "providerDataSha256": "4a3d235dfee0966e3011d27c56b9695fc74bdc2c9c6dd8c783fa099aaf4e66fd",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5861,6 +6203,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5876,12 +6224,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5891,12 +6233,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "voiranime",
-      "file": "providers/voiranime-81bdbe89ce35d3d5.js",
-      "sha256": "81bdbe89ce35d3d5d83c663aa6b9b91f4b67467498f7009e3dd6c963e3d220a6",
+      "file": "providers/voiranime-432a722c6f8913c1.js",
+      "sha256": "432a722c6f8913c1d3a7fa5bd31408c3e8e40841a3dbae9984e6484c6aedfe9a",
       "providerDataSha256": "353b01a43dc895b3410d29472d5c4d4b6e18a48e269c8628a46469e41ca235af",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -5966,6 +6314,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -5981,12 +6335,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -5996,12 +6344,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "voiranime-homes",
-      "file": "providers/voiranime-homes-7dac972a6167ad5f.js",
-      "sha256": "7dac972a6167ad5f58d37082b392bb882aa89deb48fde5669cfc6f4ae617725d",
+      "file": "providers/voiranime-homes-61bd1fb9a7e70299.js",
+      "sha256": "61bd1fb9a7e7029966d91dd9da83232fc57326c4f252eaf71c0ca59a3feab9b6",
       "providerDataSha256": "82d28396c25540bb0248df00779c6a822231f6f96f1f6e54780da183fd5082e2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6064,6 +6418,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6079,12 +6439,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6094,12 +6448,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "voiranime-rip",
-      "file": "providers/voiranime-rip-d8800b2ce715309b.js",
-      "sha256": "d8800b2ce715309b65f6a0802028829a42700d590bb706540b5ce1698ce32f42",
+      "file": "providers/voiranime-rip-4ffdca5ecfb47f27.js",
+      "sha256": "4ffdca5ecfb47f27c62f71421f5164b3c808e25516bed6c1a1b1a878f79f288a",
       "providerDataSha256": "f412483885704c44e036f169b9df2f40c6ea8f2b97fdc5cc270fb0ccdfc7b9a3",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6169,6 +6529,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6184,12 +6550,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6199,12 +6559,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vostfree",
-      "file": "providers/vostfree-d73c39f5c1d38bfc.js",
-      "sha256": "d73c39f5c1d38bfc4e05528d54aaed9255cc1b195ec57ba8d931d77099181eb8",
+      "file": "providers/vostfree-06607b625e0102d7.js",
+      "sha256": "06607b625e0102d7a9e7d0803f663a23ce31e19551c897d14c3af5cfe2281a37",
       "providerDataSha256": "0ccdb4823c80b99127900ce657709d615d1dd91f55c17de649f75a5674d1f98e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6267,6 +6633,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6282,12 +6654,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6297,12 +6663,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "wookafr",
-      "file": "providers/wookafr-07c6d3359eece4f3.js",
-      "sha256": "07c6d3359eece4f3263312b0dd842ef2965473eed2c9261129927e3b07fa47d8",
+      "file": "providers/wookafr-1eef1d20b0626457.js",
+      "sha256": "1eef1d20b0626457ee249011f5a0cfc26644e70faa269cad17300287cfb62546",
       "providerDataSha256": "91c9b94bf38ea61222da36feaaeb628a69d9bab9c3ef69a662b787073b4eec2e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6379,6 +6751,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6394,12 +6772,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6409,12 +6781,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "yflix",
-      "file": "providers/yflix-6fb6dc341783c114.js",
-      "sha256": "6fb6dc341783c1144e439fde7ecd4d38b822e13d1490ee3af51896ce19fc863a",
+      "file": "providers/yflix-d76a9587adf87b6d.js",
+      "sha256": "d76a9587adf87b6d3b442e6ec88324dcbc186f8b775c6d030e9a38ed176be40a",
       "providerDataSha256": "c2db031bb2a5dfa33811f1fc200f846421daa9ad4b5b821d03b28afa90fdef2e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6477,6 +6855,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6492,12 +6876,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6507,12 +6885,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "1shows",
-      "file": "providers/1shows-9a0240296f64a0eb.js",
-      "sha256": "9a0240296f64a0ebd8d43b6ef0dfd1ce93b4b1022c75dac47c72dcf7fc718230",
+      "file": "providers/1shows-df3a5dc79902ae60.js",
+      "sha256": "df3a5dc79902ae6016e5839088b13e887892e58b267a06ddcee87f98da2f66e5",
       "providerDataSha256": "9268db2f724f880c95acfa108e86f8a686d8ebfe2637951ed4e4d534e88d2b17",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6575,6 +6959,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6590,12 +6980,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6605,12 +6989,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "allanime",
-      "file": "providers/allanime-5980212ae12a32b6.js",
-      "sha256": "5980212ae12a32b648e9122ddd13e47d1c51c3da5d464da94816d2f50266912f",
+      "file": "providers/allanime-9f91cb61b9d1fe54.js",
+      "sha256": "9f91cb61b9d1fe54a1c284536ef4f200924bdf333a6887e93b66e1c89cf1d8a5",
       "providerDataSha256": "0c270395194c4fde70374ce6fb3a9a45837a71216193d688ddc5bcc2a83f7b60",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6666,6 +7056,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6681,12 +7077,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6696,12 +7086,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "allwish",
-      "file": "providers/allwish-0becdff90d44466c.js",
-      "sha256": "0becdff90d44466c61c7a3cef443825d6caf7722b7c25687b752c52eaca2eb36",
+      "file": "providers/allwish-f14389f57938be9b.js",
+      "sha256": "f14389f57938be9b4f78b8a67a0b1a34bf5a3d090b74c2e554b705f262cb71b2",
       "providerDataSha256": "6ecdb91e35b07ec74f45d2836f1ed5c4c128f4af1f6ca2e1e6f4b9e81072c4e5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6771,6 +7167,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6786,12 +7188,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6801,12 +7197,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "anime-ultime",
-      "file": "providers/anime-ultime-e27bdf55e86efb68.js",
-      "sha256": "e27bdf55e86efb6813751091849c3dd69736486d21db9b27756f7c8eaf77f99b",
+      "file": "providers/anime-ultime-3e7e238f593bb339.js",
+      "sha256": "3e7e238f593bb33941a89231e77cbbb33c704a17f0b6eaa46a26f6ac9c254a87",
       "providerDataSha256": "56a8347c23ba9c58f449863825d10cb374232b27386724aa9d2573e7513cd30b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6869,6 +7271,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6884,12 +7292,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6899,12 +7301,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animevost-fr",
-      "file": "providers/animevost-fr-ba46bec1ca1d7aeb.js",
-      "sha256": "ba46bec1ca1d7aeb5ac4b2e4c33cb30b03b3258838aa7283349cebe50e88263d",
+      "file": "providers/animevost-fr-9dbffb88e34d2eb7.js",
+      "sha256": "9dbffb88e34d2eb7601d7b7a259a2c265eba965b9944f99ec1e71e796a79f911",
       "providerDataSha256": "ea89671b8af067d1e50d9add4c062c9be7471dbe1f8d76e8e66d16f46902be0e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -6967,6 +7375,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -6982,12 +7396,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -6997,12 +7405,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "animeworld",
-      "file": "providers/animeworld-cf097eba5efbb953.js",
-      "sha256": "cf097eba5efbb9533ff849d67ce9dacc5e21be9ce468ddcbb423c7f326f054f0",
+      "file": "providers/animeworld-fdbc02bdafd0f585.js",
+      "sha256": "fdbc02bdafd0f585fbbeeb79e0f2ddf0ccfc4d4b1134cdc5791b10aaac00aa4d",
       "providerDataSha256": "c831ef106a22351ecde2e7302b00e079a79793521c964bdf41d7664e89801b3e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7065,6 +7479,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7080,12 +7500,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7095,12 +7509,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "cinefreak",
-      "file": "providers/cinefreak-077bb3059d997212.js",
-      "sha256": "077bb3059d99721209708f8028165c6194935188f00e307fb1789d4202736778",
+      "file": "providers/cinefreak-3375498d1cef103e.js",
+      "sha256": "3375498d1cef103ef51082bb72049a8f8ba7250f871ef3caede171a13d0ad193",
       "providerDataSha256": "454067a1bc99f7e20bd09ca07d38c212c383c7d7a1c986d7e14507c2cd62fd66",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7163,6 +7583,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7178,12 +7604,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7193,12 +7613,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "cinevibe",
-      "file": "providers/cinevibe-c703521c3a7ab0ec.js",
-      "sha256": "c703521c3a7ab0ec9f19ff91f7887559058263798ba9fb136c10d72ea71ff161",
+      "file": "providers/cinevibe-d446c11ccbedaa2e.js",
+      "sha256": "d446c11ccbedaa2e48d2e4bc7ebbf30dcb38f5ab7e2abf589b79dc415e6b6735",
       "providerDataSha256": "d55a3df0c7a6a4e3dffb889eb8ad5cd5735a742d89440d1df9c8a24d144a23c9",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7261,6 +7687,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7276,12 +7708,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7291,12 +7717,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "ctgmovies",
-      "file": "providers/ctgmovies-28c33d9d984801e2.js",
-      "sha256": "28c33d9d984801e282786c21ad887aecbf978cda27501e6706e41f594fed941e",
+      "file": "providers/ctgmovies-595da5aa6e727120.js",
+      "sha256": "595da5aa6e7271203e80baac07aab9054454512939bb178d4b9cba197c55d32c",
       "providerDataSha256": "9a251b4706c6caa02494de6de7fde3d33e3ee85833b2cac0cc1289ae6da94aed",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7352,6 +7784,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7367,12 +7805,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7382,12 +7814,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "dvdplay",
-      "file": "providers/dvdplay-968a85e45630fc7c.js",
-      "sha256": "968a85e45630fc7c21e5ed357e5f222c839ec52f7b7e4a95151855808dbe48b7",
+      "file": "providers/dvdplay-2e90a6ce9ebdf524.js",
+      "sha256": "2e90a6ce9ebdf524acb938f743256f9cb2bde171db6101cdc4a8704111e86f27",
       "providerDataSha256": "c6da05f55a03e39f1d886212d438e66f0fc847e249166a80bc871e975e34e72d",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7443,6 +7881,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7458,12 +7902,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7473,12 +7911,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "einthusan",
-      "file": "providers/einthusan-95c0cf94097bd963.js",
-      "sha256": "95c0cf94097bd9638292a1a9b43cc1ae1cf46ef37b4892e674a0345f74b34d11",
+      "file": "providers/einthusan-c40b6e5e8d4c0cc8.js",
+      "sha256": "c40b6e5e8d4c0cc84d52929b1da77d474298938b9e3b2e4e14b0783c612850ab",
       "providerDataSha256": "8961bf39133c786fe7353fed3d6ff82c37ae7e3a1f540bb686ed5dcab2f6acca",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7534,6 +7978,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7549,12 +7999,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7564,12 +8008,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "fibwatch",
-      "file": "providers/fibwatch-ac1b1f35066025a9.js",
-      "sha256": "ac1b1f35066025a9442d69e3ea0d3cbc83ef73b07fcbb25c1dc45448a684cb17",
+      "file": "providers/fibwatch-522642db4139c3b2.js",
+      "sha256": "522642db4139c3b224f523914703552a275632d15ac6fcacce90556832c8a555",
       "providerDataSha256": "39a9a1dbfa7da782afb8fc70f92261d0377b5623042dd963e5052630134210c1",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7632,6 +8082,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7647,12 +8103,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7662,12 +8112,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "frenchstream",
-      "file": "providers/frenchstream-c02589a80be4dea5.js",
-      "sha256": "c02589a80be4dea5b1db4aeb8b330a04ca797131e7cbf4002d042225c790fc2c",
+      "file": "providers/frenchstream-bf6a2842cabd562c.js",
+      "sha256": "bf6a2842cabd562c54d96adfe2d8e568e3882c86243703a9babd30255fdee17d",
       "providerDataSha256": "113117b85d8c1a091d80a1075ece3dd04880bea4ece00c70ba39ebd3976438fc",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7744,6 +8200,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7759,12 +8221,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7774,12 +8230,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "fullanime",
-      "file": "providers/fullanime-7e250599a54bbcb6.js",
-      "sha256": "7e250599a54bbcb6b13b16146c79ae21310bf641319676754ec3438bd34ed43b",
+      "file": "providers/fullanime-58d48d04abd77e7c.js",
+      "sha256": "58d48d04abd77e7cbadb1ee1dce19f6a01eb7978d2d7ce6b2c678749d7108a4a",
       "providerDataSha256": "d66c222102d1098bf599a5d3e9c1afa93725fe9a03905ef6e53ab3a418d6fe59",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7842,6 +8304,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7857,12 +8325,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7872,12 +8334,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "goatapi",
-      "file": "providers/goatapi-9f068a3ed849a831.js",
-      "sha256": "9f068a3ed849a8310e36031b9b64713b292655367094220665d0f2c239ff50b9",
+      "file": "providers/goatapi-1edcde1c188ca82b.js",
+      "sha256": "1edcde1c188ca82b11494177d6d1e116225828e30fd2d8d5c4b0647f1d5608ef",
       "providerDataSha256": "9221709002dd571c52ecd1a4e0fe91faa236f34f7a5b2ea842cd600a46655e4f",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -7940,6 +8408,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -7955,12 +8429,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -7970,12 +8438,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "gramcinema",
-      "file": "providers/gramcinema-dbfe29041a6d0a5a.js",
-      "sha256": "dbfe29041a6d0a5a7bdf0576604d3690b008c9c4ede95e1fb753163b8407a073",
+      "file": "providers/gramcinema-b8be8ab5554d06f6.js",
+      "sha256": "b8be8ab5554d06f6ecafd95628e9ae2146b3b801d61f74245ff46946a1417a59",
       "providerDataSha256": "7056bc1c604ef514807942b3065c83b87364b370325aa9a54127d02b277deb53",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8038,6 +8512,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8053,12 +8533,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8068,12 +8542,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "kisskh",
-      "file": "providers/kisskh-c8a48778ee0d1761.js",
-      "sha256": "c8a48778ee0d1761a9d839903214a8f946d2ce693cc3da70f72a91d82b7ebf57",
+      "file": "providers/kisskh-2931158bd18e7b54.js",
+      "sha256": "2931158bd18e7b548db0a4321a6eac821f248658c17eb93a7669e5b42cb1c4ef",
       "providerDataSha256": "6dd6848331210d7eb5f5137d13297451a8115021a6b7df3ae20a6e649ad6c0d5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8129,6 +8609,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8144,12 +8630,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8159,12 +8639,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "mallumv",
-      "file": "providers/mallumv-d7e6a79ca035c470.js",
-      "sha256": "d7e6a79ca035c470851795934e229c8252bbc9da918814a2a269817496f4e1f1",
+      "file": "providers/mallumv-f867e115adc1c7db.js",
+      "sha256": "f867e115adc1c7dbdaf5ef4ee8d8113e43d661c0ff79a76d5e89f84184315438",
       "providerDataSha256": "95e40c914d3746919acc0d9d4ae33074218efc6a2226877836fb0b66f4cea580",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8234,6 +8720,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8249,12 +8741,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8264,12 +8750,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "moonflix",
-      "file": "providers/moonflix-8c27a72d3c5f7ea9.js",
-      "sha256": "8c27a72d3c5f7ea92e7bc8bbcb5be1f33a17591f6bd7139140ffeed23d9feb36",
+      "file": "providers/moonflix-27179eb1a57293a2.js",
+      "sha256": "27179eb1a57293a26ee4899d16e3d509dc54bb5541329378a23f652bd0fbf538",
       "providerDataSha256": "207f680558d81c94f70cbeaf6e2c8af5ad1181b927f00b3254c7b229667b3549",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8325,6 +8817,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8340,12 +8838,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8355,12 +8847,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "moviebox",
-      "file": "providers/moviebox-eb992a0909d73fc3.js",
-      "sha256": "eb992a0909d73fc3befffca0f625e656f2c6edc2daa00ce396df9a9a2074586e",
+      "file": "providers/moviebox-75f9e14112b2879a.js",
+      "sha256": "75f9e14112b2879a61e2ffddc759a13020062ca19fca6a3a345294279f7d49b0",
       "providerDataSha256": "a04f8315412fc84f162db850c6b0b063625363a186f1d477ededf54ddf298705",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8416,6 +8914,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8431,12 +8935,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8446,12 +8944,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "mycima",
-      "file": "providers/mycima-999e4fd2c2b0417c.js",
-      "sha256": "999e4fd2c2b0417c196c6b3513f7b035cf6342fedfaba4d5eadc305e942b7d15",
+      "file": "providers/mycima-fe17264ceb1171ad.js",
+      "sha256": "fe17264ceb1171ada71971f1233083a9edcc92fcaa5f32ffb8ca439cd7e08d8b",
       "providerDataSha256": "3cf924e1478cd59c710ac76970731d6a33f7442236dfbc5f2436adf90e7f64cc",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8521,6 +9025,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8536,12 +9046,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8551,12 +9055,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "netmirror",
-      "file": "providers/netmirror-6a1ab4e5ce6d0da0.js",
-      "sha256": "6a1ab4e5ce6d0da0a1711b9004108e51bd81466d40e9524e1bad34486c07d260",
+      "file": "providers/netmirror-baf39ceddb8cfd1e.js",
+      "sha256": "baf39ceddb8cfd1eee4cec16addaba3ed3edd12398b32a52dedef036e35aac7b",
       "providerDataSha256": "6520f835296cb4ad636034325e062d7dbca14c815f40ed13700824a920b3a158",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8612,6 +9122,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8627,12 +9143,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8642,12 +9152,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "onlykdrama",
-      "file": "providers/onlykdrama-3a4c0053a574e7de.js",
-      "sha256": "3a4c0053a574e7de001a26eb814565c8743fb7128a5be33c666544d80055842a",
+      "file": "providers/onlykdrama-6f204ed56b8890e7.js",
+      "sha256": "6f204ed56b8890e78239e0f499a33cd4efae99255abb5f0778899e80cd7f717f",
       "providerDataSha256": "c55e6f3b528d09c5b097a606d0e6be5e849ef01fd1242bb50d7a506c4ac03141",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8710,6 +9226,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8725,12 +9247,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8740,12 +9256,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "showbox",
-      "file": "providers/showbox-43a5c27ef1b0df51.js",
-      "sha256": "43a5c27ef1b0df51d6cd6be4b0b32460c024754dea2308efb96f923ede08ae2a",
+      "file": "providers/showbox-685ac69e2ed01250.js",
+      "sha256": "685ac69e2ed01250e9f67e617897f8981178acc835dc9736e7e380c5db297e56",
       "providerDataSha256": "207f84774a11a0a45fb7af6551bc3db9c23ca28784e76972276f0f1ce78bbeaf",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8808,6 +9330,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8823,12 +9351,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8838,12 +9360,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "topcartoons",
-      "file": "providers/topcartoons-641f82c531787d75.js",
-      "sha256": "641f82c531787d75bb6bc804bd9b35d8bb52a2be640415b4f395b6de67e6fb32",
+      "file": "providers/topcartoons-baaba4f0655a9532.js",
+      "sha256": "baaba4f0655a95322554a5fb04871cba22568619306f918d7ebea101bbdcebe7",
       "providerDataSha256": "ad3c7161ac878479e29cffad7feaeaa6c6545aa0347b32689cf549c15588f1f3",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8899,6 +9427,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -8914,12 +9448,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -8929,12 +9457,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vidlove",
-      "file": "providers/vidlove-8bb27c29a02b125d.js",
-      "sha256": "8bb27c29a02b125dc54584959929d4425933684cfbaaf2c78f087aa6c801c40e",
+      "file": "providers/vidlove-82775ecc831024ac.js",
+      "sha256": "82775ecc831024acba64475e28d3de4d188e5ae2e4e19537e2fdf1901e36c489",
       "providerDataSha256": "318c61bab840edf62d996c34c6f85a485700bf55e7eb396a35fe9c9ddbe73ec7",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -8997,6 +9531,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -9012,12 +9552,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -9027,12 +9561,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vidnest",
-      "file": "providers/vidnest-3b51a85e38bf0666.js",
-      "sha256": "3b51a85e38bf06666f0f8d0c34cf3477f1a02f2bc3c0169d1e88d49ad3b63c7c",
+      "file": "providers/vidnest-9bcde23917664450.js",
+      "sha256": "9bcde2391766445039fdf14d21fcf148ed27ec7d3e80e334ac1871c0cf52fbb4",
       "providerDataSha256": "fe86e82d86cc9ba10d6b43f4961a2f28062caa516cd1ed715a45d2431be0b9df",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -9095,6 +9635,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -9110,12 +9656,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -9125,12 +9665,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vidnest-anime",
-      "file": "providers/vidnest-anime-fe1aa4b842911b28.js",
-      "sha256": "fe1aa4b842911b28ea7c9a2c74c1b3bf5db7a083756c66f798efce2667cb4b42",
+      "file": "providers/vidnest-anime-5366dca51c032a28.js",
+      "sha256": "5366dca51c032a287387c5e31afeb8fce37cf7d79062cd70f68ca828e3f97b7a",
       "providerDataSha256": "5c7542fe42c2cdd625387c8a17a874d60ecf91e35e49a5c29d1192cb403cbb03",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -9200,6 +9746,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -9215,12 +9767,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -9230,12 +9776,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vidsrc",
-      "file": "providers/vidsrc-e97f0e8a28e5e4f2.js",
-      "sha256": "e97f0e8a28e5e4f29202be5fa35e69cd81243c94e97061444457261b75abc16e",
+      "file": "providers/vidsrc-78cbf2cf2787b5f4.js",
+      "sha256": "78cbf2cf2787b5f45e039691f01c97dc48668c06856416504f03a00bd5e4dd67",
       "providerDataSha256": "c6d8241ff87c54b612fe66ac3a42536ac07198787bd8ed453abea11690f285e5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -9298,6 +9850,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -9313,12 +9871,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -9328,12 +9880,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "vixsrc",
-      "file": "providers/vixsrc-bd6194a93ceb400c.js",
-      "sha256": "bd6194a93ceb400ca37c515b193700813b6315dad50276d81ab7a0a3721e019d",
+      "file": "providers/vixsrc-13b0a5e4387e664b.js",
+      "sha256": "13b0a5e4387e664b2773ae4d067d2c323a25ae737e19a18bbf27c7131a0f29e1",
       "providerDataSha256": "2f8e92087e353b4119c4360df2ef5b00a70493056deb37e962d36720129e6424",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -9389,6 +9947,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -9404,12 +9968,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -9419,12 +9977,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "waveanime",
-      "file": "providers/waveanime-d4ecf239e6123299.js",
-      "sha256": "d4ecf239e6123299133f246e76df26bfffc0f5618ad65a9ec66b4f42fe28bb70",
+      "file": "providers/waveanime-e955a8bba85c0a21.js",
+      "sha256": "e955a8bba85c0a21f418e8d4ef9b5469932a0278fc120c42c1e06e2bab066fc4",
       "providerDataSha256": "afbabe854a8aecc72c4b548d30a3771e4a1cf13bb5c686efa04367cc7bc99ea2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -9487,6 +10051,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -9502,12 +10072,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -9517,12 +10081,18 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     },
     {
       "provider": "xpass",
-      "file": "providers/xpass-1eb0369e6e425ed0.js",
-      "sha256": "1eb0369e6e425ed0024e08d8eb26ca4f079a161bb6134932f16c690182436392",
+      "file": "providers/xpass-536b5ef6d0cd7c4d.js",
+      "sha256": "536b5ef6d0cd7c4d254ba6ece96d523f42935f43dac5968dfdbdc5be38f7b63b",
       "providerDataSha256": "be94073d3038567f057850477acb1c4c6fd21861427935e03cbdc147d6703d77",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
@@ -9585,6 +10155,12 @@
         },
         {
           "type": "patch_script",
+          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
+          "phase": "discovery",
+          "scope": "global_media_type_resolution"
+        },
+        {
+          "type": "patch_script",
           "path": "scripts/provider_patches/global_stream_presentation_v1.py",
           "phase": "discovery",
           "scope": "global_stream_presentation"
@@ -9600,12 +10176,6 @@
           "path": "scripts/provider_patches/stream_output_sanitizer_v6.py",
           "phase": "discovery",
           "scope": "global_terminal_stream_sanitizer"
-        },
-        {
-          "type": "patch_script",
-          "path": "scripts/provider_patches/global_media_type_resolution_v1.py",
-          "phase": "discovery",
-          "scope": "global_media_type_resolution"
         }
       ],
       "deviceSpecificJs": false,
@@ -9615,7 +10185,13 @@
         "desktop"
       ],
       "legacyProviderJsExecuted": false,
-      "upstreamJsExecuted": false
+      "upstreamJsExecuted": false,
+      "minimizer": {
+        "enabled": true,
+        "savedBytes": 0,
+        "transformedLines": 0,
+        "skippedReason": ""
+      }
     }
   ],
   "devicePolicy": {
