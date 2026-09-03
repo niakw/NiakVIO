@@ -72,15 +72,15 @@ def test_staged_artifact_contract() -> None:
 
 def test_domain_overrides() -> None:
     source = b"const BASE='https://french-stream.one';"
-    output, patch_records = apply_overrides("frenchstream", source)
-    # A configured terminal safety quarantine replaces the provider with an
-    # inert artifact. Historical route/domain mappings are intentionally pruned
-    # from terminal quarantines so a later reapply cannot resurrect a stale
-    # repair path. Domain replacement behavior remains covered by active
-    # providers below.
-    assert b"NUVIO_PROVIDER_QUARANTINE_V1" in output
+    output, patch_records = apply_overrides(
+        "frenchstream", source, include_global_core=False
+    )
+    # Frenchstream is executable/deferred, not quarantined. Its mutable terminal
+    # domain remains DATA while fstream.website is the maintenance/discovery hub.
+    assert b"NUVIO_PROVIDER_QUARANTINE_V1" not in output
     assert b"french-stream.one" not in output
-    assert not any(
+    assert b"fs16.lol" in output
+    assert any(
         row.get("type") == "replace"
         and row.get("from") == "french-stream.one"
         for row in patch_records
