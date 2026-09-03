@@ -227,6 +227,14 @@ Les cinq quarantines de stratégie sont exactement `dvdplay`, `moviebox`, `netmi
 
 Retry 19 reste le premier jalon ayant prouvé la reconstruction complète sans seed JS publiée/upstream ; retry 25 a ajouté la connaissance statique durable et le plan exécutable 96/96 ; retry 32 supersède ces références pour la publication finale.
 
+## Maintenance durable
+
+Les workflows de maintenance durables font partie de l'architecture et restent séparés du runtime Provider v3 :
+
+- `weekly-upstream-provider-discovery.yml` — découverte upstream hebdomadaire en lecture seule ;
+- `purge-actions-history.yml` — purge périodique de l'historique GitHub Actions selon la rétention du dépôt ;
+- `brain-branch-maintenance.yml` — entretien des branches durables Learning/proposals sans publication provider directe.
+
 ## 13. Fichiers de référence
 
 - `automation/provider-v3-architecture.json` — contrat machine-readable ;
