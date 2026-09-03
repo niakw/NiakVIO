@@ -370,6 +370,47 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
+
+# Stable canonical type must be reconciled after deferred TMDB verification without
+# executing the provider a second time.
+STABLE_CONTEXT_BASE = r"""
+"use strict";
+async function getStreams(tmdbId, mediaType, season, episode) {
+  globalThis.__stableProviderCalls=(globalThis.__stableProviderCalls||0)+1;
+  const ctx=globalThis.__nuvioMediaContext||{};
+  return [{
+    tmdbId, mediaType, season, episode,
+    canonicalMediaType:ctx.canonicalMediaType||"",
+    providerMediaType:ctx.providerMediaType||mediaType,
+    degraded:ctx.tmdbResolutionDegraded===true
+  }];
+}
+module.exports={getStreams};
+"""
+stable_context = mod.apply(
+    STABLE_CONTEXT_BASE,
+    options={"semantic_types": ["tv", "anime"]},
+)
+run_case(stable_context, r"""
+let tmdbCalls=0;
+global.fetch=async(url)=>{
+  tmdbCalls++;
+  if(!String(url).includes("/tv/62425"))throw new Error("stable TV verification left TMDB namespace");
+  return{ok:true,status:200,json:async()=>({
+    id:62425,name:"Dark Matter",genres:[{id:18,name:"Drama"}],
+    original_language:"en",origin_country:["CA"],keywords:{results:[]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams("62425","series",2,1);
+  if(!Array.isArray(value)||!value.length||value[0].canonicalMediaType!=="tv"||value[0].degraded)
+    throw new Error("authoritative context was not reconciled: "+JSON.stringify(value));
+  if(global.__stableProviderCalls!==1)throw new Error("stable TMDB verification re-ran provider: "+global.__stableProviderCalls);
+  if(tmdbCalls!==1)throw new Error("stable TMDB verification count drift: "+tmdbCalls);
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
 purstream_mixed = mod.apply(
     BASE,
     options={
@@ -506,7 +547,7 @@ const provider=require(process.argv[2]);
 default_budget = mod.apply("module.exports={getStreams:async()=>[]};\n", options={"semantic_types":["movie"]})
 assert '"providerTimeoutMs":30000' in default_budget
 assert '"tvProviderTimeoutMs":25000' in default_budget
-assert '"revision":"tmdb-data-contract-launch-gate-v25-client-budget-aligned"' in default_budget
+assert '"revision":"tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile"' in default_budget
 
 # The JS-side budget cannot preempt a non-cooperative native bridge, but once a
 # native request returns after the deadline it must fail closed immediately and
