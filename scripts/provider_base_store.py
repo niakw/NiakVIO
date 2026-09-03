@@ -118,6 +118,28 @@ def canonical_id(value: str) -> str:
     return safe_fragment(value).casefold().replace("_", "-")
 
 
+NON_EXECUTABLE_KNOWLEDGE_HOSTS = {
+    "npms.io", "lodash.com", "www.lodash.com", "openjsf.org", "www.openjsf.org",
+    "underscorejs.org", "www.underscorejs.org", "arm.haglund.dev", "v3-cinemeta.strem.io",
+}
+
+
+def _provider_data_url_is_executable(value: object) -> bool:
+    text = str(value or "").strip()
+    if not text or "${" in text or "encodeURIComponent(" in text:
+        return False
+    lowered = text.casefold()
+    return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
+
+
+def _provider_data_route_is_executable(value: object) -> bool:
+    text = str(value or "").strip()
+    if not text or "${" in text or "encodeURIComponent(" in text:
+        return False
+    lowered = text.casefold()
+    return "q=ponyfill" not in lowered and lowered.rstrip("/") != "/license"
+
+
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -530,17 +552,17 @@ def build_provider_data_model(
         "origins": [
             str(value).strip()
             for value in incoming_model.get("origins") or []
-            if str(value).strip()
+            if _provider_data_url_is_executable(value)
         ][:24],
         "observedUrls": [
             str(value).strip()
             for value in incoming_model.get("observedUrls") or []
-            if str(value).strip()
+            if _provider_data_url_is_executable(value)
         ][:32],
         "routes": [
             str(value).strip()
             for value in incoming_model.get("routes") or []
-            if str(value).strip()
+            if _provider_data_route_is_executable(value)
         ][:64],
         "apiRecipe": (
             incoming_model.get("apiRecipe")
@@ -763,8 +785,9 @@ function _candidateScore(url, meta) {
   if (/\/(?:movie|movies|film|films|series|tv|show|watch|title|media)\//i.test(path)) score += 12;
   return score;
 }
-function _expandLearnedRoute(pattern, meta, mediaType, season, episode) {
+function _expandLearnedRoute(pattern, meta, mediaType, season, episode, bases) {
   let route = _text(pattern);
+  if (/\$\{|encodeURIComponent\s*\(/i.test(route)) return [];
   if (!route || /^https?:\/\//i.test(route) && !/\{[^}]+\}/.test(route)) {
     return /^https?:\/\//i.test(route) ? [route] : [];
   }
@@ -781,7 +804,7 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode) {
     .replace(/\{episode\}/gi, encodeURIComponent(episode == null ? "" : episode));
   if (/\{[^}]+\}/.test(route)) return [];
   const out = [];
-  for (const base of _runtimeBases()) {
+  for (const base of (bases || _runtimeBases())) {
     const absolute = _absolute(route, base);
     if (absolute) out.push(absolute);
   }
@@ -798,9 +821,10 @@ function _routeKind(route) {
 }
 function _learnedUrls(kind, meta, mediaType, season, episode) {
   const out = [];
+  const bases = kind === "api" ? _apiBases() : _searchBases();
   for (const route of NIAKVIO_PROVIDER_MODEL.routes || []) {
     if (_routeKind(route) !== kind) continue;
-    out.push(..._expandLearnedRoute(route, meta, mediaType, season, episode));
+    out.push(..._expandLearnedRoute(route, meta, mediaType, season, episode, bases));
   }
   return _uniq(out);
 }
@@ -875,32 +899,33 @@ async function _tmdb(tmdbId, mediaType) {
   } catch (_) {}
   return null;
 }
-function _runtimeBases() {
+function _searchBases() {
   return _uniq([
     NIAKVIO_PROVIDER_MODEL.officialSite,
     NIAKVIO_PROVIDER_MODEL.knownSite,
-    ...(NIAKVIO_PROVIDER_MODEL.origins || [])
+    NIAKVIO_PROVIDER_MODEL.officialHub
   ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
 }
-function _searchBases() {
-  return _runtimeBases();
+function _apiBases() {
+  return _uniq([
+    NIAKVIO_PROVIDER_MODEL.fixedApi,
+    NIAKVIO_PROVIDER_MODEL.officialApi,
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+}
+function _runtimeBases() {
+  return _uniq([..._searchBases(), ..._apiBases()]);
 }
 function _searchUrls(meta, mediaType, season, episode) {
   return _learnedUrls("search", meta, mediaType, season, episode);
 }
 function _runtimePlanAvailable() {
   if (NIAKVIO_PROVIDER_MODEL.apiRecipe) return true;
-  if ((NIAKVIO_PROVIDER_MODEL.observedUrls || []).some(value => /api|stream|source|embed|player/i.test(_text(value)))) return true;
   return (NIAKVIO_PROVIDER_MODEL.routes || []).some(route => ["search","detail","player","api"].includes(_routeKind(route)));
 }
 function _apiUrls(tmdbId, mediaType, season, episode) {
-  const configuredBases = NIAKVIO_PROVIDER_MODEL.allowGenericApiBase === true
-    ? [NIAKVIO_PROVIDER_MODEL.fixedApi, NIAKVIO_PROVIDER_MODEL.officialApi]
-    : [];
-  const bases = _uniq([
-    ...configuredBases,
-    ...(NIAKVIO_PROVIDER_MODEL.observedUrls || []).filter(value => /api|stream|source|embed|player/i.test(value))
-  ].map(_substituteDomain));
+  const bases = _apiBases();
   const out = [];
   // Route DATA is executable knowledge. API-family providers commonly persist
   // only a relative route plus one trusted origin; consume that plan directly
@@ -1650,8 +1675,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   const type = String(mediaType || "movie").toLowerCase();
   if (NIAKVIO_PROVIDER_MODEL.supportedTypes.length &&
       !NIAKVIO_PROVIDER_MODEL.supportedTypes.includes(type) &&
-      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime")) &&
-      !(type === "movie" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
+      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
     return [];
   }
   if (!_runtimePlanAvailable()) return [];
