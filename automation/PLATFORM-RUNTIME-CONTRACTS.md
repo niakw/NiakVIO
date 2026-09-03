@@ -44,10 +44,10 @@ Dernier audit du contrat : **2026-09-03**.
 | --- | --- | --- | --- | --- |
 | Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `d4891ffaaf975c77de8ea3612f37a7a2b936c79d` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
 | iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `d4891ffaaf975c77de8ea3612f37a7a2b936c79d` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
-| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `9390d5844e53d1f4d9829490d6f3deb057d7ab14` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `9390d5844e53d1f4d9829490d6f3deb057d7ab14` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `9390d5844e53d1f4d9829490d6f3deb057d7ab14` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `49c753de3f193e3a74ea54194df3d331ce6302f0` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `b17687e37b1eb7a9ae98aad302cb94b65eed26d9` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `b17687e37b1eb7a9ae98aad302cb94b65eed26d9` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `b17687e37b1eb7a9ae98aad302cb94b65eed26d9` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `4f37e949199732e5d68be8f76c67935cbf4137d5` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
