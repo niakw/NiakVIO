@@ -1528,21 +1528,85 @@
       ]
     },
     "vidnest": {
-      "capability": "direct_media"
-    },
-    "vidnest-anime": {
       "capability": "api_stream_resolver",
+      "official_site": "https://vidnest.fun",
+      "official_api": "https://first.vidnest.fun",
+      "learned_routes": [
+        "/hollymoviehd/{media}/{id}/{season}/{episode}",
+        "/primesrc/{media}/{id}/{season}/{episode}",
+        "/ophim/{media}/{id}/{season}/{episode}",
+        "/flixhq/{media}/{id}/{season}/{episode}?server=upcloud",
+        "/vidlink/{media}/{id}/{season}/{episode}",
+        "/rogflix/{media}/{id}/{season}/{episode}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidnest_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/vidnest_runtime_v1.py": {
+          "api_base": "https://first.vidnest.fun",
+          "proxy_url": "https://vidnest.animanga.fun/proxy",
+          "decrypt_url": "https://aesdec.nuvioapp.space/decrypt",
+          "passphrase": "A7kP9mQeXU2BWcD4fRZV+Sg8yN0/M5tLbC1HJQwYe6o=",
+          "servers": [
+            "hollymoviehd",
+            "primesrc",
+            "ophim",
+            "flixhq",
+            "vidlink",
+            "rogflix"
+          ]
+        }
+      },
       "identity_input": {
         "mode": "tmdb_direct",
-        "requires_tmdb_before_run": true,
+        "requires_tmdb_before_run": false,
         "required_fields": [
           "tmdbId",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Clean v3 Vidnest calls first.vidnest.fun directly by TMDB identity and keeps the historical Nuvio decrypt service as explicit DATA.",
+        "Protected flashstream/streamsvr URLs are wrapped through the existing Vidnest proxy; Core remains responsible for final playback sanitation.",
+        "Historical TMDB calls and executable provider JavaScript are not carried into v3."
       ]
+    },
+    "vidnest-anime": {
+      "capability": "api_stream_resolver",
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 Vidnest-Anime maps Core title/year to AniList, then calls the five statically recovered backend.vidnest.fun server families.",
+        "Season >1 requires previous-season episode counts already present in Core TMDB metadata; otherwise it fails closed instead of guessing an absolute episode.",
+        "Encrypted responses use the same explicit Nuvio decrypt service contract as Vidnest."
+      ],
+      "official_site": "https://vidnest.fun",
+      "official_api": "https://backend.vidnest.fun",
+      "learned_routes": [
+        "/animeworld/{id}/{episode}/server/my%20server",
+        "/satoru/{id}/{episode}",
+        "/aniwave/{id}/{episode}/{media}/wave",
+        "/aniwave/{id}/{episode}/{media}/pahe",
+        "/aniwave/{id}/{episode}/{media}/anya"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidnest_anime_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/vidnest_anime_runtime_v1.py": {
+          "api_base": "https://backend.vidnest.fun",
+          "decrypt_url": "https://aesdec.nuvioapp.space/decrypt",
+          "passphrase": "A7kP9mQeXU2BWcD4fRZV+Sg8yN0/M5tLbC1HJQwYe6o="
+        }
+      }
     },
     "vidsrc": {
       "capability": "mixed_embed_resolver"
@@ -3251,7 +3315,7 @@
       "generated_from_manifest_or_stage": true
     },
     "vidnest": {
-      "strategy": "direct_media",
+      "strategy": "api_stream_resolver",
       "validation": "media_url",
       "allow_html_url": false,
       "requires_direct_media": true,
@@ -3265,7 +3329,15 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/hollymoviehd/{media}/{id}/{season}/{episode}",
+        "/primesrc/{media}/{id}/{season}/{episode}",
+        "/ophim/{media}/{id}/{season}/{episode}",
+        "/flixhq/{media}/{id}/{season}/{episode}?server=upcloud",
+        "/vidlink/{media}/{id}/{season}/{episode}",
+        "/rogflix/{media}/{id}/{season}/{episode}"
+      ]
     },
     "vidnest-anime": {
       "strategy": "api_stream_resolver",
@@ -3281,7 +3353,14 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/animeworld/{id}/{episode}/server/my%20server",
+        "/satoru/{id}/{episode}",
+        "/aniwave/{id}/{episode}/{media}/wave",
+        "/aniwave/{id}/{episode}/{media}/pahe",
+        "/aniwave/{id}/{episode}/{media}/anya"
+      ]
     },
     "vidsrc": {
       "strategy": "mixed_embed_resolver",
