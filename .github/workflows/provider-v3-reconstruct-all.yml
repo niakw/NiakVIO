@@ -8,6 +8,11 @@ on:
         required: false
         default: false
         type: boolean
+  push:
+    branches:
+      - workbench/provider-v3-performance-playback
+    paths:
+      - '.github/triggers/provider-v3-reconstruct-all.json'
 
 permissions:
   contents: write
@@ -43,6 +48,15 @@ jobs:
             echo "Manual Provider v3 reconstruction may never commit directly to main; use a branch + PR." >&2
             exit 1
           }
+      - name: Prepare clean reconstruction source
+        run: |
+          set -euo pipefail
+          # Layering cleanup only: strip leaked publication tails from ProviderBase.
+          # This does not invent behavior and never seeds from legacy/upstream JS.
+          python scripts/provider_base_store.py repair-derived
+          python scripts/provider_base_store.py validate
+          python scripts/provider_base_store.py validate --artifacts
+
       - name: Validate reconstruction inputs
         run: |
           set -euo pipefail
@@ -92,6 +106,8 @@ jobs:
         with:
           name: provider-v3-reconstruction-96-${{ github.run_id }}
           path: |
+            PROVENANCE.json
+            provider-bases/
             manifest.json
             vf/manifest.json
             no-anime/manifest.json
@@ -104,13 +120,14 @@ jobs:
           retention-days: 14
           if-no-files-found: error
       - name: Commit verified reconstruction to selected branch
-        if: inputs.commit_reconstruction
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/workbench/provider-v3-performance-playback') || inputs.commit_reconstruction
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             providers provider-v3-materialization.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            providers/ provider-v3-materialization.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0

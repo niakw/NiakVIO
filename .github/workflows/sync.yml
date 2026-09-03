@@ -103,6 +103,8 @@ jobs:
         run: |
           set -euo pipefail
           python tests/provider_v3_workflow_ownership_test.py
+          python tests/native_five_lab_coverage_test.py
+          python tests/native_lab_observational_purity_test.py
           python scripts/audit_provider_v3_static.py
           python tests/provider_brick_portfolio_audit_test.py
           python tests/provider_521_capability_regression_test.py

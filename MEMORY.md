@@ -268,3 +268,15 @@ Before enablement require:
 - reconstruction/minification determinism;
 - five-client lab parity on representative corpus.
 Keep it disabled in production until all proofs are green.
+
+## Five-lab gate is explicit
+- The acceptance surface is exactly five first-class platforms: TVAndroid, MobileAndroid, MobileIOS, DesktopMACOS, DesktopWindows.
+- `tests/native_five_lab_coverage_test.py` enforces all five and their workbench trigger coverage.
+- The Android workflow contains two separate labs (TV + Mobile), iOS is its own macOS/iOS job, and Desktop expands to macOS + Windows matrix jobs.
+
+## One controlled reconstruction trigger
+- Manual workflow now also accepts the explicit workbench-only trigger file `.github/triggers/provider-v3-reconstruct-all.json`.
+- The trigger has no schedule and cannot run from ordinary workbench changes.
+- Before reconstruction it may run `provider_base_store.py repair-derived` ONLY as deterministic ProviderBase layering cleanup, then validates all bases including artifacts.
+- This is not Learning repair and does not alter provider behavior; it strips leaked generated/publication tails.
+- An explicit workbench trigger commits the verified cleaned ProviderBase/PROVENANCE + reconstructed 96/96 outputs back to the workbench only.
