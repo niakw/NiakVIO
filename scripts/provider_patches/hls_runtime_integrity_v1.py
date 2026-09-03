@@ -89,7 +89,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
                 "probeFirstSegmentNative": True,
                 "nativeProbeMaxRows": native_probe_max_rows,
                 "nativeProbeTimeoutMs": native_probe_timeout_ms,
-                "implementationRevision": "native-first-segment-container-proof-v7",
+                "implementationRevision": "native-first-segment-container-proof-v8-tv-byte-capability",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -188,6 +188,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
   function firstMediaUri(body,base){var lines=clean(body).split(/\r?\n/);for(var i=0;i<lines.length;i++){var v=clean(lines[i]);if(!v||v.charAt(0)==="#")continue;var u=absolute(v,base);if(u)return u}return ""}
   function playlistEncrypted(body){var lines=clean(body).match(/#EXT-X-KEY\s*:[^\n\r]*/gi)||[];for(var i=0;i<lines.length;i++){var m=lines[i].match(/METHOD\s*=\s*([^,\s]+)/i),method=clean(m&&m[1]).toUpperCase();if(method&&method!=="NONE")return true}return false}
   function segmentProof(bytes,contentType,url,hasMap,encrypted){
+    if(!bytes||!bytes.length)return {state:"unknown",reason:"segment_bytes_unavailable"};
     if(nonMediaPayload(bytes,contentType))return {state:"invalid",reason:"segment_non_media_payload"};
     if(encrypted)return {state:"unknown",reason:"encrypted_segment"};
     var u=String(url||"").toLowerCase(),ct=String(contentType||"").toLowerCase();
