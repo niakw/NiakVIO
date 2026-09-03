@@ -529,3 +529,26 @@ Keep it disabled in production until all proofs are green.
 - After minimization, managed Lego ownership, Provider BEGIN/END envelope and Core boundary are revalidated before hashing.
 - Gates: `provider_v3_minimizer_contract_test.py`, `provider_v3_minimizer_preview_test.py` (96 previews parsed by Node), `provider_v3_minimizer_published_test.py` (96 fixed-points), plus reverse reconstruction 96/96.
 - `automation/provider-v3-architecture.json`, `ARCHITECTURE.md`, `VALIDATION.md`, README EN/FR and documentation drift tests are being updated in the same transaction.
+
+## 2026-09-03 — canonical reconstruction c27ea147 + cross-client projection/TV byte contracts
+- Manual Provider v3 reconstruction retry 32 / run `33780373644` completed successfully end-to-end.
+- Canonical reconstructed generation is `c27ea147413fd73e`; GitHub committed it as `ced50b6b51de4838f3f94ba7b349beb81239a1d4`.
+- All 96 providers were materialized from clean ProviderBase v3 + durable DATA + owned Lego; reverse reconstruction is byte-identical 96/96.
+- Published minimizer fixed-point is green 96/96; Terser remains forbidden.
+- Published HTML-regex security gate is green across all 96 bundles with `bad_html_filter_regex=0`.
+- Stream Presentation V19 contained a real cross-client projection bug: it wrote `title=Provider - Quality` but `name=Provider`. Mobile/Desktop prefer `name`, so V20 now owns the invariant `out.name=out.title` with revision `all-providers-client-projection-name-mirror-v20`.
+- The full Facts -> Identity -> Media Type -> Presentation -> Branding -> Sanitizer pipeline test now proves the managed `CORE.STREAM_SANITIZER.V6` block instead of a retired implementation marker.
+- Android TV's audited PluginRuntime exposes neither TextEncoder/TextDecoder nor WebAssembly. HLS Core V8 therefore treats a native segment Response with no readable byte API as `unknown`, never positive malformed-container evidence. Positive HTML/JSON or invalid container bytes still fail closed.
+- Reconstruction now runs the V20 pipeline and the exact TV text/json-only HLS regression before materializing any of the 96 providers, avoiding expensive retries on bad contracts/fixtures.
+- Audited official client refs on 2026-09-03 are: NuvioMobile `d4891ffaaf975c77de8ea3612f37a7a2b936c79d`, NuvioDesktop `9390d5844e53d1f4d9829490d6f3deb057d7ab14`, NuvioTV `49c753de3f193e3a74ea54194df3d331ce6302f0`.
+- `automation/platform-runtime-contracts.json`, `automation/PLATFORM-RUNTIME-CONTRACTS.md`, `automation/nuvio-client-upstreams.json`, `automation/nuvio-tv-runtime-contract.json` and `sources.json` must remain aligned to those audited refs. Stale registry refs previously blocked every Native Lab before client execution.
+- Exact strategy quarantine remains only five providers: `dvdplay`, `moviebox`, `netmirror`, `topcartoons`, `vixsrc`. Frenchstream is NOT quarantined; it is an executable mixed-embed resolver with `https://fstream.website/` as maintenance/discovery hub and may remain activation-deferred until clean reader proof.
+- The one main-only domain-refresh commit `8388b69c460c59363244cb0c248bed3320c8be06` adds legacy duplicate replacement fields, but all 54 substantive domain mappings from it are already preserved in Provider v3 DATA/static knowledge with zero missing/divergent mappings. Do not reintroduce legacy duplicate fields merely to make history textually match.
+
+## 2026-09-03 — current five-Lab acceptance and Mobile harness adaptation
+- Shared five-Lab retry on commit `36ab55c1a33d15df70abe37ed057ddcde32b5b59` successfully passed client-ref resolution for TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows.
+- Mobile Android stopped before provider execution because NiakVIO's finalizer still required the obsolete literal `Intent(context, MainActivity::class.java)`. Current generated harness correctly launches the official debug app with `Intent().setClassName("com.nuviodebug.com", MainActivity::class.java.name)`.
+- Harness-only fix commit `e271517e55bb7f3d89f612a6f2df9bccc2f31696` updates the finalizer to recognize the current explicit MainActivity launch and still reject obsolete packageManager launcher resolution. Regression test commit `670de44ae7103dfa1821b66342740ef35272fa2d` locks that shape.
+- The failed Mobile Android job `100741440859` produced no provider evidence and must never be counted as a provider/runtime failure.
+- TV job `100741450072`, iOS job `100741460214`, Windows job `100741482926` and macOS job `100741483061` from that same five-Lab run were allowed to continue; do not cancel them by advancing the shared trigger while they are still useful.
+
