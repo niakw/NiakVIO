@@ -42,9 +42,13 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
     assert "NUVIO_GLOBAL_STREAM_FACTS_V1" in output, provider
     assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in output, provider
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in output, provider
+    assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output, provider
+    assert "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" in output, provider
     assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
     assert output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"), provider
     assert output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1") < output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1"), provider
+    assert output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") < output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1"), provider
+    assert output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1") < output.index("NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6"), provider
     assert any(
         row.get("path") == GLOBAL_MEDIA_TYPE_RESOLUTION
         and row.get("scope") == "global_media_type_resolution"
@@ -120,10 +124,12 @@ p.getStreams('157336','movie',undefined,undefined).then(function(rows){
     native = json.loads(completed.stdout.strip())
     assert native["tmdbCalls"] == 1, native
     assert native["row"]["title"].endswith(" - 1080p"), native
+    assert native["row"]["name"] == native["row"]["title"], native
     assert native["row"]["duration"] == 169, native
     assert "Interstellar • 2014" in native["row"]["description"], native
     assert "⏱ 2h49" in native["row"]["description"], native
     assert "🔞 -12" in native["row"]["description"], native
+    assert native["row"]["size"] == native["row"]["description"], native
     assert {"1080p-full-hd", "webdl", "hevc", "dolby-digital-plus", "5.1"}.issubset(
         set(native["row"]["badgeIds"])
     ), native
@@ -145,4 +151,4 @@ assert "global_stream_facts_v1.py" in presentation_source
 assert "purstream_stream_facts_v1.py" not in presentation_source
 assert not (ROOT / "scripts/provider_patches/purstream_stream_facts_v1.py").exists()
 
-print("global stream facts/presentation pipeline tests passed")
+print("global stream facts/presentation/branding/sanitizer order and client projection tests passed")
