@@ -473,3 +473,20 @@ Keep it disabled in production until all proofs are green.
 - No transformation is enabled; reconstruction/publication bytes are unchanged.
 - Future enablement requires preservation of BEGIN/END, STARTFIX/CLOSEFIX/FIXDATA, Core boundary, comments/newlines until ASI safety is proven, and structural/runtime/reverse reconstruction equivalence. No identifier renaming, expression reordering/folding or literal rewriting is allowed in the conservative plan.
 
+## 2026-09-03 — native logs expose systemic 3/96 provider regression
+- The previously green Android/Desktop workflows contained useful provider-level evidence; workflow green did not mean all providers were healthy.
+- TV Android, Mobile Android, Desktop Windows and Desktop macOS each executed the full 96-provider catalogue over the representative fixtures (214 provider executions/device).
+- On all four devices, only three providers produced any streams: KEHFLIX, CASTLE and STREAMZO. The other 93 providers were zero-output across their tested declared routes.
+- This cross-device symmetry proves the dominant failure is shared Provider v3 DATA/reconstruction state, not four unrelated client failures.
+- Examples of historically useful zero-output providers include PURSTREAM, VegaMovies, HINDMOVIEZ, AnimeZeY, 4KHDHub-NEW and VidLove.
+- Desktop workflow success was also only a workflow/smoke verdict: its production-player evidence contained non-blocking reader failures because NIAKVIO_REQUIRE_READER_SUCCESS=0. Final acceptance must inspect reader evidence, not only the GitHub conclusion.
+- Do not focus fixes only on the three currently non-empty providers. The acceptance target remains the full 96-provider catalogue.
+
+## 2026-09-03 — root cause: extracted static knowledge was not persisted into durable DATA
+- discover_candidates.py already extracts routes, hosts, URLs and decoded static strings from historical/upstream JS without executing it and builds clean_provider_model.
+- materialize_provider_v3_all.py ignored that extracted model and rebuilt DATA only from provider-overrides.json.
+- provider-overrides currently has 45/96 provider patches with no explicit site/API/learned route/learned URL/provider runtime Lego. Examples include AnimeZeY and 4KHDHub-NEW.
+- Therefore structurally perfect 96/96 reconstruction could still generate providers with no executable provider route knowledge; reverse byte identity only proved reproducibility of the broken DATA.
+- Corrective migration retry 22 will statically recover knowledge for all 96, persist it to automation/provider-v3-static-knowledge.json, and make that durable file a mandatory Provider v3 reconstruction input.
+- Historical/upstream Provider JS remains knowledge-only: it is never embedded or executed as reconstruction seed.
+

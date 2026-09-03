@@ -37,6 +37,7 @@ from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E4
 
 DEFAULT_SOURCE_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
+DEFAULT_STATIC_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 DEFAULT_OUT = ROOT / "providers"
 DEFAULT_REPORT = ROOT / "provider-v3-materialization.json"
 EXPECTED_PROVIDER_COUNT = 96
@@ -113,25 +114,27 @@ def provider_model(
     provider_id: str,
     patch: dict[str, Any],
     capability: dict[str, Any],
+    static_row: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     fixed = patch.get("fixed_endpoint")
     fixed = fixed if isinstance(fixed, dict) else {}
+    static_model = static_row.get("model") if isinstance(static_row, dict) and isinstance(static_row.get("model"), dict) else {}
 
-    official_site = str(patch.get("official_site") or "").strip() or None
-    official_hub = str(patch.get("official_hub") or "").strip() or None
-    official_api = str(patch.get("official_api") or "").strip() or None
-    fixed_api = str(fixed.get("api") or "").strip() or None
+    official_site = str(patch.get("official_site") or static_model.get("officialSite") or static_model.get("knownSite") or "").strip() or None
+    official_hub = str(patch.get("official_hub") or static_model.get("officialHub") or "").strip() or None
+    official_api = str(patch.get("official_api") or static_model.get("officialApi") or "").strip() or None
+    fixed_api = str(fixed.get("api") or static_model.get("fixedApi") or "").strip() or None
 
     origins: list[str] = []
-    for value in (official_site, official_hub, official_api, fixed_api):
+    for value in (official_site, official_hub, official_api, fixed_api, *(static_model.get("origins") or [])):
         item = origin(value)
-        if item and item not in origins:
+        if item and not item.endswith(".invalid") and item not in origins:
             origins.append(item)
 
     observed_urls: list[str] = []
-    for value in patch.get("learned_urls") or []:
+    for value in [*(patch.get("learned_urls") or []), *(static_model.get("observedUrls") or [])]:
         item = str(value).strip()
-        if item and item not in observed_urls:
+        if item and "old.invalid" not in item and item not in observed_urls:
             observed_urls.append(item)
     # Explicit current endpoints are safe provenance facts and help generic
     # route expansion without importing historical/upstream executable code.
@@ -140,11 +143,11 @@ def provider_model(
         if item and item not in observed_urls:
             observed_urls.append(item)
 
-    routes = [
-        str(v).strip()
-        for v in patch.get("learned_routes") or []
-        if str(v).strip()
-    ]
+    routes: list[str] = []
+    for value in [*(patch.get("learned_routes") or []), *(static_model.get("routes") or [])]:
+        item = str(value).strip()
+        if item and item != "/" and item not in routes:
+            routes.append(item)
 
     return {
         "knownSite": official_site,
@@ -152,6 +155,7 @@ def provider_model(
             patch.get("capability")
             or capability.get("strategy")
             or capability.get("capability")
+            or static_model.get("strategy")
             or "unknown"
         ).strip().casefold(),
         "officialSite": official_site,
@@ -164,7 +168,7 @@ def provider_model(
         "apiRecipe": (
             patch.get("api_recipe")
             if isinstance(patch.get("api_recipe"), dict)
-            else None
+            else static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
         ),
         "identityInput": identity_input(patch),
         "strictIdentity": bool(patch.get("strict_identity", False)),
@@ -215,11 +219,18 @@ def materialize_all(
     overrides_path: Path = DEFAULT_OVERRIDES,
     output_dir: Path = DEFAULT_OUT,
     report_path: Path = DEFAULT_REPORT,
+    static_knowledge_path: Path = DEFAULT_STATIC_KNOWLEDGE,
     project_manifest_path: Path | None = None,
     project_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     manifest = load(source_manifest_path)
     overrides = load(overrides_path)
+    static_knowledge = load(static_knowledge_path)
+    static_rows = static_knowledge.get("providers")
+    if static_knowledge.get("legacyProviderJsExecuted") is not False or static_knowledge.get("upstreamJsExecuted") is not False:
+        raise ValueError("static Provider v3 knowledge must be knowledge-only")
+    if not isinstance(static_rows, dict):
+        raise ValueError("static Provider v3 knowledge providers map required")
     patches = overrides.get("provider_patches")
     capabilities = overrides.get("provider_capabilities")
     if not isinstance(patches, dict) or not isinstance(capabilities, dict):
@@ -242,10 +253,12 @@ def materialize_all(
     capability_ids = {canonical_id(v) for v in capabilities}
     missing_patches = sorted(set(ids) - patch_ids)
     missing_capabilities = sorted(set(ids) - capability_ids)
-    if missing_patches or missing_capabilities:
+    static_ids = {canonical_id(v) for v in static_rows}
+    missing_static = sorted(set(ids) - static_ids)
+    if missing_patches or missing_capabilities or missing_static:
         raise ValueError(
             f"structured DATA incomplete patches={missing_patches} "
-            f"capabilities={missing_capabilities}"
+            f"capabilities={missing_capabilities} static={missing_static}"
         )
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -264,7 +277,10 @@ def materialize_all(
         if not isinstance(patch, dict) or not isinstance(capability, dict):
             raise ValueError(f"{provider_id}: missing structured DATA")
 
-        model = provider_model(provider_id, patch, capability)
+        static_row = static_rows.get(provider_id)
+        if not isinstance(static_row, dict):
+            raise ValueError(f"{provider_id}: missing durable static knowledge")
+        model = provider_model(provider_id, patch, capability, static_row)
         seed = build_clean_provider_seed(
             provider_id,
             entry,
@@ -390,6 +406,8 @@ def materialize_all(
         "mainTouched": context == "main",
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
+        "staticKnowledgeFile": static_knowledge_path.relative_to(ROOT).as_posix(),
+        "staticKnowledgeProviderCount": len(static_rows),
     }
     write_json(report_path, report)
 
@@ -411,6 +429,7 @@ def main() -> int:
     parser.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--static-knowledge", type=Path, default=DEFAULT_STATIC_KNOWLEDGE)
     parser.add_argument("--project-manifest", type=Path)
     parser.add_argument("--project-ids", default="")
     args = parser.parse_args()
@@ -425,6 +444,7 @@ def main() -> int:
         overrides_path=args.overrides.resolve(),
         output_dir=args.output_dir.resolve(),
         report_path=args.report.resolve(),
+        static_knowledge_path=args.static_knowledge.resolve(),
         project_manifest_path=(
             args.project_manifest.resolve()
             if args.project_manifest is not None

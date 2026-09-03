@@ -24,7 +24,7 @@ concurrency:
 jobs:
   reconstruct:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     env:
       NUVIO_PROVIDER_V3_CONTEXT: workspace
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -40,6 +40,47 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Recover durable static Provider DATA when requested
+        shell: bash
+        run: |
+          set -euo pipefail
+          refresh="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path(".github/triggers/provider-v3-reconstruct-all.json").read_text(encoding="utf-8"))
+          print("true" if data.get("refresh_static_knowledge") is True else "false")
+          PY
+          )"
+          if [ "$refresh" != "true" ]; then
+            test -s automation/provider-v3-static-knowledge.json || {
+              echo "Durable Provider v3 static knowledge is missing; request refresh_static_knowledge=true." >&2
+              exit 1
+            }
+            python tests/provider_v3_static_knowledge_contract_test.py
+            exit 0
+          fi
+          force_args=()
+          while IFS= read -r provider_id; do
+            [ -n "$provider_id" ] || continue
+            force_args+=(--force-clean-reconstruction "$provider_id")
+          done < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          for row in m.get("scrapers") or []:
+              value=str(row.get("id") or "").strip()
+              if value:
+                  print(value)
+          PY
+          )
+          python scripts/discover_candidates.py \
+            --stage staging/provider-v3-static-knowledge \
+            --clean-reconstruction \
+            "${force_args[@]}"
+          python scripts/promote_provider_v3_static_knowledge.py \
+            --stage staging/provider-v3-static-knowledge \
+            --output automation/provider-v3-static-knowledge.json
+          python tests/provider_v3_static_knowledge_contract_test.py
       - name: Refuse direct main mutation
         if: inputs.commit_reconstruction
         shell: bash
@@ -61,6 +102,7 @@ jobs:
           python tests/provider_v3_workflow_ownership_test.py
           python tests/provider_v3_documentation_contract_test.py
           python tests/native_ios_watchdog_resume_test.py
+          python tests/provider_v3_static_knowledge_contract_test.py
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_521_capability_regression_test.py
@@ -115,6 +157,7 @@ jobs:
             vf-no-anime/manifest.json
             providers/
             provider-v3-materialization.json
+            automation/provider-v3-static-knowledge.json
             FILE-HASHES.json
             PATCH-SHA256SUMS.txt
             SHA256SUMS.json
@@ -128,7 +171,7 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
-            providers/ provider-v3-materialization.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+            providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
