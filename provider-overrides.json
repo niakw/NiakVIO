@@ -253,20 +253,74 @@
       ]
     },
     "persianstremio": {
-      "capability": "direct_media",
+      "capability": "api_stream_resolver",
       "published_types": [
         "movie",
         "tv"
+      ],
+      "official_site": "https://persianstremio.vercel.app",
+      "official_api": "https://persianstremio.vercel.app",
+      "learned_routes": [
+        "/stream/movie/{id}.json",
+        "/stream/series/{id}:{season}:{episode}.json"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/persianstremio_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/persianstremio_runtime_v1.py": {
+          "base": "https://persianstremio.vercel.app"
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Deterministic provider-owned Stremio JSON runtime: type selects movie vs series route.",
+        "IMDb id from Core metadata is preferred when available; TMDB id is the deterministic fallback.",
+        "Upstream JavaScript remains knowledge-only and is never executed."
       ]
     },
     "desiflix": {
-      "capability": "html_scraper",
+      "capability": "api_stream_resolver",
       "manifest_overrides": {
         "supportsExternalPlayer": false
       },
       "published_types": [
         "movie",
         "tv"
+      ],
+      "official_site": "https://manifest.desitvhub.eu.org",
+      "official_api": "https://manifest.desitvhub.eu.org",
+      "learned_routes": [
+        "/stream/movie/{id}.json",
+        "/stream/series/{id}:{season}:{episode}.json"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/desiflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/desiflix_runtime_v1.py": {
+          "base": "https://manifest.desitvhub.eu.org"
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Deterministic provider-owned Stremio JSON runtime: type selects movie vs series route.",
+        "IMDb id from Core metadata is preferred when available; TMDB id is the deterministic fallback.",
+        "Upstream JavaScript remains knowledge-only and is never executed."
       ]
     },
     "kehflix": {
@@ -443,11 +497,11 @@
       "manifest_overrides": {}
     },
     "anizone": {
-      "capability": "api_stream_resolver",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://everythingmoe.com/s/anizone",
       "official_site": "https://anizone.to",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
           "tmdbId",
@@ -455,8 +509,28 @@
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Provider-owned AniZone runtime consumes Core TMDB external_ids; it never calls TMDB itself.",
+        "TV anime resolves IMDb -> MAL/episode mapping, then AniZone catalogue slug and provider-owned HLS. Anime movie namespace uses the already resolved Core title.",
+        "Upstream JavaScript is knowledge-only and never executed in reconstruction."
+      ],
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/anime?search={query}",
+        "/anime/{slug}/{episode}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/anizone_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/anizone_runtime_v1.py": {
+          "base": "https://anizone.to",
+          "mapping": "https://id-mapping-api-malid.hf.space/api/resolve",
+          "jikan": "https://api.jikan.moe/v4/anime/"
+        }
+      }
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -2024,27 +2098,36 @@
       "generated_from_manifest_or_stage": true
     },
     "persianstremio": {
-      "strategy": "direct_media",
-      "validation": "media_url",
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_direct_media",
       "allow_html_url": false,
-      "requires_direct_media": true,
-      "observed_origins": [
-        "https://old.invalid"
-      ],
-      "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
-    },
-    "desiflix": {
-      "strategy": "html_scraper",
-      "validation": "provider_native",
-      "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://manifest.desitvhub.eu.org",
-        "https://old.invalid"
+        "https://persianstremio.vercel.app"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ],
+      "identity_request_source": "original_nuvio_request"
+    },
+    "desiflix": {
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": false,
+      "observed_origins": [
+        "https://manifest.desitvhub.eu.org"
+      ],
+      "generated_from_manifest": true,
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ],
+      "identity_request_source": "original_nuvio_request"
     },
     "kehflix": {
       "strategy": "html_scraper",
@@ -2319,18 +2402,24 @@
       ]
     },
     "anizone": {
-      "strategy": "api_stream_resolver",
-      "validation": "api_and_provider_native",
+      "strategy": "mixed_embed_resolver",
+      "validation": "provider_native_and_final_direct_media",
       "allow_html_url": false,
-      "requires_direct_media": false,
+      "requires_direct_media": true,
       "observed_origins": [
         "https://anizone.to",
         "https://id-mapping-api-malid.hf.space",
-        "https://api.jikan.moe",
-        "https://old.invalid"
+        "https://api.jikan.moe"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "castle": {
       "strategy": "api_stream_resolver",
