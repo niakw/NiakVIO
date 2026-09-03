@@ -105,7 +105,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime re-audited at current Dev HEAD. Shared PluginRuntimeResult/StreamItem projection remains aligned with Mobile; Desktop native fetch stays async over OkHttp.
+- Note d'audit : Runtime diff reviewed at Dev HEAD b17687e37b1e; only desktop window maximize/multi-monitor UI code changed. Plugin runtime, native fetch and stream projection contracts are unchanged.
 
 ### Windows
 
@@ -113,7 +113,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime re-audited at current Dev HEAD. Shared PluginRuntimeResult/StreamItem projection remains aligned with Mobile; Desktop native fetch stays async over OkHttp.
+- Note d'audit : Runtime diff reviewed at Dev HEAD b17687e37b1e; only desktop window maximize/multi-monitor UI code changed. Plugin runtime, native fetch and stream projection contracts are unchanged.
 
 ### Linux
 
@@ -121,7 +121,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime re-audited at current Dev HEAD. Shared PluginRuntimeResult/StreamItem projection remains aligned with Mobile; Desktop native fetch stays async over OkHttp.
+- Note d'audit : Runtime diff reviewed at Dev HEAD b17687e37b1e; only desktop window maximize/multi-monitor UI code changed. Plugin runtime, native fetch and stream projection contracts are unchanged.
 
 ### Android TV
 
@@ -129,4 +129,4 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt`
 - Transport : `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt`
 - Modèle de résultat : `app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt`
-- Note d'audit : Runtime re-audited at current dev HEAD. Positional getStreams/fetch semantics remain unchanged; LocalScraperResult now retains subtitles. Stream description is still projected from size and badges are re-derived from textual Stream fields.
+- Note d'audit : Runtime diff reviewed at dev HEAD 4f37e9491997; only ASS/SSA subtitle player UI changed. PluginRuntime, transport and stream projection contracts are unchanged.
