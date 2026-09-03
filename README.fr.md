@@ -541,4 +541,9 @@ Le moteur applique des budgets de workers, des protections réseau/SSRF, des con
 
 NiakVIO est un projet communautaire indépendant, non affilié aux développeurs de Nuvio ni aux services tiers référencés. Le projet ne contrôle pas la disponibilité, le contenu, les droits ou les pratiques de sites tiers. L'utilisation doit respecter la législation applicable et les conditions des services concernés.
 
-Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md), [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md), [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).### Workflows de maintenance durables
+
+- `weekly-upstream-provider-discovery.yml` — découverte upstream hebdomadaire en lecture seule.
+- `purge-actions-history.yml` — purge planifiée de l'historique GitHub Actions selon la rétention.
+- `brain-branch-maintenance.yml` — maintenance des branches Learning/proposals durables, sans publication directe des Provider JS.
+
