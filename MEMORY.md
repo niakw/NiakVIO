@@ -490,3 +490,15 @@ Keep it disabled in production until all proofs are green.
 - Corrective migration retry 22 will statically recover knowledge for all 96, persist it to automation/provider-v3-static-knowledge.json, and make that durable file a mandatory Provider v3 reconstruction input.
 - Historical/upstream Provider JS remains knowledge-only: it is never embedded or executed as reconstruction seed.
 
+## 2026-09-03 — Provider v3 executable-plan audit after retry 22
+- Acceptance scope is the full 96-provider catalogue, including disabled providers. `enabled=false` may never hide incomplete Provider v3 DATA; only explicit quarantine is allowed to publish an intentionally inert provider.
+- Existing architecture taxonomy remains authoritative: `official_domain_hub`, `api_stream_resolver`, `html_scraper`, `mixed_embed_resolver`, `direct_media`, `iframe_player`, `quarantined`. Do not introduce a parallel provider-type system.
+- A stricter audit exposed that route/URL presence alone is not proof of an executable reader plan. The reconstruction gate must validate strategy-compatible DATA/Lego for every one of the 96 providers.
+- Shared ProviderBase now treats Abhilinks/HubCloud/VCloud/Driveseed-style pages as bounded resolver intermediates and lets `direct_media` traverse them to proven final media; this is a family-level fix for MoviesHunt/4KHDHub/Movies4u/MoviesMod and similar providers.
+- ProviderBase API resolution now executes persisted learned `/api/...` routes against trusted provider bases instead of ignoring relative API DATA.
+- MoviesHunt, 4KHDHub and Movies4u now persist `/?s={query}`; MoviesMod persists `/search/{query}`.
+- CineVibe now has a clean provider-owned `PROVIDER.CINEVIBE.RUNTIME.V1` Lego implementing its tokenized API from Core-provided TMDB metadata; historical JS remains knowledge-only and CineVibe remains disabled until native acceptance.
+- Frenchstream is reclassified from permanent `quarantined` to `mixed_embed_resolver` while remaining disabled. `https://fstream.website/` is the maintenance/discovery hub supplied by the live project observation; terminal domain is mutable DATA. Historical wrong-duration Revenant evidence remains a stream-level identity/duration rejection regression, not a reason to inert the entire provider forever.
+- After the stricter strategy audit, additional false-positive plans were exposed: Cineby, CinemaCity, Nakios, Peachify, PlayIMDB, StreamFlix, VidEasy, Vidnest and Vidnest-Anime. These must be closed before the next 96/96 reconstruction.
+- Statically recovered contracts include CinemaCity `https://cinemacity.cc` + `/news_pages.xml` via `https://cc.realbestia.com`; Nakios `/api/sources/movie/{id}` and `/api/sources/tv/{id}/{season}/{episode}` at `https://api.nakios.store`; PlayIMDB `https://streamdata.vaplayer.ru/api.php?tmdb={id}&type={media}&season={season}&episode={episode}`; StreamFlix catalog/config at `https://api.streamflix.app`; VidEasy/Cineby share the speedracelight/Wings seed + encrypted-source family.
+- Main remains untouched; all work continues only on `workbench/provider-v3-performance-playback`.
