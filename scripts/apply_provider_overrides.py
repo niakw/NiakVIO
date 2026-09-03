@@ -15,6 +15,7 @@ import importlib.util
 import inspect
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 from override_text_utils import replace_literal
@@ -132,7 +133,22 @@ def _load_patch_module(patch_script: str, provider_id: str):
     if not spec or not spec.loader:
         raise ValueError(f"cannot load provider patch script: {patch_script}")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # Provider Lego families may factor shared implementation into sibling
+    # modules under scripts/provider_patches. spec_from_file_location() does not
+    # add that directory to sys.path, so imports that work in normal package-like
+    # execution would otherwise fail only during clean materialization.
+    parent = str(patch_path.parent)
+    inserted_parent = parent not in sys.path
+    if inserted_parent:
+        sys.path.insert(0, parent)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if inserted_parent:
+            try:
+                sys.path.remove(parent)
+            except ValueError:
+                pass
     return module
 
 
