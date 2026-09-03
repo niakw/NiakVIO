@@ -1157,6 +1157,12 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
         output = text
         for fix_id in core_ids:
             output = strip_managed_fix(output, fix_id)
+        boundary_needle = f"/* {CORE_START_MARKER} */"
+        boundary_count = output.count(boundary_needle)
+        if boundary_count > 1:
+            raise ValueError(f"Provider v3 contains duplicate Core boundaries: {boundary_count}")
+        if boundary_count == 1:
+            output = output.replace(boundary_needle, "", 1)
         return output, output != text
 
     original = text
@@ -1432,11 +1438,12 @@ def apply_overrides(
 
         # Canonical published layout is one single Provider envelope:
         # BEGIN PROVIDER
-        #   ProviderBase + DATA + PROVIDER.* Lego
+        #   ProviderBase + DATA/CONFIG + PROVIDER.* Lego
+        #   NUVIO_GLOBAL_CORE_START_BOUNDARY_V1
         #   CORE.* Lego
         # END PROVIDER
-        # No second Core envelope and no generated Core separator are needed:
-        # ownership/order is carried by the Lego IDs themselves.
+        # The single Core boundary is machine-readable architecture metadata used
+        # by reverse rebuild/byte-stability audits; it never owns executable logic.
         text = (
             text.replace("/* BEGIN NIAKVIO_CORE */", "")
             .replace("/* END NIAKVIO_CORE */", "")
@@ -1451,6 +1458,17 @@ def apply_overrides(
             )
         if text.count(PROVIDER_BEGIN_MARKER) != 1 or text.count(PROVIDER_END_MARKER) != 1:
             raise ValueError(f"{provider_id}: malformed Provider envelope before Core composition")
+
+        # Provider DATA and every PROVIDER.* Lego are complete at this point.
+        # Insert exactly one non-executable boundary before the first CORE.* Lego.
+        boundary_needle = f"/* {CORE_START_MARKER} */"
+        if boundary_needle in text:
+            raise ValueError(f"{provider_id}: stale Core boundary survived Core-tail stripping")
+        provider_end = text.index(PROVIDER_END_MARKER)
+        before_end = text[:provider_end]
+        if before_end and not before_end.endswith(("\n", "\r")):
+            before_end += "\n"
+        text = before_end + boundary_needle + "\n" + text[provider_end:]
 
         def _apply_playback_stage(hooks: list[str]) -> None:
             nonlocal text
