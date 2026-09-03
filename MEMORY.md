@@ -311,3 +311,10 @@ Keep it disabled in production until all proofs are green.
 - A dedicated unit test proves stable Dark Matter TV verification performs exactly one provider execution and one TMDB request while clearing `degraded`.
 - `normalize_stream_presentation_v12.py` is now a compatibility validator for committed V18, not a mutating normalizer. It validates `all-providers-standard-fields-url-facts-v18` read-only.
 - `global_stream_presentation_test.py` now validates V18 fixed-point directly with no apply/mutation semantics.
+
+## 2026-09-03 — V18 presentation syntax fix
+- Manual reconstruction retry 9 reached the V18 presentation unit test after ProviderBase 96/96, 5.21 capability and media-type v26 gates were green.
+- A real syntax bug was found in `global_stream_presentation_v1.py`: because the JS wrapper is a Python raw string, one separator was written as literal `\\nfunction blob(...)` instead of an actual newline.
+- Node rejected the generated provider with `SyntaxError: Invalid or unexpected token`.
+- Commit `421bd5c62fdf431a4d557cb28e6ea5b9a83c45ff` replaces that single literal escape with a real source newline.
+- `global_stream_presentation_test.py` now statically rejects any literal `\\nfunction` in the canonical V18 patch source before executing runtime cases.
