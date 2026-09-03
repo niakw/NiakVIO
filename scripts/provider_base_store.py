@@ -1496,13 +1496,50 @@ async function _resolveKnownPlayer(tmdbId, mediaType, season, episode) {
   }
   return [];
 }
+function _htmlVisibleText(value) {
+  const source = _text(value);
+  const lower = source.toLowerCase();
+  let out = "";
+  let cursor = 0;
+  let hidden = "";
+  while (cursor < source.length) {
+    if (hidden) {
+      const closeAt = lower.indexOf("</" + hidden, cursor);
+      if (closeAt < 0) break;
+      cursor = closeAt;
+      hidden = "";
+      continue;
+    }
+    if (source.charAt(cursor) !== "<") {
+      out += source.charAt(cursor);
+      cursor += 1;
+      continue;
+    }
+    const end = source.indexOf(">", cursor + 1);
+    if (end < 0) {
+      out += source.slice(cursor);
+      break;
+    }
+    let raw = source.slice(cursor + 1, end).trim();
+    let closing = raw.charAt(0) === "/";
+    if (closing) raw = raw.slice(1).trim();
+    let name = "";
+    for (let i = 0; i < raw.length; i += 1) {
+      const code = raw.charCodeAt(i);
+      const alpha = (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+      if (!alpha) break;
+      name += raw.charAt(i).toLowerCase();
+    }
+    if (!closing && (name === "script" || name === "style")) hidden = name;
+    out += " ";
+    cursor = end + 1;
+  }
+  return out;
+}
 function _strictHtmlIdentityOk(html, meta) {
   if (!NIAKVIO_PROVIDER_MODEL.strictHtmlIdentity) return true;
   if (!meta || !meta.title) return false;
-  const visible = _text(html)
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ");
+  const visible = _htmlVisibleText(html);
   const normalized = _slug(visible);
   const titles = _uniq([meta.title, ...((Array.isArray(meta.aliases) ? meta.aliases : []))])
     .map(_slug)
