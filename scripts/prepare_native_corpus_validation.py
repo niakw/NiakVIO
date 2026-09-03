@@ -275,6 +275,9 @@ def desktop_test(fixture: dict, providers: list[dict]) -> str:
 import com.nuvio.app.features.plugins.runtime.PluginRuntime
 import java.io.File
 import java.util.Base64
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -305,10 +308,12 @@ class NiakvioNativeCorpusDesktopTest {{
         val title = {f['title']}
         val season: Int? = {f['season']}
         val episode: Int? = {f['episode']}
-        val errors = mutableListOf<String>()
+        val errors = java.util.Collections.synchronizedList(mutableListOf<String>())
         emit("FIELD_NATIVE_CORPUS_BEGIN client=desktop fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
-        for (provider in providers) {{
-            val started = System.currentTimeMillis()
+        for (providerBatch in providers.chunked(6)) {{
+            val providerJobs = providerBatch.map {{ provider ->
+                async(Dispatchers.IO) {{
+                    val started = System.currentTimeMillis()
             try {{
                 val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {{
                     PluginRuntime.executePlugin(
@@ -333,6 +338,9 @@ class NiakvioNativeCorpusDesktopTest {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
                 emit("FIELD_NATIVE_ERROR client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} duration_ms=${{System.currentTimeMillis()-started}} error64=${{b64(error.message ?: error.toString())}}")
             }}
+                }}
+            }}
+            providerJobs.awaitAll()
         }}
         emit("FIELD_NATIVE_CORPUS_END client=desktop fixture=$fixtureSlug errors=${{errors.size}}")
         assertTrue(errors.isEmpty(), "native provider runtime errors: " + errors.take(12).joinToString(" | "))
@@ -372,6 +380,9 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 {imports}
 import java.util.Base64
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -389,9 +400,13 @@ class {klass} {{
     private fun b64(value: Any?): String = Base64.getUrlEncoder().withoutPadding()
         .encodeToString((value?.toString() ?: "").toByteArray(Charsets.UTF_8))
 
+    private val emitLock = Any()
+
     private fun emit(message: String) {{
-        println(message)
-        Log.i("NiakvioCorpus", message)
+        synchronized(emitLock) {{
+            println(message)
+            Log.i("NiakvioCorpus", message)
+        }}
     }}
 {TRANSPORT_HELPERS}
     @Test
@@ -402,10 +417,12 @@ class {klass} {{
         val title = {f['title']}
         val season: Int? = {f['season']}
         val episode: Int? = {f['episode']}
-        val errors = mutableListOf<String>()
+        val errors = java.util.Collections.synchronizedList(mutableListOf<String>())
         emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
-        for (provider in providers) {{
-            val started = System.currentTimeMillis()
+        for (providerBatch in providers.chunked(6)) {{
+            val providerJobs = providerBatch.map {{ provider ->
+                async(Dispatchers.IO) {{
+                    val started = System.currentTimeMillis()
             try {{
                 val providerExecutor = java.util.concurrent.Executors.newSingleThreadExecutor {{ runnable ->
                     Thread(runnable, "niakvio-provider-" + provider.id).apply {{ isDaemon = true }}
@@ -444,6 +461,9 @@ class {klass} {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
                 emit("FIELD_NATIVE_ERROR client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} duration_ms=${{System.currentTimeMillis()-started}} error64=${{b64(error.message ?: error.toString())}}")
             }}
+                }}
+            }}
+            providerJobs.awaitAll()
         }}
         emit("FIELD_NATIVE_CORPUS_END client={client} fixture=$fixtureSlug errors=${{errors.size}}")
         assertTrue("native provider runtime errors: " + errors.take(12).joinToString(" | "), errors.isEmpty())
