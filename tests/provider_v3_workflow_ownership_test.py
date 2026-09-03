@@ -16,8 +16,8 @@ assert routine.startswith("name: CORE - Verify & Publish")
 assert routine.count("schedule:")==1
 assert "47 4 * * 2,5" in routine
 assert "MODE=deep" in routine
-assert "Deep-only structural contracts" in routine
-assert "Deep-only manifest projection" in routine
+assert "Deep gate - full structural contracts" in routine
+assert "Deep - reproject manifests and integrity inventories" in routine
 
 for mode in ("quick","deep"):
     assert policy["routine"][mode]["repair_allowed"] is False
