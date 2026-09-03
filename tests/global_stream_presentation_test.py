@@ -26,7 +26,7 @@ normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
 normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-standard-fields-url-facts-v18"
+assert presentation.REVISION == "all-providers-client-projection-tunnel-v19"
 presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
 assert "\\nfunction" not in presentation_source, "raw V18 wrapper contains a literal \\n before function declaration"
 
@@ -34,7 +34,7 @@ assert "\\nfunction" not in presentation_source, "raw V18 wrapper contains a lit
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-standard-fields-url-facts-v18" in patched
+    assert "all-providers-client-projection-tunnel-v19" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -77,7 +77,7 @@ assert row["codec"] == "HEVC"
 assert row["duration"] == 169
 assert row["sourceType"] == "WEB-DL"
 assert row["format"] == "HLS"
-assert row["size"] == "8.4 GB"
+assert row["size"] == row["description"], row
 assert row["headers"] == {"Referer": "https://purstream.example/"}
 assert {"4k-ultra-hd", "webdl", "hevc", "multi"}.issubset(set(row["badgeIds"])), row
 lines = row["description"].splitlines()
@@ -105,9 +105,10 @@ roundtrip = json.loads(raw_stream_json)[0]
 assert roundtrip["description"].splitlines()[0] == "🎬 Interstellar • 2014", roundtrip
 assert "🇫🇷 MULTI (VF/VO)" in roundtrip["description"], roundtrip
 
-# NuvioTV's official local-plugin model discards provider description and maps
-# LocalScraperResult.size -> Stream.description. On TV only, tunnel the complete
-# Core description through size so emojis/technical facts and regex badge tokens survive.
+# Cross-client projection contract: Mobile/Desktop rebuild plugin StreamItem.description
+# from quality + size + language; TV maps LocalScraperResult.size -> Stream.description.
+# Therefore the complete Core description is tunneled through size on every client so
+# media identity and technical tokens survive to each client's regex badge matcher.
 tv_row = run(
     source,
     "purstream",
@@ -195,4 +196,4 @@ assert native_cached["calls"] == 0, native_cached
 assert native_cached["row"]["duration"] == 169, native_cached
 assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
 
-print("global stream presentation V18 standard-field and URL fact tests passed")
+print("global stream presentation V19 client-projection tunnel tests passed")
