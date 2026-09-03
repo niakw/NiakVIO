@@ -61,7 +61,6 @@ jobs:
           python tests/provider_v3_workflow_ownership_test.py
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
-          python tests/provider_brick_portfolio_audit_test.py
           python tests/provider_521_capability_regression_test.py
           python tests/global_media_type_resolution_test.py
           python tests/global_stream_presentation_test.py
@@ -89,6 +88,8 @@ jobs:
       - name: Validate reconstructed runtime and release integrity
         run: |
           set -euo pipefail
+          python tests/provider_brick_portfolio_audit_test.py --published --require-all
+          python scripts/audit_provider_v3_static.py
           python tests/global_media_type_resolution_test.py
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
