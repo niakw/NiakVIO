@@ -9,7 +9,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from apply_provider_overrides import apply_overrides  # noqa: E402
 
-SOURCE = b"""module.exports={getStreams:async()=>[{name:'Source | 4k | Dual-Audio',title:'Interstellar - 2014',description:'4k Dual-Audio HEVC E-AC3 5.1 169 min BLU-RAY',url:'https://media.example/master.m3u8',quality:'',language:'',headers:{Referer:'https://source.example/'}}]};\n"""
+SOURCE = b"""/* BEGIN NIAKVIO_PROVIDER */
+/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
+module.exports={getStreams:async()=>[{name:'Source | 4k | Dual-Audio',title:'Interstellar - 2014',description:'4k Dual-Audio HEVC E-AC3 5.1 169 min BLU-RAY',url:'https://media.example/master.m3u8',quality:'',language:'',headers:{Referer:'https://source.example/'}}]};
+/* END NIAKVIO_PROVIDER */
+"""
 
 patched, records = apply_overrides("generic-core-test", SOURCE, phase="discovery")
 text = patched.decode("utf-8")

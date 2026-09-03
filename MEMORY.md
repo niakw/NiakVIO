@@ -339,3 +339,11 @@ Keep it disabled in production until all proofs are green.
 - The subsequent published-byte portfolio gate found all 96 non-idempotent only because a second Core recomposition accumulated one blank line before `NUVIO_GLOBAL_CORE_START_BOUNDARY_V1`; `changed_blocks=none` on every reported provider.
 - `apply_provider_overrides._strip_generated_core_tail()` now removes the Core boundary together with its owned following newline, restoring the exact pre-Core Provider bytes before recomposition.
 - This is a byte-idempotence fix only; no Provider/Core Lego behavior changed.
+
+## 2026-09-03 — retry 12–14 post-gate fixture alignment
+- Retry 12 again materialized all 96 providers and proved reverse reconstruction generation `949d251de7e3cb4d` byte-identical 96/96. The boundary-newline idempotence fix held; the next red was a stale static ownership-order assertion, subsequently corrected by `20785a91947a70ae50fa9adbba4aa16d4a59f8b4`.
+- Retry 13 again reached 96/96 + reverse 96/96, and `PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false` passed. The next failure was isolated to `global_stream_presentation_pipeline_test.py`: its synthetic source had BEGIN/END Provider markers but no `NIAKVIO_PROVIDER_BASE_OWNED_V3`, so the HLS Core Lego correctly classified it as legacy and the idempotence reapply then rejected the escaped Core block.
+- Retry 14 reproduced the same fixture-only failure after another successful 96/96 materialization/reverse proof; static audit, media-type resolution and stream presentation V18 were green before that failure. No reconstructed files were committed and main remained untouched.
+- Synthetic Core pipeline/playback/future-provider tests now model a minimal clean-v3 Provider envelope instead of a hybrid legacy/v3 envelope. Production clean-v3 detection remains strict; no runtime Lego behavior was relaxed.
+- Next controlled reconstruction is retry 15 on the workbench only.
+

@@ -10,13 +10,20 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from apply_provider_overrides import apply_overrides, GLOBAL_STREAM_PRESENTATION  # noqa: E402
 
 
+def clean_v3_fixture(source: str) -> str:
+    if "/* BEGIN NIAKVIO_PROVIDER */" in source:
+        assert "NIAKVIO_PROVIDER_BASE_OWNED_V3" in source
+        return source
+    return (
+        "/* BEGIN NIAKVIO_PROVIDER */\n"
+        "/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        + source.rstrip()
+        + "\n/* END NIAKVIO_PROVIDER */\n"
+    )
+
+
 def apply(provider: str, source: str) -> tuple[str, list[dict]]:
-    if "/* BEGIN NIAKVIO_PROVIDER */" not in source:
-        source = (
-            "/* BEGIN NIAKVIO_PROVIDER */\n"
-            + source.rstrip()
-            + "\n/* END NIAKVIO_PROVIDER */\n"
-        )
+    source = clean_v3_fixture(source)
     payload, records = apply_overrides(provider, source.encode("utf-8"), phase="discovery")
     return payload.decode("utf-8"), records
 

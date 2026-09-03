@@ -19,6 +19,18 @@ if not spec or not spec.loader:
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
+
+def clean_v3_fixture(source: bytes) -> bytes:
+    if b"/* BEGIN NIAKVIO_PROVIDER */" in source:
+        assert b"NIAKVIO_PROVIDER_BASE_OWNED_V3" in source
+        return source
+    return (
+        b"/* BEGIN NIAKVIO_PROVIDER */\n"
+        b"/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        + source.strip()
+        + b"\n/* END NIAKVIO_PROVIDER */\n"
+    )
+
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 policy = cfg.get("playback_integrity_policy") or {}
 assert policy.get("version") == 4
@@ -62,7 +74,7 @@ module._apply_patch_script = capture_scheduler
 try:
     module.apply_overrides(
         "streamzo",
-        b"/* BEGIN NIAKVIO_PROVIDER */\nglobalThis.getStreams=async function(){return []};\n/* END NIAKVIO_PROVIDER */\n",
+        clean_v3_fixture(b"globalThis.getStreams=async function(){return []};\n"),
         phase="discovery",
     )
 finally:
@@ -83,7 +95,7 @@ assert wanted == [
     module.GLOBAL_STREAM_PRESENTATION,
 ], wanted
 
-future = b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n'''
+future = clean_v3_fixture(b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n''')
 patched, records = module.apply_overrides("future-provider-never-seen-before", future, phase="discovery")
 text = patched.decode("utf-8")
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in text
