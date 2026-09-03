@@ -59,6 +59,8 @@ PROBE_MODEL = r'''
         val trackType: Int = -1,
     )
 
+    private val niakvioPlayerProbeLock = Any()
+
     private fun sanitizeDiag(raw: String?): String = raw.orEmpty()
         .replace(Regex("https?://\\S+", RegexOption.IGNORE_CASE), "<url>")
         .replace(Regex("(?i)(authorization|cookie|token|secret)\\s*[:=]\\s*\\S+"), "$1=<redacted>")
@@ -78,7 +80,7 @@ TV_HELPERS = PROBE_MODEL + r'''
         headers: Map<String, String>?,
         streamType: String?,
         expectedDurationMinutes: Int,
-    ): NativePlayerProbe {
+    ): NativePlayerProbe = synchronized(niakvioPlayerProbeLock) {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
         val host = hostOnly(url)
@@ -144,7 +146,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
         headers: Map<String, String>?,
         streamType: String?,
         expectedDurationMinutes: Int,
-    ): NativePlayerProbe {
+    ): NativePlayerProbe = synchronized(niakvioPlayerProbeLock) {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
         val host = hostOnly(url)
