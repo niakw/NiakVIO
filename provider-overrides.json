@@ -519,7 +519,38 @@
     },
     "cinemacity": {
       "capability": "direct_media",
-      "manifest_overrides": {}
+      "manifest_overrides": {},
+      "official_site": "https://cinemacity.cc",
+      "learned_routes": [
+        "/news_pages.xml",
+        "/movies/{id}-{slug}.html",
+        "/tv-series/{id}-{slug}.html"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/cinemacity_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/cinemacity_runtime_v1.py": {
+          "site": "https://cinemacity.cc",
+          "proxy_base": "https://cc.realbestia.com",
+          "sitemap_path": "/news_pages.xml",
+          "max_pages": 8
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 CinemaCity uses the statically recovered /news_pages.xml catalogue and cc.realbestia.com proxy.",
+        "Movie/TV kind plus strict Core title/year identify the candidate; TV additionally requires requested episode evidence near the final media URL.",
+        "Historical provider JavaScript and embedded TMDB key are never executed or copied into the runtime."
+      ]
     },
     "cinemm": {
       "capability": "html_scraper",
@@ -2050,7 +2081,12 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/news_pages.xml",
+        "/movies/{id}-{slug}.html",
+        "/tv-series/{id}-{slug}.html"
+      ]
     },
     "cinemm": {
       "strategy": "html_scraper",
