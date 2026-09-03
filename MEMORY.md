@@ -347,3 +347,11 @@ Keep it disabled in production until all proofs are green.
 - Synthetic Core pipeline/playback/future-provider tests now model a minimal clean-v3 Provider envelope instead of a hybrid legacy/v3 envelope. Production clean-v3 detection remains strict; no runtime Lego behavior was relaxed.
 - Next controlled reconstruction is retry 15 on the workbench only.
 
+## 2026-09-03 — retry 15 removed stale native catalogue budget contract
+- Retry 15 again proved ProviderBase 96/96 clean, materialization 96/96, generation `949d251de7e3cb4d`, reverse rebuild byte-identical 96/96, published brick audit green, static audit green, media-type Core green, presentation V18 green, presentation pipeline green and stream identity green.
+- The next failure was not provider/runtime output: `runtime_capability_media_safety_v4_test.py` still launched `native_catalogue_recovery_budget_test.py`, which imported deleted `scripts/provider_patches/native_catalogue_recovery_budget_v1.py`.
+- Current `CORE.CATALOGUE_ALIAS_RECOVERY.V2` is positive-output identity protection only; it does not perform shared zero-result catalogue network recovery. Therefore a separate native catalogue recovery budget Lego is obsolete.
+- Removed stale `tests/native_catalogue_recovery_budget_test.py` and `scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py`; neither was referenced by provider-overrides, CORE Quick/Deep, reconstruction or LEARN.
+- `runtime_capability_media_safety_v4_test.py` now retains only the still-active native HLS budget and synchronous target-order companion regressions.
+- No provider behavior was relaxed and main remains untouched. Next controlled reconstruction: retry 16.
+
