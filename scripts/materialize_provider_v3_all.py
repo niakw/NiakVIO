@@ -33,7 +33,7 @@ from provider_base_store import (  # noqa: E402
     compose_provider_bundle,
 )
 from apply_provider_overrides import apply_overrides  # noqa: E402
-from provider_patch_blocks import validate_managed_fixes  # noqa: E402
+from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
 
 DEFAULT_SOURCE_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
@@ -314,16 +314,16 @@ def materialize_all(
                 f"{provider_id}: Core boundary count={text.count(boundary)} expected=1"
             )
         boundary_at = text.index(boundary)
-        provider_fix_positions = [
-            text.index(f"/* START NIAKVIO_FIX:{fix_id} */")
-            for fix_id in fix_ids
-            if fix_id.startswith("PROVIDER.")
-        ]
-        core_fix_positions = [
-            text.index(f"/* START NIAKVIO_FIX:{fix_id} */")
-            for fix_id in fix_ids
-            if fix_id.startswith("CORE.")
-        ]
+        provider_fix_positions = []
+        core_fix_positions = []
+        for fix_id in fix_ids:
+            span = owned_span(text, fix_id)
+            if span is None:
+                raise ValueError(f"{provider_id}: managed Lego span missing: {fix_id}")
+            if fix_id.startswith("PROVIDER."):
+                provider_fix_positions.append(span[0])
+            elif fix_id.startswith("CORE."):
+                core_fix_positions.append(span[0])
         if provider_fix_positions and max(provider_fix_positions) >= boundary_at:
             raise ValueError(f"{provider_id}: Provider Lego found after Core boundary")
         if core_fix_positions and min(core_fix_positions) <= boundary_at:
