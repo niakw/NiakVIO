@@ -388,3 +388,10 @@ Keep it disabled in production until all proofs are green.
 - Main remains untouched.
 - Because the verified provider commit is emitted by GitHub Actions and therefore does not cascade another push workflow, a provider-byte-neutral ownership-test hardening commit is used to trigger CORE Quick while preserving the exact reconstructed provider bytes.
 
+## 2026-09-03 — CORE Quick green on reconstructed Provider v3 bytes; five labs triggered next
+- CORE Quick run `33708888221` / run number 1783 completed successfully on commit `552f8dd6d478c823bb820f598d6220a26d6f4c6d`.
+- That commit is provider-byte-neutral relative to the verified reconstruction commit `72a99271f59c81a64fd8c9a353b6ba86827f39ac`; it only hardens the manual-workspace ownership test and records state in MEMORY.
+- Quick therefore validated the exact reconstructed 96 provider bytes: five-lab coverage/purity, Provider v3 static audit, published brick portfolio, 5.21 capability regression, media-type v26, presentation V18/pipeline, stream identity, runtime media safety, playback integrity and terminal sanitizer all passed.
+- The shared five-lab trigger is now advanced once for TVAndroid, MobileAndroid, MobileIOS, DesktopMACOS and DesktopWindows. All five labs must observe these same Provider JS bytes; Labs remain observational evidence only and never repair/reconstruct.
+- Main remains untouched.
+
