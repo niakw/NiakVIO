@@ -76,6 +76,16 @@ assert "providerFuture.get(" in prepare_core
 assert "java.util.concurrent.TimeUnit.MILLISECONDS" in prepare_core
 assert "provider_hard_timeout_ms=" in prepare_core
 assert "isDaemon = true" in prepare_core
+assert "providers.chunked(6)" in prepare_core
+assert "async(Dispatchers.IO)" in prepare_core
+assert "providerJobs.awaitAll()" in prepare_core
+assert "java.util.Collections.synchronizedList" in prepare_core
+assert 'os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "15000")' in prepare_core
+assert "niakvioPlayerProbeLock" in reader_codegen
+assert "synchronized(niakvioPlayerProbeLock)" in reader_codegen
+desktop_player_codegen = (ROOT / "scripts/augment_native_desktop_player.py").read_text(encoding="utf-8")
+assert "desktopPlayerProbeLock" in desktop_player_codegen
+assert "synchronized(desktopPlayerProbeLock)" in desktop_player_codegen
 assert corpus.get("retry_provider_timeouts") is False
 
 fixtures = "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
