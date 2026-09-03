@@ -48,12 +48,10 @@ jobs:
             echo "Manual Provider v3 reconstruction may never commit directly to main; use a branch + PR." >&2
             exit 1
           }
-      - name: Prepare clean reconstruction source
+      - name: Materialize canonical clean ProviderBase v3 store
         run: |
           set -euo pipefail
-          # Layering cleanup only: strip leaked publication tails from ProviderBase.
-          # This does not invent behavior and never seeds from legacy/upstream JS.
-          python scripts/provider_base_store.py repair-derived
+          python scripts/materialize_provider_base_v3_store.py
           python scripts/provider_base_store.py validate
           python scripts/provider_base_store.py validate --artifacts
 
