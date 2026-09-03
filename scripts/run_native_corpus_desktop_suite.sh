@@ -30,12 +30,6 @@ TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
 REGRESSION_STREAM_SCOPE="${NIAKVIO_REGRESSION_STREAM_SCOPE:-2}"
-REQUESTED_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
-PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"
-REQUIRE_READER_SUCCESS=0
-if [[ "$PLAYER_OUTCOME_GLOBAL_GATE" = "1" && "$REQUESTED_READER_SUCCESS" = "1" ]]; then
-  REQUIRE_READER_SUCCESS=1
-fi
 SOURCE_SHA="${NIAKVIO_SOURCE_SHA:-$(git -C "$NIAKVIO" rev-parse HEAD)}"
 SOURCE_REPOSITORY="${GITHUB_REPOSITORY:-niakw/NiakVIO}"
 source "$REPOSITORY_RESOLVER"
@@ -66,8 +60,9 @@ python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?
 if [[ -n "${GITHUB_ENV:-}" ]]; then echo "NIAKVIO_BRAIN_NONBLOCKING=1" >> "$GITHUB_ENV"; fi
 
 SOFT_FAILURES=0
+READER_FAILURES=0
 
-echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
+echo "FIELD_NATIVE_CORPUS_DESKTOP_PROFILE os=$HOST_OS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reader_outcome=observational official_player=production_path official_repository_loading=true repository_http_evidence=true local_manifest=$ALLOW_LOCAL_MANIFEST observational=true privilege=ordinary-user smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 for fixture in "${FIXTURES[@]}"; do
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
   if [[ "$fixture" = "$PRIMARY_FIXTURE" ]]; then STREAM_SCOPE="$PRIMARY_STREAM_SCOPE"; fi
@@ -134,6 +129,7 @@ PY
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$OBSERVED_READER_STATUS" -ne 0 ]]; then
     SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
+  if [[ "$OBSERVED_READER_STATUS" -ne 0 ]]; then READER_FAILURES=$((READER_FAILURES+1)); fi
   echo "FIELD_NATIVE_CORPUS_DESKTOP_STATUS os=$HOST_OS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE"
 done
 
@@ -145,7 +141,17 @@ for fixture in "${FIXTURES[@]}"; do
 done
 
 LOGS=("${WORKSPACE}"/desktop-native-corpus-${HOST_OS}-*.log)
+MATRIX_STATUS=0
+python3 "$NIAKVIO/scripts/gate_native_declared_provider_matrix.py" \
+  --client desktop \
+  --manifest "$NIAKVIO/$TARGET_MANIFEST" \
+  --corpus "$NIAKVIO/.github/triggers/nuvio-client-lab.json" \
+  "${LOGS[@]}" || MATRIX_STATUS=$?
 SMOKE_STATUS=0
 node "$SMOKE_GATE" "${LOGS[@]}" || SMOKE_STATUS=$?
-echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS os=$HOST_OS status=$SMOKE_STATUS soft_failures=$SOFT_FAILURES fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST gate=production_player_reached"
-exit "$SMOKE_STATUS"
+FINAL_STATUS=$SMOKE_STATUS
+if [[ "$MATRIX_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi
+READER_STATE=healthy
+if [[ "$READER_FAILURES" -gt 0 ]]; then READER_STATE=degraded; fi
+echo "FIELD_NATIVE_CORPUS_DESKTOP_SUITE_STATUS os=$HOST_OS status=$FINAL_STATUS soft_failures=$SOFT_FAILURES reader_state=$READER_STATE reader_failures=$READER_FAILURES matrix_status=$MATRIX_STATUS fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} manifest=$TARGET_MANIFEST gate=production_player_reached"
+exit "$FINAL_STATUS"

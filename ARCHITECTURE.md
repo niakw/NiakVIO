@@ -171,17 +171,24 @@ Les Labs :
 
 Les retests ciblés peuvent relancer un device sans invalider les autres. Desktop dispose d'un trigger ciblé macOS/Windows ; iOS dispose d'un trigger ciblé et d'un watchdog de session reprenable afin qu'un provider QuickJS non-cancellable ne bloque pas le corpus complet.
 
+Le Lab final couvre explicitement **l'intégralité du catalogue** : 96 providers et 214 routes déclarées sur les trois fixtures représentatives (`82 movie + 92 tv + 40 anime`). Une route/provider manquant rend le Lab incomplet. Les erreurs du lecteur officiel restent des observations de lecture : le Lab ne répare jamais NuvioTV/NuvioMobile/NuvioDesktop pour obtenir un vert artificiel.
+
 ## 10. Minification
 
 La minification de production est désactivée. Terser ne fait pas partie du pipeline Provider v3.
 
-Tout futur minimizer doit être NiakVIO-aware et prouver qu'il conserve :
+`scripts/provider_v3_minimizer.py` existe uniquement en **mode audit/preview** : il inventorie les 96 Provider JS, les marqueurs, commentaires, templates, lignes ASI-sensibles et le budget de whitespace. Il n'écrit jamais dans `providers/` et aucune transformation n'est active dans la reconstruction/publication.
+
+Avant toute activation, le minimizer devra être NiakVIO-aware et prouver qu'il conserve :
 
 - enveloppe BEGIN/END ;
 - `STARTFIX/CLOSEFIX/FIXDATA` ;
 - frontière Core ;
+- commentaires structurels ;
+- retours ligne tant que l'équivalence ASI n'est pas démontrée ;
+- identifiants, expressions et littéraux sans renommage/réécriture ;
 - remplacement déterministe d'un Lego ;
-- équivalence fonctionnelle et reverse reconstruction.
+- équivalence structurelle, runtime et reverse reconstruction.
 
 ## 11. Branches et publication
 

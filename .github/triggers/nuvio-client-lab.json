@@ -491,7 +491,7 @@
     "desktop",
     "mobile"
   ],
-  "run_revision": "native-reader-diagnostics-v18-provider-budget-aligned",
+  "run_revision": "native-reader-diagnostics-v19-full-96-provider-matrix",
   "policy": {
     "target_total": 10,
     "minimum_vf": 3,
@@ -525,6 +525,18 @@
       "movie": "interstellar",
       "tv": "breaking-bad-s01e01",
       "anime": "jujutsu-kaisen-s01e01"
+    },
+    "exhaustive_declared_matrix": {
+      "provider_count": 96,
+      "route_count": 214,
+      "by_type": {
+        "movie": 82,
+        "tv": 92,
+        "anime": 40
+      },
+      "missing_provider_or_declared_route_is_blocking": true,
+      "reader_outcomes": "observational",
+      "external_client_failures_are_never_repaired_by_lab": true
     }
   }
 }

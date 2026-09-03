@@ -153,7 +153,6 @@ jobs:
           NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
           NIAKVIO_REGRESSION_STREAM_SCOPE: "2"
-          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
         with:
           api-level: 31
           target: android-tv
@@ -165,6 +164,15 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
+      - name: Verify exhaustive TV provider matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
+            --client tv \
+            --manifest niakvio/manifest.json \
+            --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
       - name: Diagnose complete TV evidence
         if: always()
         shell: bash
@@ -247,7 +255,6 @@ jobs:
           NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: all
           NIAKVIO_REGRESSION_STREAM_SCOPE: all
-          NIAKVIO_REQUIRE_READER_SUCCESS: "1"
         with:
           api-level: 35
           target: google_apis
@@ -259,6 +266,15 @@ jobs:
           emulator-boot-timeout: 600
           emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
           script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_mobile_suite.sh"
+      - name: Verify exhaustive Mobile Android provider matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
+            --client mobile \
+            --manifest niakvio/manifest.json \
+            --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            "$GITHUB_WORKSPACE"/mobile-native-corpus-*.log
       - name: Diagnose complete Mobile Android evidence
         if: always()
         shell: bash

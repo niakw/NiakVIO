@@ -82,8 +82,16 @@
   ],
   "minifier": {
     "enabled_in_production": false,
+    "phase": "audit-only",
+    "audit_tool": "scripts/provider_v3_minimizer.py",
+    "transformations_enabled": [],
     "comment_architecture_must_be_preserved": true,
     "managed_markers_must_be_preserved": true,
+    "newline_asi_contract": "preserve until semantic equivalence is proven",
+    "identifier_renaming_allowed": false,
+    "expression_reordering_allowed": false,
+    "literal_rewriting_allowed": false,
+    "runtime_equivalence_tests_required_before_enablement": true,
     "byte_equivalence_tests_required_before_enablement": true,
     "terser_allowed": false
   },
@@ -156,5 +164,19 @@
     "reconstruction_sha": "8e3f40c318d923e83b1dc49320fc1e4b68efe2cd",
     "release_integrity": true,
     "quick_validation": "pending provider-byte-neutral follow-up"
+  },
+  "native_lab_contract": {
+    "provider_count": 96,
+    "declared_routes": 214,
+    "declared_routes_by_type": {
+      "movie": 82,
+      "tv": 92,
+      "anime": 40
+    },
+    "coverage_gate": "scripts/gate_native_declared_provider_matrix.py",
+    "coverage_is_blocking": true,
+    "reader_outcomes_are_observational": true,
+    "external_nuvio_repo_repairs_allowed": false,
+    "harness_repairs_allowed_only_when_test_plumbing_is_wrong": true
   }
 }

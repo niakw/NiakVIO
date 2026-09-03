@@ -87,12 +87,22 @@ assert machine["native_labs"] == [
     "DesktopWindows",
 ]
 assert machine["minifier"]["enabled_in_production"] is False
+assert machine["minifier"]["phase"] == "audit-only"
+assert machine["minifier"]["audit_tool"] == "scripts/provider_v3_minimizer.py"
+assert machine["minifier"]["transformations_enabled"] == []
 assert machine["minifier"]["terser_allowed"] is False
 assert machine["reference_reconstruction"]["retry"] == 21
 assert machine["reference_reconstruction"]["generation"] == "9ddd9f969838d444"
 assert machine["reference_reconstruction"]["reconstruction_sha"] == "8e3f40c318d923e83b1dc49320fc1e4b68efe2cd"
 assert machine["reference_reconstruction"]["reverse_byte_identical"] == "96/96"
 assert machine["reference_reconstruction"]["release_integrity"] is True
+lab = machine["native_lab_contract"]
+assert lab["provider_count"] == 96
+assert lab["declared_routes"] == 214
+assert lab["declared_routes_by_type"] == {"movie": 82, "tv": 92, "anime": 40}
+assert lab["coverage_is_blocking"] is True
+assert lab["reader_outcomes_are_observational"] is True
+assert lab["external_nuvio_repo_repairs_allowed"] is False
 
 # Dead orchestration trigger from the old repair world must not silently return.
 assert "exactement cinq Labs" in install

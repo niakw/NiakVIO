@@ -29,6 +29,7 @@ on:
       - 'tests/**'
       - 'automation/provider-v3-architecture.json'
       - 'ARCHITECTURE.md'
+      - 'ARCHITECTURE.docx'
       - 'README.md'
       - 'README.fr.md'
       - 'HEALTH-CHECK.md'
@@ -38,6 +39,17 @@ on:
       - 'SECURITY.md'
       - 'UPSTREAMS.md'
       - 'engine_v2/README.md'
+      - 'package.json'
+      - 'scripts/provider_v3_minimizer.py'
+      - 'scripts/gate_native_declared_provider_matrix.py'
+      - 'scripts/run_native_corpus_tv_suite.sh'
+      - 'scripts/run_native_corpus_mobile_suite.sh'
+      - 'scripts/run_native_corpus_desktop_suite.sh'
+      - 'scripts/native_player_diagnostics_codegen.py'
+      - '.github/triggers/nuvio-client-lab.json'
+      - '.github/workflows/native-mobile-android-reader.yml'
+      - '.github/workflows/native-mobile-ios-reader.yml'
+      - '.github/workflows/native-desktop-reader-acceptance.yml'
       - '.github/workflows/sync.yml'
   push:
     branches:
@@ -58,6 +70,7 @@ on:
       - 'tests/**'
       - 'automation/provider-v3-architecture.json'
       - 'ARCHITECTURE.md'
+      - 'ARCHITECTURE.docx'
       - 'README.md'
       - 'README.fr.md'
       - 'HEALTH-CHECK.md'
@@ -67,6 +80,17 @@ on:
       - 'SECURITY.md'
       - 'UPSTREAMS.md'
       - 'engine_v2/README.md'
+      - 'package.json'
+      - 'scripts/provider_v3_minimizer.py'
+      - 'scripts/gate_native_declared_provider_matrix.py'
+      - 'scripts/run_native_corpus_tv_suite.sh'
+      - 'scripts/run_native_corpus_mobile_suite.sh'
+      - 'scripts/run_native_corpus_desktop_suite.sh'
+      - 'scripts/native_player_diagnostics_codegen.py'
+      - '.github/triggers/nuvio-client-lab.json'
+      - '.github/workflows/native-mobile-android-reader.yml'
+      - '.github/workflows/native-mobile-ios-reader.yml'
+      - '.github/workflows/native-desktop-reader-acceptance.yml'
       - '.github/workflows/sync.yml'
   schedule:
     - cron: '47 4 * * 2,5'
@@ -127,6 +151,9 @@ jobs:
           python tests/native_five_lab_coverage_test.py
           python tests/native_lab_observational_purity_test.py
           python tests/native_ios_watchdog_resume_test.py
+          python tests/native_declared_provider_matrix_test.py
+          python tests/native_lab_reader_observation_contract_test.py
+          python tests/provider_v3_minimizer_contract_test.py
           python scripts/audit_provider_v3_static.py
           python tests/provider_brick_portfolio_audit_test.py --published --require-all
           python tests/provider_521_capability_regression_test.py

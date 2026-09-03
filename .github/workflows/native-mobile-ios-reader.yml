@@ -161,6 +161,16 @@ jobs:
             exit 2
           fi
           bash niakvio/scripts/run_native_corpus_ios_suite.sh
+      - name: Verify exhaustive iOS provider matrix
+        if: ${{ github.event_name == 'schedule' || inputs.mode != 'only' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
+            --client ios \
+            --manifest niakvio/manifest.json \
+            --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
       - name: Build sanitized iOS reader diagnoses
         if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'only') }}
         shell: bash

@@ -153,8 +153,10 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
         val errorRef = AtomicReference<String?>(null)
         var activity: MainActivity? = null
         return try {
-            val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)
-                ?: return NativePlayerProbe("error", "nuvio-mobile", "MainActivity", "NO_LAUNCH_INTENT", 0, "player_setup", host, null)
+            // Start the official production MainActivity explicitly. The package launcher
+            // currently points to an icon-alias subclass; the Lab must observe the actual
+            // player host, not depend on launcher-alias resolution in instrumentation.
+            val intent = Intent(context, MainActivity::class.java)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             activity = instrumentation.startActivitySync(intent) as? MainActivity
                 ?: return NativePlayerProbe("error", "nuvio-mobile", "MainActivity", "WRONG_ACTIVITY", 0, "player_setup", host, null)
@@ -213,7 +215,22 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                 else -> NativePlayerProbe("timeout", "nuvio-mobile-production", "PlatformPlayerSurface", "READER_TIMEOUT", 0, "timeout", host, durationSeconds)
             }
         } catch (error: Throwable) {
-            NativePlayerProbe("error", "nuvio-mobile-production", error::class.qualifiedName.orEmpty(), sanitizeDiag(error.message), 0, "player_setup", host, null)
+            val chain = generateSequence(error) { it.cause }
+                .take(6)
+                .joinToString(" -> ") { cause ->
+                    cause::class.qualifiedName.orEmpty() + ":" + sanitizeDiag(cause.message)
+                }
+            NativePlayerProbe(
+                "error",
+                "nuvio-mobile-production",
+                error::class.qualifiedName.orEmpty(),
+                sanitizeDiag(error.message),
+                0,
+                "player_setup",
+                host,
+                null,
+                chain,
+            )
         } finally {
             runCatching { instrumentation.runOnMainSync { activity?.finish() } }
         }

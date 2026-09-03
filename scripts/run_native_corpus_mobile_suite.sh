@@ -30,12 +30,6 @@ TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
-REQUESTED_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
-PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"
-REQUIRE_READER_SUCCESS=0
-if [[ "$PLAYER_OUTCOME_GLOBAL_GATE" = "1" && "$REQUESTED_READER_SUCCESS" = "1" ]]; then
-  REQUIRE_READER_SUCCESS=1
-fi
 READER_ACCEPTANCE="${NIAKVIO_READER_ACCEPTANCE:-0}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
@@ -70,6 +64,7 @@ else
   FIXTURES=("${DEFAULT_FIXTURES[@]}")
 fi
 SOFT_FAILURES=0
+READER_FAILURES=0
 PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
 
@@ -99,7 +94,7 @@ echo "FIELD_NATIVE_MOBILE_APP_INSTALLED package=com.nuviodebug.com variant=fullD
 
 mkdir -p "$EVIDENCE_ROOT"
 echo "Resolved NuvioMobile task once for corpus suite: $MOBILE_TASK"
-echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
+echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES reader_outcome=observational reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 
 for fixture in "${FIXTURES[@]}"; do
   echo "===== MOBILE CORPUS FIXTURE: $fixture ====="
@@ -148,6 +143,7 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$OBSERVED_READER_STATUS" -ne 0 ]]; then
     SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
+  if [[ "$OBSERVED_READER_STATUS" -ne 0 ]]; then READER_FAILURES=$((READER_FAILURES+1)); fi
   echo "FIELD_NATIVE_CORPUS_MOBILE_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
 done
 
@@ -159,7 +155,17 @@ for fixture in "${FIXTURES[@]}"; do
 done
 
 LOGS=("${WORKSPACE}"/mobile-native-corpus-*.log)
+MATRIX_STATUS=0
+python3 "$NIAKVIO/scripts/gate_native_declared_provider_matrix.py" \
+  --client mobile \
+  --manifest "$NIAKVIO/$TARGET_MANIFEST" \
+  --corpus "$NIAKVIO/.github/triggers/nuvio-client-lab.json" \
+  "${LOGS[@]}" || MATRIX_STATUS=$?
 SMOKE_STATUS=0
 node "$SMOKE_GATE" "${LOGS[@]}" || SMOKE_STATUS=$?
-echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$SMOKE_STATUS soft_failures=$SOFT_FAILURES fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST gate=production_player_reached evidence_root=$EVIDENCE_ROOT"
-exit "$SMOKE_STATUS"
+FINAL_STATUS=$SMOKE_STATUS
+if [[ "$MATRIX_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi
+READER_STATE=healthy
+if [[ "$READER_FAILURES" -gt 0 ]]; then READER_STATE=degraded; fi
+echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$FINAL_STATUS soft_failures=$SOFT_FAILURES reader_state=$READER_STATE reader_failures=$READER_FAILURES matrix_status=$MATRIX_STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST gate=production_player_reached evidence_root=$EVIDENCE_ROOT"
+exit "$FINAL_STATUS"

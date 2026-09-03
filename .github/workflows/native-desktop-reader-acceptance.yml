@@ -96,9 +96,7 @@ jobs:
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
-      # Reader/player outcomes are evidence for Brain/Deep. A failed playback or
-      # failed repair never freezes this Lab; only real setup/infra/contract errors do.
-      NIAKVIO_REQUIRE_READER_SUCCESS: "0"
+      # Reader/player outcomes are observational evidence. Coverage/infra are blocking; external client playback failures are preserved, never repaired here.
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -190,6 +188,15 @@ jobs:
           # reach is emitted as owner=brain/blocking=false and returns success.
           node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_player_reached.cjs" "${LOGS[@]}"
 
+      - name: Verify exhaustive Desktop provider matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
+            --client desktop \
+            --manifest niakvio/manifest.json \
+            --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
       - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
         shell: bash

@@ -457,3 +457,19 @@ Keep it disabled in production until all proofs are green.
 - `UPSTREAMS.md` now reflects reality: weekly upstream discovery is read-only; existing `upstream-lkg` snapshots are historical provenance/knowledge and are not refreshed by CORE Deep or used as executable reconstruction seeds.
 - These secondary docs are added to the fail-closed documentation drift contract.
 
+## 2026-09-03 — Native Labs expanded to full Provider catalogue
+- Final native acceptance is no longer described merely as three representative fixtures. Each of the five device Labs must traverse the complete declared Provider matrix on those fixtures.
+- Current exact matrix from manifest 5.21.31: 96 unique providers, 214 declared routes = 82 movie + 92 tv + 40 anime. Every provider has at least one representative route.
+- New fail-closed gate: `scripts/gate_native_declared_provider_matrix.py`. Missing provider, missing declared route begin, missing terminal observation, or undeclared route makes coverage incomplete.
+- Reader/player failures are deliberately observational. Labs must run the official Nuvio clients and preserve reader errors; they must not patch/repair NuvioTV/NuvioMobile/NuvioDesktop to manufacture a green playback result.
+- External client/runtime failures are therefore reported separately from NiakVIO matrix/infra completeness.
+- Mobile Android harness test plumbing now launches the official `MainActivity` explicitly instead of relying on launcher-alias resolution and records the full exception cause chain if player setup still fails. This is a harness correction, not a NuvioMobile product repair.
+- Old evidence remains useful: TV Android had 10/10 healthy reader observations; Windows Desktop had 18/19 healthy with one Kehflix anime timeout; Mobile Android had 0/20 healthy due `Could not launch activity` setup errors; macOS Desktop had 0/18 healthy due `mpv_create_failed`. The old workflow greens did not mean all readers were healthy.
+
+## 2026-09-03 — Provider v3 minimizer workbench started, production unchanged
+- Terser remains removed/forbidden.
+- `scripts/provider_v3_minimizer.py` is audit/preview-only and cannot write inside `providers/`.
+- Phase A inventories all 96 generated Provider JS files: bytes, comments, indentation/trailing whitespace, template-literal tokens, ASI-sensitive lines and canonical markers.
+- No transformation is enabled; reconstruction/publication bytes are unchanged.
+- Future enablement requires preservation of BEGIN/END, STARTFIX/CLOSEFIX/FIXDATA, Core boundary, comments/newlines until ASI safety is proven, and structural/runtime/reverse reconstruction equivalence. No identifier renaming, expression reordering/folding or literal rewriting is allowed in the conservative plan.
+
