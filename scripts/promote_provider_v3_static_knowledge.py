@@ -31,6 +31,28 @@ def canonical(value: object) -> str:
     return "".join(ch for ch in str(value or "").strip().casefold() if ch.isalnum() or ch in "-_")
 
 
+NON_EXECUTABLE_MODEL_HOSTS = (
+    "npms.io", "lodash.com", "openjsf.org", "underscorejs.org",
+    "arm.haglund.dev", "v3-cinemeta.strem.io",
+)
+
+
+def model_url_allowed(value: object) -> bool:
+    text = str(value or "").strip()
+    lowered = text.casefold()
+    if not text or "${" in text or "encodeURIComponent(" in text:
+        return False
+    return not any(host in lowered for host in NON_EXECUTABLE_MODEL_HOSTS)
+
+
+def model_route_allowed(value: object) -> bool:
+    text = str(value or "").strip()
+    lowered = text.casefold()
+    if not text or "${" in text or "encodeURIComponent(" in text:
+        return False
+    return "q=ponyfill" not in lowered and lowered.rstrip("/") != "/license"
+
+
 def merge_list(target: list[str], values: object, limit: int) -> None:
     if not isinstance(values, list):
         return
@@ -126,6 +148,12 @@ def merged_row(provider_id: str, candidates: list[dict[str, Any]]) -> dict[str, 
         if len(model["origins"]) >= 48:
             break
 
+    # Keep raw static knowledge as provenance, but only promote deterministic
+    # provider-owned routes/origins into the executable model.
+    model["origins"] = [value for value in model["origins"] if model_url_allowed(value)]
+    model["observedUrls"] = [value for value in model["observedUrls"] if model_url_allowed(value)]
+    model["routes"] = [value for value in model["routes"] if model_route_allowed(value)]
+
     return {
         "model": model,
         "knowledge": knowledge,
@@ -144,7 +172,10 @@ def has_execution_data(row: dict[str, Any], patch: dict[str, Any]) -> bool:
     for key in ("knownSite", "officialSite", "officialApi", "fixedApi"):
         if str(model.get(key) or "").strip():
             return True
-    return any(model.get(key) for key in ("routes", "observedUrls", "origins"))
+    return bool(model.get("routes")) and any(
+        str(model.get(key) or "").strip()
+        for key in ("knownSite", "officialSite", "officialHub", "officialApi", "fixedApi")
+    )
 
 
 def main() -> int:
