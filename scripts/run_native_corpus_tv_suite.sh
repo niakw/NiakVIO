@@ -168,7 +168,7 @@ for fixture in "${FIXTURES[@]}"; do
   wait "$WATCH_PID" 2>/dev/null || true
 
   LOG="${WORKSPACE}/tv-native-corpus-${fixture}.log"
-  adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I PluginRuntime:D '*:S' > "$LOG" || true
+  adb logcat -d -v brief | grep -E 'NiakvioCorpus|NiakvioEvidence|PluginRuntime|Plugin:' > "$LOG" || true
   echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv" >> "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
   cat "$LOG" || true
