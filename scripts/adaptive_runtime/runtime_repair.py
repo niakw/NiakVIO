@@ -195,7 +195,7 @@ def _adaptive_failure(result: dict[str, Any]) -> bool:
 
 
 def _load_safe_structured_parse_module():
-    script = ROOT / "scripts" / "provider_patches" / "safe_structured_parse_v1.py"
+    script = ROOT / "scripts" / "adaptive_runtime" / "safe_structured_parse_v1.py"
     spec = importlib.util.spec_from_file_location("nuvio_safe_structured_parse", script)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load {script}")
