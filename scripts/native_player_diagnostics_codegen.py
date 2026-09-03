@@ -156,7 +156,10 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
             // Start the official production MainActivity explicitly. The package launcher
             // currently points to an icon-alias subclass; the Lab must observe the actual
             // player host, not depend on launcher-alias resolution in instrumentation.
-            val intent = Intent(context, MainActivity::class.java)
+            val intent = Intent().setClassName(
+                "com.nuviodebug.com",
+                MainActivity::class.java.name,
+            )
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
             activity = instrumentation.startActivitySync(intent) as? MainActivity
                 ?: return NativePlayerProbe("error", "nuvio-mobile", "MainActivity", "WRONG_ACTIVITY", 0, "player_setup", host, null)
