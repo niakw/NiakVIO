@@ -171,7 +171,7 @@
         "version_code": 17
       },
       "current_audited": {
-        "ref": "9390d5844e53d1f4d9829490d6f3deb057d7ab14",
+        "ref": "b17687e37b1eb7a9ae98aad302cb94b65eed26d9",
         "version_name": "0.1.22-alpha",
         "version_code": 22
       },
@@ -188,7 +188,7 @@
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
           "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt"
         ],
-        "audited_change": "2026-09-03 source re-audit at Dev HEAD 9390d5844e53: positional getStreams and result projection remain compatible while Desktop keeps its own asynchronous native fetch/JVM OkHttp and player bridge behavior documented in automation/platform-runtime-contracts.json.",
+        "audited_change": "2026-09-03 source re-audit advanced to Dev HEAD b17687e37b1e: intervening changes are desktop window maximize/multi-monitor DPI UI only; positional getStreams, async native fetch/JVM OkHttp and PluginRuntimeResult/StreamItem projection are unchanged.",
         "runtime_validation": "execute the exact official Desktop runtime and re-prove macOS/Windows reader behavior; Mobile success is not Desktop proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
@@ -263,7 +263,7 @@
         "version_code": 1045
       },
       "current_audited": {
-        "ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
+        "ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
         "version_name": "0.8.12-beta",
         "version_code": 1053
       },
@@ -280,7 +280,7 @@
           "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt",
           "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt"
         ],
-        "audited_change": "2026-09-03 source re-audit at dev HEAD 49c753de3f19: positional getStreams, repository/header ingestion, Proxy.NO_PROXY + IPv4FirstDns transport and TMDB_API_KEY injection remain compatible. TV still has no TextEncoder/TextDecoder or WebAssembly; subtitles/result projection are documented in automation/platform-runtime-contracts.json and automation/nuvio-tv-runtime-contract.json.",
+        "audited_change": "2026-09-03 source re-audit advanced to dev HEAD 4f37e9491997: intervening changes are ASS/SSA subtitle styling/focus in player UI only; positional getStreams, repository/header ingestion, Proxy.NO_PROXY + IPv4FirstDns transport and TMDB_API_KEY injection remain unchanged.",
         "runtime_validation": "execute NuvioTV's own Android-TV QuickJS/host implementation; Desktop/Mobile success is never TV proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
