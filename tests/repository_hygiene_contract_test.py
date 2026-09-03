@@ -204,7 +204,7 @@ for stale in (
 
 assert "`main` is the only production code branch" in readme
 assert "`main` : unique branche de code" in readme_fr
-assert "## 22. Labs natifs sur `main`" in architecture
+assert "Cinq Native Labs" in architecture
 assert "brain-learning/proposals" in readme
 assert "brain-learning/proposals" in architecture
 assert "healthy sibling selection" not in architecture
