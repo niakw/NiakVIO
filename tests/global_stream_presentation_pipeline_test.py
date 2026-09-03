@@ -43,12 +43,12 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
     assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in output, provider
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in output, provider
     assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output, provider
-    assert "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" in output, provider
+    assert "/* STARTFIX:CORE.STREAM_SANITIZER.V6 */" in output, provider
     assert output.index("NUVIO_GLOBAL_STREAM_FACTS_V1") < output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1"), provider
     assert output.index("NUVIO_GLOBAL_STREAM_IDENTITY_V1") < output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1"), provider
     assert output.index("NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1") < output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1"), provider
     assert output.index("NUVIO_GLOBAL_STREAM_PRESENTATION_V1") < output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1"), provider
-    assert output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1") < output.index("NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6"), provider
+    assert output.index("NUVIO_GLOBAL_PROVIDER_BRANDING_V1") < output.index("/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"), provider
     assert any(
         row.get("path") == GLOBAL_MEDIA_TYPE_RESOLUTION
         and row.get("scope") == "global_media_type_resolution"
