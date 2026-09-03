@@ -8,7 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from provider_patch_blocks import validate_managed_fixes  # noqa: E402
+from provider_patch_blocks import begin_marker, end_marker, owned_span, validate_managed_fixes  # noqa: E402
 
 MANIFEST = ROOT / "manifest.json"
 CORE_BOUNDARY = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
@@ -24,9 +24,9 @@ UNIVERSAL_CORE_IDS = {
     "CORE.MEDIA_TYPE_RESOLUTION.V1",
 }
 
-MEDIA_TYPE_REVISION = "tmdb-api-first-semantic-transport-split-v20-event-launch-nonzero-gate"
-LAUNCH_EVENT = 'providerEvent="launch"'
-LAUNCH_OUTPUT_GATE = 'providerEvent!=="launch"||!hasProviderOutput(value)'
+MEDIA_TYPE_REVISION = "tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile"
+LAUNCH_EVENT_GATE = 'if(providerEvent!=="launch")return []'
+POSITIVE_OUTPUT_GATE = 'if(!hasProviderOutput(value))return []'
 
 
 def main() -> int:
@@ -84,31 +84,33 @@ def main() -> int:
             )
 
         boundary = text.index(CORE_BOUNDARY)
-        before_core = text[:boundary]
-        if "/* START NIAKVIO_FIX:CORE." in before_core:
-            errors.append(f"{provider_id}: Core Lego leaked before canonical boundary")
-
         for fix_id in fix_ids:
-            if not fix_id.startswith("CORE."):
+            start_marker = begin_marker(fix_id)
+            close_marker = end_marker(fix_id)
+            if text.count(start_marker) != 1 or text.count(close_marker) != 1:
+                errors.append(
+                    f"{provider_id}: non-canonical STARTFIX/CLOSEFIX ownership={fix_id}"
+                )
                 continue
-            start = text.find(f"/* START NIAKVIO_FIX:{fix_id} */")
-            end = text.find(f"/* END NIAKVIO_FIX:{fix_id} */")
-            if start <= boundary or end <= start:
+            span = owned_span(text, fix_id)
+            if span is None:
+                errors.append(f"{provider_id}: missing owned span={fix_id}")
+                continue
+            if fix_id.startswith("CORE.") and span[0] <= boundary:
                 errors.append(
                     f"{provider_id}: Core brick outside managed tail={fix_id}"
                 )
+            if fix_id.startswith("PROVIDER.") and span[1] > boundary:
+                errors.append(
+                    f"{provider_id}: Provider brick leaked into Core tail={fix_id}"
+                )
 
         if MEDIA_TYPE_REVISION not in text:
-            errors.append(f"{provider_id}: media-type runtime is not v20")
-        if LAUNCH_EVENT not in text:
+            errors.append(f"{provider_id}: media-type runtime is not v26")
+        if LAUNCH_EVENT_GATE not in text:
             errors.append(f"{provider_id}: launch event gate missing")
-        if LAUNCH_OUTPUT_GATE not in text:
-            errors.append(f"{provider_id}: launch/nonzero output short-circuit missing")
-
-        if text.count("/* START NIAKVIO_FIX:") != len(fix_ids):
-            errors.append(f"{provider_id}: START marker cardinality drift")
-        if text.count("/* END NIAKVIO_FIX:") != len(fix_ids):
-            errors.append(f"{provider_id}: END marker cardinality drift")
+        if POSITIVE_OUTPUT_GATE not in text:
+            errors.append(f"{provider_id}: positive-output gate missing")
 
     expected = len([
         row for row in manifest.get("scrapers") or []
@@ -129,7 +131,7 @@ def main() -> int:
     print(
         "FIELD_PUBLISHED_PROVIDER_LEGO "
         f"providers={checked} quarantined={quarantined} "
-        f"universal_bricks={len(UNIVERSAL_CORE_IDS)} media_type=v20 launch_gate=true"
+        f"universal_bricks={len(UNIVERSAL_CORE_IDS)} media_type=v26 launch_gate=true"
     )
     print("published provider Lego contract passed")
     return 0

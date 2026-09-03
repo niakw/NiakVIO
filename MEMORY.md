@@ -363,3 +363,10 @@ Keep it disabled in production until all proofs are green.
 - Removed stale `tests/native_sync_fetch_target_order_test.py` and `scripts/apply_runtime_capability_upgrade_v4.py` instead of resurrecting obsolete source-shape patchers.
 - `runtime_capability_media_safety_v4_test.py` now keeps only the active native HLS companion. No runtime policy was weakened; main remains untouched. Next controlled reconstruction: retry 17.
 
+## 2026-09-03 — retry 17 reached canonical post-rebuild contracts
+- Manual reconstruction retry 17 again materialized all 96 providers at generation `949d251de7e3cb4d` and proved reverse reconstruction byte-identical 96/96.
+- Published brick audit, Provider v3 static audit, media-type v26, stream presentation V18, presentation pipeline, stream identity and runtime capability media safety all passed on the reconstructed workspace bytes.
+- The first red was a stale test contract in `global_playback_integrity_policy_test.py`: StreamZo HLS options moved from legacy `patch_script_options` to `core_options.hls_runtime_integrity`; runtime configuration itself was present and correct.
+- The same cleanup batch aligns HLS/sanitizer assertions to canonical STARTFIX/CLOSEFIX helper markers, removes the obsolete Terser-specific test wording, and upgrades the published Lego contract from legacy marker/v20 assumptions to canonical ownership helpers + media-type v26 launch/positive-output gates.
+- No provider behavior is weakened and main remains untouched. Next controlled reconstruction: retry 18.
+

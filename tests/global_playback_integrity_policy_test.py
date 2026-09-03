@@ -10,6 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from provider_patch_blocks import begin_marker, end_marker  # noqa: E402
+
 spec = importlib.util.spec_from_file_location(
     "apply_provider_overrides",
     ROOT / "scripts/apply_provider_overrides.py",
@@ -59,9 +61,7 @@ for provider_id, row in (cfg.get("provider_patches") or {}).items():
     if hls_options is not None:
         assert isinstance(hls_options, dict), provider_id
 
-streamzo_hls_options = cfg["provider_patches"]["streamzo"]["patch_script_options"][
-    "scripts/provider_patches/hls_runtime_integrity_v1.py"
-]
+streamzo_hls_options = cfg["provider_patches"]["streamzo"]["core_options"]["hls_runtime_integrity"]
 assert streamzo_hls_options["probe_all_urls"] is True
 assert streamzo_hls_options["fail_closed_unknown"] is False
 
@@ -134,7 +134,8 @@ assert reapplied_text.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
 assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in reapplied_text
 assert '"implementationRevision":"field-safety-v6-core-repair-types"' not in reapplied_text
 assert '"implementationRevision":"scoped-playback-context-v4"' not in reapplied_text
-assert reapplied_text.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert reapplied_text.count(begin_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")) == 1
+assert reapplied_text.count(end_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")) == 1
 assert reapplied_text.count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
 assert reapplied_text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1") < reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1")
 assert reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_FACTS_V1")
