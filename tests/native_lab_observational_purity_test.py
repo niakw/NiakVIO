@@ -246,7 +246,7 @@ for label, workflow in lab_workflows.items():
         "normalize_core_media_policy.py --apply",
     ):
         assert forbidden not in workflow, f"{label} lab may not mutate/reconstruct Provider v3: {forbidden}"
-assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "40000"' in lab_workflows["android"]
+assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"' in lab_workflows["android"]
 assert "NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '40000' }}" in lab_workflows["ios"]
 
 print("native human UX observational-purity policy and implementation tests passed")
