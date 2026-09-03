@@ -82,53 +82,35 @@ NiakVIO audits the current official client HEADs and treats each client as a sep
 
 ---
 
-## Provider Engine V2 / ARCHI 2
+## Provider v3 architecture
 
-`provider_catalog.json` is the canonical publication registry. `manifest.json` and `vf/manifest.json` are deterministic projections of the same catalogue.
+NiakVIO's executable provider source is **ProviderBase v3 + structured DATA + owned Lego**. Published `providers/*.js` files are generated, content-addressed client artifacts and are never reused as reconstruction seeds.
+
+The canonical Provider JS envelope is:
 
 ```text
-upstreams + published/LKG
-          |
-          v
- multi-variant discovery
-          |
-          v
- hubs / DNS / domains
-          |
-          v
- provider_catalog.json
-          |
-          v
- ProviderSpec + Resolver Core V2
-          |
-          v
- Evidence Matrix
-          |
-          v
- Repair Brain
-          |
-          v
- media + identity + language + playback context
-      /       |       \
- Mobile   Desktop     TV
-      \       |       /
-          v
- fail-closed publication
-      /             \
-manifest.json    vf/manifest.json
+BEGIN NIAKVIO_PROVIDER
+  ProviderBase v3
+  PROVIDER.<ID>.CONFIG.V1  (STARTFIX / FIXDATA / CLOSEFIX)
+  optional PROVIDER.* Lego
+  NUVIO_GLOBAL_CORE_START_BOUNDARY_V1
+  CORE.* Lego             (STARTFIX / CLOSEFIX)
+END NIAKVIO_PROVIDER
 ```
 
-See [`ARCHITECTURE.md`](ARCHITECTURE.md) and [`engine_v2/README.md`](engine_v2/README.md).
+The forced 96/96 reconstruction lives only in `.github/workflows/provider-v3-reconstruct-all.yml` and requires a byte-identical reverse rebuild. Upstream code is knowledge/provenance, not executable canonical source.
 
----
+See [`ARCHITECTURE.md`](ARCHITECTURE.md) for the full contract.
 
-## Quick and Deep
+## CORE Quick and Deep
 
-The main provider pipeline is [`.github/workflows/sync.yml`](.github/workflows/sync.yml).
+The routine workflow is [`.github/workflows/sync.yml`](.github/workflows/sync.yml), displayed as **CORE - Verify & Publish**.
 
-**Quick** handles routine maintenance such as hub/domain refresh, canonical provider validation and bounded repairs.
+**Quick** is a fast deterministic safety gate over the exact Provider v3 bytes. It performs no provider repair, reconstruction or code/DATA mutation and does not run full network health.
 
-**Deep** is reserved for broader reconstruction, new provider knowledge, larger evidence scopes and stronger identity/transport validation.
+**Deep** adds structural and network observation, reprojects manifests and regenerates reports/hashes. It still performs no provider repair or reconstruction; on `main`, its write scope is restricted to approved reports, projections and integrity inventories.
+
+Code evolution belongs to the independent Learning sandbox and reviewable proposals. Domain Refresh is separately limited to validated `official_site` CONFIG DATA updates.
 
 ---
 
@@ -143,7 +125,7 @@ NiakVIO validates real paths on official Nuvio clients:
 
 The Labs distinguish provider extraction problems, runtime errors, player/client incompatibility, transport failures, missing media and wrong-media identity.
 
-Canonical native coverage is **1/1/1 per provider by declared type**: at most one movie fixture, one TV fixture and one anime fixture, each selected from the central fixture list. A provider is never replayed on a second work of the same type during the standard Lab. These evidence Labs are observational and do not block the normal provider publication path.
+Canonical acceptance is exactly **five first-class Labs**: TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows. The representative corpus is Interstellar, Breaking Bad S01E01 and Jujutsu Kaisen S01E01. Labs are observational: they consume exact Provider JS bytes and never repair, reconstruct or mutate them.
 
 Named movies, series and anime in Lab configurations are **test fixtures**, not catalogue entries. Public evidence is intentionally minimized and sanitized. See [`TESTING_NOTICE.md`](TESTING_NOTICE.md).
 
@@ -181,21 +163,21 @@ Inconsistent generations must not silently replace a previously healthy publishe
 
 | Workflow | Purpose |
 |---|---|
-| `sync.yml` | canonical discovery → bounded repair → validation → Quick/Deep publication |
-| `add-provider.yml` | full-auto structured onboarding: hub/direct/Telegram/search → clean ProviderBase → Labs → gated publication |
-| `native-mobile-android-reader.yml` | official Android TV + Nuvio Mobile Android evidence |
-| `native-corpus-device-targeted.yml` | manual targeted corpus for TV, Mobile, Desktop or all clients |
-| `native-mobile-ios-reader.yml` | official Nuvio Mobile iOS simulator evidence |
-| `native-desktop-reader-acceptance.yml` | official macOS/Windows Desktop evidence |
-| `core-media-finalize-main.yml` | Core fixed point and publication integrity |
-| `brain-learning-lab.yml` | independent daily full-catalogue observation + 60-minute resumable Learning queue |
-| `brain-branch-maintenance.yml` | keep sanitized Brain memory rebased on `main` and remove closed proposal branches |
+| `sync.yml` | **CORE - Verify & Publish**: Quick/Deep verification; no provider repair/reconstruction |
+| `provider-v3-reconstruct-all.yml` | manual 96/96 Provider v3 reconstruction on a non-main branch + reverse byte proof |
+| `brain-learning-lab.yml` | independent sandbox observation/repair learning + reviewable proposals |
+| `domain-refresh.yml` | validated `official_site` CONFIG-only maintenance |
+| `add-provider.yml` | structured provider onboarding; activation still requires evidence |
+| `native-mobile-android-reader.yml` | official NuvioTV Android TV + NuvioMobile Android evidence |
+| `native-mobile-ios-reader.yml` | official NuvioMobile iOS evidence |
+| `native-desktop-reader-acceptance.yml` | official NuvioDesktop macOS + Windows evidence |
+| `native-corpus-device-targeted.yml` | manual targeted device/provider diagnostics |
+| `native-reader-learning-sync.yml` | import sanitized reader evidence into Learning memory |
 | `github-actions-gate.yml` | workflow/dependency security invariants |
 | `codeql.yml` | CodeQL analysis |
-| `provider-results-readme-sync.yml` | positive native-evidence README synchronization |
-| `external-code-audit.yml` | SonarQube Cloud / DeepSource / CodeScene evidence refresh |
-| `weekly-upstream-provider-discovery.yml` | weekly read-only discovery across the three upstream provider repositories |
-| `purge-actions-history.yml` | weekly cleanup of completed Actions runs older than 7 days |
+| `external-code-audit.yml` | SonarQube Cloud / DeepSource / CodeScene evidence |
+| `weekly-upstream-provider-discovery.yml` | read-only upstream discovery |
+| `purge-actions-history.yml` | cleanup of old completed Actions runs |
 
 ---
 

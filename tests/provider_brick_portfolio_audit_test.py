@@ -14,7 +14,7 @@ sys.path.insert(0, str(SCRIPTS))
 
 from apply_provider_overrides import apply_overrides
 from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS, canonical_id, requires_clean_reconstruction, resolve_runtime_base
-from provider_patch_blocks import validate_managed_fixes
+from provider_patch_blocks import begin_marker, end_marker, owned_span, validate_managed_fixes
 
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 PROVENANCE = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
@@ -79,14 +79,12 @@ def stage_rows(stage: Path) -> dict[str, dict]:
 
 def block_fingerprints(text: str) -> dict[str, str]:
     result: dict[str, str] = {}
-    for match in BLOCK_START.finditer(text):
-        fix_id = match.group(1).strip()
-        end_marker = f"/* END NIAKVIO_FIX:{fix_id} */"
-        end = text.find(end_marker, match.end())
-        if end < 0:
-            result[fix_id] = "unterminated"
+    for fix_id in validate_managed_fixes(text):
+        span = owned_span(text, fix_id)
+        if span is None:
+            result[fix_id] = "missing-owned-span"
             continue
-        body = text[match.start(): end + len(end_marker)]
+        body = text[span[0]:span[1]]
         result[fix_id] = hashlib.sha256(body.encode("utf-8")).hexdigest()[:12]
     return result
 
@@ -102,9 +100,9 @@ def first_diff(left: str, right: str) -> tuple[int, str, str]:
 
 def audit_order(provider_id: str, text: str) -> None:
     positions = {
-        fix_id: text.find(f"/* START NIAKVIO_FIX:{fix_id} */")
+        fix_id: text.find(begin_marker(fix_id))
         for fix_id in CORE_ORDER
-        if f"/* START NIAKVIO_FIX:{fix_id} */" in text
+        if begin_marker(fix_id) in text
     }
     previous = -1
     for fix_id in CORE_ORDER:
@@ -271,7 +269,14 @@ def main() -> int:
             original_bytes = base_path.read_bytes()
             original_sha = hashlib.sha256(original_bytes).hexdigest()
             base_text = original_bytes.decode("utf-8", errors="strict")
-            if "NIAKVIO_FIX" in base_text:
+            forbidden_markers = (
+                "/* STARTFIX:",
+                "/* CLOSEFIX:",
+                "/* FIXDATA:",
+                "/* START NIAKVIO_FIX:",
+                "/* END NIAKVIO_FIX:",
+            )
+            if any(marker in base_text for marker in forbidden_markers):
                 raise AssertionError(f"{provider_id}: managed fix leaked into ProviderBase")
 
             try:

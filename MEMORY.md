@@ -402,3 +402,28 @@ Keep it disabled in production until all proofs are green.
 - A Desktop-only trigger path is added so macOS/Windows can be re-run after Desktop-specific Lab fixes without cancelling/re-running Android/iOS. The shared five-lab trigger remains the canonical full acceptance trigger.
 - No provider bytes or main bytes are changed.
 
+## 2026-09-03 — native acceptance 4/5 green before Provider v3 cleanup retry 20
+- Shared five-lab acceptance on the reconstructed Provider v3 bytes has now proven TVAndroid and MobileAndroid green in run `33709117762`.
+- Desktop targeted run `33709259843` is green on both macOS and Windows. The first Windows job failed before provider execution because Gradle could not resolve the official NuvioDesktop Foojay toolchain plugin; a targeted job rerun on the same SHA succeeded, confirming build-infrastructure/transient resolution rather than a Provider v3 regression.
+- Mobile iOS run `33709117670` remains in the official native Lab session at the time of this cleanup commit; no failure has been reported yet.
+- CORE Quick 1784 remained green after the Desktop observational-contract cleanup.
+- No main byte was modified.
+
+## 2026-09-03 — Kehflix playback malformed-container evidence closes a generic HLS Core gap
+- A real user playback failure from the current main Kehflix stream reported `Cannot find sync byte / parsing_container_malformed`, which means the player entered an MPEG-TS parsing path without finding the required TS sync structure.
+- Inspection showed that current `CORE.HLS_RUNTIME_INTEGRITY.V1` proves playlist/master/variant structure but intentionally skipped HLS network probes on native hosts. Therefore a syntactically valid `#EXTM3U` could still hand the player a first segment containing HTML/JSON/garbage or a mismatched container.
+- Official NuvioMobile/NuvioDesktop conversion was checked: plugin `row.headers` are projected to `behaviorHints.proxyHeaders.request` and then to player source headers; NuvioTV similarly maps local plugin headers to ProxyHeaders. The generic root gap is therefore first-media-container proof, not a missing basic header projection.
+- HLS Core now has an opt-in native first-segment proof controlled by provider DATA. It preserves Referer/Origin, resolves the first variant, reads only a bounded first segment/init map, validates MPEG-TS sync or fMP4 box signatures, and positively rejects HTML/JSON/malformed container payloads. Timeout/network uncertainty and encrypted HLS remain inconclusive/non-blocking.
+- Kehflix opts into this generic Core capability for at most three HLS rows with a short per-probe deadline. This is a stream-level filter; it does not disable Kehflix as a provider.
+- A native HLS regression test proves default zero-extra-probe behavior, valid TS retention, malformed TS/HTML rejection, header preservation and unknown-network retention.
+
+## 2026-09-03 — Provider v3 repository/documentation cleanup
+- The architecture documentation had drifted behind the validated code: it still described Quick as reparative/publishable, Deep as repair/reconstruction, ProviderBase V2 ownership, the removed `core-media-finalize-main.yml`, and Engine V2 as a second production control plane.
+- `ARCHITECTURE.md` is rewritten as the Provider v3 source of truth: clean ProviderBase v3 + structured DATA + owned PROVIDER/CORE Lego, manual 96/96 reconstruction only, Quick/Deep non-mutating provider verification, Learning sandbox ownership, CONFIG-only Domain Refresh and exactly five observational Native Labs.
+- README, README.fr, HEALTH-CHECK, VALIDATION, CONTRIBUTING and engine_v2/README are aligned with the same contract. `automation/provider-v3-architecture.json` advances to schema v2 and records the machine-readable ownership/documentation/HLS contracts.
+- A new documentation/ownership regression test fails closed on old ProviderBase V2 markers, old Quick/Deep repair language, dead workflow references or adaptive-repair calls from active non-Learning workflows. CORE Quick and manual reconstruction now run this test.
+- `provider_brick_portfolio_audit_test.py` no longer fingerprints/orders obsolete `START NIAKVIO_FIX/END` markers; it uses canonical STARTFIX/CLOSEFIX owned spans, closing a hidden false-green subcheck.
+- The unreferenced legacy `.github/triggers/deep-provider-repair` trigger is removed. Low-level repair primitives are not deleted blindly because several remain useful to Learning/tests.
+- A rendered/visually checked `ARCHITECTURE.docx` projection is generated from the current architecture for human review.
+- These Core/DATA changes require a new deterministic 96/96 reconstruction. Next controlled reconstruction: retry 20 on the workbench only.
+

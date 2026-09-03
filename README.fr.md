@@ -352,176 +352,111 @@ Source machine : [`automation/provider-device-results.json`](automation/provider
 
 # Architecture technique
 
-## ARCHI 2 : une seule source de vérité
+## Provider v3 : source exécutable reconstruisible
 
-NiakVIO repose sur **Provider Engine V2 / ARCHI 2**.
-
-[`provider_catalog.json`](provider_catalog.json) est le registre canonique de publication. `manifest.json` et `vf/manifest.json` sont des projections déterministes du même catalogue et non deux bases concurrentes.
+La vérité **exécutable** n'est plus un vieux Provider JS publié. Un bundle est généré depuis :
 
 ```text
-3 upstreams + état publié/LKG
-              │
-              ▼
-      Discovery multi-variantes
-              │
-              ▼
-      hubs / DNS / domaines
-              │
-              ▼
-      provider_catalog.json
-              │
-              ▼
- ProviderSpec + Resolver Core V2
-              │
-              ▼
-        Evidence Matrix
-              │
-              ▼
-        Repair Brain v4
-              │
-              ▼
- média + identité + langue + contexte
-              │
-        ┌─────┼─────┐
-        ▼     ▼     ▼
-     Mobile Desktop TV
-        └─────┼─────┘
-              ▼
-      publication fail-closed
-        ┌─────┴─────┐
-        ▼           ▼
- manifest.json   vf/manifest.json
+ProviderBase v3 propre
+  + DATA/CONFIG structurées
+  + Lego PROVIDER.*
+  + frontière Core unique
+  + Lego CORE.*
+  = providers/<id>-<hash>.js
 ```
 
-La description complète se trouve dans [`ARCHITECTURE.md`](ARCHITECTURE.md) et l'implémentation du moteur dans [`engine_v2/README.md`](engine_v2/README.md).
+Les upstreams, hubs et pages publiques servent de connaissance/provenance. Ils ne sont jamais réinjectés comme seed JavaScript canonique.
 
-### Frontière de compatibilité
+Les blocs appartenant à NiakVIO utilisent exclusivement `STARTFIX:<ID>`, `FIXDATA:<ID>` et `CLOSEFIX:<ID>`. Le marqueur ProviderBase courant est `NIAKVIO_PROVIDER_BASE_OWNED_V3`.
 
-Certaines primitives historiques de `scripts/` sont encore utilisées lorsqu'elles assurent une fonction qui n'a pas encore d'équivalent V2 : LKG, adaptation de routes, probes spécialisés, génération de bundle, etc.
+La reconstruction forcée complète appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main. Elle doit produire 96/96 providers puis prouver un reverse rebuild byte-identical 96/96.
 
-Elles restent **derrière ARCHI 2** : aucun second manifest, orchestrateur ou système d'activation concurrent ne doit devenir une deuxième source de vérité.
+Le retry 19 du chantier Provider v3 a établi cette propriété avec la génération `949d251de7e3cb4d`, commitée en `72a99271f59c81a64fd8c9a353b6ba86827f39ac`.
 
----
-
-## Quick et Deep
-
-Le pipeline principal est [`.github/workflows/sync.yml`](.github/workflows/sync.yml).
-
-### Quick — maintenance courante
-
-Quick peut notamment :
-
-- rafraîchir hubs et domaines ;
-- découvrir les variantes upstream ;
-- comparer les siblings ;
-- conserver le bundle publié/LKG ;
-- lancer une réparation bornée sur les familles non résolues ;
-- publier une amélioration lorsqu'elle est effectivement prouvée.
-
-Il évite d'attendre un Deep pour une simple migration de domaine ou une réparation déjà comprise.
-
-### Deep — reconstruction et preuve large
-
-Deep est réservé aux opérations plus coûteuses :
-
-- nouvelles variantes et connaissances provider ;
-- corpus plus large ;
-- intégration d'un nouveau provider ;
-- changement structurel du moteur ;
-- reconstruction ou recherche de route plus profonde ;
-- validation stricte d'identité, de qualité et de transport.
-
-Un changement courant ne force donc pas automatiquement une reconstruction profonde de tout le système.
+Voir [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
 ---
 
-## Repair Brain et apprentissage
+## CORE Quick et Deep
 
-Le Repair Brain ne considère pas `no_streams` comme une cause. Il cherche à classer l'étape fautive : DNS, accès, recherche, fiche, épisode, player, extraction média, contexte playback, transport, identité ou contrat Nuvio.
+Le workflow routine unique est [`.github/workflows/sync.yml`](.github/workflows/sync.yml), affiché **CORE - Verify & Publish**.
 
-Sa boucle de travail est :
+### Quick
 
-```text
-diagnostic
-   ↓
-hypothèse de réparation
-   ↓
-mutation en sandbox
-   ↓
-retest lecteur officiel
-   ↓
-acceptation ou mémoire d'échec
-```
+Quick est un gate rapide sur les bytes Provider v3 exacts :
 
-Une stratégie échouée peut être mémorisée pour éviter de répéter mécaniquement le même repair. Une stratégie réussie n'est réutilisable automatiquement qu'après les preuves prévues par la politique du moteur.
+- tests structurels et contrats Core critiques ;
+- audit du portfolio Lego ;
+- aucune reconstruction ;
+- aucun repair ;
+- aucune mutation Provider/DATA/Core ;
+- aucun full network health ;
+- aucune publication de nouveau code provider.
 
-Le **Brain Learning Lab** est séparé de la publication : il travaille en sandbox, produit une mémoire sanitizée et n'a pas le droit de publier directement un provider ou un manifest. La mémoire de réparation lecteur conserve les résultats des retests officiels et les IDs de runs déjà importés afin d'éviter le double apprentissage d'une même preuve. L'import automatique est limité aux runs lecteurs issus de `main` ; une preuve de PR ne modifie pas silencieusement la mémoire persistante.
+### Deep
 
-Un audit historique 5.20.63 sert de bootstrap de départ afin de confronter les nouvelles observations à un état antérieur riche. Les apprentissages futurs doivent ensuite être portés par les preuves du moteur, les corpus natifs et la mémoire d'expérience du Brain — pas par une liste humaine de providers à forcer.
+Deep ajoute :
 
----
+- contrats structurels complets ;
+- observation réseau/hubs en lecture seule ;
+- health sur les Provider JS publiés exacts ;
+- re-projection des manifests ;
+- reports et hashes.
 
-## LKG et quarantaine
-
-Une mise à jour upstream vide ou cassée ne doit pas écraser un provider publié sain.
-
-NiakVIO peut conserver :
-
-- snapshots LKG upstream ;
-- bundle publié comme sibling ;
-- état d'activation précédemment prouvé ;
-- routes et domaines historiquement cohérents ;
-- provenance et catégories validées.
-
-Un signal inconclusif peut conserver le dernier état sain. La quarantaine est destinée aux contradictions fortes de sécurité ou d'identité, pas à un simple zéro résultat isolé.
+Deep **ne répare et ne reconstruit pas** les providers. Sur `main`, ses écritures sont limitées aux rapports, projections et inventaires explicitement autorisés.
 
 ---
 
-## Corpus natif et couverture
+## Learning et Domain Refresh
 
-Films, séries et anime sont des dimensions de test distinctes. La cible de largeur du projet est **10 providers jouables par œuvre, dont au moins 3 VF** lorsque le catalogue permet réellement de les obtenir.
+Le Learning quotidien (`brain-learning-lab.yml`) est un sandbox indépendant. Il peut observer, classifier, tester des repairs et produire une mémoire sanitizée ou une proposition reviewable ; il n'a aucune voie de publication directe.
 
-Cette cible n'autorise aucun faux positif : mauvaise œuvre, mauvais épisode, durée incohérente ou média non lisible ne comptent pas.
+`engine_v2/` reste la couche d'evidence/classification/Learning. Ce n'est pas un deuxième orchestrateur de production.
 
-Le dispositif comprend :
-
-- un lab **NuvioTV Android TV** officiel sur des routes film/TV/anime, tous providers compatibles — actifs ou inactifs — et tous les streams retournés ;
-- un lab **Nuvio Mobile Android** officiel avec le même contrat de traversal et de lecture ;
-- un lab **Nuvio Mobile iOS** autonome sur `macos-15`, avec build Full, simulateur iPhone, runtime plugin iOS officiel et bridge lecteur MPV officiel ;
-- un lab **Nuvio Desktop natif macOS/Windows**, Linux étant explicitement exclu comme preuve lecteur ;
-- une preuve repository → provider → HTTP → stream → lecteur, plus des phases frontend capturées ;
-- des retests ciblés par device disponibles **manuellement** sans relancer toute la matrice ;
-- un sandbox Brain borné qui peut matérialiser des mutations provider génériques justifiées et, pendant l'apprentissage, lancer un **Lab client ciblé sur un seul provider** ; la fixture est choisie selon son **premier type déclaré** (`movie`, `tv` ou `anime`) afin d'éviter de rejouer inutilement toute la matrice ;
-- une mémoire lecteur fail-closed : preuve incomplète = pas d'apprentissage et pas de plan de réparation.
+`domain-refresh.yml` est une exception DATA bornée : il peut modifier uniquement un `official_site` validé et rematérialiser le bloc `PROVIDER.<ID>.CONFIG.V1` correspondant. Les bytes hors CONFIG doivent rester identiques.
 
 ---
 
-## Publication, versions et intégrité
+## Cinq Labs natifs
 
-La publication est atomique et fail-closed. La transaction peut inclure :
+La surface d'acceptation native est exactement :
 
-- `provider_catalog.json` ;
-- bundles providers ;
-- `manifest.json` ;
-- `vf/manifest.json` ;
-- provenance ;
-- états domaine/LKG ;
-- versions ;
-- `FILE-HASHES.json` ;
-- `SHA256SUMS.json` ;
-- `PATCH-SHA256SUMS.txt`.
+1. **TV Android** — NuvioTV officiel ;
+2. **Mobile Android** — NuvioMobile officiel ;
+3. **Mobile iOS** — NuvioMobile officiel ;
+4. **Desktop macOS** — NuvioDesktop officiel ;
+5. **Desktop Windows** — NuvioDesktop officiel.
 
-Une génération incohérente ne remplace pas silencieusement le dernier état publié.
+Le trigger commun est `.github/triggers/full-native-lab-validation.json`. Le corpus représentatif est Interstellar, Breaking Bad S01E01 et Jujutsu Kaisen S01E01.
 
-### Invalidation des caches Nuvio
+Les Labs consomment le SHA NiakVIO exact, contrôlent le drift du HEAD client officiel et observent extraction, identité, transport, session et lecture. Ils ne réparent, reconstruisent ou réécrivent jamais un provider.
 
-Lorsqu'une transaction change réellement une donnée visible côté client :
+Un échec de stream individuel est une preuve stream-level ; il ne désactive pas automatiquement le provider entier.
 
-- le patch provider peut être augmenté ;
-- une réactivation peut faire tourner l'ID client case-only pour éviter un ancien état local désactivé ;
-- la projection VF est resynchronisée depuis le catalogue ;
-- la release globale est propagée aux manifests et métadonnées associées ;
-- un rerun sans changement reste idempotent.
+---
+
+## HLS et intégrité de lecture
+
+Une playlist valide ne garantit pas un segment valide. `CORE.HLS_RUNTIME_INTEGRITY.V1` peut appliquer une preuve premier-segment bornée sur les providers qui en ont besoin :
+
+- playlist / variant ;
+- headers `Referer` / `Origin` conservés ;
+- premier segment ou init map lu sur quelques Ko ;
+- sync MPEG-TS ou signature fMP4 ;
+- HTML/JSON à la place d'un segment rejeté ;
+- réseau incertain, timeout ou HLS chiffré conservés comme inconclusifs plutôt que rejetés à tort.
+
+Cette capacité Core générique est activable par DATA provider ; elle n'est pas codée en dur pour un site.
+
+---
+
+## Publication et intégrité
+
+`provider_catalog.json` reste le registre canonique de métadonnées/projections. `manifest.json`, `vf/manifest.json`, `no-anime/manifest.json` et `vf-no-anime/manifest.json` sont des projections.
+
+Les Provider JS sont adressés par contenu. Une génération incohérente ne remplace jamais silencieusement une génération validée.
+
+La minification de production est désactivée ; Terser n'appartient plus au pipeline Provider v3.
 
 ---
 
@@ -529,50 +464,36 @@ Lorsqu'une transaction change réellement une donnée visible côté client :
 
 | Workflow | Rôle |
 |---|---|
-| `sync.yml` | discovery canonique → repair borné → validation → publication Quick/Deep |
-| `add-provider.yml` | onboarding full-auto structuré : hub/direct/Telegram/recherche → ProviderBase propre → Labs → publication sous preuve |
-| `canonical-media-types.yml` | contrats media, evidence native, cache et mémoire Brain |
-| `github-actions-gate.yml` | sécurité et invariants des workflows |
-| `native-mobile-android-reader.yml` | preuve native Android TV + Nuvio Mobile Android autonome |
-| `native-corpus-device-targeted.yml` | corpus ciblé manuel TV, Mobile, Desktop ou tous les clients |
-| `native-mobile-ios-reader.yml` | preuve native Nuvio Mobile iOS autonome |
-| `native-desktop-reader-acceptance.yml` | preuve lecteur officielle Desktop macOS/Windows |
-| `native-reader-learning-sync.yml` | import idempotent des résultats lecteur validés de `main` |
-| `provider-results-readme-sync.yml` | fusion des nouvelles preuves lecteur positives dans la matrice README |
-| `brain-learning-lab.yml` | observation quotidienne du catalogue complet + file Learning indépendante de 60 min, persistante entre les jours |
-| `brain-branch-maintenance.yml` | rebase la mémoire Brain sur `main` et supprime les branches proposal fermées |
-| `availability.yml` | disponibilité des providers publiés |
-| `domain-refresh.yml` | observation des domaines |
-| `core-media-finalize-main.yml` | fixed-point Core, non-régressions Engine v2 et intégrité de publication |
-| `provider-catalogue-breadth-lab.yml` | largeur de catalogue |
-| `provider-status-export.yml` | snapshot diagnostic |
-| `external-code-audit.yml` | rafraîchissement des preuves SonarQube Cloud / DeepSource / CodeScene |
-| `weekly-upstream-provider-discovery.yml` | découverte hebdomadaire en lecture seule des nouveaux providers upstream |
-| `purge-actions-history.yml` | suppression hebdomadaire des runs Actions terminés de plus de 7 jours |
-
-La branche `brain-learning/proposals` ne conserve que la mémoire sanitizée et est reconstruite sur le dernier `main`. La branche `brain-repair/proposal` est temporaire : elle est supprimée lorsqu'aucune PR Brain n'est ouverte, afin que le proposal suivant reparte du `main` courant.
-
-Les anciens labs à refs clientes mutables, les preuves Desktop Linux, les workflows provider-spécifiques et les orchestrateurs superseded ne font pas partie de l'architecture cible.
+| `sync.yml` | CORE Quick/Deep read-only côté providers |
+| `provider-v3-reconstruct-all.yml` | reconstruction manuelle 96/96 + reverse proof sur branche non-main |
+| `brain-learning-lab.yml` | Learning sandbox + propositions reviewables |
+| `domain-refresh.yml` | maintenance `official_site` CONFIG-only |
+| `add-provider.yml` | onboarding provider structuré |
+| `native-mobile-android-reader.yml` | TV Android + Mobile Android |
+| `native-mobile-ios-reader.yml` | Mobile iOS |
+| `native-desktop-reader-acceptance.yml` | Desktop macOS + Windows |
+| `native-corpus-device-targeted.yml` | retest manuel ciblé |
+| `native-reader-learning-sync.yml` | import de preuves sanitizées dans Learning |
+| `github-actions-gate.yml` | sécurité/invariants Actions |
+| `codeql.yml` | analyse CodeQL |
+| `external-code-audit.yml` | Sonar / DeepSource / CodeScene |
 
 ---
 
 ## Structure du repository
 
 ```text
-Niakvio/
-├── provider_catalog.json            # source canonique de publication
-├── manifest.json                    # projection générale
-├── vf/manifest.json                 # projection francophone
-├── engine_v2/                       # Provider Engine V2 / ARCHI 2
-│   ├── src/                         # contrats, resolver, repair, evidence
-│   ├── scripts/                     # ingestion, observation, apprentissage
-│   ├── config/                      # politiques et adapters
-│   └── tests/                       # invariants V2
-├── providers/                       # bundles publiés hashés
-├── scripts/                         # primitives runtime/compatibilité nécessaires
-├── automation/                      # upstreams, LKG et états durables
-├── tests/                           # non-régressions publication/compatibilité
-├── .github/workflows/               # production, labs et preuves natives
+NiakVIO/
+├── provider-bases/                  # ProviderBase v3 propres
+├── providers/                       # bundles client générés/hashés
+├── provider_catalog.json            # registre de publication
+├── provider-overrides.json          # DATA/options provider
+├── provider-v3-materialization.json # état de matérialisation
+├── scripts/provider_patches/        # Lego PROVIDER.* / CORE.*
+├── engine_v2/                       # evidence / classification / Learning
+├── automation/                      # contrats machine-readable
+├── tests/                           # non-régressions
+├── .github/workflows/               # CORE / Learning / Labs / maintenance
 ├── PROVENANCE.json
 ├── FILE-HASHES.json
 ├── SHA256SUMS.json

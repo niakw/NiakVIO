@@ -269,7 +269,8 @@
         "Preserve the observed same-origin signed chain: detail -> signed /player -> /api/streams/movie or /api/streams/episode -> /api/stream-gw.",
         "Kehflix episodic playback uses /api/streams/episode?id&season&episode&k; Nuvio tv/anime remain semantic types while the provider runtime uses its episodic route.",
         "External embeds remain fallback observations; the signed same-origin runtime API is attempted first.",
-        "Activation remains disabled until canonical publication proof accepts the rebuilt ProviderBase."
+        "Kehflix is currently enabled; activation remains governed by normal publication evidence and stream-level playback failures do not disable the whole provider.",
+        "Native HLS playback uses the generic Core first-segment container proof for up to three HLS rows: malformed TS/HTML payloads are rejected before player hand-off while timeout/network uncertainty remains non-blocking."
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
@@ -295,7 +296,14 @@
         "/api/streams/working",
         "/api/streams/dead",
         "/api/streams/warm"
-      ]
+      ],
+      "core_options": {
+        "hls_runtime_integrity": {
+          "probe_first_segment_native": true,
+          "native_probe_max_rows": 3,
+          "native_probe_timeout_ms": 2500
+        }
+      }
     },
     "4khdhubnew": {
       "capability": "html_scraper"

@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -12,7 +12,15 @@
     ],
     "reconstruction_rule": "ProviderBase + structured DATA + owned Core/Provider Lego only",
     "legacy_provider_js_seed_allowed": false,
-    "upstream_provider_js_seed_allowed": false
+    "upstream_provider_js_seed_allowed": false,
+    "canonical_provider_base_marker": "NIAKVIO_PROVIDER_BASE_OWNED_V3",
+    "managed_markers": [
+      "STARTFIX",
+      "CLOSEFIX",
+      "FIXDATA"
+    ],
+    "core_boundary": "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+    "published_provider_js_is_reconstruction_seed": false
   },
   "routine": {
     "deep": {
@@ -20,13 +28,12 @@
       "provider_fix_mutation_allowed": false,
       "provider_reconstruction_allowed": false,
       "responsibilities": [
-        "validate domains/hubs",
-        "run Core/provider tests",
-        "run deep health observation",
-        "verify 96/96 reverse rebuild",
-        "regenerate manifest projections",
-        "regenerate integrity inventories",
-        "publish reports/manifests only"
+        "run full Provider v3 structural contracts",
+        "observe domains/hubs read-only",
+        "observe exact published providers through deep health",
+        "reproject derived manifests",
+        "regenerate diagnostics and integrity inventories",
+        "publish allowlisted reports/manifests/hashes only"
       ],
       "static_published_byte_audit": true
     },
@@ -49,10 +56,10 @@
       "provider_fix_mutation_allowed": false,
       "provider_reconstruction_allowed": false,
       "responsibilities": [
-        "validate domains/hubs",
-        "run fast Core/provider tests",
-        "observe exact published Provider v3 bytes",
-        "publish reports only"
+        "run fast Provider v3/Core structural tests",
+        "audit exact published Provider JS bytes",
+        "validate five-lab and observational-purity contracts",
+        "make no provider/DATA/Core mutations"
       ],
       "static_published_byte_audit": true
     }
@@ -61,7 +68,10 @@
     "full_catalogue": true,
     "expected_provider_count": 96,
     "command": "python scripts/materialize_provider_v3_all.py && python scripts/verify_provider_v3_reverse_rebuild.py",
-    "requires_byte_identical_reverse_proof": true
+    "requires_byte_identical_reverse_proof": true,
+    "workflow": ".github/workflows/provider-v3-reconstruct-all.yml",
+    "main_write_allowed": false,
+    "published_or_upstream_js_seed_allowed": false
   },
   "native_labs": [
     "TVAndroid",
@@ -74,7 +84,8 @@
     "enabled_in_production": false,
     "comment_architecture_must_be_preserved": true,
     "managed_markers_must_be_preserved": true,
-    "byte_equivalence_tests_required_before_enablement": true
+    "byte_equivalence_tests_required_before_enablement": true,
+    "terser_allowed": false
   },
   "domain_refresh": {
     "schedule": "daily",
@@ -115,5 +126,25 @@
     "provider_mutation_allowed": false,
     "provider_reconstruction_allowed": false
   },
-  "legacy_duplicate_core_workflow_removed": true
+  "legacy_duplicate_core_workflow_removed": true,
+  "documentation": {
+    "markdown_source": "ARCHITECTURE.md",
+    "docx_projection": "ARCHITECTURE.docx",
+    "drift_test": "tests/provider_v3_documentation_contract_test.py"
+  },
+  "native_labs_trigger": ".github/triggers/full-native-lab-validation.json",
+  "hls_integrity": {
+    "core_fix_id": "CORE.HLS_RUNTIME_INTEGRITY.V1",
+    "native_first_segment_proof": "opt-in by provider DATA after positive playback-malformation evidence",
+    "positive_invalid_examples": [
+      "MPEG-TS sync byte missing",
+      "HTML/JSON segment payload",
+      "fMP4 signature missing"
+    ],
+    "inconclusive_is_not_rejected": [
+      "network timeout",
+      "temporary fetch failure",
+      "encrypted HLS segment"
+    ]
+  }
 }
