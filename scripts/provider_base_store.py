@@ -790,7 +790,7 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode) {
 function _routeKind(route) {
   const value = _text(route).toLowerCase();
   if (!value || /\/(?:track|report|warm|dead|working|ad-link|fp)(?:[/?#]|$)/i.test(value)) return "ignore";
-  if (/\/(?:api)(?:[/?#]|$)/i.test(value)) return "api";
+  if (/\/(?:api)(?:[./?#]|$)/i.test(value)) return "api";
   if (/\/(?:player|embed|play)(?:[/?#]|$)/i.test(value)) return "player";
   if (/\/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=/i.test(value)) return "search";
   if (/\{(?:tmdb_?id|id|slug|title)\}/i.test(value) || /\/(?:title|movie|film|series|tv|show|watch|media)(?:[/?#]|$)/i.test(value)) return "detail";
