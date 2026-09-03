@@ -204,9 +204,10 @@ Lab goals:
 - Labs are evidence, never repair engines.
 
 Known lab cleanup still required:
-- Desktop lab still contains a legacy `Materialize final Core fixed-point for Desktop canary` step that applies normalizers/reapply; REMOVE it because Labs must not mutate/reconstruct providers.
-- iOS full lab still uses 25s provider timeout; align full mode to 40s (Learning-only targeted probe may keep its separate short budget).
-- Android TV/Mobile workbench lab timeout was already raised to 40s.
+- Desktop mutating fixed-point/reapply canary was removed from the lab; Desktop now observes only.
+- Full iOS provider timeout is 40s; Learning-only targeted iOS mode remains 8s.
+- Android TV/Mobile lab timeout is 40s.
+- `tests/native_lab_observational_purity_test.py` now fails if any native lab reintroduces Provider reconstruction/repair/apply steps.
 
 ## Nuvio upstream issues
 Two earlier issues were auto-closed because of missing tags:

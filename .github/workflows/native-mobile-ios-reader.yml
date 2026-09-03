@@ -150,7 +150,7 @@ jobs:
         env:
           NIAKVIO_IOS_LAB_MODE: ${{ inputs.mode == 'only' && 'learning' || 'full' }}
           NIAKVIO_IOS_TARGET_PROVIDER: ${{ inputs.provider || '' }}
-          NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '25000' }}
+          NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '40000' }}
           NIAKVIO_IOS_PLAYER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '6000' || '22000' }}
           NIAKVIO_IOS_SESSION_STATE: ${{ github.workspace }}/ios-learning-session.env
         run: |
