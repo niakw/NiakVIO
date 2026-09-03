@@ -280,3 +280,26 @@ Keep it disabled in production until all proofs are green.
 - Before reconstruction it may run `provider_base_store.py repair-derived` ONLY as deterministic ProviderBase layering cleanup, then validates all bases including artifacts.
 - This is not Learning repair and does not alter provider behavior; it strips leaked generated/publication tails.
 - An explicit workbench trigger commits the verified cleaned ProviderBase/PROVENANCE + reconstructed 96/96 outputs back to the workbench only.
+
+## 2026-09-03 — canonical Provider/Core boundary realignment
+- Run 33699439253 proved the new canonical ProviderBase v3 store is valid 96/96:
+  - providers=96
+  - unique_bases=96
+  - clean=96
+  - reconstruction_required=0
+  - artifact_validation=true
+  - provider_js_seed=false
+  - upstream_js_seed=false
+- The next failure was not ProviderBase: `provider_brick_portfolio_audit_test.py` was auditing bare ProviderBase files as if they were already composed Provider JS. That produced 96 missing Core-boundary errors and apparent second-pass Castle/Movix Provider Lego insertions.
+- Canonical runtime layout is now explicitly:
+  1. BEGIN NIAKVIO_PROVIDER
+  2. common ProviderBase v3
+  3. PROVIDER.<ID>.CONFIG.V1 structured DATA
+  4. all provider-specific PROVIDER.* Lego
+  5. exactly one `/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */`
+  6. all CORE.* Lego
+  7. END NIAKVIO_PROVIDER
+- `apply_provider_overrides.py` now strips stale Core Lego + stale Core boundary before recomposition, applies PROVIDER.* first, then inserts exactly one Core boundary before Core composition.
+- `provider_brick_portfolio_audit_test.py --published --require-all` audits the exact JS referenced by the current manifest. Quick and post-reconstruction validation use this mode; bare ProviderBase is no longer confused with a composed provider.
+- `materialize_provider_v3_all.py` and `audit_provider_v3_static.py` both fail closed unless all PROVIDER.* blocks are before the Core boundary and every CORE.* block is after it.
+- Workbench HEAD at this checkpoint: `559eed2ad529f95c9f7bfe10ad425ba3d8c36bad`.
