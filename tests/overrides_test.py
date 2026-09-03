@@ -21,9 +21,17 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from apply_provider_overrides import apply_overrides
 
+def clean_v3(source: bytes) -> bytes:
+    return (
+        b"/* BEGIN NIAKVIO_PROVIDER */\n"
+        b"/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        + source.strip()
+        + b"\n/* END NIAKVIO_PROVIDER */\n"
+    )
+
 
 # Stable replacements still happen during discovery.
-patched, records = apply_overrides("movix", b'const API="https://api.movix.cash/";')
+patched, records = apply_overrides("movix", b'const API="https://api.movix.cash/";', include_global_core=False)
 assert b"api.movix.fun" in patched
 assert b"api.movix.cash" not in patched
 assert records and records[0]["count"] == 1
@@ -34,7 +42,7 @@ def test_staged_artifact_contract() -> None:
         stage = Path(tmp)
         (stage / "providers" / "gowaru").mkdir(parents=True)
         upstream = b'const APIS=["https://api.movix.cloud","https://api.movix.cash"];'
-        output, patch_records = apply_overrides("movix", upstream)
+        output, patch_records = apply_overrides("movix", upstream, include_global_core=False)
         target = stage / "providers" / "gowaru" / "movix.js"
         target.write_bytes(output)
         registry = {
@@ -79,7 +87,7 @@ def test_domain_overrides() -> None:
     )
 
     movix_source = b"const A='https://api.movix.cash'; const B='https://api.movix.cloud';"
-    movix_output, movix_records = apply_overrides("movix", movix_source)
+    movix_output, movix_records = apply_overrides("movix", movix_source, include_global_core=False)
     assert b"api.movix.fun" in movix_output
     assert b"api.movix.cash" not in movix_output
     assert b"api.movix.cloud" not in movix_output
@@ -88,7 +96,7 @@ def test_domain_overrides() -> None:
 
 def test_runtime_profiles_are_not_blindly_applied() -> None:
     source = b'''function*(x){if(x.length===0)return[];return {signal:true,effectiveSeason:1}}'''
-    output, patch_records = apply_overrides("example-provider", source)
+    output, patch_records = apply_overrides("example-provider", clean_v3(source))
 
     # Discovery-time Core finalization is intentionally universal. This test is
     # only about runtime repair profiles: matching their old structural markers
@@ -115,7 +123,7 @@ def test_runtime_domain_prefix_collisions_are_globally_idempotent() -> None:
     for provider_id, patch in patches.items():
         if not isinstance(patch, dict):
             continue
-        replacements = patch.get("runtime_domain_replacements") or patch.get("replacements") or {}
+        replacements = patch.get("runtime_domain_replacements") or patch.get("replacements") or patch.get("domain_substitutions") or {}
         if not isinstance(replacements, dict) or len(replacements) < 2:
             continue
 
