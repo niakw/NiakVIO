@@ -167,7 +167,10 @@
       "official_site": "https://movieshunt.casa",
       "domain_substitutions": {
         "movieshunt.work": "movieshunt.casa"
-      }
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "zinkmovies": {
       "capability": "direct_media",
@@ -244,7 +247,10 @@
         "4khdhub.one": "hdhub4u.bi",
         "new4.hdhub4u.cl": "hdhub4u.bi",
         "new5.hdhub4u.cl": "hdhub4u.bi"
-      }
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "persianstremio": {
       "capability": "direct_media",
@@ -729,7 +735,10 @@
         "m4uplay.store": "movies4u.review",
         "new2.movies4u.clinic": "movies4u.review",
         "new3.movies4u.clinic": "movies4u.review"
-      }
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "moviesdrive": {
       "notes": [
@@ -756,7 +765,10 @@
       "manifest_overrides": {},
       "domain_substitutions": {
         "moviesmod.money": "moviesmod.zone"
-      }
+      },
+      "learned_routes": [
+        "/search/{query}"
+      ]
     },
     "movix": {
       "notes": [
@@ -1179,18 +1191,18 @@
     },
     "frenchstream": {
       "notes": [
-        "Resolve the current terminal site from fstream.org before applying the provider.",
-        "Reject known short preview/troll players independently from the Frenchstream site address.",
-        "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback.",
-        "Quarantined after playable media returned for Revenant S01E01 measured 2144 seconds versus 4620 expected (ratio 0.464) on TV, macOS and mobile; publish an inert bundle for cache-safe client behavior."
+        "Use https://fstream.website/ as the maintenance/discovery hub; the terminal streaming domain is mutable DATA and must not be hard-coded as the provider identity.",
+        "Reject known short preview/troll players independently from the current Frenchstream terminal domain.",
+        "Resolve current episode mirrors before generic nested-host crawling, then keep identity/duration rejection at stream level instead of quarantining the whole provider.",
+        "Historical Revenant S01E01 duration mismatch remains regression evidence, not a permanent provider quarantine."
       ],
       "manifest_overrides": {
         "logo": "https://fs16.lol/favicon.ico",
         "supportsExternalPlayer": false,
         "enabled": false
       },
-      "capability": "quarantined",
-      "official_hub": "https://fstream.org/",
+      "capability": "mixed_embed_resolver",
+      "official_hub": "https://fstream.website/",
       "official_site": "https://fs16.lol",
       "published_types": [
         "movie",
@@ -1202,7 +1214,6 @@
         "/?do=search&subaction=search&story={query}",
         "/?s={query}"
       ],
-      "quarantine_reason": "revenant_episode_duration_mismatch",
       "core_options": {
         "desktop_runtime_compat": {
           "normalize_missing_episodes": true
@@ -1215,12 +1226,7 @@
           "min_vod_duration_seconds": 60
         }
       },
-      "domain_substitutions": {
-        "french-stream.one": "fs16.lol",
-        "frenchstream.food": "fs16.lol",
-        "fs03.lol": "fs16.lol",
-        "fs09.lol": "fs16.lol"
-      }
+      "domain_substitutions": {}
     },
     "fullanime": {
       "capability": "mixed_embed_resolver",
@@ -2843,8 +2849,8 @@
       "generated_from_manifest_or_stage": true
     },
     "frenchstream": {
-      "strategy": "quarantined",
-      "validation": "blocked_revenant_episode_duration_mismatch",
+      "strategy": "mixed_embed_resolver",
+      "validation": "requires_stream_identity_and_duration_gate",
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
