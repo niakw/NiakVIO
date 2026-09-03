@@ -12,12 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 PATCH = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
-# Native HLS behavior and synchronous target traversal remain part of the
-# runtime-safety stack. Catalogue fallback no longer owns a separate native
-# budget Lego: the current Core catalogue layer is positive-output only.
+# Native HLS behavior remains a focused companion of final media safety.
+# Target traversal/order is now Core-owned and no legacy source-shape ordering
+# patch is replayed during Provider v3 reconstruction.
 for companion in (
     "tests/native_hls_integrity_budget_test.py",
-    "tests/native_sync_fetch_target_order_test.py",
 ):
     result = subprocess.run(
         [sys.executable, str(ROOT / companion)],

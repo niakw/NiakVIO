@@ -21,7 +21,8 @@ base = r'''globalThis.getStreams=async function(){
 };'''
 
 patched = module.apply(base, {"timeout_ms": 2000})
-assert "/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */" in patched
+assert "/* STARTFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */" in patched
+assert "/* CLOSEFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */" in patched
 assert patched.count('function nativeHlsHost(){try{return typeof g.__native_fetch==="function"}') == 1
 assert patched.count("if(nativeHlsHost())return value;") == 1
 assert module.apply(patched, {"timeout_ms": 2000}) == patched

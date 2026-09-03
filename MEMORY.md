@@ -355,3 +355,11 @@ Keep it disabled in production until all proofs are green.
 - `runtime_capability_media_safety_v4_test.py` now retains only the still-active native HLS budget and synchronous target-order companion regressions.
 - No provider behavior was relaxed and main remains untouched. Next controlled reconstruction: retry 16.
 
+## 2026-09-03 — retry 16 legacy native target-order cleanup
+- Retry 16 again proved ProviderBase 96/96 clean, materialization 96/96 and reverse rebuild byte-identical 96/96, then passed published brick audit, static audit, media-type resolution, V18 presentation, presentation pipeline and stream identity.
+- The next failure was `native_hls_integrity_budget_test.py` asserting the obsolete `START NIAKVIO_FIX` syntax although managed Lego now use canonical `STARTFIX/CLOSEFIX`.
+- Pre-retry audit also found `native_sync_fetch_target_order_test.py` importing deleted `native_sync_fetch_target_order_v1.py`. Its old `apply_runtime_capability_upgrade_v4.py` still referenced that deleted patch plus the deleted minified compatibility patch, contradicting the current runtime contract: target traversal/order is Core-owned and no legacy source-shape target-order patch is replayed.
+- Updated the active HLS budget test to canonical STARTFIX/CLOSEFIX markers.
+- Removed stale `tests/native_sync_fetch_target_order_test.py` and `scripts/apply_runtime_capability_upgrade_v4.py` instead of resurrecting obsolete source-shape patchers.
+- `runtime_capability_media_safety_v4_test.py` now keeps only the active native HLS companion. No runtime policy was weakened; main remains untouched. Next controlled reconstruction: retry 17.
+
