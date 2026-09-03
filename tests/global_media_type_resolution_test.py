@@ -46,8 +46,9 @@ assert "tmdbKeyCipher" in mixed
 assert "external_source=imdb_id" in mixed
 assert "alternative_titles" in mixed
 assert "language=fr-FR" in mixed
-assert 'var providerEvent="launch";' in mixed
-assert 'if(providerEvent!=="launch"||!hasProviderOutput(value))return [];' in mixed
+assert 'var providerEvent=invocationEvent(originalArgs);' in mixed
+assert 'if(providerEvent!=="launch")return [];' in mixed
+assert 'if(!hasProviderOutput(value))return [];' in mixed
 
 run_case(mixed, r"""
 let calls = 0;
