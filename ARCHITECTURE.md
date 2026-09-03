@@ -9,6 +9,7 @@ NiakVIO sépare strictement **connaissance**, **code provider durable**, **artef
 - `provider_catalog.json` est le registre canonique de métadonnées/projections publiées.
 - `provider-bases/` contient les ProviderBase v3 propres et durables appartenant à NiakVIO.
 - `provider-overrides.json` et les données structurées associées portent la configuration provider et les options Core.
+- `automation/provider-v3-static-knowledge.json` porte la connaissance statique durable récupérée sans exécuter l'ancien JS ; sa couverture 96/96 est obligatoire.
 - `scripts/provider_patches/**` contient les Lego `PROVIDER.*` et `CORE.*` versionnés.
 - `providers/*.js` est un résultat matérialisé et adressé par contenu. Ce n'est jamais une seed de reconstruction.
 - les upstreams et sites tiers sont des sources de connaissance/provenance, jamais une base JS exécutable canonique.
@@ -22,10 +23,12 @@ La seule reconstruction complète des 96 providers est le workflow manuel `.gith
 Entrées canoniques :
 
 1. ProviderBase v3 propre ;
-2. DATA/CONFIG structurées ;
-3. Lego provider appartenant au provider ;
-4. Lego Core partagés ;
-5. manifest/provenance/politiques nécessaires à la projection.
+2. DATA/CONFIG structurées + connaissance statique durable ;
+3. type/strategy provider canonique + plan exécutable compatible ;
+4. Lego provider appartenant au provider ;
+5. Lego Core partagés ;
+6. minimizer NiakVIO-safe pré-hash ;
+7. manifest/provenance/politiques nécessaires à la projection.
 
 Interdictions :
 
@@ -35,7 +38,7 @@ Interdictions :
 - reconstruction automatique dans Quick, Deep ou Native Labs ;
 - commit direct de la reconstruction manuelle sur `main`.
 
-Une reconstruction acceptable doit couvrir 96/96 providers et passer `verify_provider_v3_reverse_rebuild.py` avec 96/96 byte-identical.
+Une reconstruction acceptable doit couvrir 96/96 providers, prouver que les 91 non-quarantined disposent d'un plan exécutable compatible avec leur type, conserver 5 quarantines explicites, passer les gates sécurité/minimizer et terminer `verify_provider_v3_reverse_rebuild.py` avec 96/96 byte-identical.
 
 ## 3. Forme canonique d'un Provider JS
 
@@ -173,22 +176,24 @@ Les retests ciblés peuvent relancer un device sans invalider les autres. Deskto
 
 Le Lab final couvre explicitement **l'intégralité du catalogue** : 96 providers et 214 routes déclarées sur les trois fixtures représentatives (`82 movie + 92 tv + 40 anime`). Une route/provider manquant rend le Lab incomplet. Les erreurs du lecteur officiel restent des observations de lecture : le Lab ne répare jamais NuvioTV/NuvioMobile/NuvioDesktop pour obtenir un vert artificiel.
 
-## 10. Minification
+## 10. Minimizer NiakVIO
 
-La minification de production est désactivée. Terser ne fait pas partie du pipeline Provider v3.
+Terser reste interdit. La production utilise désormais `scripts/provider_v3_minimizer.py`, un minimizer **NiakVIO-aware et volontairement conservateur** exécuté après composition ProviderBase + DATA + Lego et avant hash/filename.
 
-`scripts/provider_v3_minimizer.py` existe uniquement en **mode audit/preview** : il inventorie les 96 Provider JS, les marqueurs, commentaires, templates, lignes ASI-sensibles et le budget de whitespace. Il n'écrit jamais dans `providers/` et aucune transformation n'est active dans la reconstruction/publication.
+La seule transformation autorisée est la suppression de l'indentation espaces/tabulations au début d'une ligne dont l'état lexical initial est du code JavaScript ordinaire. Le minimizer :
 
-Avant toute activation, le minimizer devra être NiakVIO-aware et prouver qu'il conserve :
+- conserve chaque retour ligne, donc ne modifie pas le contrat ASI ;
+- ne renomme aucun identifiant ;
+- ne replie/réordonne aucune expression ;
+- ne réécrit aucune chaîne, regexp ou littéral ;
+- laisse un provider entier byte-stable si un template literal est présent ;
+- conserve l'enveloppe BEGIN/END, `STARTFIX/CLOSEFIX/FIXDATA` et la frontière Core ;
+- valide l'idempotence ;
+- parse les 96 previews avec Node ;
+- exige que les 96 bundles publiés soient déjà des fixed-points ;
+- reste inclus dans la reconstruction reverse 96/96 byte-identical.
 
-- enveloppe BEGIN/END ;
-- `STARTFIX/CLOSEFIX/FIXDATA` ;
-- frontière Core ;
-- commentaires structurels ;
-- retours ligne tant que l'équivalence ASI n'est pas démontrée ;
-- identifiants, expressions et littéraux sans renommage/réécriture ;
-- remplacement déterministe d'un Lego ;
-- équivalence structurelle, runtime et reverse reconstruction.
+Les gates sont `provider_v3_minimizer_contract_test.py`, `provider_v3_minimizer_preview_test.py` et `provider_v3_minimizer_published_test.py`.
 
 ## 11. Branches et publication
 
@@ -200,22 +205,22 @@ Avant toute activation, le minimizer devra être NiakVIO-aware et prouver qu'il 
 
 ## 12. État de référence du chantier Provider v3
 
-Le 3 septembre 2026, **retry 21** est la reconstruction de référence après le clean d'architecture et le durcissement HLS :
+Le 3 septembre 2026, **retry 25** est la reconstruction de référence avant la rematérialisation finale sécurité + minimizer :
 
 - 96/96 ProviderBase v3 propres ;
 - 96/96 providers matérialisés ;
-- génération `9ddd9f969838d444` ;
-- reverse rebuild 96/96 byte-identical, vérifié une première fois après matérialisation puis à nouveau dans les post-gates ;
-- portfolio Lego publié 96/96 vert ;
-- audit statique Provider v3 vert ;
-- Media Type Core v26 vert ;
-- Stream Presentation V18 / identity / runtime media safety / playback integrity / sanitizer verts ;
+- connaissance statique durable 96/96 ;
+- 91 plans non-quarantined exécutables + 5 quarantines explicites ;
+- génération `8e354389b41b2498` ;
+- reverse rebuild 96/96 byte-identical ;
+- portfolio Lego, static audit, Media Type v26, Stream Presentation/identity, runtime media safety, playback integrity et sanitizer verts ;
 - release hashes et release integrity verts ;
-- commit de reconstruction `8e3f40c318d923e83b1dc49320fc1e4b68efe2cd`.
+- commit de reconstruction `bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb` ;
+- CORE Quick vert sur `28d98a54264f7d24379c62b310a81b2e60dd7b4b`.
 
-Retry 19 reste le premier jalon ayant prouvé la reconstruction complète sans seed JS publiée/upstream. Retry 21 confirme la même propriété après les changements Core/DATA ultérieurs, notamment le contrôle HLS premier segment.
+Retry 19 reste le premier jalon ayant prouvé la reconstruction complète sans seed JS publiée/upstream. Retry 25 ajoute la connaissance statique durable et le contrat de plan exécutable 96/96.
 
-Le CORE Quick doit ensuite être exécuté sur **ces mêmes bytes reconstruits** via un commit provider-byte-neutral avant l'acceptation finale des cinq Labs.
+Une reconstruction ultérieure doit superséder cette référence avant merge si elle incorpore les corrections finales de sécurité HTML ou le minimizer de production.
 
 ## 13. Fichiers de référence
 
@@ -227,6 +232,9 @@ Le CORE Quick doit ensuite être exécuté sur **ces mêmes bytes reconstruits**
 - `scripts/provider_base_store.py` — ProviderBase v3 ;
 - `scripts/materialize_provider_v3_all.py` — reconstruction complète ;
 - `scripts/verify_provider_v3_reverse_rebuild.py` — preuve reverse ;
+- `scripts/provider_v3_minimizer.py` — minimizer NiakVIO-safe pré-hash ;
+- `tests/provider_v3_strategy_plan_contract_test.py` — 96 types/plans exécutables ;
+- `tests/provider_html_filter_security_test.py` — absence de stripping HTML regexp dangereux source/publié ;
 - `tests/provider_v3_workflow_ownership_test.py` — ownership des workflows ;
 - `tests/native_five_lab_coverage_test.py` — cinq Labs exacts ;
 - `tests/native_lab_observational_purity_test.py` — Labs observationnels ;
@@ -246,3 +254,5 @@ Le CORE Quick doit ensuite être exécuté sur **ces mêmes bytes reconstruits**
 10. Les cinq clients/devices sont des dimensions de preuve distinctes.
 11. Main ne reçoit pas une reconstruction forcée directe.
 12. Toute doc qui contredit ces invariants est considérée comme obsolète et doit faire échouer le contrat de documentation.
+13. Le stripping HTML par regexp générique est interdit dans les générateurs et les 96 bundles publiés.
+14. Le minimizer ne peut modifier que l'indentation de lignes prouvées en état lexical code ; Terser reste interdit.
