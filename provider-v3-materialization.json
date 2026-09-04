@@ -1,16 +1,16 @@
 {
   "schemaVersion": 3,
-  "sourceSha": "8a4aa54c7801f0b9d17c913ccb4b802930ff7e44",
+  "sourceSha": "fa2f700079db3176e1d374e0c022b286cae6e2bb",
   "context": "workspace",
-  "generation": "6058e985fb3e0de0faff8b4e695ded3655a25f96578902336354f96c5e33d7f0",
+  "generation": "62324cf05e030068274b9b18c95e611595501417148f32fd3a8c56ae2dba7a03",
   "providerCount": 96,
   "expectedProviderCount": 96,
   "providers": [
     {
       "provider": "anime-sama",
-      "file": "providers/anime-sama-76fee9507a31651e.js",
-      "sha256": "76fee9507a31651ee1ed8963e83ac9a6bfed401a674d2a57355a6058a8deffa0",
-      "providerDataSha256": "c1c97f3c068e1197d6a4e76edf2d306463863c6484920d2a3e60f83bb581ae15",
+      "file": "providers/anime-sama-c484106e84180d28.js",
+      "sha256": "c484106e84180d287b90d38999581ab4f393a90d13e7164798e88a780bac6230",
+      "providerDataSha256": "a4a9fb4b21029bdfba3eb28d7589dc35d0aa2073f4bc0380eea7e7bad5df17a6",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -25,10 +25,17 @@
         "CORE.STREAM_IDENTITY.V1",
         "CORE.STREAM_PRESENTATION.V1",
         "CORE.STREAM_SANITIZER.V6",
-        "PROVIDER.ANIME-SAMA.CONFIG.V1"
+        "PROVIDER.ANIME-SAMA.CONFIG.V1",
+        "PROVIDER.ANIME-SAMA.RUNTIME.V1"
       ],
       "coreCount": 12,
       "applied": [
+        {
+          "type": "provider_lego",
+          "path": "scripts/provider_patches/anime_sama_runtime_v1.py",
+          "phase": "discovery",
+          "scope": "PROVIDER.ANIME-SAMA.RUNTIME.V1"
+        },
         {
           "type": "patch_script",
           "path": "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
@@ -119,9 +126,9 @@
     },
     {
       "provider": "purstream",
-      "file": "providers/purstream-5e7c69da6311d9bd.js",
-      "sha256": "5e7c69da6311d9bd780a5632470d83d2601f4042d0bc8fe0903e1af485e11877",
-      "providerDataSha256": "cb6962f91b85104f22f2168afd7e35a2f53fa0ebc8473855adf09e1c4e62a5f8",
+      "file": "providers/purstream-e92216296111525e.js",
+      "sha256": "e92216296111525e89443331e51c7356fdb99e2c950693a90ff7739050575792",
+      "providerDataSha256": "742496126990ba79583d46b06ecdfe58cc235e79b8a0b197d7a023f1964386f7",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -216,9 +223,9 @@
     },
     {
       "provider": "flemmix",
-      "file": "providers/flemmix-4a5ebdaa89183e33.js",
-      "sha256": "4a5ebdaa89183e33c2f1fd4eac585b532fbc1d21119a8c257612bc15af12b82d",
-      "providerDataSha256": "204fe4f216d0c03cb7299469b77bd1be63fef47afa2c9de42f0fa7a6ef72a95f",
+      "file": "providers/flemmix-7b50320317213f28.js",
+      "sha256": "7b50320317213f28cd608b3b929462bae61881b57299491be115f0baa642d28e",
+      "providerDataSha256": "43b6b57528111eac60ab463557d6e578f72568740655f882f2adefcac61c83e5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -334,9 +341,9 @@
     },
     {
       "provider": "uhdmovies",
-      "file": "providers/uhdmovies-8f674477ee9ba470.js",
-      "sha256": "8f674477ee9ba4708d66eaebf15beb18c46ad7aa3d890f9b7bec605b1a55e575",
-      "providerDataSha256": "38e96f2f18685457bf2218916c6d137dc2493c75c0fe9454eeb8ec5d2b1355c1",
+      "file": "providers/uhdmovies-115fbd9a5adf79c3.js",
+      "sha256": "115fbd9a5adf79c3cccdface51d8e5960e3bd0b9a908055316a9007d6cab006b",
+      "providerDataSha256": "13c5df16a48313d07e8fb26adfcbbfe4d8093232233fc38ac3be6aae4233eba6",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -445,9 +452,9 @@
     },
     {
       "provider": "movieshunt",
-      "file": "providers/movieshunt-951771b193300424.js",
-      "sha256": "951771b193300424a9bb01618036f2d21b568b409d182b561d718b68c0e4166a",
-      "providerDataSha256": "ff040b1ce82a565e4e53ea2388d90eb7c59c65d5104ca42131059a4a5f2b44f5",
+      "file": "providers/movieshunt-9e57f0801507e07b.js",
+      "sha256": "9e57f0801507e07b7466ac8571afaf1d1965d773d41d89666c1dcb9d9053df9e",
+      "providerDataSha256": "6239900999809853647f9406292fb9a44a3aec2b608cb0850caba1b84058622d",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -542,9 +549,9 @@
     },
     {
       "provider": "zinkmovies",
-      "file": "providers/zinkmovies-d8affcb58425cee5.js",
-      "sha256": "d8affcb58425cee5d86cfec1a94344b1060f7ec3da4c08ad7c6c073669473594",
-      "providerDataSha256": "f8bad7b7468e47accf5dff1ea2023d63461e0fc9a39d1a2d6187394e22308944",
+      "file": "providers/zinkmovies-6d9e90e3c7e33075.js",
+      "sha256": "6d9e90e3c7e33075b44517d016cb455cd85814e4989d11b836cd2b590b8905b3",
+      "providerDataSha256": "3f98574e7bd39096823a55e585dbe80e75bce18621a3bf14f84fab7099fb53fb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -639,9 +646,9 @@
     },
     {
       "provider": "vegamovies",
-      "file": "providers/vegamovies-1eea844d5fe75112.js",
-      "sha256": "1eea844d5fe751127058ceaa8ecd8cd52f8d42b40e68e1fce790d33fd0be7400",
-      "providerDataSha256": "27bb666d1e138f56e43ae101ed0d0298c093d5aeaee4115cdec3d6b9b95ca433",
+      "file": "providers/vegamovies-f57585e46a504b4e.js",
+      "sha256": "f57585e46a504b4ec0ac074f8a859012e1a2f9545911fd8e684ca183e5081508",
+      "providerDataSha256": "87e8347ab66ddca53edc4dd47b18e2841fcc55bb5a07f9136938f361791d1922",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -750,9 +757,9 @@
     },
     {
       "provider": "hindmoviez",
-      "file": "providers/hindmoviez-85f0e35de89d300b.js",
-      "sha256": "85f0e35de89d300b638f9d3399bd1551b3e295357c3c4f91e4e9a043ceebb1b0",
-      "providerDataSha256": "7c64b06d0e974a1565cd767ba95a4e7df82811edd3d82944671dc4d30b6549ac",
+      "file": "providers/hindmoviez-a495d968a97eed4d.js",
+      "sha256": "a495d968a97eed4d0730986f5a27e4d555c0812beb37768160610a620d03d83c",
+      "providerDataSha256": "f13d1c6ca3468e4af217f55584787bfa0a1871710ead72bb14db97421e514181",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.DESKTOP_RUNTIME_COMPAT.V1",
@@ -854,9 +861,9 @@
     },
     {
       "provider": "4khdhub",
-      "file": "providers/4khdhub-8f85e9257b440c3f.js",
-      "sha256": "8f85e9257b440c3f519d22bc3622af9c49cd4fab81043aaa720155ea11ea9982",
-      "providerDataSha256": "b50f7e5787bbefc1e3ccab02ad202c6a67c3eae0a1e89c2dc8e1910937d0b71f",
+      "file": "providers/4khdhub-c2a1749c1a7512fd.js",
+      "sha256": "c2a1749c1a7512fdb2bfb30fa6c6a6d85f3238b1d4e07cbebaf3e614fad04a0d",
+      "providerDataSha256": "3f7f60dd07862ddae2d018221db14900f7c592c382380ff490eebffaa78a5f9d",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -965,9 +972,9 @@
     },
     {
       "provider": "persianstremio",
-      "file": "providers/persianstremio-c2cd77c9a20f0f6a.js",
-      "sha256": "c2cd77c9a20f0f6a5014f36893b7d331ee99b61f961401f7633859422bec7e83",
-      "providerDataSha256": "854dffbdb83df7f0f5fc41483f613a3d461efafe8be7215a0ce775db3188785b",
+      "file": "providers/persianstremio-4e3a0b12053fdc69.js",
+      "sha256": "4e3a0b12053fdc69c80eedb68c7646e30fb3152355607d80acb0a2c5c0e544fb",
+      "providerDataSha256": "8d329a1e141093a8210bd1deee31d83874b099b50de28c06e18b0c7a0a2a3545",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -1076,9 +1083,9 @@
     },
     {
       "provider": "desiflix",
-      "file": "providers/desiflix-d06d020033d21287.js",
-      "sha256": "d06d020033d21287570c89b2dff64acc97de29e7f303397fa92abace1064af92",
-      "providerDataSha256": "db2cb42c594e4ec2d4b1d74c5c0bd4738e22697bf4e610c108c4c6a3e3f88ced",
+      "file": "providers/desiflix-83aacd4296b54249.js",
+      "sha256": "83aacd4296b542498a7d4a214c291876d12dfc759919f52e01d72c70f12336b1",
+      "providerDataSha256": "0a3bdcaf8ad903e56497ec2a0b8b2b9d1c6070f2aca7150d27f8b998033763c6",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -1187,9 +1194,9 @@
     },
     {
       "provider": "kehflix",
-      "file": "providers/kehflix-9606225b56e86cc0.js",
-      "sha256": "9606225b56e86cc0294cdb0f19ca9b6f706b57b9331d2ea621fddfb8304364b1",
-      "providerDataSha256": "b2dac85df743374d06de5f6079a24c5776278e21f27a35939b01713b5c1ac53d",
+      "file": "providers/kehflix-4aa74615586ba4c7.js",
+      "sha256": "4aa74615586ba4c761f954b76644557fd920dfd231f238f36423360c109d22c0",
+      "providerDataSha256": "11fc09033a4ccd0dd1b3e9cf7b7731a77176f86fe5ed81d7a750ca92f1ef3b56",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1298,9 +1305,9 @@
     },
     {
       "provider": "4khdhubnew",
-      "file": "providers/4khdhubnew-6d8e39b988723ba0.js",
-      "sha256": "6d8e39b988723ba0bc3bae6963e945f769d912e374c9996fc7b58f444dffd1a7",
-      "providerDataSha256": "13bc44a29b2cf1ff3e63075489413d9cb5a2cd3387e97e2b9299f1400d7f7d42",
+      "file": "providers/4khdhubnew-ad88676160f9e6c4.js",
+      "sha256": "ad88676160f9e6c4aa01977ccca1ca202ef9168848b0b6321281c3bdca85cbe2",
+      "providerDataSha256": "4c69cb58a777a9cfd0c61b363ddcae7b25a13dd6a741ac53c5363b5115d2dfcf",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -1402,9 +1409,9 @@
     },
     {
       "provider": "allmovieland",
-      "file": "providers/allmovieland-cf7fcbf98a9a4f46.js",
-      "sha256": "cf7fcbf98a9a4f4663538b89cfef3ba3b8be51e32ac5c133d9cb1d242803f36b",
-      "providerDataSha256": "21a6bdc034e9d6004d803c8affd05b7fcdee978a355855607dbb2e25484c8277",
+      "file": "providers/allmovieland-f6825ac261a42118.js",
+      "sha256": "f6825ac261a42118691085458dab1eb4ecd38e681a3b8d096056e0aea2404bd1",
+      "providerDataSha256": "95ef601f273234ef4df122aacfd8583e81758ed9459852ca3145e0c073180fd9",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1513,9 +1520,9 @@
     },
     {
       "provider": "anidb",
-      "file": "providers/anidb-19bbfe1674c664d6.js",
-      "sha256": "19bbfe1674c664d619e0999f30d23b0882e2c3ff3b81194fd21fb82e6c44943e",
-      "providerDataSha256": "e8213a4487b02a9d1219f12feb0b9257c9132e30e4708ad79fabc9340c47e297",
+      "file": "providers/anidb-b8f4809cea56ee9f.js",
+      "sha256": "b8f4809cea56ee9f969b1f952c6a9b21ec5dc56b2035aacb45ed33cf800ee422",
+      "providerDataSha256": "e95707be5abe1a7efda92fd18aadd727bd468027b1fb7b331403e48b0c87c4d9",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1624,9 +1631,9 @@
     },
     {
       "provider": "anikototv",
-      "file": "providers/anikototv-419089eadf4c730b.js",
-      "sha256": "419089eadf4c730be0e4527502a0b668374d9d1f3dd5e2b76ea6f117afbedc86",
-      "providerDataSha256": "a06f2f297b4a799692b933e43cab75da5c014a9cfbbe1c5d06ca7b108ff97397",
+      "file": "providers/anikototv-53f96d4f4bc029d5.js",
+      "sha256": "53f96d4f4bc029d5ccb84ead66358f728c9789b19743f99a62bda5de017942dd",
+      "providerDataSha256": "da66f5df7dcd9ddbb1a05c5e1c3cc717ff70e61a64ddaeceee3ab7712b2aeb23",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -1735,9 +1742,9 @@
     },
     {
       "provider": "animekai",
-      "file": "providers/animekai-211c4977f9f86345.js",
-      "sha256": "211c4977f9f8634521876c858d2c46ce3813df312de0753f91e490f071bf8cea",
-      "providerDataSha256": "e68a314dddb8a046280de743ee6e61cbf1ef58db247e50378bd667e18406e517",
+      "file": "providers/animekai-70848fd281cbc16e.js",
+      "sha256": "70848fd281cbc16e16b3c7fcbb95e961fe96221f062909c4445e6b40a1ef2fbf",
+      "providerDataSha256": "d19a596ebe2f2de9f591be3e22cfb5d2aab38840cb2938f193bc5ed7b5452024",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -1839,9 +1846,9 @@
     },
     {
       "provider": "animepahe",
-      "file": "providers/animepahe-4a98a0359ed3cfde.js",
-      "sha256": "4a98a0359ed3cfde346405a731940c5b20317e2a82253b88fe0f11e3af127716",
-      "providerDataSha256": "a1b9f62cada6fbcd97ff55f492f167b937a63b56caa1d442b985121a0579349e",
+      "file": "providers/animepahe-8a9bb41793b91e87.js",
+      "sha256": "8a9bb41793b91e876049a97010e3a253a9f025e1dacb71370132cf400c140748",
+      "providerDataSha256": "858d92c9e83f6435488470b3b55cda6a03fd5959e97c97a2122f3fd499f5cf39",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -1943,9 +1950,9 @@
     },
     {
       "provider": "animesalt",
-      "file": "providers/animesalt-a321ab6340f70a39.js",
-      "sha256": "a321ab6340f70a397eba903af6e7946d87a0f3dfa63f6013c81105970f54eec4",
-      "providerDataSha256": "fa62c5899459ff70a271a239d757449e1df44c5a9ce41fd9a47666c01bbdb071",
+      "file": "providers/animesalt-f581d7e84d0c63b3.js",
+      "sha256": "f581d7e84d0c63b3970e48cc4845287e8db938653d1d8d2fac77cff483a8d74b",
+      "providerDataSha256": "469d78d59777b656c3ea208d133259ab70ceb85e59678d42fe483f461ee7e44f",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2054,9 +2061,9 @@
     },
     {
       "provider": "animesama-co",
-      "file": "providers/animesama-co-88d242906604fdb2.js",
-      "sha256": "88d242906604fdb24a7456133534c67b4b05128328e145fe4f069090b055de21",
-      "providerDataSha256": "41356bfe4f70ca97e2cc6837e11369690849b90751a8393b645078cabc3f1108",
+      "file": "providers/animesama-co-d57e78badf5eff01.js",
+      "sha256": "d57e78badf5eff01a7679e96c9912b58a5a53da6ef617352a9e88f19b0d991cd",
+      "providerDataSha256": "a1d17ddf4f42554458edc5d2d1d797a3ea4e37a56581499207f24301d83880dd",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2165,9 +2172,9 @@
     },
     {
       "provider": "animesultra",
-      "file": "providers/animesultra-a499f9bc13a68511.js",
-      "sha256": "a499f9bc13a68511474b9cc0fa83e62b340f385a9c389a9571d8b6f27eab0386",
-      "providerDataSha256": "9191c0d8455490e46b2af93652c559278fda6e1f1bf4aacd732a7b1dfcb3d013",
+      "file": "providers/animesultra-4832496796658554.js",
+      "sha256": "4832496796658554ad8dd6d6b3a6dbf1edf0a8492eabe9796dcd9e8c2a81c572",
+      "providerDataSha256": "4ee160ff650b2e432143f4868d31613c63fff1690cba373487a7f31e19c36e33",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2276,9 +2283,9 @@
     },
     {
       "provider": "animetsu",
-      "file": "providers/animetsu-ca969bb0f52561ef.js",
-      "sha256": "ca969bb0f52561ef50d55158776781f240a228aaa8c41f6ae7ebf4a765fb89f0",
-      "providerDataSha256": "69b2a72b14f75bc7eecb23ddc46f5ccb89392c28610acbefd79c4a0600f2a671",
+      "file": "providers/animetsu-445932988eb25755.js",
+      "sha256": "445932988eb25755ce350986386170c06d1e3647a7f9148b79bf507d74d63fe9",
+      "providerDataSha256": "fe87b8f6f6fd82e2208bc89bcf9d342e1f447f2434a7431c14bd78ce2c7f524a",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -2373,9 +2380,9 @@
     },
     {
       "provider": "animevostfr",
-      "file": "providers/animevostfr-314a96a9feaf5151.js",
-      "sha256": "314a96a9feaf5151d5f15df5c3d5c0d1e443d23f24b2ddd62e7abd0375563f6e",
-      "providerDataSha256": "09acddb2e4dad813f4885792de718d06e29cd35b49e96e214d6609d37e94aa0f",
+      "file": "providers/animevostfr-083e86e9b3cf27a9.js",
+      "sha256": "083e86e9b3cf27a919fddb3a7c856e9c484d6411263a36815ed7b39b549f54fe",
+      "providerDataSha256": "b27466b2fa0cc286f3ca80d00af1fa804eb8e895790953e9a5455b16f8810e1b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2484,9 +2491,9 @@
     },
     {
       "provider": "animezey",
-      "file": "providers/animezey-b584e7142837cdd9.js",
-      "sha256": "b584e7142837cdd99ff4b74e4a2dc95fe498589f4a5c041af9dc0cb2edd8ffcf",
-      "providerDataSha256": "f4f119f70e552ed8643fffc90558dd429ae6ad1e490862e591a7942c380d5690",
+      "file": "providers/animezey-0c12561f4eb793f8.js",
+      "sha256": "0c12561f4eb793f8f693e7a0b9fc025ecadfd711b4a049b5a938846e625fed99",
+      "providerDataSha256": "4c8fee6588d0219e500cffd6874eba590b4bc24fa93c85788a81c300f7f8bc07",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -2581,9 +2588,9 @@
     },
     {
       "provider": "animoflix",
-      "file": "providers/animoflix-cab75610d4e466de.js",
-      "sha256": "cab75610d4e466de2097da43a71abea1bc7f053d4db29dd165e4ce68b7515b20",
-      "providerDataSha256": "49f28393cc50edf68a96cb8c0b63a9ab8a4ee4c0f989fa10f7fc29d8fefaad09",
+      "file": "providers/animoflix-8fdd1eedf1ba5c9e.js",
+      "sha256": "8fdd1eedf1ba5c9ea67cc2ca7d4cd3a3f4df13bbc4e20bebb8323acc2d0901e8",
+      "providerDataSha256": "e0c0e64f4389c3c0afaefc8ab3850a1654e423355af71a46a404aa9e4056fa66",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -2685,9 +2692,9 @@
     },
     {
       "provider": "anizone",
-      "file": "providers/anizone-a7ea4a85a0f80a35.js",
-      "sha256": "a7ea4a85a0f80a3530cb930081632920995b320ce45eeb9d78344d77dac90ffb",
-      "providerDataSha256": "e169519a05977b38cf5c98763286cb38d8901c246b078c053647009e695013f2",
+      "file": "providers/anizone-83e47ce110a41228.js",
+      "sha256": "83e47ce110a412288bd84f223883e2254cd7c74d578d02e3ec8e9a03e472fdde",
+      "providerDataSha256": "7d1befab69002b3420a3944dc8e9f8fdb28b5d9274534597668040d0dafa0165",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -2803,9 +2810,9 @@
     },
     {
       "provider": "castle",
-      "file": "providers/castle-7bce338e4b59dda0.js",
-      "sha256": "7bce338e4b59dda07364ff89cc457528e01482175b854c59ef80f6d79845f512",
-      "providerDataSha256": "03f9781f55bb5a15fe14cb9390b2a7e92c66345283c926978009ad7276b914fb",
+      "file": "providers/castle-0b4bde3c2b67d75a.js",
+      "sha256": "0b4bde3c2b67d75a5bc20e8da146d9483b064c56320c98ab006b7d53b645761a",
+      "providerDataSha256": "c5dfe35421169ed6ce762f4a133d5ad361ea20ff6f2e9fbd928351d00dde796e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -2914,9 +2921,9 @@
     },
     {
       "provider": "cineby",
-      "file": "providers/cineby-8f68813829e560f0.js",
-      "sha256": "8f68813829e560f0b483398f6fd370205647832de1c5a479efb45051aa360958",
-      "providerDataSha256": "037468bf1965784ab6cb1df5aac65d6bffbcd5dab10d7255da312f7a9387fda5",
+      "file": "providers/cineby-299b56cb2155f1cc.js",
+      "sha256": "299b56cb2155f1cc3a5a752554bdda372d95821ac72da02fb32580cdd5c7b34b",
+      "providerDataSha256": "cf813688d722a90f0e308d6db63c8a84c36559c095b0c569a88759b2f6c9866a",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -3025,9 +3032,9 @@
     },
     {
       "provider": "cinemacity",
-      "file": "providers/cinemacity-cd3017e1cb2094ca.js",
-      "sha256": "cd3017e1cb2094ca12300b2c18f0e627af897033fdaa9a3823f6915115274c95",
-      "providerDataSha256": "7d8dd3259ed9f706c2b856d888825429d985331228e245032e555a75bd7d06dd",
+      "file": "providers/cinemacity-b2bb780962a8c635.js",
+      "sha256": "b2bb780962a8c63547eb49c8d950fc2b4cb9f4d9bc66f0092507e915d3e8c7d6",
+      "providerDataSha256": "2a71bb02f9159d28d6c5e7e590da873881dabf318aa407117f0d8d90ae89096e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -3129,9 +3136,9 @@
     },
     {
       "provider": "cinemm",
-      "file": "providers/cinemm-af54f4528ce77cb4.js",
-      "sha256": "af54f4528ce77cb4f250fed1cdc75973cc318c738d056a901d0a435471dc7efc",
-      "providerDataSha256": "134ed3dfd63322a1bf815e69af32e0d7e7ecc0e663d46a07ed91bf6fc9b53027",
+      "file": "providers/cinemm-400bc176777eefb9.js",
+      "sha256": "400bc176777eefb96a9b1f61747dddb3e53b652a5e18ced505de6eb1b439dd01",
+      "providerDataSha256": "5080a073c6f683867b3021ca72668d534d1e77d4d3bf49be7440d162ea6c1f22",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3240,9 +3247,9 @@
     },
     {
       "provider": "coflix",
-      "file": "providers/coflix-658e7dcf163a0425.js",
-      "sha256": "658e7dcf163a0425075613691e7fbc1da94d0687b14751096510b1643af64dc0",
-      "providerDataSha256": "c2a256eaeb1c5300baf6391946c80491bae130b6a0ad40a70b0206508f6ceb43",
+      "file": "providers/coflix-2b6ad23200c18b6f.js",
+      "sha256": "2b6ad23200c18b6f477d05bcad9d3ead0765c34c67d4d2ae23a7c2f372589d51",
+      "providerDataSha256": "a280f5f1290c2ae3967f191e44e2e74ac1e606178bdc3d889065fd5dd8b6698b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3358,9 +3365,9 @@
     },
     {
       "provider": "dooflix",
-      "file": "providers/dooflix-81739f4873e65117.js",
-      "sha256": "81739f4873e651174489f7e3d6f6e207a4acafec0fac6a125b49f4ee45a4ca8e",
-      "providerDataSha256": "6cc99f95f114738d54689cf0aa36116cf14046b2d78e821e333c0a0c19766197",
+      "file": "providers/dooflix-49861e145c638134.js",
+      "sha256": "49861e145c638134f2ffebc41309369b8d772bb2f30aa535d0f31141b35835d1",
+      "providerDataSha256": "62d0665cb9004ea8934015f2365d4324f6ecdb299464197971a867c96b9b1736",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -3462,9 +3469,9 @@
     },
     {
       "provider": "dulourd",
-      "file": "providers/dulourd-429df19015be33bf.js",
-      "sha256": "429df19015be33bf4a8627e6769fcebe62cf74db3446a35499617f71353144be",
-      "providerDataSha256": "3d793e8537a6627d9c8f2917630c4fae83ed6d6734f4e52e576e7b07c49a55d9",
+      "file": "providers/dulourd-70491e35b60736aa.js",
+      "sha256": "70491e35b60736aa4d81d5c913a348ecb0c3a61fadde42b9febb7ca8d7af569f",
+      "providerDataSha256": "49ea7bd4126e6958b841b99f80f3036f4acac45ac2075d0d160696196cee60e7",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -3566,9 +3573,9 @@
     },
     {
       "provider": "french-manga",
-      "file": "providers/french-manga-3c5412f59275d6ad.js",
-      "sha256": "3c5412f59275d6ad8fd4e08fa967053a46df67f53766d9661a203bee74164431",
-      "providerDataSha256": "d467009f76d71ca2b1cd51a935e69cc1c83048241017c3fe38e80141aeb6bf5b",
+      "file": "providers/french-manga-497b73560398e491.js",
+      "sha256": "497b73560398e491214d2537743d2b53e7c891a77cfa3956e19da5298b24c366",
+      "providerDataSha256": "208eaafe6d295f3d46b37a9b886be560cca356624e73581c7a32929c19dedf1e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3677,9 +3684,9 @@
     },
     {
       "provider": "goated",
-      "file": "providers/goated-94d8ccc0761760c3.js",
-      "sha256": "94d8ccc0761760c3cf8f991417613b3a53304222df8aa05da5526bbe85b80c26",
-      "providerDataSha256": "e25f0172031becf93824703fb36a252e71ae1f1eefbfd35a1152d8b2ea4c07fa",
+      "file": "providers/goated-5c309ce27be691f6.js",
+      "sha256": "5c309ce27be691f6c413991085d648909c4db8ebd825823b99614704e77f1f16",
+      "providerDataSha256": "803233855e34fc0bf4161a093a6d4826b67b6012deddcacb4cb87d15cfcda281",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -3781,9 +3788,9 @@
     },
     {
       "provider": "hdghartv",
-      "file": "providers/hdghartv-dfb24a1807f1090a.js",
-      "sha256": "dfb24a1807f1090a2e1d485432263f1e806f835deef51092fdfb48f1b5b3fb02",
-      "providerDataSha256": "0f3ebcaef797ecedc1bbbe31547a8548a7b6a16b4958526dcab6f2b943ad984b",
+      "file": "providers/hdghartv-ae14862431f56831.js",
+      "sha256": "ae14862431f56831c6bd99e226c2ef3d8885dd6dc6c10d71b77e6c978fa32161",
+      "providerDataSha256": "415f798237b05c83d888522a468a7470d9e4895d98cdac00545b471b34abc49d",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -3892,9 +3899,9 @@
     },
     {
       "provider": "hdhub4u",
-      "file": "providers/hdhub4u-e668d8d7b523a69c.js",
-      "sha256": "e668d8d7b523a69cf5246b410368c727f24c33ca538e854b49dcd9e452a69f54",
-      "providerDataSha256": "56e67706c47d7d302654f4c58941f33dd8e3f0d6662a20473738f206f31b26c9",
+      "file": "providers/hdhub4u-76b369b33d503189.js",
+      "sha256": "76b369b33d50318979097ac9b90c6be6809fcb7fb81b348a5abf9fbeedc9640e",
+      "providerDataSha256": "f28103284ac49cb6716ec266e798da0039ec23ee549cf4e6eafc19051fbef2db",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -4003,9 +4010,9 @@
     },
     {
       "provider": "hianime",
-      "file": "providers/hianime-f996b490b4667392.js",
-      "sha256": "f996b490b46673927837972d5649f677d8b167d47627affe2ca0a605474a934b",
-      "providerDataSha256": "2e870cc6b59f43b3404b27d46c95d9f78b5f906f3d076945233f44c82eb566cb",
+      "file": "providers/hianime-5c7fed29c9b7931e.js",
+      "sha256": "5c7fed29c9b7931eea52fa763b43ea20eb172ae4b18b7e96f275ef5d89904647",
+      "providerDataSha256": "7c2cb9caf9e436ede17f20de98aa2082367c16c450db98de9aa1eab9790b5b05",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -4107,9 +4114,9 @@
     },
     {
       "provider": "kurage",
-      "file": "providers/kurage-544f9b95da8fc1d9.js",
-      "sha256": "544f9b95da8fc1d90255898692549b1810d5d255238e5c49f45be96d4aaf4404",
-      "providerDataSha256": "6c8a9cd18f0ceb638068e265ded674f2e94ed3c5df67949f07785c465c01b2c7",
+      "file": "providers/kurage-73d186b32bcbec29.js",
+      "sha256": "73d186b32bcbec2908e95a9f60d50e06ef9054f1b45c4e5d136a1e909da8a1eb",
+      "providerDataSha256": "635e7d1248d14bdc70b463a8f35719212705c290815cf8af2b1ca480f10c701e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -4218,9 +4225,9 @@
     },
     {
       "provider": "movieblast",
-      "file": "providers/movieblast-6cbf02524fb0b88c.js",
-      "sha256": "6cbf02524fb0b88c04f6c4da392a8a076f67847ad5bf9104d79b0f8fc9e3e507",
-      "providerDataSha256": "47f60e0c2bb35b40066eeb9bd0ab2b426477b40dc1147247fd7a2012079d1c8b",
+      "file": "providers/movieblast-7b6d1e718d2fb3c5.js",
+      "sha256": "7b6d1e718d2fb3c5b6cf3280d5e6cfa26d224a46b71d0f4863e34190cf951860",
+      "providerDataSha256": "e58a946aeedc981012f9522364c3f4ed9517b27f7b166b6f29854fe14f647304",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -4322,9 +4329,9 @@
     },
     {
       "provider": "movies4u",
-      "file": "providers/movies4u-4b1fe9e029345b4d.js",
-      "sha256": "4b1fe9e029345b4d7045152a92da0c77cda00fc9f857c20e7b7e14fda54daac6",
-      "providerDataSha256": "5de79617c35f569e36d914f55aef4b7f4c174b3473f6c80c3c0fb89b77acbea2",
+      "file": "providers/movies4u-9a024ebba3e262be.js",
+      "sha256": "9a024ebba3e262bec9cd1afdd4a66362927e87158b6413fe2008b9975994efe2",
+      "providerDataSha256": "fe51eedee4aea188ca05eb2f3ea45879f54773bc848c4b91f7fde4388c630d1b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -4433,9 +4440,9 @@
     },
     {
       "provider": "moviesdrive",
-      "file": "providers/moviesdrive-96f7fcfcb8ef16b5.js",
-      "sha256": "96f7fcfcb8ef16b5caaaeff57eb061f9ba65acc8ec5183daf6b77c7003847842",
-      "providerDataSha256": "ac57878120e0fadac80be072c4fb30b808f093283cd93be068b7e9038fbcf9b0",
+      "file": "providers/moviesdrive-0352de1108607002.js",
+      "sha256": "0352de110860700283a7ab20a36f52738708f881467edd9cf74cd15e644c8789",
+      "providerDataSha256": "a3bdf02e3a248401ace7fc6a0f38dce6a469ae011b6848152550c94a03dc97c8",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -4544,9 +4551,9 @@
     },
     {
       "provider": "moviesmod",
-      "file": "providers/moviesmod-7b986bcc6250ddbb.js",
-      "sha256": "7b986bcc6250ddbb74c5c49e33fe6a89dc2f082b9a95bd47160aaf222215b83d",
-      "providerDataSha256": "7ffa92806d1b4d6aefb519c935dc5b20b910c0f5a43a286a9bce127480273454",
+      "file": "providers/moviesmod-7112476b868fd5b8.js",
+      "sha256": "7112476b868fd5b8fe49bc764dcc0f28944b23c7c8668e3c33fac0226a594928",
+      "providerDataSha256": "9030a9fe32636d8b93a61446b38d3ff1eb74166f891554da2959496503d20e02",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -4655,9 +4662,9 @@
     },
     {
       "provider": "movix",
-      "file": "providers/movix-ba8501d78417bcb9.js",
-      "sha256": "ba8501d78417bcb9b5741d276979948ca83ad974ea08d611b71d2d7e4556defc",
-      "providerDataSha256": "b14266ebc4972fee66574d0f09d92edd4733dbdbd24a95552b19bea3445adf32",
+      "file": "providers/movix-d3097d37ec283440.js",
+      "sha256": "d3097d37ec2834402780d14bdcda7e9156583d723fab305a853d76563482ef4f",
+      "providerDataSha256": "0f1fe5512eeb22dc6b73921230806e4ab7d6d445d154d834d148b5c2a9adc2fc",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -4780,9 +4787,9 @@
     },
     {
       "provider": "mugiwarastream",
-      "file": "providers/mugiwarastream-5b27c14f9b886c02.js",
-      "sha256": "5b27c14f9b886c0269da6112258e240b1c6691bd6e5e6da5c351fcf15e65f3a9",
-      "providerDataSha256": "a4b2f68b19d4e0e7ad25d50af017e1fce77335b4a4bff4550640452d16f5fb58",
+      "file": "providers/mugiwarastream-48cd88bbf2f77c59.js",
+      "sha256": "48cd88bbf2f77c59552adfd137d4fbecd97017c95244c1b91405f4d5dd4493ba",
+      "providerDataSha256": "34f9e7614d103b3fb5fbfd2e53471b389f63b69cf1a71cd15450cb2222dbcc28",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -4891,9 +4898,9 @@
     },
     {
       "provider": "nakios",
-      "file": "providers/nakios-597b0e6fc2cf4ae8.js",
-      "sha256": "597b0e6fc2cf4ae8197b160f7e1429b6e046a29da74df695b8e698f517d9ef29",
-      "providerDataSha256": "a2cc3931ce0ca3e64d992b9e7b86864707e9eee7f27288b455b565ff79a23ab1",
+      "file": "providers/nakios-9dcb45281f60cbbf.js",
+      "sha256": "9dcb45281f60cbbf889b0d8130c8d4fedcbcf810c5746ac3b901cd2010fd8388",
+      "providerDataSha256": "c3d2fc6b189adec1e749c3634af9b0290074acb6827dfa3532c177063b57c75f",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -4995,9 +5002,9 @@
     },
     {
       "provider": "neko-sama",
-      "file": "providers/neko-sama-c16fafcfe88c93f5.js",
-      "sha256": "c16fafcfe88c93f540224426c90ea6072e1764319b3a41e08c1db4289f8d788c",
-      "providerDataSha256": "6580807eacbcc70b6009237c9209b7fb3e06e1f546e44d48cfd94d2c57394d18",
+      "file": "providers/neko-sama-bc3751ce2c06de2d.js",
+      "sha256": "bc3751ce2c06de2d99cbd62cd4f013395e4a07964cb1ac0a7ef3638f820b43b4",
+      "providerDataSha256": "d13c0304ac2696bcd01b5005d0b78e31aa5b11eea2b5412dd765882a9c43e66d",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -5113,9 +5120,9 @@
     },
     {
       "provider": "papadustream",
-      "file": "providers/papadustream-b5d2ef4aeb751d12.js",
-      "sha256": "b5d2ef4aeb751d12626e4161e7ece8d2451c28731e7eead9b2a5e5509d269ca1",
-      "providerDataSha256": "703a652b800dd2fb01519a4ae1524b4fe76ab8881844cc725fd47a322a5dedaf",
+      "file": "providers/papadustream-dd0d4bb9376b7191.js",
+      "sha256": "dd0d4bb9376b7191b42be710680518435fb3d62de7419b5804d428969d31bc90",
+      "providerDataSha256": "a7d36334b0f0789d3a6b0a5bdb9a13df3aa3825f6086afe694b4b73a7736b243",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -5224,9 +5231,9 @@
     },
     {
       "provider": "peachify",
-      "file": "providers/peachify-594bb61e7ab7d026.js",
-      "sha256": "594bb61e7ab7d0265fce3617f34de927fb5bec9a4a4553530fa174407fe39ccf",
-      "providerDataSha256": "faefaa0bb1101f38c8b4ba00172c9b3caf48275b1b382ff7557982cc2b9a7d44",
+      "file": "providers/peachify-96d5a1cba7d8f396.js",
+      "sha256": "96d5a1cba7d8f3962488cfcb6078289bf124df0b90fd24ec8c374a3361de0d22",
+      "providerDataSha256": "baad4196e214de6d3abb8a41ea8c6916d0a9c50af186fd1e381e04858731087b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -5342,9 +5349,9 @@
     },
     {
       "provider": "playimdb",
-      "file": "providers/playimdb-813cf8c4a992fbe4.js",
-      "sha256": "813cf8c4a992fbe46f49e8d343e1a768204744060a69eb75b2bb1c8a9dfb1238",
-      "providerDataSha256": "481b595ce27633b3ddf63dbcdb19a2f86bc30160965fb9d29e6b336229fdd82f",
+      "file": "providers/playimdb-060cc6a41851c308.js",
+      "sha256": "060cc6a41851c3086fba347aa573447e23cdaa390e2f6f68df739d45f74a4d8c",
+      "providerDataSha256": "252c173eef5ab8e1c4664757cb0309fb21aacd2d6dc0a91381f8583870f6d208",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -5439,9 +5446,9 @@
     },
     {
       "provider": "sekai",
-      "file": "providers/sekai-91c9cc26c723359f.js",
-      "sha256": "91c9cc26c723359f500e2ffbdff3f21729254b49288c507698fffc5d1226da04",
-      "providerDataSha256": "4ebcc11b26a83c00ce742e8db935c5145f3ed200650adee4065782e864bad023",
+      "file": "providers/sekai-ba20e29ef33964ca.js",
+      "sha256": "ba20e29ef33964cafe9d61f255ede45f6c628c25e0c1821e2fa82e487d22eb48",
+      "providerDataSha256": "a9e45d37d6a8e2e82779b0a56a4b8f34e5a74366a5afc98bcd24e9f7f2b05cd7",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -5550,9 +5557,9 @@
     },
     {
       "provider": "streamflix",
-      "file": "providers/streamflix-825ac1d4c5364a2f.js",
-      "sha256": "825ac1d4c5364a2f82d2b8ea46699abacc1fd2f99aa063c2222fe57ba94ddfad",
-      "providerDataSha256": "b02ddf03fefcac33e507ca8d032ec615be7ef169710093d550034f9059676362",
+      "file": "providers/streamflix-096fe88019a8ad2d.js",
+      "sha256": "096fe88019a8ad2dfe5185937b134e400b9d6388dd8a1968b0d256f11fdd8325",
+      "providerDataSha256": "83af6de6f8c7c6da5ca5b1c5e73e290c2688af113aea2d16909cf682129500d2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -5661,9 +5668,9 @@
     },
     {
       "provider": "streamzo",
-      "file": "providers/streamzo-f61cbe2745878013.js",
-      "sha256": "f61cbe27458780136dbb0d9d414ff6b5da8eb1edf1d166b3d7ca32c1ff3cb3d6",
-      "providerDataSha256": "b0ebc9582ee2b20ddbd8795b206af4c259c7d5cf1560700e7715447aa8d18799",
+      "file": "providers/streamzo-e385e476d8fc38ab.js",
+      "sha256": "e385e476d8fc38ab96e732805d339f30ddafc2a6f79c165c6708256ba50536dc",
+      "providerDataSha256": "a62b90f11718edf8443707e1d9a599f3d2e44531c628741fec95781ddca73dc7",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -5779,9 +5786,9 @@
     },
     {
       "provider": "toflix",
-      "file": "providers/toflix-a0deeb6b939ad2a8.js",
-      "sha256": "a0deeb6b939ad2a8a46928f8a69b30504ba188118b12338be92808bf6308186d",
-      "providerDataSha256": "4abfc7c63abc2b95ed0a54986e7194e2939920f274f93e906822f6bc6d4163d3",
+      "file": "providers/toflix-e865ce1bfb318008.js",
+      "sha256": "e865ce1bfb318008819dad98a4b7d42b733c3a425a7bb3caf4b9fa17c8a3496a",
+      "providerDataSha256": "4e26c79f7fb085f9dc0df808efdcb5db8ba6b6d2affc721d8db295e96a746964",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -5876,9 +5883,9 @@
     },
     {
       "provider": "videasy",
-      "file": "providers/videasy-96985528e86bc87e.js",
-      "sha256": "96985528e86bc87e9332cdb950b8d830cb996709b6d34682719680e05411a2e2",
-      "providerDataSha256": "e94cc482b8baa8f7f6435b1d0d280499bf77fa7f2c42a3531c7272aeb3e8c27b",
+      "file": "providers/videasy-81a7226efd43a0eb.js",
+      "sha256": "81a7226efd43a0eb7508c7bdbc420d1c955679b636e7c26d874c4137e471679e",
+      "providerDataSha256": "3fd9b25706afdbfbe0f673a0fc29a4e844a4a73253086148ff0be33f906f2c11",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -5987,9 +5994,9 @@
     },
     {
       "provider": "vidfast",
-      "file": "providers/vidfast-939965efb31a2ec9.js",
-      "sha256": "939965efb31a2ec939c0a517a12c2930dfad14693f198830cfa02769c9e7add6",
-      "providerDataSha256": "db389f74be57db0353b21542d5749c9c52379c1a84047a5d5dd802812766e33e",
+      "file": "providers/vidfast-cf7579abb4bea073.js",
+      "sha256": "cf7579abb4bea073ac1b1e49aa53af16464359186037e64395e120534d3a1199",
+      "providerDataSha256": "a240ccff77b70b7772a9499cc392d2a2bce6823fcc45a29a305606ff730c4a86",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -6084,9 +6091,9 @@
     },
     {
       "provider": "vidlink",
-      "file": "providers/vidlink-eae7aa41bad6067c.js",
-      "sha256": "eae7aa41bad6067cdf2bfadf59a53844f2ae205935552327ec17150ab3445793",
-      "providerDataSha256": "ee5eebbf7b1a9baca8792a77cb5e3ac1bc4d4b519b80093a55f7b152ac62e65e",
+      "file": "providers/vidlink-aceadadb156b9cbd.js",
+      "sha256": "aceadadb156b9cbd0035ca78f04779ab7556fe421a736e6eed759d185a550755",
+      "providerDataSha256": "cfbbc483aeb7214148ddfa20a9b2b1be265bb2b0fc1e51e64b12ba7ebbe7c5f4",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -6188,9 +6195,9 @@
     },
     {
       "provider": "vidrock",
-      "file": "providers/vidrock-820b388ef5a7dd4c.js",
-      "sha256": "820b388ef5a7dd4ca1bec4943872d4f93bab4abafbd526a03c592fc2806639fb",
-      "providerDataSha256": "4a3d235dfee0966e3011d27c56b9695fc74bdc2c9c6dd8c783fa099aaf4e66fd",
+      "file": "providers/vidrock-2ccaa54970c2cf65.js",
+      "sha256": "2ccaa54970c2cf65ba922257c5602d5bbb5cd3a236c4eb804e110e3b88742b8f",
+      "providerDataSha256": "19894227613c6de635d39c37e632e8fc73a3c3fca066f42eb47b90dac895b87b",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -6292,9 +6299,9 @@
     },
     {
       "provider": "voiranime",
-      "file": "providers/voiranime-2106434f7ba65551.js",
-      "sha256": "2106434f7ba65551fb2b134159abe9211790e0b9af10330ab2dc00e175ac9838",
-      "providerDataSha256": "8d671e00852f9a60eb96e601e77cf83b13d8caf9e7eab3ceb806edab73771427",
+      "file": "providers/voiranime-c95043231a520919.js",
+      "sha256": "c95043231a520919f228afdb4d68e1968b43f962012965826822c21ec3829221",
+      "providerDataSha256": "ee8a6b22ca4c544a9003608d2737703181265fb304690fc663eddc4070208326",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -6403,9 +6410,9 @@
     },
     {
       "provider": "voiranime-homes",
-      "file": "providers/voiranime-homes-06ef51809aaa36b5.js",
-      "sha256": "06ef51809aaa36b5262a58a1515b2ecd1e4000c2ae93f698b5321d591a4ad0da",
-      "providerDataSha256": "571bfc55c7bd31b1cad9f258874302b854437595756499e1137c51ff9e48ad33",
+      "file": "providers/voiranime-homes-c98f8f6f8208bfc7.js",
+      "sha256": "c98f8f6f8208bfc7b0023a5ce45cbe9de893a2221a4b88f658acb5ff74f9daa7",
+      "providerDataSha256": "35d6f800c8481fe028d788c5162a45aea8811b4b43a11aa5974d4aea5cff2eb4",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -6507,9 +6514,9 @@
     },
     {
       "provider": "voiranime-rip",
-      "file": "providers/voiranime-rip-35153d0da797d977.js",
-      "sha256": "35153d0da797d97738424af7d32dbf460b50bde4bcad50c2d365d5ee9b514636",
-      "providerDataSha256": "2096ce51e9a31f311496988ebf10fb54c9711fdf4ec1cd60b628cb2953bbd4b1",
+      "file": "providers/voiranime-rip-0fe138f2cb69ae28.js",
+      "sha256": "0fe138f2cb69ae28833f5ad07e7e7147c8b77c777885c1de4623ed009d7f57ee",
+      "providerDataSha256": "84af7aca9ec4fd7632ecadfbab88c1b21dafd71d478f6f856917f11e357d9cbc",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -6618,9 +6625,9 @@
     },
     {
       "provider": "vostfree",
-      "file": "providers/vostfree-38ae53a8b7b1e2a7.js",
-      "sha256": "38ae53a8b7b1e2a7c5e8dc17058d03b32c37d52a5cdecb0852eaf5c909d93625",
-      "providerDataSha256": "e5820cb1f3ed6803ac03b3b844849081804d2991573e1e50d2a2260520e95dd8",
+      "file": "providers/vostfree-ce586f73ed754cb9.js",
+      "sha256": "ce586f73ed754cb9c205909bbd06d4acdbd67ca05600e339879b3a67a3855df6",
+      "providerDataSha256": "52105e14db17ff44806faad41645b2bcef3da78a41072d159a0962e9c42037b0",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -6722,9 +6729,9 @@
     },
     {
       "provider": "wookafr",
-      "file": "providers/wookafr-718e6383cc0a39f9.js",
-      "sha256": "718e6383cc0a39f9e3c81a8a9e1a6d1a8eb78a7cd46cba67efda72b9122db258",
-      "providerDataSha256": "b6706bba29deb31a9728d9783c1fca28f815866ed595eacdf1af16f30fecdb54",
+      "file": "providers/wookafr-51a00c77b118c4fd.js",
+      "sha256": "51a00c77b118c4fdb7c673d77c7c81c4a982ec4c3f6657b12cadc743451d8c66",
+      "providerDataSha256": "f1568a6ac3ce27002cab8e8ddde4a82cfbd9079b86a988046c8d8e81a381fa89",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -6840,9 +6847,9 @@
     },
     {
       "provider": "yflix",
-      "file": "providers/yflix-bdb32c3dfd71ceda.js",
-      "sha256": "bdb32c3dfd71ceda3b547aca5f9c5dbe8905339700ebd642c71bd71bda3bbb2a",
-      "providerDataSha256": "c2db031bb2a5dfa33811f1fc200f846421daa9ad4b5b821d03b28afa90fdef2e",
+      "file": "providers/yflix-f358b0af584b52a5.js",
+      "sha256": "f358b0af584b52a505c141afc121d8acf71f4c62475939bac3fa070fb1b0d4c1",
+      "providerDataSha256": "c70d8b2313125a18f280e79b0e4a0759b7fc7332a7f6315cd42ed816236315aa",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -6944,9 +6951,9 @@
     },
     {
       "provider": "1shows",
-      "file": "providers/1shows-417bfe28a58bdf24.js",
-      "sha256": "417bfe28a58bdf2491377e843cd845563f3060e134c0986891a0ccddd8e2ac71",
-      "providerDataSha256": "9268db2f724f880c95acfa108e86f8a686d8ebfe2637951ed4e4d534e88d2b17",
+      "file": "providers/1shows-3f2cd2bf48fa7d17.js",
+      "sha256": "3f2cd2bf48fa7d17ce941e45a5d3347205e1dc616436291183b21fd5199b0eff",
+      "providerDataSha256": "434d18dae85e339e3fa4e7128c2b7fb052b210b462ef841f0858710453e745dc",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7048,9 +7055,9 @@
     },
     {
       "provider": "allanime",
-      "file": "providers/allanime-29e6a6412f3bcf82.js",
-      "sha256": "29e6a6412f3bcf8296003b295b7a5d2684903c7707f67d9b5b49256c1f09462e",
-      "providerDataSha256": "6b6db7f0d710c96f33c039c7ac4d6db48d970d8eae27628482a103d6b56ac7a8",
+      "file": "providers/allanime-4c3314b5e154d151.js",
+      "sha256": "4c3314b5e154d151836bb621555c435d879536a53a6d570713943b2353133400",
+      "providerDataSha256": "2b3ffbca15cd0006f512f4d473bb7d09212e720797cf58b8ed52a8e12a47e238",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7145,9 +7152,9 @@
     },
     {
       "provider": "allwish",
-      "file": "providers/allwish-2a9534c1f3675b0c.js",
-      "sha256": "2a9534c1f3675b0c3c46bec4f9189ca9d1f6a15c7a50df3779ece38a66619b45",
-      "providerDataSha256": "cf62f91e402f707256a035e7eb391adffb57f19405fe51f9d3de0b42fff70be4",
+      "file": "providers/allwish-d01f22ae2b829045.js",
+      "sha256": "d01f22ae2b82904553207fdeda7094bafff70b84db4a75beb05d15101754fbc5",
+      "providerDataSha256": "3e552f1d30c6645a00bad1ea3cbb26a37eb595f8bb044e878f6374b400c74dbf",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -7256,9 +7263,9 @@
     },
     {
       "provider": "anime-ultime",
-      "file": "providers/anime-ultime-8216467115c12ebd.js",
-      "sha256": "8216467115c12ebd69f91ca4bd2af07d1e9c8e1b9d1c33d9c9bb12e609a739d2",
-      "providerDataSha256": "6cd3c27296396d7aca1aed4cd6a9d695b2879bfed74890eea27f69a66b9635d4",
+      "file": "providers/anime-ultime-d1a6d9895386f7de.js",
+      "sha256": "d1a6d9895386f7de51c296443467969124cd821762870a947893dcad31f9b5e5",
+      "providerDataSha256": "4dda962dd663fde7de4cc761ec44608a7d751882def0bae5269b5a16d5bea0f3",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7360,9 +7367,9 @@
     },
     {
       "provider": "animevost-fr",
-      "file": "providers/animevost-fr-15a77bac3f4a9cdf.js",
-      "sha256": "15a77bac3f4a9cdf27b6fa96ac5bd08c24b14474d29c6632837ae8f11bd2d07a",
-      "providerDataSha256": "7b718d70b7724669dd0f05002ca4a45d0f60d90920ac2b855e638ab1ee966078",
+      "file": "providers/animevost-fr-08ebd2d73893302c.js",
+      "sha256": "08ebd2d73893302cee52b83d2c0cb226d192f755a00480fc0da07c609bab176c",
+      "providerDataSha256": "ee38ca1c6cbb5da896b197e6b7b1c0da6a71c5f89919118d054a05454667b70d",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7471,9 +7478,9 @@
     },
     {
       "provider": "animeworld",
-      "file": "providers/animeworld-b72bc9fcd152debd.js",
-      "sha256": "b72bc9fcd152debd4472fa41f9c5644c16411a596e5ebe10089fad75df18886f",
-      "providerDataSha256": "c831ef106a22351ecde2e7302b00e079a79793521c964bdf41d7664e89801b3e",
+      "file": "providers/animeworld-dd1ca663a7edfa97.js",
+      "sha256": "dd1ca663a7edfa97a5927fa2283d916499beadd85db61667b583daf5e4de6fc9",
+      "providerDataSha256": "2aaac770a0759e1fd2fb4a5055eba92182d23bacf9526da24376385b49e03d5c",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7575,9 +7582,9 @@
     },
     {
       "provider": "cinefreak",
-      "file": "providers/cinefreak-5da8d23aee53f8d1.js",
-      "sha256": "5da8d23aee53f8d1fc813cf2f7e8ba44259adba6c4acc04c319a06b371429d69",
-      "providerDataSha256": "1396e3dc699f083a0d1d2b8f880fac35bc0b88c4753bddd5bda1c8f1a347d5f6",
+      "file": "providers/cinefreak-e52387c138e19de3.js",
+      "sha256": "e52387c138e19de3f93fb3e3deaec3f304afc4199d423376c82626c58fe0cf77",
+      "providerDataSha256": "0e41a533db6be61aba4bc72a9095758848d5335108c472c162576f142d5a5526",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7679,9 +7686,9 @@
     },
     {
       "provider": "cinevibe",
-      "file": "providers/cinevibe-26d13d07dd22f697.js",
-      "sha256": "26d13d07dd22f697fcaab21c69e66eb07f9d45ee0e937eb7d1d985911f484e46",
-      "providerDataSha256": "d55a3df0c7a6a4e3dffb889eb8ad5cd5735a742d89440d1df9c8a24d144a23c9",
+      "file": "providers/cinevibe-3def55cf3edf49d5.js",
+      "sha256": "3def55cf3edf49d5c9730b3a487ab1a31944b1cf68a94e8af5710531dfa926c4",
+      "providerDataSha256": "9cd6cc4b975dfdc0053c1a1f6ff039ed5e3069d4ec12132d65136171f1712182",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7783,9 +7790,9 @@
     },
     {
       "provider": "ctgmovies",
-      "file": "providers/ctgmovies-4a2c234f66563dab.js",
-      "sha256": "4a2c234f66563dab0efc5662e475b54eac812fde8d88cbe24e2810826b3316c8",
-      "providerDataSha256": "9a251b4706c6caa02494de6de7fde3d33e3ee85833b2cac0cc1289ae6da94aed",
+      "file": "providers/ctgmovies-138b8919894fc011.js",
+      "sha256": "138b8919894fc011adc511830baa6c1553c239284da7dfe38565c54803261ed8",
+      "providerDataSha256": "b12b91b46c2f822058a957d57c8335ab532989cb9d4ea7742dbee5c18ef832e1",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7880,9 +7887,9 @@
     },
     {
       "provider": "dvdplay",
-      "file": "providers/dvdplay-00e052817fa27473.js",
-      "sha256": "00e052817fa274736a6ab9e7fa66f49a86dec70edaf385deda7759e63f8e3d26",
-      "providerDataSha256": "c6da05f55a03e39f1d886212d438e66f0fc847e249166a80bc871e975e34e72d",
+      "file": "providers/dvdplay-9111422aac184a37.js",
+      "sha256": "9111422aac184a37edcf4cc0ab9139f28d45f4455613786bfca4560645451cc1",
+      "providerDataSha256": "99adfc12e388eda585ff69345bb7a22d5ca09a931390858fa2db358ad504654f",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -7977,9 +7984,9 @@
     },
     {
       "provider": "einthusan",
-      "file": "providers/einthusan-aff238c35d30a18d.js",
-      "sha256": "aff238c35d30a18dffe9156fed1cf1424bb325eb776b385ed32fb25ff174b60a",
-      "providerDataSha256": "8961bf39133c786fe7353fed3d6ff82c37ae7e3a1f540bb686ed5dcab2f6acca",
+      "file": "providers/einthusan-f757fc6f4dfb3b6d.js",
+      "sha256": "f757fc6f4dfb3b6d2d0490db6ab1267791f5561df4ffba2ee6a5f6ffc7201a11",
+      "providerDataSha256": "103fbc705df08e5873eb9e3c6942786eaabba20283e0a2e23609e33ca14b694f",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -8074,9 +8081,9 @@
     },
     {
       "provider": "fibwatch",
-      "file": "providers/fibwatch-63d1a04e87cd062c.js",
-      "sha256": "63d1a04e87cd062ccfe7442a9ee0cd9b11f5fe22e6b38c3b27cb5d3f809f4d27",
-      "providerDataSha256": "1427ef27334ec0697d89eb4e99cf4352ef9608f1da3d711a7c7d94826d837a2c",
+      "file": "providers/fibwatch-a670cc5d0f9f6763.js",
+      "sha256": "a670cc5d0f9f6763ca2c694984efb5fdeb6b2f796a9140ffae9ecf0a80f1d0de",
+      "providerDataSha256": "0c38122720ae329220731cc97561ddebcfd1c94e8dfeec19098e779a84889dfa",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -8178,9 +8185,9 @@
     },
     {
       "provider": "frenchstream",
-      "file": "providers/frenchstream-61c66818ff7490d9.js",
-      "sha256": "61c66818ff7490d959cd12de969f449d77cac04dca3925a4f910d79d9c50f12d",
-      "providerDataSha256": "75fa1c9652011c91f39f35f01c5b878410153de015200bda7548c95ae7c2910f",
+      "file": "providers/frenchstream-e32d06423f6c9962.js",
+      "sha256": "e32d06423f6c9962161a199c2f469b9946b9dbab74356683436e8d7033170f2d",
+      "providerDataSha256": "fff5e74c0ce9f19e218cd72e04dd7ce338111d4610d340cd0c4e965032537187",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -8296,9 +8303,9 @@
     },
     {
       "provider": "fullanime",
-      "file": "providers/fullanime-e44acc44002495b1.js",
-      "sha256": "e44acc44002495b1a4a1f555a2f03e2bc796d44e8f92df7f9f318b08b0b60bec",
-      "providerDataSha256": "ef6acbea7de8ab0ae3187a15fdb0195114c5a4d5b3607e2209c39ad2c4d4b09b",
+      "file": "providers/fullanime-51426cf1d91dc351.js",
+      "sha256": "51426cf1d91dc351fec390f4959f997e2f3f91f42042c290410fd79f4c63e28e",
+      "providerDataSha256": "62e277cc8665d517fca510509a1ce5ae9ea458c4029caa7562b7f0709d058be5",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -8414,9 +8421,9 @@
     },
     {
       "provider": "goatapi",
-      "file": "providers/goatapi-ba821bead822e38d.js",
-      "sha256": "ba821bead822e38dff3c69bfac2af849964653a25325915c9ad62c4a6fad114b",
-      "providerDataSha256": "9221709002dd571c52ecd1a4e0fe91faa236f34f7a5b2ea842cd600a46655e4f",
+      "file": "providers/goatapi-5e3498e19304ed09.js",
+      "sha256": "5e3498e19304ed09a4a45cced9fb042a705cf06a36f9b8ec7a4f3fa0cfde864e",
+      "providerDataSha256": "429ad469e73af259a8dbd53d99e416de7c64add92e6b4d537466baf9a6ed1a9c",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -8518,9 +8525,9 @@
     },
     {
       "provider": "gramcinema",
-      "file": "providers/gramcinema-79fa1f09046cdaea.js",
-      "sha256": "79fa1f09046cdaea0e23979f998f877c0cb55fefca2fc1ea5aef77c044c7d917",
-      "providerDataSha256": "4d1472d10d21fc3b9a3bee2639cd84c7d89f4ffe91c88530a2baf5cc4b675ec8",
+      "file": "providers/gramcinema-edf0719c1c862bb1.js",
+      "sha256": "edf0719c1c862bb16bd1d80a212432b902bbcc18aa9dc7bf2376dfa493020d28",
+      "providerDataSha256": "8ebe180e384116dcd96fc4fbb6e8b0822121d2b8d86bd29a91f42bd915bbc376",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -8622,9 +8629,9 @@
     },
     {
       "provider": "kisskh",
-      "file": "providers/kisskh-8689fa3d882b1b21.js",
-      "sha256": "8689fa3d882b1b21858dc0ad4e23149192d4924c74e98ae598e116306ac05154",
-      "providerDataSha256": "c412e363f64c12a239cd1cf807d9ee0e0860325ff2063c5fd4980778c6bff56f",
+      "file": "providers/kisskh-59160b4f9fd959cc.js",
+      "sha256": "59160b4f9fd959cc4f3d91a0282ede2eb47d1f510ee0459c9e2db68ce5c0d8d5",
+      "providerDataSha256": "33cad3761b05fdcef7edc8d41949792aba49032dfdcd86d940d82f1ac94aec74",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -8719,9 +8726,9 @@
     },
     {
       "provider": "mallumv",
-      "file": "providers/mallumv-70c38a80f27ad119.js",
-      "sha256": "70c38a80f27ad119ebca146e00cf8f3c0b60011caa3e3e8838e7f49e9e9da3c4",
-      "providerDataSha256": "77d0b4f0b4b83b3e0d74d55528de810d4081a6b465de11c678c329715406eb68",
+      "file": "providers/mallumv-f523671ce649e506.js",
+      "sha256": "f523671ce649e506d9fb6c6e219210be32c6cd1d8e34bd14184de537912e72e5",
+      "providerDataSha256": "82ab29709a2df9109a62c3c7f75ea4ac807a355258aebc4d87e3642021d4a480",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -8830,9 +8837,9 @@
     },
     {
       "provider": "moonflix",
-      "file": "providers/moonflix-ecf4a3033a1f0051.js",
-      "sha256": "ecf4a3033a1f00519e00e0fe2fbdfd2ff29806b39d5f31fb6738660a58febd53",
-      "providerDataSha256": "a4412a9f036aef736074c35628edd0cbe52cf5cd9ff805e5876f5c31524cda90",
+      "file": "providers/moonflix-fe04b1dade25d64b.js",
+      "sha256": "fe04b1dade25d64b0bf563828958da046cb275ea3fc90b3426c9dcf20143cbd4",
+      "providerDataSha256": "3d9a15635e9767cc834fb3722109147e10d05b3d46911a0d80757e21ceaa12cb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -8927,9 +8934,9 @@
     },
     {
       "provider": "moviebox",
-      "file": "providers/moviebox-09709b5ce1ed59e0.js",
-      "sha256": "09709b5ce1ed59e027189f07eb194dd57e926e1c878ef14158d6e3caa0788616",
-      "providerDataSha256": "9da7cc33118cd12ec10e299da7e05c0a4f3df0fbf5930618b7b5743010eb1a4e",
+      "file": "providers/moviebox-899cbcd5cfd7e85d.js",
+      "sha256": "899cbcd5cfd7e85d6e47fe8ef345827da09dc382852cccf97a0f6b6fd6d0e8bb",
+      "providerDataSha256": "2419dfefdf80ed3ca6cb23c744313a64ae9bca0a8efa22eb9ad19e8eca9afadf",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9024,9 +9031,9 @@
     },
     {
       "provider": "mycima",
-      "file": "providers/mycima-0099eaef04955156.js",
-      "sha256": "0099eaef04955156b510db1aafe8e8f7bb7b182226b1f237095688ec954d8bf3",
-      "providerDataSha256": "7976d553fc7e7c77596890e80c648d94d0b2fd6003dfec5c511b50ac4da11df1",
+      "file": "providers/mycima-234463dfd9a4c063.js",
+      "sha256": "234463dfd9a4c0630b68094a21eb592cadc9a225b08c47d1a6c1029c9d151f8a",
+      "providerDataSha256": "1ba119ff19ded8a6b41fa8730706ccb9d3531ac77ca7ae0fc6940da43a9f020e",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
@@ -9135,9 +9142,9 @@
     },
     {
       "provider": "netmirror",
-      "file": "providers/netmirror-e7227c293aea76fe.js",
-      "sha256": "e7227c293aea76fe364a70eac4d8c5a26c8875eb4939dbaea35aab880e2da53c",
-      "providerDataSha256": "3dcd90174f8d324e29f090a739ff70bcc1b63da2c55607ac7c65c7ff508f8981",
+      "file": "providers/netmirror-7954c9d359e1d53e.js",
+      "sha256": "7954c9d359e1d53eaa80bfa88dbd8a897230afb3b08ab3866850e6677aa6bf8e",
+      "providerDataSha256": "668bb514d3c0c0e3b24c8e6207aef8c29239ac5fc3b912667e8c8597f748237a",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9232,9 +9239,9 @@
     },
     {
       "provider": "onlykdrama",
-      "file": "providers/onlykdrama-05f83cf321501748.js",
-      "sha256": "05f83cf3215017489e3900fbee8735d8c60f9ecbc22e76bb753f7c58038a49f1",
-      "providerDataSha256": "c55e6f3b528d09c5b097a606d0e6be5e849ef01fd1242bb50d7a506c4ac03141",
+      "file": "providers/onlykdrama-c2b2d89d3f0dcd10.js",
+      "sha256": "c2b2d89d3f0dcd10d3967202ab87cec3f4c73b66155e4be1f6d84e93fe3b3f43",
+      "providerDataSha256": "3676dc57fdf622715e3267ede1c8abcd341bc97c291b59a1c3a645617f572289",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9336,9 +9343,9 @@
     },
     {
       "provider": "showbox",
-      "file": "providers/showbox-7028163e970ac0cd.js",
-      "sha256": "7028163e970ac0cd3d1bc35e4993b3e7fc3044c217239af7495ef501fcc1e4cf",
-      "providerDataSha256": "207f84774a11a0a45fb7af6551bc3db9c23ca28784e76972276f0f1ce78bbeaf",
+      "file": "providers/showbox-a8d46e9381df7c95.js",
+      "sha256": "a8d46e9381df7c9599e253ac86e23bcfd7159e88386c00b8af8ecd9afabe5a7a",
+      "providerDataSha256": "16fe4b32e7613d92ab1ebc2e1765b4c97e6f90bbc575796371156c207f2583c4",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9440,9 +9447,9 @@
     },
     {
       "provider": "topcartoons",
-      "file": "providers/topcartoons-fa61f5e173d6784e.js",
-      "sha256": "fa61f5e173d6784e84e88c17db74050faf383ed7018ab4b24e3256c52510eba6",
-      "providerDataSha256": "ad3c7161ac878479e29cffad7feaeaa6c6545aa0347b32689cf549c15588f1f3",
+      "file": "providers/topcartoons-42002cb877388483.js",
+      "sha256": "42002cb877388483e4974f5e27379cff9a654cc5c64ab2a4a67befc4d0b4a695",
+      "providerDataSha256": "ab4dd615972a11eb23d492e0f04ba4623570bb370cedff1e631e550d435537a2",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9537,9 +9544,9 @@
     },
     {
       "provider": "vidlove",
-      "file": "providers/vidlove-20d581b42cca05cc.js",
-      "sha256": "20d581b42cca05cc7570b5424c721a5ff975d935ca34d079affacb3dab5d01a8",
-      "providerDataSha256": "fe010b9e01a0754de19aa941c0c6e6e2ed42d370dc70f10bd263327c2c5db13c",
+      "file": "providers/vidlove-6e81d9727adeec1a.js",
+      "sha256": "6e81d9727adeec1a6e428f4468d8c3e2a55453766ddf4c6ae84aade90d8f542d",
+      "providerDataSha256": "894d93a41de367271fd654685f6c0c54565561d9fac90c4bdff0cd13c281c1cb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9641,9 +9648,9 @@
     },
     {
       "provider": "vidnest",
-      "file": "providers/vidnest-c121e0d8f593c085.js",
-      "sha256": "c121e0d8f593c085c0f4baefa8ec0cd3300b3dc2cb5c7c876b97adda66df13a1",
-      "providerDataSha256": "fe86e82d86cc9ba10d6b43f4961a2f28062caa516cd1ed715a45d2431be0b9df",
+      "file": "providers/vidnest-9bff3ebf4c849b57.js",
+      "sha256": "9bff3ebf4c849b57c80e0cad513228b41442648e23627c917eb8c191acc0193d",
+      "providerDataSha256": "ca8f42e84fdba07a705651a49d11851ff92eee6420bb67ff99e92896e6aeaf4a",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9745,9 +9752,9 @@
     },
     {
       "provider": "vidnest-anime",
-      "file": "providers/vidnest-anime-d6a964e1a2bad00a.js",
-      "sha256": "d6a964e1a2bad00ad386c64aa4c812b105e0f5939247ad7fda07e9d5008f9a67",
-      "providerDataSha256": "e1eee6bbedb1629a9fd36f5ed4181917cb35982211498d5471c566aabb27611f",
+      "file": "providers/vidnest-anime-b6059a3a068aa980.js",
+      "sha256": "b6059a3a068aa980519a23cddf1ad820b8ef98d35e94682c0fa8fbd5c6934846",
+      "providerDataSha256": "440881dd4fffc5e8ee6963c1cd4a00a330ec114b8dcc12e313d469f8efc989fa",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9856,9 +9863,9 @@
     },
     {
       "provider": "vidsrc",
-      "file": "providers/vidsrc-fb8f29c66449d2f2.js",
-      "sha256": "fb8f29c66449d2f228f79d5fd7271dc298cc2156afaf4ac3d535fe0efe081f10",
-      "providerDataSha256": "c6d8241ff87c54b612fe66ac3a42536ac07198787bd8ed453abea11690f285e5",
+      "file": "providers/vidsrc-e14e7b1b3dd56f32.js",
+      "sha256": "e14e7b1b3dd56f320d377e939b650f9785985d5a226c5e3f32629af1d6b6e266",
+      "providerDataSha256": "3a57fcc551e02147036aa873361dd08aa59cc64d2e9d1f6914cd2e598cd33cc0",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -9960,9 +9967,9 @@
     },
     {
       "provider": "vixsrc",
-      "file": "providers/vixsrc-e1fc67a2ca73a111.js",
-      "sha256": "e1fc67a2ca73a111a6bde5fbac66d8e9806ff89e219996f5af4f5d6d8e79aac3",
-      "providerDataSha256": "2f8e92087e353b4119c4360df2ef5b00a70493056deb37e962d36720129e6424",
+      "file": "providers/vixsrc-0c5f50227568eb5a.js",
+      "sha256": "0c5f50227568eb5a3e0e0f825a312ec43ae78dd79235f9502a7918d0edf73c4f",
+      "providerDataSha256": "6d103814ef4628323946ebd707f913a32a1a323fa23136616ee72d715b6dd8eb",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -10057,9 +10064,9 @@
     },
     {
       "provider": "waveanime",
-      "file": "providers/waveanime-5faf806933301206.js",
-      "sha256": "5faf806933301206aee5cdb55b88218250fbbc6546505cf96bbc455f3dbe3737",
-      "providerDataSha256": "1580c1c59c17d2ae3aca31f6991cd51305c141f4dc4c6ca2ce33851ca5f273f6",
+      "file": "providers/waveanime-96aa262e230fb306.js",
+      "sha256": "96aa262e230fb3063b1243b7674ff2367ed8b5aa7b648d4488eda19937e7c499",
+      "providerDataSha256": "63bcca58947a791271c273b8e3011b55a0df245afae5c041257c493ca6dc0e79",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",
@@ -10168,9 +10175,9 @@
     },
     {
       "provider": "xpass",
-      "file": "providers/xpass-b1029e38fd9e5577.js",
-      "sha256": "b1029e38fd9e5577b304b551f5a2aee1759da03456d973f5c3dfdf7212258860",
-      "providerDataSha256": "be94073d3038567f057850477acb1c4c6fd21861427935e03cbdc147d6703d77",
+      "file": "providers/xpass-adf4fdf4e4ccaa42.js",
+      "sha256": "adf4fdf4e4ccaa42dd3221c27fb9d57eeb29723beed3100e1ab479b3c15ca420",
+      "providerDataSha256": "832ebc8a41f30f9034b7a8505153ec5d799825b5d5ae984bb8f8fff3a36e71dd",
       "baseStrippedGeneratedCore": false,
       "fixIds": [
         "CORE.HLS_RUNTIME_INTEGRITY.V1",

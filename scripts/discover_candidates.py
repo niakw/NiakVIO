@@ -56,7 +56,7 @@ INFRASTRUCTURE_HOSTS = {
 CUSTOM_B64_ALPHABET_RE = re.compile(r"""["']([A-Za-z]{52}0123456789\+/=)["']""")
 CUSTOM_B64_TOKEN_RE = re.compile(r"""["']([A-Za-z0-9+/=]{4,256})["']""")
 ROUTE_LITERAL_RE = re.compile(
-    r"""(?:^|["'])(/(?:api|search|recherche|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|movie|movies|media|sheet|film|films|tv|series|show|episode|season|wp-json|wp-admin|index\.php)[^"'<>\\\s]{0,500})""",
+    r"""(?:^|["'])(/(?:api|search|recherche|watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|movie|movies|media|sheet|film|films|tv|series|show|anime|animes|catalogue|template-php|episode|episodes|season|saison|wp-json|wp-admin|index\.php)[^"'<>\\\s]{0,500})""",
     re.I,
 )
 RESERVED_HOST_SUFFIXES = {".invalid", ".example", ".test", ".localhost"}
@@ -138,7 +138,7 @@ def _plausible_hosts(hosts: list[str]) -> list[str]:
 
 def _route_placeholder(key: str) -> str | None:
     key = key.casefold()
-    if key in {"q", "query", "search", "keyword", "s"}:
+    if key in {"q", "query", "search", "keyword", "story", "s"}:
         return "{query}"
     if key == "id":
         return "{id}"

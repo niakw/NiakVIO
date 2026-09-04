@@ -30,15 +30,18 @@ def route_kind(route: object) -> str:
     value = str(route or "").strip().casefold()
     if not value:
         return "ignore"
+    # Search semantics must win over a generic /api prefix (/api/search).
+    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", value):
+        return "search"
+    if re.search(r"/template-php/[^?#]*fetch\.php(?:[?#]|$)", value):
+        return "search"
     if re.search(r"/api(?:[./?#]|$)", value):
         return "api"
     if re.search(r"/(?:player|embed|play)(?:[/?#.-]|$)", value):
         return "player"
-    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=", value):
-        return "search"
     if re.search(
-        r"\{(?:id|tmdb|tmdb_id|tmdbid|title|slug)\}|"
-        r"/(?:title|movie|movies|film|films|tv|series|show|watch|media)(?:[/?#]|$)",
+        r"\{(?:id|tmdb|tmdb_id|tmdbid|imdb|imdb_id|imdbid|title|query|slug|season|episode)\}|"
+        r"/(?:title|movie|movies|film|films|tv|serie|series|show|watch|media|anime|animes|voir-series|episode|saison|season|saga|catalogue)(?:[/?#.-]|$)",
         value,
     ):
         return "detail"

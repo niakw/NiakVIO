@@ -108,7 +108,8 @@ def _identity_mode_from_plan(
         re.search(
             r"\{(?:query|title|slug)\}"
             r"|/(?:search|recherche)(?:[/?#]|$)"
-            r"|(?:[?&])(?:s|q|query|keyword|search)=",
+            r"|(?:[?&])(?:s|q|query|keyword|search|story)="
+            r"|/template-php/[^?#]*fetch\.php(?:[?#]|$)",
             value,
             re.I,
         )
