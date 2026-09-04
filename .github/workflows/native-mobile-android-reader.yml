@@ -40,13 +40,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/check_nuvio_client_upstreams.py --no-fail             --clients nuvio-tv             --output health-output/nuvio-client-upstream-status.json
+          python3 scripts/check_nuvio_client_upstreams.py --no-fail --clients nuvio-tv --output health-output/nuvio-client-upstream-status.json
       - id: refs
         name: Resolve exact official NuvioTV HEAD
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/resolve_nuvio_lab_heads.py             --report health-output/nuvio-client-upstream-status.json             --clients nuvio-tv             --github-output "$GITHUB_OUTPUT"             --output health-output/nuvio-tv-lab-head.json
+          python3 scripts/resolve_nuvio_lab_heads.py --report health-output/nuvio-client-upstream-status.json --clients nuvio-tv --github-output "$GITHUB_OUTPUT" --output health-output/nuvio-tv-lab-head.json
       - name: Publish TV runtime context
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -57,6 +57,7 @@ jobs:
             health-output/nuvio-tv-lab-head.json
           retention-days: 8
           if-no-files-found: error
+
   resolve_mobile:
     runs-on: ubuntu-latest
     timeout-minutes: 8
@@ -73,13 +74,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/check_nuvio_client_upstreams.py --no-fail             --clients nuvio-mobile             --output health-output/nuvio-client-upstream-status.json
+          python3 scripts/check_nuvio_client_upstreams.py --no-fail --clients nuvio-mobile --output health-output/nuvio-client-upstream-status.json
       - id: refs
         name: Resolve exact official NuvioMobile HEAD
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/resolve_nuvio_lab_heads.py             --report health-output/nuvio-client-upstream-status.json             --clients nuvio-mobile             --github-output "$GITHUB_OUTPUT"             --output health-output/nuvio-mobile-android-lab-head.json
+          python3 scripts/resolve_nuvio_lab_heads.py --report health-output/nuvio-client-upstream-status.json --clients nuvio-mobile --github-output "$GITHUB_OUTPUT" --output health-output/nuvio-mobile-android-lab-head.json
       - name: Publish Mobile Android runtime context
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -90,6 +91,7 @@ jobs:
             health-output/nuvio-mobile-android-lab-head.json
           retention-days: 8
           if-no-files-found: error
+
   tv-route-reader:
     needs: resolve_tv
     runs-on: ubuntu-latest
@@ -117,16 +119,29 @@ jobs:
             ~/.android/adb*
             ~/.android/debug.keystore
           key: avd-v5-${{ runner.os }}-tv-api31-android-tv-x86-tv_1080p
-      - name: Checkout latest official NuvioTV HEAD and stage first route
+      - name: Checkout latest official NuvioTV HEAD, inject TMDB key and stage first route
         shell: bash
         env:
           NUVIO_TV_SHA: ${{ needs.resolve_tv.outputs.tv_sha }}
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
         run: |
-          set -euxo pipefail
+          set -euo pipefail
+          test -n "${TMDB_API_KEY:-}" || {
+            echo "TMDB_API_KEY secret is required for the native NuvioTV acceptance Lab." >&2
+            exit 1
+          }
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioTV.git nuvio-tv
           git -C nuvio-tv checkout "$NUVIO_TV_SHA"
-          touch nuvio-tv/local.properties nuvio-tv/local.dev.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv             --fixture interstellar --workspace "$GITHUB_WORKSPACE"             --manifest manifest.json --provider declared-type --streams 2 --initial
+          umask 077
+          printf 'TMDB_API_KEY=%s\n' "$TMDB_API_KEY" > nuvio-tv/local.properties
+          touch nuvio-tv/local.dev.properties
+          python3 - <<'PY'
+          from pathlib import Path
+          line = Path("nuvio-tv/local.properties").read_text(encoding="utf-8").strip()
+          assert line.startswith("TMDB_API_KEY=") and len(line.split("=", 1)[1]) > 0
+          print("NIAKVIO_TV_TMDB_BUILD_CONFIG_READY non_empty=true value_redacted=true")
+          PY
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial
       - name: Prebuild TV reader once before QEMU
         shell: bash
         env:
@@ -181,7 +196,7 @@ jobs:
           for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
             LOG="$GITHUB_WORKSPACE/tv-native-corpus-${fixture}.log"
             test -s "$LOG"
-            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs               --output "$GITHUB_WORKSPACE/tv-route-${fixture}-brain.json" "$LOG"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-route-${fixture}-brain.json" "$LOG"
           done
       - name: Upload TV route evidence
         if: always()
@@ -195,6 +210,7 @@ jobs:
             native-evidence/tv/**
           retention-days: 8
           if-no-files-found: warn
+
   mobile-android-reader:
     needs: resolve_mobile
     runs-on: ubuntu-latest
@@ -231,7 +247,7 @@ jobs:
           git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioMobile.git nuvio-mobile
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
-          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile             --fixture interstellar --workspace "$GITHUB_WORKSPACE"             --manifest manifest.json --provider declared-type --streams all --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
           python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
       - name: Prebuild Mobile Android reader once before QEMU
         shell: bash
@@ -283,7 +299,7 @@ jobs:
           for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
             LOG="$GITHUB_WORKSPACE/mobile-native-corpus-${fixture}.log"
             test -s "$LOG"
-            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs               --output "$GITHUB_WORKSPACE/mobile-android-route-${fixture}-brain.json" "$LOG"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/mobile-android-route-${fixture}-brain.json" "$LOG"
           done
       - name: Upload Mobile Android route evidence
         if: always()
