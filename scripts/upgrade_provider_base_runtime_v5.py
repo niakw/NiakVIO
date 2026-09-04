@@ -75,7 +75,6 @@ def patch() -> bool:
   if (encodedQuery) route = route.replace(/([?&](?:s|q|query|keyword|search|story)=)(?:\.{3})?(?=&|#|$)/gi, function(_, prefix) { return prefix + encodedQuery; });
   '''
     text = once(text, expand_anchor, expand_prefix + expand_anchor, 'expand-empty-query')
-    text = once(text, 'if (/\\{[^}]+\\}/.test(route)) return [];', 'if (/[{}]/.test(route)) return [];', 'expand-brace-guard')
 
     specials = r'''function _spv5SafeHttpStreamUrl(value) {
   const url = _text(value).trim();
