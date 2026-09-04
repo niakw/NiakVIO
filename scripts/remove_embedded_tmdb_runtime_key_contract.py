@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Remove the obsolete embedded/obfuscated TMDB key mechanism from Core.
+"""Remove embedded TMDB credentials while preserving trusted metadata paths.
 
-Provider bundles may consume TMDB metadata already injected in request context or
-use a credential explicitly supplied by the runtime. They must never serialize,
-recover or decrypt a TMDB credential from repository/provider bytes.
+Provider bundles may consume TMDB metadata already injected in request context,
+use a credential explicitly supplied by the runtime/CI, or use Nuvio's native
+fetch bridge. The native bridge keeps authentication outside provider JavaScript:
+the provider sends the TMDB URL, while the host owns any credential handling.
 
 This migration is intentionally idempotent and fails if an unexpected legacy
-shape remains, so reconstruction cannot silently re-introduce the mechanism.
+shape remains, so reconstruction cannot silently re-introduce embedded secrets.
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ def main() -> int:
     changed = False
 
     old_doc = """TMDB API metadata is authoritative when available. The build may embed an\nobfuscated runtime-only TMDB v3 API key generated from the repository secret;\nthe plaintext key is never committed and is never passed into provider business\nlogic. Object-style requests can also carry trusted TMDB metadata directly.\n"""
-    new_doc = """TMDB API metadata is authoritative when available. Core may consume metadata\nalready injected in the request context/cache or a TMDB credential explicitly\nsupplied by the host runtime. Provider bundles never embed, obfuscate, recover or\ndecrypt a TMDB credential. Object-style requests may carry trusted metadata.\n"""
+    new_doc = """TMDB API metadata is authoritative when available. Core may consume metadata\nalready injected in the request context/cache, a TMDB credential explicitly\nsupplied by the host runtime/CI, or the trusted native fetch bridge. Provider\nbundles never embed, obfuscate, recover or decrypt a TMDB credential.\n"""
     text, did = replace_optional(text, old_doc, new_doc)
     changed |= did
 
@@ -62,6 +63,32 @@ def main() -> int:
     text, did = replace_optional(text, old_local, new_local)
     changed |= did
 
+    # Native clients expose a fetch bridge whose host side owns authentication.
+    # Let it reach TMDB without requiring a JavaScript-visible credential.
+    old_timeout = 'function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}\n'
+    new_timeout = old_timeout + 'function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_){return false}}\n'
+    if 'function nativeFetchBridge(){' not in text:
+        text, did = replace_optional(text, old_timeout, new_timeout)
+        if not did:
+            raise AssertionError("native TMDB bridge insertion anchor drifted")
+        changed = True
+
+    old_api = '''async function apiJson(url){\n  var key=localKey(),token=localToken();\n  if(!g||typeof g.fetch!=="function"||(!key&&!token))return{state:"unavailable",value:null};\n  try{\n'''
+    new_api = '''async function apiJson(url){\n  var key=localKey(),token=localToken(),nativeBridge=nativeFetchBridge();\n  if(!g||typeof g.fetch!=="function"||(!key&&!token&&!nativeBridge))return{state:"unavailable",value:null};\n  try{\n'''
+    if new_api not in text:
+        text, did = replace_optional(text, old_api, new_api)
+        if not did:
+            raise AssertionError("TMDB apiJson runtime/native bridge anchor drifted")
+        changed = True
+
+    old_probe = '    var probe=await apiJson("https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response=keywords,alternative_titles,external_ids&language=fr-FR");\n'
+    new_probe = '''    var append=namespace==="movie"?"keywords,alternative_titles,external_ids,release_dates":"keywords,alternative_titles,external_ids,content_ratings";\n    var probe=await apiJson("https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response="+encodeURIComponent(append)+"&language=fr-FR");\n'''
+    if new_probe not in text:
+        text, did = replace_optional(text, old_probe, new_probe)
+        if not did:
+            raise AssertionError("TMDB metadata append projection anchor drifted")
+        changed = True
+
     forbidden = (
         "RUNTIME_KEY_PATH",
         "_runtime_key_payload",
@@ -75,9 +102,24 @@ def main() -> int:
     if leftovers:
         raise AssertionError(f"embedded TMDB key mechanism still present: {leftovers}")
 
+    required = (
+        'function nativeFetchBridge(){',
+        '(!key&&!token&&!nativeBridge)',
+        'release_dates',
+        'content_ratings',
+        'https://api.themoviedb.org/3/',
+        '__nuvioTmdbMetadataCacheV1',
+    )
+    missing = [needle for needle in required if needle not in text]
+    if missing:
+        raise AssertionError(f"runtime/context TMDB metadata path missing: {missing}")
+
     if changed:
         TARGET.write_text(text, encoding="utf-8")
-    print(f"TMDB_RUNTIME_KEY_EMBED_REMOVAL_OK changed={str(changed).lower()} owner=runtime_or_context")
+    print(
+        f"TMDB_RUNTIME_KEY_EMBED_REMOVAL_OK changed={str(changed).lower()} "
+        "owner=runtime_or_native_context native_bridge=true"
+    )
     return 0
 
 
