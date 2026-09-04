@@ -26,7 +26,7 @@ jobs:
       - name: Checkout candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          fetch-depth: 1
+          fetch-depth: 5
           persist-credentials: false
 
       - name: Set up Python
@@ -53,39 +53,47 @@ jobs:
           fi
           echo "FIELD_TMDB_FAST_YIELD state=ready credential_present=true value_redacted=true"
 
-      - name: Rebuild corrected Provider v3 candidate in runner
+      - name: Verify fresh reconstructed 96/96 candidate
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/upgrade_provider_v3_source_plan_v4.py
-          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
-          force_args=()
-          while IFS= read -r provider_id; do
-            [ -n "$provider_id" ] || continue
-            force_args+=(--force-clean-reconstruction "$provider_id")
-          done < <(python - <<'PY'
+          python - <<'PY'
           import json
+          import subprocess
           from pathlib import Path
-          data=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          for row in data.get('scrapers') or []:
-              provider_id=str(row.get('id') or '').strip()
-              if provider_id:
-                  print(provider_id)
-          PY
+
+          trigger = json.loads(Path('.github/triggers/provider-v3-fast-yield.json').read_text(encoding='utf-8'))
+          source_sha = str(trigger.get('source_sha') or '').strip()
+          if len(source_sha) != 40:
+              raise SystemExit('fast-yield trigger missing full source_sha')
+
+          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          rows = [row for row in (manifest.get('scrapers') or []) if isinstance(row, dict)]
+          ids = [str(row.get('id') or '').strip() for row in rows]
+          if len(rows) != 96 or len(set(ids)) != 96 or any(not item for item in ids):
+              raise SystemExit(f'manifest provider census mismatch rows={len(rows)} unique={len(set(ids))}')
+          missing = [str(row.get('filename') or '') for row in rows if not Path(str(row.get('filename') or '')).is_file()]
+          if missing:
+              raise SystemExit('manifest references missing provider bundles: ' + ','.join(missing[:10]))
+
+          material = json.loads(Path('provider-v3-materialization.json').read_text(encoding='utf-8'))
+          if int(material.get('providerCount') or 0) != 96 or int(material.get('expectedProviderCount') or 0) != 96:
+              raise SystemExit('materialization provider count is not 96/96')
+
+          subprocess.run(['git', 'cat-file', '-e', source_sha + '^{commit}'], check=True)
+          subprocess.run(['git', 'merge-base', '--is-ancestor', source_sha, 'HEAD'], check=True)
+          changed = subprocess.run(
+              ['git', 'diff', '--name-only', source_sha + '..HEAD', '--', 'manifest.json', 'provider-v3-materialization.json', 'providers'],
+              check=True, capture_output=True, text=True,
+          ).stdout.strip()
+          if changed:
+              raise SystemExit('provider candidate drifted after verified reconstruction: ' + changed.replace('\n', ','))
+
+          print(
+              'FIELD_PROVIDER_FAST_YIELD_CANDIDATE '
+              f'source_sha={source_sha} providers=96 materialized=96 bundles_present=true drift=false'
           )
-          python scripts/discover_candidates.py \
-            --stage staging/provider-v3-fast-yield \
-            --clean-reconstruction \
-            "${force_args[@]}"
-          python scripts/promote_provider_v3_static_knowledge.py \
-            --stage staging/provider-v3-fast-yield \
-            --output automation/provider-v3-static-knowledge.json
-          python scripts/enrich_provider_v3_static_knowledge.py
-          python scripts/finalize_gowaru_provider_v3_source_plans.py
-          python scripts/materialize_provider_base_v3_store.py
-          python scripts/materialize_provider_v3_all.py
-          python tests/provider_v3_source_plan_v4_contract_test.py
-          python tests/provider_anime_semantic_transport_contract_test.py
+          PY
 
       - name: Run fast real-stream yield census
         shell: bash
