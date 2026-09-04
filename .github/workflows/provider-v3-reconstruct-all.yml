@@ -40,6 +40,10 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Upgrade common Provider v3 source-plan reader
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_v3_source_plan_v4.py
       - name: Recover durable static Provider DATA when requested
         shell: bash
         run: |
@@ -57,6 +61,7 @@ jobs:
               exit 1
             }
             python scripts/enrich_provider_v3_static_knowledge.py
+            python scripts/finalize_gowaru_provider_v3_source_plans.py
             python tests/provider_v3_static_knowledge_contract_test.py
             exit 0
           fi
@@ -82,6 +87,7 @@ jobs:
             --stage staging/provider-v3-static-knowledge \
             --output automation/provider-v3-static-knowledge.json
           python scripts/enrich_provider_v3_static_knowledge.py
+          python scripts/finalize_gowaru_provider_v3_source_plans.py
           python tests/provider_v3_static_knowledge_contract_test.py
       - name: Refuse direct main mutation
         if: inputs.commit_reconstruction
@@ -109,6 +115,7 @@ jobs:
           python tests/provider_html_filter_security_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
           python tests/provider_patch_sibling_import_test.py
           python tests/provider_v3_identity_preflight_contract_test.py
           python tests/provider_v3_id_provenance_contract_test.py
@@ -149,6 +156,7 @@ jobs:
           python tests/provider_v3_minimizer_published_test.py
           python tests/provider_html_filter_security_test.py --published
           python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
           python tests/provider_wings_runtime_family_test.py
           python tests/peachify_runtime_crypto_test.py
           python scripts/audit_provider_v3_static.py
@@ -189,7 +197,9 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
-            providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+            providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            sources.json scripts/provider_base_store.py scripts/materialize_provider_v3_all.py scripts/discover_candidates.py \
+            tests/provider_v3_strategy_plan_contract_test.py
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
