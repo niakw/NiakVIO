@@ -177,8 +177,35 @@ def normalize_manifest() -> int:
     return changed
 
 
+def embedded_tmdb_contract_already_final() -> bool:
+    """Accept the current Core capability without replaying an obsolete migration."""
+    path = ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py"
+    text = path.read_text(encoding="utf-8")
+    forbidden = (
+        "RUNTIME_KEY_PATH",
+        "_runtime_key_payload",
+        "tmdbKeyCipher",
+        "tmdbKeySalt",
+        "function embeddedKey",
+        "normalizeKey(embeddedKey())",
+        "NiakVIO/TMDB/v1",
+    )
+    required = (
+        "g.__nuvioCoreGetTmdbDataV1=coreGetTmdbData",
+        "https://api.themoviedb.org/3/",
+        "__nuvioTmdbMetadataCacheV1",
+        "episode:tv:",
+        "release_dates",
+        "content_ratings",
+    )
+    return not any(needle in text for needle in forbidden) and all(needle in text for needle in required)
+
+
 def main() -> int:
-    runtime_key_removed = remove_embedded_tmdb_runtime_key() == 0
+    if embedded_tmdb_contract_already_final():
+        runtime_key_removed = True
+    else:
+        runtime_key_removed = remove_embedded_tmdb_runtime_key() == 0
     runtime_key_captured = capture_tmdb_core_credential() == 0
     presentation_hardened = harden_stream_presentation_metadata() == 0
     changes = {
