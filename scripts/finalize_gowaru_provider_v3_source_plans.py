@@ -12,6 +12,7 @@ import argparse
 import json
 import re
 import urllib.error
+import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,7 @@ GOWARU_REF = "c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2"
 RAW_ROOT = f"https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/{GOWARU_REF}/src"
 MODULES = ("config.js", "extractor.js", "http.js", "index.js")
 USER_AGENT = "NiakVIO-Gowaru-Static-Plan/1"
+CORE_METADATA_HOSTS = frozenset({"api.themoviedb.org"})
 
 TEMPLATE_RE = re.compile(r"`([^`]{1,1600})`", re.S)
 QUOTED_ROUTE_RE = re.compile(r"[\"']((?:https?://|/)[^\"'\r\n]{1,900})[\"']", re.I)
@@ -85,29 +87,50 @@ def normalize_route(raw: str) -> str | None:
     if not value:
         return None
     value = EXPR_RE.sub(lambda m: placeholder(m.group(1)), value)
-
-    # A template commonly starts with ${BASE_URL}; after static substitution it
-    # is now a relative path.  Full URLs are reduced to path/query DATA because
-    # the origin is already persisted separately.
-    if value.startswith(("http://", "https://")):
-        match = re.match(r"https?://[^/]+(.*)$", value, re.I | re.S)
-        value = match.group(1) if match else ""
-    if not value.startswith("/"):
-        first = value.find("/")
-        if first >= 0:
-            value = value[first:]
     value = value.strip().rstrip(";,)]}")
-    if not value.startswith("/") or value == "/":
-        return None
-
-    # Normalize a handful of literal JS artifacts without guessing provider
-    # semantics. Unknown expressions were erased above rather than executed.
     value = re.sub(r"\s+", "", value)
     value = value.replace("&&", "&")
     value = value.replace("{query}{query}", "{query}")
+
+    # Absolute request targets are executable source knowledge in their own
+    # right.  Never erase their host and then replay the path against the
+    # provider origin: doing that turns e.g. api.reallyfast.xyz into a bogus
+    # /api.reallyfast.xyz provider path.  Protocol-relative upstream literals
+    # are made explicit with HTTPS so the runtime keeps their origin as well.
+    if value.startswith("//"):
+        value = "https:" + value
+    if value.startswith(("http://", "https://")):
+        try:
+            parsed = urllib.parse.urlsplit(value)
+        except ValueError:
+            return None
+        host = str(parsed.hostname or "").casefold()
+        if not host:
+            return None
+        # TMDB metadata is a Core responsibility.  Upstream provider source may
+        # contain TMDB lookup code (and occasionally upstream API keys), but it
+        # must never become Provider DATA or provider-network traffic.
+        if host in CORE_METADATA_HOSTS:
+            return None
+        if (not parsed.path or parsed.path == "/") and not parsed.query:
+            return None
+    else:
+        if not value.startswith("/"):
+            first = value.find("/")
+            if first >= 0:
+                value = value[first:]
+        if not value.startswith("/") or value == "/":
+            return None
+        # Historical static extraction could leave an erased absolute host as
+        # /api.themoviedb.org/... .  Fail closed for that form too.
+        if re.match(r"^/api\.themoviedb\.org(?:/|$)", value, re.I):
+            return None
+
     if len(value) > 900:
         return None
     low = value.casefold()
+    if "api.themoviedb.org" in low:
+        return None
     if any(token in low for token in ("q=ponyfill", "/license", "lodash.com", "openjsf.org", "underscorejs.org", "npms.io")):
         return None
     if "${" in value or "encodeuricomponent(" in low:
