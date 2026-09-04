@@ -42,9 +42,23 @@ def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None,
         runner = root / "runner.cjs"
         provider.write_text(patched, encoding="utf-8")
         fetch = fetch_impl or "async function(){throw new Error('offline')}"
-        runtime_key = "global.TMDB_API_KEY=String(1);\n" if fetch_impl else ""
+        # Presentation no longer owns TMDB transport or credentials. When this
+        # isolated test supplies a TMDB fixture, expose it through the same Core
+        # metadata capability that composed provider bundles expose at runtime.
+        core_capability = ""
+        if fetch_impl:
+            core_capability = r"""
+global.__nuvioCoreGetTmdbDataV1=async function(q){
+  const kind=(q&&q.tmdbNamespace)==='tv'||(q&&q.mediaType)==='tv'||(q&&q.mediaType)==='series'||(q&&q.mediaType)==='anime'?'tv':'movie';
+  const id=String(q&&q.tmdbId||'');
+  const response=await global.fetch('https://api.themoviedb.org/3/'+kind+'/'+encodeURIComponent(id));
+  if(!response||!response.ok)return {state:'unavailable',tmdbId:id,tmdbNamespace:kind,metadata:null,episodeMetadata:null};
+  const metadata=await response.json();
+  return {state:'ok',tmdbId:id,tmdbNamespace:kind,metadata,episodeMetadata:null};
+};
+"""
         runner.write_text(
-            runtime_key + "global.fetch=" + fetch + ";\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
+            "global.fetch=" + fetch + ";\n" + core_capability + "\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
             encoding="utf-8",
         )
         # The contract intentionally contains emoji. Never inherit the Windows
