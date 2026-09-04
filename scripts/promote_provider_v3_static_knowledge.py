@@ -78,6 +78,7 @@ def merged_row(provider_id: str, candidates: list[dict[str, Any]]) -> dict[str, 
         "observedUrls": [],
         "routes": [],
         "apiRecipe": None,
+        "sourceRuntimeFamily": "unknown",
     }
     knowledge: dict[str, Any] = {
         "hosts": [],
@@ -85,6 +86,7 @@ def merged_row(provider_id: str, candidates: list[dict[str, Any]]) -> dict[str, 
         "routeFragments": [],
         "observedUrls": [],
         "decodedStaticStringCount": 0,
+        "runtimeFamily": "unknown",
     }
     sources: list[dict[str, Any]] = []
 
@@ -118,6 +120,14 @@ def merged_row(provider_id: str, candidates: list[dict[str, Any]]) -> dict[str, 
         if model.get("apiRecipe") is None and isinstance(cm.get("apiRecipe"), dict):
             model["apiRecipe"] = cm["apiRecipe"]
 
+        runtime_family = str(
+            cm.get("sourceRuntimeFamily") or uk.get("runtimeFamily") or "unknown"
+        ).strip().casefold() or "unknown"
+        if model["sourceRuntimeFamily"] == "unknown" and runtime_family != "unknown":
+            model["sourceRuntimeFamily"] = runtime_family
+        if knowledge["runtimeFamily"] == "unknown" and runtime_family != "unknown":
+            knowledge["runtimeFamily"] = runtime_family
+
         merge_list(model["origins"], cm.get("origins"), 48)
         merge_list(model["observedUrls"], cm.get("observedUrls"), 72)
         merge_list(model["routes"], cm.get("routes"), 96)
@@ -133,6 +143,7 @@ def merged_row(provider_id: str, candidates: list[dict[str, Any]]) -> dict[str, 
             "upstreamId": str(candidate.get("upstream_id") or ""),
             "manifestOrigin": str(candidate.get("manifest_origin") or ""),
             "upstreamSha256": str(candidate.get("upstream_sha256") or ""),
+            "upstreamKnowledgeSource": str(candidate.get("upstream_knowledge_source") or ""),
             "codeRole": "knowledge-only",
             "codeExecuted": False,
         })
@@ -239,9 +250,13 @@ def main() -> int:
     routeful = sum(1 for row in providers.values() if row["model"].get("routes"))
     urlful = sum(1 for row in providers.values() if row["model"].get("observedUrls"))
     originful = sum(1 for row in providers.values() if row["model"].get("origins"))
+    familyful = sum(
+        1 for row in providers.values()
+        if str(row["model"].get("sourceRuntimeFamily") or "unknown") != "unknown"
+    )
     print(
         "FIELD_PROVIDER_V3_STATIC_KNOWLEDGE "
-        f"providers={len(providers)} routes={routeful} urls={urlful} origins={originful} "
+        f"providers={len(providers)} routes={routeful} urls={urlful} origins={originful} families={familyful} "
         "legacy_executed=false upstream_executed=false"
     )
     return 0
