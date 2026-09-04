@@ -42,10 +42,23 @@ for row in rows:
     sanitizer = text.rfind(sanitizer_start)
     if branding >= 0 and sanitizer <= branding:
         weak.append(provider_id)
+
+    # V6 currently has two supported builder shapes. Both are fail-closed when
+    # probeAllUrls=true: an unprobed row is dropped rather than leaked. The
+    # dedicated direct/fail-closed tests above execute this behavior; this 96/96
+    # projection test only verifies that every materialized provider contains one
+    # of the V6-owned hooks plus the managed probeAllUrls policy.
     compact = "".join(text.split())
-    if "if(!item.probe)returnconfig.probeAllUrls?null:item.stream;" not in compact:
+    current_hook = (
+        "if(coreMediaProof(item.stream,item.url))returnclearCoreMediaProof(item.stream);"
+        "if(!item.probe)returnconfig.probeAllUrls?null:clearCoreMediaProof(item.stream);"
+    )
+    legacy_hook = "if(!item.probe)returnconfig.probeAllUrls?null:item.stream;"
+    if current_hook not in compact and legacy_hook not in compact:
+        weak.append(provider_id)
+    if '"probeAllUrls":true' not in compact:
         weak.append(provider_id)
 
 assert not missing, f"providers missing terminal sanitizer V6: {missing}"
-assert not weak, f"providers still pass unprobed stream rows or stale ownership markers: {sorted(set(weak))}"
-print(f"global stream output guard passed: providers={len(rows)} managed_terminal_sanitizer={len(rows)} startfix_v3=true")
+assert not weak, f"providers missing current V6 fail-closed ownership/policy: {sorted(set(weak))}"
+print(f"global stream output guard passed: providers={len(rows)} managed_terminal_sanitizer={len(rows)} startfix_v3=true fail_closed_v6=true")
