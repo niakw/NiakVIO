@@ -10,6 +10,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from finalize_gowaru_provider_v3_source_plans import normalize_route, repair_persisted_routes  # noqa: E402
 from materialize_provider_v3_all import _identity_mode_from_plan  # noqa: E402
 from provider_base_store import (  # noqa: E402
     build_clean_provider_seed,
@@ -75,6 +76,30 @@ def make_bundle(family: str, routes: list[str]) -> bytes:
     return compose_provider_bundle("synthetic", base, model)
 
 
+def test_route_guardrails() -> None:
+    # TMDB is Core-owned metadata traffic. It must never be materialized as a
+    # provider route, whether the upstream source contained an absolute URL or
+    # an old generation already persisted the erased-host form.
+    assert normalize_route("https://api.themoviedb.org/3/tv/${tmdbId}?api_key=${apiKey}") is None
+    assert normalize_route("/api.themoviedb.org/3/movie/{tmdbId}") is None
+
+    # Genuine provider/API origins remain absolute and are never replayed
+    # against the website origin.
+    expected = "https://api.reallyfast.xyz/api/search?q={query}"
+    assert normalize_route("https://api.reallyfast.xyz/api/search?q=${query}") == expected
+    repaired = repair_persisted_routes(
+        [
+            "/api.reallyfast.xyz/api/search?q={query}",
+            "/api.themoviedb.org/3/movie/{tmdbId}",
+        ],
+        {
+            "officialSite": "https://provider.test",
+            "origins": ["https://api.reallyfast.xyz"],
+        },
+    )
+    assert repaired == [expected], repaired
+
+
 def test_post_form_reader() -> None:
     bundle = make_bundle("catalogue-form-html-embed", ["/template-php/defaut/fetch.php"])
     harness = r'''
@@ -129,10 +154,11 @@ def main() -> int:
         assert model.get("routes"), provider_id
         assert str(model.get("sourceRuntimeFamily") or "unknown") != "unknown", provider_id
 
+    test_route_guardrails()
     test_post_form_reader()
     test_metadata_gate()
     test_get_search_reader()
-    print("PROVIDER_V3_SOURCE_PLAN_V4_CONTRACT_OK gowaru=10 synthetic_runtime=3 metadata_gate=1")
+    print("PROVIDER_V3_SOURCE_PLAN_V4_CONTRACT_OK gowaru=10 synthetic_runtime=3 metadata_gate=1 route_guardrails=1")
     return 0
 
 
