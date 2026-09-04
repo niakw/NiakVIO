@@ -4,10 +4,10 @@
 Canonical provider capability answers *what content the provider serves*.
 Transport capability answers *which Nuvio/TMDB namespace can launch it*.
 An anime-only provider therefore remains canonically ``anime`` while accepting
-both TV and movie transport.  Authoritative TMDB metadata is still required to
+both TV and movie transport. Authoritative TMDB metadata is still required to
 prove that a TV/movie work is anime before the semantic gate lets it through.
 
-This migration is deliberately idempotent.  It patches NiakVIO-owned source,
+This migration is deliberately idempotent. It patches NiakVIO-owned source,
 normalizes the current manifest, and then becomes a no-op on later rebuilds.
 """
 from __future__ import annotations
@@ -33,8 +33,8 @@ def patch_gowaru_route_normalizer() -> bool:
     path = ROOT / "scripts" / "finalize_gowaru_provider_v3_source_plans.py"
     return replace_once(
         path,
-        'return _sanitize_placeholder_names(route.rstrip(";,)]}"))',
-        'return _sanitize_placeholder_names(route.rstrip(";,)]"))',
+        'value = value.strip().rstrip(";,)]}")',
+        'value = value.strip().rstrip(";,)]")',
         "Gowaru route placeholder tail",
     )
 
@@ -61,9 +61,9 @@ def patch_media_transport() -> bool:
   var mapped=s(map[canonical]).toLowerCase();
   if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
   if(mapped)return alias(mapped);
-  // Anime is semantic, not a TMDB namespace.  Once authoritative metadata has
+  // Anime is semantic, not a TMDB namespace. Once authoritative metadata has
   // classified the work as anime, preserve its real TV/movie namespace for the
-  // provider API.  The semantic capability gate still rejects non-anime works.
+  // provider API. The semantic capability gate still rejects non-anime works.
   if(canonical==="anime")return namespace==="movie"?"movie":"tv";
   return canonical==="movie"?"movie":"tv";
 }'''
