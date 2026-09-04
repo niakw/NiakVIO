@@ -16,6 +16,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from remove_embedded_tmdb_runtime_key_contract import main as remove_embedded_tmdb_runtime_key
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -145,6 +147,8 @@ def patch_runtime_regression_expectations() -> bool:
         "TV fail-open fallback failed",
         "'\"tmdbKeyCipher\":' not in mixed",
         "'\"tmdbKeySalt\":' not in mixed",
+        '"function embeddedKey" not in mixed',
+        '"NiakVIO/TMDB/v1" not in mixed',
     )
     for needle in required:
         if needle not in text:
@@ -178,7 +182,9 @@ def normalize_manifest() -> int:
 
 
 def main() -> int:
+    runtime_key_removed = remove_embedded_tmdb_runtime_key() == 0
     changes = {
+        "tmdb_runtime_key_removed": runtime_key_removed,
         "gowaru_route_tail": patch_gowaru_route_normalizer(),
         "core_anime_transport": patch_media_transport(),
         "materializer_anime_compat": patch_materializer(),
