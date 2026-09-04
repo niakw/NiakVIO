@@ -3,9 +3,12 @@
 
 Provider DATA may describe the provider's own request chain, but TMDB metadata
 lookup and credentials belong to Core. Static extraction from upstream provider
-JavaScript can otherwise leak TMDB request fragments (including api_key query
-shapes) into provider routes and make the generic reader misclassify them as
-provider endpoints.
+JavaScript can otherwise leak TMDB request fragments into provider routes and
+make the generic reader misclassify them as provider endpoints.
+
+Bare ``/3/movie|tv/...`` fragments are ambiguous in isolation, so they are only
+removed when the same provider row contains explicit TMDB transport evidence
+(host/api-key URL). This avoids deleting a legitimate provider API v3 route.
 """
 from __future__ import annotations
 
@@ -13,7 +16,7 @@ import argparse
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterable
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +25,10 @@ TMDB_HOSTS = frozenset({"api.themoviedb.org", "www.themoviedb.org", "themoviedb.
 TMDB_ERASED_HOST_RE = re.compile(r"^/+(?:api\.)?themoviedb\.org(?:/|$)", re.I)
 TMDB_API_ROUTE_RE = re.compile(
     r"^/3/(?:\{media\}|\{type\}|movie|tv)/\{tmdb(?:_?id)?\}.*(?:[?&])api_key=",
+    re.I,
+)
+TMDB_BARE_API_ROUTE_RE = re.compile(
+    r"^/3/(?:\{media\}|\{type\}|movie|tv)/(?:\{tmdb(?:_?id)?\}|\d+)(?:[/?#]|$)",
     re.I,
 )
 
@@ -33,8 +40,23 @@ def load(path: Path) -> dict[str, Any]:
     return payload
 
 
-def is_tmdb_url_or_route(value: object) -> bool:
-    text = str(value or "").strip().replace("\\/", "/")
+def iter_strings(value: object) -> Iterable[str]:
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, list):
+        for child in value:
+            yield from iter_strings(child)
+    elif isinstance(value, dict):
+        for child in value.values():
+            yield from iter_strings(child)
+
+
+def normalized(value: object) -> str:
+    return str(value or "").strip().replace("\\/", "/")
+
+
+def is_explicit_tmdb_transport(value: object) -> bool:
+    text = normalized(value)
     if not text:
         return False
     low = text.casefold()
@@ -51,7 +73,14 @@ def is_tmdb_url_or_route(value: object) -> bool:
     return str(parsed.hostname or "").casefold() in TMDB_HOSTS
 
 
-def clean_list(values: object) -> tuple[list[str], int]:
+def is_tmdb_url_or_route(value: object, *, strip_bare_api_route: bool = False) -> bool:
+    text = normalized(value)
+    if is_explicit_tmdb_transport(text):
+        return True
+    return bool(strip_bare_api_route and TMDB_BARE_API_ROUTE_RE.search(text))
+
+
+def clean_list(values: object, *, strip_bare_api_routes: bool = False) -> tuple[list[str], int]:
     if not isinstance(values, list):
         return [], 0
     out: list[str] = []
@@ -60,7 +89,7 @@ def clean_list(values: object) -> tuple[list[str], int]:
         text = str(raw or "").strip()
         if not text:
             continue
-        if is_tmdb_url_or_route(text):
+        if is_tmdb_url_or_route(text, strip_bare_api_route=strip_bare_api_routes):
             removed += 1
             continue
         if text not in out:
@@ -68,11 +97,11 @@ def clean_list(values: object) -> tuple[list[str], int]:
     return out, removed
 
 
-def assert_recipe_is_provider_owned(provider_id: str, recipe: object) -> None:
+def assert_recipe_is_provider_owned(provider_id: str, recipe: object, *, strip_bare_api_routes: bool = False) -> None:
     if not isinstance(recipe, dict):
         return
     for key, raw in recipe.items():
-        if isinstance(raw, str) and is_tmdb_url_or_route(raw):
+        if isinstance(raw, str) and is_tmdb_url_or_route(raw, strip_bare_api_route=strip_bare_api_routes):
             raise AssertionError(
                 f"{provider_id}: apiRecipe.{key} contains Core-owned TMDB transport: {raw}"
             )
@@ -90,12 +119,26 @@ def main() -> int:
 
     removed = 0
     touched = 0
+    bare_route_touched = 0
     for provider_id, row in providers.items():
         if not isinstance(row, dict):
             continue
         local_removed = 0
         model = row.get("model") if isinstance(row.get("model"), dict) else {}
         knowledge = row.get("knowledge") if isinstance(row.get("knowledge"), dict) else {}
+
+        # Correlate ambiguous /3/movie|tv fragments with explicit TMDB evidence
+        # from the same extracted provider row before deleting that evidence.
+        explicit_tmdb_evidence = any(
+            is_explicit_tmdb_transport(raw)
+            for raw in iter_strings({"model": model, "knowledge": knowledge})
+        )
+        bare_before = sum(
+            1
+            for raw in iter_strings({"model": model, "knowledge": knowledge})
+            if TMDB_BARE_API_ROUTE_RE.search(normalized(raw))
+            and not is_explicit_tmdb_transport(raw)
+        )
 
         for container, key in (
             (model, "routes"),
@@ -105,27 +148,36 @@ def main() -> int:
             (knowledge, "routeFragments"),
             (knowledge, "observedUrls"),
         ):
-            cleaned, count = clean_list(container.get(key))
+            cleaned, count = clean_list(
+                container.get(key),
+                strip_bare_api_routes=explicit_tmdb_evidence,
+            )
             if isinstance(container.get(key), list):
                 container[key] = cleaned
             local_removed += count
 
-        # Provider API recipes may never point at TMDB. Credentials and metadata
-        # lookup are supplied by Core before provider execution.
-        assert_recipe_is_provider_owned(provider_id, model.get("apiRecipe"))
+        assert_recipe_is_provider_owned(
+            provider_id,
+            model.get("apiRecipe"),
+            strip_bare_api_routes=explicit_tmdb_evidence,
+        )
 
         row["model"] = model
         row["knowledge"] = knowledge
         if local_removed:
             touched += 1
             removed += local_removed
+        if explicit_tmdb_evidence and bare_before:
+            bare_route_touched += 1
 
     payload["coreMetadataTransportSanitized"] = True
     payload["coreMetadataTransportOwner"] = "core"
+    payload["coreMetadataBareRoutePolicy"] = "strip-only-with-explicit-tmdb-evidence"
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "PROVIDER_V3_CORE_METADATA_ROUTE_SANITIZE_OK "
-        f"providers={len(providers)} touched={touched} removed={removed} tmdb_owner=core"
+        f"providers={len(providers)} touched={touched} removed={removed} "
+        f"bare_route_touched={bare_route_touched} tmdb_owner=core"
     )
     return 0
 
