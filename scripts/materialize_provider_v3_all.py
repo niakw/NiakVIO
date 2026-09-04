@@ -233,6 +233,24 @@ def provider_model(
     }
 
 
+def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
+    """Keep anime semantic identity while exposing Nuvio TV/movie launch lanes."""
+    canonical = []
+    for value in entry.get("canonicalSupportedTypes") or []:
+        item = str(value or "").strip().casefold()
+        if item in {"movie", "tv", "anime"} and item not in canonical:
+            canonical.append(item)
+    if set(canonical) != {"anime"}:
+        return False
+    wanted = ["anime", "tv", "movie"]
+    current = [str(value or "").strip().casefold() for value in entry.get("supportedTypes") or []]
+    if current == wanted and canonical == ["anime"]:
+        return False
+    entry["canonicalSupportedTypes"] = ["anime"]
+    entry["supportedTypes"] = wanted
+    return True
+
+
 def base_version(value: object) -> str:
     raw = str(value or "0.0.0").strip() or "0.0.0"
     for token in ("-v3-all-", "-tv-native", "-tv-lab", "-tv-strict"):
@@ -320,6 +338,7 @@ def materialize_all(
     aggregate = hashlib.sha256()
 
     for index, entry in enumerate(rows, start=1):
+        normalize_anime_transport_compatibility(entry)
         provider_id = canonical_id(str(entry.get("id") or ""))
         print(
             "FIELD_PROVIDER_V3_MATERIALIZE_BEGIN "

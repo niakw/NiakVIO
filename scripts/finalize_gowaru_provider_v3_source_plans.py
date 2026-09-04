@@ -87,7 +87,7 @@ def normalize_route(raw: str) -> str | None:
     if not value:
         return None
     value = EXPR_RE.sub(lambda m: placeholder(m.group(1)), value)
-    value = value.strip().rstrip(";,)]}")
+    value = value.strip().rstrip(";,)]")
     value = re.sub(r"\s+", "", value)
     value = value.replace("&&", "&")
     value = value.replace("{query}{query}", "{query}")

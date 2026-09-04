@@ -90,7 +90,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile",
+        "revision": "tmdb-data-contract-launch-gate-v27-anime-semantic-transport",
         **_runtime_key_payload(),
     }
     serialized = json.dumps(payload, separators=(",", ":"))
@@ -113,12 +113,10 @@ function providerTransport(canonical,namespace){
   var mapped=s(map[canonical]).toLowerCase();
   if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
   if(mapped)return alias(mapped);
-  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
-  if(canonical==="anime"){
-    var ns=namespace==="movie"?"movie":"tv";
-    if(semantic.indexOf(ns)>=0)return ns;
-    return"anime";
-  }
+  // Anime is semantic, not a TMDB namespace. Once authoritative metadata has
+  // classified the work as anime, preserve its real TV/movie namespace for the
+  // provider API. The semantic capability gate still rejects non-anime works.
+  if(canonical==="anime")return namespace==="movie"?"movie":"tv";
   return canonical==="movie"?"movie":"tv";
 }
 function namespaceCandidates(v,season,episode){

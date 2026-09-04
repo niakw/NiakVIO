@@ -235,7 +235,7 @@ const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams('280049','tv',1,12);
   if(!Array.isArray(value)||!value.length)throw new Error('native deferred anime result lost');
-  if(value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='anime')
+  if(value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='tv')
     throw new Error('native anime semantic verification failed: '+JSON.stringify(value));
   if(calls!==1)throw new Error('native positive anime output must be TMDB-verified exactly once');
 })().catch(e=>{console.error(e);process.exit(1)});
@@ -287,7 +287,7 @@ global.fetch=async()=>{throw new Error("TMDB unavailable")};
 const provider=require(process.argv[2]);
 (async()=>{
   const value=await provider.getStreams("280049","series",1,11);
-  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].mediaType!=="anime"||value[0].degraded!==true)throw new Error("Anime-only provider must preserve anime transport on metadata outage");
+  if(!Array.isArray(value)||!value.length||value[0]==null||value[0].mediaType!=="tv"||value[0].degraded!==true)throw new Error("Anime-only series fallback must preserve TV transport on metadata outage");
 })().catch(e=>{console.error(e);process.exit(1)});
 """)
 
@@ -547,7 +547,7 @@ const provider=require(process.argv[2]);
 default_budget = mod.apply("module.exports={getStreams:async()=>[]};\n", options={"semantic_types":["movie"]})
 assert '"providerTimeoutMs":30000' in default_budget
 assert '"tvProviderTimeoutMs":25000' in default_budget
-assert '"revision":"tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile"' in default_budget
+assert '"revision":"tmdb-data-contract-launch-gate-v27-anime-semantic-transport"' in default_budget
 
 # The JS-side budget cannot preempt a non-cooperative native bridge, but once a
 # native request returns after the deadline it must fail closed immediately and

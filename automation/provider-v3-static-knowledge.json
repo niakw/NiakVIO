@@ -43,9 +43,7 @@
           "/catalogue/{slug}/film/{lang}/episodes.js",
           "/catalogue/",
           "/resolvers.js",
-          "/anime-sama.to",
           "/catalogue",
-          "/catalogue/{slug}${seasonPath",
           "/episodes.js",
           "/saison.",
           "/catalogue/{slug}{season}//episodes.js"
@@ -61,10 +59,8 @@
         "routes": [
           "/catalogue/",
           "/resolvers.js",
-          "/anime-sama.to",
           "/template-php/defaut/fetch.php",
           "/catalogue",
-          "/catalogue/{slug}${seasonPath",
           "/episodes.js",
           "/saison.",
           "/catalogue/{slug}{season}//episodes.js"
@@ -72,10 +68,8 @@
         "routeFragments": [
           "/catalogue/",
           "/resolvers.js",
-          "/anime-sama.to",
           "/template-php/defaut/fetch.php",
           "/catalogue",
-          "/catalogue/{slug}${seasonPath",
           "/episodes.js",
           "/saison.",
           "/catalogue/{slug}{season}//episodes.js"
@@ -264,9 +258,9 @@
           "/saison-(",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search?q=",
-          "/serie/"
+          "/serie/",
+          "/{media}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html-embed",
@@ -283,9 +277,9 @@
           "/saison-(",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search?q=",
-          "/serie/"
+          "/serie/",
+          "/{media}"
         ],
         "routeFragments": [
           "/film/",
@@ -294,9 +288,9 @@
           "/saison-(",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search?q=",
-          "/serie/"
+          "/serie/",
+          "/{media}"
         ],
         "observedUrls": [
           "https://flemmix.me/"
@@ -1517,7 +1511,6 @@
         ],
         "routes": [
           "/anime/",
-          "/animesama.co",
           "/anime",
           "/saison-(",
           "/saison-",
@@ -1526,11 +1519,11 @@
           "/resolvers.js",
           "/anime/{id}-{slug}.html",
           "/episode",
-          "/anime/{id}-${match.slug",
           "/saison-{season}/episode-{episode}.html",
           "/film/episode-{episode}.html",
           "/template-php/defaut/fetch.php",
-          "/anime/{id}-{slug"
+          "/anime/{id}-{slug",
+          "/anime/{id}-{slug}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-form-html-embed",
@@ -1542,7 +1535,6 @@
         ],
         "routes": [
           "/anime/",
-          "/animesama.co",
           "/anime",
           "/saison-(",
           "/saison-",
@@ -1551,15 +1543,14 @@
           "/resolvers.js",
           "/anime/{id}-{slug}.html",
           "/episode",
-          "/anime/{id}-${match.slug",
           "/saison-{season}/episode-{episode}.html",
           "/film/episode-{episode}.html",
           "/template-php/defaut/fetch.php",
-          "/anime/{id}-{slug"
+          "/anime/{id}-{slug",
+          "/anime/{id}-{slug}"
         ],
         "routeFragments": [
           "/anime/",
-          "/animesama.co",
           "/anime",
           "/saison-(",
           "/saison-",
@@ -1568,11 +1559,11 @@
           "/resolvers.js",
           "/anime/{id}-{slug}.html",
           "/episode",
-          "/anime/{id}-${match.slug",
           "/saison-{season}/episode-{episode}.html",
           "/film/episode-{episode}.html",
           "/template-php/defaut/fetch.php",
-          "/anime/{id}-{slug"
+          "/anime/{id}-{slug",
+          "/anime/{id}-{slug}"
         ],
         "observedUrls": [
           "https://animesama.co/"
@@ -1621,8 +1612,6 @@
           "https://ww.animesultra.org/"
         ],
         "routes": [
-          "/shell.php?videoid=${url",
-          "/shell.php?videoid=${cp.url",
           "/resolvers.js",
           "/anime-vf/",
           "/anime-vostfr/",
@@ -1630,16 +1619,14 @@
           "/anime-vostfr",
           "/saison",
           "/saison[-",
-          "/index.php?do=search&subaction=search&story=${encodeURIComponent(title",
-          "/video.sibnet.ru/shell.php?videoid=${url",
           "/anime-vf/533-one-punch-man-saison-1-vf-au/episode-N.html",
           "/episode-N.html",
           "/episode-{episode}.html",
-          "/video.sibnet.ru/shell.php?videoid=${cp.url",
-          "/engine/ajax/full-story.php?newsId=${newsId",
           "/index.php?do=search&subaction=search&story={query",
           "/engine/ajax/full-story.php?newsId={id",
-          "/parsefailedfor{id}:"
+          "/parsefailedfor{id}:",
+          "/index.php?do=search&subaction=search&story={query}",
+          "/engine/ajax/full-story.php?newsId={id}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "dle-full-story",
@@ -1651,10 +1638,7 @@
           "video.sibnet.ru"
         ],
         "routes": [
-          "/shell.php?videoid=${url}",
-          "/shell.php?videoid=${cp.url}",
-          "/shell.php?videoid=${url",
-          "/shell.php?videoid=${cp.url",
+          "/shell.php?videoid=",
           "/resolvers.js",
           "/anime-vf/",
           "/anime-vostfr/",
@@ -1662,20 +1646,16 @@
           "/anime-vostfr",
           "/saison",
           "/saison[-",
-          "/index.php?do=search&subaction=search&story=${encodeURIComponent(title",
-          "/video.sibnet.ru/shell.php?videoid=${url",
           "/anime-vf/533-one-punch-man-saison-1-vf-au/episode-N.html",
           "/episode-N.html",
           "/episode-{episode}.html",
-          "/video.sibnet.ru/shell.php?videoid=${cp.url",
-          "/engine/ajax/full-story.php?newsId=${newsId",
           "/index.php?do=search&subaction=search&story={query",
           "/engine/ajax/full-story.php?newsId={id",
-          "/parsefailedfor{id}:"
+          "/parsefailedfor{id}:",
+          "/index.php?do=search&subaction=search&story={query}",
+          "/engine/ajax/full-story.php?newsId={id}"
         ],
         "routeFragments": [
-          "/shell.php?videoid=${url",
-          "/shell.php?videoid=${cp.url",
           "/resolvers.js",
           "/anime-vf/",
           "/anime-vostfr/",
@@ -1683,16 +1663,14 @@
           "/anime-vostfr",
           "/saison",
           "/saison[-",
-          "/index.php?do=search&subaction=search&story=${encodeURIComponent(title",
-          "/video.sibnet.ru/shell.php?videoid=${url",
           "/anime-vf/533-one-punch-man-saison-1-vf-au/episode-N.html",
           "/episode-N.html",
           "/episode-{episode}.html",
-          "/video.sibnet.ru/shell.php?videoid=${cp.url",
-          "/engine/ajax/full-story.php?newsId=${newsId",
           "/index.php?do=search&subaction=search&story={query",
           "/engine/ajax/full-story.php?newsId={id",
-          "/parsefailedfor{id}:"
+          "/parsefailedfor{id}:",
+          "/index.php?do=search&subaction=search&story={query}",
+          "/engine/ajax/full-story.php?newsId={id}"
         ],
         "observedUrls": [
           "https://ww.animesultra.org/",
@@ -1876,7 +1854,8 @@
           "/episode",
           "/animes",
           "/saison",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "wordpress-search-episode",
@@ -1893,7 +1872,8 @@
           "/episode",
           "/animes",
           "/saison",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "routeFragments": [
           "/animes/",
@@ -1902,7 +1882,8 @@
           "/episode",
           "/animes",
           "/saison",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "observedUrls": [
           "https://v2.animevostfr.org/"
@@ -2031,13 +2012,12 @@
           "/playerUrl",
           "/videoUrl",
           "/?s={query",
-          "//episode-\"",
-          "//episode-1/",
           "/anime/{slug}/film//episode-1/",
           "/anime/{slug}/film//",
           "/anime/{slug}/movie//episode-1/",
           "/anime/{slug}//episode-1/",
-          "//episode-"
+          "/?s={query}",
+          "//episode-\""
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html-embed",
@@ -2071,13 +2051,12 @@
           "/playerUrl",
           "/videoUrl",
           "/?s={query",
-          "//episode-\"",
-          "//episode-1/",
           "/anime/{slug}/film//episode-1/",
           "/anime/{slug}/film//",
           "/anime/{slug}/movie//episode-1/",
           "/anime/{slug}//episode-1/",
-          "//episode-"
+          "/?s={query}",
+          "//episode-\""
         ],
         "routeFragments": [
           "/anime/",
@@ -2103,13 +2082,12 @@
           "/playerUrl",
           "/videoUrl",
           "/?s={query",
-          "//episode-\"",
-          "//episode-1/",
           "/anime/{slug}/film//episode-1/",
           "/anime/{slug}/film//",
           "/anime/{slug}/movie//episode-1/",
           "/anime/{slug}//episode-1/",
-          "//episode-"
+          "/?s={query}",
+          "//episode-\""
         ],
         "observedUrls": [
           "https://animoflix.to/"
@@ -2682,7 +2660,9 @@
           "/{season}-saison/{episode}-episode.html",
           "/episode:S{season}E{episode",
           "/engine/inc/serial/app/ajax/Season.php",
-          "/voir-series/"
+          "/voir-series/",
+          "/?do=search&subaction=search&story={query}",
+          "/episode:S{season}E{episode}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "dle-search-html",
@@ -2703,7 +2683,9 @@
           "/{season}-saison/{episode}-episode.html",
           "/episode:S{season}E{episode",
           "/engine/inc/serial/app/ajax/Season.php",
-          "/voir-series/"
+          "/voir-series/",
+          "/?do=search&subaction=search&story={query}",
+          "/episode:S{season}E{episode}"
         ],
         "routeFragments": [
           "/Season.php",
@@ -2715,7 +2697,9 @@
           "/{season}-saison/{episode}-episode.html",
           "/episode:S{season}E{episode",
           "/engine/inc/serial/app/ajax/Season.php",
-          "/voir-series/"
+          "/voir-series/",
+          "/?do=search&subaction=search&story={query}",
+          "/episode:S{season}E{episode}"
         ],
         "observedUrls": [
           "https://www.dulourd.hair/",
@@ -2776,7 +2760,6 @@
           "/Saison",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search.php",
           "/?s=",
           "/engine/ajax/manga_episodes_api.php?id="
@@ -2794,7 +2777,6 @@
           "/Saison",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search.php",
           "/engine/ajax/search.php",
           "/?s=",
@@ -2805,7 +2787,6 @@
           "/Saison",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search.php",
           "/engine/ajax/search.php",
           "/?s=",
@@ -3518,18 +3499,10 @@
           "/search-fallback.js",
           "/api/content",
           "/api/fstream",
-          "/api.movix.fun",
           "/api/{wiflix|j1f|cpasmal}).",
-          "/api/fstream/movie/${tmdbId",
-          "/api/fstream/tv/{tmdbId}/season/${Number(season",
-          "/api/search?title=${searchQuery",
           "/api/fstream.",
           "/api/fstream/movie/72462",
           "/api/fstream/movie/27205",
-          "/api/fstream/movie/${altId",
-          "/api/fstream/tv/{id}/season/${Number(season",
-          "/api/{query}/movie/${tmdbId",
-          "/api/{query}/tv/{tmdbId}/season/${Number(season",
           "/api/fstream/movie/{tmdbId",
           "/api/fstream/tv/{tmdbId}/season/{season",
           "/api/search?title={query",
@@ -3537,7 +3510,14 @@
           "/api/fstream/tv/{id}/season/{season",
           "/api//movie/{tmdbId",
           "/api//tv/{tmdbId}/season/{season",
-          "/hls/"
+          "/hls/",
+          "/api/fstream/movie/{tmdbId}",
+          "/api/fstream/tv/{tmdbId}/season/{season}",
+          "/api/search?title={query}",
+          "/api/fstream/movie/{id}",
+          "/api/fstream/tv/{id}/season/{season}",
+          "/api//movie/{tmdbId}",
+          "/api//tv/{tmdbId}/season/{season}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html-embed",
@@ -3554,18 +3534,10 @@
           "/search-fallback.js",
           "/api/content",
           "/api/fstream",
-          "/api.movix.fun",
           "/api/{wiflix|j1f|cpasmal}).",
-          "/api/fstream/movie/${tmdbId",
-          "/api/fstream/tv/{tmdbId}/season/${Number(season",
-          "/api/search?title=${searchQuery",
           "/api/fstream.",
           "/api/fstream/movie/72462",
           "/api/fstream/movie/27205",
-          "/api/fstream/movie/${altId",
-          "/api/fstream/tv/{id}/season/${Number(season",
-          "/api/{query}/movie/${tmdbId",
-          "/api/{query}/tv/{tmdbId}/season/${Number(season",
           "/api/fstream/movie/{tmdbId",
           "/api/fstream/tv/{tmdbId}/season/{season",
           "/api/search?title={query",
@@ -3573,7 +3545,14 @@
           "/api/fstream/tv/{id}/season/{season",
           "/api//movie/{tmdbId",
           "/api//tv/{tmdbId}/season/{season",
-          "/hls/"
+          "/hls/",
+          "/api/fstream/movie/{tmdbId}",
+          "/api/fstream/tv/{tmdbId}/season/{season}",
+          "/api/search?title={query}",
+          "/api/fstream/movie/{id}",
+          "/api/fstream/tv/{id}/season/{season}",
+          "/api//movie/{tmdbId}",
+          "/api//tv/{tmdbId}/season/{season}"
         ],
         "routeFragments": [
           "/embed",
@@ -3581,18 +3560,10 @@
           "/search-fallback.js",
           "/api/content",
           "/api/fstream",
-          "/api.movix.fun",
           "/api/{wiflix|j1f|cpasmal}).",
-          "/api/fstream/movie/${tmdbId",
-          "/api/fstream/tv/{tmdbId}/season/${Number(season",
-          "/api/search?title=${searchQuery",
           "/api/fstream.",
           "/api/fstream/movie/72462",
           "/api/fstream/movie/27205",
-          "/api/fstream/movie/${altId",
-          "/api/fstream/tv/{id}/season/${Number(season",
-          "/api/{query}/movie/${tmdbId",
-          "/api/{query}/tv/{tmdbId}/season/${Number(season",
           "/api/fstream/movie/{tmdbId",
           "/api/fstream/tv/{tmdbId}/season/{season",
           "/api/search?title={query",
@@ -3600,7 +3571,14 @@
           "/api/fstream/tv/{id}/season/{season",
           "/api//movie/{tmdbId",
           "/api//tv/{tmdbId}/season/{season",
-          "/hls/"
+          "/hls/",
+          "/api/fstream/movie/{tmdbId}",
+          "/api/fstream/tv/{tmdbId}/season/{season}",
+          "/api/search?title={query}",
+          "/api/fstream/movie/{id}",
+          "/api/fstream/tv/{id}/season/{season}",
+          "/api//movie/{tmdbId}",
+          "/api//tv/{tmdbId}/season/{season}"
         ],
         "observedUrls": [
           "https://api.movix.fun/",
@@ -3651,12 +3629,11 @@
         ],
         "routes": [
           "/resolvers.js",
-          "/api/search?q=${query",
           "/catalogue/{slug}/films",
           "/catalogue/{slug}/episodes/saison1",
-          "/catalogue/{slug}/episodes/saison${s",
           "/api/search?q={query",
-          "/catalogue/{slug}/episodes/saison"
+          "/catalogue/{slug}/episodes/saison",
+          "/api/search?q={query}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-json-html-detail",
@@ -3668,21 +3645,19 @@
         ],
         "routes": [
           "/resolvers.js",
-          "/api/search?q=${query",
           "/catalogue/{slug}/films",
           "/catalogue/{slug}/episodes/saison1",
-          "/catalogue/{slug}/episodes/saison${s",
           "/api/search?q={query",
-          "/catalogue/{slug}/episodes/saison"
+          "/catalogue/{slug}/episodes/saison",
+          "/api/search?q={query}"
         ],
         "routeFragments": [
           "/resolvers.js",
-          "/api/search?q=${query",
           "/catalogue/{slug}/films",
           "/catalogue/{slug}/episodes/saison1",
-          "/catalogue/{slug}/episodes/saison${s",
           "/api/search?q={query",
-          "/catalogue/{slug}/episodes/saison"
+          "/catalogue/{slug}/episodes/saison",
+          "/api/search?q={query}"
         ],
         "observedUrls": [
           "https://www.mugiwara-no-streaming.com/"
@@ -3730,18 +3705,15 @@
           "/api/search/multi",
           "/search-fallback.js",
           "/resolvers.js",
-          "/api/search/multi?query=${encodeURIComponent(query",
-          "/api/sources/movie/${r.id",
-          "/api/sources/tv/{id}/${Number(season",
-          "/api/sources/movie/${tmdbId",
-          "/api/sources/tv/{tmdbId}/{season}/${targetEpisode",
-          "/api.nakios.store",
           "/api/sources/movie/550",
           "/api/search/multi?query={query",
           "/api/sources/movie/{id",
           "/api/sources/tv/{id}/{season}/{episode",
           "/api/sources/movie/{tmdbId",
-          "/api/sources/tv/{tmdbId}/{season}/{episode"
+          "/api/sources/tv/{tmdbId}/{season}/{episode",
+          "/api/search/multi?query={query}",
+          "/api/sources/movie/{tmdbId}",
+          "/api/sources/tv/{tmdbId}/{season}/{episode}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "tmdb-direct-api",
@@ -3756,35 +3728,33 @@
           "/api/search/multi",
           "/search-fallback.js",
           "/resolvers.js",
-          "/api/search/multi?query=${encodeURIComponent(query",
-          "/api/sources/movie/${r.id",
-          "/api/sources/tv/{id}/${Number(season",
-          "/api/sources/movie/${tmdbId",
-          "/api/sources/tv/{tmdbId}/{season}/${targetEpisode",
-          "/api.nakios.store",
           "/api/sources/movie/550",
           "/api/search/multi?query={query",
           "/api/sources/movie/{id",
           "/api/sources/tv/{id}/{season}/{episode",
           "/api/sources/movie/{tmdbId",
-          "/api/sources/tv/{tmdbId}/{season}/{episode"
+          "/api/sources/tv/{tmdbId}/{season}/{episode",
+          "/api/search/multi?query={query}",
+          "/api/sources/movie/{id}",
+          "/api/sources/tv/{id}/{season}/{episode}",
+          "/api/sources/movie/{tmdbId}",
+          "/api/sources/tv/{tmdbId}/{season}/{episode}"
         ],
         "routeFragments": [
           "/api/search/multi",
           "/search-fallback.js",
           "/resolvers.js",
-          "/api/search/multi?query=${encodeURIComponent(query",
-          "/api/sources/movie/${r.id",
-          "/api/sources/tv/{id}/${Number(season",
-          "/api/sources/movie/${tmdbId",
-          "/api/sources/tv/{tmdbId}/{season}/${targetEpisode",
-          "/api.nakios.store",
           "/api/sources/movie/550",
           "/api/search/multi?query={query",
           "/api/sources/movie/{id",
           "/api/sources/tv/{id}/{season}/{episode",
           "/api/sources/movie/{tmdbId",
-          "/api/sources/tv/{tmdbId}/{season}/{episode"
+          "/api/sources/tv/{tmdbId}/{season}/{episode",
+          "/api/search/multi?query={query}",
+          "/api/sources/movie/{id}",
+          "/api/sources/tv/{id}/{season}/{episode}",
+          "/api/sources/movie/{tmdbId}",
+          "/api/sources/tv/{tmdbId}/{season}/{episode}"
         ],
         "observedUrls": [
           "https://nakios.store/",
@@ -3828,7 +3798,6 @@
           "/?s={query}",
           "/anime/{slug}-saison-{N}/",
           "/resolvers.js",
-          "/animes-sama.su",
           "/animes-sama",
           "/anime",
           "/anime/{slug}-saison-1/",
@@ -3845,24 +3814,24 @@
         "routes": [
           "/anime/{slug}-saison-{N}/",
           "/resolvers.js",
-          "/animes-sama.su",
           "/animes-sama",
           "/anime",
           "/anime/{slug}-saison-{season}/",
           "/anime/{slug}/",
           "/anime/{slug}-saison-1/",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "routeFragments": [
           "/anime/{slug}-saison-{N}/",
           "/resolvers.js",
-          "/animes-sama.su",
           "/animes-sama",
           "/anime",
           "/anime/{slug}-saison-{season}/",
           "/anime/{slug}/",
           "/anime/{slug}-saison-1/",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "observedUrls": [
           "https://animes-sama.su/"
@@ -3906,18 +3875,16 @@
         "routes": [
           "/3",
           "/resolvers.js",
-          "/api.themoviedb.org/3",
-          "/tv/{tmdbId}/external_ids?api_key=${TMDB_API_KEY",
           "/tv/{tmdbId}?api_key=&language=fr-FR",
-          "/search?q=${encodeURIComponent(title",
           "/series",
           "/playlist.m3u8",
           "/playlist",
-          "/series/${imdbId",
           "/tv/{tmdbId}/external_ids?api_key=",
           "/search?q={query",
           "/series/{imdbId",
-          "/hls/"
+          "/hls/",
+          "/search?q={query}",
+          "/series/{imdbId}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html-embed",
@@ -3931,34 +3898,30 @@
         "routes": [
           "/3",
           "/resolvers.js",
-          "/api.themoviedb.org/3",
-          "/tv/{tmdbId}/external_ids?api_key=${TMDB_API_KEY",
           "/tv/{tmdbId}?api_key=&language=fr-FR",
-          "/search?q=${encodeURIComponent(title",
           "/series",
           "/playlist.m3u8",
           "/playlist",
-          "/series/${imdbId",
           "/tv/{tmdbId}/external_ids?api_key=",
           "/search?q={query",
           "/series/{imdbId",
-          "/hls/"
+          "/hls/",
+          "/search?q={query}",
+          "/series/{imdbId}"
         ],
         "routeFragments": [
           "/3",
           "/resolvers.js",
-          "/api.themoviedb.org/3",
-          "/tv/{tmdbId}/external_ids?api_key=${TMDB_API_KEY",
           "/tv/{tmdbId}?api_key=&language=fr-FR",
-          "/search?q=${encodeURIComponent(title",
           "/series",
           "/playlist.m3u8",
           "/playlist",
-          "/series/${imdbId",
           "/tv/{tmdbId}/external_ids?api_key=",
           "/search?q={query",
           "/series/{imdbId",
-          "/hls/"
+          "/hls/",
+          "/search?q={query}",
+          "/series/{imdbId}"
         ],
         "observedUrls": [
           "https://papadustream.club/",
@@ -4137,7 +4100,8 @@
           "/episode",
           "/episodeLow",
           "/saga-(\\\\d+)[\"'",
-          "/{slug}/saga-"
+          "/{slug}/saga-",
+          "/{slug}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "slug-saga-inline-media",
@@ -4155,7 +4119,8 @@
           "/episode",
           "/episodeLow",
           "/saga-(\\\\d+)[\"'",
-          "/{slug}/saga-"
+          "/{slug}/saga-",
+          "/{slug}"
         ],
         "routeFragments": [
           "/resolvers.js",
@@ -4164,7 +4129,8 @@
           "/episode",
           "/episodeLow",
           "/saga-(\\\\d+)[\"'",
-          "/{slug}/saga-"
+          "/{slug}/saga-",
+          "/{slug}"
         ],
         "observedUrls": [
           "https://sekai.one/",
@@ -4288,13 +4254,11 @@
           "/series/{slug}",
           "/embed/sharecloudy.com/ID",
           "/embed/...",
-          "/streamzo.fr",
           "/resolvers.js",
           "/embed/",
           "/embed",
           "/series/slug",
           "/series/",
-          "/series/${slug",
           "/series/{slug"
         ],
         "apiRecipe": null,
@@ -4308,26 +4272,26 @@
         "routes": [
           "/embed/sharecloudy.com/ID",
           "/embed/...",
-          "/streamzo.fr",
           "/resolvers.js",
           "/embed/",
           "/embed",
           "/series/slug",
           "/series/",
-          "/series/${slug",
-          "/series/{slug"
+          "/series/{slug",
+          "/series/{slug}",
+          "/{slug}"
         ],
         "routeFragments": [
           "/embed/sharecloudy.com/ID",
           "/embed/...",
-          "/streamzo.fr",
           "/resolvers.js",
           "/embed/",
           "/embed",
           "/series/slug",
           "/series/",
-          "/series/${slug",
-          "/series/{slug"
+          "/series/{slug",
+          "/series/{slug}",
+          "/{slug}"
         ],
         "observedUrls": [
           "https://streamzo.fr/"
@@ -4752,7 +4716,9 @@
           "/anime/-vf/",
           "/?s={query",
           "/anime//",
-          "/anime/{slug}/{episode}/"
+          "/anime/{slug}/{episode}/",
+          "/?s={query}",
+          "https://voir-anime.to/anime/{slug}/{episode}/"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "wordpress-search-episode",
@@ -4763,7 +4729,7 @@
           "voir-anime.to"
         ],
         "routes": [
-          "/anime/${slugName}/${prefix}${pad}${targetEp}${suffix}/",
+          "/anime/{slug}/{episode}/",
           "/anime/",
           "/episode/",
           "/film",
@@ -4781,7 +4747,8 @@
           "/anime/-vf/",
           "/?s={query",
           "/anime//",
-          "/anime/{slug}/{episode}/"
+          "/?s={query}",
+          "https://voir-anime.to/anime/{slug}/{episode}/"
         ],
         "routeFragments": [
           "/anime/",
@@ -4801,7 +4768,9 @@
           "/anime/-vf/",
           "/?s={query",
           "/anime//",
-          "/anime/{slug}/{episode}/"
+          "/anime/{slug}/{episode}/",
+          "/?s={query}",
+          "https://voir-anime.to/anime/{slug}/{episode}/"
         ],
         "observedUrls": [
           "https://voir-anime.to/",
@@ -4858,7 +4827,6 @@
           "/Saison",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search.php",
           "/engine/ajax/search.php",
           "/?s=",
@@ -4877,7 +4845,6 @@
           "/Saison",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search.php",
           "/engine/ajax/search.php",
           "/?s=",
@@ -4888,7 +4855,6 @@
           "/Saison",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/search.php",
           "/engine/ajax/search.php",
           "/?s=",
@@ -5037,17 +5003,16 @@
           "https://ipv4.vostfree.ws/"
         ],
         "routes": [
-          "/shell.php?videoid=${content",
           "/embed-.html",
-          "/embed/${content",
-          "/e/${content",
           "/resolvers.js",
           "/index.php?do=search",
           "/FILM/Movie/Special",
-          "/video.sibnet.ru/shell.php?videoid=${content",
-          "/streamtape.com/e/${content",
           "/{query}searches,stoppingearly",
-          "/embed/"
+          "/embed/",
+          "https://vidmoly.to/embed-.html",
+          "https://uqload.com/embed-.html",
+          "https://sendvid.com/embed/",
+          "https://www.myvi.ru/embed/"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html",
@@ -5066,34 +5031,30 @@
           "www.myvi.ru"
         ],
         "routes": [
-          "/shell.php?videoid=${content}",
-          "/embed-${content}.html",
-          "/embed/${content}",
-          "/e/${content}",
-          "/shell.php?videoid=${content",
+          "/shell.php?videoid=",
           "/embed-.html",
-          "/embed/${content",
-          "/e/${content",
+          "/embed/",
+          "/e/",
           "/resolvers.js",
           "/index.php?do=search",
           "/FILM/Movie/Special",
-          "/video.sibnet.ru/shell.php?videoid=${content",
-          "/streamtape.com/e/${content",
           "/{query}searches,stoppingearly",
-          "/embed/"
+          "https://vidmoly.to/embed-.html",
+          "https://uqload.com/embed-.html",
+          "https://sendvid.com/embed/",
+          "https://www.myvi.ru/embed/"
         ],
         "routeFragments": [
-          "/shell.php?videoid=${content",
           "/embed-.html",
-          "/embed/${content",
-          "/e/${content",
           "/resolvers.js",
           "/index.php?do=search",
           "/FILM/Movie/Special",
-          "/video.sibnet.ru/shell.php?videoid=${content",
-          "/streamtape.com/e/${content",
           "/{query}searches,stoppingearly",
-          "/embed/"
+          "/embed/",
+          "https://vidmoly.to/embed-.html",
+          "https://uqload.com/embed-.html",
+          "https://sendvid.com/embed/",
+          "https://www.myvi.ru/embed/"
         ],
         "observedUrls": [
           "https://ipv4.vostfree.ws/",
@@ -5169,13 +5130,13 @@
           "/episodes",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/wp-json/v2/posts?search=...",
           "/wp-json/v2/posts?search={query}&per_page=10",
           "/streaming/{slug}/",
           "/streaming/series/{slug}/",
           "/?s=",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html-embed",
@@ -5198,13 +5159,13 @@
           "/episodes",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/wp-json/v2/posts?search=...",
           "/wp-json/v2/posts?search={query}&per_page=10",
           "/streaming/{slug}/",
           "/streaming/series/{slug}/",
           "/?s=",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "routeFragments": [
           "/streaming/series/",
@@ -5215,13 +5176,13 @@
           "/episodes",
           "/resolvers.js",
           "/saison",
-          "/api.themoviedb.org/3/{media}/{tmdbId}?api_key=&language=en-US",
           "/wp-json/v2/posts?search=...",
           "/wp-json/v2/posts?search={query}&per_page=10",
           "/streaming/{slug}/",
           "/streaming/series/{slug}/",
           "/?s=",
-          "/?s={query"
+          "/?s={query",
+          "/?s={query}"
         ],
         "observedUrls": [
           "https://wookafr.center/",
@@ -5666,15 +5627,12 @@
         "routes": [
           "/api/animes/search?q={query}",
           "/api/animes/{slug}",
-          "/animevost.fr",
-          "/api/animes/search?q=${encodeURIComponent(query",
-          "/api/animes/${slug",
           "/episode",
           "/saison",
-          "/api/animes/${searchResult.slug",
           "/api/animes/search?q={query",
           "/api/animes/{slug",
-          "/api/animes/{query"
+          "/api/animes/{query",
+          "/api/animes/{query}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html-embed",
@@ -5685,26 +5643,24 @@
           "animevost.fr"
         ],
         "routes": [
-          "/animevost.fr",
-          "/api/animes/search?q=${encodeURIComponent(query",
-          "/api/animes/${slug",
           "/episode",
           "/saison",
-          "/api/animes/${searchResult.slug",
           "/api/animes/search?q={query",
           "/api/animes/{slug",
-          "/api/animes/{query"
+          "/api/animes/{query",
+          "/api/animes/search?q={query}",
+          "/api/animes/{slug}",
+          "/api/animes/{query}"
         ],
         "routeFragments": [
-          "/animevost.fr",
-          "/api/animes/search?q=${encodeURIComponent(query",
-          "/api/animes/${slug",
           "/episode",
           "/saison",
-          "/api/animes/${searchResult.slug",
           "/api/animes/search?q={query",
           "/api/animes/{slug",
-          "/api/animes/{query"
+          "/api/animes/{query",
+          "/api/animes/search?q={query}",
+          "/api/animes/{slug}",
+          "/api/animes/{query}"
         ],
         "observedUrls": [
           "https://animevost.fr/"
@@ -6275,7 +6231,6 @@
           "/index.php?newsid=",
           "/3",
           "/resolvers.js",
-          "/api.themoviedb.org/3",
           "/index.php?newsid=XXXXXX",
           "/saison|series|",
           "/saison",
@@ -6316,7 +6271,6 @@
           "/index.php?newsid=",
           "/3",
           "/resolvers.js",
-          "/api.themoviedb.org/3",
           "/index.php?newsid=XXXXXX",
           "/saison|series|",
           "/saison",
@@ -6349,7 +6303,6 @@
           "/index.php?newsid=",
           "/3",
           "/resolvers.js",
-          "/api.themoviedb.org/3",
           "/index.php?newsid=XXXXXX",
           "/saison|series|",
           "/saison",
@@ -6399,11 +6352,11 @@
           "/search?s={query",
           "/episode/{N",
           "/resolvers.js",
-          "/search?s={query}&_t=${Date.now(",
           "/episode",
           "/embed",
           "/search?s={query}&_t=",
-          "/voir-anime/{slug}-vostfr"
+          "/voir-anime/{slug}-vostfr",
+          "/voir-anime/{season}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "wordpress-search-episode",
@@ -6417,21 +6370,21 @@
           "/search?s={query",
           "/episode/{N",
           "/resolvers.js",
-          "/search?s={query}&_t=${Date.now(",
           "/episode",
           "/embed",
           "/search?s={query}&_t=",
-          "/voir-anime/{slug}-vostfr"
+          "/voir-anime/{slug}-vostfr",
+          "/voir-anime/{season}"
         ],
         "routeFragments": [
           "/search?s={query",
           "/episode/{N",
           "/resolvers.js",
-          "/search?s={query}&_t=${Date.now(",
           "/episode",
           "/embed",
           "/search?s={query}&_t=",
-          "/voir-anime/{slug}-vostfr"
+          "/voir-anime/{slug}-vostfr",
+          "/voir-anime/{season}"
         ],
         "observedUrls": [
           "https://www.fullanime.fr/"
@@ -7758,18 +7711,16 @@
           "/playback/:epId/manifest.mpd",
           "/Media3",
           "/resolvers.js",
-          "/api/series?query=${encodeURIComponent(query",
           "/api/series?limit=100",
-          "/api/series/${id",
           "/api/episodes/:id).",
-          "/api/episodes/${epId",
           "/playback/subtitles/{epId}-{lang}-{full|forced}.ass",
           "/playback/subtitles/{id}--.ass",
           "/playback/:ep/manifest.mpd).",
           "/api/series?query={query",
           "/api/series/{id",
           "/api/episodes/{id",
-          "/playback/{id}/manifest.mpd"
+          "/playback/{id}/manifest.mpd",
+          "/api/episodes/{id}"
         ],
         "apiRecipe": null,
         "sourceRuntimeFamily": "catalogue-html-embed",
@@ -7785,11 +7736,8 @@
           "/playback/:epId/manifest.mpd",
           "/Media3",
           "/resolvers.js",
-          "/api/series?query=${encodeURIComponent(query",
           "/api/series?limit=100",
-          "/api/series/${id",
           "/api/episodes/:id).",
-          "/api/episodes/${epId",
           "/playback/subtitles/{epId}-{lang}-{full|forced}.ass",
           "/playback/subtitles/{id}--.ass",
           "/playback/{episode}/manifest.mpd",
@@ -7797,7 +7745,10 @@
           "/api/series?query={query",
           "/api/series/{id",
           "/api/episodes/{id",
-          "/playback/{id}/manifest.mpd"
+          "/playback/{id}/manifest.mpd",
+          "/api/series?query={query}",
+          "/api/series/{id}",
+          "/api/episodes/{id}"
         ],
         "routeFragments": [
           "/api/series?query=X",
@@ -7805,11 +7756,8 @@
           "/playback/:epId/manifest.mpd",
           "/Media3",
           "/resolvers.js",
-          "/api/series?query=${encodeURIComponent(query",
           "/api/series?limit=100",
-          "/api/series/${id",
           "/api/episodes/:id).",
-          "/api/episodes/${epId",
           "/playback/subtitles/{epId}-{lang}-{full|forced}.ass",
           "/playback/subtitles/{id}--.ass",
           "/playback/{episode}/manifest.mpd",
@@ -7817,7 +7765,10 @@
           "/api/series?query={query",
           "/api/series/{id",
           "/api/episodes/{id",
-          "/playback/{id}/manifest.mpd"
+          "/playback/{id}/manifest.mpd",
+          "/api/series?query={query}",
+          "/api/series/{id}",
+          "/api/episodes/{id}"
         ],
         "observedUrls": [
           "https://waveanime.fr/"
