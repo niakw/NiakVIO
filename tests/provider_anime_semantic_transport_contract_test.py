@@ -44,8 +44,8 @@ assert "def normalize_anime_transport_compatibility(" in materializer
 assert 'wanted = ["anime", "tv", "movie"]' in materializer
 
 finalizer = (ROOT / "scripts" / "finalize_gowaru_provider_v3_source_plans.py").read_text(encoding="utf-8")
-assert 'route.rstrip(";,)]")' in finalizer
-assert 'route.rstrip(";,)]}")' not in finalizer
+assert 'value = value.strip().rstrip(";,)]")' in finalizer
+assert 'value = value.strip().rstrip(";,)]}")' not in finalizer
 
 print(
     "provider anime semantic/transport contract passed "
