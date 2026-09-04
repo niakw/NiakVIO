@@ -1,0 +1,129 @@
+name: TEMP - Provider v3 Fast Yield
+
+on:
+  push:
+    branches:
+      - workbench/provider-v3-performance-playback
+    paths:
+      - ".github/triggers/provider-v3-fast-yield.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-v3-fast-yield
+  cancel-in-progress: true
+
+jobs:
+  fast-yield:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Assert TMDB runtime context
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${TMDB_API_KEY:-}" ] && [ -z "${TMDB_ACCESS_TOKEN:-}" ]; then
+            echo "TMDB credential missing from fast-yield runner" >&2
+            exit 78
+          fi
+          echo "FIELD_TMDB_FAST_YIELD state=ready credential_present=true value_redacted=true"
+
+      - name: Rebuild corrected Provider v3 candidate in runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_v3_source_plan_v4.py
+          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+          force_args=()
+          while IFS= read -r provider_id; do
+            [ -n "$provider_id" ] || continue
+            force_args+=(--force-clean-reconstruction "$provider_id")
+          done < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          for row in data.get('scrapers') or []:
+              provider_id=str(row.get('id') or '').strip()
+              if provider_id:
+                  print(provider_id)
+          PY
+          )
+          python scripts/discover_candidates.py \
+            --stage staging/provider-v3-fast-yield \
+            --clean-reconstruction \
+            "${force_args[@]}"
+          python scripts/promote_provider_v3_static_knowledge.py \
+            --stage staging/provider-v3-fast-yield \
+            --output automation/provider-v3-static-knowledge.json
+          python scripts/enrich_provider_v3_static_knowledge.py
+          python scripts/finalize_gowaru_provider_v3_source_plans.py
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_all.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_anime_semantic_transport_contract_test.py
+
+      - name: Run fast real-stream yield census
+        shell: bash
+        env:
+          NIAKVIO_QUICK_YIELD_WORKERS: "12"
+          NIAKVIO_QUICK_YIELD_TIMEOUT: "45"
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_quick_yield.py
+
+      - name: Publish fast yield summary
+        if: always()
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          from pathlib import Path
+          path=Path('provider-v3-quick-yield.json')
+          print('## Provider v3 fast yield')
+          if not path.is_file():
+              print('- report missing')
+              raise SystemExit(0)
+          data=json.loads(path.read_text(encoding='utf-8'))
+          print(f"- Providers: **{data.get('provider_count', 0)}**")
+          print(f"- Semantic executions: **{data.get('task_count', 0)}**")
+          print(f"- Returned raw streams: **{data.get('raw_provider_count', 0)} providers**")
+          print(f"- Playable media: **{data.get('playable_provider_count', 0)} providers**")
+          print(f"- Identity-verified playable media: **{data.get('verified_provider_count', 0)} providers**")
+          print('- Playable: `' + ', '.join(data.get('playable_providers') or []) + '`')
+          for kind, row in (data.get('type_summary') or {}).items():
+              print(f"- {kind}: tasks={row.get('tasks',0)} raw={row.get('raw',0)} playable={row.get('playable',0)} verified={row.get('verified',0)}")
+          PY
+
+      - name: Upload sanitized fast yield evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-v3-fast-yield-${{ github.run_id }}
+          path: provider-v3-quick-yield.json
+          retention-days: 5
+          if-no-files-found: warn
