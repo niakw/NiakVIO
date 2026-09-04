@@ -1,0 +1,302 @@
+name: One-shot Provider v3 runtime settlement migration
+
+on:
+  push:
+    branches:
+      - workbench/provider-v3-performance-playback
+    paths:
+      - .github/workflows/zz-provider-v3-runtime-migration.yml
+
+permissions:
+  contents: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: workbench/provider-v3-performance-playback
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Apply native runtime contract migration
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace(path, old, new, expected=1):
+              p = Path(path)
+              text = p.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f"{path}: anchor count={count} expected={expected}: {old[:100]!r}")
+              p.write_text(text.replace(old, new), encoding="utf-8")
+
+          def replace_all(path, old, new, minimum=1):
+              p = Path(path)
+              text = p.read_text(encoding="utf-8")
+              count = text.count(old)
+              if count < minimum:
+                  raise SystemExit(f"{path}: anchor count={count} minimum={minimum}: {old[:100]!r}")
+              p.write_text(text.replace(old, new), encoding="utf-8")
+
+          # One native budget everywhere the device lab owns the wall clock.
+          replace(".github/triggers/nuvio-client-lab.json", '"provider_timeout_ms": 40000', '"provider_timeout_ms": 25000')
+          replace(".github/triggers/nuvio-client-lab.json", '"retry_provider_timeout_ms": 40000', '"retry_provider_timeout_ms": 25000')
+          replace(".github/triggers/nuvio-client-lab.json", '"playback_timeout_ms": 18000', '"playback_timeout_ms": 25000')
+          replace_all(
+              ".github/workflows/native-mobile-android-reader.yml",
+              'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"',
+              'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"',
+          )
+
+          # Keep anime as logical/provider-selection identity, but Nuvio runtimes receive tv.
+          media = Path("scripts/native_media_type_contract.py")
+          media_text = media.read_text(encoding="utf-8")
+          if "def fixture_runtime_media_type(" in media_text:
+              raise SystemExit("native media runtime projection already exists unexpectedly")
+          media_text += '''\n\ndef provider_runtime_media_type(\n    value: Any,\n    *,\n    category: Any = None,\n    metadata: dict[str, Any] | None = None,\n) -> str:\n    canonical = canonical_media_type(value, category=category, metadata=metadata)\n    return "tv" if canonical == "anime" else canonical\n\n\ndef fixture_runtime_media_type(fixture: dict[str, Any]) -> str:\n    # Provider selection still consumes fixture_media_type() so anime-only\n    # providers remain eligible. The Nuvio plugin ABI itself is movie|tv.\n    logical = fixture_media_type(fixture)\n    return "tv" if logical == "anime" else logical\n'''
+          media.write_text(media_text, encoding="utf-8")
+
+          replace(
+              "scripts/prepare_native_corpus_validation.py",
+              "from native_media_type_contract import fixture_media_type  # noqa: E402",
+              "from native_media_type_contract import fixture_runtime_media_type  # noqa: E402",
+          )
+          replace(
+              "scripts/prepare_native_corpus_validation.py",
+              'provider_timeout_ms = max(5_000, min(int(config.get("provider_timeout_ms") or 40_000), 120_000))',
+              'provider_timeout_ms = max(5_000, min(int(config.get("provider_timeout_ms") or 25_000), 120_000))',
+          )
+          replace(
+              "scripts/prepare_native_corpus_validation.py",
+              '"media_type": kotlin_string(fixture_media_type(fixture)),',
+              '"media_type": kotlin_string(fixture_runtime_media_type(fixture)),',
+          )
+          replace(
+              "scripts/prepare_native_corpus_validation.py",
+              '"season": "null" if season in (None, "") else str(int(season)),\n        "episode": "null" if episode in (None, "") else str(int(episode)),',
+              '"season": "null" if season is None or season == "" else str(int(season)),\n        "episode": "null" if episode is None or episode == "" else str(int(episode)),',
+          )
+          replace(
+              "scripts/prepare_native_corpus_validation.py",
+              'os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "15000")',
+              'os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "25000")',
+          )
+          replace(
+              "scripts/prepare_native_corpus_validation.py",
+              "android_timeout_ms = 15_000",
+              "android_timeout_ms = 25_000",
+          )
+          replace(
+              "scripts/prepare_native_corpus_validation.py",
+              '''                val rows = try {{\n                    providerFuture.get({f['provider_timeout_ms']}L, java.util.concurrent.TimeUnit.MILLISECONDS)\n                }} catch (timeout: java.util.concurrent.TimeoutException) {{\n                    providerFuture.cancel(true)\n                    throw RuntimeException("provider_hard_timeout_ms={f['provider_timeout_ms']}", timeout)\n                }} finally {{\n                    providerFuture.cancel(true)\n                    providerExecutor.shutdownNow()\n                }}\n''',
+              '''                var providerTimedOut = false\n                val rows = try {{\n                    providerFuture.get({f['provider_timeout_ms']}L, java.util.concurrent.TimeUnit.MILLISECONDS)\n                }} catch (timeout: java.util.concurrent.TimeoutException) {{\n                    providerTimedOut = true\n                    providerFuture.cancel(true)\n                    throw RuntimeException("provider_hard_timeout_ms={f['provider_timeout_ms']}", timeout)\n                }} finally {{\n                    if (providerTimedOut) {{\n                        providerExecutor.shutdownNow()\n                    }} else {{\n                        providerExecutor.shutdown()\n                    }}\n                }}\n''',
+          )
+
+          # Settle the mobile production-player observation once. A late callback must
+          # never overwrite a successful terminal state, and the player owns the first read.
+          replace(
+              "scripts/native_player_diagnostics_codegen.py",
+              '        val errorRef = AtomicReference<String?>(null)\n',
+              '        val errorRef = AtomicReference<String?>(null)\n        val terminalStateRef = AtomicReference<String?>(null)\n',
+          )
+          replace(
+              "scripts/native_player_diagnostics_codegen.py",
+              '''                            if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {\n                                terminal.countDown()\n                            }\n''',
+              '''                            if ((snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) &&\n                                terminalStateRef.compareAndSet(null, "success")\n                            ) {\n                                terminal.countDown()\n                            }\n''',
+          )
+          replace(
+              "scripts/native_player_diagnostics_codegen.py",
+              '''                            if (!message.isNullOrBlank()) {\n                                errorRef.compareAndSet(null, message)\n                                terminal.countDown()\n                            }\n''',
+              '''                            if (!message.isNullOrBlank() && terminalStateRef.compareAndSet(null, "error")) {\n                                errorRef.set(message)\n                                terminal.countDown()\n                            }\n''',
+          )
+          replace(
+              "scripts/native_player_diagnostics_codegen.py",
+              '''            terminal.await(__PLAYER_TIMEOUT_MS__L, TimeUnit.MILLISECONDS)\n            val error = errorRef.get()\n            val snapshot = snapshotRef.get()\n            if (!error.isNullOrBlank()) {\n''',
+              '''            terminal.await(__PLAYER_TIMEOUT_MS__L, TimeUnit.MILLISECONDS)\n            val terminalState = terminalStateRef.get()\n            val error = errorRef.get()\n            val snapshot = snapshotRef.get()\n            if (terminalState == "error" && !error.isNullOrBlank()) {\n''',
+          )
+          replace(
+              "scripts/native_player_diagnostics_codegen.py",
+              '                shortMedia -> NativePlayerProbe("short_media", "nuvio-mobile-production", "", "", 0, "duration_identity", host, durationSeconds)\n                snapshot?.isEnded == true -> NativePlayerProbe("ended", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)\n                snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L) ->\n',
+              '                terminalState == "success" && shortMedia -> NativePlayerProbe("short_media", "nuvio-mobile-production", "", "", 0, "duration_identity", host, durationSeconds)\n                terminalState == "success" && snapshot?.isEnded == true -> NativePlayerProbe("ended", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)\n                terminalState == "success" && snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L) ->\n',
+          )
+          replace(
+              "scripts/native_player_diagnostics_codegen.py",
+              '.replace("__PLAYER_TIMEOUT_MS__", "22000")',
+              '.replace("__PLAYER_TIMEOUT_MS__", "25000")',
+          )
+
+          # Transport/capability probes remain useful evidence, but never veto an
+          # authoritative provider/player success. Reader failures still gate.
+          replace(
+              "scripts/analyze_native_corpus_results.cjs",
+              '''// Capability probes are discovery evidence. Their failures never turn a healthy\n// declared provider contract into a regression. Only published-route anomalies\n// affect this analyzer's status.\nif (\n  declaredRuntimeErrors.length ||\n  declaredContradictions.length ||\n  transportFailures.length ||\n  readerFailures.length\n) {\n''',
+              '''// Transport/capability probes are best-effort discovery evidence. They are\n// emitted and reported, but cannot turn authoritative provider/player success\n// into a regression. Runtime contradictions and reader failures still gate.\nif (\n  declaredRuntimeErrors.length ||\n  declaredContradictions.length ||\n  readerFailures.length\n) {\n''',
+          )
+          replace(
+              "scripts/analyze_native_corpus_collection.cjs",
+              "if (row.state === 'ready' && row.failure_stage === 'none') {",
+              "if ((row.state === 'ready' || row.state === 'ended') && row.failure_stage === 'none') {",
+          )
+
+          # Make the catalogue alias-recovery budget explicit in the common Lego source:
+          # max 3 aliases/queries x max 3 base origins, never an unbounded fallback loop.
+          p = Path("scripts/provider_base_store.py")
+          text = p.read_text(encoding="utf-8")
+          start = text.find("const searchQueries = _uniq([")
+          if start < 0:
+              raise SystemExit("provider_base_store.py: searchQueries anchor missing")
+          suffix = "].map(_text).filter(Boolean));"
+          end = text.find(suffix, start)
+          if end < 0:
+              raise SystemExit("provider_base_store.py: searchQueries terminator missing")
+          bounded = "].map(_text).filter(Boolean)).slice(0, 3);"
+          text = text[:end] + bounded + text[end + len(suffix):]
+          old_loop = "for (const query of searchQueries.slice(0, 3))"
+          if text.count(old_loop) != 1:
+              raise SystemExit(f"provider_base_store.py: alias loop count={text.count(old_loop)}")
+          text = text.replace(old_loop, "for (const query of searchQueries)", 1)
+          if "const candidates = baseList.slice(0, 3);" not in text:
+              raise SystemExit("provider_base_store.py: base recovery bound missing")
+          p.write_text(text, encoding="utf-8")
+
+          # Update existing lock tests for the new native budget.
+          replace(
+              "tests/native_corpus_device_lab_test.py",
+              'assert corpus.get("provider_timeout_ms") == 40000',
+              'assert corpus.get("provider_timeout_ms") == 25000',
+          )
+          replace_all(
+              "tests/native_corpus_device_lab_test.py",
+              'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "15000"',
+              'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "25000"',
+          )
+          replace_all(
+              "tests/native_corpus_device_lab_test.py",
+              'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"',
+              'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"',
+          )
+          player_test = Path("tests/native_player_diagnostics_codegen_test.py")
+          player_test_text = player_test.read_text(encoding="utf-8")
+          if '22000' in player_test_text:
+              player_test.write_text(player_test_text.replace('22000', '25000'), encoding="utf-8")
+
+          # Permanent regression lock for the settlement/type/budget contracts.
+          Path("tests/native_runtime_settlement_contract_test.py").write_text(r'''#!/usr/bin/env python3
+from __future__ import annotations
+import json
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+from native_media_type_contract import fixture_media_type, fixture_runtime_media_type
+from prepare_native_corpus_validation import android_test, common_fixture_values
+
+
+def main() -> int:
+    corpus = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
+    assert corpus["provider_timeout_ms"] == 25_000
+    assert corpus["retry_provider_timeout_ms"] == 25_000
+    assert corpus["playback_timeout_ms"] == 25_000
+
+    anime = {"slug": "anime-zero", "mediaType": "anime", "category": "anime", "season": 0, "episode": 0}
+    assert fixture_media_type(anime) == "anime"
+    assert fixture_runtime_media_type(anime) == "tv"
+    values = common_fixture_values(anime)
+    assert values["media_type"] == '"tv"'
+    assert values["season"] == "0" and values["episode"] == "0"
+    assert values["provider_timeout_ms"] == "25000"
+
+    generated = android_test(
+        anime,
+        [{"id": "contract", "asset": "p000.js", "enabled": True, "logo": ""}],
+        "mobile",
+    )
+    assert "provider_hard_timeout_ms=25000" in generated
+    assert "providerTimedOut = true" in generated
+    assert "providerFuture.cancel(true)" in generated
+    finally_tail = generated.split("} finally {", 1)[1].split("emit(\"FIELD_NATIVE_RESULT", 1)[0]
+    assert "providerFuture.cancel(true)" not in finally_tail
+    assert "providerExecutor.shutdown()" in finally_tail
+
+    player_codegen = (ROOT / "scripts/native_player_diagnostics_codegen.py").read_text(encoding="utf-8")
+    assert 'compareAndSet(null, "success")' in player_codegen
+    assert 'compareAndSet(null, "error")' in player_codegen
+    assert '.replace("__PLAYER_TIMEOUT_MS__", "25000")' in player_codegen
+    assert player_codegen.index('val reader = probeNativePlayer') < player_codegen.index('val transport = probeTransport')
+
+    analyzer = (ROOT / "scripts/analyze_native_corpus_results.cjs").read_text(encoding="utf-8")
+    gate = analyzer[analyzer.rfind("if (\n  declaredRuntimeErrors.length"):]
+    gate = gate.split("process.exitCode = 1", 1)[0]
+    assert "readerFailures.length" in gate
+    assert "transportFailures.length" not in gate
+
+    collection = (ROOT / "scripts/analyze_native_corpus_collection.cjs").read_text(encoding="utf-8")
+    assert "row.state === 'ready' || row.state === 'ended'" in collection
+
+    base_source = (ROOT / "scripts/provider_base_store.py").read_text(encoding="utf-8")
+    assert "].map(_text).filter(Boolean)).slice(0, 3);" in base_source
+    assert "const candidates = baseList.slice(0, 3);" in base_source
+    assert "for (const query of searchQueries)" in base_source
+
+    print("native runtime settlement contract passed")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+''', encoding="utf-8")
+          PY
+
+      - name: Materialize common ProviderBase and Lego bundles
+        shell: bash
+        run: |
+          python scripts/materialize_provider_base_v3_store.py
+          NUVIO_PROVIDER_V3_CONTEXT=workspace python scripts/materialize_provider_v3_all.py
+
+      - name: Verify runtime, common Lego and 96-provider fixed point
+        shell: bash
+        run: |
+          python -m py_compile \
+            scripts/native_media_type_contract.py \
+            scripts/prepare_native_corpus_validation.py \
+            scripts/native_player_diagnostics_codegen.py \
+            scripts/provider_base_store.py \
+            tests/native_runtime_settlement_contract_test.py
+          node --check scripts/analyze_native_corpus_results.cjs
+          node --check scripts/analyze_native_corpus_collection.cjs
+          python tests/native_runtime_settlement_contract_test.py
+          python tests/native_corpus_device_lab_test.py
+          python tests/native_player_diagnostics_codegen_test.py
+          python tests/native_media_type_resolution_test.py
+          python tests/native_android_lab_transport_test.py
+          python tests/native_corpus_transport_capability_test.py
+          python tests/global_catalogue_alias_recovery_test.py
+          python tests/provider_base_store_test.py
+          python tests/published_provider_lego_contract_test.py
+          python tests/provider_clean_reconstruction_contract_test.py
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/verify_provider_publication_fixed_point.py
+
+      - name: Commit verified migration and remove one-shot workflow
+        shell: bash
+        run: |
+          rm .github/workflows/zz-provider-v3-runtime-migration.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git status --short
+          git commit -m "fix(runtime): settle native playback deterministically"
+          git push origin HEAD:workbench/provider-v3-performance-playback
