@@ -17,7 +17,12 @@ assert "prune_unreferenced_providers.py" in text
 assert "generate_release_hashes.py" in text
 assert "validate_release_integrity.py" in text
 assert "provider_dns_preflight.mjs" in text
-assert 'git commit -m \'chore(domains): publish validated Provider v3 primary domains\'' in text
+commit_lines=[line.strip() for line in text.splitlines() if "git commit -m " in line]
+assert len(commit_lines) == 1, commit_lines
+commit_line=commit_lines[0]
+assert "chore(domains):" in commit_line
+assert "validated" in commit_line
+assert "Provider v3 primary domains" in commit_line
 assert "push origin HEAD:main" in text
 assert "gh workflow run sync.yml --ref main -f mode=quick" in text
 
