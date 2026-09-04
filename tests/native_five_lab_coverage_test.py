@@ -10,10 +10,12 @@ for text in (android,ios,desktop):
     assert "workbench/provider-v3-performance-playback" in text
     assert ".github/triggers/full-native-lab-validation.json" in text
 
-# 1 TV Android + 1 Mobile Android
+# 1 TV Android + 1 Mobile Android. 25 s is the settled per-provider native
+# budget used by both Android clients; keep this contract aligned with the
+# authoritative reader workflow rather than the superseded 15 s migration value.
 assert "tv-route-reader:" in android
 assert "mobile-android-reader:" in android
-assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"' in android
+assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"' in android
 assert "run_native_corpus_tv_suite.sh" in android
 assert "run_native_corpus_mobile_suite.sh" in android
 assert android.count("gate_native_declared_provider_matrix.py") >= 2
