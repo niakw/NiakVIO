@@ -5,11 +5,13 @@ from __future__ import annotations
 import concurrent.futures
 import json
 import os
+import re
 import subprocess
 import time
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
@@ -92,6 +94,58 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
     return tasks, providers
 
 
+def _provider_fetches(debug: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = debug.get("fetches") if isinstance(debug.get("fetches"), list) else []
+    output = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        try:
+            host = str(urlsplit(str(row.get("url") or "")).hostname or "").casefold()
+        except ValueError:
+            host = ""
+        if host == "api.themoviedb.org":
+            continue
+        output.append(row)
+    return output
+
+
+def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dict[str, Any]) -> str:
+    model = debug.get("model") if isinstance(debug.get("model"), dict) else {}
+    raw = int(probe.get("raw_stream_count") or 0)
+    if raw > 0:
+        return "provider_returned_streams"
+
+    supported = [str(v or "").casefold() for v in model.get("supported_types") or []]
+    requested = str(task.get("semantic_type") or "").casefold()
+    if supported and requested not in supported and not (requested == "tv" and "anime" in supported):
+        return "gate_type_capability"
+
+    if not bool(model.get("has_api_recipe")) and int(model.get("route_count") or 0) <= 0:
+        return "gate_runtime_plan_missing"
+
+    provider_fetches = _provider_fetches(debug)
+    if not provider_fetches:
+        family = str(model.get("source_runtime_family") or "unknown").casefold()
+        return "gate_source_family_unknown" if family == "unknown" else "provider_zero_before_provider_network"
+
+    for row in provider_fetches:
+        raw_url = str(row.get("url") or "")
+        try:
+            parsed = urlsplit(raw_url)
+            path = str(parsed.path or "")
+        except ValueError:
+            path = raw_url
+        if "api.themoviedb.org" in path.casefold() or re.search(r"^/3/(?:movie|tv)(?:/|$)", path, re.I):
+            return "source_plan_core_metadata_leak"
+
+    if any(row.get("error") for row in provider_fetches):
+        return "provider_network_exception"
+    if any(int(row.get("status") or 0) >= 400 for row in provider_fetches):
+        return "provider_network_http_error"
+    return "provider_network_zero_result"
+
+
 def run(task: dict[str, Any]) -> dict[str, Any]:
     started = time.monotonic()
     command = [
@@ -134,13 +188,14 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
     else:
         status = "no_streams"
     debug = probe.get("debug") if isinstance(probe.get("debug"), dict) else {}
+    stage = classify_debug_stage(task, probe, debug)
     return {
         **base,
         "status": status,
-        "debug_stage": str(debug.get("stage") or "unknown"),
+        "debug_stage": stage,
         "debug_model": debug.get("model"),
         "debug_fetch_count": int(debug.get("fetch_count") or 0),
-        "debug_provider_fetch_count": int(debug.get("provider_fetch_count") or 0),
+        "debug_provider_fetch_count": len(_provider_fetches(debug)),
         "debug_fetches": debug.get("fetches") or [],
         "raw": raw,
         "playable": playable,
@@ -190,8 +245,8 @@ def main() -> int:
             stage_providers[stage].append(provider)
 
     report = {
-        "schema_version": 2,
-        "environment": "node-fast-real-stream-census-with-tmdb-runtime-context-and-gate-trace",
+        "schema_version": 3,
+        "environment": "node-fast-real-stream-census-with-tmdb-runtime-context-and-fetch-derived-gate-trace",
         "provider_count": provider_count,
         "task_count": len(tasks),
         "raw_provider_count": len(raw_providers),
