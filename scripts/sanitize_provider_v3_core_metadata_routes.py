@@ -6,9 +6,9 @@ lookup and credentials belong to Core. Static extraction from upstream provider
 JavaScript can otherwise leak TMDB request fragments into provider routes and
 make the generic reader misclassify them as provider endpoints.
 
-Bare ``/3/movie|tv/...`` fragments are ambiguous in isolation, so they are only
-removed when the same provider row contains explicit TMDB transport evidence
-(host/api-key URL). This avoids deleting a legitimate provider API v3 route.
+This sanitizer also finalizes a deterministic generic runtime family when the
+static extractor left an active provider at ``unknown`` despite having enough
+strategy/route DATA to select the common ProviderBase reader safely.
 """
 from __future__ import annotations
 
@@ -31,6 +31,25 @@ TMDB_BARE_API_ROUTE_RE = re.compile(
     r"^/3/(?:\{media\}|\{type\}|movie|tv)/(?:\{tmdb(?:_?id)?\}|\d+)(?:[/?#]|$)",
     re.I,
 )
+# Exact TMDB v3 path stubs are non-executable provider DATA even after the
+# original host/expression was lost by historical static extraction.  A real
+# provider endpoint such as /api/3/tv/... is deliberately not matched.
+TMDB_CANONICAL_STUB_RE = re.compile(
+    r"^/3(?:/?$|/(?:movie|tv|find)(?:/|$))",
+    re.I,
+)
+TMDB_CREDENTIAL_TOKEN_RE = re.compile(r"(?:api_key=|tmdb_api_key|tmdb_access_token|\$\{tmdb_api_key)", re.I)
+SEARCH_ROUTE_RE = re.compile(
+    r"\{query\}|/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=|/template-php/[^?#]*fetch\.php",
+    re.I,
+)
+PLAYER_ROUTE_RE = re.compile(r"/(?:player|embed|play|watch|video)(?:[/?#.-]|$)", re.I)
+API_ROUTE_RE = re.compile(r"/(?:api|v\d+)(?:[/?#.-]|$)", re.I)
+DIRECT_ROUTE_RE = re.compile(
+    r"\{(?:tmdbid|tmdb_id|media|type)\}|(?:[?&])tmdb=|/(?:stream|streams|source|sources)(?:[/?#.-]|$)",
+    re.I,
+)
+FORM_ROUTE_RE = re.compile(r"/template-php/[^?#]*fetch\.php(?:[?#]|$)", re.I)
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -75,7 +94,16 @@ def is_explicit_tmdb_transport(value: object) -> bool:
 
 def is_tmdb_url_or_route(value: object, *, strip_bare_api_route: bool = False) -> bool:
     text = normalized(value)
+    if not text:
+        return False
     if is_explicit_tmdb_transport(text):
+        return True
+    # Historical extraction sometimes erased the TMDB host and even the final
+    # JS template expression, leaving only /3/tv/, /3/movie/, /3/find/ or /3/.
+    # Those canonical stubs are never useful executable Provider DATA.
+    if TMDB_CANONICAL_STUB_RE.match(text):
+        return True
+    if TMDB_CREDENTIAL_TOKEN_RE.search(text) and ("/3/" in text or "tmdb" in text.casefold()):
         return True
     return bool(strip_bare_api_route and TMDB_BARE_API_ROUTE_RE.search(text))
 
@@ -107,6 +135,46 @@ def assert_recipe_is_provider_owned(provider_id: str, recipe: object, *, strip_b
             )
 
 
+def derive_runtime_family(model: dict[str, Any]) -> str:
+    current = str(model.get("sourceRuntimeFamily") or "unknown").strip().casefold() or "unknown"
+    if current != "unknown":
+        return current
+    strategy = str(model.get("strategy") or "unknown").strip().casefold()
+    if strategy == "quarantined":
+        return "unknown"
+
+    routes = [str(value or "").strip() for value in model.get("routes") or [] if str(value or "").strip()]
+    joined = "\n".join(routes)
+    recipe = model.get("apiRecipe") if isinstance(model.get("apiRecipe"), dict) else None
+    has_search = bool(SEARCH_ROUTE_RE.search(joined))
+    has_player = bool(PLAYER_ROUTE_RE.search(joined))
+    has_api = bool(API_ROUTE_RE.search(joined))
+    has_direct = bool(DIRECT_ROUTE_RE.search(joined))
+    has_form = bool(FORM_ROUTE_RE.search(joined))
+
+    if has_form:
+        return "catalogue-form-html-embed" if has_player or strategy in {"mixed_embed_resolver", "iframe_player"} else "catalogue-form-html"
+    if has_search:
+        if strategy == "api_stream_resolver" or "/api/search" in joined.casefold():
+            return "catalogue-json-html-detail"
+        if has_player or strategy in {"mixed_embed_resolver", "iframe_player"}:
+            return "catalogue-html-embed"
+        return "catalogue-html"
+    if recipe:
+        return "tmdb-direct-api"
+    if strategy == "api_stream_resolver" and has_api:
+        return "tmdb-direct-api"
+    if strategy in {"mixed_embed_resolver", "iframe_player"} and routes:
+        return "catalogue-html-embed"
+    if strategy == "html_scraper" and routes:
+        return "catalogue-html"
+    if strategy == "direct_media" and routes:
+        return "tmdb-direct-api" if has_direct or has_api else "catalogue-html"
+    if strategy == "official_domain_hub" and routes:
+        return "catalogue-html"
+    return "unknown"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--knowledge", type=Path, default=DEFAULT_KNOWLEDGE)
@@ -120,6 +188,8 @@ def main() -> int:
     removed = 0
     touched = 0
     bare_route_touched = 0
+    family_derived = 0
+    unresolved_active: list[str] = []
     for provider_id, row in providers.items():
         if not isinstance(row, dict):
             continue
@@ -127,8 +197,8 @@ def main() -> int:
         model = row.get("model") if isinstance(row.get("model"), dict) else {}
         knowledge = row.get("knowledge") if isinstance(row.get("knowledge"), dict) else {}
 
-        # Correlate ambiguous /3/movie|tv fragments with explicit TMDB evidence
-        # from the same extracted provider row before deleting that evidence.
+        # Correlate ambiguous historical routes with explicit evidence, while
+        # canonical TMDB v3 stubs are always removed by clean_list().
         explicit_tmdb_evidence = any(
             is_explicit_tmdb_transport(raw)
             for raw in iter_strings({"model": model, "knowledge": knowledge})
@@ -162,6 +232,17 @@ def main() -> int:
             strip_bare_api_routes=explicit_tmdb_evidence,
         )
 
+        before_family = str(model.get("sourceRuntimeFamily") or "unknown").strip().casefold() or "unknown"
+        after_family = derive_runtime_family(model)
+        if before_family == "unknown" and after_family != "unknown":
+            model["sourceRuntimeFamily"] = after_family
+            if str(knowledge.get("runtimeFamily") or "unknown").strip().casefold() == "unknown":
+                knowledge["runtimeFamily"] = after_family
+            family_derived += 1
+        strategy = str(model.get("strategy") or "unknown").strip().casefold()
+        if strategy != "quarantined" and str(model.get("sourceRuntimeFamily") or "unknown").strip().casefold() == "unknown":
+            unresolved_active.append(provider_id)
+
         row["model"] = model
         row["knowledge"] = knowledge
         if local_removed:
@@ -170,14 +251,22 @@ def main() -> int:
         if explicit_tmdb_evidence and bare_before:
             bare_route_touched += 1
 
+    if unresolved_active:
+        raise AssertionError(
+            "active Provider DATA still has unknown sourceRuntimeFamily: "
+            + ",".join(sorted(unresolved_active))
+        )
+
     payload["coreMetadataTransportSanitized"] = True
     payload["coreMetadataTransportOwner"] = "core"
-    payload["coreMetadataBareRoutePolicy"] = "strip-only-with-explicit-tmdb-evidence"
+    payload["coreMetadataBareRoutePolicy"] = "canonical-tmdb-v3-stubs-always-strip"
+    payload["runtimeFamilyFinalized"] = True
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "PROVIDER_V3_CORE_METADATA_ROUTE_SANITIZE_OK "
         f"providers={len(providers)} touched={touched} removed={removed} "
-        f"bare_route_touched={bare_route_touched} tmdb_owner=core"
+        f"bare_route_touched={bare_route_touched} family_derived={family_derived} "
+        "active_unknown=0 tmdb_owner=core"
     )
     return 0
 
