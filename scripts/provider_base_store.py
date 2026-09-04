@@ -827,9 +827,12 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode, bases) {
 function _routeKind(route) {
   const value = _text(route).toLowerCase();
   if (!value || /\/(?:track|report|warm|dead|working|ad-link|fp)(?:[/?#]|$)/i.test(value)) return "ignore";
+  // Search semantics are more specific than a generic /api prefix. A route
+  // such as /api?m=search&q={query} must carry Core title metadata instead of
+  // falling into _apiUrls(), where title is intentionally empty for ID routes.
+  if (/\/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=/i.test(value)) return "search";
   if (/\/(?:api)(?:[./?#]|$)/i.test(value)) return "api";
   if (/\/(?:player|embed|play)(?:[/?#]|$)/i.test(value)) return "player";
-  if (/\/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=/i.test(value)) return "search";
   if (/\{(?:tmdb_?id|id|slug|title)\}/i.test(value) || /\/(?:title|movie|film|series|tv|show|watch|media)(?:[/?#]|$)/i.test(value)) return "detail";
   return "ignore";
 }
