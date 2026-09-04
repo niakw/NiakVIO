@@ -77,16 +77,16 @@
         "tv"
       ],
       "manifest_overrides": {},
-      "official_site": "https://purstream.id",
-      "official_api": "https://api.purstream.id/api/v1",
+      "official_site": "https://purstream.ad",
+      "official_api": "https://purstream.ad/api",
       "fixed_endpoint": {
         "resolver_function": "detectPurstreamDomain",
-        "api": "https://api.purstream.id/api/v1",
-        "referer": "https://purstream.id/"
+        "api": "https://purstream.ad/api",
+        "referer": "https://purstream.ad/"
       },
       "api_recipe": {
-        "base": "https://api.purstream.id/api/v1",
-        "referer": "https://purstream.id/",
+        "base": "https://purstream.ad/api",
+        "referer": "https://purstream.ad/",
         "searchRoute": "/search-bar/search/{query}",
         "movieRoute": "/stream/{id}",
         "episodeRoute": "/stream/{id}/episode?season={season}&episode={episode}",
@@ -127,6 +127,26 @@
         "api.purstream.art": "api.purstream.id",
         "api.purstream.club": "api.purstream.id",
         "api.purstream.wiki": "api.purstream.id"
+      },
+      "replacements": {
+        "purstream.art": "purstream.ad",
+        "purstream.club": "purstream.ad",
+        "purstream.wiki": "purstream.ad",
+        "api.purstream.art": "purstream.ad",
+        "api.purstream.club": "purstream.ad",
+        "api.purstream.wiki": "purstream.ad",
+        "purstream.id": "purstream.ad",
+        "api.purstream.id": "purstream.ad"
+      },
+      "runtime_domain_replacements": {
+        "purstream.art": "purstream.ad",
+        "purstream.club": "purstream.ad",
+        "purstream.wiki": "purstream.ad",
+        "api.purstream.art": "purstream.ad",
+        "api.purstream.club": "purstream.ad",
+        "api.purstream.wiki": "purstream.ad",
+        "purstream.id": "purstream.ad",
+        "api.purstream.id": "purstream.ad"
       }
     },
     "flemmix": {
@@ -137,10 +157,10 @@
         "Cloudflare/browser verification is not by itself provider-unreachable; final activation remains governed by runtime media proof."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://flemmix.men",
+      "official_site": "https://flemmix.kim",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://flemmix.men/favicon.ico"
+        "logo": "https://flemmix.kim/favicon.ico"
       },
       "published_types": [
         "movie",
@@ -183,6 +203,32 @@
         "flemmix.prof": "flemmix.men",
         "wiflix.re": "flemmix.men",
         "flemmix.cafe": "flemmix.men"
+      },
+      "replacements": {
+        "flemmix.casa": "flemmix.kim",
+        "flemmix.garden": "flemmix.kim",
+        "flemmix.gold": "flemmix.kim",
+        "flemmix.me": "flemmix.kim",
+        "flemmix.menn": "flemmix.kim",
+        "flemmix.voto": "flemmix.kim",
+        "wiflix-hd.vip": "flemmix.kim",
+        "wiflix.name": "flemmix.kim",
+        "ww1.wiflix-adresses.fun": "flemmix.kim",
+        "ww547.wiflix-hd.vip": "flemmix.kim",
+        "flemmix.men": "flemmix.kim"
+      },
+      "runtime_domain_replacements": {
+        "flemmix.casa": "flemmix.kim",
+        "flemmix.garden": "flemmix.kim",
+        "flemmix.gold": "flemmix.kim",
+        "flemmix.me": "flemmix.kim",
+        "flemmix.menn": "flemmix.kim",
+        "flemmix.voto": "flemmix.kim",
+        "wiflix-hd.vip": "flemmix.kim",
+        "wiflix.name": "flemmix.kim",
+        "ww1.wiflix-adresses.fun": "flemmix.kim",
+        "ww547.wiflix-hd.vip": "flemmix.kim",
+        "flemmix.men": "flemmix.kim"
       }
     },
     "uhdmovies": {
@@ -1595,13 +1641,13 @@
         "Historical Revenant S01E01 duration mismatch remains regression evidence, not a permanent provider quarantine."
       ],
       "manifest_overrides": {
-        "logo": "https://fs16.lol/favicon.ico",
+        "logo": "https://fs23.lol/favicon.ico",
         "supportsExternalPlayer": false,
         "enabled": false
       },
       "capability": "mixed_embed_resolver",
       "official_hub": "https://fstream.website/",
-      "official_site": "https://fs16.lol",
+      "official_site": "https://fs23.lol",
       "published_types": [
         "movie",
         "tv",
@@ -1624,7 +1670,12 @@
           "min_vod_duration_seconds": 60
         }
       },
-      "domain_substitutions": {},
+      "domain_substitutions": {
+        "french-stream.one": "fs16.lol",
+        "frenchstream.food": "fs16.lol",
+        "fs03.lol": "fs16.lol",
+        "fs09.lol": "fs16.lol"
+      },
       "capability_promotion": {
         "reason": "official_hub_recovered",
         "evidence": [
@@ -1641,6 +1692,20 @@
           }
         },
         "activation_policy": "remain_disabled_until_native_reader_acceptance"
+      },
+      "replacements": {
+        "french-stream.one": "fs23.lol",
+        "frenchstream.food": "fs23.lol",
+        "fs03.lol": "fs23.lol",
+        "fs09.lol": "fs23.lol",
+        "fs16.lol": "fs23.lol"
+      },
+      "runtime_domain_replacements": {
+        "french-stream.one": "fs23.lol",
+        "frenchstream.food": "fs23.lol",
+        "fs03.lol": "fs23.lol",
+        "fs09.lol": "fs23.lol",
+        "fs16.lol": "fs23.lol"
       }
     },
     "fullanime": {
