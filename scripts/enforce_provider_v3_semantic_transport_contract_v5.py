@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from harden_stream_presentation_metadata_fallbacks import main as harden_stream_presentation_metadata
 from remove_embedded_tmdb_runtime_key_contract import main as remove_embedded_tmdb_runtime_key
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -129,13 +130,7 @@ def patch_materializer() -> bool:
 
 
 def patch_runtime_regression_expectations() -> bool:
-    """Validate the current test contract; never rewrite tests from a migration.
-
-    Older revisions inserted test blocks by brittle literal anchors. That made a
-    legitimate test refactor fail reconstruction before Provider DATA could even
-    be materialized. The regression suite is now source-controlled directly.
-    This enforcer only verifies durable invariants that matter to runtime.
-    """
+    """Validate the current test contract; never rewrite tests from a migration."""
     path = ROOT / "tests" / "global_media_type_resolution_test.py"
     text = path.read_text(encoding="utf-8")
     required = (
@@ -183,8 +178,10 @@ def normalize_manifest() -> int:
 
 def main() -> int:
     runtime_key_removed = remove_embedded_tmdb_runtime_key() == 0
+    presentation_hardened = harden_stream_presentation_metadata() == 0
     changes = {
         "tmdb_runtime_key_removed": runtime_key_removed,
+        "stream_presentation_metadata_hardened": presentation_hardened,
         "gowaru_route_tail": patch_gowaru_route_normalizer(),
         "core_anime_transport": patch_media_transport(),
         "materializer_anime_compat": patch_materializer(),
