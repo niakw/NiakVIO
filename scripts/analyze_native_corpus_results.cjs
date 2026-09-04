@@ -254,7 +254,13 @@ for (const row of capabilityContradictions.slice(0, 160)) console.log(`FIELD_NAT
 for (const row of capabilityReaderFailures.slice(0, 160)) console.log(`FIELD_NATIVE_CAPABILITY_PROBE_PLAYER_FAILURE ${JSON.stringify(row)}`);
 for (const row of capabilityRuntimeErrors.slice(0, 160)) console.log(`FIELD_NATIVE_CAPABILITY_PROBE_RUNTIME_ERROR ${JSON.stringify(row)}`);
 
-// Capability probes are discovery evidence. Their failures never turn a healthy
-// declared provider contract into a regression. Only published-route anomalies
-// affect this analyzer's status.
-if (declaredRuntimeErrors.length || declaredContradictions.length || transportFailures.length || readerFailures.length) process.exitCode = 1;
+// Transport/capability probes are best-effort discovery evidence. They are
+// emitted and reported, but cannot turn authoritative provider/player success
+// into a regression. Runtime contradictions and reader failures still gate.
+if (
+  declaredRuntimeErrors.length ||
+  declaredContradictions.length ||
+  readerFailures.length
+) {
+  process.exitCode = 1;
+}

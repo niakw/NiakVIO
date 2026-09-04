@@ -42,7 +42,7 @@ assert "function baseUrl()" in patched
 assert "https://catalog.example" not in patched
 
 assert "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2" in patched
-assert '"implementationRevision":"authoritative-recovery-v12-html-scanner"' in patched
+assert '"implementationRevision":"authoritative-recovery-v13-positive-output-only"' in patched
 assert "function providerDeadline()" in patched
 assert "function workDeadline()" in patched
 assert "__nuvioProviderDeadlineMs" in patched

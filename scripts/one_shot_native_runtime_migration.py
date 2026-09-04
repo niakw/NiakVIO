@@ -117,8 +117,8 @@ def main() -> int:
     )
     replace(
         "scripts/analyze_native_corpus_collection.cjs",
-        "if (row.state === 'ready' && row.failure_stage === 'none') {",
-        "if ((row.state === 'ready' || row.state === 'ended') && row.failure_stage === 'none') {",
+        "if (state === 'ready' && (failureStage === 'none' || failureStage === '')) {",
+        "if ((state === 'ready' || state === 'ended') && (failureStage === 'none' || failureStage === '')) {",
     )
 
     # Explicitly bound common catalogue alias recovery: 3 queries x 3 base origins.

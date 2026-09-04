@@ -116,3 +116,20 @@ def fixture_media_type(fixture: dict[str, Any]) -> str:
         category=fixture.get("category"),
         metadata=metadata if isinstance(metadata, dict) else fixture,
     )
+
+
+def provider_runtime_media_type(
+    value: Any,
+    *,
+    category: Any = None,
+    metadata: dict[str, Any] | None = None,
+) -> str:
+    canonical = canonical_media_type(value, category=category, metadata=metadata)
+    return "tv" if canonical == "anime" else canonical
+
+
+def fixture_runtime_media_type(fixture: dict[str, Any]) -> str:
+    # Provider selection still consumes fixture_media_type() so anime-only
+    # providers remain eligible. The Nuvio plugin ABI itself is movie|tv.
+    logical = fixture_media_type(fixture)
+    return "tv" if logical == "anime" else logical

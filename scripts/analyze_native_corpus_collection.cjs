@@ -72,7 +72,7 @@ for (const log of logs) {
       playerTerminals.get(key).add(playerKey);
       const state = String(f.state || 'unknown').toLowerCase();
       const failureStage = String(f.failure_stage || 'none').toLowerCase();
-      if (state === 'ready' && (failureStage === 'none' || failureStage === '')) {
+      if ((state === 'ready' || state === 'ended') && (failureStage === 'none' || failureStage === '')) {
         if (!mediaVerified.has(key)) mediaVerified.set(key, new Set());
         mediaVerified.get(key).add(playerKey);
       }

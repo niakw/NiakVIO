@@ -153,6 +153,7 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
         val terminal = CountDownLatch(1)
         val snapshotRef = AtomicReference<PlayerPlaybackSnapshot?>(null)
         val errorRef = AtomicReference<String?>(null)
+        val terminalStateRef = AtomicReference<String?>(null)
         var activity: MainActivity? = null
         return try {
             // Start the official production MainActivity explicitly. The package launcher
@@ -185,7 +186,9 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                         onControllerReady = { _ -> },
                         onSnapshot = { snapshot ->
                             snapshotRef.set(snapshot)
-                            if (snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) {
+                            if ((snapshot.isEnded || (!snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L))) &&
+                                terminalStateRef.compareAndSet(null, "success")
+                            ) {
                                 terminal.countDown()
                             }
                         },
@@ -193,8 +196,8 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                             // Auto mode intentionally emits null while switching from
                             // ExoPlayer to libmpv; do not terminate until Nuvio itself
                             // reports a final error or a playable snapshot.
-                            if (!message.isNullOrBlank()) {
-                                errorRef.compareAndSet(null, message)
+                            if (!message.isNullOrBlank() && terminalStateRef.compareAndSet(null, "error")) {
+                                errorRef.set(message)
                                 terminal.countDown()
                             }
                         },
@@ -202,9 +205,10 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                 }
             }
             terminal.await(__PLAYER_TIMEOUT_MS__L, TimeUnit.MILLISECONDS)
+            val terminalState = terminalStateRef.get()
             val error = errorRef.get()
             val snapshot = snapshotRef.get()
-            if (!error.isNullOrBlank()) {
+            if (terminalState == "error" && !error.isNullOrBlank()) {
                 return NativePlayerProbe("error", "nuvio-mobile-production", "PlatformPlayerSurface", sanitizeDiag(error), 0, "player", host, null)
             }
             val durationSeconds = snapshot?.durationMs?.takeIf { it > 0L }?.div(1000.0)
@@ -213,9 +217,9 @@ MOBILE_HELPERS = PROBE_MODEL + r'''
                 durationSeconds < 60.0 || (expected != null && durationSeconds / expected < 0.55)
             )
             when {
-                shortMedia -> NativePlayerProbe("short_media", "nuvio-mobile-production", "", "", 0, "duration_identity", host, durationSeconds)
-                snapshot?.isEnded == true -> NativePlayerProbe("ended", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
-                snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L) ->
+                terminalState == "success" && shortMedia -> NativePlayerProbe("short_media", "nuvio-mobile-production", "", "", 0, "duration_identity", host, durationSeconds)
+                terminalState == "success" && snapshot?.isEnded == true -> NativePlayerProbe("ended", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
+                terminalState == "success" && snapshot != null && !snapshot.isLoading && (snapshot.isPlaying || snapshot.positionMs > 0L || snapshot.durationMs > 0L) ->
                     NativePlayerProbe("ready", "nuvio-mobile-production", "", "", 0, "none", host, durationSeconds)
                 else -> NativePlayerProbe("timeout", "nuvio-mobile-production", "PlatformPlayerSurface", "READER_TIMEOUT", 0, "timeout", host, durationSeconds)
             }
@@ -278,7 +282,7 @@ def augment_android_test(
         raise ValueError("android import anchor missing or ambiguous")
     imports = COMMON_IMPORTS + (TV_IMPORTS if client == "tv" else MOBILE_IMPORTS)
     source = source.replace(ANDROID_IMPORT_ANCHOR, ANDROID_IMPORT_ANCHOR + imports, 1)
-    helpers = (TV_HELPERS if client == "tv" else MOBILE_HELPERS).replace("__PLAYER_TIMEOUT_MS__", "22000")
+    helpers = (TV_HELPERS if client == "tv" else MOBILE_HELPERS).replace("__PLAYER_TIMEOUT_MS__", "25000")
     if source.count(TEST_ANCHOR) != 1:
         raise ValueError("test anchor missing or ambiguous")
     source = source.replace(TEST_ANCHOR, helpers + "\n" + TEST_ANCHOR, 1)

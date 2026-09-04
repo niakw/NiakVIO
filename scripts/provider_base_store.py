@@ -1390,7 +1390,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
   const searchQueries = _uniq([
     meta && meta.title,
     ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])
-  ].map(_text).filter(Boolean));
+  ].map(_text).filter(Boolean)).slice(0, 3);
 
   let statusFallbackBlocked = false;
   async function findProvider(baseList) {
@@ -1401,7 +1401,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
         .filter(value => Number.isFinite(value))
     );
     const candidates = baseList.slice(0, 3);
-    for (const query of searchQueries.slice(0, 3)) {
+    for (const query of searchQueries) {
       values.query = query;
       for (const base of candidates) {
         if (blockedBases.has(base)) continue;
