@@ -909,8 +909,18 @@ async function _tmdb(tmdbId, mediaType) {
   try {
     const cache = typeof globalThis !== "undefined" ? globalThis.__nuvioTmdbMetadataCacheV1 : null;
     const cached = cache && cache[identity];
-    if (cached && typeof cached.then !== "function") {
-      const row = cached.metadata && typeof cached.metadata === "object" ? cached.metadata : cached;
+    if (cached) {
+      const settled = typeof cached.then === "function" ? await cached : cached;
+      const row = settled && settled.metadata && typeof settled.metadata === "object" ? settled.metadata : settled;
+      const projected = project(row);
+      if (projected) return projected;
+    }
+  } catch (_) {}
+  try {
+    const getTmdbData = typeof globalThis !== "undefined" ? globalThis.__nuvioCoreGetTmdbDataV1 : null;
+    if (typeof getTmdbData === "function") {
+      const result = await getTmdbData({ tmdbId: String(tmdbId), mediaType: type, tmdbNamespace: type });
+      const row = result && result.metadata && typeof result.metadata === "object" ? result.metadata : null;
       const projected = project(row);
       if (projected) return projected;
     }
