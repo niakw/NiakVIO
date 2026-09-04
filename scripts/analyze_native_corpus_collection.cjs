@@ -20,7 +20,9 @@ const starts = new Map();
 const ends = new Set();
 const observed = new Map();
 const executed = new Map();
+const positive = new Map();
 const mediaVerified = new Map();
+const playerTerminals = new Map();
 const clients = new Set();
 let readableLogs = 0;
 let hasCapabilityProbe = false;
@@ -54,14 +56,26 @@ for (const log of logs) {
         if (!executed.has(key)) executed.set(key, new Set());
         const provider = f.provider64 || f.provider || '<unknown>';
         const requestType = String(f.request_type || 'unknown').toLowerCase();
-        executed.get(key).add(`${provider}\u0000${requestType}`);
+        const route = `${provider}\u0000${requestType}`;
+        executed.get(key).add(route);
+        if (line.startsWith('FIELD_NATIVE_RESULT ') && Number(f.count || 0) > 0) {
+          if (!positive.has(key)) positive.set(key, new Set());
+          positive.get(key).add(route);
+        }
       }
     } else if (line.startsWith('FIELD_NATIVE_PLAYER ')) {
-      if (!mediaVerified.has(key)) mediaVerified.set(key, new Set());
+      if (!playerTerminals.has(key)) playerTerminals.set(key, new Set());
       const provider = f.provider64 || f.provider || '<unknown>';
       const requestType = String(f.request_type || 'unknown').toLowerCase();
       const index = Number(f.index || 0);
-      mediaVerified.get(key).add(`${provider}\u0000${requestType}\u0000${index}`);
+      const playerKey = `${provider}\u0000${requestType}\u0000${index}`;
+      playerTerminals.get(key).add(playerKey);
+      const state = String(f.state || 'unknown').toLowerCase();
+      const failureStage = String(f.failure_stage || 'none').toLowerCase();
+      if (state === 'ready' && (failureStage === 'none' || failureStage === '')) {
+        if (!mediaVerified.has(key)) mediaVerified.set(key, new Set());
+        mediaVerified.get(key).add(playerKey);
+      }
     }
   }
 }
@@ -71,22 +85,36 @@ if (readableLogs === 0) problems.push('no_readable_log');
 if (starts.size === 0) problems.push('missing_begin_marker');
 let providersObservedCount = 0;
 let executionCount = 0;
+let positiveResultCount = 0;
+let positiveProviderCount = 0;
+let playerTerminalCount = 0;
 let mediaVerifiedCount = 0;
 for (const [key, expected] of starts) {
   if (!ends.has(key)) problems.push(`missing_end:${safeKey(key)}`);
   const count = observed.get(key)?.size || 0;
   const scopeExecutions = executed.get(key) || new Set();
   const scopeProviders = new Set([...scopeExecutions].map((value) => value.split('\u0000')[0]).filter(Boolean));
+  const scopePositive = positive.get(key) || new Set();
+  const scopePositiveProviders = new Set([...scopePositive].map((value) => value.split('\u0000')[0]).filter(Boolean));
+  const scopePlayerTerminals = playerTerminals.get(key)?.size || 0;
   const scopeMediaVerified = mediaVerified.get(key)?.size || 0;
   providersObservedCount += scopeProviders.size;
   executionCount += scopeExecutions.size;
+  positiveResultCount += scopePositive.size;
+  positiveProviderCount += scopePositiveProviders.size;
+  playerTerminalCount += scopePlayerTerminals;
   mediaVerifiedCount += scopeMediaVerified;
   if (expected <= 0) problems.push(`invalid_expected_provider_count:${safeKey(key)}`);
   else if (count < expected) problems.push(`incomplete_provider_traversal:${safeKey(key)}:${count}/${expected}`);
   if (scopeProviders.size === 0) problems.push(`zero_providers_observed:${safeKey(key)}`);
   if (scopeExecutions.size === 0) problems.push(`zero_provider_executions:${safeKey(key)}`);
+  if (scopePositive.size === 0) problems.push(`zero_positive_provider_results:${safeKey(key)}`);
+  if (scopePlayerTerminals === 0) problems.push(`zero_player_terminals:${safeKey(key)}`);
   if (scopeMediaVerified === 0) problems.push(`zero_media_verified:${safeKey(key)}`);
 }
+
+const anomalyStatus = Number.isInteger(child.status) ? child.status : 1;
+if (anomalyStatus !== 0) problems.push(`native_result_analyzer_failed:${anomalyStatus}`);
 
 // Media-type discovery is Brain evidence, not a provider repair. Run it only when
 // the generated corpus actually exercised an undeclared tv/anime capability.
@@ -105,19 +133,18 @@ if (hasCapabilityProbe && problems.length === 0) {
   else console.log(`FIELD_NATIVE_MEDIA_CAPABILITY_ARTIFACT client=${client} fixture=${fixture} path=${output}`);
 }
 
-const anomalyStatus = Number.isInteger(child.status) ? child.status : 1;
 const complete = problems.length === 0;
 console.log(
   `FIELD_NATIVE_CORPUS_COLLECTION_GATE fixture=${fixture} complete=${complete} ` +
   `analyzer_status=${anomalyStatus} capability_probe=${hasCapabilityProbe} providers_observed=${providersObservedCount} ` +
-  `executions=${executionCount} media_verified=${mediaVerifiedCount} problems=${problems.length}`
+  `executions=${executionCount} positive_results=${positiveResultCount} positive_providers=${positiveProviderCount} ` +
+  `player_terminals=${playerTerminalCount} media_verified=${mediaVerifiedCount} problems=${problems.length}`
 );
 for (const problem of problems) console.log(`FIELD_NATIVE_CORPUS_INFRA_ERROR ${problem}`);
 
-// Provider/runtime anomalies and intentionally skipped incompatible routes are
-// evidence, not lab infrastructure failure. Only an incomplete corpus/evidence
-// chain fails this gate. A corpus with zero provider execution or zero native
-// player terminal is not evidence and must never reach the Brain as complete.
+// Traversal is not functionality. ERROR/SKIPPED/RESULT count=0 prove that a route
+// was visited, but they never prove a provider or the native player works. The
+// lower-level analyzer is authoritative for runtime/transport/player anomalies.
 process.exitCode = complete ? 0 : 2;
 
 function fields(line) {
