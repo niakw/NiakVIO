@@ -56,9 +56,13 @@ export function classifySystemicExtraction(resultRows = []) {
       return peers && [...peers].some((client) => client !== currentClient);
     }).map((row) => text(row.provider)).filter(Boolean))];
 
-    const systemic = providers.length >= SYSTEMIC_EXTRACTION_MIN_PROVIDERS
-      || (providers.length >= SYSTEMIC_EXTRACTION_MIN_WITH_HEALTHY_PEERS
-        && healthyPeerProviders.length >= SYSTEMIC_EXTRACTION_MIN_WITH_HEALTHY_PEERS);
+    // Multiple zero-stream providers on one client are only correlation: they can
+    // all be independently broken upstream. Promote the group to client/runtime
+    // drift only when the same provider routes are demonstrably healthy on an
+    // independent client. Explicit runtime errors are handled separately by the
+    // native-reader runtime sentinel and therefore do not need to be inferred here.
+    const systemic = providers.length >= SYSTEMIC_EXTRACTION_MIN_WITH_HEALTHY_PEERS
+      && healthyPeerProviders.length >= SYSTEMIC_EXTRACTION_MIN_WITH_HEALTHY_PEERS;
     if (!systemic) continue;
 
     for (const row of rows) systemicExecutionKeys.add(extractionExecutionKey(row));
@@ -76,7 +80,7 @@ export function classifySystemicExtraction(resultRows = []) {
       layer: 'core_runtime_compat',
       providerMutationEligible: false,
       coreOrManifestProposalAllowed: true,
-      confidence: healthyPeerProviders.length >= SYSTEMIC_EXTRACTION_MIN_WITH_HEALTHY_PEERS ? 'confirmed_by_healthy_peers' : 'correlated_multi_provider',
+      confidence: 'confirmed_by_healthy_peers',
     });
   }
 
