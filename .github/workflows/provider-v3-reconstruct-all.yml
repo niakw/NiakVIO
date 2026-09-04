@@ -44,6 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/upgrade_provider_v3_source_plan_v4.py
+          python scripts/upgrade_provider_base_runtime_v5.py
       - name: Enforce anime semantic and TV/movie transport contract
         run: |
           set -euo pipefail
