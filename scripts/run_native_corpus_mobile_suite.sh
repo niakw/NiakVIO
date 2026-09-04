@@ -94,7 +94,7 @@ echo "FIELD_NATIVE_MOBILE_APP_INSTALLED package=com.nuviodebug.com variant=fullD
 
 mkdir -p "$EVIDENCE_ROOT"
 echo "Resolved NuvioMobile task once for corpus suite: $MOBILE_TASK"
-echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES reader_outcome=observational reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
+echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES reader_outcome=observational reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true live_logcat=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 
 for fixture in "${FIXTURES[@]}"; do
   echo "===== MOBILE CORPUS FIXTURE: $fixture ====="
@@ -114,10 +114,13 @@ for fixture in "${FIXTURES[@]}"; do
 
   FRONT_DIR="${EVIDENCE_ROOT}/${fixture}"
   FRONT_LOG="${WORKSPACE}/mobile-native-frontend-${fixture}.log"
+  LOG="${WORKSPACE}/mobile-native-corpus-${fixture}.log"
   mkdir -p "$FRONT_DIR"
-  rm -f "$FRONT_LOG"
+  rm -f "$FRONT_LOG" "$LOG"
   adb logcat -c || true
-  bash "$FRONTEND_WATCHER" mobile "$FRONT_DIR" "$FRONTEND_CAPTURE" > "$FRONT_LOG" 2>&1 &
+  adb logcat -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' > >(tee "$LOG") 2>&1 &
+  LOGCAT_PID=$!
+  bash "$FRONTEND_WATCHER" mobile "$FRONT_DIR" "$FRONTEND_CAPTURE" > >(tee "$FRONT_LOG") 2>&1 &
   WATCH_PID=$!
 
   RUNTIME_STATUS=0
@@ -125,12 +128,11 @@ for fixture in "${FIXTURES[@]}"; do
   sleep 1
   kill "$WATCH_PID" 2>/dev/null || true
   wait "$WATCH_PID" 2>/dev/null || true
+  kill "$LOGCAT_PID" 2>/dev/null || true
+  wait "$LOGCAT_PID" 2>/dev/null || true
 
-  LOG="${WORKSPACE}/mobile-native-corpus-${fixture}.log"
-  adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' > "$LOG" || true
-  echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=mobile" >> "$LOG"
+  echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=mobile" | tee -a "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
-  cat "$LOG" || true
 
   ANALYSIS_STATUS=0
   node "$ANALYZER" "$fixture" "$LOG" || ANALYSIS_STATUS=$?
