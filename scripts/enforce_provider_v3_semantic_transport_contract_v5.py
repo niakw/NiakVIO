@@ -8,7 +8,8 @@ both TV and movie transport. Authoritative TMDB metadata is still required to
 prove that a TV/movie work is anime before the semantic gate lets it through.
 
 This migration is deliberately idempotent. It patches NiakVIO-owned source,
-normalizes the current manifest, and then becomes a no-op on later rebuilds.
+normalizes the current manifest, and validates runtime regression expectations
+without rewriting the test suite.
 """
 from __future__ import annotations
 
@@ -126,78 +127,29 @@ def patch_materializer() -> bool:
 
 
 def patch_runtime_regression_expectations() -> bool:
+    """Validate the current test contract; never rewrite tests from a migration.
+
+    Older revisions inserted test blocks by brittle literal anchors. That made a
+    legitimate test refactor fail reconstruction before Provider DATA could even
+    be materialized. The regression suite is now source-controlled directly.
+    This enforcer only verifies durable invariants that matter to runtime.
+    """
     path = ROOT / "tests" / "global_media_type_resolution_test.py"
     text = path.read_text(encoding="utf-8")
-    changed = False
-
-    replacements = (
-        (
-            "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='anime'",
-            "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='tv'",
-        ),
-        (
-            'value[0].mediaType!=="anime"||value[0].degraded!==true',
-            'value[0].mediaType!=="tv"||value[0].degraded!==true',
-        ),
-        (
-            'throw new Error("Anime-only provider must preserve anime transport on metadata outage")',
-            'throw new Error("Anime-only series fallback must preserve TV transport on metadata outage")',
-        ),
-        (
-            'assert \'"revision":"tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile"\' in default_budget',
-            'assert \'"revision":"tmdb-data-contract-launch-gate-v27-anime-semantic-transport"\' in default_budget',
-        ),
-    )
-    for old, new in replacements:
-        if old in text:
-            text = text.replace(old, new, 1)
-            changed = True
-
-    movie_marker = "anime movie semantic/transport split failed"
-    if movie_marker not in text:
-        anchor = 'anime_only = mod.apply(BASE, options={"semantic_types": ["anime"]})\n'
-        if text.count(anchor) != 1:
-            raise AssertionError("anime-only runtime test anchor drifted")
-        block = r'''# Anime is a semantic catalogue family. An animated TMDB movie must therefore
-# launch an anime-only provider through the real movie namespace rather than
-# being filtered out by client/provider capability plumbing.
-anime_movie = mod.apply(BASE, options={"semantic_types": ["anime"]})
-run_case(anime_movie, r"""
-let calls=0;
-global.fetch=async(url)=>{
-  calls++;
-  if(!String(url).includes('/movie/900001?'))throw new Error('unexpected TMDB endpoint '+url);
-  return{ok:true,status:200,json:async()=>({
-    id:900001,title:'Synthetic Anime Movie',genres:[{id:16,name:'Animation'}],
-    original_language:'ja',production_countries:[{iso_3166_1:'JP'}],keywords:{keywords:[{name:'anime'}]}
-  })};
-};
-const provider=require(process.argv[2]);
-(async()=>{
-  const value=await provider.getStreams('900001','movie',null,null);
-  if(!Array.isArray(value)||!value.length)throw new Error('anime movie result lost');
-  if(value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='movie')
-    throw new Error('anime movie semantic/transport split failed: '+JSON.stringify(value));
-  if(calls!==1)throw new Error('anime movie must be TMDB-verified exactly once');
-})().catch(e=>{console.error(e);process.exit(1)});
-""")
-
-'''
-        text = text.replace(anchor, block + anchor, 1)
-        changed = True
-
     required = (
-        "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='tv'",
-        'value[0].mediaType!=="tv"||value[0].degraded!==true',
-        '"revision":"tmdb-data-contract-launch-gate-v27-anime-semantic-transport"',
-        movie_marker,
+        "global.TMDB_API_KEY='0123456789abcdef0123456789abcdef'",
+        "anime semantic/TV transport split failed",
+        "non-launch must return []",
+        "zero output caused TMDB work",
+        "TV-only provider leaked anime",
+        "TV fail-open fallback failed",
+        "'\"tmdbKeyCipher\":' not in mixed",
+        "'\"tmdbKeySalt\":' not in mixed",
     )
     for needle in required:
         if needle not in text:
-            raise AssertionError(f"missing anime semantic/transport runtime assertion: {needle}")
-
-    path.write_text(text, encoding="utf-8")
-    return changed
+            raise AssertionError(f"missing current media runtime assertion: {needle}")
+    return False
 
 
 def normalize_manifest() -> int:
