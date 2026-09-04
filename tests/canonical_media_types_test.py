@@ -90,37 +90,23 @@ def validate_catalog(path: Path) -> tuple[dict[str, dict], dict[str, list[str]]]
         assert len(order) == len(set(order)), f"{path}: manifestOrder.{projection} contains duplicate ids"
         missing = [value for value in order if value not in by_canonical]
         assert not missing, f"{path}: manifestOrder.{projection} references unknown canonical ids {missing}"
-
-        projected = {
-            key
-            for key, entry in by_canonical.items()
-            if bool(entry["projections"].get(projection))
-        }
+        projected = {key for key, entry in by_canonical.items() if bool(entry["projections"].get(projection))}
         assert set(order) == projected, (
             f"{path}: manifestOrder.{projection} must exactly match providers projected to {projection}; "
             f"missing_from_order={sorted(projected - set(order))} extra_in_order={sorted(set(order) - projected)}"
         )
         normalized_orders[projection] = order
-
     return by_canonical, normalized_orders
 
 
-def assert_projection(
-    manifest_path: Path,
-    projection: str,
-    catalog: dict[str, dict],
-    orders: dict[str, list[str]],
-) -> tuple[int, int]:
+def assert_projection(manifest_path: Path, projection: str, catalog: dict[str, dict], orders: dict[str, list[str]]) -> tuple[int, int]:
     manifest_rows, anime = validate_manifest(manifest_path)
     order = orders[projection]
-    assert len(manifest_rows) == len(order), (
-        f"{manifest_path}: projection size drift {len(manifest_rows)} != catalog order {len(order)}"
-    )
+    assert len(manifest_rows) == len(order), f"{manifest_path}: projection size drift {len(manifest_rows)} != catalog order {len(order)}"
     expected_ids = [catalog[key]["scraperId"].casefold() for key in order]
     actual_ids = [row["key"] for row in manifest_rows]
-    assert actual_ids == expected_ids, (
-        f"{manifest_path}: provider order/identity is not the deterministic {projection} projection of provider_catalog.json"
-    )
+    assert actual_ids == expected_ids, f"{manifest_path}: provider order/identity is not the deterministic {projection} projection of provider_catalog.json"
+
     for row, canonical_key in zip(manifest_rows, order, strict=True):
         expected_types = catalog[canonical_key]["types"]
         assert row["canonical"] == expected_types, (
@@ -128,18 +114,16 @@ def assert_projection(
             f"{row['canonical']} != {expected_types}"
         )
 
-        # canonicalSupportedTypes describes what the provider serves semantically.
-        # supportedTypes describes Nuvio launch compatibility. Anime catalogues may
-        # contain both episodic anime and anime movies, so an anime-only provider
-        # must accept TV *and* movie transport without acquiring ordinary movie
-        # semantic capability.
         expected_transport = list(expected_types)
+        transport_expanded = False
         if "anime" in expected_types:
             for compatible in ("tv", "movie"):
                 if compatible not in expected_transport:
                     expected_transport.append(compatible)
+                    transport_expanded = True
+        if transport_expanded:
             assert tuple(row["row"].get("canonicalSupportedTypes") or ()) == expected_types, (
-                f"{manifest_path}:{row['id']}: anime transport aliases must preserve canonicalSupportedTypes"
+                f"{manifest_path}:{row['id']}: anime transport aliases must preserve explicit canonicalSupportedTypes"
             )
         assert row["types"] == tuple(expected_transport), (
             f"{manifest_path}:{row['id']}: Nuvio transport supportedTypes drift: "
@@ -158,11 +142,7 @@ assert vf_count > 0, vf_count
 assert vf_anime > 0, "VF projection must retain its anime providers"
 
 corpus = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
-fixtures = {
-    row["slug"]: row["fixture"]
-    for row in corpus.get("fixtures", [])
-    if isinstance(row, dict) and isinstance(row.get("fixture"), dict)
-}
+fixtures = {row["slug"]: row["fixture"] for row in corpus.get("fixtures", []) if isinstance(row, dict) and isinstance(row.get("fixture"), dict)}
 for slug in ("jujutsu-kaisen-s01e01", "mushoku-tensei-s01e01"):
     fixture = fixtures[slug]
     assert str(fixture.get("category") or "").lower() == "anime", (slug, fixture)

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Fail closed unless a native Lab traversed the complete declared Provider matrix.
 
-For the current 96-provider catalog this is 214 declared routes:
-82 movie + 92 tv + 40 anime. Every provider must appear on at least one
-representative route, and every declared movie/tv/anime route must begin and reach
-an explicit terminal observation (result/error/skipped/watchdog timeout).
+The matrix is derived from the current manifest ``supportedTypes`` transport
+surface instead of freezing historical route totals. Every provider must appear
+on at least one representative movie/tv/anime route, and every declared route
+must begin and reach an explicit terminal observation
+(result/error/skipped/watchdog timeout).
 """
 from __future__ import annotations
 

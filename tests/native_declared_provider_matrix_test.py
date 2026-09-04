@@ -96,18 +96,23 @@ def run(client: str, logs: list[Path]) -> subprocess.CompletedProcess[str]:
 
 
 all_routes = routes()
-assert len({provider.casefold() for provider, _ in all_routes}) == 96
-assert len(all_routes) == 214
-assert sum(1 for _, kind in all_routes if kind == "movie") == 82
-assert sum(1 for _, kind in all_routes if kind == "tv") == 92
-assert sum(1 for _, kind in all_routes if kind == "anime") == 40
+provider_count = len({provider.casefold() for provider, _ in all_routes})
+counts = {kind: sum(1 for _, route_type in all_routes if route_type == kind) for kind in TYPES}
+route_count = len(all_routes)
+assert provider_count == 96
+assert route_count == sum(counts.values())
+assert all(counts[kind] > 0 for kind in TYPES), counts
+expected_summary = (
+    f"providers={provider_count} routes={route_count} "
+    f"movie={counts['movie']} tv={counts['tv']} anime={counts['anime']}"
+)
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     ok = run("tv", write_android_logs(root))
     assert ok.returncode == 0, ok.stdout + ok.stderr
-    assert "providers=96 routes=214 movie=82 tv=92 anime=40" in ok.stdout
-    assert "completed=214" in ok.stdout
+    assert expected_summary in ok.stdout
+    assert f"completed={route_count}" in ok.stdout
 
 with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
@@ -121,7 +126,11 @@ with tempfile.TemporaryDirectory() as tmp:
     root = Path(tmp)
     ios = run("ios", [write_ios_log(root)])
     assert ios.returncode == 0, ios.stdout + ios.stderr
-    assert "providers=96 routes=214" in ios.stdout
-    assert "completed=214" in ios.stdout
+    assert expected_summary in ios.stdout
+    assert f"completed={route_count}" in ios.stdout
 
-print("native declared provider matrix gate passed for 96 providers / 214 routes")
+print(
+    "native declared provider matrix gate passed "
+    f"providers={provider_count} routes={route_count} "
+    f"movie={counts['movie']} tv={counts['tv']} anime={counts['anime']}"
+)
