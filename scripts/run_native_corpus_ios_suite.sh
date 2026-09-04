@@ -111,8 +111,8 @@ PY
   xcrun simctl install "$UDID" "$APP"
 
   # Full 96/214 corpus runs may legitimately need many per-route watchdog resumes.
-# The restart budget is therefore route-scale (240) rather than a small infra retry cap.
-# CoreSimulatorBridge defaults to a 120s launch retry window. On fresh
+  # The restart budget is therefore route-scale (240) rather than a small infra retry cap.
+  # CoreSimulatorBridge defaults to a 120s launch retry window. On fresh
   # macOS runners the first iOS boot can spend longer than that in app/runtime
   # initialization even after bootstatus is terminal, causing simctl to detach
   # just as the Lab begins. Keep this launch-only allowance separate from the
@@ -161,7 +161,7 @@ launch_lab() {
   SIMCTL_CHILD_NIAKVIO_IOS_PLAYER_TIMEOUT_MS="$PLAYER_TIMEOUT_MS" \
   SIMCTL_CHILD_NIAKVIO_IOS_RESUME_FIXTURE="$RESUME_FIXTURE" \
   SIMCTL_CHILD_NIAKVIO_IOS_RESUME_AFTER_PROVIDER="$RESUME_AFTER_PROVIDER" \
-    xcrun simctl launch --terminate-running-process --console "$UDID" "$BUNDLE_ID" >>"$LOG" 2>&1 &
+    xcrun simctl launch --terminate-running-process --console "$UDID" "$BUNDLE_ID" > >(tee -a "$LOG") 2>&1 &
   LAUNCH_PID=$!
   set -e
 }
@@ -200,7 +200,7 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
   fi
   if (( IDLE_SECONDS >= IDLE_TIMEOUT_SECONDS )); then
     if [[ "$MODE" != "full" ]]; then
-      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=log_idle_timeout idle_seconds=$IDLE_SECONDS mode=$MODE target=$TARGET_PROVIDER" >> "$LOG"
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=log_idle_timeout idle_seconds=$IDLE_SECONDS mode=$MODE target=$TARGET_PROVIDER" | tee -a "$LOG"
       DONE=1
       STATUS=2
       break
@@ -209,25 +209,25 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
     BLOCKED_FIXTURE="$(printf '%s\n' "$LAST_BEGIN" | sed -n 's/.* fixture=\([^ ]*\).*/\1/p')"
     BLOCKED_PROVIDER="$(printf '%s\n' "$LAST_BEGIN" | sed -n 's/.* provider=\([^ ]*\).*/\1/p')"
     if [[ -z "$BLOCKED_FIXTURE" || -z "$BLOCKED_PROVIDER" ]]; then
-      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_without_provider_context idle_seconds=$IDLE_SECONDS mode=$MODE" >> "$LOG"
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_without_provider_context idle_seconds=$IDLE_SECONDS mode=$MODE" | tee -a "$LOG"
       DONE=1
       STATUS=2
       break
     fi
     if grep -Fq "FIELD_NATIVE_IOS_PROVIDER_END fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER " "$LOG"; then
-      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_after_provider_end fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER" >> "$LOG"
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=idle_after_provider_end fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER" | tee -a "$LOG"
       DONE=1
       STATUS=2
       break
     fi
     WATCHDOG_RESTARTS=$((WATCHDOG_RESTARTS + 1))
     if (( WATCHDOG_RESTARTS > MAX_WATCHDOG_RESTARTS )); then
-      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=watchdog_restart_budget_exhausted restarts=$WATCHDOG_RESTARTS fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER" >> "$LOG"
+      echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=watchdog_restart_budget_exhausted restarts=$WATCHDOG_RESTARTS fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER" | tee -a "$LOG"
       DONE=1
       STATUS=2
       break
     fi
-    echo "FIELD_NATIVE_IOS_WATCHDOG action=restart fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER idle_seconds=$IDLE_SECONDS restart=$WATCHDOG_RESTARTS" >> "$LOG"
+    echo "FIELD_NATIVE_IOS_WATCHDOG action=restart fixture=$BLOCKED_FIXTURE provider=$BLOCKED_PROVIDER idle_seconds=$IDLE_SECONDS restart=$WATCHDOG_RESTARTS" | tee -a "$LOG"
     stop_lab
     RESUME_FIXTURE="$BLOCKED_FIXTURE"
     RESUME_AFTER_PROVIDER="$BLOCKED_PROVIDER"
@@ -239,10 +239,9 @@ for _ in $(seq 1 "$WAIT_SECONDS"); do
 done
 
 stop_lab
-cat "$LOG"
 
 if [[ "$DONE" -ne 1 ]]; then
-  echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=no_terminal_marker mode=$MODE target=$TARGET_PROVIDER" >&2
+  echo "FIELD_NATIVE_CORPUS_IOS_SUITE_STATUS status=infra_error reason=no_terminal_marker mode=$MODE target=$TARGET_PROVIDER" | tee -a "$LOG" >&2
   STATUS=2
 fi
 exit "$STATUS"
