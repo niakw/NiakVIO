@@ -128,20 +128,69 @@ def patch_materializer() -> bool:
 def patch_runtime_regression_expectations() -> bool:
     path = ROOT / "tests" / "global_media_type_resolution_test.py"
     text = path.read_text(encoding="utf-8")
-    changes = {
-        'value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="anime"||value[0].degraded!==true':
-            'value[0].canonicalMediaType!=="anime"||value[0].mediaType!=="tv"||value[0].degraded!==true',
-        "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='anime'":
-            "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='tv'",
-    }
     changed = False
-    for old, new in changes.items():
-        if new in text:
-            continue
-        if text.count(old) != 1:
-            raise AssertionError(f"runtime anime transport expectation drifted: {old[:48]}")
-        text = text.replace(old, new, 1)
+
+    replacements = (
+        (
+            "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='anime'",
+            "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='tv'",
+        ),
+        (
+            'value[0].mediaType!=="anime"||value[0].degraded!==true',
+            'value[0].mediaType!=="tv"||value[0].degraded!==true',
+        ),
+        (
+            'throw new Error("Anime-only provider must preserve anime transport on metadata outage")',
+            'throw new Error("Anime-only series fallback must preserve TV transport on metadata outage")',
+        ),
+    )
+    for old, new in replacements:
+        if old in text:
+            text = text.replace(old, new, 1)
+            changed = True
+
+    movie_marker = "anime movie semantic/transport split failed"
+    if movie_marker not in text:
+        anchor = 'anime_only = mod.apply(BASE, options={"semantic_types": ["anime"]})\n'
+        if text.count(anchor) != 1:
+            raise AssertionError("anime-only runtime test anchor drifted")
+        block = r'''# Anime is a semantic catalogue family. An animated TMDB movie must therefore
+# launch an anime-only provider through the real movie namespace rather than
+# being filtered out by client/provider capability plumbing.
+anime_movie = mod.apply(BASE, options={"semantic_types": ["anime"]})
+run_case(anime_movie, r"""
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  if(!String(url).includes('/movie/900001?'))throw new Error('unexpected TMDB endpoint '+url);
+  return{ok:true,status:200,json:async()=>({
+    id:900001,title:'Synthetic Anime Movie',genres:[{id:16,name:'Animation'}],
+    original_language:'ja',production_countries:[{iso_3166_1:'JP'}],keywords:{keywords:[{name:'anime'}]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('900001','movie',null,null);
+  if(!Array.isArray(value)||!value.length)throw new Error('anime movie result lost');
+  if(value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='movie')
+    throw new Error('anime movie semantic/transport split failed: '+JSON.stringify(value));
+  if(calls!==1)throw new Error('anime movie must be TMDB-verified exactly once');
+})().catch(e=>{console.error(e);process.exit(1)});
+""")
+
+'''
+        text = text.replace(anchor, block + anchor, 1)
         changed = True
+
+    required = (
+        "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='tv'",
+        'value[0].mediaType!=="tv"||value[0].degraded!==true',
+        movie_marker,
+    )
+    for needle in required:
+        if needle not in text:
+            raise AssertionError(f"missing anime semantic/transport runtime assertion: {needle}")
+
     path.write_text(text, encoding="utf-8")
     return changed
 
