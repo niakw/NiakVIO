@@ -31,20 +31,27 @@ module.exports={getStreams:async function(){return [
   {name:"server-503-inconclusive",url:"https://media.example/server-503.mp4"}
 ]}};
 '''
-    patched = module.apply(
-        source,
-        options={
-            "probe_direct_media": True,
-            "probe_all_urls": True,
-            "max_probes": 10,
-            "probe_timeout_ms": 2000,
-            "min_vod_duration_seconds": 0,
-        },
-    )
+    options = {
+        "probe_direct_media": True,
+        "probe_all_urls": True,
+        "max_probes": 10,
+        "probe_timeout_ms": 2000,
+        "min_vod_duration_seconds": 0,
+    }
+    patched = module.apply(source, options=options)
     assert '"implementationVersion":9' in patched
-    assert patched.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    current_start = "/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"
+    current_close = "/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */"
+    assert patched.count(current_start) == 1
+    assert patched.count(current_close) == 1
+    assert "/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */" not in patched
     assert "NUVIO_STREAM_OUTPUT_HLS_HTML_REPAIR_V7" not in patched
     assert "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" not in patched
+    # Reapplication must replace the owned V6 block rather than duplicating it.
+    repatched = module.apply(patched, options=options)
+    assert repatched == patched
+    assert repatched.count(current_start) == 1
+    assert repatched.count(current_close) == 1
 
     runner = r'''
 const vm=require('vm');
