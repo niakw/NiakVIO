@@ -44,6 +44,10 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/upgrade_provider_v3_source_plan_v4.py
+      - name: Enforce anime semantic and TV/movie transport contract
+        run: |
+          set -euo pipefail
+          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
       - name: Recover durable static Provider DATA when requested
         shell: bash
         run: |
@@ -124,6 +128,7 @@ jobs:
           python scripts/provider_base_store.py validate
           python tests/provider_clean_reconstruction_contract_test.py
           python tests/provider_521_capability_regression_test.py
+          python tests/provider_anime_semantic_transport_contract_test.py
           python tests/global_media_type_resolution_test.py
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
@@ -157,6 +162,7 @@ jobs:
           python tests/provider_html_filter_security_test.py --published
           python tests/provider_v3_strategy_plan_contract_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_anime_semantic_transport_contract_test.py
           python tests/provider_wings_runtime_family_test.py
           python tests/peachify_runtime_crypto_test.py
           python scripts/audit_provider_v3_static.py
@@ -199,7 +205,8 @@ jobs:
           git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
             sources.json scripts/provider_base_store.py scripts/materialize_provider_v3_all.py scripts/discover_candidates.py \
-            tests/provider_v3_strategy_plan_contract_test.py
+            scripts/finalize_gowaru_provider_v3_source_plans.py scripts/provider_patches/global_media_type_resolution_v1.py \
+            tests/provider_v3_strategy_plan_contract_test.py tests/global_media_type_resolution_test.py
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
