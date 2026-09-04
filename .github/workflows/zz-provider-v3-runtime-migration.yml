@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Normalize compact analyzer anchor
+        run: python scripts/one_shot_native_runtime_prepatch.py
+
       - name: Apply exact migration
         run: python scripts/one_shot_native_runtime_migration.py
 
@@ -55,7 +58,7 @@ jobs:
 
       - name: Commit verified result and remove temporary runner
         run: |
-          rm .github/workflows/zz-provider-v3-runtime-migration.yml scripts/one_shot_native_runtime_migration.py
+          rm .github/workflows/zz-provider-v3-runtime-migration.yml scripts/one_shot_native_runtime_migration.py scripts/one_shot_native_runtime_prepatch.py
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
