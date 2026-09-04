@@ -70,6 +70,10 @@ jobs:
           data['expected_declared_routes'] = 214
           path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
           PY
+          # GitHub Actions' token cannot update workflow files. Keep the already-tested
+          # workflow edit out of this candidate commit; it is applied immediately after
+          # this push through the authorized GitHub connector before Labs are triggered.
+          git restore .github/workflows/native-mobile-android-reader.yml
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
