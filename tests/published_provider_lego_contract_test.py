@@ -24,7 +24,7 @@ UNIVERSAL_CORE_IDS = {
     "CORE.MEDIA_TYPE_RESOLUTION.V1",
 }
 
-MEDIA_TYPE_REVISION = "tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile"
+MEDIA_TYPE_REVISION = "tmdb-data-contract-launch-gate-v27-anime-semantic-transport"
 LAUNCH_EVENT_GATE = 'if(providerEvent!=="launch")return []'
 POSITIVE_OUTPUT_GATE = 'if(!hasProviderOutput(value))return []'
 
@@ -55,58 +55,43 @@ def main() -> int:
 
         text = path.read_text(encoding="utf-8", errors="strict")
         if QUARANTINE_MARKER in text:
-            # Terminal quarantine deliberately replaces the whole runtime bundle
-            # with an inert empty export after Core composition. It is therefore
-            # the only published state exempt from the Core Lego tail contract.
             quarantined += 1
             continue
 
         checked += 1
         boundary_count = text.count(CORE_BOUNDARY)
         if boundary_count != 1:
-            errors.append(
-                f"{provider_id}: Core boundary count={boundary_count} expected=1"
-            )
+            errors.append(f"{provider_id}: Core boundary count={boundary_count} expected=1")
             continue
 
         try:
             fix_ids = validate_managed_fixes(text)
         except Exception as exc:
-            errors.append(
-                f"{provider_id}: managed Lego invalid: {type(exc).__name__}: {exc}"
-            )
+            errors.append(f"{provider_id}: managed Lego invalid: {type(exc).__name__}: {exc}")
             continue
 
         missing = sorted(UNIVERSAL_CORE_IDS - set(fix_ids))
         if missing:
-            errors.append(
-                f"{provider_id}: missing universal Core bricks={','.join(missing)}"
-            )
+            errors.append(f"{provider_id}: missing universal Core bricks={','.join(missing)}")
 
         boundary = text.index(CORE_BOUNDARY)
         for fix_id in fix_ids:
             start_marker = begin_marker(fix_id)
             close_marker = end_marker(fix_id)
             if text.count(start_marker) != 1 or text.count(close_marker) != 1:
-                errors.append(
-                    f"{provider_id}: non-canonical STARTFIX/CLOSEFIX ownership={fix_id}"
-                )
+                errors.append(f"{provider_id}: non-canonical STARTFIX/CLOSEFIX ownership={fix_id}")
                 continue
             span = owned_span(text, fix_id)
             if span is None:
                 errors.append(f"{provider_id}: missing owned span={fix_id}")
                 continue
             if fix_id.startswith("CORE.") and span[0] <= boundary:
-                errors.append(
-                    f"{provider_id}: Core brick outside managed tail={fix_id}"
-                )
+                errors.append(f"{provider_id}: Core brick outside managed tail={fix_id}")
             if fix_id.startswith("PROVIDER.") and span[1] > boundary:
-                errors.append(
-                    f"{provider_id}: Provider brick leaked into Core tail={fix_id}"
-                )
+                errors.append(f"{provider_id}: Provider brick leaked into Core tail={fix_id}")
 
         if MEDIA_TYPE_REVISION not in text:
-            errors.append(f"{provider_id}: media-type runtime is not v26")
+            errors.append(f"{provider_id}: media-type runtime is not v27")
         if LAUNCH_EVENT_GATE not in text:
             errors.append(f"{provider_id}: launch event gate missing")
         if POSITIVE_OUTPUT_GATE not in text:
@@ -117,21 +102,17 @@ def main() -> int:
         if isinstance(row, dict) and str(row.get("id") or "").strip()
     ])
     if checked + quarantined != expected:
-        errors.append(
-            f"portfolio incomplete: checked={checked} quarantined={quarantined} expected={expected}"
-        )
+        errors.append(f"portfolio incomplete: checked={checked} quarantined={quarantined} expected={expected}")
 
     if errors:
         for error in errors:
             print("FIELD_PUBLISHED_PROVIDER_LEGO_ERROR " + error)
-        raise AssertionError(
-            f"published provider Lego contract errors={len(errors)}"
-        )
+        raise AssertionError(f"published provider Lego contract errors={len(errors)}")
 
     print(
         "FIELD_PUBLISHED_PROVIDER_LEGO "
         f"providers={checked} quarantined={quarantined} "
-        f"universal_bricks={len(UNIVERSAL_CORE_IDS)} media_type=v26 launch_gate=true"
+        f"universal_bricks={len(UNIVERSAL_CORE_IDS)} media_type=v27 launch_gate=true"
     )
     print("published provider Lego contract passed")
     return 0
