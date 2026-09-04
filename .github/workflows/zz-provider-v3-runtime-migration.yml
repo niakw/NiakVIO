@@ -38,7 +38,7 @@ jobs:
           python scripts/materialize_provider_base_v3_store.py
           NUVIO_PROVIDER_V3_CONTEXT=workspace python scripts/materialize_provider_v3_all.py
 
-      - name: Verify runtime and 96-provider fixed point
+      - name: Verify runtime candidate before native Labs
         run: |
           python -m py_compile scripts/native_media_type_contract.py scripts/prepare_native_corpus_validation.py scripts/native_player_diagnostics_codegen.py scripts/provider_base_store.py tests/native_runtime_settlement_contract_test.py
           node --check scripts/analyze_native_corpus_results.cjs
@@ -54,15 +54,26 @@ jobs:
           python tests/published_provider_lego_contract_test.py
           python tests/provider_clean_reconstruction_contract_test.py
           python scripts/verify_provider_v3_reverse_rebuild.py
-          python scripts/verify_provider_publication_fixed_point.py
 
-      - name: Commit verified result and remove temporary runner
+      - name: Publish verified native-Lab candidate
         run: |
-          rm .github/workflows/zz-provider-v3-runtime-migration.yml scripts/one_shot_native_runtime_migration.py scripts/one_shot_native_runtime_prepatch.py
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+          path = Path('.github/triggers/full-native-lab-validation.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          data['reason'] = 'provider v3 runtime settlement candidate: 25s budget + anime tv ABI + settle-once + fail-closed alias recovery'
+          data['requested_at'] = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+          data['platforms'] = ['TVAndroid', 'MobileAndroid', 'MobileIOS', 'DesktopMACOS', 'DesktopWindows']
+          data['expected_provider_count'] = 96
+          data['expected_declared_routes'] = 214
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git diff --cached --check
           git status --short
-          git commit -m "fix(runtime): settle native playback deterministically"
+          git commit -m "test(runtime): publish native lab settlement candidate"
           git push origin HEAD:workbench/provider-v3-performance-playback
