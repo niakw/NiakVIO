@@ -66,6 +66,8 @@ jobs:
             }
             python scripts/enrich_provider_v3_static_knowledge.py
             python scripts/finalize_gowaru_provider_v3_source_plans.py
+            python scripts/sanitize_provider_v3_core_metadata_routes.py
+            python tests/provider_v3_core_metadata_route_sanitizer_test.py
             python tests/provider_v3_static_knowledge_contract_test.py
             exit 0
           fi
@@ -92,6 +94,8 @@ jobs:
             --output automation/provider-v3-static-knowledge.json
           python scripts/enrich_provider_v3_static_knowledge.py
           python scripts/finalize_gowaru_provider_v3_source_plans.py
+          python scripts/sanitize_provider_v3_core_metadata_routes.py
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
       - name: Refuse direct main mutation
         if: inputs.commit_reconstruction
@@ -118,6 +122,7 @@ jobs:
           python tests/provider_v3_minimizer_preview_test.py
           python tests/provider_html_filter_security_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
           python tests/provider_patch_sibling_import_test.py
@@ -160,6 +165,7 @@ jobs:
           python tests/provider_brick_portfolio_audit_test.py --published --require-all
           python tests/provider_v3_minimizer_published_test.py
           python tests/provider_html_filter_security_test.py --published
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
           python tests/provider_anime_semantic_transport_contract_test.py
@@ -205,8 +211,8 @@ jobs:
           git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
             sources.json scripts/provider_base_store.py scripts/materialize_provider_v3_all.py scripts/discover_candidates.py \
-            scripts/finalize_gowaru_provider_v3_source_plans.py scripts/provider_patches/global_media_type_resolution_v1.py \
-            tests/provider_v3_strategy_plan_contract_test.py tests/global_media_type_resolution_test.py
+            scripts/finalize_gowaru_provider_v3_source_plans.py scripts/sanitize_provider_v3_core_metadata_routes.py scripts/provider_patches/global_media_type_resolution_v1.py \
+            tests/provider_v3_core_metadata_route_sanitizer_test.py tests/provider_v3_strategy_plan_contract_test.py tests/global_media_type_resolution_test.py
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
