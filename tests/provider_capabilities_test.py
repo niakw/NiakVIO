@@ -24,10 +24,15 @@ purstream = infer_capability("purstream", "module.exports={getStreams:function()
 assert purstream["strategy"] == "official_domain_hub"
 assert purstream["hub"] == "https://purstream.wiki"
 
+# This fixture verifies only the discovery-time removal of the retired global
+# stream guard. Do not materialize the v3 Core into a deliberately legacy,
+# envelope-less synthetic bundle: Core ownership is validated separately on
+# Provider-v3 bundles and is required to remain inside BEGIN/END PROVIDER.
 legacy = b"module.exports={getStreams:function(){return Promise.resolve([])}};\n/* NUVIO_GLOBAL_STREAM_OUTPUT_GUARD_V3 */\n;(function(){throw new Error('legacy')})();\n"
-patched, records = apply_overrides("synthetic", legacy)
+patched, records = apply_overrides("synthetic", legacy, include_global_core=False)
 assert b"NUVIO_GLOBAL_STREAM_OUTPUT_GUARD" not in patched
 assert any(item.get("type") == "remove_legacy_global_stream_guard" for item in records)
+assert b"STARTFIX:CORE." not in patched
 
 pur_patch = (config.get("provider_patches") or {}).get("purstream") or {}
 assert (pur_patch.get("replacements") or {}).get("purstream.art") != "purstream.wiki"
