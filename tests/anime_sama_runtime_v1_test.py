@@ -2,10 +2,14 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PATCH = ROOT / "scripts/provider_patches/anime_sama_runtime_v1.py"
+PATCH_DIR = ROOT / "scripts/provider_patches"
+PATCH = PATCH_DIR / "anime_sama_runtime_v1.py"
+if str(PATCH_DIR) not in sys.path:
+    sys.path.insert(0, str(PATCH_DIR))
 
 spec = importlib.util.spec_from_file_location("anime_sama_runtime_v1", PATCH)
 assert spec and spec.loader
