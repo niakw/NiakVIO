@@ -42,9 +42,6 @@ assert "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
 assert module.PROVIDER_BASE_OWNED_MARKER == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert module.CLEAN_RECONSTRUCTION_AUTHORING_VERSION >= 3
 assert module.CLEAN_RECONSTRUCTION_SOURCE == "niakvio-clean-reconstruction-v3"
-assert "upstreamCodeEmbedded" in text
-assert '"upstreamCodeEmbedded":false' in text
-assert '"upstreamCodeExecuted":false' in text
 assert "async function getStreams" in text
 assert "function _playerLike" in text
 assert "async function _crawlDirectMedia" in text
@@ -60,7 +57,7 @@ assert "const crawled = await _crawlDirectMedia(" in text
 assert text.index("const runtime = await _resolveRuntimeApi(") < text.index("const crawled = await _crawlDirectMedia(")
 assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
-assert "requests < 4" in text
+assert "requests < 7" in text
 assert "slice(0, 24)" not in text
 assert "function _detailGuesses" not in text
 assert "if (!_runtimePlanAvailable()) return [];" in text
@@ -68,6 +65,22 @@ assert "NIAKVIO_PROVIDER_MODEL.observedUrls || []" not in text
 assert "function _apiBases()" in text
 assert 'const bases = kind === "api" ? _apiBases() : _searchBases();' in text
 assert '!(type === "movie" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))' not in text
+
+clean_model = module.build_provider_data_model(
+    "synthetic",
+    {"name": "Synthetic", "supportedTypes": ["movie", "tv"]},
+    known_site="https://example.invalid",
+    provider_model={
+        "strategy": "html_scraper",
+        "officialSite": "https://example.invalid",
+        "origins": ["https://example.invalid"],
+        "routes": ["/search", "/watch"],
+    },
+)
+assert clean_model["authoring"] == module.CURRENT_PROVIDER_MODEL_AUTHORING
+assert clean_model["upstreamCodeEmbedded"] is False
+assert clean_model["upstreamCodeExecuted"] is False
+assert clean_model["routePlanVersion"] == 3
 
 dirty_model = module.build_provider_data_model(
     "synthetic",
@@ -88,6 +101,8 @@ dirty_model = module.build_provider_data_model(
 assert dirty_model["origins"] == ["https://example.invalid"]
 assert dirty_model["observedUrls"] == ["https://example.invalid/watch"]
 assert dirty_model["routes"] == ["/?s={query}"]
+assert dirty_model["upstreamCodeEmbedded"] is False
+assert dirty_model["upstreamCodeExecuted"] is False
 module.assert_base_layering(clean, "synthetic-clean")
 with tempfile.NamedTemporaryFile(suffix=".js") as handle:
     handle.write(clean)
