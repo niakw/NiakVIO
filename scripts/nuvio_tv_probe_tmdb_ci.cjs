@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 'use strict';
 
-// CI-only bridge for the Node-compatible Nuvio probe. The clean Provider v3
-// runtime consumes TMDB metadata through __nuvioMediaContext / the shared cache,
-// not directly from a credential global. GitHub Actions exposes the credential
-// through process.env, so hydrate the exact metadata contract before loading the
-// ordinary probe. Never print either credential or the full authenticated URL.
+// CI-only bridge for the Node-compatible Nuvio probe. It hydrates the same
+// request-local TMDB context used by Core, then traces provider-network activity
+// without leaking credentials. Debug data is appended to the probe JSON only;
+// published provider bytes are untouched.
+const fs = require('node:fs');
 const key = String(process.env.TMDB_API_KEY || '').trim();
 const token = String(process.env.TMDB_ACCESS_TOKEN || '').trim();
 if (!key && !token) {
@@ -31,13 +31,76 @@ function mediaNamespace(value) {
   return String(value || '').toLowerCase() === 'movie' ? 'movie' : 'tv';
 }
 
+function safeUrl(raw) {
+  try {
+    const url = new URL(String(raw || ''));
+    for (const name of [...url.searchParams.keys()]) {
+      if (/api[_-]?key|token|auth|signature|sig|secret/i.test(name)) url.searchParams.set(name, '<redacted>');
+    }
+    return url.toString();
+  } catch {
+    return String(raw || '').slice(0, 500);
+  }
+}
+
+function providerModel(providerPath) {
+  try {
+    const text = fs.readFileSync(providerPath, 'utf8');
+    const marker = 'const NIAKVIO_PROVIDER_MODEL = Object.freeze(';
+    const at = text.indexOf(marker);
+    if (at < 0) return null;
+    const start = at + marker.length;
+    let depth = 0, quote = '', escaped = false;
+    for (let i = start; i < text.length; i += 1) {
+      const ch = text[i];
+      if (quote) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === quote) quote = '';
+        continue;
+      }
+      if (ch === '"') { quote = ch; continue; }
+      if (ch === '{' || ch === '[') depth += 1;
+      else if (ch === '}' || ch === ']') depth -= 1;
+      else if (ch === ')' && depth === 0) {
+        return JSON.parse(text.slice(start, i));
+      }
+    }
+  } catch {}
+  return null;
+}
+
+function routeKind(route) {
+  const value = String(route || '').toLowerCase();
+  if (/search|recherche|[?&](?:s|q|query|keyword|story)=/.test(value)) return 'search';
+  if (/player|watch|embed|play/.test(value)) return 'player';
+  if (/api|stream|source/.test(value)) return 'api';
+  if (/detail|movie|film|serie|series|anime|catalogue|title|episode|season|saison/.test(value)) return 'detail';
+  return 'unknown';
+}
+
+function debugStage(model, fixture, fetchTrace, result) {
+  const type = String(fixture.mediaType || fixture.type || 'movie').toLowerCase();
+  const supported = Array.isArray(model?.supportedTypes) ? model.supportedTypes.map((x) => String(x).toLowerCase()) : [];
+  const typeAllowed = !supported.length || supported.includes(type) || (type === 'tv' && supported.includes('anime'));
+  if (!typeAllowed) return 'gate_type_capability';
+  const routes = Array.isArray(model?.routes) ? model.routes : [];
+  const runtimePlan = !!model?.apiRecipe || routes.some((r) => ['search', 'detail', 'player', 'api'].includes(routeKind(r)));
+  if (!runtimePlan) return 'gate_runtime_plan_missing';
+  if (model?.identityInput?.requiresTmdbBeforeRun === true && !globalThis.__nuvioMediaContext?.tmdbMetadata) return 'gate_tmdb_metadata_missing';
+  if (Number(result?.raw_stream_count || 0) > 0) return 'provider_returned_streams';
+  if (!fetchTrace.length && (!model?.sourceRuntimeFamily || model.sourceRuntimeFamily === 'unknown')) return 'gate_source_family_unknown';
+  if (!fetchTrace.length) return 'provider_zero_before_network';
+  const providerFetches = fetchTrace.filter((row) => !/api\.themoviedb\.org/i.test(row.url));
+  if (!providerFetches.length) return 'provider_zero_before_provider_network';
+  if (providerFetches.some((row) => Number(row.status) >= 400)) return 'provider_network_http_error';
+  if (providerFetches.some((row) => row.error)) return 'provider_network_exception';
+  return 'provider_network_zero_result';
+}
+
 async function hydrateTmdbContext() {
   let fixture = {};
-  try {
-    fixture = JSON.parse(process.argv[3] || '{}');
-  } catch {
-    fixture = {};
-  }
+  try { fixture = JSON.parse(process.argv[3] || '{}'); } catch { fixture = {}; }
   const tmdbId = String(fixture.tmdbId || fixture.id || '').trim();
   const type = mediaNamespace(fixture.mediaType || fixture.type || 'movie');
   if (!tmdbId) {
@@ -53,11 +116,7 @@ async function hydrateTmdbContext() {
 
   let response;
   try {
-    response = await fetch(endpoint, {
-      headers,
-      redirect: 'follow',
-      signal: AbortSignal.timeout(12000),
-    });
+    response = await fetch(endpoint, { headers, redirect: 'follow', signal: AbortSignal.timeout(12000) });
   } catch (error) {
     console.error(`FIELD_TMDB_PROBE_CONTEXT state=infra_error reason=tmdb_fetch_failed error=${error?.name || 'Error'}`);
     process.exit(78);
@@ -72,19 +131,73 @@ async function hydrateTmdbContext() {
   const cache = Object.create(null);
   cache[identity] = { metadata };
 
+  // CI exposes runtime credentials only to Core. They are never serialized into
+  // Provider DATA and never printed by this bridge.
   expose('TMDB_API_KEY', key);
   expose('TMDB_ACCESS_TOKEN', token);
   expose('__nuvioTmdbMetadataCacheV1', cache, true);
-  expose('__nuvioMediaContext', {
-    tmdbId,
-    tmdbNamespace: type,
-    tmdbMetadata: metadata,
-  }, true);
+  expose('__nuvioMediaContext', { tmdbId, tmdbNamespace: type, tmdbMetadata: metadata }, true);
   console.error('FIELD_TMDB_PROBE_CONTEXT state=ready credential_present=true metadata_hydrated=true value_redacted=true');
+  return { fixture, metadata };
 }
 
 (async () => {
-  await hydrateTmdbContext();
+  const { fixture } = await hydrateTmdbContext();
+  const providerPath = String(process.argv[2] || '');
+  const model = providerModel(providerPath);
+  const originalFetch = globalThis.fetch;
+  const trace = [];
+  if (typeof originalFetch === 'function') {
+    globalThis.fetch = async function tracedFetch(input, init) {
+      const started = Date.now();
+      const url = safeUrl(typeof input === 'string' || input instanceof URL ? input : input?.url);
+      try {
+        const response = await originalFetch.call(this, input, init);
+        trace.push({ url, status: Number(response?.status || 0), duration_ms: Date.now() - started });
+        return response;
+      } catch (error) {
+        trace.push({ url, status: 0, duration_ms: Date.now() - started, error: String(error?.name || 'Error') });
+        throw error;
+      }
+    };
+  }
+
+  const originalWrite = process.stdout.write.bind(process.stdout);
+  process.stdout.write = function debugWrite(chunk, encoding, callback) {
+    let text = String(chunk ?? '');
+    const trimmed = text.trim();
+    if (trimmed.startsWith('{')) {
+      try {
+        const value = JSON.parse(trimmed);
+        if (Object.prototype.hasOwnProperty.call(value, 'playable_stream_count')) {
+          const modelSummary = model ? {
+            strategy: model.strategy || null,
+            source_runtime_family: model.sourceRuntimeFamily || 'unknown',
+            reconstruction_state: model.reconstructionState || null,
+            identity_mode: model.identityInput?.mode || null,
+            requires_tmdb_before_run: model.identityInput?.requiresTmdbBeforeRun === true,
+            supported_types: model.supportedTypes || [],
+            route_count: Array.isArray(model.routes) ? model.routes.length : 0,
+            route_kinds: [...new Set((model.routes || []).map(routeKind))],
+            has_api_recipe: !!model.apiRecipe,
+            official_site: model.officialSite || null,
+            official_hub: model.officialHub || null,
+            official_api: model.officialApi || null,
+          } : null;
+          value.debug = {
+            stage: debugStage(model, fixture, trace, value),
+            model: modelSummary,
+            fetch_count: trace.length,
+            provider_fetch_count: trace.filter((row) => !/api\.themoviedb\.org/i.test(row.url)).length,
+            fetches: trace.slice(0, 30),
+          };
+          text = JSON.stringify(value) + '\n';
+        }
+      } catch {}
+    }
+    return originalWrite(text, encoding, callback);
+  };
+
   require('./nuvio_tv_probe_v2.cjs');
 })().catch((error) => {
   console.error(`FIELD_TMDB_PROBE_CONTEXT state=infra_error reason=bridge_failure error=${error?.name || 'Error'}`);
