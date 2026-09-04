@@ -34,21 +34,28 @@ const desktopZeros = ['cineby', 'videasy', 'purstream'].map((provider) => ({
   client: 'macos', fixture: 'sinners-2025', provider, requestType: 'movie',
   routeMode: 'declared', enabled: true, count: 0,
 }));
-const systemic = classifySystemicExtraction(desktopZeros);
-assert.equal(systemic.systemicGroups.length, 1);
-assert.equal(systemic.systemicGroups[0].providerCount, 3);
-assert.equal(systemic.systemicGroups[0].failureClass, 'runtime_contract_drift');
-assert.equal(systemic.systemicGroups[0].failureDomain, 'client_runtime');
-assert.equal(systemic.systemicGroups[0].providerMutationEligible, false);
-assert.equal(systemic.systemicExecutionKeys.size, 3);
+const uncorroboratedZeros = classifySystemicExtraction(desktopZeros);
+assert.equal(uncorroboratedZeros.systemicGroups.length, 0, 'multiple zero-stream providers on one client are not runtime proof');
+assert.equal(uncorroboratedZeros.systemicExecutionKeys.size, 0);
 
 const oneProvider = classifySystemicExtraction(desktopZeros.slice(0, 1));
 assert.equal(oneProvider.systemicGroups.length, 0, 'one empty provider remains provider-level evidence');
 
+const oneHealthyPeer = classifySystemicExtraction([
+  ...desktopZeros,
+  { ...desktopZeros[0], client: 'tv', count: 2 },
+]);
+assert.equal(oneHealthyPeer.systemicGroups.length, 0, 'one healthy peer cannot relabel a whole failed client group');
+
 const healthyPeers = desktopZeros.slice(0, 2).map((row) => ({ ...row, client: 'tv', count: 2 }));
 const peerConfirmed = classifySystemicExtraction([...desktopZeros.slice(0, 2), ...healthyPeers]);
 assert.equal(peerConfirmed.systemicGroups.length, 1);
+assert.equal(peerConfirmed.systemicGroups[0].providerCount, 2);
+assert.equal(peerConfirmed.systemicGroups[0].failureClass, 'runtime_contract_drift');
+assert.equal(peerConfirmed.systemicGroups[0].failureDomain, 'client_runtime');
+assert.equal(peerConfirmed.systemicGroups[0].providerMutationEligible, false);
 assert.equal(peerConfirmed.systemicGroups[0].confidence, 'confirmed_by_healthy_peers');
 assert.deepEqual(peerConfirmed.systemicGroups[0].healthyPeerProviders, ['cineby', 'videasy']);
+assert.equal(peerConfirmed.systemicExecutionKeys.size, 2);
 
 console.log('Brain v4 native reader causality + systemic runtime tests passed');
