@@ -38,7 +38,10 @@ clean = module.build_clean_provider_seed(
     },
 )
 text = clean.decode("utf-8")
-assert "NIAKVIO_PROVIDER_BASE_OWNED_V2" in text
+assert "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+assert module.PROVIDER_BASE_OWNED_MARKER == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
+assert module.CLEAN_RECONSTRUCTION_AUTHORING_VERSION >= 3
+assert module.CLEAN_RECONSTRUCTION_SOURCE == "niakvio-clean-reconstruction-v3"
 assert "upstreamCodeEmbedded" in text
 assert '"upstreamCodeEmbedded":false' in text
 assert '"upstreamCodeExecuted":false' in text
