@@ -1,12 +1,8 @@
 name: LEARN - Catalogue Breadth Lab
 
 on:
+  # Report-only census: intentionally manual. Do not keep a synthetic dead trigger file.
   workflow_dispatch:
-  push:
-    branches:
-      - workbench/provider-v3-performance-playback
-    paths:
-      - ".github/workflows/provider-catalogue-breadth-lab.yml"
 
 permissions:
   contents: read
