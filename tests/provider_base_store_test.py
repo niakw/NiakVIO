@@ -49,7 +49,9 @@ assert "function _runtimeApiUrls" in text
 assert "function _directPlayerUrls" in text
 assert "function _mediaNamespace(mediaType)" in text
 assert "const desiredMedia = _mediaNamespace(mediaType);" in text
-assert 'url.searchParams.set("m", transportType)' in text
+assert 'const transportType = _mediaNamespace(mediaType);' in text
+assert '"?m=" + encodeURIComponent(transportType)' in text
+assert '"&id=" + encodeURIComponent(_text(tmdbId))' in text
 assert "function _sourceUrls" in text
 assert "async function _resolveRuntimeApi" in text
 assert "const discoveredNested = _uniq(urls.filter(_playerLike));" in text
