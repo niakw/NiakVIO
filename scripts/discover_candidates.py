@@ -270,6 +270,39 @@ def fetch_manifest(urls: list[str]) -> tuple[dict[str, Any], str]:
     raise RuntimeError("; ".join(errors))
 
 
+def fetch_provider_knowledge_bytes(
+    source_cfg: dict[str, Any], provider_id: str, compiled_data: bytes
+) -> tuple[bytes, str]:
+    """Prefer provider-local upstream source over a shared bundled artifact.
+
+    Bundled provider JS can contain common utilities for dozens of unrelated
+    providers (Kitsu, npm/package metadata, resolver registries, etc.). Treating
+    every literal in that bundle as provider DATA creates false executable routes.
+    Provider-local source is static knowledge only and is never executed/embedded.
+    """
+    templates = source_cfg.get("knowledge_raw_templates")
+    if not isinstance(templates, list) or not templates:
+        return compiled_data, "compiled-provider"
+    chunks: list[bytes] = []
+    urls: list[str] = []
+    for raw in templates[:8]:
+        template = str(raw or "").strip()
+        if not template:
+            continue
+        try:
+            url = template.format(provider_id=provider_id)
+            data = fetch_bytes(url, attempts=1, timeout=12)
+            validate_javascript(data, url)
+            chunks.append(data)
+            urls.append(url)
+        except Exception:
+            continue
+    if not chunks:
+        return compiled_data, "compiled-provider-fallback"
+    banner = ("\n/* NIAKVIO_STATIC_KNOWLEDGE_SOURCE " + " ".join(urls) + " */\n").encode("utf-8")
+    return banner.join(chunks), "provider-local-source"
+
+
 def safe_fragment(value: str) -> str:
     cleaned = re.sub(r"[^a-zA-Z0-9._-]+", "-", value.strip()).strip(".-")
     return cleaned[:120] or "provider"
@@ -371,6 +404,23 @@ def known_site_for_provider(
     return observed_site_from_upstream(raw_upstream, provider_id)
 
 
+def infer_source_runtime_family(text: str) -> str:
+    low = text.casefold()
+    if "episodes.js" in low and "/catalogue/" in low:
+        return "catalogue-episodes-js"
+    if "/api/streams/episode" in low and "/player" in low:
+        return "signed-player-api"
+    if "/stream/movie/" in low and "/stream/series/" in low:
+        return "stremio-json"
+    if re.search(r"/(?:search|search-bar)[^\n]{0,200}/stream", low):
+        return "api-search-stream"
+    if re.search(r"/(?:search|recherche)|[?&](?:s|q|query)=", low) and re.search(r"/(?:embed|player|watch)", low):
+        return "catalogue-html-embed"
+    if re.search(r"/(?:api/)?(?:stream|streams|source|sources)[/?]", low):
+        return "tmdb-direct-api"
+    return "unknown"
+
+
 def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: bytes) -> dict[str, Any]:
     """Extract bounded provider knowledge statically, including obfuscated string tables."""
     text, decoded = static_knowledge_text(raw_upstream)
@@ -429,6 +479,7 @@ def upstream_knowledge(provider_id: str, entry: dict[str, Any], raw_upstream: by
     return {
         "providerId": provider_id,
         "supportedTypes": [str(value) for value in supported or []][:8],
+        "runtimeFamily": infer_source_runtime_family(text),
         "hosts": hosts[:32],
         "routes": routes[:64],
         "routeFragments": fragments[:64],
@@ -612,6 +663,7 @@ def clean_provider_model(
         "observedUrls": learned_urls[:48],
         "routes": learned_routes[:64],
         "apiRecipe": recipe,
+        "sourceRuntimeFamily": str(knowledge.get("runtimeFamily") or "unknown"),
         "knowledgeRole": "structured-static-observation-only",
         "legacyCodeEmbedded": False,
         "legacyCodeExecuted": False,
@@ -647,13 +699,15 @@ def executable_seed(
     provenance_rows: dict[str, Any],
     overrides: dict[str, Any],
     *,
+    knowledge_upstream: bytes | None = None,
     clean_reconstruction: bool,
     force_clean_reconstruction: bool = False,
 ) -> tuple[bytes, str, str | None, bool, dict[str, Any], dict[str, Any]]:
     previous = provenance_rows.get(provider_id)
     previous_row = previous if isinstance(previous, dict) else {}
-    site = known_site_for_provider(provider_id, raw_upstream, overrides)
-    knowledge = upstream_knowledge(provider_id, entry, raw_upstream)
+    static_bytes = knowledge_upstream if knowledge_upstream is not None else raw_upstream
+    site = known_site_for_provider(provider_id, static_bytes, overrides)
+    knowledge = upstream_knowledge(provider_id, entry, static_bytes)
     reconstruction_required = requires_clean_reconstruction(previous_row)
 
     pending_clean = is_clean_reconstruction_candidate(previous_row)
@@ -890,6 +944,9 @@ def main() -> int:
                     continue
 
                 upstream_digest = hashlib.sha256(data).hexdigest()
+                knowledge_data, knowledge_source = fetch_provider_knowledge_bytes(
+                    source_cfg, provider_id, data
+                )
                 (
                     seed,
                     code_origin,
@@ -903,6 +960,7 @@ def main() -> int:
                     data,
                     provenance_rows,
                     overrides,
+                    knowledge_upstream=knowledge_data,
                     clean_reconstruction=bool(args.clean_reconstruction),
                     force_clean_reconstruction=provider_id in forced_reconstruction_ids,
                 )
@@ -945,6 +1003,7 @@ def main() -> int:
                         "upstream_sha256": upstream_digest,
                         "upstream_code_role": "knowledge-only",
                         "upstream_code_executed": False,
+                        "upstream_knowledge_source": knowledge_source,
                         "upstream_knowledge": knowledge,
                         "clean_provider_model": provider_model,
                         "candidate_code_origin": code_origin,

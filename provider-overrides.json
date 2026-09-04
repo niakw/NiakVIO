@@ -14,11 +14,51 @@
     "anime-sama": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://anime-sama.store",
+      "official_site": "https://anime-sama.to",
       "manifest_overrides": {},
       "domain_substitutions": {
-        "animes-sama.fr": "anime-sama.store"
-      }
+        "animes-sama.fr": "anime-sama.to",
+        "anime-sama.store": "anime-sama.to",
+        "anime-sama.fr": "anime-sama.to"
+      },
+      "published_types": [
+        "movie",
+        "anime"
+      ],
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "learned_routes": [
+        "/template-php/defaut/fetch.php",
+        "/catalogue/{slug}/saison{season}/{lang}/episodes.js",
+        "/catalogue/{slug}/{lang}/episodes.js",
+        "/catalogue/{slug}/film/{lang}/episodes.js"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/anime_sama_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/anime_sama_runtime_v1.py": {
+          "base": "https://anime-sama.to",
+          "fallbackBases": [
+            "https://anime-sama.store"
+          ],
+          "languages": [
+            "vostfr",
+            "vf"
+          ],
+          "targetStreams": 3
+        }
+      },
+      "notes": [
+        "Provider v3 runtime is a NiakVIO-owned catalogue/episodes.js Lego derived from the current upstream contract; upstream JavaScript is not embedded or executed."
+      ]
     },
     "purstream": {
       "notes": [

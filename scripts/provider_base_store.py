@@ -569,6 +569,7 @@ def build_provider_data_model(
             if isinstance(incoming_model.get("apiRecipe"), dict)
             else None
         ),
+        "sourceRuntimeFamily": str(incoming_model.get("sourceRuntimeFamily") or "unknown"),
         "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),
         "strictIdentity": bool(incoming_model.get("strictIdentity", False)),
         "strictHtmlIdentity": bool(incoming_model.get("strictHtmlIdentity", False)),

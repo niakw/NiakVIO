@@ -222,6 +222,7 @@ def provider_model(
         "observedUrls": observed_urls,
         "routes": routes,
         "apiRecipe": api_recipe,
+        "sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown"),
         "identityInput": identity_input(patch, routes, api_recipe),
         "strictIdentity": bool(patch.get("strict_identity", False)),
         "strictHtmlIdentity": bool(patch.get("strict_html_identity", False)),
