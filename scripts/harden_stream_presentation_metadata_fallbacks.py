@@ -37,10 +37,13 @@ def main() -> int:
         text = text.replace(old_media, new_media, 1)
         changed = True
 
-    # The established visual contract is intentionally untouched.
+    # The established visual contract is intentionally untouched. The media
+    # icon is selected by one conditional expression in the current projection,
+    # so assert the two literal icon payloads rather than an obsolete pair of
+    # separate concatenation source shapes.
     required = (
-        '"🎬 "+media',
-        '"📺 "+media',
+        '"🎬 "',
+        '"📺 "',
         '"⏱ "+humanDuration',
         '"🔞 "+f.ageRating',
         '"🇫🇷 "',
