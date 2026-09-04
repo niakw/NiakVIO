@@ -162,7 +162,10 @@ def derive_runtime_family(model: dict[str, Any]) -> str:
         return "catalogue-html"
     if recipe:
         return "tmdb-direct-api"
-    if strategy == "api_stream_resolver" and has_api:
+    # Some known API resolvers (Cineby/VidEasy) use endpoint names such as
+    # /seed and /cdn/sources-with-title rather than a literal /api prefix.
+    # Strategy ownership plus a non-empty route plan is sufficient here.
+    if strategy == "api_stream_resolver" and routes:
         return "tmdb-direct-api"
     if strategy in {"mixed_embed_resolver", "iframe_player"} and routes:
         return "catalogue-html-embed"
