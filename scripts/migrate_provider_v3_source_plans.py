@@ -29,8 +29,15 @@ def migrate_sources() -> None:
     path = ROOT / "sources.json"
     data = json.loads(path.read_text(encoding="utf-8"))
     upstreams = data["upstreams"]
+    # Gowaru splits one provider across sibling modules. Config/HTTP modules
+    # carry current base URLs, headers and route constants that extractor.js
+    # alone cannot faithfully describe. Missing optional modules are tolerated
+    # by fetch_provider_knowledge_bytes(), so one durable provider-directory
+    # plan works for the whole Gowaru catalogue without provider exceptions.
     upstreams["gowaru"]["knowledge_raw_templates"] = [
+        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/src/{provider_id}/config.js",
         "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/src/{provider_id}/extractor.js",
+        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/src/{provider_id}/http.js",
         "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/src/{provider_id}/index.js",
     ]
     upstreams["aio"]["knowledge_raw_templates"] = [
@@ -172,7 +179,8 @@ def main() -> int:
     migrate_projection()
     print(
         "PROVIDER_V3_SOURCE_PLAN_MIGRATION_OK "
-        "upstream-local-source=gowaru,aio,yoru anime-sama=provider-lego replay_safe=true"
+        "upstream-local-source=gowaru,aio,yoru gowaru-modules=config,extractor,http,index "
+        "anime-sama=provider-lego replay_safe=true"
     )
     return 0
 
