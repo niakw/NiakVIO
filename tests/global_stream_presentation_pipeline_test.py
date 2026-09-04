@@ -151,4 +151,16 @@ assert "global_stream_facts_v1.py" in presentation_source
 assert "purstream_stream_facts_v1.py" not in presentation_source
 assert not (ROOT / "scripts/provider_patches/purstream_stream_facts_v1.py").exists()
 
+# Explicitly keep the established icon/UI contract while rejecting placeholder
+# provider/media labels and filling missing media facts through shared Core TMDB.
+fallback = subprocess.run(
+    [sys.executable, str(ROOT / "tests" / "global_stream_presentation_metadata_fallback_test.py")],
+    text=True,
+    encoding="utf-8",
+    capture_output=True,
+    timeout=30,
+    check=False,
+)
+assert fallback.returncode == 0, fallback.stdout + fallback.stderr
+
 print("global stream facts/presentation/branding/sanitizer order and client projection tests passed")
