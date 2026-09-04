@@ -17,9 +17,11 @@ on:
 permissions:
   contents: write
 
+# Only the newest reconstruction request for a branch is useful. A stale 96/96
+# rebuild must never block or queue a newer source-contract correction.
 concurrency:
-  group: provider-v3-manual-reconstruction-${{ github.ref }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: provider-v3-manual-reconstruction-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   reconstruct:
@@ -118,6 +120,9 @@ jobs:
           set -euo pipefail
           python tests/provider_v3_workflow_ownership_test.py
           python tests/provider_v3_documentation_contract_test.py
+          python tests/native_five_lab_coverage_test.py
+          python tests/canonical_media_types_test.py
+          python tests/provider_stream_scope_architecture_test.py
           python tests/native_ios_watchdog_resume_test.py
           python tests/provider_v3_minimizer_contract_test.py
           python tests/provider_v3_minimizer_preview_test.py

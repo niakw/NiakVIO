@@ -1,554 +1,281 @@
 # NiakVIO — Recovery Memory
 
-Last authoritative rewrite: 2026-09-03.
-This file is the recovery source of truth if ChatGPT/session context is lost. Prefer the latest repository state over older chat summaries.
+Last authoritative rewrite: 2026-09-05.
+This file is the recovery source of truth if ChatGPT/session context is lost. Prefer the current repository state over older chat summaries. Older retry-by-retry history remains available in Git history; this file intentionally prioritizes the current contracts and active blockers.
 
-## Hard branch safety
+## Branch safety
 - Active development branch: `workbench/provider-v3-performance-playback`.
-- DO NOT write to `main` while this workbench is being completed.
-- Production/main was intentionally frozen for user testing at SHA `8116f02289226ab8fb823f7ae03e204f73926a83`.
-- Production manifest at freeze: 5.21.31, 96 providers, MOVIX disabled, PURSTREAM restricted to movie/tv.
-- All current architecture/runtime/lab/minifier changes stay on workbench until final manual acceptance.
+- DO NOT write to `main` while the workbench is being completed and validated.
+- Production/main remains a separate user-facing baseline until final acceptance/merge.
+- All current Provider v3/runtime/yield/Lab/minifier/security work belongs on the workbench.
 
-## Primary product goal
-Build the most stable possible NiakVIO baseline:
-1. clean Provider v3 architecture;
-2. stable structured DATA;
-3. stable shared CORE Lego;
-4. provider JS immutable during routine automation;
-5. good speed without premature provider aborts;
-6. rich standard stream metadata/badges consumed correctly by Nuvio clients;
-7. playback/readability verified on official Nuvio clients;
-8. deterministic manual full reconstruction available only when explicitly needed;
-9. LEARN is the only automated code-evolution/repair system;
-10. eventual NiakVIO-aware JS minifier that preserves the comment/Lego architecture exactly.
+## Non-negotiable execution method
+- Do NOT use the loop `one failing test -> one fix -> rebuild -> discover next test`.
+- For every candidate SHA, collect ALL visible failing workflows/jobs first.
+- Group failures by common root cause.
+- Apply one batched correction for the full known set.
+- Run cheap/unit/structural gates before another expensive 96/96 reconstruction.
+- Manual reconstruction must execute the important cross-workflow contracts before materializing 96 providers, so stale test contracts fail early.
+- When a newer reconstruction request supersedes an older one on the same branch, the older run should be cancelled rather than queueing/holding the branch.
 
-## Provider v3 invariant
-- Catalogue size: 96 providers.
-- A runtime Provider JS is built conceptually from:
-  - clean ProviderBase;
-  - structured provider DATA;
-  - PROVIDER.* Lego;
-  - CORE.* Lego.
-- Legacy/upstream/published old Provider JS is knowledge/reference only and must never become an executable reconstruction seed.
+## Primary target
+- Catalogue target: ALL 96 providers, including disabled/off providers for structural completeness.
+- A low yield such as 3/96 or 7/96 is a systemic regression, not an acceptable release state.
+- Do not focus only on Kehflix/Castle/StreamZo or any small currently-working subset.
+- Objective is the maximum real usable provider count, then native client/playback acceptance.
+
+## Provider v3 architecture
+A generated provider is composed from:
+1. clean ProviderBase v3;
+2. structured provider DATA;
+3. provider-owned `PROVIDER.*` Lego;
+4. shared `CORE.*` Lego.
+
+Hard rules:
+- Historical/upstream/published provider JS is knowledge/reference only, never an executable reconstruction seed.
 - Provider envelope markers are mandatory:
   - `/* BEGIN NIAKVIO_PROVIDER */`
   - `/* END NIAKVIO_PROVIDER */`
-- Managed Lego markers are mandatory and ordered:
-  - PROVIDER.* blocks first;
-  - CORE.* blocks after;
-  - every managed block uses STARTFIX/CLOSEFIX and managed FIXDATA.
-- Routine automation must not modify the structure/order/content of these blocks.
+- Provider Lego must precede exactly one Core boundary.
+- Core Lego must follow that boundary.
+- Managed Lego uses STARTFIX/CLOSEFIX + FIXDATA ownership.
+- Reverse reconstruction must remain deterministic/byte-verifiable.
 
-## Automation ownership — simplified architecture
-There is ONE routine workflow:
-- `.github/workflows/sync.yml`
-- display name: `CORE - Verify & Publish`
+## Provider taxonomy
+Use the existing architecture taxonomy; do not invent a parallel type system:
+- `official_domain_hub`
+- `api_stream_resolver`
+- `html_scraper`
+- `mixed_embed_resolver`
+- `direct_media`
+- `iframe_player`
+- `quarantined`
 
-### Quick profile
-Purpose: fast event-driven safety gate.
-Triggers:
-- push;
-- PR;
-- manual dispatch;
-- Domain Refresh follow-up.
-Responsibilities:
-- exact 96 published-byte static audit;
-- critical DATA/Core/runtime unit contracts;
-- playback policy / stream presentation / type safety contracts;
-- no full network health;
-- no manifest publication;
+Last structurally validated quarantine set was five providers:
+- DVDPLAY
+- MOVIEBOX
+- NETMIRROR
+- TOPCARTOONS
+- VIXSRC
+
+Frenchstream is NOT a permanent quarantine. `https://fstream.website/` is its maintenance/discovery hub; the provider itself uses a DLE-style business protocol and may remain activation-deferred until clean runtime proof.
+
+## Canonical media type vs Nuvio transport — CRITICAL
+This distinction must never be forgotten again.
+
+### Canonical capability
+`canonicalSupportedTypes` describes WHAT the provider catalogue semantically serves:
+- `movie`
+- `tv`
+- `anime`
+
+An anime-only provider can correctly have:
+- `canonicalSupportedTypes = ["anime"]`
+
+Do NOT add ordinary `movie` semantic capability merely because the provider can launch an anime film.
+
+### Nuvio launch compatibility
+`supportedTypes` is the transport/launch surface consumed by Nuvio.
+
+Anime providers MUST be compatible with:
+- `anime`
+- `tv` for episodic anime / Nuvio series-shaped requests
+- `movie` for anime films present in anime provider catalogues
+
+Therefore this is valid and intentional:
+- `canonicalSupportedTypes = ["anime"]`
+- `supportedTypes = ["anime", "tv", "movie"]`
+
+`movie` here is transport compatibility, NOT permission to return arbitrary non-anime movies.
+Authoritative TMDB/canonical classification must still reject non-anime works for an anime-only provider.
+
+Client aliases:
+- `series`, `show`, `other` normalize to TV-shaped input.
+- Anime may be discovered from trusted TMDB metadata and then transported to the provider through the real TV/movie namespace.
+
+## TMDB / identity contract
+Official Nuvio provider signature remains conceptually:
+- `getStreams(tmdbId, mediaType, season, episode)`
+
+Core owns TMDB metadata resolution/cache and normalized identity context.
+Important gates:
+- Non-launch provider events must return `[]` before provider/network work.
+- Zero-output providers should not pay unnecessary TMDB work unless their declared DATA plan needs metadata BEFORE execution.
+- Catalogue/title/external-id plans may require TMDB preflight.
+- Ordinary direct plans can run first and only pay canonical verification after positive output.
+- TMDB metadata cache must be request-safe and must not leak media context between works.
+- External IDs such as IMDb must be retained/exposed when a provider protocol needs them.
+
+## JSON stream-API family clarification
+Some providers expose a JSON `streams[]`-style API. This is a SOURCE API contract, not a change of target client.
+Nuvio remains the target runtime/client.
+Do not describe the work as "moving to Stremio"; the task is adapting those source JSON responses into Nuvio stream objects.
+
+DesiFlix/Persian-style live observation showed 200 responses with zero output when the provider identity was wrong/fell back to raw TMDB.
+Commit `0691e922` added a runtime path that can obtain external IMDb identity from Core TMDB metadata before calling those source APIs.
+This still requires validation on a reconstructed generation/yield; do not mark it solved merely because code exists.
+
+## Source-plan/runtime recovery
+The important systemic losses found during Provider v3 reconstruction were not only dead domains:
+- business protocols were flattened into generic scraping;
+- generic crawler ordering could waste budget on feeds/comments instead of download intermediates;
+- some JSON APIs were treated as generic media URLs;
+- some corrupted/templated routes survived into executable DATA;
+- source-family classification could select the wrong handler.
+
+Known family examples:
+- Frenchstream: DLE POST/search -> news id -> movie/season/episode business endpoints -> players.
+- MoviesHunt/HindMoviez/MoviesMod/UHDMovies/4KHDHub family: search/detail -> Abhilinks/HubCloud/VCloud/Driveseed-style intermediates -> final host.
+- JSON stream-API family: source response objects need conversion to Nuvio stream rows after correct identity resolution.
+
+Fix families/shared Core where possible; do not hand-patch 89 providers when one lost protocol explains many reds.
+
+## Last authoritative live yield checkpoint
+Fast-yield run `33927727936` tested the reconstructed v5 generation and still measured only 7/96 unique providers with playable output.
+Across 188 provider/fixture executions the observed buckets were approximately:
+- 116 HTTP errors;
+- 36 network reached but zero result;
+- 22 network/runtime exceptions;
+- 11 positive execution rows representing 7 unique playable providers.
+
+Conclusion:
+- v5 crawler/parser improvements alone did NOT solve the systemic regression.
+- 7/96 remains unacceptable.
+- A new yield must be run only against the next verified reconstructed SHA; do not compare new code against the old 7/96 artifact and call it fixed.
+
+## Current 2026-09-05 batch checkpoint
+Parent workbench SHA before the current contract batch:
+- `847e3ab6c0ee49b6b9e24b5c0c76269f1a76c5eb`
+- message: `test: run batched Provider v3 runtime v6 rebuild`
+
+Visible NiakVIO CI failures on that SHA were collected BEFORE another reconstruction:
+1. `CORE - Media Type & Playback Gate`
+   - `tests/canonical_media_types_test.py`
+   - false/stale assertion said ANIDB anime-only must NOT expose `movie` transport.
+   - Correct rule: canonical anime-only, but tv+movie transport compatible.
+2. `CORE - Workflow Gate`
+   - `tests/provider_stream_scope_architecture_test.py`
+   - stale source-shape assertion expected an old local `var ns=...` implementation detail.
+   - Correct invariant is semantic anime + namespace-preserving tv/movie provider transport.
+3. `CORE - Verify & Publish`
+   - `tests/native_five_lab_coverage_test.py`
+   - stale hard-coded route counts `movie=82 / tv=92 / anime=40` mixed canonical capability with expanded transport compatibility.
+   - Test must distinguish canonical route counts from transport route counts instead of freezing old transport totals.
+4. GitHub Advanced Security failure on the same period was external infrastructure:
+   - its Copilot/code-scanning agent requested `gpt-5.3-codex`;
+   - GitHub API returned `400 The requested model is not supported`.
+   - Do not classify that as a NiakVIO code defect.
+
+The current correction batch must therefore:
+- fix the three stale contracts together;
+- add an explicit runtime regression proving anime movie -> canonical `anime`, provider transport `movie`;
+- keep existing runtime anime movie support intact;
+- move those contract tests into reconstruction preflight;
+- make reconstruction concurrency branch-scoped with `cancel-in-progress: true`;
+- then run CI once before triggering the next 96/96 rebuild.
+
+## Native Labs
+Final acceptance surface is exactly five first-class client/platform Labs:
+1. TVAndroid — official NuvioTV
+2. MobileAndroid — official NuvioMobile
+3. MobileIOS — official NuvioMobile
+4. DesktopMACOS — official NuvioDesktop
+5. DesktopWindows — official NuvioDesktop
+
+Labs are observational evidence only:
 - no provider reconstruction;
 - no repair;
-- no provider/Core/Fix mutation.
-Quick is NOT scheduled.
+- no mutation of Nuvio clients to manufacture greens;
+- preserve reader/player errors.
 
-### Deep profile
-Purpose: full verification + publication, still non-repairing and non-reconstructing.
-Triggers:
-- schedule Tuesday + Friday at 04:47 UTC;
-- manual dispatch mode=deep.
-Responsibilities:
-- everything in Quick;
-- full structural contracts;
-- read-only hub observation;
-- full runtime/network health observation of the exact 96 published JS;
-- regenerate language manifest projections from observed health;
-- regenerate reports and integrity inventories;
-- publish only reports/manifests/hashes if changed.
-Deep NEVER:
-- repairs providers;
-- promotes candidates;
-- reconstructs Provider JS;
-- edits DATA/Core/Fix/runtime code.
+Do NOT launch the full five Labs while the shared 96-provider runtime/yield is still structurally broken. First get structural gates + reconstruction + fast yield to a credible level; then use Labs for true client/runtime/playback proof.
 
-The removed duplicate routine workflow `.github/workflows/core-media-finalize-main.yml` must remain deleted.
+## Playback / reader integrity
+Kehflix previously produced `Cannot find sync byte / parsing_container_malformed` on a real user playback path.
+Shared HLS Core now has opt-in bounded first-segment/container proof:
+- preserve Referer/Origin;
+- validate MPEG-TS sync or fMP4 structure when bytes are readable;
+- reject positive HTML/JSON/malformed container evidence;
+- network uncertainty/encrypted HLS remain non-blocking;
+- stream-level failures must not disable the whole provider.
 
-## Domain Refresh — the only routine production DATA-write exception
-Workflow: `.github/workflows/domain-refresh.yml`.
-Purpose: maintain availability when an authoritative provider hub changes its PRIMARY DOMAIN.
+Final acceptance must inspect actual reader evidence, not only green workflow conclusions.
 
-Strict scope:
-- may update ONLY `provider_patches.<provider>.official_site`;
-- may update domain history;
-- may update the corresponding `PROVIDER.<ID>.CONFIG.V1` officialSite value and content-addressed filename/reference;
-- must prove every byte outside that CONFIG Lego is identical;
-- must not run provider/Core repair or reconstruction;
-- must not change official_api, routes, replacements, api_recipe, patch options, patch scripts, CORE, PROVIDER fix logic or provider capabilities.
+## Runtime platform contract
+Authoritative comparison document:
+- `automation/PLATFORM-RUNTIME-CONTRACTS.md`
 
-Trust model:
-- provider must have an authoritative hub source;
-- domain-only resolver considers hub / public Telegram / redirect-derived authoritative candidates;
-- direct/search fallback must never autonomously replace official_site;
-- if the captured URL is not safely validated, keep the previous site;
-- if nothing changed, do nothing and do not rewrite/reapply.
+Key differences that matter:
+- all clients execute JS through QuickJS-compatible native runtimes;
+- Android/TV and Desktop/iOS fetch bridges differ;
+- TV lacks some capabilities exposed elsewhere (historically TextEncoder/TextDecoder and WebAssembly gaps were important);
+- transport/header/subtitle/description/name projection differs by client.
 
-Important architectural decoupling:
-- `CORE.CATALOGUE_ALIAS_RECOVERY` no longer serializes the provider domain into CORE bytes.
-- It reads `NIAKVIO_PROVIDER_MODEL.officialSite` at runtime.
-- Commit that introduced this decoupling: `3dd72f7b90d3b46481244f3795fdaaed5898eb73`.
+Whenever upstream Nuvio client refs change, re-audit the platform contract instead of guessing.
 
-Domain helper scripts currently present:
-- `scripts/validate_domain_refresh_scope.py`
-- `scripts/update_provider_v3_domain_config.py`
-- `scripts/audit_provider_v3_static.py`
+## Minifier
+- Terser is forbidden.
+- `scripts/provider_v3_minimizer.py` is the NiakVIO-aware conservative minimizer integrated into materialization.
+- It must preserve BEGIN/END provider envelope, STARTFIX/CLOSEFIX/FIXDATA, Core boundary and ownership comments.
+- It must not rename identifiers, reorder expressions, fold literals or perform unsafe global replacements.
+- Providers with risky template-literal state may remain byte-stable.
+- Fixed-point + Node parse + reverse reconstruction + native parity are required.
 
-## LEARN — exclusive code evolution owner
-Workflow: `.github/workflows/brain-learning-lab.yml`.
-LEARN is the only automated component allowed to TRY to evolve/repair NiakVIO code.
+## Security
+The earlier 25 CodeQL high alerts were traced to a shared bad HTML-filtering regex shape in generated provider code.
+ProviderBase/Core moved to deterministic HTML scanners and published provider bundles must remain gated against reintroduction.
+Before final merge:
+- final 96/96 generated bytes must pass HTML-filter security tests;
+- npm audit/high dependency gate must be clean;
+- CodeQL/security must be checked on the final branch/PR SHA;
+- distinguish external GitHub security-agent infrastructure failures from actual findings.
 
-Responsibilities:
-- observe failing/weak providers, including disabled/off providers;
-- investigate CORE/Provider fix weaknesses;
-- attempt repairs only in Learning sandbox/workspace;
-- validate candidate changes;
-- persist sanitized learning/proposals;
-- open/refresh review PRs (brain-repair proposal flow).
+## Workflow ownership
+Routine workflow:
+- `CORE - Verify & Publish` (`.github/workflows/sync.yml`)
 
-Hard restrictions:
-- no direct production runtime publication;
-- no direct main mutation for repair;
-- human review/merge remains the promotion gate.
+Quick:
+- static/runtime/unit safety;
+- no reconstruction/repair.
 
-Provider issues remaining after the stable baseline should be handled through LEARN proposals, not daily reconstruction.
+Deep:
+- broader read-only observation and report/manifest projection;
+- still no provider repair/reconstruction.
 
-## Manual reconstruction
-Workflow: `.github/workflows/provider-v3-reconstruct-all.yml`.
-This is the ONLY intended full 96/96 reconstruction path.
-It is manual-only.
-It must:
-- rebuild from clean ProviderBase + DATA + owned Lego;
-- never use legacy/upstream Provider JS as seed;
-- reconstruct all 96;
-- prove reverse reconstruction byte identity;
-- run runtime/integrity tests;
-- refuse direct commit to main;
-- optionally commit the verified reconstruction only to a selected non-main branch.
-Normal Quick/Deep/Domain/Labs must never call the full materializer.
+Manual full reconstruction:
+- `.github/workflows/provider-v3-reconstruct-all.yml`
+- only path for full 96/96 materialization;
+- workbench/non-main only for commits;
+- rebuild from ProviderBase + DATA + owned Lego;
+- reverse proof + runtime/integrity gates required.
 
-## Current runtime tuning on workbench
-Commit `58425bf9c0d7b8883c05a63ef532217f3840daea` introduced the intended shared Core tuning:
-- TV Provider v3 internal budget: 25s (was ~10s);
-- Mobile/Desktop Provider v3 internal budget: 30s (was ~18s);
-- native lab observation budget target: 40s.
+LEARN:
+- only automated code-evolution/repair owner;
+- proposals/sandbox/PR flow, not silent production mutation.
 
-Why:
-- official NuvioTV plugin execution allows about 120s;
-- official NuvioMobile/NuvioDesktop execution allows about 60s;
-- NiakVIO was self-aborting too early and providers could appear red around 10–15s even though the client still allowed them to finish.
+Domain Refresh:
+- only routine narrow DATA-write exception;
+- official domain/config scope only;
+- never a substitute full repair engine.
 
-Important:
-- keep individual network/fetch deadlines short;
-- the longer provider envelope budget is not permission for hung requests;
-- optimize providers to yield useful streams early rather than simply waiting longer.
+## Completion order from this checkpoint
+1. Commit the full known contract batch (canonical vs transport tests + runtime anime-movie regression + reconstruction preflight/concurrency + this MEMORY rewrite).
+2. Let all cheap/PR gates for that one SHA complete; collect ALL reds before touching code again.
+3. If NiakVIO gates are clean, advance the reconstruction trigger once.
+4. Reconstruct all 96 from the corrected shared runtime/DATA.
+5. Require reverse rebuild + release/runtime integrity green.
+6. Run one fast-yield 96/96 census against exactly that reconstructed SHA.
+7. If yield is still weak, group all live failures by protocol/family and patch shared runtime/DATA in another batch; do not start five native Labs yet.
+8. Once yield is credible, run all five native Labs on exact bytes and inspect reader/playback evidence.
+9. Fix any client-specific/runtime/playback gaps, then final security/docs/clean/merge preparation.
 
-## Stream presentation / metadata work
-Target problem observed by user:
-- Interstellar returned only a few providers before timeout/red;
-- stream titles could show e.g. `Kehflix - Inconnue`;
-- quality and badges were often missing.
+## Never infer "done" from these alone
+None of the following by itself means NiakVIO is finished:
+- 96/96 files generated;
+- reverse reconstruction 96/96;
+- a green GitHub workflow;
+- 3 or 7 providers returning streams;
+- a few working providers on one client;
+- a structurally valid manifest.
 
-Shared presentation V18 direction:
-- infer quality from normal fields AND safe URL facts;
-- inspect quality/resolution/height/width/label;
-- normalize FHD -> 1080p;
-- HD -> 720p;
-- SD -> 480p;
-- retain 2160p/4K and other numeric resolution recognition.
-Important client fact:
-- custom NiakVIO badgeIds/displayBadges alone are not enough;
-- official Nuvio clients derive much of the UI from standard stream fields/text;
-- enrich standard fields first and avoid extra network probes when facts are already locally available.
-
-## Native client labs
-Required proof platforms:
-1. TV Android (official NuvioTV);
-2. Mobile Android (official NuvioMobile);
-3. Mobile iOS (official NuvioMobile);
-4. Desktop macOS (official NuvioDesktop);
-5. Desktop Windows (official NuvioDesktop).
-
-Representative corpus currently used:
-- Interstellar (movie);
-- Breaking Bad S01E01 (series);
-- Jujutsu Kaisen S01E01 (anime).
-
-Lab goals:
-- provider discovery/latency;
-- stream count and provider count;
-- stream metadata quality/badges;
-- playable transport reach;
-- navigation/session isolation;
-- no stale result bleed between works/types;
-- exact workbench Provider JS bytes should be tested;
-- Labs are evidence, never repair engines.
-
-Known lab cleanup still required:
-- Desktop mutating fixed-point/reapply canary was removed from the lab; Desktop now observes only.
-- Full iOS provider timeout is 40s; Learning-only targeted iOS mode remains 8s.
-- Android TV/Mobile lab timeout is 40s.
-- `tests/native_lab_observational_purity_test.py` now fails if any native lab reintroduces Provider reconstruction/repair/apply steps.
-
-## Nuvio upstream issues
-Two earlier issues were auto-closed because of missing tags:
-- NuvioTV #3314
-- NuvioDesktop #569
-
-Decision as of 2026-09-03:
-- do NOT republish yet;
-- our previous 10/18s NiakVIO budget could create similar symptoms;
-- re-run navigation/session scenarios in the five labs on the corrected workbench first;
-- if the lifecycle/session problem still reproduces with fresh evidence, republish properly with labels + current logs;
-- otherwise leave closed.
-
-## Workflow simplification commits / milestones
-Useful recent workbench commits:
-- `58425bf9c0d7b8883c05a63ef532217f3840daea` — 25/30s provider budget + stream facts work.
-- `b45048241b1857a7be2a02a2c6ab6340fc0dbe5c` — Quick/Deep verification-only direction.
-- `3dd72f7b90d3b46481244f3795fdaaed5898eb73` — Core domain lookup reads Provider CONFIG runtime DATA.
-- `639b927c75881c731994274990c3dbac17026a5f` — collapse duplicate routine workflows into one CORE workflow.
-- `193a750c2d50f38ccdf26a9fc44af6971b4b7987` — Quick and Deep assigned distinct roles.
-
-## Current CI observation
-The first CORE run after `193a750...` failed before meaningful runtime tests because `tests/provider_v3_workflow_ownership_test.py` still expected the superseded cron `17 5 * * *`.
-Correct target cron is `47 4 * * 2,5`.
-This is a stale contract-test failure, not a provider/runtime failure.
-The next commit after this MEMORY rewrite fixes that assertion.
-
-Earlier Quick attempt also showed that `provider_base_store.py validate` reports historical contaminated ProviderBase state (anime-sama first). ProviderBase-store cleanup is a reconstruction concern, not a routine Quick gate. The manual reconstruction path must eventually clean/validate the reconstruction source before the one controlled workbench rebuild.
-
-## Next execution order
-1. Make CORE Quick green with the updated workflow contract.
-2. Remove all provider mutation/materialization from the native Labs.
-3. Align full iOS lab provider timeout to 40s.
-4. Harden LEARN contract so disabled/off providers are explicitly eligible for proposals and only PR output is allowed.
-5. Clean/validate ProviderBase reconstruction source in the manual reconstruction path.
-6. Execute ONE controlled full 96/96 reconstruction on the workbench to materialize current Core changes (25/30s, presentation V18, domain/Core decoupling, etc.).
-7. Prove 96/96 reverse rebuild on that one generation.
-8. Run TVAndroid / MobileAndroid / MobileIOS / DesktopMACOS / DesktopWindows labs on those exact bytes.
-9. Fix every architecture/runtime/playback/metadata issue found, using shared Core/Data where appropriate and provider-specific fixes only where truly necessary.
-10. Re-run the relevant labs until stable.
-11. Build the NiakVIO JS minifier only after runtime/architecture gates are stable.
-
-## Minifier / minifizer requirements
-Do not use generic Terser blindly.
-The future NiakVIO minifier must understand the Provider architecture and preserve:
-- BEGIN/END NIAKVIO_PROVIDER;
-- STARTFIX/CLOSEFIX markers;
-- FIXDATA blocks/payloads;
-- Provider/Core Lego ordering;
-- comments used as machine-readable ownership boundaries;
-- ability to replace/remove one managed Lego later without guessing source shape.
-It must never do unsafe global string replacement.
-It should minify only safe JS payload regions between protected architecture boundaries.
-Before enablement require:
-- byte-safe marker preservation tests;
-- parse/syntax equivalence;
-- runtime behavioral parity;
-- reconstruction/minification determinism;
-- five-client lab parity on representative corpus.
-Keep it disabled in production until all proofs are green.
-
-## Five-lab gate is explicit
-- The acceptance surface is exactly five first-class platforms: TVAndroid, MobileAndroid, MobileIOS, DesktopMACOS, DesktopWindows.
-- `tests/native_five_lab_coverage_test.py` enforces all five and their workbench trigger coverage.
-- The Android workflow contains two separate labs (TV + Mobile), iOS is its own macOS/iOS job, and Desktop expands to macOS + Windows matrix jobs.
-
-## One controlled reconstruction trigger
-- Manual workflow now also accepts the explicit workbench-only trigger file `.github/triggers/provider-v3-reconstruct-all.json`.
-- The trigger has no schedule and cannot run from ordinary workbench changes.
-- Before reconstruction it may run `provider_base_store.py repair-derived` ONLY as deterministic ProviderBase layering cleanup, then validates all bases including artifacts.
-- This is not Learning repair and does not alter provider behavior; it strips leaked generated/publication tails.
-- An explicit workbench trigger commits the verified cleaned ProviderBase/PROVENANCE + reconstructed 96/96 outputs back to the workbench only.
-
-## 2026-09-03 — canonical Provider/Core boundary realignment
-- Run 33699439253 proved the new canonical ProviderBase v3 store is valid 96/96:
-  - providers=96
-  - unique_bases=96
-  - clean=96
-  - reconstruction_required=0
-  - artifact_validation=true
-  - provider_js_seed=false
-  - upstream_js_seed=false
-- The next failure was not ProviderBase: `provider_brick_portfolio_audit_test.py` was auditing bare ProviderBase files as if they were already composed Provider JS. That produced 96 missing Core-boundary errors and apparent second-pass Castle/Movix Provider Lego insertions.
-- Canonical runtime layout is now explicitly:
-  1. BEGIN NIAKVIO_PROVIDER
-  2. common ProviderBase v3
-  3. PROVIDER.<ID>.CONFIG.V1 structured DATA
-  4. all provider-specific PROVIDER.* Lego
-  5. exactly one `/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */`
-  6. all CORE.* Lego
-  7. END NIAKVIO_PROVIDER
-- `apply_provider_overrides.py` now strips stale Core Lego + stale Core boundary before recomposition, applies PROVIDER.* first, then inserts exactly one Core boundary before Core composition.
-- `provider_brick_portfolio_audit_test.py --published --require-all` audits the exact JS referenced by the current manifest. Quick and post-reconstruction validation use this mode; bare ProviderBase is no longer confused with a composed provider.
-- `materialize_provider_v3_all.py` and `audit_provider_v3_static.py` both fail closed unless all PROVIDER.* blocks are before the Core boundary and every CORE.* block is after it.
-- Workbench HEAD at this checkpoint: `559eed2ad529f95c9f7bfe10ad425ba3d8c36bad`.
-
-## 2026-09-03 — Core unit-contract cleanup before 96/96 rebuild
-- The 5.21.0 capability gate now records Purstream's intentional current semantic scope as movie/tv while preserving historical 5.21.0 types for audit context.
-- CORE.MEDIA_TYPE_RESOLUTION.V1 moved to revision `tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile`.
-- v26 fixes deferred-TMDB positive-output reconciliation: if TMDB confirms the same canonical/provider transport, NiakVIO does NOT execute the provider a second time. It promotes the authoritative context and reconciles only diagnostic fields already present in returned rows.
-- A dedicated unit test proves stable Dark Matter TV verification performs exactly one provider execution and one TMDB request while clearing `degraded`.
-- `normalize_stream_presentation_v12.py` is now a compatibility validator for committed V18, not a mutating normalizer. It validates `all-providers-standard-fields-url-facts-v18` read-only.
-- `global_stream_presentation_test.py` now validates V18 fixed-point directly with no apply/mutation semantics.
-
-## 2026-09-03 — V18 presentation syntax fix
-- Manual reconstruction retry 9 reached the V18 presentation unit test after ProviderBase 96/96, 5.21 capability and media-type v26 gates were green.
-- A real syntax bug was found in `global_stream_presentation_v1.py`: because the JS wrapper is a Python raw string, one separator was written as literal `\\nfunction blob(...)` instead of an actual newline.
-- Node rejected the generated provider with `SyntaxError: Invalid or unexpected token`.
-- Commit `421bd5c62fdf431a4d557cb28e6ea5b9a83c45ff` replaces that single literal escape with a real source newline.
-- `global_stream_presentation_test.py` now statically rejects any literal `\\nfunction` in the canonical V18 patch source before executing runtime cases.
-
-## 2026-09-03 — pre-reconstruction gate fully green / canonical span fix
-- Manual reconstruction retry 10 was the first run where the complete pre-reconstruction gate passed:
-  - ProviderBase v3 store 96/96 clean + artifact-valid;
-  - clean reconstruction contract;
-  - 5.21 capability regression;
-  - media-type v26;
-  - stream presentation V18.
-- The run then entered `Reconstruct all 96 providers from DATA + Lego` for the first time.
-- Its first failure was in the materializer boundary assertion itself, not Anime-Sama/runtime: the new assertion reconstructed an obsolete `START NIAKVIO_FIX` marker string while Provider v3 uses canonical `STARTFIX/CLOSEFIX`.
-- `materialize_provider_v3_all.py` now imports and uses `provider_patch_blocks.owned_span()` for all Provider/Core Lego positions. Boundary validation and reverse-code ownership therefore share one parser/source of truth.
-
-## 2026-09-03 — first full 96/96 generation + reverse proof
-- Retry 11 successfully materialized all 96 providers:
-  - generation `949d251de7e3cb4d`
-  - `FIELD_PROVIDER_V3_ALL_MATERIALIZED providers=96`
-  - reverse reconstruction `PROVIDER_V3_REVERSE_REBUILD_OK providers=96 generation=949d251de7e3cb4d byte_identical=96/96`
-  - workspace context only; mainTouched=false.
-- The subsequent published-byte portfolio gate found all 96 non-idempotent only because a second Core recomposition accumulated one blank line before `NUVIO_GLOBAL_CORE_START_BOUNDARY_V1`; `changed_blocks=none` on every reported provider.
-- `apply_provider_overrides._strip_generated_core_tail()` now removes the Core boundary together with its owned following newline, restoring the exact pre-Core Provider bytes before recomposition.
-- This is a byte-idempotence fix only; no Provider/Core Lego behavior changed.
-
-## 2026-09-03 — retry 12–14 post-gate fixture alignment
-- Retry 12 again materialized all 96 providers and proved reverse reconstruction generation `949d251de7e3cb4d` byte-identical 96/96. The boundary-newline idempotence fix held; the next red was a stale static ownership-order assertion, subsequently corrected by `20785a91947a70ae50fa9adbba4aa16d4a59f8b4`.
-- Retry 13 again reached 96/96 + reverse 96/96, and `PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false` passed. The next failure was isolated to `global_stream_presentation_pipeline_test.py`: its synthetic source had BEGIN/END Provider markers but no `NIAKVIO_PROVIDER_BASE_OWNED_V3`, so the HLS Core Lego correctly classified it as legacy and the idempotence reapply then rejected the escaped Core block.
-- Retry 14 reproduced the same fixture-only failure after another successful 96/96 materialization/reverse proof; static audit, media-type resolution and stream presentation V18 were green before that failure. No reconstructed files were committed and main remained untouched.
-- Synthetic Core pipeline/playback/future-provider tests now model a minimal clean-v3 Provider envelope instead of a hybrid legacy/v3 envelope. Production clean-v3 detection remains strict; no runtime Lego behavior was relaxed.
-- Next controlled reconstruction is retry 15 on the workbench only.
-
-## 2026-09-03 — retry 15 removed stale native catalogue budget contract
-- Retry 15 again proved ProviderBase 96/96 clean, materialization 96/96, generation `949d251de7e3cb4d`, reverse rebuild byte-identical 96/96, published brick audit green, static audit green, media-type Core green, presentation V18 green, presentation pipeline green and stream identity green.
-- The next failure was not provider/runtime output: `runtime_capability_media_safety_v4_test.py` still launched `native_catalogue_recovery_budget_test.py`, which imported deleted `scripts/provider_patches/native_catalogue_recovery_budget_v1.py`.
-- Current `CORE.CATALOGUE_ALIAS_RECOVERY.V2` is positive-output identity protection only; it does not perform shared zero-result catalogue network recovery. Therefore a separate native catalogue recovery budget Lego is obsolete.
-- Removed stale `tests/native_catalogue_recovery_budget_test.py` and `scripts/apply_native_catalogue_recovery_budget_upgrade_v1.py`; neither was referenced by provider-overrides, CORE Quick/Deep, reconstruction or LEARN.
-- `runtime_capability_media_safety_v4_test.py` now retains only the still-active native HLS budget and synchronous target-order companion regressions.
-- No provider behavior was relaxed and main remains untouched. Next controlled reconstruction: retry 16.
-
-## 2026-09-03 — retry 16 legacy native target-order cleanup
-- Retry 16 again proved ProviderBase 96/96 clean, materialization 96/96 and reverse rebuild byte-identical 96/96, then passed published brick audit, static audit, media-type resolution, V18 presentation, presentation pipeline and stream identity.
-- The next failure was `native_hls_integrity_budget_test.py` asserting the obsolete `START NIAKVIO_FIX` syntax although managed Lego now use canonical `STARTFIX/CLOSEFIX`.
-- Pre-retry audit also found `native_sync_fetch_target_order_test.py` importing deleted `native_sync_fetch_target_order_v1.py`. Its old `apply_runtime_capability_upgrade_v4.py` still referenced that deleted patch plus the deleted minified compatibility patch, contradicting the current runtime contract: target traversal/order is Core-owned and no legacy source-shape target-order patch is replayed.
-- Updated the active HLS budget test to canonical STARTFIX/CLOSEFIX markers.
-- Removed stale `tests/native_sync_fetch_target_order_test.py` and `scripts/apply_runtime_capability_upgrade_v4.py` instead of resurrecting obsolete source-shape patchers.
-- `runtime_capability_media_safety_v4_test.py` now keeps only the active native HLS companion. No runtime policy was weakened; main remains untouched. Next controlled reconstruction: retry 17.
-
-## 2026-09-03 — retry 17 reached canonical post-rebuild contracts
-- Manual reconstruction retry 17 again materialized all 96 providers at generation `949d251de7e3cb4d` and proved reverse reconstruction byte-identical 96/96.
-- Published brick audit, Provider v3 static audit, media-type v26, stream presentation V18, presentation pipeline, stream identity and runtime capability media safety all passed on the reconstructed workspace bytes.
-- The first red was a stale test contract in `global_playback_integrity_policy_test.py`: StreamZo HLS options moved from legacy `patch_script_options` to `core_options.hls_runtime_integrity`; runtime configuration itself was present and correct.
-- The same cleanup batch aligns HLS/sanitizer assertions to canonical STARTFIX/CLOSEFIX helper markers, removes the obsolete Terser-specific test wording, and upgrades the published Lego contract from legacy marker/v20 assumptions to canonical ownership helpers + media-type v26 launch/positive-output gates.
-- No provider behavior is weakened and main remains untouched. Next controlled reconstruction: retry 18.
-
-## 2026-09-03 — retry 18 passed runtime post-gates; workspace activation report drift isolated
-- Retry 18 again materialized all 96 providers and proved generation `949d251de7e3cb4d` reverse byte identity 96/96.
-- The previously stale contracts are now proven fixed: published brick audit, static audit, media-type v26, presentation V18/pipeline, stream identity, runtime media safety, playback integrity, stream sanitizer and published Provider Lego v26 all passed on reconstructed bytes.
-- Release integrity then failed only because MOVIX is intentionally disabled in the checked-out published baseline while the committed historical Deep `health-report.json` still says `preserved-current-enabled-ci-uncertain / enabled=true`.
-- Manual Provider v3 reconstruction is a non-publishing workspace operation and does not own activation decisions. Activation preservation now defers an unchanged baseline-disabled provider in `NUVIO_PROVIDER_V3_CONTEXT=workspace` even when the historical Deep report is stale; production/Deep retains the strict requirement that its current report must also say disabled.
-- A regression test covers workspace acceptance, production rejection of stale enabled reports, and production acceptance when both baseline and current report are disabled.
-- No activation flag, provider runtime, or main byte is changed. Next controlled reconstruction: retry 19.
-
-## 2026-09-03 — retry 19 completed and committed the canonical 96/96 workspace
-- Retry 19 completed successfully end-to-end.
-- ProviderBase v3 remained clean and artifact-valid; all 96 providers were reconstructed from DATA + owned Lego at generation `949d251de7e3cb4d`.
-- Reverse reconstruction remained byte-identical 96/96.
-- Runtime/release post-gates all passed, including published brick audit, Provider v3 static audit, media-type v26, presentation V18/pipeline, stream identity, runtime media safety, playback integrity, terminal sanitizer, published Provider Lego contract, release hashes and release integrity.
-- The verified reconstruction artifact uploaded successfully.
-- GitHub committed the reconstructed workspace as `72a99271f59c81a64fd8c9a353b6ba86827f39ac` with message `chore: reconstruct Provider v3 96/96`.
-- Main remains untouched.
-- Because the verified provider commit is emitted by GitHub Actions and therefore does not cascade another push workflow, a provider-byte-neutral ownership-test hardening commit is used to trigger CORE Quick while preserving the exact reconstructed provider bytes.
-
-## 2026-09-03 — CORE Quick green on reconstructed Provider v3 bytes; five labs triggered next
-- CORE Quick run `33708888221` / run number 1783 completed successfully on commit `552f8dd6d478c823bb820f598d6220a26d6f4c6d`.
-- That commit is provider-byte-neutral relative to the verified reconstruction commit `72a99271f59c81a64fd8c9a353b6ba86827f39ac`; it only hardens the manual-workspace ownership test and records state in MEMORY.
-- Quick therefore validated the exact reconstructed 96 provider bytes: five-lab coverage/purity, Provider v3 static audit, published brick portfolio, 5.21 capability regression, media-type v26, presentation V18/pipeline, stream identity, runtime media safety, playback integrity and terminal sanitizer all passed.
-- The shared five-lab trigger is now advanced once for TVAndroid, MobileAndroid, MobileIOS, DesktopMACOS and DesktopWindows. All five labs must observe these same Provider JS bytes; Labs remain observational evidence only and never repair/reconstruct.
-- Main remains untouched.
-
-## 2026-09-03 — Desktop lab preflight stale mutation contract removed
-- The first five-lab trigger reached Desktop only as far as the resolve/preflight job. It failed before any official Desktop client execution because `tests/nuvio_client_upstream_drift_guard_test.py` still required the retired mutating Desktop canary sequence (`normalize_* --apply` / Core rematerialization).
-- This contradicted the current Lab architecture: native Labs are observational and must consume the exact already-materialized Provider JS bytes.
-- The drift-guard regression now requires the read-only Desktop contract checks, official-client drift/HEAD resolution and native reader execution, and explicitly forbids mutation/reapply/reconstruction commands in the Desktop Lab.
-- A Desktop-only trigger path is added so macOS/Windows can be re-run after Desktop-specific Lab fixes without cancelling/re-running Android/iOS. The shared five-lab trigger remains the canonical full acceptance trigger.
-- No provider bytes or main bytes are changed.
-
-## 2026-09-03 — native acceptance 4/5 green before Provider v3 cleanup retry 20
-- Shared five-lab acceptance on the reconstructed Provider v3 bytes has now proven TVAndroid and MobileAndroid green in run `33709117762`.
-- Desktop targeted run `33709259843` is green on both macOS and Windows. The first Windows job failed before provider execution because Gradle could not resolve the official NuvioDesktop Foojay toolchain plugin; a targeted job rerun on the same SHA succeeded, confirming build-infrastructure/transient resolution rather than a Provider v3 regression.
-- Mobile iOS run `33709117670` remains in the official native Lab session at the time of this cleanup commit; no failure has been reported yet.
-- CORE Quick 1784 remained green after the Desktop observational-contract cleanup.
-- No main byte was modified.
-
-## 2026-09-03 — Kehflix playback malformed-container evidence closes a generic HLS Core gap
-- A real user playback failure from the current main Kehflix stream reported `Cannot find sync byte / parsing_container_malformed`, which means the player entered an MPEG-TS parsing path without finding the required TS sync structure.
-- Inspection showed that current `CORE.HLS_RUNTIME_INTEGRITY.V1` proves playlist/master/variant structure but intentionally skipped HLS network probes on native hosts. Therefore a syntactically valid `#EXTM3U` could still hand the player a first segment containing HTML/JSON/garbage or a mismatched container.
-- Official NuvioMobile/NuvioDesktop conversion was checked: plugin `row.headers` are projected to `behaviorHints.proxyHeaders.request` and then to player source headers; NuvioTV similarly maps local plugin headers to ProxyHeaders. The generic root gap is therefore first-media-container proof, not a missing basic header projection.
-- HLS Core now has an opt-in native first-segment proof controlled by provider DATA. It preserves Referer/Origin, resolves the first variant, reads only a bounded first segment/init map, validates MPEG-TS sync or fMP4 box signatures, and positively rejects HTML/JSON/malformed container payloads. Timeout/network uncertainty and encrypted HLS remain inconclusive/non-blocking.
-- Kehflix opts into this generic Core capability for at most three HLS rows with a short per-probe deadline. This is a stream-level filter; it does not disable Kehflix as a provider.
-- A native HLS regression test proves default zero-extra-probe behavior, valid TS retention, malformed TS/HTML rejection, header preservation and unknown-network retention.
-
-## 2026-09-03 — Provider v3 repository/documentation cleanup
-- The architecture documentation had drifted behind the validated code: it still described Quick as reparative/publishable, Deep as repair/reconstruction, ProviderBase V2 ownership, the removed `core-media-finalize-main.yml`, and Engine V2 as a second production control plane.
-- `ARCHITECTURE.md` is rewritten as the Provider v3 source of truth: clean ProviderBase v3 + structured DATA + owned PROVIDER/CORE Lego, manual 96/96 reconstruction only, Quick/Deep non-mutating provider verification, Learning sandbox ownership, CONFIG-only Domain Refresh and exactly five observational Native Labs.
-- README, README.fr, HEALTH-CHECK, VALIDATION, CONTRIBUTING and engine_v2/README are aligned with the same contract. `automation/provider-v3-architecture.json` advances to schema v2 and records the machine-readable ownership/documentation/HLS contracts.
-- A new documentation/ownership regression test fails closed on old ProviderBase V2 markers, old Quick/Deep repair language, dead workflow references or adaptive-repair calls from active non-Learning workflows. CORE Quick and manual reconstruction now run this test.
-- `provider_brick_portfolio_audit_test.py` no longer fingerprints/orders obsolete `START NIAKVIO_FIX/END` markers; it uses canonical STARTFIX/CLOSEFIX owned spans, closing a hidden false-green subcheck.
-- The unreferenced legacy `.github/triggers/deep-provider-repair` trigger is removed. Low-level repair primitives are not deleted blindly because several remain useful to Learning/tests.
-- A rendered/visually checked `ARCHITECTURE.docx` projection is generated from the current architecture for human review.
-- These Core/DATA changes require a new deterministic 96/96 reconstruction. Next controlled reconstruction: retry 20 on the workbench only.
-
-## 2026-09-03 — retry 20 reconstructed 96/96; post-gate test-only red
-- Retry 20 run `33711943492` successfully materialized all 96 Provider v3 bundles after the HLS/Core cleanup at generation `9ddd9f969838d444`.
-- Reverse reconstruction was byte-identical 96/96 and the published brick portfolio/static/media-type/presentation/identity gates passed on the reconstructed workspace.
-- The run stopped only because `native_hls_integrity_budget_test.py` incorrectly asserted that the source token `probeFirstSegmentNative` must be absent from the default HLS Core. The helper exists in source regardless of configuration; the correct invariant is that serialized config does not enable `"probeFirstSegmentNative":true`.
-- CORE Quick 1785 failed for the expected pre-rematerialization reason: exact published bytes still contained the previous HLS Lego. No new Provider v3 architectural failure was found.
-- Next controlled reconstruction is retry 21 after correcting that test.
-
-## 2026-09-03 — iOS Lab watchdog made resumable
-- iOS full run `33709117670` built the official NuvioMobile device IPA and launched the simulator successfully, then produced real provider observations before stalling after Vegamovies and hitting the 120-second log-idle watchdog.
-- This is an iOS Lab/session isolation problem: the official PluginRuntime wraps execution in coroutine timeout, but a blocked native JS/QuickJS evaluation can remain non-cooperative and stop the whole process from advancing.
-- The CI-only iOS harness now emits provider BEGIN/END markers and accepts resume fixture/provider context.
-- The shell Lab watchdog can terminate only the app process, mark the blocked provider as a timeout on the resumed run, relaunch the exact same official client/manifest, and continue at the next provider without replaying already completed fixtures/providers.
-- Full acceptance has a bounded watchdog restart budget; targeted Learning mode remains fail-fast instead of hiding a hang.
-- A dedicated `native-ios-lab-validation.json` trigger permits iOS-only acceptance reruns without repeating the four already-green Android/Desktop Labs.
-
-## 2026-09-03 — retry 21 fully green after HLS/Core cleanup
-- Manual reconstruction run `33733218590` / retry 21 completed successfully end-to-end on workbench source commit `fb1d8b5ea40c6515842949f5e980735166d82dcc`.
-- All 96 ProviderBase v3 inputs remained clean; all 96 providers were materialized at generation `9ddd9f969838d444`.
-- Reverse reconstruction was byte-identical 96/96 immediately after materialization and again in the final post-gates.
-- Published brick portfolio, Provider v3 static audit, Media Type v26, Stream Presentation V18/pipeline, stream identity, runtime media safety, playback integrity, terminal sanitizer, release hashes and release integrity all passed.
-- GitHub committed the verified reconstructed workspace as `8e3f40c318d923e83b1dc49320fc1e4b68efe2cd` with message `chore: reconstruct Provider v3 96/96`.
-- CORE Quick 1787 failed only because it started concurrently before reconstruction and therefore audited the previous published HLS bytes; documentation and iOS watchdog contracts were already green. A provider-byte-neutral documentation commit must now trigger the authoritative Quick on the new bytes.
-- Main remains untouched.
-
-## 2026-09-03 — final documentation cleanup prepared after retry 21
-- `INSTALL.md` no longer describes Quick as repair-first or Deep as a reconstruction engine; it documents manual Provider v3 reconstruction, five native Labs and 8-day current native artifacts.
-- `SECURITY.md` now states that published Provider JS are rebuilt from ProviderBase v3 + structured DATA + owned Lego, never hand-edited or seeded from upstream/published JS.
-- `UPSTREAMS.md` now reflects reality: weekly upstream discovery is read-only; existing `upstream-lkg` snapshots are historical provenance/knowledge and are not refreshed by CORE Deep or used as executable reconstruction seeds.
-- These secondary docs are added to the fail-closed documentation drift contract.
-
-## 2026-09-03 — Native Labs expanded to full Provider catalogue
-- Final native acceptance is no longer described merely as three representative fixtures. Each of the five device Labs must traverse the complete declared Provider matrix on those fixtures.
-- Current exact matrix from manifest 5.21.31: 96 unique providers, 214 declared routes = 82 movie + 92 tv + 40 anime. Every provider has at least one representative route.
-- New fail-closed gate: `scripts/gate_native_declared_provider_matrix.py`. Missing provider, missing declared route begin, missing terminal observation, or undeclared route makes coverage incomplete.
-- Reader/player failures are deliberately observational. Labs must run the official Nuvio clients and preserve reader errors; they must not patch/repair NuvioTV/NuvioMobile/NuvioDesktop to manufacture a green playback result.
-- External client/runtime failures are therefore reported separately from NiakVIO matrix/infra completeness.
-- Mobile Android harness test plumbing now launches the official `MainActivity` explicitly instead of relying on launcher-alias resolution and records the full exception cause chain if player setup still fails. This is a harness correction, not a NuvioMobile product repair.
-- Old evidence remains useful: TV Android had 10/10 healthy reader observations; Windows Desktop had 18/19 healthy with one Kehflix anime timeout; Mobile Android had 0/20 healthy due `Could not launch activity` setup errors; macOS Desktop had 0/18 healthy due `mpv_create_failed`. The old workflow greens did not mean all readers were healthy.
-
-## 2026-09-03 — Provider v3 minimizer workbench started, production unchanged
-- Terser remains removed/forbidden.
-- `scripts/provider_v3_minimizer.py` is audit/preview-only and cannot write inside `providers/`.
-- Phase A inventories all 96 generated Provider JS files: bytes, comments, indentation/trailing whitespace, template-literal tokens, ASI-sensitive lines and canonical markers.
-- No transformation is enabled; reconstruction/publication bytes are unchanged.
-- Future enablement requires preservation of BEGIN/END, STARTFIX/CLOSEFIX/FIXDATA, Core boundary, comments/newlines until ASI safety is proven, and structural/runtime/reverse reconstruction equivalence. No identifier renaming, expression reordering/folding or literal rewriting is allowed in the conservative plan.
-
-## 2026-09-03 — native logs expose systemic 3/96 provider regression
-- The previously green Android/Desktop workflows contained useful provider-level evidence; workflow green did not mean all providers were healthy.
-- TV Android, Mobile Android, Desktop Windows and Desktop macOS each executed the full 96-provider catalogue over the representative fixtures (214 provider executions/device).
-- On all four devices, only three providers produced any streams: KEHFLIX, CASTLE and STREAMZO. The other 93 providers were zero-output across their tested declared routes.
-- This cross-device symmetry proves the dominant failure is shared Provider v3 DATA/reconstruction state, not four unrelated client failures.
-- Examples of historically useful zero-output providers include PURSTREAM, VegaMovies, HINDMOVIEZ, AnimeZeY, 4KHDHub-NEW and VidLove.
-- Desktop workflow success was also only a workflow/smoke verdict: its production-player evidence contained non-blocking reader failures because NIAKVIO_REQUIRE_READER_SUCCESS=0. Final acceptance must inspect reader evidence, not only the GitHub conclusion.
-- Do not focus fixes only on the three currently non-empty providers. The acceptance target remains the full 96-provider catalogue.
-
-## 2026-09-03 — root cause: extracted static knowledge was not persisted into durable DATA
-- discover_candidates.py already extracts routes, hosts, URLs and decoded static strings from historical/upstream JS without executing it and builds clean_provider_model.
-- materialize_provider_v3_all.py ignored that extracted model and rebuilt DATA only from provider-overrides.json.
-- provider-overrides currently has 45/96 provider patches with no explicit site/API/learned route/learned URL/provider runtime Lego. Examples include AnimeZeY and 4KHDHub-NEW.
-- Therefore structurally perfect 96/96 reconstruction could still generate providers with no executable provider route knowledge; reverse byte identity only proved reproducibility of the broken DATA.
-- Corrective migration retry 22 will statically recover knowledge for all 96, persist it to automation/provider-v3-static-knowledge.json, and make that durable file a mandatory Provider v3 reconstruction input.
-- Historical/upstream Provider JS remains knowledge-only: it is never embedded or executed as reconstruction seed.
-
-## 2026-09-03 — Provider v3 executable-plan audit after retry 22
-- Acceptance scope is the full 96-provider catalogue, including disabled providers. `enabled=false` may never hide incomplete Provider v3 DATA; only explicit quarantine is allowed to publish an intentionally inert provider.
-- Existing architecture taxonomy remains authoritative: `official_domain_hub`, `api_stream_resolver`, `html_scraper`, `mixed_embed_resolver`, `direct_media`, `iframe_player`, `quarantined`. Do not introduce a parallel provider-type system.
-- A stricter audit exposed that route/URL presence alone is not proof of an executable reader plan. The reconstruction gate must validate strategy-compatible DATA/Lego for every one of the 96 providers.
-- Shared ProviderBase now treats Abhilinks/HubCloud/VCloud/Driveseed-style pages as bounded resolver intermediates and lets `direct_media` traverse them to proven final media; this is a family-level fix for MoviesHunt/4KHDHub/Movies4u/MoviesMod and similar providers.
-- ProviderBase API resolution now executes persisted learned `/api/...` routes against trusted provider bases instead of ignoring relative API DATA.
-- MoviesHunt, 4KHDHub and Movies4u now persist `/?s={query}`; MoviesMod persists `/search/{query}`.
-- CineVibe now has a clean provider-owned `PROVIDER.CINEVIBE.RUNTIME.V1` Lego implementing its tokenized API from Core-provided TMDB metadata; historical JS remains knowledge-only and CineVibe remains disabled until native acceptance.
-- Frenchstream is reclassified from permanent `quarantined` to `mixed_embed_resolver` while remaining disabled. `https://fstream.website/` is the maintenance/discovery hub supplied by the live project observation; terminal domain is mutable DATA. Historical wrong-duration Revenant evidence remains a stream-level identity/duration rejection regression, not a reason to inert the entire provider forever.
-- After the stricter strategy audit, additional false-positive plans were exposed: Cineby, CinemaCity, Nakios, Peachify, PlayIMDB, StreamFlix, VidEasy, Vidnest and Vidnest-Anime. These must be closed before the next 96/96 reconstruction.
-- Statically recovered contracts include CinemaCity `https://cinemacity.cc` + `/news_pages.xml` via `https://cc.realbestia.com`; Nakios `/api/sources/movie/{id}` and `/api/sources/tv/{id}/{season}/{episode}` at `https://api.nakios.store`; PlayIMDB `https://streamdata.vaplayer.ru/api.php?tmdb={id}&type={media}&season={season}&episode={episode}`; StreamFlix catalog/config at `https://api.streamflix.app`; VidEasy/Cineby share the speedracelight/Wings seed + encrypted-source family.
-- Main remains untouched; all work continues only on `workbench/provider-v3-performance-playback`.
-
-## 2026-09-03 — retry 25 closed structural Provider v3; final security/minimizer rematerialization pending
-- Retry 25 / run `33745927664` completed the full manual Provider v3 reconstruction successfully.
-- Reference generation before final security/minimizer rematerialization: `8e354389b41b2498`; reconstruction commit `bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb`; subsequent CORE Quick green `28d98a54264f7d24379c62b310a81b2e60dd7b4b`.
-- Reverse reconstruction is 96/96 byte-identical; release integrity and the full Provider v3 structural post-gates passed.
-- Full catalogue contract is 96 providers, disabled included. Current plan contract is 91 non-quarantined executable providers + 5 explicit quarantines: DVDPLAY, MOVIEBOX, NETMIRROR, TOPCARTOONS, VIXSRC.
-- Frenchstream is no longer a runtime quarantine: `provider_patches.frenchstream.capability=mixed_embed_resolver`, `https://fstream.website/` is the maintenance/discovery hub, and the historical wrong-duration evidence remains stream-level. The immutable 5.21 production floor remains separately recorded in `provider_capabilities`.
-- Shared resolver improvements now execute persisted API routes and resolve Abhilinks/HubCloud/VCloud/Driveseed-style intermediates. Clean provider-owned runtimes exist for CineVibe, StreamFlix, CinemaCity, Peachify, Vidnest, Vidnest-Anime, Cineby and VidEasy; Nakios/PlayIMDB use generic API DATA plans.
-- Five native Labs were triggered on the reconstructed bytes. Historical baseline is extremely weak functionally despite coverage greens: TV Android 2/214 non-empty, macOS 3/214, Windows 3/214, iOS 0/214; the old Mobile Android run failed before corpus staging. The Mobile Android harness has since been corrected to launch official MainActivity explicitly.
-
-## 2026-09-03 — 25 CodeQL High alerts share one ProviderBase HTML-regex root cause
-- The 25 user-reported main alerts (#158-#182) are all CodeQL `Bad HTML filtering regexp` findings in generated provider bundles.
-- The common generated source is `_strictHtmlIdentityOk()` in `scripts/provider_base_store.py`, which used generic regex HTML stripping. All 25 corresponding active workbench providers still inherited the same shape before this fix.
-- ProviderBase now uses deterministic scanner `_htmlVisibleText()` instead of regex HTML stripping.
-- `CORE.CATALOGUE_ALIAS_RECOVERY.V2` also had a second generic tag-strip pattern (visible on Frenchstream); it now uses deterministic `plainHtml()` and revision `authoritative-recovery-v12-html-scanner`.
-- `tests/provider_html_filter_security_test.py` gates both generator sources and, after reconstruction, all 96 published bundles. The test is wired into manual reconstruction, CORE Quick and SEC Final Gate.
-- Final requirement before merge: reconstruct all 96 again so the active content-addressed provider filenames no longer contain the old regex, then run CodeQL/security on the final branch/PR SHA.
-
-## 2026-09-03 — NiakVIO-safe minimizer finished and integrated
-- The earlier MEMORY entry describing the minimizer as audit-only is superseded.
-- Terser remains forbidden.
-- `scripts/provider_v3_minimizer.py` is now production-enabled and integrated into `materialize_provider_v3_all.py` before digest/filename generation.
-- The only transformation is removal of leading spaces/tabs on lines whose initial lexical state is ordinary JavaScript code.
-- Every line terminator is preserved; identifiers, expressions, regexes, strings and literals are never rewritten. Any provider containing a template literal is left completely byte-stable.
-- After minimization, managed Lego ownership, Provider BEGIN/END envelope and Core boundary are revalidated before hashing.
-- Gates: `provider_v3_minimizer_contract_test.py`, `provider_v3_minimizer_preview_test.py` (96 previews parsed by Node), `provider_v3_minimizer_published_test.py` (96 fixed-points), plus reverse reconstruction 96/96.
-- `automation/provider-v3-architecture.json`, `ARCHITECTURE.md`, `VALIDATION.md`, README EN/FR and documentation drift tests are being updated in the same transaction.
-
-## 2026-09-03 — canonical reconstruction c27ea147 + cross-client projection/TV byte contracts
-- Manual Provider v3 reconstruction retry 32 / run `33780373644` completed successfully end-to-end.
-- Canonical reconstructed generation is `c27ea147413fd73e`; GitHub committed it as `ced50b6b51de4838f3f94ba7b349beb81239a1d4`.
-- All 96 providers were materialized from clean ProviderBase v3 + durable DATA + owned Lego; reverse reconstruction is byte-identical 96/96.
-- Published minimizer fixed-point is green 96/96; Terser remains forbidden.
-- Published HTML-regex security gate is green across all 96 bundles with `bad_html_filter_regex=0`.
-- Stream Presentation V19 contained a real cross-client projection bug: it wrote `title=Provider - Quality` but `name=Provider`. Mobile/Desktop prefer `name`, so V20 now owns the invariant `out.name=out.title` with revision `all-providers-client-projection-name-mirror-v20`.
-- The full Facts -> Identity -> Media Type -> Presentation -> Branding -> Sanitizer pipeline test now proves the managed `CORE.STREAM_SANITIZER.V6` block instead of a retired implementation marker.
-- Android TV's audited PluginRuntime exposes neither TextEncoder/TextDecoder nor WebAssembly. HLS Core V8 therefore treats a native segment Response with no readable byte API as `unknown`, never positive malformed-container evidence. Positive HTML/JSON or invalid container bytes still fail closed.
-- Reconstruction now runs the V20 pipeline and the exact TV text/json-only HLS regression before materializing any of the 96 providers, avoiding expensive retries on bad contracts/fixtures.
-- Audited official client refs on 2026-09-03 are: NuvioMobile `d4891ffaaf975c77de8ea3612f37a7a2b936c79d`, NuvioDesktop `9390d5844e53d1f4d9829490d6f3deb057d7ab14`, NuvioTV `49c753de3f193e3a74ea54194df3d331ce6302f0`.
-- `automation/platform-runtime-contracts.json`, `automation/PLATFORM-RUNTIME-CONTRACTS.md`, `automation/nuvio-client-upstreams.json`, `automation/nuvio-tv-runtime-contract.json` and `sources.json` must remain aligned to those audited refs. Stale registry refs previously blocked every Native Lab before client execution.
-- Exact strategy quarantine remains only five providers: `dvdplay`, `moviebox`, `netmirror`, `topcartoons`, `vixsrc`. Frenchstream is NOT quarantined; it is an executable mixed-embed resolver with `https://fstream.website/` as maintenance/discovery hub and may remain activation-deferred until clean reader proof.
-- The one main-only domain-refresh commit `8388b69c460c59363244cb0c248bed3320c8be06` adds legacy duplicate replacement fields, but all 54 substantive domain mappings from it are already preserved in Provider v3 DATA/static knowledge with zero missing/divergent mappings. Do not reintroduce legacy duplicate fields merely to make history textually match.
-
-## 2026-09-03 — current five-Lab acceptance and Mobile harness adaptation
-- Shared five-Lab retry on commit `36ab55c1a33d15df70abe37ed057ddcde32b5b59` successfully passed client-ref resolution for TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows.
-- Mobile Android stopped before provider execution because NiakVIO's finalizer still required the obsolete literal `Intent(context, MainActivity::class.java)`. Current generated harness correctly launches the official debug app with `Intent().setClassName("com.nuviodebug.com", MainActivity::class.java.name)`.
-- Harness-only fix commit `e271517e55bb7f3d89f612a6f2df9bccc2f31696` updates the finalizer to recognize the current explicit MainActivity launch and still reject obsolete packageManager launcher resolution. Regression test commit `670de44ae7103dfa1821b66342740ef35272fa2d` locks that shape.
-- The failed Mobile Android job `100741440859` produced no provider evidence and must never be counted as a provider/runtime failure.
-- TV job `100741450072`, iOS job `100741460214`, Windows job `100741482926` and macOS job `100741483061` from that same five-Lab run were allowed to continue; do not cancel them by advancing the shared trigger while they are still useful.
-
+Done means the full requested workbench is coherent, yield is materially restored across the catalogue, the exact final bytes pass structural/security gates, and the five official Nuvio client Labs provide acceptable reader/playback evidence before merge.

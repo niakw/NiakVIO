@@ -6,6 +6,7 @@ promote = (ROOT / "scripts" / "promote_candidates.py").read_text(encoding="utf-8
 health = (ROOT / "scripts" / "health_check.mjs").read_text(encoding="utf-8")
 config = __import__("json").loads((ROOT / "health-config.json").read_text(encoding="utf-8"))
 media = (ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
+materializer = (ROOT / "scripts" / "materialize_provider_v3_all.py").read_text(encoding="utf-8")
 
 # Provider / type / stream are explicit architecture levels.
 assert 'scope: str = "provider"' in promote
@@ -72,8 +73,10 @@ assert config["modes"]["deep"]["zero_stream_preflight"] is False
 assert config["activation"]["zero_stream_is_per_work_not_manifest_disable"] is True
 assert config["activation"]["deep_learning_may_fallback_after_zero_stream"] is True
 
-# Media context is request-local and canonical resolution can cross movie/tv
-# namespaces, including anime movies transported as movie.
+# Media context is request-local and identity lookup can cross TMDB movie/tv
+# namespaces. Canonical anime stays semantic, while provider transport may use
+# tv OR movie so anime films remain reachable without granting ordinary-movie
+# semantic capability to anime-only providers.
 assert "delete g.__nuvioMediaContext" in media
 assert "__nuvioProviderRequestToken" in media
 assert "requestDeadline=Date.now()+providerBudgetMs()" in media
@@ -81,6 +84,7 @@ assert "g.__nuvioProviderRequestToken!==requestToken" in media
 assert 'return["movie","tv"]' in media
 assert 'return["tv","movie"]' in media
 assert 'canonical==="anime"' in media
-assert 'var ns=namespace==="movie"?"movie":"tv"' in media
+assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' in media
+assert 'wanted = ["anime", "tv", "movie"]' in materializer
 
-print("provider/type/stream architecture scopes verified")
+print("provider/type/stream architecture scopes verified: anime canonical, tv/movie transport compatible")

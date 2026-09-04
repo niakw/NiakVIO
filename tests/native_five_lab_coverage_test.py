@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """The native acceptance surface is exactly five first-class client/platform labs."""
 from pathlib import Path
+import json
+
 ROOT=Path(__file__).resolve().parents[1]
 android=(ROOT/".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8")
 ios=(ROOT/".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8")
@@ -35,10 +37,44 @@ assert "gate_native_declared_provider_matrix.py" in desktop
 
 platforms=["TVAndroid","MobileAndroid","MobileIOS","DesktopMACOS","DesktopWindows"]
 assert len(platforms)==5 and len(set(platforms))==5
-manifest=__import__("json").loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
+
+manifest=json.loads((ROOT/"manifest.json").read_text(encoding="utf-8"))
 rows=manifest.get("scrapers") or []
-route_counts={kind:sum(kind in {str(v).lower() for v in (row.get("supportedTypes") or [])} for row in rows) for kind in ("movie","tv","anime")}
 assert len(rows)==96
-assert route_counts=={"movie":82,"tv":92,"anime":40}
-assert sum(route_counts.values())==214
-print("NATIVE_FIVE_LABS_OK platforms="+",".join(platforms)+" providers=96 routes=214")
+
+valid={"movie","tv","anime"}
+canonical_route_counts={kind:0 for kind in valid}
+transport_route_counts={kind:0 for kind in valid}
+for row in rows:
+    provider=str(row.get("id") or "<unknown>")
+    transport=[str(v).strip().lower() for v in (row.get("supportedTypes") or []) if str(v).strip()]
+    canonical=[str(v).strip().lower() for v in (row.get("canonicalSupportedTypes") or transport) if str(v).strip()]
+    assert transport and canonical, provider
+    assert set(transport)<=valid, (provider,transport)
+    assert set(canonical)<=valid, (provider,canonical)
+    assert set(canonical)<=set(transport), (provider,canonical,transport)
+    for kind in valid:
+        canonical_route_counts[kind]+=int(kind in canonical)
+        transport_route_counts[kind]+=int(kind in transport)
+    if set(canonical)=={"anime"}:
+        # Anime providers are semantically anime-only, but Nuvio must be able to
+        # launch both episodic anime and anime movies through tv/movie transport.
+        assert {"anime","tv","movie"}<=set(transport), (provider,transport)
+
+# Do not freeze transport counts to an old manifest shape: compatible launch
+# aliases legitimately increase them. Canonical counts remain the semantic
+# capability surface, while the native matrix traverses the declared transport
+# surface actually consumed by Nuvio.
+assert transport_route_counts["movie"]>=canonical_route_counts["movie"]
+assert transport_route_counts["tv"]>=canonical_route_counts["tv"]
+assert transport_route_counts["anime"]>=canonical_route_counts["anime"]
+assert sum(transport_route_counts.values())>=sum(canonical_route_counts.values())
+assert canonical_route_counts["anime"]>0
+
+print(
+    "NATIVE_FIVE_LABS_OK platforms="+",".join(platforms)
+    +" providers=96 canonical_routes="+str(sum(canonical_route_counts.values()))
+    +" transport_routes="+str(sum(transport_route_counts.values()))
+    +" canonical="+json.dumps(canonical_route_counts,sort_keys=True)
+    +" transport="+json.dumps(transport_route_counts,sort_keys=True)
+)

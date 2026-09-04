@@ -127,19 +127,23 @@ def assert_projection(
             f"{manifest_path}:{row['id']}: canonical media types drift from provider_catalog.json: "
             f"{row['canonical']} != {expected_types}"
         )
-        expected_transport = expected_types
-        if "anime" in expected_types and "tv" not in expected_types:
-            expected_transport = tuple([*expected_types, "tv"])
+
+        # canonicalSupportedTypes describes what the provider serves semantically.
+        # supportedTypes describes Nuvio launch compatibility. Anime catalogues may
+        # contain both episodic anime and anime movies, so an anime-only provider
+        # must accept TV *and* movie transport without acquiring ordinary movie
+        # semantic capability.
+        expected_transport = list(expected_types)
+        if "anime" in expected_types:
+            for compatible in ("tv", "movie"):
+                if compatible not in expected_transport:
+                    expected_transport.append(compatible)
             assert tuple(row["row"].get("canonicalSupportedTypes") or ()) == expected_types, (
-                f"{manifest_path}:{row['id']}: anime TV transport alias must preserve canonicalSupportedTypes"
+                f"{manifest_path}:{row['id']}: anime transport aliases must preserve canonicalSupportedTypes"
             )
-        if "anime" in expected_types and "movie" not in expected_types:
-            assert "movie" not in row["types"], (
-                f"{manifest_path}:{row['id']}: anime-only provider must not be selected for ordinary movie transport"
-            )
-        assert row["types"] == expected_transport, (
+        assert row["types"] == tuple(expected_transport), (
             f"{manifest_path}:{row['id']}: Nuvio transport supportedTypes drift: "
-            f"{row['types']} != {expected_transport}"
+            f"{row['types']} != {tuple(expected_transport)}"
         )
     return len(manifest_rows), anime
 
@@ -162,13 +166,11 @@ fixtures = {
 for slug in ("jujutsu-kaisen-s01e01", "mushoku-tensei-s01e01"):
     fixture = fixtures[slug]
     assert str(fixture.get("category") or "").lower() == "anime", (slug, fixture)
-    # Nuvio may surface episodic anime as tv/series, but trusted metadata owns
-    # the canonical identity. The provider route must resolve to anime, never
-    # duplicate the same work through both tv and anime.
     assert str(fixture.get("mediaType") or "").lower() == "anime", (slug, fixture)
 
 print(
     "canonical media type tests passed: "
     f"catalog={len(catalog)} general={canonical_count} vf={vf_count} "
-    f"anime_general={canonical_anime} anime_vf={vf_anime} vocabulary=movie|tv|anime"
+    f"anime_general={canonical_anime} anime_vf={vf_anime} vocabulary=movie|tv|anime "
+    "anime_transport=anime+tv+movie"
 )

@@ -88,6 +88,29 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 ''')
 
+anime_only = mod.apply(BASE, options={"semantic_types": ["anime"]})
+run_case(anime_only, '''
+let calls=0;
+global.fetch=async(url)=>{
+  calls++;
+  const value=String(url);
+  if(!value.includes('/movie/129?'))throw new Error('anime movie must resolve in TMDB movie namespace: '+value);
+  return{ok:true,status:200,json:async()=>({
+    id:129,genres:[{id:16,name:'Animation'}],original_language:'ja',
+    production_countries:[{iso_3166_1:'JP'}],keywords:{keywords:[{name:'anime'}]}
+  })};
+};
+const provider=require(process.argv[2]);
+(async()=>{
+  const value=await provider.getStreams('129','movie',null,null);
+  if(!Array.isArray(value)||!value.length)throw new Error('anime movie was suppressed');
+  if(value[0].canonicalMediaType!=='anime')throw new Error('anime movie lost canonical anime identity: '+JSON.stringify(value));
+  if(value[0].mediaType!=='movie'||value[0].providerMediaType!=='movie')
+    throw new Error('anime movie transport must stay movie: '+JSON.stringify(value));
+  if(calls!==1)throw new Error('anime movie TMDB verification count '+calls);
+})().catch(e=>{console.error(e);process.exit(1)});
+''')
+
 run_case(mixed, '''
 let calls=0;
 global.__nuvioProviderEvent='discovery';
@@ -153,4 +176,4 @@ const provider=require(process.argv[2]);
 })().catch(e=>{console.error(e);process.exit(1)});
 ''')
 
-print('global media resolver: runtime-only TMDB credentials, launch gate, canonical/transport split and deferred verification passed')
+print('global media resolver: runtime-only TMDB credentials, launch gate, canonical anime + tv/movie transport, and deferred verification passed')
