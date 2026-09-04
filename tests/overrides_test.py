@@ -75,8 +75,11 @@ def test_domain_overrides() -> None:
     frenchstream = config["provider_patches"]["frenchstream"]
     assert frenchstream["capability"] == "mixed_embed_resolver"
     assert frenchstream["official_hub"] == "https://fstream.website/"
-    assert frenchstream["official_site"] == "https://fs16.lol"
-    assert frenchstream.get("domain_substitutions") == {}
+    assert frenchstream["official_site"] == "https://fs23.lol"
+    runtime_domains = frenchstream.get("runtime_domain_replacements") or {}
+    assert runtime_domains
+    assert set(runtime_domains.values()) == {"fs23.lol"}
+    assert runtime_domains.get("fs16.lol") == "fs23.lol"
     assert frenchstream["capability_promotion"]["activation_policy"] == "remain_disabled_until_native_reader_acceptance"
 
     movix_source = b"const A='https://api.movix.cash'; const B='https://api.movix.cloud';"
