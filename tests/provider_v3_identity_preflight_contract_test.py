@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from materialize_provider_v3_all import identity_input, provider_model  # noqa: E402
+from provider_base_store import build_clean_provider_seed  # noqa: E402
 
 
 def assert_mode(value, expected, requires):
@@ -23,6 +24,15 @@ assert_mode(identity_input({"official_site": "https://example.test"}, ["/api/mov
 # Real catalogue/title/slug plans need Core TMDB metadata first.
 assert_mode(identity_input({}, ["/search?q={query}", "/film/{slug}"], None), "catalog_search", True)
 assert_mode(identity_input({}, ["/api/search/{query}"], None), "catalog_search", True)
+
+# API-backed catalogue search is still SEARCH, not a direct API identity route.
+# This ordering is runtime-significant: otherwise _apiUrls() expands {query}
+# with an intentionally empty title and emits malformed requests such as q=.
+seed_text = build_clean_provider_seed("fixture").decode("utf-8")
+route_kind_start = seed_text.index("function _routeKind(route)")
+route_kind_end = seed_text.index("function _learnedUrls", route_kind_start)
+route_kind = seed_text[route_kind_start:route_kind_end]
+assert route_kind.index('return "search"') < route_kind.index('return "api"'), route_kind
 
 # A direct recipe must stay deferred; a search recipe must preflight.
 assert_mode(identity_input({}, [], {"directRoute": "/{media}?id={tmdbId}&mode=json"}), "tmdb_direct", False)
