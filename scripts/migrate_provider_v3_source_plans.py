@@ -4,6 +4,9 @@
 The migration keeps ProviderBase common/clean while making static Learning use
 provider-specific upstream source where available and attaching the first
 provider-owned runtime family (Anime-Sama catalogue/episodes.js).
+
+This file is also the explicit workflow trigger for applying the migration on
+the provider-v3 performance/playback workbench branch.
 """
 from __future__ import annotations
 
