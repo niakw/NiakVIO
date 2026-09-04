@@ -1,12 +1,9 @@
 #!/usr/bin/env python3
-"""One-shot Provider v3 source-plan migration.
+"""Idempotent Provider v3 source-plan migration.
 
-The migration keeps ProviderBase common/clean while making static Learning use
-provider-specific upstream source where available and attaching the first
-provider-owned runtime family (Anime-Sama catalogue/episodes.js).
-
-This file is also the explicit workflow trigger for applying the migration on
-the provider-v3 performance/playback workbench branch.
+ProviderBase remains common/clean. Static Learning reads provider-local upstream
+source for Gowaru, All-in-One-Nuvio and Yoru when available, while executable
+publication stays NiakVIO-owned DATA + Lego/Core.
 """
 from __future__ import annotations
 
@@ -31,10 +28,17 @@ def replace_once(path: Path, old: str, new: str) -> None:
 def migrate_sources() -> None:
     path = ROOT / "sources.json"
     data = json.loads(path.read_text(encoding="utf-8"))
-    gowaru = data["upstreams"]["gowaru"]
-    gowaru["knowledge_raw_templates"] = [
+    upstreams = data["upstreams"]
+    upstreams["gowaru"]["knowledge_raw_templates"] = [
         "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/src/{provider_id}/extractor.js",
         "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/src/{provider_id}/index.js",
+    ]
+    upstreams["aio"]["knowledge_raw_templates"] = [
+        "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/{provider_id}.js",
+        "https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/providers/{provider_id}.js",
+    ]
+    upstreams["yoru"]["knowledge_raw_templates"] = [
+        "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/{provider_id}.js",
     ]
     write_json(path, data)
 
@@ -87,10 +91,17 @@ def migrate_overrides() -> None:
 
 def migrate_discovery() -> None:
     path = ROOT / "scripts" / "discover_candidates.py"
+    text = path.read_text(encoding="utf-8")
+    # The migration is intentionally replay-safe on the workbench branch.
+    if "def fetch_provider_knowledge_bytes(" in text and "def infer_source_runtime_family(" in text:
+        if '"sourceRuntimeFamily": str(knowledge.get("runtimeFamily") or "unknown")' not in text:
+            raise RuntimeError("discover_candidates.py: partial source-plan migration detected")
+        return
+
     replace_once(
         path,
         '''def safe_fragment(value: str) -> str:\n''',
-        '''def fetch_provider_knowledge_bytes(\n    source_cfg: dict[str, Any], provider_id: str, compiled_data: bytes\n) -> tuple[bytes, str]:\n    """Prefer provider-local upstream source over a shared bundled artifact.\n\n    Bundled provider JS can contain common utilities for dozens of unrelated\n    providers (Kitsu, npm/package metadata, resolver registries, etc.). Treating\n    every literal in that bundle as provider DATA creates false executable routes.\n    Provider-local source is static knowledge only and is never executed/embedded.\n    """\n    templates = source_cfg.get("knowledge_raw_templates")\n    if not isinstance(templates, list) or not templates:\n        return compiled_data, "compiled-provider"\n    chunks: list[bytes] = []\n    urls: list[str] = []\n    for raw in templates[:8]:\n        template = str(raw or "").strip()\n        if not template:\n            continue\n        try:\n            url = template.format(provider_id=provider_id)\n            data = fetch_bytes(url, attempts=1, timeout=12)\n            validate_javascript(data, url)\n            chunks.append(data)\n            urls.append(url)\n        except Exception:\n            continue\n    if not chunks:\n        return compiled_data, "compiled-provider-fallback"\n    banner = ("\\n/* NIAKVIO_STATIC_KNOWLEDGE_SOURCE " + " ".join(urls) + " */\\n").encode("utf-8")\n    return banner.join(chunks), "provider-local-source"\n\n\ndef safe_fragment(value: str) -> str:\n''',
+        '''def fetch_provider_knowledge_bytes(\n    source_cfg: dict[str, Any], provider_id: str, compiled_data: bytes\n) -> tuple[bytes, str]:\n    """Prefer provider-local upstream source over a shared bundled artifact.\n\n    Bundled provider JS can contain common utilities for dozens of unrelated\n    providers. Provider-local source is static knowledge only and is never\n    executed or embedded in the published provider.\n    """\n    templates = source_cfg.get("knowledge_raw_templates")\n    if not isinstance(templates, list) or not templates:\n        return compiled_data, "compiled-provider"\n    chunks: list[bytes] = []\n    urls: list[str] = []\n    for raw in templates[:8]:\n        template = str(raw or "").strip()\n        if not template:\n            continue\n        try:\n            url = template.format(provider_id=provider_id)\n            data = fetch_bytes(url, attempts=1, timeout=12)\n            validate_javascript(data, url)\n            chunks.append(data)\n            urls.append(url)\n        except Exception:\n            continue\n    if not chunks:\n        return compiled_data, "compiled-provider-fallback"\n    banner = ("\\n/* NIAKVIO_STATIC_KNOWLEDGE_SOURCE " + " ".join(urls) + " */\\n").encode("utf-8")\n    return banner.join(chunks), "provider-local-source"\n\n\ndef safe_fragment(value: str) -> str:\n''',
     )
     replace_once(
         path,
@@ -135,18 +146,23 @@ def migrate_discovery() -> None:
 
 
 def migrate_projection() -> None:
-    path = ROOT / "scripts" / "materialize_provider_v3_all.py"
-    replace_once(
-        path,
-        '''        "apiRecipe": api_recipe,\n        "identityInput": identity_input(patch, routes, api_recipe),\n''',
-        '''        "apiRecipe": api_recipe,\n        "sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown"),\n        "identityInput": identity_input(patch, routes, api_recipe),\n''',
-    )
+    materializer = ROOT / "scripts" / "materialize_provider_v3_all.py"
+    materializer_text = materializer.read_text(encoding="utf-8")
+    if '"sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown")' not in materializer_text:
+        replace_once(
+            materializer,
+            '''        "apiRecipe": api_recipe,\n        "identityInput": identity_input(patch, routes, api_recipe),\n''',
+            '''        "apiRecipe": api_recipe,\n        "sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown"),\n        "identityInput": identity_input(patch, routes, api_recipe),\n''',
+        )
+
     base = ROOT / "scripts" / "provider_base_store.py"
-    replace_once(
-        base,
-        '''        "apiRecipe": (\n            incoming_model.get("apiRecipe")\n            if isinstance(incoming_model.get("apiRecipe"), dict)\n            else None\n        ),\n        "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),\n''',
-        '''        "apiRecipe": (\n            incoming_model.get("apiRecipe")\n            if isinstance(incoming_model.get("apiRecipe"), dict)\n            else None\n        ),\n        "sourceRuntimeFamily": str(incoming_model.get("sourceRuntimeFamily") or "unknown"),\n        "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),\n''',
-    )
+    base_text = base.read_text(encoding="utf-8")
+    if '"sourceRuntimeFamily": str(incoming_model.get("sourceRuntimeFamily") or "unknown")' not in base_text:
+        replace_once(
+            base,
+            '''        "apiRecipe": (\n            incoming_model.get("apiRecipe")\n            if isinstance(incoming_model.get("apiRecipe"), dict)\n            else None\n        ),\n        "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),\n''',
+            '''        "apiRecipe": (\n            incoming_model.get("apiRecipe")\n            if isinstance(incoming_model.get("apiRecipe"), dict)\n            else None\n        ),\n        "sourceRuntimeFamily": str(incoming_model.get("sourceRuntimeFamily") or "unknown"),\n        "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),\n''',
+        )
 
 
 def main() -> int:
@@ -154,7 +170,10 @@ def main() -> int:
     migrate_overrides()
     migrate_discovery()
     migrate_projection()
-    print("PROVIDER_V3_SOURCE_PLAN_MIGRATION_OK anime-sama=provider-lego upstream-local-source=enabled")
+    print(
+        "PROVIDER_V3_SOURCE_PLAN_MIGRATION_OK "
+        "upstream-local-source=gowaru,aio,yoru anime-sama=provider-lego replay_safe=true"
+    )
     return 0
 
 
