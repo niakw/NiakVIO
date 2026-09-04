@@ -56,6 +56,7 @@ jobs:
               echo "Durable Provider v3 static knowledge is missing; request refresh_static_knowledge=true." >&2
               exit 1
             }
+            python scripts/enrich_provider_v3_static_knowledge.py
             python tests/provider_v3_static_knowledge_contract_test.py
             exit 0
           fi
@@ -80,6 +81,7 @@ jobs:
           python scripts/promote_provider_v3_static_knowledge.py \
             --stage staging/provider-v3-static-knowledge \
             --output automation/provider-v3-static-knowledge.json
+          python scripts/enrich_provider_v3_static_knowledge.py
           python tests/provider_v3_static_knowledge_contract_test.py
       - name: Refuse direct main mutation
         if: inputs.commit_reconstruction
