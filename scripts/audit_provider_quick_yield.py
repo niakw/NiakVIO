@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""Fast report-only Provider v3 yield census.
-
-Runs one representative real work for every canonical semantic capability of
-all providers (movie, TV, anime) through the same Node-compatible Nuvio probe.
-It validates returned media endpoints and content identity, but never mutates
-activation. This is deliberately much faster than the broad catalogue Lab and
-is intended as a pre-Lab regression signal.
-"""
+"""Fast report-only Provider v3 yield census with execution-gate diagnostics."""
 from __future__ import annotations
 
 import concurrent.futures
@@ -88,8 +81,7 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
         if not provider_id or not filename or not (ROOT / filename).is_file():
             continue
         providers += 1
-        types = semantic_types(row)
-        for media_type in types:
+        for media_type in semantic_types(row):
             tasks.append({
                 "provider_id": provider_id,
                 "provider_name": str(row.get("name") or row.get("id") or provider_id),
@@ -103,11 +95,8 @@ def build_tasks() -> tuple[list[dict[str, Any]], int]:
 def run(task: dict[str, Any]) -> dict[str, Any]:
     started = time.monotonic()
     command = [
-        "node",
-        str(PROBE),
-        str(ROOT / task["filename"]),
-        json.dumps(task["fixture"], ensure_ascii=False, separators=(",", ":")),
-        "{}",
+        "node", str(PROBE), str(ROOT / task["filename"]),
+        json.dumps(task["fixture"], ensure_ascii=False, separators=(",", ":")), "{}",
     ]
     base = {
         "provider_id": task["provider_id"],
@@ -116,24 +105,16 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         "fixture_title": str(task["fixture"].get("title") or ""),
     }
     try:
-        proc = subprocess.run(
-            command,
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            timeout=TIMEOUT,
-            check=False,
-            env=os.environ.copy(),
-        )
+        proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT, check=False, env=os.environ.copy())
     except subprocess.TimeoutExpired:
-        return {**base, "status": "timeout", "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000)}
+        return {**base, "status": "timeout", "debug_stage": "timeout", "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000)}
     except Exception as exc:
-        return {**base, "status": "audit_error", "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000), "error": type(exc).__name__}
+        return {**base, "status": "audit_error", "debug_stage": "audit_error", "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000), "error": type(exc).__name__}
 
     probe = parse_probe(proc.stdout)
     if probe is None:
         marker = "missing_tmdb_credential" if "missing_tmdb_credential" in proc.stderr else "invalid_probe_output"
-        return {**base, "status": marker, "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000)}
+        return {**base, "status": marker, "debug_stage": marker, "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000), "stderr_tail": proc.stderr[-1000:]}
 
     raw = int(probe.get("raw_stream_count") or 0)
     playable = int(probe.get("playable_stream_count") or 0)
@@ -152,9 +133,15 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         status = "returned_unplayable"
     else:
         status = "no_streams"
+    debug = probe.get("debug") if isinstance(probe.get("debug"), dict) else {}
     return {
         **base,
         "status": status,
+        "debug_stage": str(debug.get("stage") or "unknown"),
+        "debug_model": debug.get("model"),
+        "debug_fetch_count": int(debug.get("fetch_count") or 0),
+        "debug_provider_fetch_count": int(debug.get("provider_fetch_count") or 0),
+        "debug_fetches": debug.get("fetches") or [],
         "raw": raw,
         "playable": playable,
         "verified": verified,
@@ -183,6 +170,7 @@ def main() -> int:
     verified_providers = sorted(provider for provider, values in by_provider.items() if any(int(row.get("verified") or 0) > 0 for row in values))
     wrong_content = sorted(provider for provider, values in by_provider.items() if any(row.get("status") == "wrong_content" for row in values))
     statuses = Counter(str(row.get("status") or "unknown") for row in rows)
+    debug_stages = Counter(str(row.get("debug_stage") or "unknown") for row in rows)
 
     type_summary: dict[str, dict[str, int]] = {}
     for media_type in REPRESENTATIVE:
@@ -194,9 +182,16 @@ def main() -> int:
             "verified": sum(1 for row in subset if int(row.get("verified") or 0) > 0),
         }
 
+    stage_providers: dict[str, list[str]] = defaultdict(list)
+    for row in rows:
+        stage = str(row.get("debug_stage") or "unknown")
+        provider = str(row.get("provider_id") or "")
+        if provider and provider not in stage_providers[stage]:
+            stage_providers[stage].append(provider)
+
     report = {
-        "schema_version": 1,
-        "environment": "node-fast-real-stream-census-with-tmdb-runtime-context",
+        "schema_version": 2,
+        "environment": "node-fast-real-stream-census-with-tmdb-runtime-context-and-gate-trace",
         "provider_count": provider_count,
         "task_count": len(tasks),
         "raw_provider_count": len(raw_providers),
@@ -209,6 +204,8 @@ def main() -> int:
         "wrong_content_providers": wrong_content,
         "type_summary": type_summary,
         "status_counts": dict(sorted(statuses.items())),
+        "debug_stage_counts": dict(sorted(debug_stages.items())),
+        "debug_stage_providers": {key: sorted(value) for key, value in sorted(stage_providers.items())},
         "rows": sorted(rows, key=lambda row: (row["provider_id"], row["semantic_type"])),
     }
     OUTPUT.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -219,6 +216,8 @@ def main() -> int:
     )
     print("FIELD_PROVIDER_QUICK_YIELD_PLAYABLE providers=" + ",".join(playable_providers))
     print("FIELD_PROVIDER_QUICK_YIELD_VERIFIED providers=" + ",".join(verified_providers))
+    for stage, count in sorted(debug_stages.items(), key=lambda item: (-item[1], item[0])):
+        print(f"FIELD_PROVIDER_QUICK_YIELD_STAGE stage={stage} tasks={count} providers={len(stage_providers.get(stage) or [])}")
     for media_type, summary in type_summary.items():
         print(
             "FIELD_PROVIDER_QUICK_YIELD_TYPE "
