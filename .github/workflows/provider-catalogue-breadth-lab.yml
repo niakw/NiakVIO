@@ -1,8 +1,12 @@
 name: LEARN - Catalogue Breadth Lab
 
 on:
-  # Report-only census: intentionally manual. Do not keep a synthetic dead trigger file.
   workflow_dispatch:
+  push:
+    branches:
+      - workbench/provider-v3-performance-playback
+    paths:
+      - ".github/workflows/provider-catalogue-breadth-lab.yml"
 
 permissions:
   contents: read
@@ -47,9 +51,15 @@ jobs:
         env:
           NUVIO_BREADTH_WORKERS: "8"
           NUVIO_BREADTH_TIMEOUT: "80"
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         run: |
           set -euxo pipefail
-          python3 scripts/audit_provider_catalogue_breadth.py \
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}" || {
+            echo "A TMDB credential is required for the Provider JS breadth census." >&2
+            exit 1
+          }
+          python3 scripts/audit_provider_catalogue_breadth_tmdb_ci.py \
             --output provider-catalogue-breadth.json
 
       - name: Publish census summary
