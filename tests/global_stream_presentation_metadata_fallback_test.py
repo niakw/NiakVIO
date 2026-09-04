@@ -58,10 +58,12 @@ source = (
 )
 output = materialize(source)
 
-# Existing UI contract must remain byte-shape compatible.
+# Existing UI contract must remain byte-shape compatible. The current projection
+# chooses the movie/TV icon through one conditional expression, so validate the
+# literal icon payloads rather than the obsolete separate concatenation shapes.
 for needle in (
-    '"🎬 "+media',
-    '"📺 "+media',
+    '"🎬 "',
+    '"📺 "',
     '"⏱ "+humanDuration',
     '"🔞 "+f.ageRating',
     'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")',
