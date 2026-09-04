@@ -30,13 +30,16 @@ for row in rows:
     source = (ROOT / relative).read_bytes()
     patched, _records = apply_overrides(provider_id, source, phase="discovery")
     text = patched.decode("utf-8")
-    managed = "/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */"
-    if text.count(managed) != 1:
+    sanitizer_start = "/* STARTFIX:CORE.STREAM_SANITIZER.V6 */"
+    sanitizer_close = "/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */"
+    if text.count(sanitizer_start) != 1 or text.count(sanitizer_close) != 1:
         missing.append(provider_id)
+    if "/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */" in text:
+        weak.append(provider_id)
     if "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6" in text:
         weak.append(provider_id)
-    branding = text.rfind("/* START NIAKVIO_FIX:CORE.PROVIDER_BRANDING.V1 */")
-    sanitizer = text.rfind(managed)
+    branding = text.rfind("/* STARTFIX:CORE.PROVIDER_BRANDING.V1 */")
+    sanitizer = text.rfind(sanitizer_start)
     if branding >= 0 and sanitizer <= branding:
         weak.append(provider_id)
     compact = "".join(text.split())
@@ -44,5 +47,5 @@ for row in rows:
         weak.append(provider_id)
 
 assert not missing, f"providers missing terminal sanitizer V6: {missing}"
-assert not weak, f"providers still pass unprobed stream rows: {weak}"
-print(f"global stream output guard passed: providers={len(rows)} managed_terminal_sanitizer={len(rows)}")
+assert not weak, f"providers still pass unprobed stream rows or stale ownership markers: {sorted(set(weak))}"
+print(f"global stream output guard passed: providers={len(rows)} managed_terminal_sanitizer={len(rows)} startfix_v3=true")
