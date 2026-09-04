@@ -80,7 +80,6 @@ jobs:
           if conflicted(p):
               ours = stage_json(2, p)
               theirs = stage_json(3, p)
-              # The provider map name is stable, but tolerate a future schema wrapper.
               ours_map = ours.get("providers") if isinstance(ours.get("providers"), dict) else ours
               theirs_map = theirs.get("providers") if isinstance(theirs.get("providers"), dict) else theirs
               for provider in PROVIDERS:
@@ -101,3 +100,5 @@ jobs:
           git diff --cached --check
           git commit -m "merge: reconcile latest validated provider domains from main"
           git push origin HEAD:workbench/provider-v3-performance-playback
+
+# touch: execute after workflow registration
