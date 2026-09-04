@@ -38,6 +38,18 @@ def source_argument(argv: list[str]) -> Path:
 
 def unwrap_runtime_trap(path: Path, client: str) -> bool:
     text = path.read_text(encoding="utf-8")
+
+    # A prebuild may already have replaced the direct runtime invocation with the
+    # official repository-loading path. The in-Lab runner intentionally reuses that
+    # generated source, so a second compatibility pass must be a no-op instead of
+    # failing because neither the wrapped nor raw `code =` anchor exists anymore.
+    if "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN" in text:
+        print(
+            f"FIELD_NATIVE_PROVIDER_LOADING_COMPAT client={client} "
+            "runtime_trap_unwrapped=false already_provider_loaded=true"
+        )
+        return False
+
     if client == "desktop":
         wrapped = "code = trapRuntimeErrors(File(root, provider.asset).readText()),"
         raw = "code = File(root, provider.asset).readText(),"
