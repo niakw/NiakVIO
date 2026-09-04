@@ -18,7 +18,7 @@ LAB_TRANSPORT="${NIAKVIO}/scripts/configure_native_android_lab_transport.py"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
 REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_http_evidence.py"
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
-PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading.py"
+PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading_compat.py"
 ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
 MOBILE_HARDEN="${NIAKVIO}/scripts/harden_nuvio_mobile_device_test.py"
 
