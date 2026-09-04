@@ -143,6 +143,10 @@ def patch_runtime_regression_expectations() -> bool:
             'throw new Error("Anime-only provider must preserve anime transport on metadata outage")',
             'throw new Error("Anime-only series fallback must preserve TV transport on metadata outage")',
         ),
+        (
+            'assert \'"revision":"tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile"\' in default_budget',
+            'assert \'"revision":"tmdb-data-contract-launch-gate-v27-anime-semantic-transport"\' in default_budget',
+        ),
     )
     for old, new in replacements:
         if old in text:
@@ -185,6 +189,7 @@ const provider=require(process.argv[2]);
     required = (
         "value[0].canonicalMediaType!=='anime'||value[0].mediaType!=='tv'",
         'value[0].mediaType!=="tv"||value[0].degraded!==true',
+        '"revision":"tmdb-data-contract-launch-gate-v27-anime-semantic-transport"',
         movie_marker,
     )
     for needle in required:
