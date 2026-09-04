@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from capture_tmdb_core_runtime_credential import main as capture_tmdb_core_credential
 from harden_stream_presentation_metadata_fallbacks import main as harden_stream_presentation_metadata
 from remove_embedded_tmdb_runtime_key_contract import main as remove_embedded_tmdb_runtime_key
 
@@ -178,9 +179,11 @@ def normalize_manifest() -> int:
 
 def main() -> int:
     runtime_key_removed = remove_embedded_tmdb_runtime_key() == 0
+    runtime_key_captured = capture_tmdb_core_credential() == 0
     presentation_hardened = harden_stream_presentation_metadata() == 0
     changes = {
         "tmdb_runtime_key_removed": runtime_key_removed,
+        "tmdb_runtime_key_captured_in_core": runtime_key_captured,
         "stream_presentation_metadata_hardened": presentation_hardened,
         "gowaru_route_tail": patch_gowaru_route_normalizer(),
         "core_anime_transport": patch_media_transport(),
