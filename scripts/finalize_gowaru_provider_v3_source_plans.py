@@ -93,9 +93,9 @@ def normalize_route(raw: str) -> str | None:
     value = value.replace("{query}{query}", "{query}")
 
     # Absolute request targets are executable source knowledge in their own
-    # right.  Never erase their host and then replay the path against the
-    # provider origin: doing that turns e.g. api.reallyfast.xyz into a bogus
-    # /api.reallyfast.xyz provider path.  Protocol-relative upstream literals
+    # right. Never erase their host and replay the path against the provider
+    # origin: doing that turns e.g. api.reallyfast.xyz into a bogus
+    # /api.reallyfast.xyz provider path. Protocol-relative upstream literals
     # are made explicit with HTTPS so the runtime keeps their origin as well.
     if value.startswith("//"):
         value = "https:" + value
@@ -107,7 +107,7 @@ def normalize_route(raw: str) -> str | None:
         host = str(parsed.hostname or "").casefold()
         if not host:
             return None
-        # TMDB metadata is a Core responsibility.  Upstream provider source may
+        # TMDB metadata is a Core responsibility. Upstream provider source may
         # contain TMDB lookup code (and occasionally upstream API keys), but it
         # must never become Provider DATA or provider-network traffic.
         if host in CORE_METADATA_HOSTS:
@@ -122,7 +122,7 @@ def normalize_route(raw: str) -> str | None:
         if not value.startswith("/") or value == "/":
             return None
         # Historical static extraction could leave an erased absolute host as
-        # /api.themoviedb.org/... .  Fail closed for that form too.
+        # /api.themoviedb.org/... . Fail closed for that form too.
         if re.match(r"^/api\.themoviedb\.org(?:/|$)", value, re.I):
             return None
 
@@ -136,6 +136,61 @@ def normalize_route(raw: str) -> str | None:
     if "${" in value or "encodeuricomponent(" in low:
         return None
     return value
+
+
+def origin_map(model: dict[str, Any]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    values: list[str] = []
+    for key in ("origins", "observedUrls"):
+        raw = model.get(key)
+        if isinstance(raw, list):
+            values.extend(str(value or "") for value in raw)
+    for key in ("officialApi", "fixedApi", "officialSite", "knownSite", "officialHub"):
+        values.append(str(model.get(key) or ""))
+    for value in values:
+        if not value.startswith(("http://", "https://")):
+            continue
+        try:
+            parsed = urllib.parse.urlsplit(value)
+        except ValueError:
+            continue
+        host = str(parsed.hostname or "").casefold()
+        if not host or host in CORE_METADATA_HOSTS:
+            continue
+        scheme = parsed.scheme.casefold() if parsed.scheme.casefold() in {"http", "https"} else "https"
+        out.setdefault(host, f"{scheme}://{parsed.netloc}")
+    return out
+
+
+def repair_persisted_routes(values: list[str], model: dict[str, Any]) -> list[str]:
+    """Repair host fragments emitted by older static-plan generations.
+
+    Old generations collapsed absolute URLs to /host/path. If that host is
+    already trusted in Provider DATA, restore the absolute target. Bare host
+    fragments are not request plans and are discarded. TMDB fragments are
+    always discarded because Core owns TMDB metadata.
+    """
+    hosts = origin_map(model)
+    out: list[str] = []
+    for raw in values or []:
+        route = normalize_route(str(raw or ""))
+        if not route:
+            continue
+        if route.startswith("/"):
+            low = route.casefold()
+            repaired = route
+            for host, origin in hosts.items():
+                prefix = "/" + host
+                if low == prefix or low == prefix + "/":
+                    repaired = ""
+                    break
+                if low.startswith(prefix + "/"):
+                    repaired = origin + route[len(prefix):]
+                    break
+            route = repaired
+        if route and route not in out:
+            out.append(route)
+    return out
 
 
 def extract_routes(text: str) -> list[str]:
@@ -256,9 +311,12 @@ def main() -> int:
         family = infer_family(text, routes)
         model = row.get("model") if isinstance(row.get("model"), dict) else {}
         knowledge = row.get("knowledge") if isinstance(row.get("knowledge"), dict) else {}
-        model["routes"] = merge(model.get("routes") or [], routes, 160)
-        knowledge["routes"] = merge(knowledge.get("routes") or [], routes, 192)
-        knowledge["routeFragments"] = merge(knowledge.get("routeFragments") or [], routes, 192)
+        model_routes = repair_persisted_routes(model.get("routes") or [], model)
+        knowledge_routes = repair_persisted_routes(knowledge.get("routes") or [], model)
+        fragment_routes = repair_persisted_routes(knowledge.get("routeFragments") or [], model)
+        model["routes"] = merge(model_routes, routes, 160)
+        knowledge["routes"] = merge(knowledge_routes, routes, 192)
+        knowledge["routeFragments"] = merge(fragment_routes, routes, 192)
 
         # Strong provider-local family evidence supersedes a generic family label.
         if family != "unknown":
