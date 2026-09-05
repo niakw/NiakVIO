@@ -4,22 +4,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "20 18 * * 6"
-  pull_request:
-    branches: [main]
-    paths:
-      - "manifest.json"
-      - "vf/manifest.json"
-      - "no-anime/manifest.json"
-      - "vf-no-anime/manifest.json"
-      - "providers/**"
-      - "provider-bases/**"
-      - "provider-overrides.json"
-      - "scripts/patch_nuvio_desktop_test_compat.py"
-      - "tests/patch_nuvio_desktop_test_compat_test.py"
-      - "automation/native-human-ux-policy.json"
-      - ".github/workflows/native-desktop-reader-acceptance.yml"
-      - ".github/triggers/full-native-lab-validation.json"
-      - ".github/triggers/native-desktop-lab-validation.json"
   push:
     branches:
       - main
@@ -34,7 +18,7 @@ permissions:
 # Main revisions are latest-wins. Explicit workflow_dispatch runs stay isolated
 # because the final orchestrator may watch one exact dispatch as authoritative proof.
 concurrency:
-  group: native-desktop-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || (github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main-push') }}
+  group: native-desktop-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main-push' }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
@@ -50,7 +34,7 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
@@ -124,7 +108,7 @@ jobs:
         with:
           path: niakvio
           persist-credentials: false
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
+          ref: ${{ github.sha }}
 
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
@@ -146,7 +130,28 @@ jobs:
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
           touch nuvio-desktop/local.properties
+
+          EXPECTED_TEST="composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/PlayerExitOrderingTest.kt"
           python3 niakvio/scripts/patch_nuvio_desktop_test_compat.py "$GITHUB_WORKSPACE/nuvio-desktop"
+          CHANGED="$(git -C nuvio-desktop diff --name-only)"
+          if [[ -n "$CHANGED" && "$CHANGED" != "$EXPECTED_TEST" ]]; then
+            echo "Desktop compatibility shim escaped commonTest-only scope:" >&2
+            printf '%s\n' "$CHANGED" >&2
+            exit 1
+          fi
+          if git -C nuvio-desktop diff --name-only -- 'composeApp/src/commonMain/**' | grep -q .; then
+            echo "Desktop compatibility shim modified commonMain/runtime" >&2
+            exit 1
+          fi
+          BEFORE="$(git -C nuvio-desktop diff --binary | git hash-object --stdin)"
+          python3 niakvio/scripts/patch_nuvio_desktop_test_compat.py "$GITHUB_WORKSPACE/nuvio-desktop"
+          AFTER="$(git -C nuvio-desktop diff --binary | git hash-object --stdin)"
+          if [[ "$BEFORE" != "$AFTER" ]]; then
+            echo "Desktop compatibility shim is not idempotent" >&2
+            exit 1
+          fi
+          echo "FIELD_NATIVE_DESKTOP_TEST_COMPAT_SCOPE status=verified target=$EXPECTED_TEST runtime_mutation=false"
+
           python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
 
       - name: Install official Windows WebView2 build dependency
@@ -217,7 +222,6 @@ jobs:
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
-
       - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
         shell: bash
