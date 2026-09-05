@@ -10,6 +10,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from reconstruct_provider_v3_sequential_live import (  # noqa: E402
     credit_verified_playable_chains,
     is_qualified,
+    select_minimal_final_proof_tasks,
 )
 
 # Regression from Castle: a TV fixture can be genuinely playable while its
@@ -95,7 +96,37 @@ assert "verified = is_qualified(evaluation) and not wrong_only_types and not run
 assert '"wrongContentOnlyTypes": sorted(wrong_only_types)' in source
 assert "wrong = any(" not in source
 
+# Final reprobe traffic must be reduced to the exact evidence-bearing fixtures,
+# one per required type. This avoids re-running exploratory movie fixtures before
+# the only TV proof and triggering provider rate limits such as Cineby's 429.
+candidate_tasks = [
+    {"semantic_type": "movie", "fixture_slug": "sinners-2025"},
+    {"semantic_type": "movie", "fixture_slug": "interstellar"},
+    {"semantic_type": "movie", "fixture_slug": "colony-2021"},
+    {"semantic_type": "tv", "fixture_slug": "breaking-bad-s01e01"},
+]
+minimal = select_minimal_final_proof_tasks(candidate_tasks, {
+    "requiredTypes": ["movie", "tv"],
+    "declaredTypeRouteEvidence": {
+        "movie": [{"fixture": "sinners-2025", "source": "verified-playable-http-chain"}],
+        "tv": [{"fixture": "breaking-bad-s01e01", "source": "verified-playable-http-chain"}],
+    },
+})
+assert [row["fixture_slug"] for row in minimal] == ["sinners-2025", "breaking-bad-s01e01"], minimal
+
+# Legacy evidence without a fixture marker still gets exactly one candidate per
+# required type, never all exploratory fixtures.
+fallback = select_minimal_final_proof_tasks(candidate_tasks, {
+    "requiredTypes": ["movie", "tv"],
+    "declaredTypeRouteEvidence": {
+        "movie": [{"source": "declared-type-template-live-match"}],
+        "tv": [{"source": "declared-type-template-live-match"}],
+    },
+})
+assert [row["fixture_slug"] for row in fallback] == ["sinners-2025", "breaking-bad-s01e01"], fallback
+
 print(
     "PROVIDER_V3_PLAYABLE_CHAIN_GATE_OK castle_tv=credited_without_route_invention "
-    "search_only=not_credited cineby_wrong_content=per_type_not_global"
+    "search_only=not_credited cineby_wrong_content=per_type_not_global "
+    "final_reprobe=minimal_evidence_fixtures"
 )
