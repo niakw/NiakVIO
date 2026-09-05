@@ -271,13 +271,20 @@
     },
     "vegamovies": {
       "capability": "html_scraper",
-      "official_hub": "https://1vegamovies.tw/",
-      "official_site": "https://1vegamovies.me",
+      "official_hub": "https://vglist.top/",
+      "official_site": "https://new2.vegamovies.futbol",
       "manifest_overrides": {},
       "domain_substitutions": {
-        "vegamovies.catering": "1vegamovies.me",
-        "1vegamovies.cc": "1vegamovies.me"
-      }
+        "vegamovies.catering": "new2.vegamovies.futbol",
+        "1vegamovies.cc": "new2.vegamovies.futbol",
+        "1vegamovies.me": "new2.vegamovies.futbol"
+      },
+      "notes": [
+        "Reviewed current-site authority points to new2.vegamovies.futbol with vglist.top as the official directory/hub.",
+        "GET /?s={query} is a candidate search route inferred from the current catalogue search surface; it is intentionally not HTTP-proven here.",
+        "The strict sequential live probe must execute this candidate before it can become validated Provider DATA.",
+        "Historical /search.php and /api routes remain diagnostic candidates until live finalization prunes failed paths; no content-specific /download-* URL is persisted as Provider DATA."
+      ]
     },
     "hindmoviez": {
       "capability": "direct_media",
@@ -312,15 +319,16 @@
     "4khdhub": {
       "capability": "html_scraper",
       "notes": [
-        "Use the current HDHub4u terminal route and reject HTML/error bodies returned as HLS media.",
-        "4KHDHub runtime domain discovery is materialized from NiakVIO's persisted terminal; upstream repository registries are maintenance-only and never fetched during playback."
+        "4KHDHub runtime domain discovery is materialized from NiakVIO's persisted terminal; upstream repository registries are maintenance-only and never fetched during playback.",
+        "Reviewed current 4KHDHub authority is 4khdhub.one; HDHub4u is a separate catalogue and must not replace the 4KHDHub terminal.",
+        "GET /?s={query} remains a candidate until the strict N-to-N live probe executes it against 4khdhub.one.",
+        "The canonical 4khdhub.one host must never be substituted to hdhub4u.* by historical override data."
       ],
-      "official_hub": "https://hdhub4u.ec/",
-      "official_site": "https://hdhub4u.bi",
+      "official_hub": "https://4khdhub.one/",
+      "official_site": "https://4khdhub.one",
       "manifest_overrides": {},
       "learned_urls": [
-        "https://new4.hdhub4u.cl",
-        "https://hdhub4u.bi"
+        "https://4khdhub.one"
       ],
       "core_options": {
         "stream_sanitizer": {
@@ -328,11 +336,7 @@
         }
       },
       "domain_substitutions": {
-        "4khdhub.click": "hdhub4u.bi",
-        "new3.hdhub4u.cl": "hdhub4u.bi",
-        "4khdhub.one": "hdhub4u.bi",
-        "new4.hdhub4u.cl": "hdhub4u.bi",
-        "new5.hdhub4u.cl": "hdhub4u.bi"
+        "4khdhub.click": "4khdhub.one"
       },
       "learned_routes": [
         "/?s={query}"
