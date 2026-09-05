@@ -61,6 +61,7 @@ jobs:
           python scripts/upgrade_provider_v3_defer_finalization_preserve_validated_data_v3.py
           python scripts/upgrade_provider_v3_season_query_role_v1.py
           python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+          python scripts/reconcile_provider_v3_current_config_candidates.py
           python scripts/validate_provider_v3_routes_live.py --prepare-candidates
           python scripts/enrich_provider_v3_static_knowledge.py
           python scripts/sanitize_provider_v3_core_metadata_routes.py
@@ -69,6 +70,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python tests/provider_v3_current_config_candidate_reconciliation_test.py
           python tests/provider_v3_live_route_validation_test.py
           python tests/provider_v3_sequential_live_gate_test.py
           python tests/provider_v3_redirect_host_gate_test.py
@@ -126,7 +128,7 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git config user.email '41898233+github-actions[bot]@users.noreply.github.com'
 
           # Route/DATA truth is the deliverable of this workbench gate. Persist
           # only those two canonical files; never smuggle generated bundles,
