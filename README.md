@@ -240,7 +240,7 @@ An inconsistent generation must never silently replace a healthy published state
 
 ## Repository policy
 
-- `main` is production;
+- `main` is the only production code branch;
 - structural Provider v3 work is validated on a workbench branch first;
 - current route-recognition workbench: `workbench/provider-v3-recognition-routes-data`;
 - Learning/proposal branches never become publication authority;
