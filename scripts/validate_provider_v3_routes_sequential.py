@@ -64,7 +64,26 @@ def canonical(value: object) -> str:
 
 def route_role(route: str) -> str:
     value = str(route or "").strip().casefold()
-    if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", value):
+    # PROVIDER_V3_SEASON_QUERY_ROLE_V1
+    # `s=` is ambiguous: WordPress-style search uses it as a query, while many
+    # provider resolver APIs use `s` + `e` as season/episode coordinates. Treat
+    # it as search only when it is not paired with episode semantics.
+    try:
+        parsed_role = urllib.parse.urlsplit(value)
+        role_query = urllib.parse.parse_qs(parsed_role.query, keep_blank_values=True)
+    except ValueError:
+        role_query = {}
+    has_episode_coordinate = any(key in role_query for key in ("e", "ep", "episode", "episode_number"))
+    has_season_coordinate = any(key in role_query for key in ("season", "season_number")) or (
+        "s" in role_query and has_episode_coordinate
+    )
+    explicit_search_query = any(key in role_query for key in ("q", "query", "keyword", "search", "story"))
+    ambiguous_s_search = "s" in role_query and not has_season_coordinate
+    if (
+        re.search(r"/(?:search|recherche)(?:[/?#]|$)", value)
+        or explicit_search_query
+        or ambiguous_s_search
+    ):
         return "search"
     if re.search(r"/(?:video[-_]?player|watchplayer|iframeplayer|player|embed|play)(?:[/?#.-]|$)", value):
         return "player"
@@ -227,9 +246,9 @@ def derive_observed_route(fetch: dict[str, Any], task: dict[str, Any]) -> tuple[
         placeholder = None
         if tmdb and value == tmdb and key_l in {"id", "tmdb", "tmdbid", "tmdb_id", "movie", "tv"}:
             placeholder = "{tmdbId}"
-        elif season and value == season and key_l in {"s", "season", "season_number"}:
+        elif season and value == season and key_l in {"s", "season", "season_number", "seasonid", "season_id"}:
             placeholder = "{season}"
-        elif episode and value == episode and key_l in {"e", "ep", "episode", "episode_number"}:
+        elif episode and value == episode and key_l in {"e", "ep", "episode", "episode_number", "episodeid", "episode_id"}:
             placeholder = "{episode}"
         elif value.strip().casefold() in title_values and key_l in {"q", "query", "search", "title", "keyword", "story", "s"}:
             placeholder = "{query}"
@@ -241,6 +260,31 @@ def derive_observed_route(fetch: dict[str, Any], task: dict[str, Any]) -> tuple[
     route = path
     if rendered_query:
         route += "?" + urllib.parse.urlencode(rendered_query, doseq=True, safe="{}:/")
+
+    # PROVIDER_V3_DYNAMIC_QUERY_RESIDUE_V1
+    # A request observed live is not reusable Provider DATA while it still
+    # contains literal content identity or request/session state. Season/episode
+    # aliases above are abstracted first; remaining values under these keys must
+    # stay diagnostic evidence only until Learning can derive a stable recipe.
+    volatile_query_keys = {
+        "seed", "token", "access_token", "auth", "signature", "sig", "hash",
+        "nonce", "timestamp", "ts", "expires", "expiry", "expire", "key",
+    }
+    content_identity_query_keys = {
+        "imdb", "imdbid", "imdb_id", "year", "releaseyear", "release_year",
+        "seasonid", "season_id", "episodeid", "episode_id",
+    }
+    dynamic_query_residue = []
+    for residue_key, residue_value in rendered_query:
+        key_l = str(residue_key or "").strip().casefold()
+        value_s = str(residue_value or "").strip()
+        if not value_s or ("{" in value_s and "}" in value_s):
+            continue
+        if key_l in volatile_query_keys or key_l in content_identity_query_keys:
+            dynamic_query_residue.append({"key": residue_key, "value": value_s})
+    if dynamic_query_residue:
+        reusable = False
+
     fixture_specific = []
     if tmdb and tmdb in route:
         fixture_specific.append(tmdb)
@@ -283,6 +327,7 @@ def derive_observed_route(fetch: dict[str, Any], task: dict[str, Any]) -> tuple[
         "substitutions": substitutions,
         "reusable": reusable,
         "fixtureSpecificValues": unique(fixture_specific, 12),
+        "dynamicQueryResidue": dynamic_query_residue[:12],
     }
     return (route if reusable else None), meta
 
@@ -906,10 +951,18 @@ def finalize_provider(
     if completion_state in {"terminal-blocked", "terminal-unreachable"}:
         execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
+        # PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V2
+        # A route that was actually traversed and failed is useful negative
+        # evidence, but it is not executable Provider source DATA. Keep blocked
+        # routes (auth/rate/policy can be environmental), keep live-validated
+        # routes, and keep failed-live rows only in candidate/diagnostic evidence.
         execution_plan_rows = [
             row for row in stable_candidate_rows
-            if row.get("attemptEvidence")
-            or row.get("validationState") == "live-validated"
+            if row.get("validationState") != "failed-live"
+            and (
+                row.get("attemptEvidence")
+                or row.get("validationState") == "live-validated"
+            )
         ]
         execution_plan_routes = {
             str(row.get("route") or "") for row in execution_plan_rows if isinstance(row, dict)
@@ -989,7 +1042,9 @@ def finalize_provider(
         "declaredTypesAreGateDenominator": True,
         "internalRequestsAreNotGateDenominator": True,
         "executionPlanRouteCount": len(model.get("routes") or []),
-        "executionPlanRetainsAttemptedNon2xx": True,
+        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "executionPlanRetainsFailedLive": False,
+        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
         "runtimeDerivedRouteCount": len(runtime_derived_rows),
         "runtimeDerivedRoutesPersisted": False,
         "safeRuntimeDerivedRouteCount": len(safe_runtime_derived_rows),

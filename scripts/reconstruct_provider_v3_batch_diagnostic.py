@@ -185,6 +185,57 @@ def _print_repair_evidence(
         )
 
 
+# PROVIDER_V3_PRESERVE_VALIDATED_DATA_ON_FINAL_FAILURE_V3
+def _demote_unverified_finalization(
+    static_row: dict[str, Any],
+    patch: dict[str, Any],
+    evaluation: dict[str, Any],
+) -> None:
+    """Keep improved route/DATA, but remove provider-success authority."""
+    state = "validated-data-retained-final-bundle-unverified"
+    model = static_row.get("model") if isinstance(static_row.get("model"), dict) else {}
+    knowledge_row = static_row.get("knowledge") if isinstance(static_row.get("knowledge"), dict) else {}
+
+    recognition = model.get("routeRecognition") if isinstance(model.get("routeRecognition"), dict) else {}
+    recognition["status"] = state
+    recognition["completionState"] = state
+    recognition["finalBundleVerified"] = False
+    recognition["learnRequired"] = True
+    recognition["providerQualified"] = False
+    recognition["publicationAuthority"] = False
+    recognition["validatedRouteDataRetained"] = True
+    recognition["validatedTypesBeforeFinalFailure"] = list(evaluation.get("validatedTypes") or [])
+    model["routeRecognition"] = recognition
+
+    repair = model.get("repairObservation") if isinstance(model.get("repairObservation"), dict) else {}
+    repair["finalBundleVerified"] = False
+    repair["learnRequired"] = True
+    repair["validatedRouteDataRetained"] = True
+    repair["finalFailureState"] = state
+    model["repairObservation"] = repair
+
+    recognized = knowledge_row.get("recognizedContract") if isinstance(knowledge_row.get("recognizedContract"), dict) else {}
+    recognized["completionState"] = state
+    recognized["finalBundleVerified"] = False
+    recognized["learnRequired"] = True
+    recognized["providerQualified"] = False
+    recognized["publicationAuthority"] = False
+    recognized["validatedRouteDataRetained"] = True
+    knowledge_row["recognizedContract"] = recognized
+
+    live_gate = patch.get("live_route_gate") if isinstance(patch.get("live_route_gate"), dict) else {}
+    live_gate["completion_state"] = state
+    live_gate["final_bundle_verified"] = False
+    live_gate["learn_required"] = True
+    live_gate["provider_qualified"] = False
+    live_gate["publication_authority"] = False
+    live_gate["validated_route_data_retained"] = True
+    patch["live_route_gate"] = live_gate
+
+    static_row["model"] = model
+    static_row["knowledge"] = knowledge_row
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-index", type=int, default=1, help="1-based manifest/provider queue index")
@@ -415,10 +466,21 @@ def main() -> int:
             else:
                 final_proof["deferToLearn"] = True
                 final_proof["deferReason"] = "final-bundle-verification-failed"
+                # The DATA repair itself may be correct even when the rebuilt JS
+                # still regresses. Keep the improved validated routeData, demote
+                # provider qualification/publication authority, and send the
+                # remaining runtime/materialization problem to Learn.
+                _demote_unverified_finalization(static_row, patch, evaluation)
+                write(knowledge_path, knowledge)
+                write(overrides_path, overrides)
+                final_proof["validatedDataRetained"] = True
+                final_proof["providerAuthorityDemoted"] = True
                 deferred_to_learn.append({
                     "index": absolute_index,
                     "providerId": provider_id,
                     "reason": "final-bundle-verification-failed",
+                    "validatedDataRetained": True,
+                    "providerAuthorityDemoted": True,
                     "candidateValidatedTypes": list(evaluation.get("validatedTypes") or []),
                     "candidateMissingTypes": list(evaluation.get("missingTypes") or []),
                     "finalProof": final_proof,
