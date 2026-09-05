@@ -438,10 +438,28 @@ def _generic_control_route(route: str) -> bool:
         path = parsed.path or "/"
     except ValueError:
         path = value.split("?", 1)[0] or "/"
-    # A homepage remains a generic control surface even when arbitrary query
-    # parameters are accepted.  /?tmdbId=... returning 200 is not proof that
-    # the provider implements a typed movie/TV route.
-    if path in {"", "/"}:
+    # PROVIDER_V3_QUERY_IDENTITY_ROUTE_V1
+    # A root URL is normally a generic homepage, but some providers expose a
+    # real typed API entirely through query parameters. Accept only a stable
+    # reusable identity template plus an explicit canonical media type.
+    try:
+        query_pairs = urllib.parse.parse_qsl(parsed.query, keep_blank_values=True)
+    except (ValueError, AttributeError):
+        query_pairs = []
+    identity_keys = {"id", "tmdb", "tmdbid", "tmdb_id"}
+    semantic_keys = {"type", "mediatype", "media_type", "media", "category", "kind"}
+    has_reusable_identity = any(
+        str(key).casefold() in identity_keys
+        and "{" in str(raw_value)
+        and "}" in str(raw_value)
+        for key, raw_value in query_pairs
+    )
+    has_semantic_type = any(
+        str(key).casefold() in semantic_keys
+        and canonical(raw_value) in REPRESENTATIVE
+        for key, raw_value in query_pairs
+    )
+    if path in {"", "/"} and not (has_reusable_identity and has_semantic_type):
         return True
     if route_role(value) == "search":
         return True
