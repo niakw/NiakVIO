@@ -2,16 +2,18 @@
 """Strict Provider v3 reconstruction: one provider, one live proof, then next.
 
 For each provider in manifest order:
-1. probe the provisional candidate bundle with real fixtures;
-2. capture/match/derive the HTTP routes actually used;
-3. refuse to advance until useful coverage is reached, unless the provider is
+1. materialize provider N candidate JS from its current candidate DATA;
+2. probe that candidate JS with real fixtures;
+3. capture/match/derive the HTTP routes actually used;
+4. refuse to advance until useful coverage is reached, unless the provider is
    proven terminally blocked/unreachable;
-4. finalize structured DATA for that provider;
-5. immediately rematerialize that provider's final JS bundle;
-6. re-probe the final JS against the live-only route DATA;
-7. only then advance to the next provider.
+5. finalize structured DATA for provider N;
+6. immediately rematerialize provider N final JS from live-only DATA;
+7. re-probe that final JS against the live-only route DATA;
+8. only then materialize or touch provider N+1.
 
-There is deliberately no inter-provider concurrency.
+There is deliberately no inter-provider concurrency and no global candidate
+materialization pass.
 """
 from __future__ import annotations
 
@@ -173,6 +175,7 @@ def checkpoint(
         },
         "providers": provider_rows,
         "sequentialNoInterProviderConcurrency": True,
+        "globalCandidateMaterialization": False,
     })
 
 
@@ -224,6 +227,21 @@ def main() -> int:
             flush=True,
         )
 
+        # Provider N is the only provider materialized for candidate execution at
+        # this point. N+1 is untouched until N has also passed its final JS proof.
+        candidate_materialized = materialize_one(provider_id)
+        candidate_filename = str(candidate_materialized.get("file") or "")
+        if not candidate_filename:
+            raise SystemExit(f"{provider_id}: candidate one-provider materialization produced no file")
+        for task in provider["tasks"]:
+            task["filename"] = candidate_filename
+        print(
+            "FIELD_PROVIDER_CANDIDATE_MATERIALIZED "
+            f"index={index} provider={provider_id} file={candidate_filename} "
+            f"sha256={str(candidate_materialized.get('sha256') or '')[:16]}",
+            flush=True,
+        )
+
         _rows, evaluation, used_tasks = run_until_qualified(provider, model, minimum, timeout)
         completion_state = "coverage-qualified" if should_pass(evaluation) else None
         origin_evidence: list[dict[str, Any]] = []
@@ -239,6 +257,8 @@ def main() -> int:
                 "originEvidence": origin_evidence,
                 "advancedToNextProvider": False,
                 "finalBundleVerified": False,
+                "candidateBundleFile": candidate_filename,
+                "candidateBundleSha256": candidate_materialized.get("sha256"),
             }
             report_rows.append(failure)
             checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)
@@ -248,7 +268,7 @@ def main() -> int:
                 f"{provider_id}: live coverage insufficient "
                 f"effective={evaluation['effectiveCoverageRatio']:.3f} "
                 f"required={evaluation['requiredCoverageRatio']:.3f}; "
-                f"refusing to advance to provider {index + 1}"
+                f"refusing to materialize or advance to provider {index + 1}"
             )
 
         finalize_provider(
@@ -263,7 +283,7 @@ def main() -> int:
         write(knowledge_path, knowledge)
         write(overrides_path, overrides)
 
-        # Immediately rebuild the exact final bundle for this provider before N+1.
+        # Rebuild the exact final bundle for N from live-only DATA before N+1.
         materialized = materialize_one(provider_id)
         final_filename = str(materialized.get("file") or "")
         if not final_filename:
@@ -287,18 +307,18 @@ def main() -> int:
                     "advancedToNextProvider": False,
                     "finalBundleVerified": False,
                     "finalBundleProof": final_proof,
+                    "candidateBundleFile": candidate_filename,
+                    "candidateBundleSha256": candidate_materialized.get("sha256"),
                     "finalBundleFile": final_filename,
+                    "finalBundleSha256": materialized.get("sha256"),
                 }
                 report_rows.append(failure)
                 checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)
                 raise SystemExit(
                     f"{provider_id}: candidate DATA qualified but final bundle failed live proof; "
-                    f"refusing to advance to provider {index + 1}"
+                    f"refusing to materialize or advance to provider {index + 1}"
                 )
         else:
-            # Terminal blocked/unreachable may advance for audit completeness only.
-            # The global active-provider gate will reject publication if such a
-            # provider remains enabled in manifest.json.
             final_proof = {
                 "verified": False,
                 "reason": completion_state,
@@ -313,6 +333,8 @@ def main() -> int:
             "advancedToNextProvider": True,
             "finalBundleVerified": bool(final_proof.get("verified")),
             "finalBundleProof": final_proof,
+            "candidateBundleFile": candidate_filename,
+            "candidateBundleSha256": candidate_materialized.get("sha256"),
             "finalBundleFile": final_filename,
             "finalBundleSha256": materialized.get("sha256"),
         }
@@ -340,6 +362,7 @@ def main() -> int:
 
     final_report = load(output_path)
     final_report["allProvidersAdvancedSequentially"] = True
+    final_report["globalCandidateMaterialization"] = False
     write(output_path, final_report)
     knowledge["liveRouteValidation"] = {
         "schemaVersion": 3,
@@ -349,13 +372,12 @@ def main() -> int:
         "completedProviderCount": EXPECTED,
         "allProvidersAdvancedSequentially": True,
         "sequentialNoInterProviderConcurrency": True,
+        "globalCandidateMaterialization": False,
         "staticEvidenceIsHttpProof": False,
         "candidateRoutesAreExecutableAuthority": False,
     }
     write(knowledge_path, knowledge)
 
-    # Dynamic global publication invariant: every enabled provider must be live
-    # qualified. This is 63/63 on the current manifest, but deliberately not hardcoded.
     saved_argv = sys.argv[:]
     try:
         sys.argv = [
