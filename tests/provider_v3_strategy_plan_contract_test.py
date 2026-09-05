@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Provider v3 strategy-to-executable-plan contract for the full 96 catalogue.
 
-The child recognizer gate deliberately includes duplicate local route-variable
-coverage, so route scope regressions fail before any expensive 96/96 rebuild.
+Static candidates do not make a provider executable. After the sequential live
+reconstruction gate, an enabled provider must still have an executable live plan.
+A disabled provider may have no executable plan only when the same run attached
+explicit terminal blocked/unreachable network evidence.
 """
 from __future__ import annotations
 
@@ -25,6 +27,7 @@ ALLOWED = {
     "iframe_player",
     "quarantined",
 }
+TERMINAL_DISABLED = {"terminal-blocked", "terminal-unreachable"}
 
 
 def cid(value: object) -> str:
@@ -35,7 +38,6 @@ def route_kind(route: object) -> str:
     value = str(route or "").strip().casefold()
     if not value:
         return "ignore"
-    # Search semantics must win over a generic /api prefix (/api/search).
     if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", value):
         return "search"
     if re.search(r"/template-php/[^?#]*fetch\.php(?:[?#]|$)", value):
@@ -79,6 +81,19 @@ def run_child_test(filename: str) -> None:
     assert result.returncode == 0, result.stdout + result.stderr
 
 
+def terminal_evidence_ok(model: dict, patch: dict, state: str) -> bool:
+    gate = patch.get("live_route_gate") if isinstance(patch.get("live_route_gate"), dict) else {}
+    recognition = model.get("routeRecognition") if isinstance(model.get("routeRecognition"), dict) else {}
+    if gate.get("completion_state") != state or recognition.get("completionState") != state:
+        return False
+    if recognition.get("sequentialProviderGate") is not True:
+        return False
+    if state == "terminal-blocked":
+        return int(gate.get("provider_request_count") or 0) > 0
+    evidence = recognition.get("originEvidence") if isinstance(recognition.get("originEvidence"), list) else []
+    return bool(evidence) and all(isinstance(row, dict) and row.get("reachable") is False for row in evidence)
+
+
 def main() -> int:
     run_child_test("provider_contract_recognizer_test.py")
     run_child_test("provider_v3_local_recognition_contract_test.py")
@@ -101,6 +116,7 @@ def main() -> int:
     failures: list[str] = []
     counts: dict[str, int] = {}
     quarantined: list[str] = []
+    terminal_audited: list[str] = []
 
     for row, provider_id in zip(rows, ids):
         patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
@@ -188,18 +204,24 @@ def main() -> int:
             ) and bool(bases)
 
         if not executable:
+            recognition = model.get("routeRecognition") if isinstance(model.get("routeRecognition"), dict) else {}
+            state = str(recognition.get("completionState") or "").strip()
+            if not enabled and state in TERMINAL_DISABLED and terminal_evidence_ok(model, patch, state):
+                terminal_audited.append(provider_id)
+                continue
             failures.append(
-                f"{provider_id}: strategy={strategy} has no executable DATA/recipe/Lego "
-                f"(routeKinds={sorted(kinds)}, bases={len(bases)}, enabled={enabled})"
+                f"{provider_id}: strategy={strategy} has no executable LIVE DATA/recipe/Lego "
+                f"(routeKinds={sorted(kinds)}, bases={len(bases)}, enabled={enabled}, terminal={state or 'none'})"
             )
 
     if failures:
         raise AssertionError("\n".join(failures))
 
-    non_quarantined = 96 - len(quarantined)
+    executable_count = 96 - len(quarantined) - len(terminal_audited)
     print(
         "PROVIDER_V3_STRATEGY_PLAN_OK "
-        f"providers=96 executable={non_quarantined} quarantined={len(quarantined)} "
+        f"providers=96 executable={executable_count} quarantined={len(quarantined)} "
+        f"terminal_disabled={len(terminal_audited)} "
         f"strategies={json.dumps(counts, sort_keys=True)}"
     )
     return 0
