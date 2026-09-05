@@ -13,24 +13,32 @@ assert 'FIELD_PROVIDER_REPAIR_BEGIN' in source
 assert 'FIELD_PROVIDER_REPAIR_RESULT' in source
 assert 'FIELD_PROVIDER_REPAIR_STALLED' in source
 assert '_stage_runtime_repair_candidates(' in source
-assert 'FIELD_PROVIDER_BATCH_PROVIDER_FAIL' in source
+assert 'FIELD_PROVIDER_BATCH_PROVIDER_DEFER' in source
 assert 'repair-exhausted' in source
-assert 'refusedToAdvance' in source
-assert 'refuseAdvanceAfterUnresolved' in source
+assert 'defer-to-learn' in source
+assert 'learnRequired' in source
+assert 'deferred_to_learn' in source
+assert 'continueAfterRepairExhausted": True' in source
+assert 'providerScopedFailuresDeferToLearn": True' in source
+assert 'refuseAdvanceAfterUnresolved": False' in source
 assert 'repairFirst": True' in source
 assert 'publicationGate": False' in source
 assert 'diagnosticOnly": False' in source
 assert 'prove_final_bundle(' in source
 assert 'finalize_provider(' in source
-assert 'return 1' in source
+assert 'return 1' in source  # reserved for non-provider/global hard failures
 assert 'ThreadPoolExecutor' not in source
 assert 'as_completed' not in source
+assert 'refused_provider = provider_id' not in source
+assert 'refusing_next=' not in source
 
-fail_at = source.index('FIELD_PROVIDER_BATCH_PROVIDER_FAIL')
-assert 'break' in source[fail_at:fail_at + 1200], "unresolved provider must stop the slice"
+repair_defer_at = source.index('repair_exhausted=true')
+window = source[repair_defer_at:repair_defer_at + 900]
+assert 'learn=true' in window
+assert 'continue' in window, "repair-exhausted provider must defer to Learn and advance"
 
 print(
     "PROVIDER_V3_BATCH_DIAGNOSTIC_CONTRACT_OK "
-    "bounded_slice=true repair_first=true continue_after_failure=false "
-    "publication_gate=false final_bundle_reprobe=true"
+    "bounded_slice=true repair_first=true defer_to_learn=true "
+    "continue_after_provider_failure=true publication_gate=false final_bundle_reprobe=true"
 )
