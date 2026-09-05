@@ -48,7 +48,13 @@ for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_re
 assert "Refuse direct main mutation" in manual
 assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
 
-assert "--apply" in domain and "--domain-only" in domain
+# Domain refresh owns only authoritative hub -> official_site/history publication.
+# Terminal DNS/HTTP reachability is observation-only and must never gate the hub declaration.
+assert "refresh_authoritative_hub_domains.py" in domain
+assert "--apply" in domain
+assert "--domain-only" not in domain, "legacy terminal-gated domain updater must not own hub publication"
+assert "continue-on-error: true" in domain
+assert "provider_dns_preflight.mjs" in domain
 assert "update_provider_v3_domain_config.py" in domain
 assert "audit_provider_v3_static.py" in domain
 assert "materialize_provider_v3_all.py" not in domain
