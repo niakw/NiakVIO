@@ -78,7 +78,7 @@ jobs:
             "${EXTRA[@]}"
 
           rm -f automation/provider-version-backfill.json
-          python scripts/prune_provider_v3_artifacts.py
+          python scripts/prune_unreferenced_providers.py
           python scripts/generate_language_manifests.py \
             --manifest manifest.json \
             --report health-report.json
