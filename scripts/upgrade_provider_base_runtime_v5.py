@@ -26,6 +26,27 @@ def _once_whitespace_tolerant(text: str, old: str, new: str, label: str) -> str:
     return text[:match.start()] + new + text[match.end():]
 
 
+def _patch_v7_safe_html_text() -> bool:
+    """Use the existing deterministic HTML scanner in the DLE title scorer."""
+    target = runtime_v7.TARGET
+    text = target.read_text(encoding='utf-8')
+    unsafe = '_text(match[4]).replace(/<[^>]+>/g, " ")'
+    safe = '_htmlVisibleText(match[4])'
+    unsafe_count = text.count(unsafe)
+    safe_count = text.count(safe)
+    if unsafe_count == 0:
+        if safe_count != 1:
+            raise AssertionError(
+                f'v7-safe-html-text: expected one safe scanner when no legacy form remains, got {safe_count}'
+            )
+        return False
+    if unsafe_count != 1:
+        raise AssertionError(f'v7-safe-html-text: expected one unsafe anchor, got {unsafe_count}')
+    text = text.replace(unsafe, safe, 1)
+    target.write_text(text, encoding='utf-8')
+    return True
+
+
 def patch() -> bool:
     changed_v5 = runtime_v5.patch()
     runtime_v5.validate()
@@ -35,13 +56,19 @@ def patch() -> bool:
     # fail-closed on tokens/cardinality, but do not bind migrations to indentation.
     runtime_v7.once = _once_whitespace_tolerant
     changed_v7 = runtime_v7.patch()
-    return bool(changed_v5 or changed_v6 or changed_v7)
+    changed_safe_html = _patch_v7_safe_html_text()
+    return bool(changed_v5 or changed_v6 or changed_v7 or changed_safe_html)
 
 
 def validate() -> None:
     runtime_v5.validate()
     runtime_v6.validate()
     runtime_v7.validate()
+    text = runtime_v7.TARGET.read_text(encoding='utf-8')
+    if '_htmlVisibleText(match[4])' not in text:
+        raise AssertionError('runtime v7 DLE parser must use deterministic HTML text scanner')
+    if '_text(match[4]).replace(/<[^>]+>/g, " ")' in text:
+        raise AssertionError('runtime v7 DLE parser contains forbidden HTML filtering regexp')
 
 
 def main() -> int:
@@ -51,7 +78,7 @@ def main() -> int:
         'PROVIDER_BASE_RUNTIME_CURRENT_OK '
         f'changed={str(changed).lower()} v5=1 v6=1 v7=1 '
         'external_ids=1 traversal_eligibility=1 nested_priority=1 '
-        'source_plan_first=1 alias_origin=1 dle_runtime=1'
+        'source_plan_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1'
     )
     return 0
 
