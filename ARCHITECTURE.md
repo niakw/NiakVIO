@@ -1,34 +1,68 @@
 # Architecture NiakVIO — Provider v3
 
-> Source de vérité technique du dépôt. Toute modification des règles Provider v3, CORE, Learning, Domain Refresh ou Native Labs doit mettre ce document à jour dans la même transaction.
+> Source de vérité technique du dépôt. Toute évolution Provider v3, CORE, route recognition, Learning, Domain Refresh, Native Labs ou publication doit mettre ce document à jour dans la même transaction.
 
-## 1. Principe
+## 1. Modèle mental
 
-NiakVIO sépare strictement **connaissance**, **code provider durable**, **artefacts publiés**, **validation** et **apprentissage**.
+NiakVIO sépare strictement trois rôles :
 
-- `provider_catalog.json` est le registre canonique de métadonnées/projections publiées.
-- `provider-bases/` contient les ProviderBase v3 propres et durables appartenant à NiakVIO.
-- `provider-overrides.json` et les données structurées associées portent la configuration provider et les options Core.
-- `automation/provider-v3-static-knowledge.json` porte la connaissance statique durable récupérée sans exécuter l'ancien JS ; sa couverture 96/96 est obligatoire.
-- `scripts/provider_patches/**` contient les Lego `PROVIDER.*` et `CORE.*` versionnés.
-- `providers/*.js` est un résultat matérialisé et adressé par contenu. Ce n'est jamais une seed de reconstruction.
-- les upstreams et sites tiers sont des sources de connaissance/provenance, jamais une base JS exécutable canonique.
+- **Provider Object = boîte noire structurée** : identité, DATA, routes, stratégie, limites, preuves et provenance ;
+- **NiakVIO = cerveau** : reconnaît, compose, vérifie, apprend et publie ;
+- **clients Nuvio = appareils de laboratoire** : ils donnent une preuve native d'extraction/transport/lecture, mais ne deviennent jamais une source de vérité inter-device.
 
-Le marqueur de propriété ProviderBase courant est `NIAKVIO_PROVIDER_BASE_OWNED_V3`.
+NiakVIO ne doit pas réduire artificiellement le catalogue pour obtenir des métriques vertes. Les **96 Provider Objects** restent dans le census, providers désactivés compris. Une absence de route reconnue, un zéro flux ou un échec stream-level ne constitue jamais à lui seul une preuve de mort/quarantaine du provider.
 
-## 2. Reconstruction déterministe
+## 2. Sources de vérité Provider v3
 
-La seule reconstruction complète des 96 providers est le workflow manuel `.github/workflows/provider-v3-reconstruct-all.yml`.
+- `provider_catalog.json` : registre canonique de métadonnées/projections publiées ;
+- `provider-bases/` : ProviderBase v3 propres appartenant à NiakVIO ;
+- `provider-overrides.json` : DATA/options provider ;
+- `automation/provider-v3-static-knowledge.json` : connaissance structurée durable 96/96 ;
+- `scripts/provider_patches/**` : Lego `PROVIDER.*` et `CORE.*` ;
+- `providers/*.js` : artefacts client matérialisés et adressés par contenu, **jamais seeds de reconstruction** ;
+- upstreams/sites tiers : connaissance/provenance uniquement, jamais JS canonique exécutable.
 
-Entrées canoniques :
+Le marqueur ProviderBase courant est `NIAKVIO_PROVIDER_BASE_OWNED_V3`.
 
-1. ProviderBase v3 propre ;
-2. DATA/CONFIG structurées + connaissance statique durable ;
-3. type/strategy provider canonique + plan exécutable compatible ;
-4. Lego provider appartenant au provider ;
-5. Lego Core partagés ;
-6. minimizer NiakVIO-safe pré-hash ;
-7. manifest/provenance/politiques nécessaires à la projection.
+## 3. DATA de routes canonique
+
+La DATA canonique des routes appartient directement à l'objet unique du provider :
+
+```text
+provider.model.routeData
+```
+
+Règles :
+
+1. `reconstruct_provider_routes(...)` travaille sur le **Provider Object**, pas sur une seconde structure parallèle ;
+2. `provider.model.routes` est uniquement une projection compacte dérivée de `routeData` ;
+3. `provider.knowledge.recognizedContract.requests` est uniquement une projection de compatibilité de `routeData` ;
+4. chaque route peut conserver `role`, `method`, `bodyFields`, encodage, `Referer`/`Origin`, type de réponse, preuve HTTP, provenance et confiance ;
+5. les champs structurés (`searchRoute`, `movieRoute`, `episodeRoute`, `*Path`, `*Endpoint`, etc.) sont reconnus directement ;
+6. le source fourni lors de l'onboarding peut être analysé statiquement, y compris variables/concaténations/templates, **sans exécuter le JavaScript provider** ;
+7. la reconnaissance est idempotente : `model.routes` et `recognizedContract.requests` ne redeviennent jamais de nouvelles preuves au passage suivant.
+
+Le workflow route-only est `.github/workflows/provider-v3-reconstruct-routes.yml`. Il ne lance ni reconstruction Provider v3 ni JavaScript provider.
+
+### Census route-only vérifié — 5 septembre 2026
+
+Run `33949700926`, source `2fc4279ff1e6b13d1be3614c3d661d8b49d8ca6f`, DATA persistée par `0a2e7c1d8b72d1f0ad8ac45b9de0cdd124053231` :
+
+- **96/96 Provider Objects analysés** ;
+- **401 routes** reconstruites ;
+- **6 routes avec preuve HTTP** après normalisation/idempotence ;
+- **95/96** objets avec `routeData` non vide ;
+- `topcartoons` : `routeData=[]`, état de reconnaissance `unknown` ;
+- **0 JavaScript provider exécuté** ;
+- **0 reconstruction provider exécutée**.
+
+`topcartoons` n'est pas déclaré mort/quarantiné par cette absence. L'état signifie seulement : **aucune route durable identifiable avec les preuves actuelles**.
+
+## 4. Reconstruction déterministe complète
+
+La reconstruction complète des 96 providers appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main.
+
+Entrées : ProviderBase v3 + DATA/connaissance statique + type/stratégie/plan + Lego Provider + Lego Core + minimizer NiakVIO-safe + projections/provenance.
 
 Interdictions :
 
@@ -36,236 +70,149 @@ Interdictions :
 - seed depuis un bundle upstream ;
 - replay d'un ancien patch source-shape comme vérité canonique ;
 - reconstruction automatique dans Quick, Deep ou Native Labs ;
-- commit direct de la reconstruction manuelle sur `main`.
+- reconstruction forcée directement sur `main`.
 
-Une reconstruction acceptable doit couvrir 96/96 providers, prouver que les 91 non-quarantined disposent d'un plan exécutable compatible avec leur type, conserver 5 quarantines explicites, passer les gates sécurité/minimizer et terminer `verify_provider_v3_reverse_rebuild.py` avec 96/96 byte-identical.
+Une reconstruction acceptable doit couvrir 96/96, passer les contrats de type/plan, sécurité/minimizer et terminer `scripts/verify_provider_v3_reverse_rebuild.py` en byte-identical.
 
-## 3. Forme canonique d'un Provider JS
+## 5. Forme canonique d'un Provider JS
 
 ```text
 /* BEGIN NIAKVIO_PROVIDER */
 /* NIAKVIO_PROVIDER_ID:<id> */
 /* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
-<ProviderBase v3 propre>
+<ProviderBase v3>
 
 /* STARTFIX:PROVIDER.<ID>.CONFIG.V1 */
 /* FIXDATA:PROVIDER.<ID>.CONFIG.V1:<payload> */
 <DATA provider>
 /* CLOSEFIX:PROVIDER.<ID>.CONFIG.V1 */
 
-<autres Lego PROVIDER.* éventuels>
-
+<Lego PROVIDER.* éventuels>
 /* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */
-<Lego CORE.* chacun dans STARTFIX/CLOSEFIX>
-
+<Lego CORE.* dans STARTFIX/CLOSEFIX>
 /* END NIAKVIO_PROVIDER */
 ```
 
-Les blocs managés utilisent exclusivement `STARTFIX:<ID>` / `CLOSEFIX:<ID>` et, lorsque nécessaire, `FIXDATA:<ID>`. L'intérieur d'un bloc appartient à ce bloc ; un patch ne peut pas modifier les bytes d'un autre Lego.
+Les marqueurs canoniques sont `STARTFIX:<ID>` / `CLOSEFIX:<ID>` et, lorsque nécessaire, `FIXDATA:<ID>`. Un Lego ne peut pas modifier les bytes d'un autre Lego.
 
-Ordre Core de composition : catalogue/alias si nécessaire, media enrichment si nécessaire, runtime media safety, HLS integrity, security boundary, runtime compatibility, stream facts, stream identity, stream presentation, provider branding, terminal sanitizer, puis media-type resolution. L'exécution des wrappers suit naturellement l'ordre inverse de la composition textuelle.
+## 6. Contrat runtime
 
-## 4. Contrat runtime
+Le Provider JS est un lecteur spécialisé, pas un crawler ni un moteur Learning.
 
-Le Provider JS est un **lecteur spécialisé**, pas un crawler ni un moteur Learning.
+- événement utile : `launch` ; les autres sortent rapidement ;
+- gate capacité/type avant réseau ;
+- identité TMDB composite : `movie:<id>` ou `tv:<id>` ; anime reste un type sémantique et utilise le namespace série/TMDB `tv` lorsque nécessaire ;
+- `series/show/tv` se normalisent vers `tv` ;
+- anime et série sont traités sans mélange heuristique parasite ;
+- un provider incompatible retourne `[]` sans recherche arbitraire ;
+- TMDB n'est appelé que lorsque la stratégie en a réellement besoin ;
+- traitements Core de sortie seulement après production de flux ;
+- zéro flux n'autorise jamais la fabrication d'un résultat ;
+- une erreur stream-level ne désactive jamais à elle seule le provider.
 
-- l'événement utile est `launch` ; les autres événements doivent sortir rapidement ;
-- l'identité TMDB reste composite : `movie:<id>` ou `tv:<id>` ; anime est un type sémantique, pas un troisième namespace TMDB ;
-- `series/show/tv` sont normalisés vers `tv` ;
-- la résolution média v26 réconcilie le contexte client et le contexte TMDB avant le travail provider incompatible ;
-- un provider incompatible retourne `[]` sans lancer de recherche arbitraire sur son domaine ;
-- le provider exécute uniquement des routes/recettes connues et bornées ;
-- les traitements de sortie Core n'ont de sens qu'après production de streams ; zéro flux ne devient jamais une raison de fabriquer un résultat ;
-- un échec stream-level ne désactive pas à lui seul le provider.
+Le Core Media Type courant reste `tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile`.
 
-Le Core Media Type courant est `tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile`.
+## 7. Reader, transport et HLS
 
-Le Core Stream Presentation courant est **V20** (`all-providers-client-projection-name-mirror-v20`) : `title` et `name` portent tous deux `Provider - Qualité`. Cette duplication est volontaire parce que Mobile/Desktop privilégient `name` alors que d'autres surfaces peuvent privilégier `title`.
+Une URL `.m3u8` ou `#EXTM3U` ne prouve pas la lisibilité native.
 
-## 5. HLS et playback
+`CORE.HLS_RUNTIME_INTEGRITY.V1` peut effectuer une validation bornée : playlist, variant, contexte `Referer`/`Origin`, premier segment/init map, sync MPEG-TS ou signature fMP4. HTML/JSON servi à la place d'un média est un rejet positif. Timeout, erreur réseau, chiffrement HLS ou absence d'API bytes côté TV restent **inconclusifs**, jamais faux rejets.
 
-Une URL `.m3u8` ou un `#EXTM3U` ne suffit pas à prouver qu'un stream sera lisible.
+Les Labs doivent séparer : extraction provider, identité, transport, conteneur, contexte de lecture et erreur du player officiel.
 
-`CORE.HLS_RUNTIME_INTEGRITY.V1` sait valider/recover de manière bornée les playlists. Pour les providers ayant une preuve de segments malformés sur client natif, le même Core peut activer une preuve **premier segment** :
+## 8. CORE — Verify & Publish
 
-- fetch playlist borné ;
-- résolution du premier variant si master ;
-- conservation des `Referer`/`Origin` du stream ;
-- lecture bornée du premier segment ou init map ;
-- TS : recherche de bytes de synchronisation MPEG-TS ;
-- fMP4 : signature de box `ftyp/styp/moof/moov` ;
-- HTML/JSON servi à la place d'un segment : rejet positif ;
-- chiffrement HLS ou erreur réseau/timeout : état inconclusif, pas faux rejet.
-- Android TV : si le bridge natif n'expose aucun octet lisible (`body/arrayBuffer` absents), l'état du premier segment reste inconclusif ; l'absence de byte API n'est jamais une preuve de conteneur malformé. Le contrat TV audité n'expose ni `TextEncoder/TextDecoder` ni `WebAssembly`.
-
-Cette preuve est une capacité Core générique et peut être activée par DATA provider ; elle n'est pas un patch spécifique codé en dur.
-
-## 6. CORE — Quick et Deep
-
-Le workflow routine unique est `.github/workflows/sync.yml`, nom affiché `CORE - Verify & Publish`.
+Le workflow routine unique est `.github/workflows/sync.yml`, affiché **CORE - Verify & Publish**.
 
 ### Quick
 
-Quick est un gate **rapide, déterministe et non-mutant côté providers** :
-
-- tests structurels/contrats critiques ;
-- audit des bytes Provider v3 exacts ;
-- pas de reconstruction ;
-- pas de repair ;
-- pas de mutation DATA/Core ;
-- pas de publication de nouveau code provider ;
-- pas de full network health.
+Quick est déterministe, rapide et non-mutant côté provider : contrats structurels, audit bytes exacts, contrats de couverture Labs/minimizer/sécurité. Pas de repair, pas de reconstruction, pas de full network health.
 
 ### Deep
 
-Deep est une **validation/observation plus large**, toujours sans mutation du code provider :
+Deep ajoute observation réseau/hubs en lecture seule, health des bytes publiés exacts, reprojection manifests, rapports et inventaires. Il ne répare ni ne reconstruit les providers.
 
-- tous les contrats structurels ;
-- observation réseau/hubs en lecture seule ;
-- health des providers publiés exacts ;
-- re-projection des manifests dérivés ;
-- génération reports/hashes ;
-- publication sur `main` limitée aux rapports, projections et inventaires autorisés.
+**Quick/Deep ne réparent ni ne reconstruisent les providers.**
 
-Deep ne répare pas et ne reconstruit pas les providers.
+## 9. Learning et Domain Refresh
 
-## 7. Learning
+Learning (`brain-learning-lab.yml`) est sandbox-only : observation, classification, essais bornés, mémoire sanitizée et propositions reviewables. Aucune publication directe de Provider JS/manifest.
 
-`.github/workflows/brain-learning-lab.yml` est le propriétaire des expérimentations de repair/apprentissage.
+Domain Refresh (`domain-refresh.yml`) est une exception DATA bornée : mise à jour `official_site` validée uniquement, sans changement API/route/Core/Provider structurel ; bytes identiques hors CONFIG concerné.
 
-La mémoire/proposition durable de Learning est maintenue sur la branche `brain-learning/proposals`; elle n'est jamais une branche de production et ne remplace pas `main` comme autorité de publication.
+## 10. Cinq Native Labs
 
-- sandbox uniquement ;
-- catalogue complet, providers désactivés inclus ;
-- mémoire sanitizée persistante ;
-- propositions de code reviewables ;
-- aucune publication directe de Provider JS ou manifest ;
-- aucune permission de détendre les invariants de sécurité/identité.
+Surface d'acceptation exacte :
 
-`engine_v2/` est donc un sous-système d'observation, classification, evidence et Learning. Ce n'est pas une seconde boucle de publication ni un repair caché de Quick/Deep.
+1. `TVAndroid` — NuvioTV ;
+2. `MobileAndroid` — NuvioMobile ;
+3. `MobileIOS` — NuvioMobile ;
+4. `DesktopMACOS` — NuvioDesktop ;
+5. `DesktopWindows` — NuvioDesktop.
 
-## 8. Domain Refresh
+Trigger commun : `.github/triggers/full-native-lab-validation.json`.
 
-`domain-refresh.yml` est une exception explicitement bornée de maintenance DATA : il peut mettre à jour uniquement `official_site` validé et rematérialiser le CONFIG provider correspondant.
+Le contrat couvre l'intégralité du catalogue : **96 providers / 214 routes déclarées** (`82 movie + 92 tv + 40 anime`). Les Labs sont observationnels : ils consomment les bytes NiakVIO exacts et ne réparent/reconstruisent jamais pour obtenir un vert artificiel.
 
-Le contrat impose :
+## 11. Minimizer NiakVIO
 
-- aucun patch Core/Provider structurel ;
-- aucun changement API/route ;
-- bytes identiques hors bloc `PROVIDER.<ID>.CONFIG.V1` ;
-- nouveau filename adressé par contenu ;
-- hashes/integrity régénérés.
+Terser est interdit. `scripts/provider_v3_minimizer.py` est conservateur et pré-hash : suppression de l'indentation uniquement lorsque l'état lexical initial est du JavaScript ordinaire. Il conserve retours ligne/ASI, identifiants, expressions, littéraux, regexp, templates sensibles, enveloppes BEGIN/END, `STARTFIX/CLOSEFIX/FIXDATA` et frontière Core.
 
-## 9. Cinq Native Labs
+Gates :
 
-La surface d'acceptation native est exactement :
+- `tests/provider_v3_minimizer_contract_test.py` ;
+- `tests/provider_v3_minimizer_preview_test.py` ;
+- `tests/provider_v3_minimizer_published_test.py` ;
+- `scripts/verify_provider_v3_reverse_rebuild.py`.
 
-1. `TVAndroid` — NuvioTV officiel ;
-2. `MobileAndroid` — NuvioMobile officiel ;
-3. `MobileIOS` — NuvioMobile officiel ;
-4. `DesktopMACOS` — NuvioDesktop officiel ;
-5. `DesktopWindows` — NuvioDesktop officiel.
+## 12. Snapshots historiques ≠ vérité opérationnelle courante
 
-Le trigger commun est `.github/triggers/full-native-lab-validation.json`.
+`automation/provider-v3-architecture.json.reference_reconstruction` conserve volontairement un snapshot de matérialisation historique pour la preuve reverse. Ses anciens comptes de plans/quarantaines ne doivent **jamais** être réinterprétés comme la vérité actuelle de reconnaissance ou de disponibilité.
 
-Les Labs :
+En particulier, l'ancien snapshot `retry25` (`91` plans exécutables + `5` quarantines) reste une référence de matérialisation figée. L'état courant des routes se lit exclusivement dans `route_recognition.latest_verified_census` et `automation/provider-v3-static-knowledge.json`.
 
-- consomment le SHA NiakVIO exact ;
-- résolvent le HEAD client officiel puis contrôlent son drift ;
-- testent Interstellar, Breaking Bad S01E01 et Jujutsu Kaisen S01E01 ;
-- observent extraction, playback, identité, session et transport ;
-- ne réparent, ne reconstruisent et ne réécrivent jamais Provider v3 ;
-- conservent uniquement des preuves sanitizées.
+Une quarantaine nécessite une **raison fonctionnelle explicite et prouvée**. `routeData=[]` ne constitue pas cette preuve.
 
-Les retests ciblés peuvent relancer un device sans invalider les autres. Desktop dispose d'un trigger ciblé macOS/Windows ; iOS dispose d'un trigger ciblé et d'un watchdog de session reprenable afin qu'un provider QuickJS non-cancellable ne bloque pas le corpus complet.
+## 13. Branches et publication
 
-Le Lab final couvre explicitement **l'intégralité du catalogue** : 96 providers et 214 routes déclarées sur les trois fixtures représentatives (`82 movie + 92 tv + 40 anime`). Une route/provider manquant rend le Lab incomplet. Les erreurs du lecteur officiel restent des observations de lecture : le Lab ne répare jamais NuvioTV/NuvioMobile/NuvioDesktop pour obtenir un vert artificiel.
-
-## 10. Minimizer NiakVIO
-
-Terser reste interdit. La production utilise désormais `scripts/provider_v3_minimizer.py`, un minimizer **NiakVIO-aware et volontairement conservateur** exécuté après composition ProviderBase + DATA + Lego et avant hash/filename.
-
-La seule transformation autorisée est la suppression de l'indentation espaces/tabulations au début d'une ligne dont l'état lexical initial est du code JavaScript ordinaire. Le minimizer :
-
-- conserve chaque retour ligne, donc ne modifie pas le contrat ASI ;
-- ne renomme aucun identifiant ;
-- ne replie/réordonne aucune expression ;
-- ne réécrit aucune chaîne, regexp ou littéral ;
-- laisse un provider entier byte-stable si un template literal est présent ;
-- conserve l'enveloppe BEGIN/END, `STARTFIX/CLOSEFIX/FIXDATA` et la frontière Core ;
-- valide l'idempotence ;
-- parse les 96 previews avec Node ;
-- exige que les 96 bundles publiés soient déjà des fixed-points ;
-- reste inclus dans la reconstruction reverse 96/96 byte-identical.
-
-Les gates sont `provider_v3_minimizer_contract_test.py`, `provider_v3_minimizer_preview_test.py` et `provider_v3_minimizer_published_test.py`.
-
-## 11. Branches et publication
-
-- `main` reste la branche de production ;
-- les chantiers structurants Provider v3 se valident sur `workbench/provider-v3-performance-playback` ;
-- la reconstruction manuelle peut committer uniquement sur une branche non-main sélectionnée ;
-- les cinq Labs peuvent tourner sur `main` ou sur le workbench lorsqu'un trigger explicite est poussé ;
-- aucun résultat Lab ne doit être présenté comme preuve d'un autre device.
-
-## 12. État de référence du chantier Provider v3
-
-Le 3 septembre 2026, **retry 32** est la reconstruction canonique courante :
-
-- 96/96 ProviderBase v3 propres et 96/96 providers matérialisés ;
-- génération `c27ea147413fd73e` ;
-- commit de reconstruction `ced50b6b51de4838f3f94ba7b349beb81239a1d4` ;
-- reverse rebuild **96/96 byte-identical** ;
-- minimizer publié fixed-point 96/96, Terser interdit ;
-- sécurité HTML publiée : `bad_html_filter_regex=0` sur les 96 bundles ;
-- 91 plans non-quarantined exécutables + 5 quarantines explicites ;
-- Stream Presentation **V20**, pipeline Facts -> Identity -> Media Type -> Presentation -> Branding -> Sanitizer V6 vert ;
-- HLS native **V8** : byte API TV indisponible = inconclusif/non-bloquant, preuve positive HTML/JSON/conteneur invalide = rejet ;
-- refs officielles auditées : Mobile `d4891ffaaf975c77de8ea3612f37a7a2b936c79d`, Desktop `9390d5844e53d1f4d9829490d6f3deb057d7ab14`, TV `49c753de3f193e3a74ea54194df3d331ce6302f0`.
-
-Les cinq quarantines de stratégie sont exactement `dvdplay`, `moviebox`, `netmirror`, `topcartoons` et `vixsrc`. Frenchstream n'est pas quarantiné : son plan est `mixed_embed_resolver`, son hub de maintenance/découverte est `https://fstream.website/` et son activation peut rester différée jusqu'à une preuve reader propre.
-
-Retry 19 reste le premier jalon ayant prouvé la reconstruction complète sans seed JS publiée/upstream ; retry 25 a ajouté la connaissance statique durable et le plan exécutable 96/96 ; retry 32 supersède ces références pour la publication finale.
-
-## Maintenance durable
-
-Les workflows de maintenance durables font partie de l'architecture et restent séparés du runtime Provider v3 :
-
-- `weekly-upstream-provider-discovery.yml` — découverte upstream hebdomadaire en lecture seule ;
-- `purge-actions-history.yml` — purge périodique de l'historique GitHub Actions selon la rétention du dépôt ;
-- `brain-branch-maintenance.yml` — entretien des branches durables Learning/proposals sans publication provider directe.
-
-## 13. Fichiers de référence
-
-- `automation/provider-v3-architecture.json` — contrat machine-readable ;
-- `provider-v3-materialization.json` — état de matérialisation ;
-- `PROVENANCE.json` — provenance et hashes de base ;
-- `provider-overrides.json` — DATA/options provider ;
-- `scripts/provider_patch_blocks.py` — propriété transactionnelle des Lego ;
-- `scripts/provider_base_store.py` — ProviderBase v3 ;
-- `scripts/materialize_provider_v3_all.py` — reconstruction complète ;
-- `scripts/verify_provider_v3_reverse_rebuild.py` — preuve reverse ;
-- `scripts/provider_v3_minimizer.py` — minimizer NiakVIO-safe pré-hash ;
-- `tests/provider_v3_strategy_plan_contract_test.py` — 96 types/plans exécutables ;
-- `tests/provider_html_filter_security_test.py` — absence de stripping HTML regexp dangereux source/publié ;
-- `tests/provider_v3_workflow_ownership_test.py` — ownership des workflows ;
-- `tests/native_five_lab_coverage_test.py` — cinq Labs exacts ;
-- `tests/native_lab_observational_purity_test.py` — Labs observationnels ;
-- `tests/provider_brick_portfolio_audit_test.py` — audit des Lego publiés.
+- `main` = production ;
+- chantier courant de reconnaissance : `workbench/provider-v3-recognition-routes-data` ;
+- reconstruction complète manuelle : branche non-main uniquement ;
+- Labs sur SHA exact ; aucune preuve d'un device ne vaut preuve d'un autre ;
+- branches Learning/proposals séparées du contrôle de publication.
 
 ## 14. Invariants non négociables
 
 1. Pas de seed JS publiée/upstream pour reconstruire Provider v3.
-2. ProviderBase v3 + DATA + Lego sont suffisants pour recréer les 96 bundles.
-3. Quick/Deep ne réparent ni ne reconstruisent les providers.
-4. Learning n'a pas de voie de publication directe.
-5. Domain Refresh ne modifie que le CONFIG de domaine autorisé.
-6. Les marqueurs canoniques sont STARTFIX/CLOSEFIX.
-7. Le Core boundary est unique.
-8. Un mauvais média jouable est plus grave qu'un zéro résultat.
-9. Une erreur de stream ne devient pas automatiquement une désactivation provider.
-10. Les cinq clients/devices sont des dimensions de preuve distinctes.
-11. Main ne reçoit pas une reconstruction forcée directe.
-12. Toute doc qui contredit ces invariants est considérée comme obsolète et doit faire échouer le contrat de documentation.
-13. Le stripping HTML par regexp générique est interdit dans les générateurs et les 96 bundles publiés.
-14. Le minimizer ne peut modifier que l'indentation de lignes prouvées en état lexical code ; Terser reste interdit.
+2. ProviderBase v3 + DATA + Lego suffisent à recréer les bundles.
+3. `provider.model.routeData` est la source canonique des routes.
+4. `model.routes` et `knowledge.recognizedContract.requests` sont des projections, pas des preuves sources.
+5. La reconnaissance route-only n'exécute ni JS provider ni reconstruction complète.
+6. Une reconnaissance vide n'est ni une quarantaine ni une preuve de mort.
+7. Quick/Deep ne réparent ni ne reconstruisent les providers.
+8. Learning n'a pas de voie de publication directe.
+9. Domain Refresh ne modifie que le CONFIG autorisé.
+10. Les marqueurs canoniques sont STARTFIX/CLOSEFIX et le Core boundary est unique.
+11. Un mauvais média jouable est plus grave qu'un zéro résultat.
+12. Une erreur stream-level ne devient pas automatiquement une désactivation provider.
+13. Les cinq clients/devices sont des dimensions de preuve distinctes.
+14. Main ne reçoit pas une reconstruction forcée directe.
+15. Le stripping HTML par regexp générique est interdit.
+16. Terser reste interdit ; le minimizer ne transforme que ce que son contrat lexical autorise.
+17. Toute documentation qui contredit ces invariants est obsolète et doit faire échouer le contrat de documentation.
+
+## Fichiers de référence
+
+- `automation/provider-v3-architecture.json` — contrat machine-readable ;
+- `automation/provider-v3-static-knowledge.json` — Provider Objects + route DATA ;
+- `provider-v3-materialization.json` — snapshot de matérialisation ;
+- `PROVENANCE.json` — provenance/hashes ;
+- `provider-overrides.json` — DATA/options ;
+- `scripts/provider_route_reconstructor.py` — reconnaissance/reconstruction route-only ;
+- `scripts/materialize_provider_v3_all.py` — reconstruction complète ;
+- `scripts/verify_provider_v3_reverse_rebuild.py` — preuve reverse ;
+- `scripts/provider_v3_minimizer.py` — minimizer safe ;
+- `tests/provider_route_reconstructor_test.py` — routeData/idempotence/census ;
+- `tests/provider_v3_documentation_contract_test.py` — drift docs/ownership ;
+- `tests/native_five_lab_coverage_test.py` — cinq Labs ;
+- `tests/native_lab_observational_purity_test.py` — pureté observationnelle.
