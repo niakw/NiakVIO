@@ -50,7 +50,6 @@ jobs:
           python3 tests/native_stream_extraction_gate_test.py
           python3 tests/native_desktop_runtime_diagnostics_order_test.py
           python3 tests/nuvio_client_upstream_drift_guard_test.py
-          python3 tests/patch_nuvio_desktop_test_compat_test.py
           python3 tests/native_declared_provider_matrix_gate_test.py
       - name: Inspect current official Nuvio client drift
         shell: bash
@@ -95,7 +94,7 @@ jobs:
     env:
       WEBVIEW2_VERSION: 1.0.4078.44
       # libmpv requires the C numeric locale to be exactly C before mpv_create().
-      # Keep the official NuvioDesktop production source untouched; provide its documented
+      # Keep the official NuvioDesktop source untouched; provide its documented
       # native runtime precondition at process level in the Lab.
       LC_NUMERIC: C
       NIAKVIO_TARGET_PROVIDER: declared-type
@@ -131,28 +130,6 @@ jobs:
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
           touch nuvio-desktop/local.properties
-
-          EXPECTED_TEST="composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/PlayerExitOrderingTest.kt"
-          python3 niakvio/scripts/patch_nuvio_desktop_test_compat.py "$GITHUB_WORKSPACE/nuvio-desktop"
-          CHANGED="$(git -C nuvio-desktop diff --name-only)"
-          if [[ -n "$CHANGED" && "$CHANGED" != "$EXPECTED_TEST" ]]; then
-            echo "Desktop compatibility shim escaped commonTest-only scope:" >&2
-            printf '%s\n' "$CHANGED" >&2
-            exit 1
-          fi
-          if git -C nuvio-desktop diff --name-only -- 'composeApp/src/commonMain/**' | grep -q .; then
-            echo "Desktop compatibility shim modified commonMain/runtime" >&2
-            exit 1
-          fi
-          BEFORE="$(git -C nuvio-desktop diff --binary | git -C nuvio-desktop hash-object --stdin)"
-          python3 niakvio/scripts/patch_nuvio_desktop_test_compat.py "$GITHUB_WORKSPACE/nuvio-desktop"
-          AFTER="$(git -C nuvio-desktop diff --binary | git -C nuvio-desktop hash-object --stdin)"
-          if [[ "$BEFORE" != "$AFTER" ]]; then
-            echo "Desktop compatibility shim is not idempotent" >&2
-            exit 1
-          fi
-          echo "FIELD_NATIVE_DESKTOP_TEST_COMPAT_SCOPE status=verified target=$EXPECTED_TEST runtime_mutation=false"
-
           python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
 
       - name: Install official Windows WebView2 build dependency
