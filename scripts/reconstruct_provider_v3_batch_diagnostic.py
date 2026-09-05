@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Probe a bounded Provider v3 slice without stopping at the first bad provider.
+"""Repair-first bounded Provider v3 slice.
 
-This is a workbench diagnostic accelerator, not a publication gate. Each provider
-is still materialized and probed independently with the same declared-type rules
-as the strict N-to-N reconstruction. A provider that lacks proof is recorded and
-left unfinalized, while the diagnostic continues through the configured slice so
-multiple real failures can be fixed in one batch. The script exits non-zero when
-hard failures are present, after writing the complete report.
+Unlike the old diagnostic accelerator, this gate never silently advances past a
+repairable provider. Provider N is materialized, probed, and—when live runtime
+evidence exists but declared-type proof is incomplete—its safe observed candidate
+DATA is staged, N is rebuilt, and N is probed again. The slice advances only after
+N is final-bundle verified or proven terminally blocked/unreachable.
+
+This remains a workbench gate, not publication authority.
 """
 from __future__ import annotations
 
 import argparse
 import copy
+import json
+import urllib.parse
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +32,159 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_REPORT = ROOT / "provider-v3-batch-diagnostic.json"
 
 
+def _unique(values: list[Any], limit: int = 256) -> list[str]:
+    out: list[str] = []
+    for raw in values:
+        value = str(raw or "").strip()
+        if value and value not in out:
+            out.append(value)
+        if len(out) >= limit:
+            break
+    return out
+
+
+def _stage_runtime_repair_candidates(
+    provider_id: str,
+    static_row: dict[str, Any],
+    evaluation: dict[str, Any],
+    repair_attempt: int,
+) -> bool:
+    """Persist candidate/runtime observations only; never promote unqualified live authority."""
+    model = static_row.get("model") if isinstance(static_row.get("model"), dict) else {}
+    before = json.dumps(
+        {
+            "candidateRouteData": model.get("candidateRouteData"),
+            "candidateRoutes": model.get("candidateRoutes"),
+            "origins": model.get("origins"),
+            "observedUrls": model.get("observedUrls"),
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        default=str,
+    )
+
+    candidate_rows = copy.deepcopy(evaluation.get("candidateRouteData") or [])
+    model["candidateRouteData"] = candidate_rows
+    model["candidateRoutes"] = _unique(
+        [row.get("route") for row in candidate_rows if isinstance(row, dict)],
+        256,
+    )
+
+    origins = list(model.get("origins") or [])
+    observed_urls = list(model.get("observedUrls") or [])
+    for row in candidate_rows:
+        if not isinstance(row, dict):
+            continue
+        evidence_rows = [*(row.get("attemptEvidence") or []), *(row.get("liveEvidence") or [])]
+        for evidence in evidence_rows:
+            if not isinstance(evidence, dict):
+                continue
+            for key in ("url", "finalUrl", "final_url"):
+                raw = str(evidence.get(key) or "").strip()
+                if not raw:
+                    continue
+                if raw not in observed_urls:
+                    observed_urls.append(raw)
+                try:
+                    parsed = urllib.parse.urlsplit(raw)
+                except ValueError:
+                    continue
+                if parsed.scheme in {"http", "https"} and parsed.hostname:
+                    origin = f"{parsed.scheme}://{parsed.netloc}"
+                    if origin not in origins:
+                        origins.append(origin)
+
+    for evidence in evaluation.get("unresolvedObservedRequests") or []:
+        if not isinstance(evidence, dict):
+            continue
+        for key in ("url", "finalUrl", "final_url", "observedUrl"):
+            raw = str(evidence.get(key) or "").strip()
+            if not raw:
+                continue
+            if raw not in observed_urls:
+                observed_urls.append(raw)
+            try:
+                parsed = urllib.parse.urlsplit(raw)
+            except ValueError:
+                continue
+            if parsed.scheme in {"http", "https"} and parsed.hostname:
+                origin = f"{parsed.scheme}://{parsed.netloc}"
+                if origin not in origins:
+                    origins.append(origin)
+
+    model["origins"] = _unique(origins, 64)
+    model["observedUrls"] = _unique(observed_urls, 128)
+    model["repairObservation"] = {
+        "version": 1,
+        "attempt": repair_attempt,
+        "providerId": provider_id,
+        "requiredTypes": list(evaluation.get("requiredTypes") or []),
+        "validatedTypes": list(evaluation.get("validatedTypes") or []),
+        "missingTypes": list(evaluation.get("missingTypes") or []),
+        "providerRequestCount": int(evaluation.get("providerRequestCount") or 0),
+        "liveValidatedRouteCount": int(evaluation.get("liveValidatedRouteCount") or 0),
+        "unresolvedObservedRequestCount": int(evaluation.get("unresolvedObservedRequestCount") or 0),
+        "candidateOnly": True,
+        "promotedToLiveAuthority": False,
+    }
+
+    after = json.dumps(
+        {
+            "candidateRouteData": model.get("candidateRouteData"),
+            "candidateRoutes": model.get("candidateRoutes"),
+            "origins": model.get("origins"),
+            "observedUrls": model.get("observedUrls"),
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        default=str,
+    )
+    return before != after
+
+
+def _print_repair_evidence(
+    provider_id: str,
+    evaluation: dict[str, Any],
+    repair_attempt: int,
+) -> None:
+    emitted = 0
+    for row in evaluation.get("candidateRouteData") or []:
+        if not isinstance(row, dict):
+            continue
+        state = str(row.get("validationState") or "")
+        if state not in {"live-validated", "failed-live", "blocked-live"}:
+            continue
+        route = str(row.get("route") or "").replace("\n", " ")[:220]
+        if not route:
+            continue
+        print(
+            "FIELD_PROVIDER_REPAIR_ROUTE "
+            f"provider={provider_id} attempt={repair_attempt} state={state} route={route}",
+            flush=True,
+        )
+        emitted += 1
+        if emitted >= 12:
+            break
+
+    unresolved = evaluation.get("unresolvedObservedRequests") or []
+    for item in unresolved[:8]:
+        if not isinstance(item, dict):
+            continue
+        url = str(
+            item.get("finalUrl")
+            or item.get("final_url")
+            or item.get("url")
+            or item.get("observedUrl")
+            or ""
+        ).replace("\n", " ")[:300]
+        print(
+            "FIELD_PROVIDER_REPAIR_UNRESOLVED "
+            f"provider={provider_id} attempt={repair_attempt} "
+            f"status={int(item.get('status') or 0)} url={url or 'none'}",
+            flush=True,
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--start-index", type=int, default=1, help="1-based manifest/provider queue index")
@@ -39,6 +195,7 @@ def main() -> int:
     parser.add_argument("--minimum-coverage", type=float, default=0.75)
     parser.add_argument("--timeout", type=int, default=50)
     parser.add_argument("--origin-timeout", type=int, default=8)
+    parser.add_argument("--repair-attempts", type=int, default=2)
     args = parser.parse_args()
 
     queue, provider_count = build_provider_queue()
@@ -55,6 +212,7 @@ def main() -> int:
     minimum = float(args.minimum_coverage)
     timeout = max(20, min(int(args.timeout), 120))
     origin_timeout = max(3, min(int(args.origin_timeout), 15))
+    repair_attempt_limit = max(1, min(int(args.repair_attempts), 4))
 
     knowledge_path = args.knowledge.resolve()
     overrides_path = args.overrides.resolve()
@@ -68,9 +226,10 @@ def main() -> int:
     hard_failures: list[str] = []
     terminal_only: list[str] = []
     final_verified: list[str] = []
+    refused_provider: str | None = None
 
     print(
-        f"FIELD_PROVIDER_BATCH_BEGIN start={start} end={end} count={len(selected)} total={EXPECTED}",
+        f"FIELD_PROVIDER_BATCH_BEGIN start={start} end={end} count={len(selected)} total={EXPECTED} repair_first=true",
         flush=True,
     )
 
@@ -80,13 +239,15 @@ def main() -> int:
         patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
         if not isinstance(static_row, dict):
             hard_failures.append(provider_id)
+            refused_provider = provider_id
             rows.append({
                 "index": absolute_index,
                 "providerId": provider_id,
                 "result": "missing-static-knowledge",
-                "advancedForDiagnostics": True,
+                "advancedForDiagnostics": False,
+                "refusedToAdvance": True,
             })
-            continue
+            break
 
         model = static_row.get("model") if isinstance(static_row.get("model"), dict) else {}
         model["canonicalSupportedTypes"] = list(provider.get("supported_types") or [])
@@ -102,48 +263,116 @@ def main() -> int:
         candidate_filename = str(candidate.get("file") or "")
         if not candidate_filename:
             hard_failures.append(provider_id)
+            refused_provider = provider_id
             rows.append({
                 "index": absolute_index,
                 "providerId": provider_id,
                 "result": "candidate-materialization-failed",
-                "advancedForDiagnostics": True,
+                "advancedForDiagnostics": False,
+                "refusedToAdvance": True,
             })
-            continue
+            break
         for task in provider["tasks"]:
             task["filename"] = candidate_filename
 
-        _probe_rows, evaluation, used_tasks = run_until_qualified(
-            provider, model, minimum, timeout
-        )
+        _probe_rows, evaluation, used_tasks = run_until_qualified(provider, model, minimum, timeout)
         completion_state = "declared-types-qualified" if is_qualified(evaluation) else None
         origin_evidence: list[dict[str, Any]] = []
         if completion_state is None:
-            completion_state, origin_evidence = terminal_state(
-                evaluation, model, patch, origin_timeout
-            )
+            completion_state, origin_evidence = terminal_state(evaluation, model, patch, origin_timeout)
+
+        repair_history: list[dict[str, Any]] = []
+
+        if completion_state is None:
+            for repair_attempt in range(1, repair_attempt_limit + 1):
+                _print_repair_evidence(provider_id, evaluation, repair_attempt)
+                changed = _stage_runtime_repair_candidates(provider_id, static_row, evaluation, repair_attempt)
+                write(knowledge_path, knowledge)
+                write(overrides_path, overrides)
+                print(
+                    "FIELD_PROVIDER_REPAIR_BEGIN "
+                    f"index={absolute_index} provider={provider_id} attempt={repair_attempt}/{repair_attempt_limit} "
+                    f"changed={str(changed).lower()} "
+                    f"missing={','.join(evaluation.get('missingTypes') or []) or 'unknown'} "
+                    f"validated={','.join(evaluation.get('validatedTypes') or []) or 'none'}",
+                    flush=True,
+                )
+
+                repair_materialized = materialize_one(provider_id)
+                repair_filename = str(repair_materialized.get("file") or "")
+                if not repair_filename:
+                    repair_history.append({
+                        "attempt": repair_attempt,
+                        "candidateDataChanged": changed,
+                        "result": "repair-materialization-failed",
+                    })
+                    break
+                for task in provider["tasks"]:
+                    task["filename"] = repair_filename
+
+                _probe_rows, evaluation, used_tasks = run_until_qualified(provider, model, minimum, timeout)
+                completion_state = "declared-types-qualified" if is_qualified(evaluation) else None
+                origin_evidence = []
+                if completion_state is None:
+                    completion_state, origin_evidence = terminal_state(
+                        evaluation, model, patch, origin_timeout
+                    )
+
+                repair_history.append({
+                    "attempt": repair_attempt,
+                    "candidateDataChanged": changed,
+                    "bundleFile": repair_filename,
+                    "bundleSha256": repair_materialized.get("sha256"),
+                    "completionState": completion_state,
+                    "validatedTypes": list(evaluation.get("validatedTypes") or []),
+                    "missingTypes": list(evaluation.get("missingTypes") or []),
+                    "providerRequestCount": int(evaluation.get("providerRequestCount") or 0),
+                    "liveValidatedRouteCount": int(evaluation.get("liveValidatedRouteCount") or 0),
+                })
+                print(
+                    "FIELD_PROVIDER_REPAIR_RESULT "
+                    f"index={absolute_index} provider={provider_id} attempt={repair_attempt} "
+                    f"state={completion_state or 'unresolved'} "
+                    f"validated={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
+                    f"missing={','.join(evaluation.get('missingTypes') or []) or 'none'}",
+                    flush=True,
+                )
+                if completion_state is not None:
+                    break
+                if not changed:
+                    print(
+                        "FIELD_PROVIDER_REPAIR_STALLED "
+                        f"index={absolute_index} provider={provider_id} attempt={repair_attempt}",
+                        flush=True,
+                    )
+                    break
 
         if completion_state is None:
             hard_failures.append(provider_id)
+            refused_provider = provider_id
             rows.append({
                 **evaluation,
                 "index": absolute_index,
                 "providerId": provider_id,
-                "result": "missing-declared-type-route-proof",
-                "completionState": "missing-declared-type-route-proof",
+                "result": "repair-exhausted",
+                "completionState": "repair-exhausted",
                 "originEvidence": origin_evidence,
                 "candidateBundleFile": candidate_filename,
                 "candidateBundleSha256": candidate.get("sha256"),
-                "advancedForDiagnostics": True,
+                "repairHistory": repair_history,
+                "advancedForDiagnostics": False,
+                "refusedToAdvance": True,
                 "finalBundleVerified": False,
             })
             print(
                 "FIELD_PROVIDER_BATCH_PROVIDER_FAIL "
-                f"index={absolute_index} provider={provider_id} "
+                f"index={absolute_index} provider={provider_id} repair_exhausted=true "
                 f"missing={','.join(evaluation.get('missingTypes') or []) or 'unknown'} "
-                f"validated={','.join(evaluation.get('validatedTypes') or []) or 'none'}",
+                f"validated={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
+                f"refusing_next={absolute_index + 1 if absolute_index < EXPECTED else 'none'}",
                 flush=True,
             )
-            continue
+            break
 
         finalize_provider(
             provider_id,
@@ -173,6 +402,7 @@ def main() -> int:
                 final_verified.append(provider_id)
             else:
                 hard_failures.append(provider_id)
+                refused_provider = provider_id
         else:
             terminal_only.append(provider_id)
             final_proof = {
@@ -191,11 +421,13 @@ def main() -> int:
             "originEvidence": origin_evidence,
             "candidateBundleFile": candidate_filename,
             "candidateBundleSha256": candidate.get("sha256"),
+            "repairHistory": repair_history,
             "finalBundleFile": final_filename,
             "finalBundleSha256": final_materialized.get("sha256"),
             "finalBundleVerified": bool(final_proof.get("verified")),
             "finalBundleProof": final_proof,
-            "advancedForDiagnostics": True,
+            "advancedForDiagnostics": refused_provider is None,
+            "refusedToAdvance": refused_provider is not None,
         })
         print(
             "FIELD_PROVIDER_BATCH_PROVIDER_RESULT "
@@ -205,12 +437,16 @@ def main() -> int:
             f"final_verified={str(bool(final_proof.get('verified'))).lower()}",
             flush=True,
         )
+        if refused_provider is not None:
+            break
 
     report = {
-        "schemaVersion": 1,
-        "method": "provider-v3-bounded-batch-diagnostic",
+        "schemaVersion": 2,
+        "method": "provider-v3-bounded-repair-first-gate",
         "publicationGate": False,
-        "diagnosticOnly": True,
+        "diagnosticOnly": False,
+        "repairFirst": True,
+        "refuseAdvanceAfterUnresolved": True,
         "providerCount": EXPECTED,
         "startIndex": start,
         "endIndex": end,
@@ -218,6 +454,7 @@ def main() -> int:
         "processedCount": len(rows),
         "hardFailureCount": len(hard_failures),
         "hardFailures": hard_failures,
+        "refusedProvider": refused_provider,
         "terminalOnlyCount": len(terminal_only),
         "terminalOnly": terminal_only,
         "finalVerifiedCount": len(final_verified),
@@ -229,7 +466,7 @@ def main() -> int:
         "FIELD_PROVIDER_BATCH_COMPLETE "
         f"start={start} end={end} processed={len(rows)} "
         f"hard_failures={len(hard_failures)} terminal={len(terminal_only)} "
-        f"final_verified={len(final_verified)}",
+        f"final_verified={len(final_verified)} refused={refused_provider or 'none'}",
         flush=True,
     )
     if hard_failures:
