@@ -45,11 +45,6 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Apply redirect-aware host gate repair
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/apply_provider_v3_redirect_host_gate_patch.py
       - name: Prepare current Provider v3 runtime and DATA
         shell: bash
         run: |
@@ -57,6 +52,7 @@ jobs:
           python scripts/upgrade_provider_v3_source_plan_v5.py
           python scripts/upgrade_provider_base_runtime_v5.py
           python scripts/upgrade_provider_v3_finalization_v1.py
+          python scripts/upgrade_provider_v3_redirect_route_match_v1.py
           python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
           python scripts/validate_provider_v3_routes_live.py --prepare-candidates
           python scripts/enrich_provider_v3_static_knowledge.py
