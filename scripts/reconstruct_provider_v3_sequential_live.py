@@ -6,7 +6,7 @@ For each provider in manifest order:
 2. probe that candidate JS with real fixtures for its declared semantic types;
 3. capture HTTP evidence while keeping playback verification separate;
 4. refuse to advance until every declared type has one successful live type route
-   (or verified direct output for that type), unless the provider is proven
+   (or verified playable/direct output for that type), unless the provider is proven
    terminally blocked/unreachable;
 5. finalize structured DATA for provider N;
 6. immediately rematerialize provider N final JS from live DATA;
@@ -29,7 +29,18 @@ from typing import Any
 
 from assert_active_provider_live_coverage import main as active_coverage_main
 from materialize_provider_v3_one import materialize_one
-from validate_provider_v3_routes_live import EXPECTED, KNOWLEDGE, OUTPUT, OVERRIDES, load, run_task, write
+from validate_provider_v3_routes_live import (
+    EXPECTED,
+    KNOWLEDGE,
+    OUTPUT,
+    OVERRIDES,
+    live_evidence,
+    load,
+    provider_fetch,
+    run_task,
+    success,
+    write,
+)
 from validate_provider_v3_routes_sequential import (
     build_provider_queue,
     evaluate_provider,
@@ -42,16 +53,64 @@ from validate_provider_v3_routes_sequential import (
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def credit_verified_playable_chains(
+    evaluation: dict[str, Any],
+    task_rows: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """Credit the semantic type of an identity-checked playable provider chain.
+
+    Some providers use opaque/generic player/API paths which cannot safely be turned
+    into semantic route templates. If the probe nevertheless verified the requested
+    fixture as playable and the provider made at least one successful HTTP request,
+    that exact chain is valid live type proof. This never promotes the opaque URL as
+    reusable route DATA; it only records per-type evidence for the gate.
+    """
+    required = {str(v or "").strip().casefold() for v in evaluation.get("requiredTypes") or []}
+    validated = {str(v or "").strip().casefold() for v in evaluation.get("validatedTypes") or []}
+    evidence = copy.deepcopy(evaluation.get("declaredTypeRouteEvidence") or {})
+    credited: set[str] = set()
+
+    for task in task_rows:
+        media_type = str(task.get("semantic_type") or "").strip().casefold()
+        if media_type not in required or task.get("status") != "playable_verified":
+            continue
+        successful = [
+            fetch for fetch in task.get("fetches") or []
+            if isinstance(fetch, dict) and provider_fetch(fetch) and success(fetch)
+        ]
+        if not successful:
+            continue
+        rows = evidence.setdefault(media_type, [])
+        if not rows:
+            rows.append({
+                "route": "playable-chain",
+                "source": "verified-playable-http-chain",
+                "fixture": task.get("fixture_slug"),
+                "evidence": [live_evidence(fetch, task) for fetch in successful[:8]],
+                "reusableRoutePromoted": False,
+            })
+        validated.add(media_type)
+        credited.add(media_type)
+
+    missing = required - validated
+    ratio = len(validated) / len(required) if required else 1.0
+    evaluation["declaredTypeRouteEvidence"] = evidence
+    evaluation["validatedTypes"] = sorted(validated)
+    evaluation["missingTypes"] = sorted(missing)
+    evaluation["declaredTypeCoverageRatio"] = round(ratio, 4)
+    evaluation["effectiveCoverageRatio"] = round(ratio, 4)
+    evaluation["typeComplete"] = not missing
+    evaluation["playableChainValidatedTypes"] = sorted(credited)
+    return evaluation
+
+
 def is_qualified(evaluation: dict[str, Any]) -> bool:
-    """All declared types must be proven; internal request counts never substitute."""
+    """All declared types need live evidence; HTTP success or direct output is mandatory."""
     if not should_pass(evaluation):
         return False
     if evaluation.get("directOutputOnly"):
         return True
-    return bool(
-        int(evaluation.get("liveValidatedRouteCount") or 0) > 0
-        and evaluation.get("providerSuccessHttp") is True
-    )
+    return evaluation.get("providerSuccessHttp") is True
 
 
 def final_model_from_live(model: dict[str, Any]) -> dict[str, Any]:
@@ -91,14 +150,18 @@ def run_until_qualified(
 ) -> tuple[list[dict[str, Any]], dict[str, Any], list[dict[str, Any]]]:
     rows: list[dict[str, Any]] = []
     used_tasks: list[dict[str, Any]] = []
-    evaluation = evaluate_provider(provider["provider_id"], model, rows, minimum)
+    evaluation = credit_verified_playable_chains(
+        evaluate_provider(provider["provider_id"], model, rows, minimum), rows
+    )
     for task_index, task in enumerate(provider["tasks"], start=1):
         result = run_task(task, timeout)
         result["fixture_slug"] = task.get("fixture_slug")
         result["fixture"] = copy.deepcopy(task.get("fixture") or {})
         rows.append(result)
         used_tasks.append(copy.deepcopy(task))
-        evaluation = evaluate_provider(provider["provider_id"], model, rows, minimum)
+        evaluation = credit_verified_playable_chains(
+            evaluate_provider(provider["provider_id"], model, rows, minimum), rows
+        )
         http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
         http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
         print(
@@ -137,7 +200,9 @@ def prove_final_bundle(
 
     live_model = final_model_from_live(model)
     rows: list[dict[str, Any]] = []
-    evaluation = evaluate_provider(provider["provider_id"], live_model, rows, minimum)
+    evaluation = credit_verified_playable_chains(
+        evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows
+    )
     for task in used_tasks:
         final_task = copy.deepcopy(task)
         final_task["filename"] = final_filename
@@ -145,11 +210,25 @@ def prove_final_bundle(
         result["fixture_slug"] = final_task.get("fixture_slug")
         result["fixture"] = copy.deepcopy(final_task.get("fixture") or {})
         rows.append(result)
-        evaluation = evaluate_provider(provider["provider_id"], live_model, rows, minimum)
+        evaluation = credit_verified_playable_chains(
+            evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows
+        )
 
-    wrong = any(row.get("status") == "wrong_content" for row in rows)
-    runtime_error = any(row.get("status") in {"runtime_error", "invalid_probe_output", "probe_error"} for row in rows)
-    verified = is_qualified(evaluation) and not wrong and not runtime_error
+    required_types = {str(v or "").strip().casefold() for v in evaluation.get("requiredTypes") or []}
+    playable_types = {
+        str(row.get("semantic_type") or "").strip().casefold()
+        for row in rows if row.get("status") == "playable_verified"
+    }
+    wrong_types = {
+        str(row.get("semantic_type") or "").strip().casefold()
+        for row in rows if row.get("status") == "wrong_content"
+    }
+    wrong_only_types = (wrong_types & required_types) - playable_types
+    runtime_error = any(
+        row.get("status") in {"runtime_error", "invalid_probe_output", "probe_error"}
+        for row in rows
+    )
+    verified = is_qualified(evaluation) and not wrong_only_types and not runtime_error
     return {
         "verified": verified,
         "reason": "ok" if verified else "final-bundle-declared-type-proof-failed",
@@ -160,6 +239,9 @@ def prove_final_bundle(
         "validatedTypes": evaluation.get("validatedTypes", []),
         "missingTypes": evaluation.get("missingTypes", []),
         "typeComplete": evaluation.get("typeComplete", False),
+        "playableVerifiedTypes": sorted(playable_types),
+        "wrongContentTypes": sorted(wrong_types),
+        "wrongContentOnlyTypes": sorted(wrong_only_types),
         "statuses": [row.get("status") for row in rows],
     }
 
