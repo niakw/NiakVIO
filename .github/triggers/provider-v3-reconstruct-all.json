@@ -1,5 +1,5 @@
 {
-  "reason": "96/96 strict N-to-N reconstruction: reviewed current-site authority may refresh provider knownSite/officialSite/officialHub without creating HTTP proof; VegaMovies uses new2.vegamovies.futbol and 4KHDHub uses 4khdhub.one as a separate catalogue from HDHub4u; /?s={query} remains explicitly unexecuted until each live probe; declared media types remain the only gate denominator; route identity uses requested URLs, HTTP 451 is terminal-blocked only, runtime observations remain evidence-only, and every normally qualified final bundle is reprobed before provider N+1",
+  "reason": "96/96 strict N-to-N reconstruction after canonical Lego drift detection: CORE.STREAM_PRESENTATION.V1 published bundles are one revision behind the canonical idempotent presentation block and must be rematerialized from ProviderBase v3 + DATA + Lego, never patched in place. Preserve reviewed current-site authority, declared-type gates, request-URL route identity, HTTP 451 terminal-block classification, evidence-only runtime observations, final-bundle reprobe before N+1, and verify persianstremio/desiflix provider runtime Lego drift through the same deterministic rebuild + reverse proof.",
   "refresh_static_knowledge": false,
   "source_plan_head": "58c966e595d9aff307c51dccfc7656272f0a04eb",
   "sanitize_core_metadata_routes": true,
@@ -59,5 +59,6 @@
   "global_candidate_materialization": false,
   "current_active_provider_count": 63,
   "publication_requires_all_active_live_qualified": true,
-  "final_bundle_reprobe_before_next_provider": true
+  "final_bundle_reprobe_before_next_provider": true,
+  "rebuild_reason_revision": "stream-presentation-idempotence-v1"
 }
