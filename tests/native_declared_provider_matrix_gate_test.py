@@ -21,7 +21,11 @@ def run_gate(log_text: str) -> subprocess.CompletedProcess[str]:
             json.dumps(
                 {
                     "scrapers": [
-                        {"id": "AnimeOnly", "supportedTypes": ["anime"]},
+                        {
+                            "id": "AnimeOnly",
+                            "canonicalSupportedTypes": ["anime"],
+                            "supportedTypes": ["anime", "tv", "movie"],
+                        },
                     ]
                 }
             ),
@@ -61,36 +65,62 @@ def run_gate(log_text: str) -> subprocess.CompletedProcess[str]:
 
 
 def main() -> int:
-    transported_as_tv = run_gate(
+    # Anime identity is semantic/canonical. Nuvio's provider ABI transports the
+    # dedicated anime-series fixture through tv, while anime providers remain
+    # launch-compatible with movie and tv so Core can reject non-anime content
+    # after authoritative identity classification and before provider network work.
+    complete_transport_surface = run_gate(
         "\n".join(
             [
+                "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=interstellar provider=AnimeOnly request_type=movie",
+                "FIELD_NATIVE_RESULT client=desktop fixture=interstellar provider=AnimeOnly request_type=movie count=0",
+                "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=breaking-bad-s01e01 provider=AnimeOnly request_type=tv",
+                "FIELD_NATIVE_RESULT client=desktop fixture=breaking-bad-s01e01 provider=AnimeOnly request_type=tv count=0",
                 "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=jujutsu-kaisen-s01e01 provider=AnimeOnly request_type=tv",
                 "FIELD_NATIVE_RESULT client=desktop fixture=jujutsu-kaisen-s01e01 provider=AnimeOnly request_type=tv count=0",
             ]
         )
         + "\n"
     )
-    assert transported_as_tv.returncode == 0, transported_as_tv.stdout + transported_as_tv.stderr
-    assert "state=passed" in transported_as_tv.stdout, transported_as_tv.stdout
+    assert complete_transport_surface.returncode == 0, complete_transport_surface.stdout + complete_transport_surface.stderr
+    assert "state=passed" in complete_transport_surface.stdout, complete_transport_surface.stdout
+    assert "routes=3 movie=1 tv=1 anime=1" in complete_transport_surface.stdout, complete_transport_surface.stdout
 
     missing_terminal = run_gate(
-        "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=jujutsu-kaisen-s01e01 provider=AnimeOnly request_type=tv\n"
+        "\n".join(
+            [
+                "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=interstellar provider=AnimeOnly request_type=movie",
+                "FIELD_NATIVE_RESULT client=desktop fixture=interstellar provider=AnimeOnly request_type=movie count=0",
+                "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=breaking-bad-s01e01 provider=AnimeOnly request_type=tv",
+                "FIELD_NATIVE_RESULT client=desktop fixture=breaking-bad-s01e01 provider=AnimeOnly request_type=tv count=0",
+                "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=jujutsu-kaisen-s01e01 provider=AnimeOnly request_type=tv",
+            ]
+        )
+        + "\n"
     )
     assert missing_terminal.returncode == 1, missing_terminal.stdout + missing_terminal.stderr
     assert "reason=missing_terminal" in missing_terminal.stdout, missing_terminal.stdout
+    assert "type=anime" in missing_terminal.stdout, missing_terminal.stdout
 
-    incoherent_transport = run_gate(
+    # The anime fixture cannot be relabelled as a movie merely to make a Lab
+    # green. A movie transport on that fixture does not satisfy the anime route.
+    incoherent_anime_transport = run_gate(
         "\n".join(
             [
+                "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=interstellar provider=AnimeOnly request_type=movie",
+                "FIELD_NATIVE_RESULT client=desktop fixture=interstellar provider=AnimeOnly request_type=movie count=0",
+                "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=breaking-bad-s01e01 provider=AnimeOnly request_type=tv",
+                "FIELD_NATIVE_RESULT client=desktop fixture=breaking-bad-s01e01 provider=AnimeOnly request_type=tv count=0",
                 "FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=jujutsu-kaisen-s01e01 provider=AnimeOnly request_type=movie",
                 "FIELD_NATIVE_RESULT client=desktop fixture=jujutsu-kaisen-s01e01 provider=AnimeOnly request_type=movie count=0",
             ]
         )
         + "\n"
     )
-    assert incoherent_transport.returncode == 1, incoherent_transport.stdout + incoherent_transport.stderr
-    assert "reason=missing_begin" in incoherent_transport.stdout, incoherent_transport.stdout
-    assert "reason=undeclared_route" in incoherent_transport.stdout, incoherent_transport.stdout
+    assert incoherent_anime_transport.returncode == 1, incoherent_anime_transport.stdout + incoherent_anime_transport.stderr
+    assert "reason=missing_begin" in incoherent_anime_transport.stdout, incoherent_anime_transport.stdout
+    assert "reason=missing_terminal" in incoherent_anime_transport.stdout, incoherent_anime_transport.stdout
+    assert "type=anime" in incoherent_anime_transport.stdout, incoherent_anime_transport.stdout
 
     print("native declared provider matrix gate tests passed")
     return 0
