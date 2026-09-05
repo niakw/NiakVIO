@@ -8,8 +8,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import provider_contract_recognizer as r
+from provider_route_role_classifier import install as install_route_roles
 from provider_route_expression_analyzer import install as install_route_analyzer
 
+install_route_roles(r)
 install_route_analyzer(r)
 
 
@@ -199,6 +201,12 @@ assert "/VideoPlayer.html?id={id}" in au_routes, au_routes
 au_contracts = r.recognize_request_contracts(anime_ultime_shape, au_routes)
 assert any(row["role"] == "search" and row["executedEvidence"] for row in au_contracts), au_contracts
 assert any(row["role"] == "player" and row["executedEvidence"] for row in au_contracts), au_contracts
+
+
+# Durable Anime-Ultime DATA contains a player path without placeholders. It must
+# still be classified as executable player evidence rather than discarded.
+assert r.route_kind("/VideoPlayer.html") == "player"
+assert r.route_is_executable_candidate("/VideoPlayer.html") is True
 
 
 # Junk/static infrastructure must never become executable Provider DATA.
