@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from validate_provider_v3_routes_sequential import (  # noqa: E402
+    _generic_control_route,
     _provider_contract_hosts,
     evaluate_provider,
     should_pass,
@@ -75,4 +76,56 @@ hub_eval = evaluate_provider("hub-regression", hub_model, [hub_task], 0.75)
 assert hub_eval["validatedTypes"] == ["anime"], hub_eval
 assert should_pass(hub_eval) is True, hub_eval
 
-print("PROVIDER_V3_REDIRECT_HOST_GATE_TEST_OK request_identity=true official_hub=true")
+# Regression 3: query-only typed APIs are real provider routes, not arbitrary
+# homepages. This is the Animesalt family shape: movie/tv/anime share `/` and
+# differ by the semantic query literal while tmdbId carries reusable identity.
+for media_type in ("movie", "tv", "anime"):
+    route = f"/?tmdbId={{tmdbId}}&type={media_type}"
+    assert _generic_control_route(route) is False, route
+
+# Keep the false-positive guard strict. A root homepage does not become route
+# proof merely because it accepts arbitrary params, a literal id, or type alone.
+for route in (
+    "/",
+    "/?foo=bar",
+    "/?tmdbId=123&type=movie",
+    "/?tmdbId={tmdbId}",
+    "/?type=movie",
+):
+    assert _generic_control_route(route) is True, route
+
+query_model = {
+    "canonicalSupportedTypes": ["movie", "tv", "anime"],
+    "knownSite": "https://query.example",
+    "routeData": [
+        {"route": "/?tmdbId={tmdbId}&type=movie", "type": "movie"},
+        {"route": "/?tmdbId={tmdbId}&type=tv", "type": "tv"},
+        {"route": "/?tmdbId={tmdbId}&type=anime", "type": "anime"},
+    ],
+}
+query_tasks = []
+for media_type, tmdb_id in (("movie", "157336"), ("tv", "94605"), ("anime", "95479")):
+    query_tasks.append({
+        "semantic_type": media_type,
+        "fixture_slug": f"typed-query-{media_type}",
+        "fixture": {
+            "tmdbId": tmdb_id,
+            "mediaType": media_type,
+            "title": f"Fixture {media_type}",
+        },
+        "status": "no_streams",
+        "fetches": [{
+            **common,
+            "url": f"https://query.example/?tmdbId={tmdb_id}&type={media_type}",
+            "final_url": f"https://query.example/?tmdbId={tmdb_id}&type={media_type}",
+        }],
+    })
+query_eval = evaluate_provider("typed-query-regression", query_model, query_tasks, 0.75)
+assert set(query_eval["validatedTypes"]) == {"movie", "tv", "anime"}, query_eval
+assert query_eval["missingTypes"] == [], query_eval
+assert should_pass(query_eval) is True, query_eval
+
+print(
+    "PROVIDER_V3_REDIRECT_HOST_GATE_TEST_OK "
+    "request_identity=true official_hub=true typed_query_root=true"
+)
