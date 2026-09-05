@@ -37,8 +37,19 @@ window = source[repair_defer_at:repair_defer_at + 900]
 assert 'learn=true' in window
 assert 'continue' in window, "repair-exhausted provider must defer to Learn and advance"
 
+# A candidate can qualify while its finalized rebuild regresses. That failure is
+# Learn evidence, not permission to leave the broken promoted DATA as authority.
+assert 'PROVIDER_V3_DEFER_FINALIZATION_ROLLBACK_V2' in source
+assert 'pre_finalize_static_row = copy.deepcopy(static_row)' in source
+assert 'pre_finalize_patch = copy.deepcopy(patch)' in source
+assert 'providers[provider_id] = pre_finalize_static_row' in source
+assert 'patches[provider_id] = pre_finalize_patch' in source
+assert 'final_proof["promotedDataRolledBack"] = True' in source
+assert '"promotedDataRolledBack": True' in source
+
 print(
     "PROVIDER_V3_BATCH_DIAGNOSTIC_CONTRACT_OK "
     "bounded_slice=true repair_first=true defer_to_learn=true "
-    "continue_after_provider_failure=true publication_gate=false final_bundle_reprobe=true"
+    "failed_final_rollback=true continue_after_provider_failure=true "
+    "publication_gate=false final_bundle_reprobe=true"
 )
