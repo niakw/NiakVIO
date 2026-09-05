@@ -36,10 +36,14 @@ def route_kind(route: object) -> str:
         return "search"
     if re.search(r"/template-php/[^?#]*fetch\.php(?:[?#]|$)", value):
         return "search"
+    if re.search(r"/(?:video[-_]?player|watchplayer|iframeplayer|player|embed|play)(?:[/?#.-]|$)", value):
+        return "player"
+    if re.search(r"/(?:download|file|mediafile|source|sources)(?:[/?#.-]|$)", value):
+        return "source"
+    if re.search(r"/(?:episodes?(?:\.js|\.json|\.txt)?|season-list|episode-list)(?:[/?#.-]|$)", value):
+        return "episode-index"
     if re.search(r"/api(?:[./?#]|$)", value):
         return "api"
-    if re.search(r"/(?:player|embed|play)(?:[/?#.-]|$)", value):
-        return "player"
     if re.search(
         r"\{(?:id|tmdb|tmdb_id|tmdbid|imdb|imdb_id|imdbid|title|query|slug|season|episode)\}|"
         r"/(?:title|movie|movies|film|films|tv|serie|series|show|watch|media|anime|animes|voir-series|episode|saison|season|saga|catalogue)(?:[/?#.-]|$)",
@@ -60,15 +64,20 @@ def module_fix_id(script: str) -> str:
     return str(getattr(module, "MANAGED_FIX_ID", "") or "").strip().upper()
 
 
-def main() -> int:
-    recognizer = subprocess.run(
-        [sys.executable, str(ROOT / "tests/provider_contract_recognizer_test.py")],
+def run_child_test(filename: str) -> None:
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "tests" / filename)],
         cwd=ROOT,
         text=True,
         capture_output=True,
         check=False,
     )
-    assert recognizer.returncode == 0, recognizer.stdout + recognizer.stderr
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def main() -> int:
+    run_child_test("provider_contract_recognizer_test.py")
+    run_child_test("provider_v3_local_recognition_contract_test.py")
 
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
@@ -170,16 +179,9 @@ def main() -> int:
 
         executable = bool(legos) or recipe
         if not executable:
-            if strategy == "api_stream_resolver":
-                executable = "api" in kinds and bool(bases)
-            elif strategy == "official_domain_hub":
-                executable = bool(
-                    {"api", "search", "detail", "player"} & kinds
-                ) and bool(bases)
-            else:
-                executable = bool(
-                    {"api", "search", "detail", "player"} & kinds
-                ) and bool(bases)
+            executable = bool(
+                {"api", "search", "detail", "player", "source", "episode-index"} & kinds
+            ) and bool(bases)
 
         if not executable:
             failures.append(
