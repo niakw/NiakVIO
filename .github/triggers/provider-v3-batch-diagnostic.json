@@ -1,5 +1,5 @@
 {
-  "reason": "Redo from provider 19 with repair-first semantics after consolidating redirect request identity and officialHub authority into the canonical redirect migration. For every provider N: live probe, safe runtime candidate staging, rematerialize N, re-probe N, then advance only after final verification or terminal blocked/unreachable proof.",
+  "reason": "Redo from provider 19 with repair-first semantics after fixing typed query-only route proof. Root query APIs are accepted only when the stable template carries reusable content identity plus an explicit canonical media type. For every provider N: live probe, safe runtime candidate staging, rematerialize N, re-probe N, then advance only after final verification or terminal blocked/unreachable proof.",
   "start_index": 19,
   "count": 10,
   "publication_gate": false,
@@ -9,9 +9,10 @@
   "refuse_advance_after_unresolved": true,
   "redirect_request_identity": "canonical-migration-v1",
   "official_hub_contract_host": true,
+  "typed_query_root_route": "reusable-identity-plus-semantic-type",
   "final_bundle_reprobe": true,
   "playable_chain_type_proof": true,
   "wrong_content_gate_scope": "per-declared-type",
   "final_probe_fixture_selection": "minimal-evidence-per-declared-type",
-  "batch_contract_revision": "repair-first-from-19-v2"
+  "batch_contract_revision": "repair-first-from-19-v3"
 }
