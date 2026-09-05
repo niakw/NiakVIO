@@ -48,16 +48,32 @@ for pattern in (
 assert "raw.githubusercontent.com" not in local
 assert "externalRepositories=0" in local
 
+# Reviewed route DATA and request-execution proof are separate facts. Generic
+# durable routes may be high-confidence without pretending a request call was seen.
+assert '"executedEvidence": False' in local
+assert '"niakvio-reviewed-route-data" if explicit' in local
+
 assert seeds.get("schemaVersion") == 1
 assert seeds.get("role") == "niakvio-owned-recognition-seeds"
 assert seeds.get("externalRepositoryRequired") is False
 assert seeds.get("providerJavaScriptExecuted") is False
 seed_providers = seeds.get("providers")
 assert isinstance(seed_providers, dict)
-for provider_id in ("animekai", "animezey", "anime-ultime"):
+for provider_id in ("animekai", "animezey", "anime-ultime", "uhdmovies"):
     assert provider_id in seed_providers, provider_id
     row = seed_providers[provider_id]
     assert isinstance(row.get("routes"), list) and row["routes"], provider_id
+
+uhd = seed_providers["uhdmovies"]
+assert uhd["routes"] == ["/?s={query}"], uhd
+assert "/movie/" not in uhd["routes"], uhd
+assert any(
+    request.get("route") == "/?s={query}"
+    and request.get("role") == "search"
+    and request.get("method") == "GET"
+    and request.get("executedEvidence") is True
+    for request in uhd.get("requests") or []
+), uhd
 
 providers = knowledge.get("providers")
 assert isinstance(providers, dict) and len(providers) == 96
