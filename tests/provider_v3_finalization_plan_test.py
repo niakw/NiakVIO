@@ -12,9 +12,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 # importing the runtime under test.
 from upgrade_provider_v3_finalization_v1 import patch_finalizer  # noqa: E402
 from upgrade_provider_v3_redirect_route_match_v1 import patch as patch_redirect_route_match  # noqa: E402
+from upgrade_provider_v3_http_block_classification_v1 import patch as patch_http_block_classification  # noqa: E402
 
 patch_finalizer()
 patch_redirect_route_match()
+patch_http_block_classification()
 
 from validate_provider_v3_routes_sequential import evaluate_provider, finalize_provider, should_pass  # noqa: E402
 
@@ -145,8 +147,6 @@ assert "/tv/{tmdbId}?season={season}&episode={episode}" in final_routes, final_r
 assert "/unused/{tmdbId}" not in final_routes, final_routes
 assert not any("gateway/session-" in route for route in final_routes), final_routes
 assert not any(row.get("liveDerived") for row in final_model["routeData"]), final_model["routeData"]
-# Full runtime observations must stay out of provider DATA as well. Otherwise a
-# signed/session URL changes the next bundle even when executable routes are clean.
 assert final_model["origins"] == base_model["origins"], final_model["origins"]
 assert final_model["observedUrls"] == base_model["observedUrls"], final_model["observedUrls"]
 recognized = knowledge["providers"]["plan-provider"]["knowledge"]["recognizedContract"]
@@ -167,7 +167,9 @@ assert final_model["routeRecognition"]["runtimeObservationsPersistedAsProviderDa
 assert final_model["routeRecognition"]["runtimeDerivedRouteCount"] >= 1
 assert final_model["routeRecognition"]["blockedPlanPreserved"] is False
 
-# A runner-level block is not evidence that downstream typed routes are invalid.
+# A policy/jurisdiction block (451) is not proof that the provider routes are
+# invalid. It must be classified exactly like a blocked runner: no positive
+# validation, but preserve the stable plan so another network/client can use it.
 blocked_model = copy.deepcopy(base_model)
 blocked_evaluation = evaluate_provider(
     "blocked-provider",
@@ -178,13 +180,15 @@ blocked_evaluation = evaluate_provider(
         "fixture": {"tmdbId": "10", "mediaType": "movie", "title": "Movie"},
         "status": "no_streams",
         "fetches": [
-            fetch("https://api.plan.test/v1/search/Movie", 403),
-            fetch("https://api.plan.test/v1/transient/session-12345", 403),
+            fetch("https://api.plan.test/v1/search/Movie", 451),
+            fetch("https://api.plan.test/v1/transient/session-12345", 451),
         ],
     }],
     0.75,
 )
 assert blocked_evaluation["providerBlockedOnly"] is True, blocked_evaluation
+assert blocked_evaluation["providerSuccessHttp"] is False, blocked_evaluation
+assert blocked_evaluation["validatedTypes"] == [], blocked_evaluation
 blocked_knowledge = {
     "providers": {
         "blocked-provider": {
@@ -226,7 +230,7 @@ assert blocked_overrides["provider_patches"]["blocked-provider"]["api_recipe"] =
 
 print(
     "PROVIDER_V3_FINALIZATION_PLAN_OK redirect_request_identity=preserved "
-    "stable_attempted_non2xx=preserved runtime_derived=pure-evidence "
-    "runtime_observations=pure-evidence unexecuted_guess=pruned "
-    "blocked_stable_plan=preserved api_recipe=atomic"
+    "http451=terminal-blocked-not-validated stable_attempted_non2xx=preserved "
+    "runtime_derived=pure-evidence runtime_observations=pure-evidence "
+    "unexecuted_guess=pruned blocked_stable_plan=preserved api_recipe=atomic"
 )
