@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
-"""Strict Provider v3 reconstruction: one provider, one live proof, then next.
+"""Strict Provider v3 reconstruction: one provider, all declared types, then next.
 
 For each provider in manifest order:
 1. materialize provider N candidate JS from its current candidate DATA;
-2. probe that candidate JS with real fixtures;
-3. capture/match/derive the HTTP routes actually used;
-4. refuse to advance until useful coverage AND a real successful live route are
-   proven, unless a direct output is itself verified or the provider is proven
+2. probe that candidate JS with real fixtures for its declared semantic types;
+3. capture HTTP evidence while keeping playback verification separate;
+4. refuse to advance until every declared type has one successful live type route
+   (or verified direct output for that type), unless the provider is proven
    terminally blocked/unreachable;
 5. finalize structured DATA for provider N;
-6. immediately rematerialize provider N final JS from live-only DATA;
-7. re-probe that final JS against the live-only route DATA;
+6. immediately rematerialize provider N final JS from live DATA;
+7. re-probe the final JS and re-prove every declared type;
 8. only then materialize or touch provider N+1.
 
-There is deliberately no inter-provider concurrency and no global candidate
-materialization pass.
+Internal search/status/player/source requests remain chain evidence; they are not
+an arbitrary coverage denominator. There is no inter-provider concurrency and no
+global candidate materialization pass.
 """
 from __future__ import annotations
 
@@ -42,12 +43,13 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def is_qualified(evaluation: dict[str, Any]) -> bool:
-    """Coverage alone is never success: require positive live evidence."""
-    if evaluation.get("playableVerified") and int(evaluation.get("providerRequestCount") or 0) == 0:
+    """All declared types must be proven; internal request counts never substitute."""
+    if not should_pass(evaluation):
+        return False
+    if evaluation.get("directOutputOnly"):
         return True
     return bool(
-        should_pass(evaluation)
-        and int(evaluation.get("liveValidatedRouteCount") or 0) > 0
+        int(evaluation.get("liveValidatedRouteCount") or 0) > 0
         and evaluation.get("providerSuccessHttp") is True
     )
 
@@ -72,7 +74,7 @@ def terminal_state(
     if evaluation.get("providerRequestCount", 0) == 0 or not evaluation.get("providerSuccessHttp"):
         evidence = [probe_origin(url, origin_timeout) for url in origins]
 
-    if evaluation.get("playableVerified") and evaluation.get("providerRequestCount", 0) == 0:
+    if evaluation.get("directOutputOnly") and evaluation.get("typeComplete"):
         return "direct-output-verified", evidence
     if evaluation.get("providerBlockedOnly") and evaluation.get("providerRequestCount", 0) > 0:
         return "terminal-blocked", evidence
@@ -104,13 +106,12 @@ def run_until_qualified(
             f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "
             f"step={task_index}/{len(provider['tasks'])} task_status={result.get('status')} "
             f"http_statuses={http_summary} "
-            f"candidate_coverage={evaluation['candidateCoverageRatio']:.3f} "
-            f"observed_capture={evaluation['observedRouteCaptureRatio']:.3f} "
-            f"effective={evaluation['effectiveCoverageRatio']:.3f} "
-            f"target={evaluation['requiredCoverageRatio']:.3f} "
+            f"declared_types={','.join(evaluation['requiredTypes']) or 'none'} "
+            f"validated_types={','.join(evaluation['validatedTypes']) or 'none'} "
+            f"missing_types={','.join(evaluation['missingTypes']) or 'none'} "
+            f"type_coverage={evaluation['declaredTypeCoverageRatio']:.3f} target=1.000 "
             f"requests={evaluation['providerRequestCount']} "
-            f"live={evaluation['liveValidatedRouteCount']} "
-            f"unresolved_observed={evaluation['unresolvedObservedRequestCount']}",
+            f"live={evaluation['liveValidatedRouteCount']}",
             flush=True,
         )
         if is_qualified(evaluation):
@@ -151,13 +152,14 @@ def prove_final_bundle(
     verified = is_qualified(evaluation) and not wrong and not runtime_error
     return {
         "verified": verified,
-        "reason": "ok" if verified else "final-bundle-live-proof-failed",
+        "reason": "ok" if verified else "final-bundle-declared-type-proof-failed",
         "providerRequestCount": evaluation.get("providerRequestCount", 0),
         "liveValidatedRouteCount": evaluation.get("liveValidatedRouteCount", 0),
-        "effectiveCoverageRatio": evaluation.get("effectiveCoverageRatio", 0.0),
-        "requiredCoverageRatio": evaluation.get("requiredCoverageRatio", 1.0),
+        "declaredTypeCoverageRatio": evaluation.get("declaredTypeCoverageRatio", 0.0),
+        "requiredTypes": evaluation.get("requiredTypes", []),
+        "validatedTypes": evaluation.get("validatedTypes", []),
+        "missingTypes": evaluation.get("missingTypes", []),
         "typeComplete": evaluation.get("typeComplete", False),
-        "unresolvedObservedRequestCount": evaluation.get("unresolvedObservedRequestCount", 0),
         "statuses": [row.get("status") for row in rows],
     }
 
@@ -171,9 +173,12 @@ def checkpoint(
     failed_provider: str | None = None,
 ) -> None:
     write(output, {
-        "schemaVersion": 3,
-        "method": "strict-sequential-provider-reconstruct-live-final-proof",
+        "schemaVersion": 4,
+        "method": "strict-sequential-provider-reconstruct-declared-type-final-proof",
         "minimumCoverageRatio": minimum,
+        "requiredDeclaredTypeCoverageRatio": 1.0,
+        "declaredTypesAreGateDenominator": True,
+        "internalRequestsAreGateDenominator": False,
         "providerCount": EXPECTED,
         "completedProviderCount": completed,
         "failedProvider": failed_provider,
@@ -204,6 +209,8 @@ def main() -> int:
     parser.add_argument("--origin-timeout", type=int, default=8)
     args = parser.parse_args()
 
+    # Kept as CLI compatibility for existing workflow callers. It no longer
+    # controls provider advancement: declared semantic type coverage is fixed at 100%.
     minimum = float(args.minimum_coverage)
     if not 0.5 <= minimum <= 1.0:
         raise SystemExit("--minimum-coverage must be between 0.5 and 1.0")
@@ -256,7 +263,7 @@ def main() -> int:
         )
 
         _rows, evaluation, used_tasks = run_until_qualified(provider, model, minimum, timeout)
-        completion_state = "coverage-qualified" if is_qualified(evaluation) else None
+        completion_state = "declared-types-qualified" if is_qualified(evaluation) else None
         origin_evidence: list[dict[str, Any]] = []
         if completion_state is None:
             completion_state, origin_evidence = terminal_state(
@@ -266,7 +273,7 @@ def main() -> int:
         if completion_state is None:
             failure = {
                 **evaluation,
-                "completionState": "insufficient-live-coverage",
+                "completionState": "missing-declared-type-route-proof",
                 "originEvidence": origin_evidence,
                 "advancedToNextProvider": False,
                 "finalBundleVerified": False,
@@ -278,10 +285,9 @@ def main() -> int:
             write(knowledge_path, knowledge)
             write(overrides_path, overrides)
             raise SystemExit(
-                f"{provider_id}: live coverage insufficient "
-                f"effective={evaluation['effectiveCoverageRatio']:.3f} "
-                f"live={evaluation['liveValidatedRouteCount']} "
-                f"required={evaluation['requiredCoverageRatio']:.3f}; "
+                f"{provider_id}: missing live route proof for declared types "
+                f"{','.join(evaluation.get('missingTypes') or []) or 'unknown'}; "
+                f"validated={','.join(evaluation.get('validatedTypes') or []) or 'none'}; "
                 f"refusing to materialize or advance to provider {index + 1}"
             )
 
@@ -303,7 +309,7 @@ def main() -> int:
             raise SystemExit(f"{provider_id}: final one-provider materialization produced no file")
 
         final_proof: dict[str, Any]
-        if completion_state in {"coverage-qualified", "direct-output-verified"}:
+        if completion_state in {"declared-types-qualified", "direct-output-verified"}:
             final_proof = prove_final_bundle(
                 provider,
                 model,
@@ -328,7 +334,8 @@ def main() -> int:
                 report_rows.append(failure)
                 checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)
                 raise SystemExit(
-                    f"{provider_id}: candidate DATA qualified but final bundle failed live proof; "
+                    f"{provider_id}: candidate DATA proved all declared types but final bundle did not; "
+                    f"missing={','.join(final_proof.get('missingTypes') or []) or 'unknown'}; "
                     f"refusing to materialize or advance to provider {index + 1}"
                 )
         else:
@@ -366,7 +373,8 @@ def main() -> int:
         print(
             "FIELD_PROVIDER_SEQUENTIAL_PASS "
             f"index={index} provider={provider_id} state={completion_state} "
-            f"effective={evaluation['effectiveCoverageRatio']:.3f} "
+            f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
+            f"type_coverage={evaluation.get('declaredTypeCoverageRatio', 0.0):.3f} "
             f"live={evaluation['liveValidatedRouteCount']} "
             f"requests={evaluation['providerRequestCount']} "
             f"final_bundle_verified={str(bool(final_proof.get('verified'))).lower()}",
@@ -376,16 +384,20 @@ def main() -> int:
     final_report = load(output_path)
     final_report["allProvidersAdvancedSequentially"] = True
     final_report["globalCandidateMaterialization"] = False
+    final_report["declaredTypesAreGateDenominator"] = True
+    final_report["requiredDeclaredTypeCoverageRatio"] = 1.0
     write(output_path, final_report)
     knowledge["liveRouteValidation"] = {
-        "schemaVersion": 3,
-        "method": "strict-sequential-provider-reconstruct-live-final-proof",
-        "minimumCoverageRatio": minimum,
+        "schemaVersion": 4,
+        "method": "strict-sequential-provider-reconstruct-declared-type-final-proof",
         "providerCount": EXPECTED,
         "completedProviderCount": EXPECTED,
         "allProvidersAdvancedSequentially": True,
         "sequentialNoInterProviderConcurrency": True,
         "globalCandidateMaterialization": False,
+        "declaredTypesAreGateDenominator": True,
+        "requiredDeclaredTypeCoverageRatio": 1.0,
+        "internalRequestsAreGateDenominator": False,
         "staticEvidenceIsHttpProof": False,
         "candidateRoutesAreExecutableAuthority": False,
     }
@@ -404,7 +416,7 @@ def main() -> int:
 
     print(
         "FIELD_PROVIDER_ROUTE_SEQUENTIAL_COMPLETE "
-        f"providers={EXPECTED} minimum_coverage={minimum:.2f} "
+        f"providers={EXPECTED} declared_type_coverage=1.00 "
         f"live={final_report.get('liveValidatedRouteCount', 0)} "
         f"requests={final_report.get('providerRequestCount', 0)} "
         f"final_verified={final_report.get('finalBundleVerifiedCount', 0)}",
