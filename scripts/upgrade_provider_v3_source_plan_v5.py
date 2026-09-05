@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
 """Provider v3 source-plan v5 local migration gate.
 
-The old v4 helper was a one-shot migration that also knew about external provider
-repositories. Provider v3 is now NiakVIO-owned: ordinary reconstruction must only
-consume ProviderBase + durable NiakVIO DATA + owned Lego. This gate therefore
-performs no network I/O and no external-repository pinning.
-
-It also keeps the live fixture matrix semantically aligned before any reconstruction
-starts (for example anime-specialized movie providers use an anime feature film,
-not an unrelated live-action movie).
+Ordinary reconstruction consumes only NiakVIO-owned ProviderBase + durable DATA +
+owned Lego. Before reconstruction, this gate also keeps fixtures semantically
+aligned and prevents generic homepage responses from becoming media-type proof.
 """
 from __future__ import annotations
 
@@ -16,6 +11,7 @@ import json
 from pathlib import Path
 
 import upgrade_provider_v3_fixture_selection_v1 as fixture_selection
+import upgrade_provider_v3_type_route_gate_v1 as type_route_gate
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_STORE = ROOT / "scripts" / "provider_base_store.py"
@@ -32,6 +28,8 @@ REQUIRED_MARKERS = (
 def main() -> int:
     fixture_changed = fixture_selection.patch()
     fixture_selection.validate()
+    type_gate_changed = type_route_gate.patch()
+    type_route_gate.validate()
 
     base_text = BASE_STORE.read_text(encoding="utf-8")
     missing = [marker for marker in REQUIRED_MARKERS if marker not in base_text]
@@ -44,8 +42,7 @@ def main() -> int:
     upstreams = config.get("upstreams")
     if isinstance(upstreams, dict) and upstreams:
         raise AssertionError(
-            "sources.json still contains external provider repositories; "
-            "ordinary Provider v3 reconstruction must be NiakVIO-local"
+            "sources.json still contains external provider repositories; ordinary Provider v3 reconstruction must be NiakVIO-local"
         )
 
     serialized = json.dumps(config, ensure_ascii=False).casefold()
@@ -62,7 +59,8 @@ def main() -> int:
     print(
         "PROVIDER_V3_SOURCE_PLAN_V5_LOCAL_OK "
         f"markers={len(REQUIRED_MARKERS)} externalProviderRepositories=0 network=0 "
-        f"fixtureSelectionChanged={str(fixture_changed).lower()}"
+        f"fixtureSelectionChanged={str(fixture_changed).lower()} "
+        f"typeRouteGateChanged={str(type_gate_changed).lower()}"
     )
     return 0
 
