@@ -5,8 +5,9 @@ For each provider in manifest order:
 1. materialize provider N candidate JS from its current candidate DATA;
 2. probe that candidate JS with real fixtures;
 3. capture/match/derive the HTTP routes actually used;
-4. refuse to advance until useful coverage is reached, unless the provider is
-   proven terminally blocked/unreachable;
+4. refuse to advance until useful coverage AND a real successful live route are
+   proven, unless a direct output is itself verified or the provider is proven
+   terminally blocked/unreachable;
 5. finalize structured DATA for provider N;
 6. immediately rematerialize provider N final JS from live-only DATA;
 7. re-probe that final JS against the live-only route DATA;
@@ -38,6 +39,17 @@ from validate_provider_v3_routes_sequential import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def is_qualified(evaluation: dict[str, Any]) -> bool:
+    """Coverage alone is never success: require positive live evidence."""
+    if evaluation.get("playableVerified") and int(evaluation.get("providerRequestCount") or 0) == 0:
+        return True
+    return bool(
+        should_pass(evaluation)
+        and int(evaluation.get("liveValidatedRouteCount") or 0) > 0
+        and evaluation.get("providerSuccessHttp") is True
+    )
 
 
 def final_model_from_live(model: dict[str, Any]) -> dict[str, Any]:
@@ -85,10 +97,13 @@ def run_until_qualified(
         rows.append(result)
         used_tasks.append(copy.deepcopy(task))
         evaluation = evaluate_provider(provider["provider_id"], model, rows, minimum)
+        http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
+        http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
         print(
             "FIELD_PROVIDER_SEQUENTIAL_PROBE "
             f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "
-            f"step={task_index}/{len(provider['tasks'])} "
+            f"step={task_index}/{len(provider['tasks'])} task_status={result.get('status')} "
+            f"http_statuses={http_summary} "
             f"candidate_coverage={evaluation['candidateCoverageRatio']:.3f} "
             f"observed_capture={evaluation['observedRouteCaptureRatio']:.3f} "
             f"effective={evaluation['effectiveCoverageRatio']:.3f} "
@@ -98,7 +113,7 @@ def run_until_qualified(
             f"unresolved_observed={evaluation['unresolvedObservedRequestCount']}",
             flush=True,
         )
-        if should_pass(evaluation):
+        if is_qualified(evaluation):
             break
     return rows, evaluation, used_tasks
 
@@ -133,7 +148,7 @@ def prove_final_bundle(
 
     wrong = any(row.get("status") == "wrong_content" for row in rows)
     runtime_error = any(row.get("status") in {"runtime_error", "invalid_probe_output", "probe_error"} for row in rows)
-    verified = should_pass(evaluation) and not wrong and not runtime_error
+    verified = is_qualified(evaluation) and not wrong and not runtime_error
     return {
         "verified": verified,
         "reason": "ok" if verified else "final-bundle-live-proof-failed",
@@ -227,8 +242,6 @@ def main() -> int:
             flush=True,
         )
 
-        # Provider N is the only provider materialized for candidate execution at
-        # this point. N+1 is untouched until N has also passed its final JS proof.
         candidate_materialized = materialize_one(provider_id)
         candidate_filename = str(candidate_materialized.get("file") or "")
         if not candidate_filename:
@@ -243,7 +256,7 @@ def main() -> int:
         )
 
         _rows, evaluation, used_tasks = run_until_qualified(provider, model, minimum, timeout)
-        completion_state = "coverage-qualified" if should_pass(evaluation) else None
+        completion_state = "coverage-qualified" if is_qualified(evaluation) else None
         origin_evidence: list[dict[str, Any]] = []
         if completion_state is None:
             completion_state, origin_evidence = terminal_state(
@@ -267,6 +280,7 @@ def main() -> int:
             raise SystemExit(
                 f"{provider_id}: live coverage insufficient "
                 f"effective={evaluation['effectiveCoverageRatio']:.3f} "
+                f"live={evaluation['liveValidatedRouteCount']} "
                 f"required={evaluation['requiredCoverageRatio']:.3f}; "
                 f"refusing to materialize or advance to provider {index + 1}"
             )
@@ -283,7 +297,6 @@ def main() -> int:
         write(knowledge_path, knowledge)
         write(overrides_path, overrides)
 
-        # Rebuild the exact final bundle for N from live-only DATA before N+1.
         materialized = materialize_one(provider_id)
         final_filename = str(materialized.get("file") or "")
         if not final_filename:
