@@ -78,9 +78,13 @@ jobs:
           report_file="$(find "${recovery_dir}" -type f -name 'provider-v3-batch-diagnostic.json' -print -quit)"
           test -n "${static_file}" && test -n "${overrides_file}" && test -n "${report_file}"
 
-          echo '8ee6e3f36566971247221c7984ed10e4eff14708c589bb9c334c89e3a6404b5  '"${static_file}" | sha256sum -c -
-          echo '165240e06618b13b0da2eef34ea5a890bde52b7ff958e9116acb100721faf500  '"${overrides_file}" | sha256sum -c -
-          echo 'e6d51733c7f496cfd338c5c98f179e69ed7c05c0be082edd848bd13056abf8cb  '"${report_file}" | sha256sum -c -
+          static_sha="$(sha256sum "${static_file}" | awk '{print $1}')"
+          overrides_sha="$(sha256sum "${overrides_file}" | awk '{print $1}')"
+          report_sha="$(sha256sum "${report_file}" | awk '{print $1}')"
+          echo "FIELD_PROVIDER_RECOVERY_HASH static=${static_sha} overrides=${overrides_sha} report=${report_sha}"
+          test "${static_sha}" = '8ee6e3f36566971247221c7984ed10e4eff14708c589bb9c334c89e3a6404b5'
+          test "${overrides_sha}" = '165240e06618b13b0da2eef34ea5a890bde52b7ff958e9116acb100721faf500'
+          test "${report_sha}" = 'e6d51733c7f496cfd338c5c98f179e69ed7c05c0be082edd848bd13056abf8cb'
 
           python - "${static_file}" "${report_file}" <<'PY'
           import json, sys
