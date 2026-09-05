@@ -63,6 +63,33 @@ def main() -> int:
         assert module.load(root / "provider_catalog.json")["manifestMeta"]["vf"]["version"] == "5.21.32"
         assert module.load(root / "sources.json")["repository"]["manifest_version"] == "5.21.32"
 
+        # The bot's own follow-up push uses the already synchronized manifest as
+        # its baseline. Deterministic rematerialization must therefore be a no-op:
+        # no second provider bump, no second global release bump, no metadata churn.
+        write(root / "after-first.json", manifest)
+        second = module.apply_bump(
+            root / "manifest.json",
+            root / "after-first.json",
+            force_all=False,
+            target_release=None,
+        )
+        assert second == {
+            "changed": False,
+            "release": "5.21.32",
+            "providers": [],
+            "providerVersions": {},
+            "metadata": [],
+        }
+        second_manifest = module.load(root / "manifest.json")
+        second_rows = {row["id"].casefold(): row for row in second_manifest["scrapers"]}
+        assert second_manifest["version"] == "5.21.32"
+        assert second_rows["p07"]["version"] == "1.2.4"
+        assert second_rows["p08"]["version"] == "1.2.3"
+        assert module.load(root / "package.json")["version"] == "5.21.32"
+        assert module.load(root / "package-lock.json")["version"] == "5.21.32"
+        assert module.load(root / "provider_catalog.json")["manifestMeta"]["general"]["version"] == "5.21.32"
+        assert module.load(root / "sources.json")["manifest_version"] == "5.21.32"
+
         all_before = fixture()
         all_current = json.loads(json.dumps(all_before))
         write(root / "before-all.json", all_before)
@@ -74,6 +101,22 @@ def main() -> int:
             target_release="5.21.32",
         )
         assert len(result["providers"]) == 96
+        assert all(row["version"] == "1.2.4" for row in module.load(root / "manifest-all.json")["scrapers"])
+
+        # A forced backfill is one-shot. Once the marker is gone, the normal
+        # content-addressed comparison against the post-backfill manifest is also
+        # idempotent and cannot bump all 96 a second time.
+        backfilled = module.load(root / "manifest-all.json")
+        write(root / "after-backfill.json", backfilled)
+        result = module.apply_bump(
+            root / "manifest-all.json",
+            root / "after-backfill.json",
+            force_all=False,
+            target_release=None,
+        )
+        assert result["changed"] is False
+        assert result["release"] == "5.21.32"
+        assert result["providers"] == []
         assert all(row["version"] == "1.2.4" for row in module.load(root / "manifest-all.json")["scrapers"])
 
     print("provider release versioning tests passed")
