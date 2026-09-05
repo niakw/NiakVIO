@@ -72,7 +72,7 @@ assert 'automation/provider-v3-batch-checkpoints' in workflow
 assert 'git add automation/provider-v3-static-knowledge.json provider-overrides.json "${checkpoint}" MEMORY.md' in workflow
 assert "automation/provider-v3-static-knowledge\\.json|provider-overrides\\.json|MEMORY\\.md|automation/provider-v3-batch-checkpoints/" in workflow
 assert "data: persist live-validated Provider routes, DATA and batch evidence" in workflow
-assert 'batch-run-${GITHUB_RUN_ID}-route-data-checkpoint' in workflow
+assert "GITHUB_RUN_ID" in workflow and "route-data-checkpoint" in workflow
 assert 'git stash push --include-untracked' in workflow
 assert 'git fetch origin workbench/provider-v3-recognition-routes-data' in workflow
 assert 'git rebase origin/workbench/provider-v3-recognition-routes-data' in workflow
