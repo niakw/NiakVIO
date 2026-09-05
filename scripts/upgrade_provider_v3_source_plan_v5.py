@@ -6,13 +6,16 @@ repositories. Provider v3 is now NiakVIO-owned: ordinary reconstruction must onl
 consume ProviderBase + durable NiakVIO DATA + owned Lego. This gate therefore
 performs no network I/O and no external-repository pinning.
 
-It fails closed if the expected common runtime/source-plan markers are absent or
-if sources.json regains an operational external-provider registry.
+It also keeps the live fixture matrix semantically aligned before any reconstruction
+starts (for example anime-specialized movie providers use an anime feature film,
+not an unrelated live-action movie).
 """
 from __future__ import annotations
 
 import json
 from pathlib import Path
+
+import upgrade_provider_v3_fixture_selection_v1 as fixture_selection
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_STORE = ROOT / "scripts" / "provider_base_store.py"
@@ -27,6 +30,9 @@ REQUIRED_MARKERS = (
 
 
 def main() -> int:
+    fixture_changed = fixture_selection.patch()
+    fixture_selection.validate()
+
     base_text = BASE_STORE.read_text(encoding="utf-8")
     missing = [marker for marker in REQUIRED_MARKERS if marker not in base_text]
     if missing:
@@ -55,7 +61,8 @@ def main() -> int:
 
     print(
         "PROVIDER_V3_SOURCE_PLAN_V5_LOCAL_OK "
-        f"markers={len(REQUIRED_MARKERS)} externalProviderRepositories=0 network=0"
+        f"markers={len(REQUIRED_MARKERS)} externalProviderRepositories=0 network=0 "
+        f"fixtureSelectionChanged={str(fixture_changed).lower()}"
     )
     return 0
 
