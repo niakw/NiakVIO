@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
-"""Compatibility entry point for Provider v3 source-plan enrichment.
+"""Compatibility entry point for Provider v3 contract enrichment.
 
-The implementation now lives in provider_contract_recognizer.py so Discovery,
-Learning and reconstruction share one source-aware contract recognition skill.
+Provider contract recognition is NiakVIO-owned and source-agnostic. The durable
+recognizer consumes JavaScript/static evidence already available to the pipeline;
+the route-expression analyzer extends it with safe static understanding of URL
+concatenation, request variables, POST bodies and bounded decoded string evidence.
+No provider JavaScript is executed.
 """
-from provider_contract_recognizer import *  # noqa: F401,F403
+import provider_contract_recognizer as _recognizer
+from provider_route_expression_analyzer import install as _install_route_analyzer
+
+_install_route_analyzer(_recognizer)
+from provider_contract_recognizer import *  # noqa: F401,F403,E402
 
 
 if __name__ == "__main__":
