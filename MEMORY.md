@@ -482,3 +482,12 @@ Done means the full requested workbench is coherent, routes/protocol DATA are ma
 - A route is validated DATA only after actual live HTTP execution. Static recognition, source inspection, seed data or inferred route shape alone remain candidate/diagnostic evidence.
 - Every subsequent recognition batch MUST commit `automation/provider-v3-static-knowledge.json`, `provider-overrides.json`, its exact batch report checkpoint, and a MEMORY checkpoint before proceeding to another batch.
 - Full Provider reconstruction is intentionally deferred until route/DATA recognition across the full 96-provider catalogue is complete.
+
+
+## Route/DATA batch checkpoint run 33985303336 {#batch-run-33985303336-route-data-checkpoint}
+- Range: 59→96; processed: 38; hard failures: 0.
+- Final-bundle verified (12): `voiranime`, `wookafr`, `1shows`, `allanime`, `allwish`, `animevost-fr`, `dvdplay`, `fullanime`, `mallumv`, `moviebox`, `showbox`, `vidsrc`.
+- Terminal-blocked (8): `animeworld`, `cinevibe`, `ctgmovies`, `fibwatch`, `onlykdrama`, `vidlove`, `vidnest-anime`, `vixsrc`.
+- Deferred-to-learn (18): `voiranime-homes`, `voiranime-rip`, `vostfree`, `yflix`, `anime-ultime`, `cinefreak`, `einthusan`, `frenchstream`, `goatapi`, `gramcinema`, `kisskh`, `moonflix`, `mycima`, `netmirror`, `topcartoons`, `vidnest`, `waveanime`, `xpass`.
+- Exact durable report: `automation/provider-v3-batch-checkpoints/run-33985303336-batch-059-096.json`. Canonical static knowledge and overrides were committed in the same checkpoint commit.
+- Resume only after this Git checkpoint exists; never advance a recognition batch from artifact-only state.
