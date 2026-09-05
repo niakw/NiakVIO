@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Reconstruct canonical route DATA on one NiakVIO Provider Object.
 
-This module is deliberately independent from full provider reconstruction.  The
+This module is deliberately independent from full provider reconstruction. The
 same per-provider function can be called while a provider is being created or by
 an offline 96/96 route-only sweep.
 
-No provider JavaScript is executed.  Optional source text is analysed only by the
+No provider JavaScript is executed. Optional source text is analysed only by the
 bounded static expression analyser already owned by NiakVIO.
 """
 from __future__ import annotations
@@ -14,7 +14,7 @@ import argparse
 import copy
 import json
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 
 import provider_contract_recognizer as recognizer
 from provider_route_expression_analyzer import (
@@ -31,6 +31,21 @@ DEFAULT_SEEDS = ROOT / "automation" / "provider-v3-recognition-seeds.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
 EXPECTED_PROVIDERS = 96
 HTTP_METHODS = {"GET", "POST", "PUT", "PATCH", "DELETE"}
+STRUCTURED_ROUTE_SUFFIXES = ("route", "routes", "path", "paths", "endpoint", "endpoints", "url", "urls")
+STRUCTURED_ROUTE_EXCLUDED_KEYS = {
+    "base",
+    "baseurl",
+    "base_url",
+    "referer",
+    "referrer",
+    "origin",
+    "host",
+    "domain",
+    "officialsite",
+    "officialhub",
+    "officialapi",
+    "fixedapi",
+}
 
 install_route_guard(recognizer)
 install_route_roles(recognizer)
@@ -48,6 +63,16 @@ def _load(path: Path, default: dict[str, Any] | None = None) -> dict[str, Any]:
 
 def _write(path: Path, value: dict[str, Any]) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _as_list(value: Any) -> list[Any]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    if isinstance(value, tuple):
+        return list(value)
+    return [value]
 
 
 def _unique_strings(values: Iterable[Any], limit: int = 192) -> list[str]:
@@ -71,6 +96,39 @@ def _sanitize_route(route: Any, *, explicit: bool = False) -> str | None:
     return value
 
 
+def _structured_key_is_route(key: str) -> bool:
+    compact = str(key or "").strip().replace("-", "").replace("_", "").casefold()
+    if not compact or compact in STRUCTURED_ROUTE_EXCLUDED_KEYS:
+        return False
+    return compact.endswith(STRUCTURED_ROUTE_SUFFIXES)
+
+
+def _iter_structured_routes(value: Any, *, prefix: str) -> Iterator[tuple[Any, str]]:
+    """Walk durable structured contract DATA and yield route-bearing fields.
+
+    This is intentionally key-driven: arbitrary strings inside recipes are not
+    promoted into executable routes. Nested ``*Route``, ``*Path``, ``*Endpoint``
+    and ``*Url`` fields are eligible; headers, field names and host fragments are
+    not. The returned evidence path makes the Provider Object itself auditable.
+    """
+    if isinstance(value, dict):
+        for key, child in value.items():
+            child_prefix = f"{prefix}.{key}" if prefix else str(key)
+            if _structured_key_is_route(str(key)):
+                if isinstance(child, (list, tuple)):
+                    for item in child:
+                        if isinstance(item, (str, int, float)):
+                            yield item, child_prefix
+                elif isinstance(child, (str, int, float)):
+                    yield child, child_prefix
+            if isinstance(child, (dict, list, tuple)):
+                yield from _iter_structured_routes(child, prefix=child_prefix)
+    elif isinstance(value, (list, tuple)):
+        for index, child in enumerate(value):
+            if isinstance(child, (dict, list, tuple)):
+                yield from _iter_structured_routes(child, prefix=f"{prefix}[{index}]")
+
+
 def _request_row(raw: dict[str, Any], *, explicit: bool = False, default_evidence: str) -> dict[str, Any] | None:
     route = _sanitize_route(raw.get("route"), explicit=explicit)
     if not route:
@@ -86,7 +144,7 @@ def _request_row(raw: dict[str, Any], *, explicit: bool = False, default_evidenc
         "route": route,
         "role": str(raw.get("role") or recognizer.route_kind(route)).strip().casefold(),
         "method": method,
-        "bodyFields": _unique_strings(raw.get("bodyFields") or [], 24),
+        "bodyFields": _unique_strings(_as_list(raw.get("bodyFields")), 24),
         "formEncoded": bool(raw.get("formEncoded")),
         "jsonEncoded": bool(raw.get("jsonEncoded")),
         "refererRequired": bool(raw.get("refererRequired")),
@@ -100,7 +158,7 @@ def _request_row(raw: dict[str, Any], *, explicit: bool = False, default_evidenc
     }
 
 
-def _generic_route_row(route: str, *, explicit: bool, evidence: str) -> dict[str, Any]:
+def _generic_route_row(route: str, *, explicit: bool, evidence: str, confidence: float | None = None) -> dict[str, Any]:
     return {
         "route": route,
         "role": recognizer.route_kind(route),
@@ -115,7 +173,7 @@ def _generic_route_row(route: str, *, explicit: bool, evidence: str) -> dict[str
         "httpUsed": False,
         "evidence": evidence,
         "evidenceSources": [evidence],
-        "confidence": 0.9 if explicit else 0.75,
+        "confidence": max(0.0, min(1.0, confidence if confidence is not None else (0.9 if explicit else 0.75))),
     }
 
 
@@ -149,13 +207,34 @@ def _merge_route_data(rows: Iterable[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def _compat_requests(route_data: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Keep the old recognizedContract.requests view as a derived projection."""
+    """Keep old recognizedContract.requests as a projection, never as authority."""
     fields = (
-        "route", "role", "method", "bodyFields", "formEncoded", "jsonEncoded",
-        "refererRequired", "originRequired", "response", "executedEvidence",
-        "evidence", "confidence",
+        "route",
+        "role",
+        "method",
+        "bodyFields",
+        "formEncoded",
+        "jsonEncoded",
+        "refererRequired",
+        "originRequired",
+        "response",
+        "executedEvidence",
+        "evidence",
+        "confidence",
     )
     return [{field: copy.deepcopy(row.get(field)) for field in fields} for row in route_data]
+
+
+def _add_candidate(
+    candidates: list[tuple[Any, bool, str, float | None]],
+    raw: Any,
+    *,
+    explicit: bool,
+    evidence: str,
+    confidence: float | None = None,
+) -> None:
+    for value in _as_list(raw):
+        candidates.append((value, explicit, evidence, confidence))
 
 
 def reconstruct_provider_routes(
@@ -168,9 +247,9 @@ def reconstruct_provider_routes(
 ) -> dict[str, Any]:
     """Populate canonical route DATA on one Provider Object and return it.
 
-    `provider_object` is the unique row held under static-knowledge.providers[id].
-    Full provider reconstruction is intentionally out of scope.  Re-running this
-    function is idempotent for identical inputs.
+    ``provider_object`` is the unique row under static-knowledge.providers[id].
+    Full provider reconstruction is intentionally out of scope. Re-running this
+    function with identical inputs is idempotent.
     """
     if not isinstance(provider_object, dict):
         raise TypeError(f"{provider_id}: provider object must be a dict")
@@ -180,25 +259,49 @@ def reconstruct_provider_routes(
     knowledge = provider_object.get("knowledge") if isinstance(provider_object.get("knowledge"), dict) else {}
 
     previous_contract = knowledge.get("recognizedContract") if isinstance(knowledge.get("recognizedContract"), dict) else {}
-    previous_requests = previous_contract.get("requests") if isinstance(previous_contract.get("requests"), list) else []
     previous_route_data = model.get("routeData") if isinstance(model.get("routeData"), list) else []
+    previous_is_projection = bool(previous_route_data) and previous_contract.get("canonicalRouteData") == "model.routeData"
+    previous_requests = (
+        []
+        if previous_is_projection
+        else previous_contract.get("requests") if isinstance(previous_contract.get("requests"), list) else []
+    )
     seed_requests = seed.get("requests") if isinstance(seed.get("requests"), list) else []
 
-    explicit_raw = [str(x) for x in patch.get("learned_routes") or []] + [str(x) for x in seed.get("routes") or []]
+    learned_routes = [str(x) for x in _as_list(patch.get("learned_routes"))]
+    seeded_routes = [str(x) for x in _as_list(seed.get("routes"))]
+    explicit_raw = learned_routes + seeded_routes
     explicit_routes = {
         value for value in (_sanitize_route(raw, explicit=True) for raw in explicit_raw) if value
     }
 
-    candidates: list[tuple[Any, bool, str]] = []
-    candidates.extend((raw, True, "niakvio-reviewed-route-data") for raw in explicit_raw)
-    candidates.extend((raw, False, "niakvio-model-route-data") for raw in model.get("routes") or [])
-    candidates.extend((raw, False, "niakvio-knowledge-route-data") for raw in knowledge.get("routes") or [])
-    candidates.extend((raw, False, "niakvio-route-fragment-data") for raw in knowledge.get("routeFragments") or [])
+    candidates: list[tuple[Any, bool, str, float | None]] = []
+    _add_candidate(candidates, learned_routes, explicit=True, evidence="niakvio-learned-route-data", confidence=0.95)
+    _add_candidate(candidates, seeded_routes, explicit=True, evidence="niakvio-reviewed-route-data", confidence=0.95)
+
+    # model.routes is only an input before routeData exists. Once canonical DATA
+    # has been materialized it is a projection and must never become new evidence
+    # for itself on the next pass.
+    if not previous_route_data:
+        _add_candidate(candidates, model.get("routes"), explicit=False, evidence="niakvio-model-route-data")
+
+    _add_candidate(candidates, knowledge.get("routes"), explicit=False, evidence="niakvio-knowledge-route-data")
+    _add_candidate(candidates, knowledge.get("routeFragments"), explicit=False, evidence="niakvio-route-fragment-data")
+
+    # Structured provider contracts are stronger than legacy free-form route
+    # arrays. Walk them recursively so movie/TV/search/source/status routes stored
+    # in apiRecipe (and reviewed override recipes) are represented on the unique
+    # Provider Object even if the old compact model.routes list omitted them.
+    for value, path in _iter_structured_routes(model.get("apiRecipe"), prefix="model.apiRecipe"):
+        _add_candidate(candidates, value, explicit=True, evidence=f"provider-object:{path}", confidence=0.95)
+    for value, path in _iter_structured_routes(patch.get("api_recipe"), prefix="override.api_recipe"):
+        _add_candidate(candidates, value, explicit=True, evidence=f"provider-object:{path}", confidence=0.95)
 
     routes: list[str] = []
     route_evidence: dict[str, list[str]] = {}
+    route_confidence: dict[str, float] = {}
     pruned = 0
-    for raw, explicit, evidence in candidates:
+    for raw, explicit, evidence, confidence in candidates:
         route = _sanitize_route(raw, explicit=explicit)
         if not route:
             if str(raw or "").strip():
@@ -209,11 +312,20 @@ def reconstruct_provider_routes(
         route_evidence.setdefault(route, [])
         if evidence not in route_evidence[route]:
             route_evidence[route].append(evidence)
+        if confidence is not None:
+            route_confidence[route] = max(route_confidence.get(route, 0.0), float(confidence))
 
     rows: list[dict[str, Any]] = []
+    # Existing canonical routeData preserves method/body/header/response proof.
+    # v1/v2 recognizedContract.requests is imported only until canonicalization;
+    # v3 requests is a derived compatibility projection and is never re-ingested.
     for raw in list(previous_route_data) + list(previous_requests):
         if isinstance(raw, dict):
-            row = _request_row(raw, explicit=str(raw.get("route") or "") in explicit_routes, default_evidence="niakvio-existing-route-data")
+            row = _request_row(
+                raw,
+                explicit=str(raw.get("route") or "") in explicit_routes,
+                default_evidence="niakvio-existing-route-data",
+            )
             if row:
                 rows.append(row)
     for raw in seed_requests:
@@ -235,6 +347,7 @@ def reconstruct_provider_routes(
             route_evidence.setdefault(clean, [])
             if evidence not in route_evidence[clean]:
                 route_evidence[clean].append(evidence)
+            route_confidence[clean] = max(route_confidence.get(clean, 0.0), float(meta.get("confidence") or 0.97))
         for raw in expression_request_contracts(source_text, recognizer):
             if isinstance(raw, dict):
                 row = _request_row(raw, explicit=False, default_evidence="static-expression-analysis")
@@ -246,19 +359,31 @@ def reconstruct_provider_routes(
     for route in routes:
         if route in represented:
             continue
-        explicit = route in explicit_routes
-        evidence = (route_evidence.get(route) or ["niakvio-reviewed-route-data" if explicit else "niakvio-owned-route-data"])[0]
-        merged.append(_generic_route_row(route, explicit=explicit, evidence=evidence))
+        explicit = route in explicit_routes or route_confidence.get(route, 0.0) >= 0.9
+        evidence = (
+            route_evidence.get(route)
+            or ["niakvio-reviewed-route-data" if explicit else "niakvio-owned-route-data"]
+        )[0]
+        merged.append(
+            _generic_route_row(
+                route,
+                explicit=explicit,
+                evidence=evidence,
+                confidence=route_confidence.get(route),
+            )
+        )
 
-    # Enrich merged rows with every independent provenance signal for the same route.
+    # Enrich rows with independent provenance signals. Because model.routes is
+    # not re-read after canonicalization, a second run is byte-stable.
     for row in merged:
         route = str(row.get("route") or "")
         row["evidenceSources"] = _unique_strings(
             list(row.get("evidenceSources") or []) + route_evidence.get(route, []), 24
         )
+        if route_confidence.get(route, 0.0) > float(row.get("confidence") or 0.0):
+            row["confidence"] = min(1.0, route_confidence[route])
         row["httpUsed"] = bool(row.get("executedEvidence"))
 
-    # routes is deliberately derived from canonical routeData, not maintained in parallel.
     canonical_routes = _unique_strings([row.get("route") for row in merged], 192)
     model["routeData"] = merged[:192]
     model["routes"] = canonical_routes
@@ -272,7 +397,6 @@ def reconstruct_provider_routes(
         "fullProviderReconstructionRequired": False,
     }
 
-    # Diagnostics/legacy consumers keep a projection; routeData is the canonical owner.
     family = str(model.get("sourceRuntimeFamily") or knowledge.get("runtimeFamily") or "unknown").strip().casefold()
     knowledge["recognizedContract"] = {
         "version": 3,
@@ -309,7 +433,7 @@ def reconstruct_all_routes(
     overrides: dict[str, Any] | None = None,
     provider_id: str | None = None,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    """Route-only sweep.  It never invokes full provider reconstruction."""
+    """Route-only sweep. It never invokes full provider reconstruction."""
     output = copy.deepcopy(payload)
     providers = output.get("providers")
     if not isinstance(providers, dict):
