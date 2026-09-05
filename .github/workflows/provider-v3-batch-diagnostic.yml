@@ -109,26 +109,32 @@ jobs:
           cp "${overrides_file}" provider-overrides.json
           cp "${report_file}" "${checkpoint}"
 
-          marker="run-33979458656-route-data-recovery"
-          if ! grep -q "${marker}" MEMORY.md; then
-            cat >> MEMORY.md <<'EOF'
+          python - <<'PY'
+          from pathlib import Path
+          memory = Path('MEMORY.md')
+          text = memory.read_text(encoding='utf-8')
+          marker = 'run-33979458656-route-data-recovery'
+          if marker not in text:
+              checkpoint_text = """
 
-## 2026-09-05 route/DATA recovery lock — run 33979458656 {#run-33979458656-route-data-recovery}
-- This is the authoritative recovery checkpoint for route/DATA work after the original successful artifact was not persisted to Git.
-- Source workflow run: `33979458656`, head SHA `b1891055fc0830f690bc6afa9f7d2708844a1394`.
-- Recovered canonical snapshot contains all 96 providers and already carries the previously accumulated 1→18 state.
-- Batch report itself covers providers 19→58: 40 processed, 17 final-bundle verified, 4 terminal-blocked, 19 defer-to-learn, 0 hard failures.
-- Final-bundle verified in 19→58: `animesalt`, `animetsu`, `animevostfr`, `castle`, `cineby`, `cinemm`, `coflix`, `french-manga`, `hianime`, `kurage`, `moviesmod`, `neko-sama`, `playimdb`, `streamzo`, `toflix`, `videasy`, `vidfast`.
-- Terminal-blocked in 19→58: `animesultra`, `animezey`, `cinemacity`, `movix`.
-- `mugiwarastream` is a deliberate validated-DATA-retained/final-bundle-unverified case: keep its validated DATA while provider authority remains demoted until repaired.
-- Exact recovered SHA-256: static knowledge `8ee6e3f36566971247221c7984ed10e4eff14708c589bb9c334c89e3a6404b5`; overrides `165240e06618b13b0da2eef34ea5a890bde52b7ff958e9116acb100721faf500`; batch report `e6d51733c7f496cfd338c5c98f179e69ed7c05c0be082edd848bd13056abf8cb`.
-- Durable report path: `automation/provider-v3-batch-checkpoints/run-33979458656-batch-019-058.json`.
-- Do NOT rerun 19→58 merely because a chat/session is lost. Resume recognition at provider 59 unless explicitly auditing a regression.
-- A route is validated DATA only after actual live HTTP execution. Static recognition, source inspection, seed data or inferred route shape alone remain candidate/diagnostic evidence.
-- Every subsequent recognition batch MUST commit `automation/provider-v3-static-knowledge.json`, `provider-overrides.json`, its exact batch report checkpoint, and a MEMORY checkpoint before proceeding to another batch.
-- Full Provider reconstruction is intentionally deferred until route/DATA recognition across the full 96-provider catalogue is complete.
-EOF
-          fi
+          ## 2026-09-05 route/DATA recovery lock — run 33979458656 {#run-33979458656-route-data-recovery}
+          - This is the authoritative recovery checkpoint for route/DATA work after the original successful artifact was not persisted to Git.
+          - Source workflow run: `33979458656`, head SHA `b1891055fc0830f690bc6afa9f7d2708844a1394`.
+          - Recovered canonical snapshot contains all 96 providers and already carries the previously accumulated 1→18 state.
+          - Batch report itself covers providers 19→58: 40 processed, 17 final-bundle verified, 4 terminal-blocked, 19 defer-to-learn, 0 hard failures.
+          - Final-bundle verified in 19→58: `animesalt`, `animetsu`, `animevostfr`, `castle`, `cineby`, `cinemm`, `coflix`, `french-manga`, `hianime`, `kurage`, `moviesmod`, `neko-sama`, `playimdb`, `streamzo`, `toflix`, `videasy`, `vidfast`.
+          - Terminal-blocked in 19→58: `animesultra`, `animezey`, `cinemacity`, `movix`.
+          - `mugiwarastream` is a deliberate validated-DATA-retained/final-bundle-unverified case: keep its validated DATA while provider authority remains demoted until repaired.
+          - Exact recovered SHA-256: static knowledge `8ee6e3f36566971247221c7984ed10e4eff14708c589bb9c334c89e3a6404b5`; overrides `165240e06618b13b0da2eef34ea5a890bde52b7ff958e9116acb100721faf500`; batch report `e6d51733c7f496cfd338c5c98f179e69ed7c05c0be082edd848bd13056abf8cb`.
+          - Durable report path: `automation/provider-v3-batch-checkpoints/run-33979458656-batch-019-058.json`.
+          - Do NOT rerun 19→58 merely because a chat/session is lost. Resume recognition at provider 59 unless explicitly auditing a regression.
+          - A route is validated DATA only after actual live HTTP execution. Static recognition, source inspection, seed data or inferred route shape alone remain candidate/diagnostic evidence.
+          - Every subsequent recognition batch MUST commit `automation/provider-v3-static-knowledge.json`, `provider-overrides.json`, its exact batch report checkpoint, and a MEMORY checkpoint before proceeding to another batch.
+          - Full Provider reconstruction is intentionally deferred until route/DATA recognition across the full 96-provider catalogue is complete.
+          """
+              checkpoint_text = '\n'.join(line[10:] if line.startswith('          ') else line for line in checkpoint_text.splitlines())
+              memory.write_text(text + checkpoint_text + '\n', encoding='utf-8')
+          PY
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
