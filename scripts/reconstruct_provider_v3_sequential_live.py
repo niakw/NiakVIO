@@ -203,7 +203,17 @@ def prove_final_bundle(
     evaluation = credit_verified_playable_chains(
         evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows
     )
-    for task in used_tasks:
+    # PROVIDER_V3_FINAL_PROBE_DIAGNOSTICS_V1
+    print(
+        "FIELD_PROVIDER_FINAL_MODEL "
+        f"provider={provider['provider_id']} routes={len(live_model.get('routes') or [])} "
+        f"route_data={len(live_model.get('routeData') or [])} "
+        f"origins={len(live_model.get('origins') or [])} "
+        f"observed_urls={len(live_model.get('observedUrls') or [])} "
+        f"api_recipe={str(isinstance(live_model.get('apiRecipe'), dict)).lower()}",
+        flush=True,
+    )
+    for task_index, task in enumerate(used_tasks, start=1):
         final_task = copy.deepcopy(task)
         final_task["filename"] = final_filename
         result = run_task(final_task, timeout)
@@ -212,6 +222,19 @@ def prove_final_bundle(
         rows.append(result)
         evaluation = credit_verified_playable_chains(
             evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows
+        )
+        http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
+        http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
+        print(
+            "FIELD_PROVIDER_FINAL_PROBE "
+            f"provider={provider['provider_id']} fixture={final_task.get('fixture_slug')} "
+            f"step={task_index}/{len(used_tasks)} task_status={result.get('status')} "
+            f"http_statuses={http_summary} "
+            f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
+            f"missing_types={','.join(evaluation.get('missingTypes') or []) or 'none'} "
+            f"requests={evaluation.get('providerRequestCount', 0)} "
+            f"live={evaluation.get('liveValidatedRouteCount', 0)}",
+            flush=True,
         )
 
     required_types = {str(v or "").strip().casefold() for v in evaluation.get("requiredTypes") or []}
