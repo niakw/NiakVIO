@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail closed if native reader labs make playback easier than real Nuvio.
+"""Fail closed if native reader labs make playback/build easier than real Nuvio.
 
 The machine-readable policy is automation/native-human-ux-policy.json. Tests here
 protect both sides of the contract: the policy cannot silently become permissive,
@@ -17,7 +17,6 @@ desktop = (ROOT / "scripts/augment_native_desktop_player.py").read_text(encoding
 resolver = (ROOT / "scripts/resolve_native_repository.sh").read_text(encoding="utf-8")
 desktop_suite = (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
 android_transport = (ROOT / "scripts/configure_native_android_lab_transport.py").read_text(encoding="utf-8")
-mobile_hardener = (ROOT / "scripts/harden_nuvio_mobile_device_test.py").read_text(encoding="utf-8")
 bootstrap = (ROOT / "scripts/native_client_test_bootstrap.py").read_text(encoding="utf-8")
 checkout_audit = (ROOT / "scripts/audit_native_client_checkout.py").read_text(encoding="utf-8")
 reader_acceptance = (ROOT / "scripts/prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
@@ -34,7 +33,7 @@ lab_workflows = {
 
 # The policy itself is intentionally strict and fail-closed. Relaxing any of these
 # requires an explicit policy diff instead of an incidental helper change.
-assert policy["version"] >= 5
+assert policy["version"] >= 9
 assert policy["mode"] == "human-ux-observation-only"
 control = policy["change_control"]
 assert control["policy_file_is_source_of_truth"] is True
@@ -42,6 +41,8 @@ assert control["audit_must_read_this_file"] is True
 assert control["policy_changes_require_canonical_gate"] is True
 assert control["policy_changes_require_explicit_diff_review"] is True
 assert control["default_on_ambiguity"] == "fail-closed"
+assert "exact committed published NiakVIO provider bytes" in policy["persistent_profiles"]["common"]["provider_transaction"]
+assert "never rematerialize" in policy["persistent_profiles"]["common"]["provider_transaction"]
 for required_external in (
     "NuvioMobile",
     "NuvioTV",
@@ -62,10 +63,13 @@ for forbidden in (
     "PluginRepository.clearLocalState",
     "FIELD_NATIVE_HTTP_REQUEST client=",
     "FIELD_NATIVE_REPOSITORY_HTTP_REQUEST client=",
+    'pickFirsts.add("lib/*/libc++_shared.so")',
 ):
     assert forbidden in policy["forbidden_checkout_tokens"], forbidden
 for required_rule in (
     "patch Nuvio source code for logging or instrumentation",
+    "patch official Nuvio test/commonTest sources to bypass compile or test failures",
+    "patch official Nuvio build/dependency/packaging conflicts to bypass upstream failures",
     "patch Nuvio repository/network loaders to inject evidence interceptors",
     "patch OS permissions, security policy or runtime privileges",
 ):
@@ -138,36 +142,20 @@ assert "modified=false" in android_transport
 assert '.set(f"{ANDROID}usesCleartextTraffic"' not in android_transport
 assert "android.permission.INTERNET" not in android_transport
 
-# Mobile has one persisted behavior-neutral exception: the ephemeral device-test APK
-# may select one duplicate libc++ runtime so instrumentation can be packaged. This
-# must never spread into application/player/network/runtime behavior.
-assert 'pickFirsts.add("lib/*/libc++_shared.so")' in mobile_hardener
-assert "composeApp/build.gradle.kts" in mobile_hardener
-assert "device-test" in mobile_hardener
-assert "instrumentation APK" in mobile_hardener
-assert 'pickFirsts.add("lib/*/libc++_shared.so")' in policy["allowed_gradle_additions"]["mobile"]
-assert any(
-    row.get("id") == "mobile-device-test-libcxx-packaging-conflict" and row.get("status") == "resolved"
+# Upstream build/dependency conflicts are evidence, not Lab repair targets.
+assert not (ROOT / "scripts/harden_nuvio_mobile_device_test.py").exists()
+assert 'pickFirsts.add("lib/*/libc++_shared.so")' not in policy["allowed_gradle_additions"]["mobile"]
+assert "packaging {" not in policy["allowed_gradle_additions"]["mobile"]
+assert "jniLibs {" not in policy["allowed_gradle_additions"]["mobile"]
+mobile_blocker = next(
+    row
     for row in policy["job_blocker_memory"]["entries"]
+    if row.get("id") == "mobile-device-test-libcxx-packaging-conflict"
 )
-for forbidden in (
-    "configure_manifest",
-    "sentry-android-gradle",
-    "io.sentry.android.gradle",
-    "tools:replace",
-    "usesCleartextTraffic",
-    "networkSecurityConfig",
-    "android.permission.INTERNET",
-    "PlayerPlaybackNetworking",
-    "PlatformPlaybackDataSourceFactory",
-    "ExoPlayer.Builder",
-    "NativePlayerController(",
-    "setDefaultRequestProperties",
-    'setRequestProperty("Referer"',
-    'setRequestProperty("Origin"',
-    'setRequestProperty("User-Agent"',
-):
-    assert forbidden not in mobile_hardener, f"mobile-hardener:{forbidden}"
+assert mobile_blocker["status"] == "external-upstream-blocker"
+assert "retain the official build failure as external evidence" in mobile_blocker["resolution"]
+assert "harden_nuvio_mobile_device_test.py" not in lab_workflows["android"]
+assert 'pickFirsts.add("lib/*/libc++_shared.so")' not in lab_workflows["android"]
 
 # The only supported Android checkout edits are test plumbing. The shared bootstrap
 # must never manufacture a production network/player/runtime capability.
@@ -192,6 +180,7 @@ for forbidden in (
     "ExoPlayer.Builder",
     "setDefaultRequestProperties",
     "PluginRepository.clearLocalState",
+    'pickFirsts.add("lib/*/libc++_shared.so")',
 ):
     assert forbidden not in bootstrap, f"bootstrap:{forbidden}"
 
@@ -231,7 +220,6 @@ assert "PluginRepository.clearLocalState()" not in provider_loading
 assert "officialPluginManager.executeScraper(loadedScraper" in provider_loading
 assert "PluginRepository.executeScraper(loadedScraper" in provider_loading
 
-
 for label, workflow in lab_workflows.items():
     for forbidden in (
         "materialize_provider_v3_all.py",
@@ -244,8 +232,9 @@ for label, workflow in lab_workflows.items():
         "normalize_core_fixed_point_contract.py --apply",
         "normalize_provider_branding_pipeline.py --apply",
         "normalize_core_media_policy.py --apply",
+        "harden_nuvio_mobile_device_test.py",
     ):
-        assert forbidden not in workflow, f"{label} lab may not mutate/reconstruct Provider v3: {forbidden}"
+        assert forbidden not in workflow, f"{label} lab may not repair/reconstruct external/client state: {forbidden}"
 assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"' in lab_workflows["android"]
 assert "NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '40000' }}" in lab_workflows["ios"]
 
