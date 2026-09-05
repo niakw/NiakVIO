@@ -758,21 +758,32 @@ function _crawlUrlScore(url) {
     return score;
   } catch (_) { return -5000; }
 }
+function _crawlCanonical(url) {
+try {
+const parsed = new URL(url);
+if (!/^https?:$/i.test(parsed.protocol)) return "";
+parsed.hash = "";
+return parsed.toString();
+} catch (_) { return ""; }
+}
 function _crawlEligible(url) {
   try {
-    if (_directMedia(url) || _playerLike(url)) return true;
+    if (_directMedia(url)) return true;
     const parsed = new URL(url);
     if (!/^https?:$/i.test(parsed.protocol)) return false;
     const host = _text(parsed.hostname).toLowerCase();
     const path = (parsed.pathname + parsed.search).toLowerCase();
+    const hash = _text(parsed.hash).toLowerCase();
+    if (/^#(?:comments?|respond|reply|share)/i.test(hash)) return false;
     if (/(?:^|\.)(?:t\.me|telegram\.me|facebook\.com|instagram\.com|twitter\.com|x\.com|youtube\.com|youtu\.be)$/i.test(host)) return false;
-    if (/\/(?:feed|comments?\/feed|wp-json\/oembed|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) return false;
+    if (/\/(?:feed|comments?\/feed|wp-json(?:\/|$)|wp-admin|admin|login|register|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) return false;
     if (/\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) return false;
-    return _crawlUrlScore(url) > 0;
+    if (/(?:\+t\.uri|code%3a|message%3a|xhr%3a|\{status:)/i.test(path)) return false;
+    return _playerLike(url) || _crawlUrlScore(url) > 0;
   } catch (_) { return false; }
 }
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
-  const queue = _uniq(seedUrls).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));
+  const queue = _uniq(seedUrls.map(_crawlCanonical)).filter(Boolean).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));
   const seen = new Set();
   const streams = [];
   let requests = 0;
@@ -804,7 +815,7 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
         continue;
       }
       if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
-        for (const next of urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 4)) {
+        for (const next of _uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 4)) {
           if (!seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
         }
       }
@@ -1811,6 +1822,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
 /* NIAKVIO_PROVIDER_BASE_SOURCE_PLAN_V4 */
 /* NIAKVIO_PROVIDER_BASE_RUNTIME_V5 */
 /* NIAKVIO_PROVIDER_BASE_RUNTIME_V6 */
+/* NIAKVIO_PROVIDER_BASE_RUNTIME_V7 */
 function _spv4Family() {
   return _text(NIAKVIO_PROVIDER_MODEL.sourceRuntimeFamily || "unknown").toLowerCase();
 }
@@ -1889,8 +1901,8 @@ function _spv4IsDetailRoute(route, family) {
     /\/(?:anime|animes|movie|movies|film|films|serie|series|voir-series|episode|saison|season|saga|catalogue|watch)(?:[/?#.-]|$)/i.test(value);
 }
 function _spv4SameProviderOrigin(url) {
-  const candidate = _origin(url);
-  return !!candidate && _runtimeBases().some(base => _origin(base) === candidate);
+const candidate = _origin(_substituteDomain(url));
+return !!candidate && _runtimeBases().some(base => _origin(_substituteDomain(base)) === candidate);
 }
 function _spv4AttrUrls(text, base) {
   const out = [];
@@ -1917,14 +1929,26 @@ function _spv4UrlScore(url, meta) {
   } catch (_) {}
   return score;
 }
+function _spv7DetailUrlEligible(url) {
+try {
+const parsed = new URL(url);
+const path = _text(parsed.pathname).toLowerCase();
+const hash = _text(parsed.hash).toLowerCase();
+if (/^#(?:comments?|respond|reply|share)/i.test(hash)) return false;
+if (/\/(?:feed|wp-json|wp-admin|admin|login|register|privacy|terms)(?:[/?#.-]|$)/i.test(path)) return false;
+if (/\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) return false;
+return true;
+} catch (_) { return false; }
+}
 function _spv4HtmlDetails(html, base, meta) {
-  return _spv4AttrUrls(html, base)
-    .filter(_spv4SameProviderOrigin)
-    .map(url => ({ url, score: _spv4UrlScore(url, meta) }))
-    .filter(row => row.score >= 24)
-    .sort((a, b) => b.score - a.score)
-    .map(row => row.url)
-    .slice(0, 8);
+return _spv4AttrUrls(html, base)
+.filter(_spv4SameProviderOrigin)
+.filter(_spv7DetailUrlEligible)
+.map(url => ({ url: _substituteDomain(url), score: _spv4UrlScore(url, meta) }))
+.filter(row => row.score >= 36)
+.sort((a, b) => b.score - a.score)
+.map(row => row.url)
+.slice(0, 8);
 }
 function _spv4JsonRows(value, out) {
   out = out || [];
@@ -2050,7 +2074,7 @@ function _spv4DirectStreams(urls, referer) {
   return direct.length ? _streams(direct, referer).slice(0, 12) : [];
 }
 async function _spv4NestedStreams(urls, referer) {
-  const candidates = _uniq(urls).filter(url => _crawlEligible(url) || /(?:sibnet|vidmoly|streamtape|sendvid|vidoza|myvi)/i.test(url)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8);
+  const candidates = _uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(url => _crawlEligible(url) || /(?:sibnet|vidmoly|streamtape|sendvid|vidoza|myvi)/i.test(url)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8);
   if (!candidates.length) return [];
   return (await _crawlDirectMedia(candidates, referer, 2)).slice(0, 12);
 }
@@ -2293,27 +2317,110 @@ async function _spv4ResolveDetail(detailUrl, meta, mediaType, season, episode, f
   if (direct.length) return direct;
   return _spv4NestedStreams(urls, base);
 }
-async function _spv4GetStreams(tmdbId, mediaType, season, episode) {
-  const runtimeFamily = _spv4Family();
-  if (runtimeFamily === "stremio-json") {
-    const stremio = await _spv5Stremio(tmdbId, mediaType, season, episode);
-    if (stremio.length) return stremio;
+function _spv7ProviderSiteBases() {
+  return _uniq([NIAKVIO_PROVIDER_MODEL.officialSite, NIAKVIO_PROVIDER_MODEL.knownSite])
+    .map(_substituteDomain).filter(value => /^https?:/i.test(value));
+}
+function _spv7DleDetailLinks(html, base, meta) {
+  const out = [];
+  const text = _embeddedText(html);
+  const re = /<a\b([^>]*)href=["']([^"']*(?:newsid=\d+|\/\d+[^"']*))['"]([^>]*)>([\s\S]*?)<\/a>/gi;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    const label = _text(match[1]) + " " + _text(match[3]) + " " + _htmlVisibleText(match[4]);
+    const score = _spv4TitleScore(label, meta);
+    const url = _absolute(match[2], base);
+    if (url && score >= 36 && _spv4SameProviderOrigin(url)) out.push({url:_substituteDomain(url), score});
+    if (out.length >= 12) break;
   }
-  const primary = await getStreams(tmdbId, mediaType, season, episode);
-  if (Array.isArray(primary) && primary.length) return primary;
-  const family = _spv4Family();
-  if (!family || family === "unknown") return [];
-  const type = _text(mediaType || "movie").toLowerCase();
-  const meta = await _tmdb(tmdbId, type);
-  // Catalogue/source-plan families are forbidden from performing provider
-  // network requests until Core has supplied TMDB metadata/cache.
-  if (!meta || !meta.title) return [];
-  const details = await _spv4FindDetails(meta, type, season, episode, family);
-  for (const detail of details.slice(0, 8)) {
-    const streams = await _spv4ResolveDetail(detail, meta, type, season, episode, family);
-    if (streams.length) return streams;
+  return out.sort((a,b)=>b.score-a.score).map(row=>row.url).slice(0,6);
+}
+async function _spv7DleFindDetails(meta, mediaType, season, episode) {
+  const out = [];
+  for (const base of _spv7ProviderSiteBases().slice(0,2)) {
+    try {
+      const target = new URL("/engine/ajax/search.php", base).toString();
+      const response = await _fetch(target, {
+        method:"POST",
+        headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest",Referer:base+"/"},
+        body:"query="+encodeURIComponent(_text(meta && meta.title))+"&page=1"
+      });
+      out.push(..._spv7DleDetailLinks(await response.text(), response.url || target, meta));
+    } catch (_) {}
+    if (out.length) break;
+  }
+  if (out.length) return _uniq(out).slice(0,8);
+  return _spv4FindDetails(meta, mediaType, season, episode, "dle-film-api");
+}
+async function _spv7DleTv(tmdbId, mediaType, season, episode) {
+  if (mediaType === "movie" || tmdbId == null || episode == null) return [];
+  const wantedSeason = Math.max(1, Number(season) || 1);
+  const wantedEpisode = String(Math.max(1, Number(episode) || 1));
+  for (const base of _spv7ProviderSiteBases().slice(0,2)) {
+    try {
+      const seasonsUrl = new URL("/engine/ajax/get_seasons.php?serie_tag=s-"+encodeURIComponent(_text(tmdbId))+"&news_id=0", base).toString();
+      const response = await _fetch(seasonsUrl, {headers:{Accept:"application/json,text/plain,*/*",Referer:base+"/"}});
+      const raw = await response.text();
+      let seasons = null; try { seasons = JSON.parse(raw); } catch (_) {}
+      if (!Array.isArray(seasons) || !seasons.length) continue;
+      let chosen = seasons.find(row => {
+        const match = _text(row && row.title).match(/saison\s*(\d+)/i);
+        return match && Number(match[1]) === wantedSeason;
+      }) || seasons[0];
+      const seasonId = _text(chosen && chosen.id).trim();
+      if (!seasonId) continue;
+      const epsUrl = new URL("/data/eps_"+encodeURIComponent(seasonId)+".txt?v="+Math.floor(Date.now()/30000), base).toString();
+      const epsResponse = await _fetch(epsUrl, {headers:{Accept:"application/json,text/plain,*/*",Referer:base+"/"}});
+      const epsRaw = await epsResponse.text();
+      let eps = null; try { eps = JSON.parse(epsRaw); } catch (_) {}
+      if (!eps || typeof eps !== "object") continue;
+      const rows = [];
+      const seen = new Set();
+      for (const lang of ["vf","vostfr","vo"]) {
+        const bucket = eps[lang];
+        const players = bucket && (bucket[wantedEpisode] || bucket[Number(wantedEpisode)]);
+        if (!players || typeof players !== "object") continue;
+        for (const [host, value] of Object.entries(players)) {
+          const url = _text(value).trim();
+          if (!/^https?:\/\//i.test(url) || seen.has(url)) continue;
+          seen.add(url);
+          rows.push({name:NIAKVIO_PROVIDER_MODEL.displayName,title:"["+lang.toUpperCase()+"] "+_text(host).toUpperCase(),url,language:lang,headers:{Referer:base+"/"}});
+        }
+      }
+      if (rows.length) return rows.slice(0,24);
+    } catch (_) {}
   }
   return [];
+}
+async function _spv4GetStreams(tmdbId, mediaType, season, episode) {
+const family = _spv4Family();
+const type = _text(mediaType || "movie").toLowerCase();
+if (family === "stremio-json") {
+const stremio = await _spv5Stremio(tmdbId, type, season, episode);
+if (stremio.length) return stremio;
+}
+if (family && family !== "unknown") {
+const meta = await _tmdb(tmdbId, type);
+// Known source families execute their typed source plan before the generic
+// fallback. This prevents broad catalogue/API guesses from spending the
+// provider budget on category pages, dead aliases and placeholder routes.
+if (meta && meta.title) {
+if (family === "dle-film-api" && type !== "movie") {
+const tv = await _spv7DleTv(tmdbId, type, season, episode);
+if (tv.length) return tv;
+}
+const details = family === "dle-film-api"
+? await _spv7DleFindDetails(meta, type, season, episode)
+: await _spv4FindDetails(meta, type, season, episode, family);
+for (const detail of details.slice(0, 8)) {
+const streams = await _spv4ResolveDetail(detail, meta, type, season, episode, family);
+if (streams.length) return streams;
+}
+}
+}
+const primary = await getStreams(tmdbId, type, season, episode);
+if (Array.isArray(primary) && primary.length) return primary;
+return [];
 }
 module.exports = {
   getStreams: _spv4GetStreams,
