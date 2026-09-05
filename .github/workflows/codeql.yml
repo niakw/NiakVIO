@@ -2,12 +2,14 @@ name: SEC - CodeQL
 # Default Setup owns GitHub code-scanning uploads. This advanced security-extended
 # workflow remains an independent exact-SHA proof, but never uploads SARIF and
 # therefore cannot conflict with Default Setup.
-#
-# TEMPORARILY PAUSED: automatic push / pull_request / schedule triggers are
-# disabled while the Actions queue is drained. Keep workflow_dispatch so the
-# exact-SHA security proof can still be launched deliberately when needed.
 
 on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "23 4 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -16,8 +18,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: codeql-manual-${{ github.run_id }}
-  cancel-in-progress: false
+  group: codeql-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   analyze:
