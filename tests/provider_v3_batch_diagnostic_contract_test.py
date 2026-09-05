@@ -4,6 +4,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "scripts" / "reconstruct_provider_v3_batch_diagnostic.py").read_text(encoding="utf-8")
 validator = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
+workflow = (ROOT / ".github" / "workflows" / "provider-v3-batch-diagnostic.yml").read_text(encoding="utf-8")
 
 assert 'parser.add_argument("--start-index"' in source
 assert 'parser.add_argument("--count"' in source
@@ -62,11 +63,25 @@ assert 'row.get("validationState") != "failed-live"' in validator
 assert '"executionPlanRetainsFailedLive": False' in validator
 assert '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"}' in validator
 
+# The workbench batch is not useful if its validated route/DATA improvements die
+# with the runner. Persist exactly the two canonical DATA stores after a
+# successful bounded slice, and refuse unrelated generated/runtime files.
+assert 'Persist validated Provider route and DATA state' in workflow
+assert 'git add automation/provider-v3-static-knowledge.json provider-overrides.json' in workflow
+assert "automation/provider-v3-static-knowledge\\.json|provider-overrides\\.json" in workflow
+assert "data: persist live-validated Provider routes and DATA" in workflow
+assert 'git fetch origin workbench/provider-v3-recognition-routes-data' in workflow
+assert 'git rebase origin/workbench/provider-v3-recognition-routes-data' in workflow
+assert 'FIELD_PROVIDER_ROUTE_DATA_PERSIST changed=true' in workflow
+persist_at = workflow.index('Persist validated Provider route and DATA state')
+upload_at = workflow.index('Upload provider repair-first evidence')
+assert persist_at < upload_at, "validated route/DATA must persist before artifact-only fallback"
+
 print(
     "PROVIDER_V3_BATCH_DIAGNOSTIC_CONTRACT_OK "
     "bounded_slice=true repair_first=true defer_to_learn=true "
     "validated_data_retained=true provider_authority_demoted=true "
     "failed_live_execution_data=false failed_live_metadata=false "
     "blocked_non2xx_plan=terminal-only continue_after_provider_failure=true "
-    "publication_gate=false final_bundle_reprobe=true"
+    "route_data_persisted=true publication_gate=false final_bundle_reprobe=true"
 )
