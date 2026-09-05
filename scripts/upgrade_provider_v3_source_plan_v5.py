@@ -4,7 +4,7 @@
 Ordinary reconstruction consumes only NiakVIO-owned ProviderBase + durable DATA +
 owned Lego. Before reconstruction, this gate also keeps fixtures semantically
 aligned, prevents generic homepage responses from becoming media-type proof, and
-wires validated clean-v3 route Lego for the current provider batch.
+wires validated clean-v3 route Lego/current route DATA for the active batches.
 """
 from __future__ import annotations
 
@@ -14,6 +14,7 @@ from pathlib import Path
 import upgrade_provider_v3_fixture_selection_v1 as fixture_selection
 import upgrade_provider_v3_type_route_gate_v1 as type_route_gate
 import upgrade_provider_v3_batch_routes_v1 as batch_routes
+import upgrade_provider_v3_batch_routes_v2 as batch_routes_v2
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_STORE = ROOT / "scripts" / "provider_base_store.py"
@@ -34,6 +35,8 @@ def main() -> int:
     type_route_gate.validate()
     batch_routes_changed = batch_routes.patch()
     batch_routes.validate()
+    batch_routes_v2_changed = batch_routes_v2.patch()
+    batch_routes_v2.validate()
 
     base_text = BASE_STORE.read_text(encoding="utf-8")
     missing = [marker for marker in REQUIRED_MARKERS if marker not in base_text]
@@ -65,7 +68,8 @@ def main() -> int:
         f"markers={len(REQUIRED_MARKERS)} externalProviderRepositories=0 network=0 "
         f"fixtureSelectionChanged={str(fixture_changed).lower()} "
         f"typeRouteGateChanged={str(type_gate_changed).lower()} "
-        f"batchRoutesChanged={str(batch_routes_changed).lower()}"
+        f"batchRoutesChanged={str(batch_routes_changed).lower()} "
+        f"batchRoutesV2Changed={str(batch_routes_v2_changed).lower()}"
     )
     return 0
 
