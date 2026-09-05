@@ -17,8 +17,6 @@ on:
 permissions:
   contents: write
 
-# Only the newest reconstruction request for a branch is useful. A stale 96/96
-# rebuild must never block or queue a newer route/DATA correction.
 concurrency:
   group: provider-v3-manual-reconstruction-${{ github.ref }}
   cancel-in-progress: true
@@ -26,7 +24,7 @@ concurrency:
 jobs:
   reconstruct:
     runs-on: ubuntu-latest
-    timeout-minutes: 150
+    timeout-minutes: 330
     env:
       NUVIO_PROVIDER_V3_CONTEXT: workspace
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -72,15 +70,15 @@ jobs:
             echo "NiakVIO Provider v3 recognition seeds are missing." >&2
             exit 1
           }
-          # A previous live pass stores rejected/unreached routes as candidates.
-          # Restore them only for this new discovery/probe pass; they are not
-          # executable authority until the live gate promotes them again.
           python scripts/validate_provider_v3_routes_live.py --prepare-candidates
           python scripts/enrich_provider_v3_static_knowledge.py
           python scripts/sanitize_provider_v3_core_metadata_routes.py
           python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
           python tests/provider_v3_live_route_validation_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/active_provider_live_coverage_test.py
       - name: Refuse direct main mutation
         if: inputs.commit_reconstruction
         shell: bash
@@ -126,42 +124,51 @@ jobs:
           python tests/global_stream_presentation_pipeline_test.py
           python tests/native_hls_integrity_budget_test.py
           python tests/provider_v3_live_route_validation_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/active_provider_live_coverage_test.py
 
-      - name: Traverse reconstructed route candidates live
+      - name: Reconstruct and validate providers sequentially live
         shell: bash
         run: |
           set -euo pipefail
-          # Pass 1 is deliberately provisional. Candidate routes are allowed here
-          # only so the real Provider Object can execute them in its actual chain.
+          # Candidate bundles exist only to let each real Provider Object execute.
+          # No route from this pass is publication authority by itself.
           python scripts/materialize_provider_v3_all.py
-          # The validator observes the requests that were really issued and
-          # rewrites route authority + route-bearing overrides to live-only DATA.
-          python scripts/validate_provider_v3_routes_live.py
-          python tests/provider_v3_live_route_validation_test.py
+
+          # Strict order: provider N candidate probe -> DATA finalization -> provider
+          # N final rematerialization -> final-bundle live proof -> only then N+1.
+          # There is intentionally no inter-provider concurrency here.
+          python scripts/reconstruct_provider_v3_sequential_live.py --minimum-coverage 0.75
+
+          # Dynamic global invariant. Current manifest has 63 enabled providers,
+          # therefore this run must prove 63/63 live-qualified before publication.
+          python scripts/assert_active_provider_live_coverage.py
           python - <<'PY'
           import json
           from pathlib import Path
           report=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
           assert report.get("providerCount") == 96, report.get("providerCount")
-          assert report.get("providersWithProviderHttpCount", 0) > 0, report
-          assert report.get("liveValidatedRouteCount", 0) <= report.get("attemptedRouteCount", 0), report
-          assert report.get("attemptedRouteCount", 0) <= report.get("candidateRouteCount", 0), report
+          assert report.get("completedProviderCount") == 96, report.get("completedProviderCount")
+          assert report.get("allProvidersAdvancedSequentially") is True, report
+          assert report.get("sequentialNoInterProviderConcurrency") is True, report
           print(
-              "FIELD_RECONSTRUCTION_LIVE_ROUTE_GATE "
-              f"candidates={report['candidateRouteCount']} attempted={report['attemptedRouteCount']} "
-              f"live={report['liveValidatedRouteCount']} blocked={report['blockedRouteCount']} "
-              f"failed={report['failedRouteCount']} unexecuted={report['unexecutedCandidateRouteCount']}"
+              "FIELD_RECONSTRUCTION_SEQUENTIAL_LIVE_GATE "
+              f"providers={report['providerCount']} completed={report['completedProviderCount']} "
+              f"live={report.get('liveValidatedRouteCount', 0)} "
+              f"final_verified={report.get('finalBundleVerifiedCount', 0)}"
           )
           PY
 
-      - name: Reconstruct all 96 providers from live DATA + Lego
+      - name: Reconstruct all 96 providers from final live DATA + Lego
         run: |
           set -euo pipefail
-          # Pass 2 is authoritative: model.routes and route-bearing overrides have
-          # already been reduced to successful live traversal evidence.
+          # Deterministic full rematerialization after every provider has already
+          # passed its own sequential candidate+final live gate.
           python scripts/materialize_provider_v3_all.py
           python scripts/prune_unreferenced_providers.py
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/assert_active_provider_live_coverage.py
           python scripts/verify_provider_v3_reverse_rebuild.py
           python - <<'PY'
           import json
@@ -170,16 +177,17 @@ jobs:
           r=json.loads(Path("provider-v3-materialization.json").read_text(encoding="utf-8"))
           live=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
           rows=m.get("scrapers") or []
+          active=sum(1 for row in rows if row.get("enabled") is not False)
           assert len(rows)==96, len(rows)
+          assert active==63, active
           assert r.get("providerCount")==96, r.get("providerCount")
           assert r.get("context")=="workspace", r.get("context")
           assert r.get("publication") is False
           assert r.get("mainTouched") is False
           assert all(str(x.get("filename") or "").startswith("providers/") for x in rows)
-          assert live.get("candidateRouteCount", 0) >= live.get("liveValidatedRouteCount", 0)
           print(
-              "FIELD_MANUAL_RECONSTRUCTION providers=96 context=workspace mainTouched=false "
-              f"liveRoutes={live.get('liveValidatedRouteCount', 0)}"
+              "FIELD_MANUAL_RECONSTRUCTION providers=96 active=63 context=workspace "
+              f"mainTouched=false liveRoutes={live.get('liveValidatedRouteCount', 0)}"
           )
           PY
       - name: Validate reconstructed runtime and release integrity
@@ -204,6 +212,10 @@ jobs:
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/published_provider_lego_contract_test.py
           python tests/provider_v3_live_route_validation_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/active_provider_live_coverage_test.py
+          python scripts/assert_active_provider_live_coverage.py
           python scripts/verify_provider_v3_reverse_rebuild.py
           python scripts/audit_provider_quick_yield.py
           python scripts/generate_release_hashes.py
@@ -244,15 +256,18 @@ jobs:
             scripts/provider_contract_local_enricher.py scripts/provider_route_expression_analyzer.py \
             scripts/provider_route_normalization_guard.py scripts/provider_route_role_classifier.py scripts/provider_route_scope_guard.py \
             scripts/enrich_provider_v3_static_knowledge.py scripts/sanitize_provider_v3_core_metadata_routes.py \
-            scripts/provider_base_store.py scripts/materialize_provider_v3_all.py \
-            scripts/validate_provider_v3_routes_live.py scripts/nuvio_tv_probe_route_validation.cjs \
+            scripts/provider_base_store.py scripts/materialize_provider_v3_all.py scripts/materialize_provider_v3_one.py \
+            scripts/validate_provider_v3_routes_live.py scripts/validate_provider_v3_routes_sequential.py \
+            scripts/reconstruct_provider_v3_sequential_live.py scripts/assert_active_provider_live_coverage.py \
+            scripts/nuvio_tv_probe_route_validation.cjs \
             scripts/provider_patches/global_media_type_resolution_v1.py scripts/provider_patches/global_stream_presentation_v1.py \
             tests/provider_contract_recognizer_test.py tests/provider_v3_core_metadata_route_sanitizer_test.py \
             tests/provider_v3_strategy_plan_contract_test.py tests/provider_v3_live_route_validation_test.py \
-            tests/global_media_type_resolution_test.py MEMORY.md
+            tests/provider_v3_sequential_live_gate_test.py tests/provider_v3_sequential_reconstruction_contract_test.py \
+            tests/active_provider_live_coverage_test.py tests/global_media_type_resolution_test.py MEMORY.md
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
           fi
-          git commit -m "chore: reconstruct Provider v3 96/96 with live route proof"
+          git commit -m "chore: reconstruct Provider v3 96/96 sequentially with live route proof"
           git push origin "HEAD:${GITHUB_REF_NAME}"
