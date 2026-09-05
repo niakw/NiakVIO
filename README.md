@@ -237,6 +237,7 @@ An inconsistent generation must never silently replace a healthy published state
 | `codeql.yml` | CodeQL analysis |
 | `weekly-upstream-provider-discovery.yml` | read-only upstream discovery |
 | `purge-actions-history.yml` | old Actions-run cleanup |
+| `brain-branch-maintenance.yml` | durable Learning/proposals branch maintenance; no direct Provider JS publication |
 
 ---
 
