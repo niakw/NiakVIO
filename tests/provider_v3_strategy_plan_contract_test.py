@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -33,7 +34,7 @@ def route_kind(route: object) -> str:
     # Search semantics must win over a generic /api prefix (/api/search).
     if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", value):
         return "search"
-    if re.search(r"/template-php/[^?#]*fetch\.php(?:[?#]|$)", value):
+    if re.search(r"/(?:template-php/[^?#]*fetch\.php|engine/ajax/search\.php)(?:[?#]|$)", value):
         return "search"
     if re.search(r"/api(?:[./?#]|$)", value):
         return "api"
@@ -60,6 +61,15 @@ def module_fix_id(script: str) -> str:
 
 
 def main() -> int:
+    recognizer = subprocess.run(
+        [sys.executable, str(ROOT / "tests/provider_contract_recognizer_test.py")],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert recognizer.returncode == 0, recognizer.stdout + recognizer.stderr
+
     manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
     overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
     knowledge = json.loads(
