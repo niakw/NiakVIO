@@ -16,7 +16,8 @@ ROOT = Path(__file__).resolve().parents[1]
 BATCH = ROOT / "scripts" / "reconstruct_provider_v3_batch_diagnostic.py"
 VALIDATOR = ROOT / "scripts" / "validate_provider_v3_routes_sequential.py"
 MARKER = "PROVIDER_V3_PRESERVE_VALIDATED_DATA_ON_FINAL_FAILURE_V3"
-VALIDATOR_MARKER = "PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V1"
+VALIDATOR_MARKER_V1 = "PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V1"
+VALIDATOR_MARKER = "PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V2"
 
 
 def once(text: str, old: str, new: str, label: str) -> str:
@@ -32,13 +33,18 @@ def patch_validator() -> bool:
         validate_validator(text)
         return False
 
-    old = '''        execution_plan_rows = [
+    changed = False
+    if VALIDATOR_MARKER_V1 in text:
+        text = text.replace(VALIDATOR_MARKER_V1, VALIDATOR_MARKER, 1)
+        changed = True
+    else:
+        old = '''        execution_plan_rows = [
             row for row in stable_candidate_rows
             if row.get("attemptEvidence")
             or row.get("validationState") == "live-validated"
         ]
 '''
-    new = '''        # PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V1
+        new = '''        # PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V2
         # A route that was actually traversed and failed is useful negative
         # evidence, but it is not executable Provider source DATA. Keep blocked
         # routes (auth/rate/policy can be environmental), keep live-validated
@@ -52,10 +58,25 @@ def patch_validator() -> bool:
             )
         ]
 '''
-    text = once(text, old, new, "execution-plan-failed-live-filter")
+        text = once(text, old, new, "execution-plan-failed-live-filter")
+        changed = True
+
+    # Keep the machine-readable recognition contract aligned with the actual
+    # execution DATA. A generic attempted non-2xx is no longer retained after a
+    # qualified live traversal when it is classified failed-live; only terminal
+    # blocked/unreachable plans survive because those failures may be environmental.
+    if '"executionPlanRetainsFailedLive"' not in text:
+        old_meta = '        "executionPlanRetainsAttemptedNon2xx": True,\n'
+        new_meta = '''        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "executionPlanRetainsFailedLive": False,
+        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+'''
+        text = once(text, old_meta, new_meta, "failed-live-recognition-metadata")
+        changed = True
+
     VALIDATOR.write_text(text, encoding="utf-8")
     validate_validator(text)
-    return True
+    return changed
 
 
 def patch_batch() -> bool:
@@ -162,6 +183,8 @@ def validate_validator(text: str) -> None:
         VALIDATOR_MARKER,
         'row.get("validationState") != "failed-live"',
         'row.get("validationState") == "live-validated"',
+        '"executionPlanRetainsFailedLive": False',
+        '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"}',
     ):
         if needle not in text:
             raise AssertionError(f"validator preserve-DATA contract missing: {needle}")
@@ -197,7 +220,8 @@ def main() -> int:
         "PROVIDER_V3_PRESERVE_VALIDATED_DATA_ON_FINAL_FAILURE_V3_OK "
         f"validator_changed={str(validator_changed).lower()} "
         f"batch_changed={str(batch_changed).lower()} "
-        "failed_live_execution_data=false validated_data_retained=true "
+        "failed_live_execution_data=false failed_live_metadata=false "
+        "blocked_non2xx_plan=terminal-only validated_data_retained=true "
         "provider_authority_demoted=true learn=true continue_next=true"
     )
     return 0
