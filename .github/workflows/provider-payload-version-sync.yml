@@ -26,6 +26,11 @@ jobs:
     if: github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # This whole job is a non-publishing workspace transaction. Keep the
+      # activation-preservation baseline semantics in scope through the final
+      # release-integrity gate; do not scope this only to materialization.
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
     steps:
       - name: Checkout exact provider branch
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -54,8 +59,7 @@ jobs:
 
           # Keep the materialization report deterministic across the bot's own
           # follow-up push; provider bytes themselves never depend on GITHUB_SHA.
-          GITHUB_SHA="" NUVIO_PROVIDER_V3_CONTEXT=workspace \
-            python scripts/materialize_provider_v3_all.py
+          GITHUB_SHA="" python scripts/materialize_provider_v3_all.py
 
           EXTRA=()
           if [ -f automation/provider-version-backfill.json ]; then
@@ -85,6 +89,7 @@ jobs:
           python scripts/validate_language_projection.py
           python scripts/audit_provider_v3_static.py
           python tests/provider_release_versioning_test.py
+          python tests/provider_payload_version_automation_test.py
           python tests/provider_v3_minimizer_published_test.py
           python tests/global_playback_integrity_policy_test.py
           python scripts/generate_release_hashes.py
