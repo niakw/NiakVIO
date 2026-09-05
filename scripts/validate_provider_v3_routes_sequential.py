@@ -11,6 +11,8 @@ Contract:
   direct output for that type) before the provider advances;
 - search/status/player/source traffic can prove the chain but never creates an
   extra required route or denominator by itself;
+- relative recipe routes are matched against their declared API base, never
+  promoted as literal dynamic IDs by accident;
 - only a proven unavailable/blocked provider may advance without normal type-route proof.
 
 There is deliberately no inter-provider concurrency.
@@ -112,7 +114,6 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
             if provider_id in row["providers"] and row["semantic_type"] in supported:
                 selected.append(row)
 
-        # One canonical fixture for every declared semantic type is mandatory.
         for media_type in supported:
             slug = REPRESENTATIVE[media_type]
             row = by_slug.get(slug)
@@ -320,17 +321,58 @@ def _declared_type_templates(model: dict[str, Any], required_types: set[str]) ->
     return out
 
 
+def _recipe_bases(model: dict[str, Any]) -> list[str]:
+    values: list[str] = []
+    for key in ("officialApi", "fixedApi"):
+        raw = str(model.get(key) or "").strip()
+        if raw and raw not in values:
+            values.append(raw)
+    for recipe_key in ("candidateApiRecipe", "apiRecipe"):
+        recipe = model.get(recipe_key)
+        if not isinstance(recipe, dict):
+            continue
+        for key in ("base", "api", "baseUrl", "endpoint"):
+            raw = str(recipe.get(key) or "").strip()
+            if raw and raw not in values:
+                values.append(raw)
+    return values
+
+
+def _route_matches_model_url(route: str, actual_url: str, model: dict[str, Any]) -> bool:
+    if route_matches_url(route, actual_url):
+        return True
+    try:
+        actual = urllib.parse.urlsplit(str(actual_url or ""))
+    except ValueError:
+        return False
+    actual_host = (actual.hostname or "").casefold()
+    for base in _recipe_bases(model):
+        try:
+            base_parts = urllib.parse.urlsplit(base)
+            route_parts = urllib.parse.urlsplit(route)
+        except ValueError:
+            continue
+        if base_parts.hostname and (base_parts.hostname or "").casefold() != actual_host:
+            continue
+        if route_parts.scheme or route_parts.netloc:
+            continue
+        base_path = (base_parts.path or "").rstrip("/")
+        route_path = (route_parts.path or "/").lstrip("/")
+        combined_path = (base_path + "/" + route_path) if route_path else (base_path or "/")
+        combined = combined_path
+        if route_parts.query:
+            combined += "?" + route_parts.query
+        if route_matches_url(combined, actual_url):
+            return True
+    return False
+
+
 def _provider_contract_hosts(model: dict[str, Any]) -> set[str]:
     values: list[str] = []
     for key in ("knownSite", "officialSite", "officialApi", "fixedApi"):
         if model.get(key):
             values.append(str(model[key]))
-    for recipe_key in ("candidateApiRecipe", "apiRecipe"):
-        recipe = model.get(recipe_key)
-        if isinstance(recipe, dict):
-            for key in ("base", "api", "baseUrl", "endpoint"):
-                if recipe.get(key):
-                    values.append(str(recipe[key]))
+    values.extend(_recipe_bases(model))
     hosts: set[str] = set()
     for value in values:
         try:
@@ -381,6 +423,28 @@ def _generic_control_route(route: str) -> bool:
     return False
 
 
+def _safe_observed_type_route(route: str, derivation: dict[str, Any], media_type: str) -> bool:
+    # A literal provider-internal id (e.g. /stream/525) is not a reusable route
+    # unless we can prove how it varies. Only fixture-derived placeholders or an
+    # explicit semantic path can be promoted by the generic fallback.
+    if derivation.get("substitutions"):
+        return True
+    value = canonical(route)
+    if media_type == "movie" and re.search(r"/(?:movie|movies|film|films)(?:[/?.#_-]|$)", value):
+        return True
+    if media_type == "tv" and (
+        re.search(r"/(?:tv|series|serie|shows?|television)(?:[/?.#_-]|$)", value)
+        or any(token in value for token in ("{season}", "{episode}", "season=", "episode="))
+    ):
+        return True
+    if media_type == "anime" and (
+        re.search(r"/(?:anime|animes)(?:[/?.#_-]|$)", value)
+        or any(token in value for token in ("{season}", "{episode}", "season=", "episode="))
+    ):
+        return True
+    return False
+
+
 def _observed_type_entry(
     media_type: str,
     task_rows: list[dict[str, Any]],
@@ -397,6 +461,8 @@ def _observed_type_entry(
                 continue
             route, derivation = derive_observed_route(fetch, task)
             if not route or _generic_control_route(route):
+                continue
+            if not _safe_observed_type_route(route, derivation, media_type):
                 continue
             return {
                 "route": route,
@@ -418,7 +484,6 @@ def _validate_declared_type_routes(
     evidence_by_type: dict[str, list[dict[str, Any]]] = {media_type: [] for media_type in required_types}
 
     for media_type in sorted(required_types):
-        # First prove the declared/candidate route that explicitly belongs to this type.
         for template in templates.get(media_type) or []:
             for task in task_rows:
                 if canonical(task.get("semantic_type")) != media_type:
@@ -429,7 +494,7 @@ def _validate_declared_type_routes(
                     if not _fetch_on_contract_host(fetch, hosts):
                         continue
                     actual = str(fetch.get("final_url") or fetch.get("url") or "")
-                    if route_matches_url(template, actual):
+                    if _route_matches_model_url(template, actual, model):
                         evidence_by_type[media_type].append({
                             "route": template,
                             "source": "declared-type-template-live-match",
@@ -442,16 +507,15 @@ def _validate_declared_type_routes(
             if evidence_by_type[media_type]:
                 break
 
-        # If the old DATA did not know the current typed route (or it moved), promote
-        # only a reusable successful route actually observed on the provider's own
-        # contract host during a fixture of this exact declared type.
+        # Discovery fallback is deliberately conservative: it may only promote a
+        # route whose dynamic part came from this fixture, or whose path itself
+        # explicitly identifies the declared semantic type. Unknown literal IDs
+        # remain evidence, never templates.
         if not evidence_by_type[media_type]:
             observed = _observed_type_entry(media_type, task_rows, model)
             if observed:
                 evidence_by_type[media_type].append(observed)
 
-        # Direct-media providers may legitimately return a verified stream without
-        # any provider HTTP traversal. This is still validated separately per type.
         if not evidence_by_type[media_type]:
             for task in task_rows:
                 if canonical(task.get("semantic_type")) != media_type or task.get("status") != "playable_verified":
@@ -548,7 +612,7 @@ def evaluate_provider(
         matches = []
         for index, (fetch, task) in enumerate(fetch_rows):
             actual = str(fetch.get("final_url") or fetch.get("url") or "")
-            if route and route_matches_url(route, actual):
+            if route and _route_matches_model_url(route, actual, model):
                 matches.append((fetch, task, index))
                 matched_indexes.add(index)
         row["staticCallEvidence"] = bool(row.get("executedEvidence") or row.get("staticCallEvidence"))
@@ -585,7 +649,6 @@ def evaluate_provider(
             row["validationState"] = "candidate-not-executed"
         enriched.append(row)
 
-    # Internal/auxiliary requests are retained as evidence, but they are not the gate denominator.
     derived_by_route: dict[str, dict[str, Any]] = {}
     unresolved_observed: list[dict[str, Any]] = []
     for index, (fetch, task) in enumerate(fetch_rows):
@@ -685,7 +748,6 @@ def evaluate_provider(
         "unresolvedObservedRequestCount": len(unresolved_observed),
         "candidateCoverageRatio": round(candidate_ratio, 4),
         "observedRouteCaptureRatio": round(observed_ratio, 4),
-        # Compatibility aliases now deliberately mean declared semantic type-route coverage.
         "effectiveCoverageRatio": round(declared_type_ratio, 4),
         "requiredCoverageRatio": 1.0,
         "declaredTypeCoverageRatio": round(declared_type_ratio, 4),
@@ -706,7 +768,6 @@ def evaluate_provider(
 
 
 def should_pass(evaluation: dict[str, Any]) -> bool:
-    # No percentage of internal requests can compensate for a missing declared type.
     return bool(
         evaluation.get("typeComplete")
         and float(evaluation.get("declaredTypeCoverageRatio") or 0.0) >= 1.0
