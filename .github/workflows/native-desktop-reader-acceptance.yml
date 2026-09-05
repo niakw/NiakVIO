@@ -143,9 +143,9 @@ jobs:
             echo "Desktop compatibility shim modified commonMain/runtime" >&2
             exit 1
           fi
-          BEFORE="$(git -C nuvio-desktop diff --binary | git hash-object --stdin)"
+          BEFORE="$(git -C nuvio-desktop diff --binary | git -C nuvio-desktop hash-object --stdin)"
           python3 niakvio/scripts/patch_nuvio_desktop_test_compat.py "$GITHUB_WORKSPACE/nuvio-desktop"
-          AFTER="$(git -C nuvio-desktop diff --binary | git hash-object --stdin)"
+          AFTER="$(git -C nuvio-desktop diff --binary | git -C nuvio-desktop hash-object --stdin)"
           if [[ "$BEFORE" != "$AFTER" ]]; then
             echo "Desktop compatibility shim is not idempotent" >&2
             exit 1
