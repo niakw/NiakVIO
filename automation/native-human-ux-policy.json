@@ -1,10 +1,11 @@
 {
-  "version": 7,
+  "version": 8,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
     "The harness exists to observe the user path, not to improve it.",
     "Do not modify Nuvio production runtime code to make tests pass or to gain visibility.",
+    "Do not patch official Nuvio test/commonTest sources to make a Lab compile or pass; upstream compile/test failures are external evidence.",
     "Do not modify the OS or emulator security/network/runtime policy to make playback easier.",
     "Playback/player failures are evidence first; only a demonstrated NiakVIO-owned cause may become a Brain repair target.",
     "If the official Nuvio client or OS blocks faithful observation before playback, classify and retain the external limitation instead of repairing the environment.",
@@ -42,6 +43,7 @@
     "forbidden_reasons": [
       "make CI green",
       "increase playback success rate",
+      "work around a Nuvio compile or test failure",
       "work around a Nuvio player failure",
       "work around an OS or emulator playback/network limitation",
       "obtain richer evidence by changing Nuvio runtime semantics",
@@ -130,10 +132,10 @@
       ],
       "allowed_test_plumbing": [
         "composeApp/src/desktopTest/",
-        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/PlayerExitOrderingTest.kt (exact no-op interface compatibility shim only)",
         "local.properties"
       ],
       "forbidden_retouch": [
+        "official commonTest/test source patches",
         "root execution",
         "sudo",
         "--add-opens or ALL-UNNAMED JVM privilege relaxation",
@@ -194,11 +196,12 @@
       },
       {
         "id": "desktop-player-language-preference-test-contract-drift",
-        "status": "resolved-by-strict-test-only-compatibility",
+        "status": "external-upstream-blocker",
         "signature": "PlayerExitOrderingTest anonymous PlayerEngineController does not implement applyAudioLanguagePreferences(languages: List<String>)",
         "cause": "official NuvioDesktop Dev added an abstract PlayerEngineController method while its commonTest fake was not updated; desktopTest compilation fails before any NiakVIO provider executes on both macOS and Windows",
-        "resolution": "when and only when the exact known signature is present, add the missing no-op method to that single commonTest fake in the ephemeral checkout; production runtime remains byte-for-byte upstream",
-        "never_repeat": "never widen this exception to commonTest generally, skip failing upstream tests, or patch NuvioDesktop production player/runtime code"
+        "resolution": "retain the official compile failure as external evidence and rerun unchanged against a newer official NuvioDesktop HEAD; NiakVIO must not patch commonTest or production sources",
+        "next_action": "observe the latest official NuvioDesktop HEAD as-is; if the signature persists, keep the Desktop Lab red/external rather than repairing the checkout",
+        "never_repeat": "do not patch the NuvioDesktop commonTest fake, skip the failing upstream test, or alter production player/runtime code to manufacture a green Lab"
       },
       {
         "id": "reader-run-cancellation-churn",
@@ -269,7 +272,6 @@
     ],
     "desktop": [
       "composeApp/src/desktopTest/",
-      "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/PlayerExitOrderingTest.kt",
       "local.properties"
     ]
   },
@@ -302,7 +304,6 @@
     "add test-only dependencies for diagnostic probes only",
     "add exactly one debug-build-only Hilt EntryPoint accessor required for diagnostic access to the existing production PluginManager singleton",
     "resolve duplicate C++ runtime packaging in the instrumentation APK only without changing application runtime, player, provider, network or OS behavior",
-    "add an exact no-op method to the single stale NuvioDesktop commonTest PlayerEngineController fake when the official interface changed and compilation otherwise stops before provider observation",
     "use a debug signing configuration when hosted CI cannot access an official release signing key",
     "stage NiakVIO provider bundles as diagnostic test assets",
     "add test code that invokes production Nuvio entry points only as component diagnostics, never as human-UX acceptance proof"
@@ -334,13 +335,14 @@
     "change decoder or playback settings to obtain a green result",
     "clear or rewrite the real user profile, plugin state or cache to hide failures",
     "patch Nuvio source code for logging or instrumentation",
+    "patch official Nuvio test/commonTest sources to bypass compile or test failures",
     "patch Nuvio repository/network loaders to inject evidence interceptors",
     "patch OS permissions, security policy or runtime privileges",
     "classify an external Nuvio or OS limitation as a NiakVIO provider repair target",
     "count a direct player/provider component probe as human-UX acceptance",
     "retouch the harness merely because playback or player tests are failing"
   ],
-  "evidence_rule": "Human-UX acceptance must come from the real Nuvio user path and production player. Component probes may supplement diagnosis but cannot replace that path. Diagnostics must not patch Nuvio production runtime code to gain visibility.",
+  "evidence_rule": "Human-UX acceptance must come from the real Nuvio user path and production player. Component probes may supplement diagnosis but cannot replace that path. Diagnostics must not patch Nuvio production runtime code or official test sources to gain visibility or bypass failures.",
   "failure_rule": "If faithful observation cannot reach playback because the official Nuvio client or OS blocks earlier, record the condition as external evidence. Do not repair the external environment merely to continue the test.",
   "brain_rule": "Brain may learn and repair only from complete evidence that demonstrates a NiakVIO-owned cause. External Nuvio/OS failures must not generate provider mutations.",
   "change_control": {
