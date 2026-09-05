@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -24,6 +24,31 @@
     ],
     "core_boundary": "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "published_provider_js_is_reconstruction_seed": false
+  },
+  "route_recognition": {
+    "provider_object_count": 96,
+    "canonical_route_data": "provider.model.routeData",
+    "derived_route_projection": "provider.model.routes",
+    "compatibility_projection": "provider.knowledge.recognizedContract.requests",
+    "workflow": ".github/workflows/provider-v3-reconstruct-routes.yml",
+    "route_only": true,
+    "provider_javascript_executed": false,
+    "full_provider_reconstruction_invoked": false,
+    "empty_route_data_is_valid_recognition": true,
+    "empty_route_data_implies_quarantine": false,
+    "latest_verified_census": {
+      "date": "2026-09-05",
+      "run_id": 33949700926,
+      "source_sha": "2fc4279ff1e6b13d1be3614c3d661d8b49d8ca6f",
+      "persisted_sha": "0a2e7c1d8b72d1f0ad8ac45b9de0cdd124053231",
+      "provider_count": 96,
+      "route_count": 401,
+      "http_proven_route_count": 6,
+      "providers_with_route_data": 95,
+      "providers_without_durable_route": [
+        "topcartoons"
+      ]
+    }
   },
   "routine": {
     "deep": {
@@ -169,6 +194,8 @@
     ]
   },
   "reference_reconstruction": {
+    "status": "frozen_historical_materialization_reference",
+    "current_operational_truth": false,
     "date": "2026-09-03",
     "retry": 25,
     "generation": "8e354389b41b2498",
@@ -179,7 +206,7 @@
     "reconstruction_sha": "bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb",
     "release_integrity": true,
     "quick_validation_sha": "28d98a54264f7d24379c62b310a81b2e60dd7b4b",
-    "note": "Reference before final HTML-filter security + minimizer rematerialization; next reconstruction must supersede this entry."
+    "note": "Frozen materialization reference retained for reverse-rebuild compatibility. It is not the current route-recognition/quarantine truth. Current recognition state is route_recognition.latest_verified_census."
   },
   "native_lab_contract": {
     "provider_count": 96,
@@ -198,9 +225,11 @@
   "provider_plan_contract": {
     "catalogue_provider_count": 96,
     "disabled_providers_are_audited": true,
+    "historical_materialization_plan_counts_only": true,
     "executable_non_quarantined": 91,
     "quarantined": 5,
     "quarantine_requires_explicit_reason": true,
+    "route_recognition_absence_is_not_quarantine_evidence": true,
     "strategy_taxonomy": [
       "official_domain_hub",
       "api_stream_resolver",

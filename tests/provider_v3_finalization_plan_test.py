@@ -1,0 +1,254 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import copy
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+
+# Keep this test standalone: apply the migrations it is meant to lock before
+# importing the runtime under test.
+from upgrade_provider_v3_finalization_v1 import patch_finalizer  # noqa: E402
+from upgrade_provider_v3_redirect_route_match_v1 import patch as patch_redirect_route_match  # noqa: E402
+from upgrade_provider_v3_http_block_classification_v1 import patch as patch_http_block_classification  # noqa: E402
+from upgrade_provider_v3_defer_finalization_preserve_validated_data_v3 import patch_validator as patch_failed_live_execution_data  # noqa: E402
+
+patch_finalizer()
+patch_redirect_route_match()
+patch_http_block_classification()
+patch_failed_live_execution_data()
+
+from validate_provider_v3_routes_sequential import evaluate_provider, finalize_provider, should_pass  # noqa: E402
+
+COMMON = {
+    "method": "GET",
+    "content_type": "application/json",
+    "header_names": ["accept"],
+    "body_kind": "none",
+    "body_fields": [],
+}
+
+
+def fetch(url: str, status: int, final_url: str | None = None) -> dict[str, object]:
+    return {**COMMON, "url": url, "final_url": final_url or url, "status": status}
+
+
+base_model = {
+    "canonicalSupportedTypes": ["movie", "tv"],
+    "knownSite": "https://plan.test",
+    "officialApi": "https://api.plan.test/v1",
+    "fixedApi": "https://api.plan.test/v1",
+    "origins": ["https://plan.test", "https://api.plan.test"],
+    "observedUrls": ["https://plan.test/"],
+    "apiRecipe": {
+        "base": "https://api.plan.test/v1",
+        "searchRoute": "/search/{query}",
+        "movieRoute": "/movie/{tmdbId}",
+        "episodeRoute": "/tv/{tmdbId}?season={season}&episode={episode}",
+        "statusUrl": "https://plan.test/status",
+    },
+    "routes": [
+        "/search/{query}",
+        "/fallback/{tmdbId}",
+        "/movie/{tmdbId}",
+        "/tv/{tmdbId}?season={season}&episode={episode}",
+        "/unused/{tmdbId}",
+    ],
+    "routeData": [
+        {"route": "/search/{query}", "role": "search"},
+        {"route": "/fallback/{tmdbId}", "role": "detail"},
+        {"route": "/movie/{tmdbId}", "role": "detail", "types": ["movie"]},
+        {"route": "/tv/{tmdbId}?season={season}&episode={episode}", "role": "detail", "types": ["tv"]},
+        {"route": "/unused/{tmdbId}", "role": "detail"},
+    ],
+}
+
+movie = {
+    "semantic_type": "movie",
+    "fixture_slug": "movie",
+    "fixture": {"tmdbId": "10", "mediaType": "movie", "title": "Movie"},
+    "status": "playable_verified",
+    "fetches": [
+        # The stable request identity must survive a server redirect. This is the
+        # exact class of bug that reduced UHDMovies final DATA to routes=0.
+        fetch(
+            "https://api.plan.test/v1/search/Movie",
+            200,
+            "https://api.plan.test/v1/results/movie",
+        ),
+        fetch("https://api.plan.test/v1/fallback/10", 404),
+        fetch("https://api.plan.test/v1/movie/10", 200),
+        fetch("https://api.plan.test/v1/gateway/session-837492", 200),
+    ],
+}
+tv = {
+    "semantic_type": "tv",
+    "fixture_slug": "tv",
+    "fixture": {"tmdbId": "20", "mediaType": "tv", "title": "Series", "season": 1, "episode": 1},
+    "status": "playable_verified",
+    "fetches": [
+        fetch(
+            "https://api.plan.test/v1/search/Series",
+            200,
+            "https://api.plan.test/v1/results/series",
+        ),
+        fetch("https://api.plan.test/v1/fallback/20", 404),
+        fetch("https://api.plan.test/v1/tv/20?season=1&episode=1", 200),
+        fetch("https://api.plan.test/v1/gateway/session-994211", 200),
+    ],
+}
+
+evaluation = evaluate_provider("plan-provider", copy.deepcopy(base_model), [movie, tv], 0.75)
+assert should_pass(evaluation), evaluation
+assert evaluation["validatedTypes"] == ["movie", "tv"], evaluation
+search_candidate = next(
+    row for row in evaluation["candidateRouteData"]
+    if row.get("route") == "/search/{query}" and not row.get("liveDerived")
+)
+assert search_candidate["validationState"] == "live-validated", search_candidate
+assert search_candidate.get("attemptEvidence"), search_candidate
+assert search_candidate.get("liveEvidence"), search_candidate
+fallback_candidate = next(
+    row for row in evaluation["candidateRouteData"]
+    if row.get("route") == "/fallback/{tmdbId}" and not row.get("liveDerived")
+)
+assert fallback_candidate["validationState"] == "failed-live", fallback_candidate
+assert fallback_candidate.get("attemptEvidence"), fallback_candidate
+
+derived = [row for row in evaluation["candidateRouteData"] if row.get("liveDerived")]
+assert derived, evaluation["candidateRouteData"]
+assert any("gateway/session-" in str(row.get("route") or "") for row in derived), derived
+
+knowledge = {
+    "providers": {
+        "plan-provider": {
+            "model": copy.deepcopy(base_model),
+            "knowledge": {"recognizedContract": {}},
+        }
+    }
+}
+overrides = {
+    "provider_patches": {
+        "plan-provider": {
+            "learned_routes": list(base_model["routes"]),
+            "api_recipe": copy.deepcopy(base_model["apiRecipe"]),
+        }
+    }
+}
+finalize_provider(
+    "plan-provider",
+    {"provider_id": "plan-provider"},
+    knowledge,
+    overrides,
+    evaluation,
+    "declared-types-qualified",
+    [],
+)
+final_model = knowledge["providers"]["plan-provider"]["model"]
+final_routes = set(final_model["routes"])
+assert "/search/{query}" in final_routes, final_routes
+# A route actually traversed and proven 404 is negative evidence, not executable
+# Provider DATA. Keep it in candidate diagnostics but not in the final plan.
+assert "/fallback/{tmdbId}" not in final_routes, final_routes
+assert "/movie/{tmdbId}" in final_routes, final_routes
+assert "/tv/{tmdbId}?season={season}&episode={episode}" in final_routes, final_routes
+assert "/unused/{tmdbId}" not in final_routes, final_routes
+assert not any("gateway/session-" in route for route in final_routes), final_routes
+assert not any(row.get("liveDerived") for row in final_model["routeData"]), final_model["routeData"]
+assert not any(row.get("validationState") == "failed-live" for row in final_model["routeData"]), final_model["routeData"]
+assert final_model["origins"] == base_model["origins"], final_model["origins"]
+assert final_model["observedUrls"] == base_model["observedUrls"], final_model["observedUrls"]
+recognized = knowledge["providers"]["plan-provider"]["knowledge"]["recognizedContract"]
+assert any("gateway/session-837492" in url for url in recognized["runtimeObservedUrls"]), recognized
+assert recognized["runtimeObservationsPersistedAsProviderData"] is False
+assert any(
+    row.get("route") == "/fallback/{tmdbId}" and row.get("validationState") == "failed-live"
+    for row in recognized["candidateRequests"]
+), recognized["candidateRequests"]
+assert final_model["apiRecipe"]["statusUrl"] == "https://plan.test/status", final_model["apiRecipe"]
+patch = overrides["provider_patches"]["plan-provider"]
+assert "/fallback/{tmdbId}" not in patch["learned_routes"], patch
+assert "/unused/{tmdbId}" not in patch["learned_routes"], patch
+assert not any("gateway/session-" in route for route in patch["learned_routes"]), patch
+assert patch["api_recipe"]["statusUrl"] == "https://plan.test/status", patch
+assert final_model["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is False
+assert final_model["routeRecognition"]["executionPlanRetainsFailedLive"] is False
+assert final_model["routeRecognition"]["blockedNon2xxPlanPreserved"] is False
+assert final_model["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
+assert final_model["routeRecognition"]["runtimeObservationsPersistedAsProviderData"] is False
+assert final_model["routeRecognition"]["runtimeDerivedRouteCount"] >= 1
+assert final_model["routeRecognition"]["blockedPlanPreserved"] is False
+
+# A policy/jurisdiction block (451) is not proof that the provider routes are
+# invalid. It must be classified exactly like a blocked runner: no positive
+# validation, but preserve the stable plan so another network/client can use it.
+blocked_model = copy.deepcopy(base_model)
+blocked_evaluation = evaluate_provider(
+    "blocked-provider",
+    blocked_model,
+    [{
+        "semantic_type": "movie",
+        "fixture_slug": "movie",
+        "fixture": {"tmdbId": "10", "mediaType": "movie", "title": "Movie"},
+        "status": "no_streams",
+        "fetches": [
+            fetch("https://api.plan.test/v1/search/Movie", 451),
+            fetch("https://api.plan.test/v1/transient/session-12345", 451),
+        ],
+    }],
+    0.75,
+)
+assert blocked_evaluation["providerBlockedOnly"] is True, blocked_evaluation
+assert blocked_evaluation["providerSuccessHttp"] is False, blocked_evaluation
+assert blocked_evaluation["validatedTypes"] == [], blocked_evaluation
+blocked_knowledge = {
+    "providers": {
+        "blocked-provider": {
+            "model": copy.deepcopy(blocked_model),
+            "knowledge": {"recognizedContract": {}},
+        }
+    }
+}
+blocked_overrides = {
+    "provider_patches": {
+        "blocked-provider": {
+            "learned_routes": list(blocked_model["routes"]),
+            "api_recipe": copy.deepcopy(blocked_model["apiRecipe"]),
+        }
+    }
+}
+finalize_provider(
+    "blocked-provider",
+    {"provider_id": "blocked-provider"},
+    blocked_knowledge,
+    blocked_overrides,
+    blocked_evaluation,
+    "terminal-blocked",
+    [],
+)
+blocked_final = blocked_knowledge["providers"]["blocked-provider"]["model"]
+assert set(blocked_final["routes"]) == set(base_model["routes"]), blocked_final["routes"]
+assert not any("transient/session-" in route for route in blocked_final["routes"]), blocked_final["routes"]
+assert blocked_final["origins"] == base_model["origins"], blocked_final["origins"]
+assert blocked_final["observedUrls"] == base_model["observedUrls"], blocked_final["observedUrls"]
+blocked_recognized = blocked_knowledge["providers"]["blocked-provider"]["knowledge"]["recognizedContract"]
+assert any("transient/session-12345" in url for url in blocked_recognized["runtimeObservedUrls"]), blocked_recognized
+assert blocked_final["apiRecipe"] == base_model["apiRecipe"], blocked_final["apiRecipe"]
+assert blocked_final["routeRecognition"]["blockedPlanPreserved"] is True
+assert blocked_final["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is True
+assert blocked_final["routeRecognition"]["executionPlanRetainsFailedLive"] is False
+assert blocked_final["routeRecognition"]["blockedNon2xxPlanPreserved"] is True
+assert blocked_final["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
+assert blocked_final["routeRecognition"]["runtimeObservationsPersistedAsProviderData"] is False
+assert set(blocked_overrides["provider_patches"]["blocked-provider"]["learned_routes"]) == set(base_model["routes"])
+assert blocked_overrides["provider_patches"]["blocked-provider"]["api_recipe"] == base_model["apiRecipe"]
+
+print(
+    "PROVIDER_V3_FINALIZATION_PLAN_OK redirect_request_identity=preserved "
+    "failed_live=diagnostic-only http451=terminal-blocked-not-validated "
+    "blocked_non2xx_plan=preserved runtime_derived=pure-evidence "
+    "runtime_observations=pure-evidence unexecuted_guess=pruned "
+    "blocked_stable_plan=preserved api_recipe=atomic"
+)

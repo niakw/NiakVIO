@@ -68,7 +68,7 @@ for provider_id in sorted(manifest_ids):
 assert not unusable, unusable
 assert routeful >= 30, routeful
 
-for provider_id in ("purstream", "vegamovies", "hindmoviez", "animezey", "4khdhubnew", "vidlove", "castle", "kehflix", "streamzo"):
+for provider_id in ("purstream", "vegamovies", "hindmoviez", "4khdhub", "animezey", "4khdhubnew", "vidlove", "castle", "kehflix", "streamzo"):
     assert provider_id in providers
     model = providers[provider_id]["model"]
     assert any(
@@ -83,4 +83,38 @@ for provider_id in ("purstream", "vegamovies", "hindmoviez", "animezey", "4khdhu
         ]
     ), provider_id
 
-print(f"Provider v3 durable static knowledge contract passed providers={len(providers)} routeful={routeful}")
+# Current-site authority and route execution evidence are deliberately separate.
+# The reviewed seed may refresh VegaMovies' terminal before the live loop, but
+# /?s={query} must remain an unexecuted candidate until the N-to-N probe calls it.
+vega = providers["vegamovies"]["model"]
+assert vega.get("knownSite") == "https://new2.vegamovies.futbol", vega.get("knownSite")
+assert vega.get("officialSite") == "https://new2.vegamovies.futbol", vega.get("officialSite")
+assert vega.get("officialHub") == "https://vglist.top/", vega.get("officialHub")
+assert "/?s={query}" in (vega.get("routes") or []), vega.get("routes")
+vega_search = next(
+    row for row in vega.get("routeData") or []
+    if isinstance(row, dict) and row.get("route") == "/?s={query}"
+)
+assert vega_search.get("executedEvidence") is False, vega_search
+assert vega_search.get("httpUsed") is False, vega_search
+assert "current-domain-candidate-unexecuted" in (vega_search.get("evidenceSources") or []), vega_search
+
+# 4KHDHub and HDHub4u are separate catalogues. Reviewed authority must keep
+# provider 4khdhub on 4khdhub.one and must not treat the site refresh as HTTP proof.
+hub4k = providers["4khdhub"]["model"]
+assert hub4k.get("knownSite") == "https://4khdhub.one", hub4k.get("knownSite")
+assert hub4k.get("officialSite") == "https://4khdhub.one", hub4k.get("officialSite")
+assert hub4k.get("officialHub") == "https://4khdhub.one/", hub4k.get("officialHub")
+assert "/?s={query}" in (hub4k.get("routes") or []), hub4k.get("routes")
+hub4k_search = next(
+    row for row in hub4k.get("routeData") or []
+    if isinstance(row, dict) and row.get("route") == "/?s={query}"
+)
+assert hub4k_search.get("executedEvidence") is False, hub4k_search
+assert hub4k_search.get("httpUsed") is False, hub4k_search
+
+print(
+    f"Provider v3 durable static knowledge contract passed providers={len(providers)} routeful={routeful} "
+    "vegamovies_current_domain=reviewed route_candidate=unexecuted "
+    "4khdhub_current_domain=reviewed separate_from_hdhub4u=true"
+)

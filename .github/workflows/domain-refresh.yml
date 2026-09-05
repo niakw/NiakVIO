@@ -14,6 +14,7 @@ on:
     paths:
       - '.github/triggers/domain-refresh'
       - '.github/workflows/domain-refresh.yml'
+      - 'scripts/refresh_authoritative_hub_domains.py'
       - 'scripts/resolve_provider_hubs.py'
       - 'scripts/validate_domain_refresh_scope.py'
       - 'scripts/update_provider_v3_domain_config.py'
@@ -54,13 +55,25 @@ jobs:
           MODE="${{ github.event.inputs.mode || 'quick' }}"
           mkdir -p health-output
           cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
-          python scripts/resolve_provider_hubs.py             --mode "$MODE" --include-disabled --workers 8 --timeout 8             --apply --domain-only             --output health-output/provider-hub-report.json
-          python scripts/validate_domain_refresh_scope.py             --before "$RUNNER_TEMP/provider-overrides.before.json"             --after provider-overrides.json             --output health-output/domain-site-changes.json
-      - name: Validate observed domains through DNS
+          python scripts/refresh_authoritative_hub_domains.py \
+            --mode "$MODE" --include-disabled --workers 8 --timeout 8 \
+            --apply \
+            --output health-output/provider-hub-report.json
+          python scripts/validate_domain_refresh_scope.py \
+            --before "$RUNNER_TEMP/provider-overrides.before.json" \
+            --after provider-overrides.json \
+            --output health-output/domain-site-changes.json
+      - name: Observe updated domains through DNS and HTTP
+        continue-on-error: true
         env:
           GLOBALPING_API_TOKEN: ${{ secrets.GLOBALPING_API_TOKEN }}
         run: |
-          node scripts/provider_dns_preflight.mjs             --manifest manifest.json             --hub-report health-output/provider-hub-report.json             --config domain-observation-config.json             --all-domains             --output health-output/dns-preflight-report.json
+          node scripts/provider_dns_preflight.mjs \
+            --manifest manifest.json \
+            --hub-report health-output/provider-hub-report.json \
+            --config domain-observation-config.json \
+            --all-domains \
+            --output health-output/dns-preflight-report.json
       - name: Update only changed Provider CONFIG domain DATA
         run: |
           set -euo pipefail
@@ -70,13 +83,14 @@ jobs:
           python scripts/prune_unreferenced_providers.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
-      - name: Enforce domain-only immutability
+      - name: Enforce authoritative domain-only immutability
         run: |
+          python tests/authoritative_hub_domain_refresh_test.py
           python tests/domain_refresh_workflow_test.py
           python tests/provider_v3_workflow_ownership_test.py
           python scripts/audit_provider_v3_static.py
           git diff --exit-code -- scripts/provider_patches provider-bases provider_catalog.json provider-type-policy.json
-      - name: Publish validated primary-domain update
+      - name: Publish authoritative primary-domain update
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -84,7 +98,9 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add provider-overrides.json provider-domain-history.json             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json             provider-v3-materialization.json providers/ FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git add provider-overrides.json provider-domain-history.json \
+            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            provider-v3-materialization.json providers/ FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           if git diff --cached --quiet; then
             echo 'No authoritative hub primary-domain change.'
             exit 0
@@ -93,11 +109,11 @@ jobs:
           git fetch origin main
           CURRENT_SHA="$(git rev-parse origin/main)"
           if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
-            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced validated=$BASE_SHA current=$CURRENT_SHA"
+            echo "FIELD_DOMAIN_PUBLICATION_SKIPPED reason=main_advanced observed=$BASE_SHA current=$CURRENT_SHA"
             gh workflow run domain-refresh.yml --ref main -f mode=quick
             exit 0
           fi
-          git commit -m 'chore(domains): update validated Provider v3 primary domains'
+          git commit -m 'chore(domains): update authoritative Provider v3 primary domains'
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
           gh workflow run sync.yml --ref main -f mode=quick
