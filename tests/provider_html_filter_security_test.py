@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PATHS = (
     ROOT / "scripts/provider_base_store.py",
     ROOT / "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
+    ROOT / "scripts/provider_patches/allmovieland_runtime_v1.py",
+    ROOT / "scripts/provider_patches/anikototv_runtime_v1.py",
 )
 
 BAD_PATTERNS = (
@@ -55,10 +57,16 @@ def main() -> int:
 
     base_source = SOURCE_PATHS[0].read_text(encoding="utf-8")
     alias_source = SOURCE_PATHS[1].read_text(encoding="utf-8")
+    allmovieland_source = SOURCE_PATHS[2].read_text(encoding="utf-8")
+    anikoto_source = SOURCE_PATHS[3].read_text(encoding="utf-8")
     if "function _htmlVisibleText(value)" not in base_source:
         failures.append("provider_base_store.py: missing deterministic HTML text scanner")
     if "function plainHtml(v)" not in alias_source:
         failures.append("global_catalogue_alias_recovery_v2.py: missing deterministic HTML text scanner")
+    if 'function visible(v){var src=String(v==null?"":v)' not in allmovieland_source:
+        failures.append("allmovieland_runtime_v1.py: missing deterministic HTML text scanner")
+    if 'function text(v){var src=String(v==null?"":v)' not in anikoto_source:
+        failures.append("anikototv_runtime_v1.py: missing deterministic HTML text scanner")
 
     checked = 0
     if args.published:
