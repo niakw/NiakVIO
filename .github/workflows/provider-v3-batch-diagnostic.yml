@@ -82,9 +82,9 @@ jobs:
           overrides_sha="$(sha256sum "${overrides_file}" | awk '{print $1}')"
           report_sha="$(sha256sum "${report_file}" | awk '{print $1}')"
           echo "FIELD_PROVIDER_RECOVERY_HASH static=${static_sha} overrides=${overrides_sha} report=${report_sha}"
-          test "${static_sha}" = '8ee6e3f36566971247221c7984ed10e4eff14708c589bb9c334c89e3a6404b5'
-          test "${overrides_sha}" = '165240e06618b13b0da2eef34ea5a890bde52b7ff958e9116acb100721faf500'
-          test "${report_sha}" = 'e6d51733c7f496cfd338c5c98f179e69ed7c05c0be082edd848bd13056abf8cb'
+          test "${static_sha}" = 'aab5f7eb12743c1beba7bf37148cb8428307fe3971c30dfe283d06f47ea28df5'
+          test "${overrides_sha}" = '6f651b8b065438c70501877952653c3879c7baf189f5325231bad713e3f70b5a'
+          test "${report_sha}" = 'a0f30ce73d805c720a75d89836cc24fab7a2278c8c67575d1aaf97f322cb58db'
 
           python - "${static_file}" "${report_file}" <<'PY'
           import json, sys
@@ -129,7 +129,7 @@ jobs:
           - Final-bundle verified in 19→58: `animesalt`, `animetsu`, `animevostfr`, `castle`, `cineby`, `cinemm`, `coflix`, `french-manga`, `hianime`, `kurage`, `moviesmod`, `neko-sama`, `playimdb`, `streamzo`, `toflix`, `videasy`, `vidfast`.
           - Terminal-blocked in 19→58: `animesultra`, `animezey`, `cinemacity`, `movix`.
           - `mugiwarastream` is a deliberate validated-DATA-retained/final-bundle-unverified case: keep its validated DATA while provider authority remains demoted until repaired.
-          - Exact recovered SHA-256: static knowledge `8ee6e3f36566971247221c7984ed10e4eff14708c589bb9c334c89e3a6404b5`; overrides `165240e06618b13b0da2eef34ea5a890bde52b7ff958e9116acb100721faf500`; batch report `e6d51733c7f496cfd338c5c98f179e69ed7c05c0be082edd848bd13056abf8cb`.
+          - Exact recovered SHA-256: static knowledge `aab5f7eb12743c1beba7bf37148cb8428307fe3971c30dfe283d06f47ea28df5`; overrides `6f651b8b065438c70501877952653c3879c7baf189f5325231bad713e3f70b5a`; batch report `a0f30ce73d805c720a75d89836cc24fab7a2278c8c67575d1aaf97f322cb58db`.
           - Durable report path: `automation/provider-v3-batch-checkpoints/run-33979458656-batch-019-058.json`.
           - Do NOT rerun 19→58 merely because a chat/session is lost. Resume recognition at provider 59 unless explicitly auditing a regression.
           - A route is validated DATA only after actual live HTTP execution. Static recognition, source inspection, seed data or inferred route shape alone remain candidate/diagnostic evidence.
