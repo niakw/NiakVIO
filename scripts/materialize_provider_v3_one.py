@@ -18,10 +18,107 @@ import materialize_provider_v3_all as allmat
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _host(value: object) -> str:
+    raw = str(value or "").strip().casefold()
+    if not raw:
+        return ""
+    if "://" in raw:
+        try:
+            from urllib.parse import urlparse
+            return str(urlparse(raw).hostname or "").strip().casefold()
+        except ValueError:
+            return ""
+    return raw.split("/", 1)[0].strip().casefold()
+
+
+def reconcile_domain_substitutions(overrides: dict[str, object]) -> list[str]:
+    """Collapse stale domain substitutions through current replacement DATA.
+
+    Some providers retain an older terminal in ``domain_substitutions`` while
+    ``replacements`` / ``runtime_domain_replacements`` already know the newer
+    terminal. ProviderBase consumes ``domain_substitutions`` directly, so leaving
+    that chain uncollapsed can make a freshly rebuilt provider call a blocked old
+    domain even when ``official_site`` is already correct.
+
+    We only rewrite substitution chains that are already connected to replacement
+    DATA; unrelated replacement entries are not promoted into routing authority.
+    """
+    patches = overrides.get("provider_patches")
+    if not isinstance(patches, dict):
+        return []
+    changed: list[str] = []
+    for provider_id, patch in patches.items():
+        if not isinstance(patch, dict):
+            continue
+        raw_substitutions = patch.get("domain_substitutions")
+        if not isinstance(raw_substitutions, dict) or not raw_substitutions:
+            continue
+
+        redirects: dict[str, str] = {}
+        for key in ("replacements", "runtime_domain_replacements"):
+            mapping = patch.get(key)
+            if not isinstance(mapping, dict):
+                continue
+            for source, target in mapping.items():
+                source_host = _host(source)
+                target_host = _host(target)
+                if source_host and target_host:
+                    redirects[source_host] = target_host
+        if not redirects:
+            continue
+
+        def terminal(host: str) -> str:
+            current = _host(host)
+            seen: set[str] = set()
+            for _ in range(12):
+                if not current or current in seen:
+                    break
+                seen.add(current)
+                next_host = _host(redirects.get(current))
+                if not next_host or next_host == current:
+                    break
+                current = next_host
+            return current
+
+        substitutions = {
+            _host(source): _host(target)
+            for source, target in raw_substitutions.items()
+            if _host(source) and _host(target)
+        }
+        original = dict(substitutions)
+        original_targets = set(substitutions.values())
+
+        for source, target in list(substitutions.items()):
+            substitutions[source] = terminal(target)
+
+        # If an old substitution target itself now redirects to a newer terminal,
+        # preserve that continuation so URLs already carrying the old target are
+        # also normalized by ProviderBase.
+        for source, target in redirects.items():
+            if source in substitutions or source in original_targets:
+                substitutions[source] = terminal(target)
+
+        if substitutions == original:
+            continue
+        patch["domain_substitutions"] = dict(sorted(substitutions.items()))
+        changed.append(str(provider_id))
+
+    if changed:
+        print(
+            "FIELD_PROVIDER_DOMAIN_SUBSTITUTIONS_RECONCILED "
+            f"providers={len(changed)} ids={','.join(sorted(changed))}",
+            flush=True,
+        )
+    return changed
+
+
 def materialize_one(provider_id: str) -> dict[str, object]:
     provider_id = allmat.canonical_id(provider_id)
     manifest = allmat.load(allmat.DEFAULT_SOURCE_MANIFEST)
     overrides = allmat.load(allmat.DEFAULT_OVERRIDES)
+    changed_domains = reconcile_domain_substitutions(overrides)
+    if changed_domains:
+        allmat.write_json(allmat.DEFAULT_OVERRIDES, overrides)
     static_knowledge = allmat.load(allmat.DEFAULT_STATIC_KNOWLEDGE)
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
@@ -141,6 +238,7 @@ def materialize_one(provider_id: str) -> dict[str, object]:
         "devices": ["tv", "mobile", "desktop"],
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
+        "domainSubstitutionReconciledProviders": changed_domains,
         "minimizer": {
             "enabled": True,
             "savedBytes": minimized.saved_bytes,
