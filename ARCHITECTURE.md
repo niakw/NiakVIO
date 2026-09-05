@@ -179,7 +179,7 @@ Une quarantaine nécessite une **raison fonctionnelle explicite et prouvée**. `
 - chantier courant de reconnaissance : `workbench/provider-v3-recognition-routes-data` ;
 - reconstruction complète manuelle : branche non-main uniquement ;
 - Labs sur SHA exact ; aucune preuve d'un device ne vaut preuve d'un autre ;
-- branches Learning/proposals séparées du contrôle de publication.
+- Learning/proposals : branche dédiée `brain-learning/proposals`, séparée du contrôle de publication et sans voie directe vers `main`.
 
 ## 14. Invariants non négociables
 
