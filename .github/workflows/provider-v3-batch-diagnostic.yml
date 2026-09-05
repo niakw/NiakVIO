@@ -20,8 +20,9 @@ on:
 permissions:
   contents: write
 
-# Workbench repair slices stay sequential inside each SHA. They never publish,
-# but they may persist a tested source-gate correction back to this workbench branch.
+# Workbench repair slices stay sequential inside each SHA. They never publish.
+# Provider-scoped failures are repair-first, then deferred to Learn instead of
+# blocking the remaining slice.
 concurrency:
   group: provider-v3-batch-diagnostic-${{ github.sha }}
   cancel-in-progress: false
@@ -52,8 +53,10 @@ jobs:
           python scripts/upgrade_provider_v3_source_plan_v5.py
           python scripts/upgrade_provider_base_runtime_v5.py
           python scripts/upgrade_provider_v3_finalization_v1.py
+          python scripts/upgrade_provider_v3_semantic_query_residue_v1.py
           python scripts/upgrade_provider_v3_safe_runtime_route_promotion_v2.py
           python scripts/upgrade_provider_v3_redirect_route_match_v1.py
+          python scripts/upgrade_provider_v3_batch_defer_to_learn_v1.py
           python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
           python scripts/validate_provider_v3_routes_live.py --prepare-candidates
           python scripts/enrich_provider_v3_static_knowledge.py
@@ -74,14 +77,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if git diff --quiet -- scripts/validate_provider_v3_routes_sequential.py; then
+          if git diff --quiet -- scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_batch_diagnostic.py; then
             echo 'FIELD_PROVIDER_GATE_PERSIST changed=false'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/validate_provider_v3_routes_sequential.py
-          git commit -m 'fix: persist tested provider route gate upgrades'
+          git add scripts/validate_provider_v3_routes_sequential.py scripts/reconstruct_provider_v3_batch_diagnostic.py
+          git commit -m 'fix: persist tested provider repair gate upgrades'
           git push origin HEAD:workbench/provider-v3-recognition-routes-data
           echo 'FIELD_PROVIDER_GATE_PERSIST changed=true'
       - name: Run bounded provider repair-first gate
