@@ -63,13 +63,17 @@ assert 'row.get("validationState") != "failed-live"' in validator
 assert '"executionPlanRetainsFailedLive": False' in validator
 assert '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"}' in validator
 
-# The workbench batch is not useful if its validated route/DATA improvements die
-# with the runner. Persist exactly the two canonical DATA stores after a
-# successful bounded slice, and refuse unrelated generated/runtime files.
+# A successful recognition slice is not allowed to exist only inside a runner
+# artifact. Persist canonical DATA, the exact per-run report and MEMORY state in
+# Git before the next batch can become authoritative. Generated bundles remain
+# outside this checkpoint, and a dirty generated worktree must not break rebase.
 assert 'Persist validated Provider route and DATA state' in workflow
-assert 'git add automation/provider-v3-static-knowledge.json provider-overrides.json' in workflow
-assert "automation/provider-v3-static-knowledge\\.json|provider-overrides\\.json" in workflow
-assert "data: persist live-validated Provider routes and DATA" in workflow
+assert 'automation/provider-v3-batch-checkpoints' in workflow
+assert 'git add automation/provider-v3-static-knowledge.json provider-overrides.json "${checkpoint}" MEMORY.md' in workflow
+assert "automation/provider-v3-static-knowledge\\.json|provider-overrides\\.json|MEMORY\\.md|automation/provider-v3-batch-checkpoints/" in workflow
+assert "data: persist live-validated Provider routes, DATA and batch evidence" in workflow
+assert 'batch-run-${GITHUB_RUN_ID}-route-data-checkpoint' in workflow
+assert 'git stash push --include-untracked' in workflow
 assert 'git fetch origin workbench/provider-v3-recognition-routes-data' in workflow
 assert 'git rebase origin/workbench/provider-v3-recognition-routes-data' in workflow
 assert 'FIELD_PROVIDER_ROUTE_DATA_PERSIST changed=true' in workflow
@@ -83,5 +87,6 @@ print(
     "validated_data_retained=true provider_authority_demoted=true "
     "failed_live_execution_data=false failed_live_metadata=false "
     "blocked_non2xx_plan=terminal-only continue_after_provider_failure=true "
-    "route_data_persisted=true publication_gate=false final_bundle_reprobe=true"
+    "route_data_persisted=true report_checkpointed=true memory_checkpointed=true "
+    "publication_gate=false final_bundle_reprobe=true"
 )
