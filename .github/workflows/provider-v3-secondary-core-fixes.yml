@@ -1,0 +1,54 @@
+name: LAB - Provider v3 Secondary Core Fixes
+
+on:
+  push:
+    branches:
+      - workbench/provider-v3-recognition-routes-data
+    paths:
+      - '.github/triggers/provider-v3-secondary-core-fixes.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-v3-secondary-core-fixes-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secondary-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Materialize current shared runtime fixes
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_base_runtime_v5.py
+      - name: Validate stream presentation and Stremio fallback
+        run: |
+          set -euo pipefail
+          python tests/global_stream_unknown_quality_projection_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/stremio_json_runtime_fallback_contract_test.py
+      - name: Commit materialized shared Core source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add scripts/provider_patches/global_stream_presentation_v1.py
+          if git diff --cached --quiet; then
+            echo "FIELD_SECONDARY_CORE_COMMIT changed=false"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix: materialize shared stream quality cleanup"
+          git push origin HEAD:workbench/provider-v3-recognition-routes-data
+          echo "FIELD_SECONDARY_CORE_COMMIT changed=true"
