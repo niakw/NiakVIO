@@ -85,6 +85,12 @@ assert 'return["movie","tv"]' in media
 assert 'return["tv","movie"]' in media
 assert 'canonical==="anime"' in media
 assert 'if(canonical==="anime")return namespace==="movie"?"movie":"tv";' in media
-assert 'wanted = ["anime", "tv", "movie"]' in materializer
+
+# Architecture tests assert the semantic/transport boundary, not one historical
+# implementation of the materializer. The dedicated anime contract test checks
+# the exact catalog-backed widening after the enforcer has run.
+assert "def normalize_anime_transport_compatibility(" in materializer
+assert 'entry["canonicalSupportedTypes"]' in materializer
+assert 'entry["supportedTypes"]' in materializer
 
 print("provider/type/stream architecture scopes verified: anime canonical, tv/movie transport compatible")
