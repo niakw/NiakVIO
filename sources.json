@@ -1,69 +1,24 @@
 {
-  "schema_version": 67,
+  "schema_version": 68,
   "repository": {
     "name": "NiakVIO",
     "manifest_version": "5.21.31",
-    "description": "Combined Nuvio manifest generated from non-P2P providers declared by Gowaru, All-in-One-Nuvio and Yoru. Provider IDs are canonicalized and duplicates are rejected immediately at import; the first valid declaration according to upstream order is retained. Official address hubs, public Telegram announcements, curated candidates, consecutive search confirmation and persistent last-known-good history maintain routes. Current published bundles remain the functional fallback when no live upstream provider can be imported."
-  },
-  "upstreams": {
-    "gowaru": {
-      "name": "Gowaru's Repo",
-      "repository": "https://github.com/Gowaru/gowaru-nuvio-providers",
-      "manifest_urls": [
-        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/manifest.json"
-      ],
-      "license": "GPL-3.0",
-      "license_evidence": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/LICENSE",
-      "knowledge_raw_templates": [
-        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/config.js",
-        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/extractor.js",
-        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/http.js",
-        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/index.js"
-      ]
-    },
-    "aio": {
-      "name": "All-in-One-Nuvio",
-      "repository": "https://github.com/NuvioPlugin/All-in-One-Nuvio",
-      "manifest_urls": [
-        "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/manifest.json",
-        "https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/manifest.json"
-      ],
-      "license": "GPL-3.0",
-      "license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
-      "knowledge_raw_templates": [
-        "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/{provider_id}.js",
-        "https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/providers/{provider_id}.js"
-      ]
-    },
-    "yoru": {
-      "name": "Yoru's Repo",
-      "repository": "https://github.com/yoruix/nuvio-providers",
-      "manifest_urls": [
-        "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/manifest.json"
-      ],
-      "license": "GPL-3.0",
-      "license_evidence": "https://github.com/yoruix/nuvio-providers/blob/main/LICENSE",
-      "knowledge_raw_templates": [
-        "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/{provider_id}.js"
-      ]
-    }
+    "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
-    "discover_every_declared_provider": true,
-    "duplicate_key": "case-insensitive canonical provider id",
-    "preserve_complete_upstream_manifest_entry": "preserve the complete manifest entry of the first successfully imported canonical provider; rejected duplicates never alter provider metadata",
+    "catalogue_provider_count": 96,
+    "provider_identity": "case-insensitive canonical provider id",
+    "include_disabled_providers_in_structural_validation": true,
     "include_unconfirmed_providers_disabled": true,
-    "require_all_upstream_manifests_before_publication": false,
     "content_addressed_provider_filenames": true,
     "checks_run_before_publication": true,
-    "preserve_upstream_enabled_state": false,
+    "preserve_external_enabled_state": false,
     "auto_disable_only_after_repeated_confirmed_media_endpoint_outages": true,
     "strict_health_activation": true,
     "enabled_status": "healthy or curated reachable",
     "minimum_score_enabled": 70,
     "minimum_reachable_streams": 1,
     "minimum_healthy_fixtures": 1,
-    "respect_upstream_disabled_state": true,
     "publish_unconfirmed_providers_disabled": true,
     "minimum_distinct_hosts": 1,
     "minimum_effective_height": 720,
@@ -83,7 +38,7 @@
     "previous_strict_validation_has_finite_inconclusive_grace": true,
     "runtime_check": "one representative provider request and at most one playable stream",
     "server_accessibility": "any HTTP response from a non-infrastructure provider host; DNS/connection/timeout failures remain inaccessible",
-    "metadata_curation": "use the selected canonical provider entry only; rejected duplicate declarations are audit evidence, not metadata inputs",
+    "metadata_curation": "NiakVIO provider metadata and durable recognition DATA are authoritative; external duplicate declarations are not runtime inputs",
     "minimum_manifest_curation_score": 5,
     "enabled_manifest_order": [
       "explicit or runtime-confirmed VF providers first",
@@ -94,7 +49,7 @@
       "other-language group: health/quality score, resolution, curation score descending"
     ],
     "representative_fixture_mode": true,
-    "content_type_inference": "Anime catalogues also expose movie when they contain animated feature films; mixed catalogues expose anime explicitly; tv remains the series request type.",
+    "content_type_inference": "Anime catalogues may transport animated feature films through the movie namespace; canonical anime capability remains distinct from transport compatibility; tv remains the series request type.",
     "manual_provider_priority": [
       "anime-sama",
       "purstream",
@@ -109,14 +64,15 @@
       "desiflix"
     ],
     "manual_provider_priority_scope": "Applied before language/quality ranking while preserving enabled providers before disabled providers.",
-    "upstream_availability_policy": "Prefer a complete live manifest; otherwise use one of the two retained upstream snapshots; otherwise retain current published functional provider bundles.",
-    "upstream_snapshot_generations": 2,
-    "provider_domain_resolution": "Official hubs and public Telegram first; redirects and curated candidates next; bounded Yandex/DuckDuckGo fallback only in deep mode; search-only changes require two consecutive validations.",
-    "provider_domain_refresh_schedule": "Daily lightweight validated refresh; strict code and stream promotion remains deep-only twice weekly.",
+    "provider_domain_resolution": "Official hubs and public service announcements first; validated redirects and curated candidates next; bounded search fallback only in deep mode; search-only changes require repeated confirmation.",
+    "provider_domain_refresh_schedule": "Daily lightweight validated refresh; strict code and stream publication remains deep-only.",
     "last_known_good_domain_retention": true,
     "published_provider_functional_fallback": true,
     "deduplicate_at_input": true,
-    "duplicate_policy": "reject later declaration immediately once a canonical provider has been successfully imported"
+    "duplicate_policy": "reject later duplicate DATA rows once a canonical NiakVIO provider id is materialized",
+    "external_provider_repository_required": false,
+    "external_provider_code_executed": false,
+    "route_authority": "NiakVIO durable DATA plus validated NiakVIO recognition and runtime observations"
   },
   "exclusions": {
     "provider_ids": [
@@ -164,7 +120,9 @@
   "policy": {
     "generic_same_sha_historical_quality_grace": true,
     "no_provider_specific_activation_exception": true,
-    "manifest_version_bumps_when_payload_changes": true
+    "manifest_version_bumps_when_payload_changes": true,
+    "external_provider_repository_required": false,
+    "route_learning_owner": "NiakVIO"
   },
   "manifest_version": "5.21.31",
   "nuvio_client_compatibility": {
