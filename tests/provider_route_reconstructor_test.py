@@ -17,6 +17,13 @@ provider = {
         "knownSite": "https://example.invalid",
         "strategy": "mixed_embed_resolver",
         "routes": ["/legacy/{id}", "/resolvers.js"],
+        "apiRecipe": {
+            "base": "https://api.example.invalid/api/v1",
+            "searchRoute": "/api/search?q={query}",
+            "movieRoute": "/stream/{id}",
+            "episodeRoute": "/stream/{id}/episode?season={season}&episode={episode}",
+            "requestHeaders": {"Accept": "application/json"},
+        },
     },
     "knowledge": {
         "routes": ["/api/search?q={query}", "/wp-json/oembed"],
@@ -76,6 +83,8 @@ assert "/browser?keyword={query}" in model["routes"], model["routes"]
 assert "/ep-{episode}" in model["routes"], model["routes"]
 assert "/player/{id}" in model["routes"], model["routes"]
 assert "/api/source/{id}" in model["routes"], model["routes"]
+assert "/stream/{id}" in model["routes"], model["routes"]
+assert "/stream/{id}/episode?season={season}&episode={episode}" in model["routes"], model["routes"]
 assert "/resolvers.js" not in model["routes"], model["routes"]
 assert "/wp-json/oembed" not in model["routes"], model["routes"]
 assert "/data-video=" not in model["routes"], model["routes"]
@@ -86,6 +95,16 @@ assert search["jsonEncoded"] is True, search
 assert search["refererRequired"] is True, search
 assert search["httpUsed"] is True, search
 assert search["confidence"] == 0.97, search
+
+movie = next(row for row in route_data if row["route"] == "/stream/{id}")
+assert "provider-object:model.apiRecipe.movieRoute" in movie["evidenceSources"], movie
+assert movie["confidence"] >= 0.95, movie
+
+episode_route = next(
+    row for row in route_data
+    if row["route"] == "/stream/{id}/episode?season={season}&episode={episode}"
+)
+assert "provider-object:model.apiRecipe.episodeRoute" in episode_route["evidenceSources"], episode_route
 
 for route in ("/browser?keyword={query}", "/ep-{episode}"):
     row = next(item for item in route_data if item["route"] == route)
@@ -98,11 +117,14 @@ assert recognized["canonicalRouteData"] == "model.routeData", recognized
 assert [row["route"] for row in recognized["requests"]] == [row["route"] for row in route_data], recognized
 assert model["routeRecognition"]["fullProviderReconstructionRequired"] is False
 
-# Same inputs are stable: route-only reconstruction must be safe during individual
-# provider creation as well as repeated 96/96 sweeps.
+# Same inputs are stable: model.routes is a projection after canonicalization and
+# must never become fresh evidence for routeData on the next pass.
 first = copy.deepcopy(provider)
 reconstruct_provider_routes("fixture", provider, seed=seed, patch=patch, source_text=source)
-assert provider["model"]["routeData"] == first["model"]["routeData"]
+assert provider["model"]["routeData"] == first["model"]["routeData"], (
+    first["model"]["routeData"],
+    provider["model"]["routeData"],
+)
 assert provider["model"]["routes"] == first["model"]["routes"]
 
 # Unknown route contract is a recognition state, never evidence that the provider
@@ -134,7 +156,7 @@ for provider_id, row in reconstructed["providers"].items():
     assert recognition.get("fullProviderReconstructionRequired") is False, provider_id
 
 print(
-    "Provider route reconstructor tests passed: canonical routeData, static source proof, "
-    f"idempotence, unknown != quarantine, census=96 routes={census['routeCount']} "
+    "Provider route reconstructor tests passed: canonical routeData, structured object scan, "
+    f"static source proof, idempotence, unknown != quarantine, census=96 routes={census['routeCount']} "
     f"httpProven={census['httpProvenRouteCount']} unknown={len(census['unknownProviders'])}"
 )
