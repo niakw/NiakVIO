@@ -10,7 +10,7 @@ on:
         type: boolean
   push:
     branches:
-      - workbench/provider-v3-performance-playback
+      - workbench/provider-v3-recognition-routes-data
     paths:
       - '.github/triggers/provider-v3-reconstruct-all.json'
 
@@ -18,7 +18,7 @@ permissions:
   contents: write
 
 # Only the newest reconstruction request for a branch is useful. A stale 96/96
-# rebuild must never block or queue a newer source-contract correction.
+# rebuild must never block or queue a newer route/DATA correction.
 concurrency:
   group: provider-v3-manual-reconstruction-${{ github.ref }}
   cancel-in-progress: true
@@ -51,52 +51,19 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
-      - name: Recover durable static Provider DATA when requested
+      - name: Enrich durable Provider DATA from NiakVIO-owned knowledge
         shell: bash
         run: |
           set -euo pipefail
-          refresh="$(python - <<'PY'
-          import json
-          from pathlib import Path
-          data=json.loads(Path(".github/triggers/provider-v3-reconstruct-all.json").read_text(encoding="utf-8"))
-          print("true" if data.get("refresh_static_knowledge") is True else "false")
-          PY
-          )"
-          if [ "$refresh" != "true" ]; then
-            test -s automation/provider-v3-static-knowledge.json || {
-              echo "Durable Provider v3 static knowledge is missing; request refresh_static_knowledge=true." >&2
-              exit 1
-            }
-            python scripts/enrich_provider_v3_static_knowledge.py
-            python scripts/finalize_gowaru_provider_v3_source_plans.py
-            python scripts/sanitize_provider_v3_core_metadata_routes.py
-            python tests/provider_v3_core_metadata_route_sanitizer_test.py
-            python tests/provider_v3_static_knowledge_contract_test.py
-            exit 0
-          fi
-          force_args=()
-          while IFS= read -r provider_id; do
-            [ -n "$provider_id" ] || continue
-            force_args+=(--force-clean-reconstruction "$provider_id")
-          done < <(python - <<'PY'
-          import json
-          from pathlib import Path
-          m=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
-          for row in m.get("scrapers") or []:
-              value=str(row.get("id") or "").strip()
-              if value:
-                  print(value)
-          PY
-          )
-          python scripts/discover_candidates.py \
-            --stage staging/provider-v3-static-knowledge \
-            --clean-reconstruction \
-            "${force_args[@]}"
-          python scripts/promote_provider_v3_static_knowledge.py \
-            --stage staging/provider-v3-static-knowledge \
-            --output automation/provider-v3-static-knowledge.json
+          test -s automation/provider-v3-static-knowledge.json || {
+            echo "Durable Provider v3 static knowledge is missing." >&2
+            exit 1
+          }
+          test -s automation/provider-v3-recognition-seeds.json || {
+            echo "NiakVIO Provider v3 recognition seeds are missing." >&2
+            exit 1
+          }
           python scripts/enrich_provider_v3_static_knowledge.py
-          python scripts/finalize_gowaru_provider_v3_source_plans.py
           python scripts/sanitize_provider_v3_core_metadata_routes.py
           python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
@@ -202,24 +169,29 @@ jobs:
             providers/
             provider-v3-materialization.json
             automation/provider-v3-static-knowledge.json
+            automation/provider-v3-recognition-seeds.json
             FILE-HASHES.json
             PATCH-SHA256SUMS.txt
             SHA256SUMS.json
           retention-days: 14
           if-no-files-found: error
       - name: Commit verified reconstruction to selected branch
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/workbench/provider-v3-performance-playback') || inputs.commit_reconstruction
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/workbench/provider-v3-recognition-routes-data') || inputs.commit_reconstruction
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
-            providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
-            sources.json scripts/provider_base_store.py scripts/materialize_provider_v3_all.py scripts/discover_candidates.py \
-            scripts/finalize_gowaru_provider_v3_source_plans.py scripts/sanitize_provider_v3_core_metadata_routes.py \
+            providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json automation/provider-v3-recognition-seeds.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            scripts/provider_contract_local_enricher.py scripts/provider_route_expression_analyzer.py \
+            scripts/provider_route_normalization_guard.py scripts/provider_route_role_classifier.py \
+            scripts/enrich_provider_v3_static_knowledge.py scripts/sanitize_provider_v3_core_metadata_routes.py \
+            scripts/provider_base_store.py scripts/materialize_provider_v3_all.py \
             scripts/provider_patches/global_media_type_resolution_v1.py scripts/provider_patches/global_stream_presentation_v1.py \
-            tests/provider_v3_core_metadata_route_sanitizer_test.py tests/provider_v3_strategy_plan_contract_test.py tests/global_media_type_resolution_test.py
+            tests/provider_contract_recognizer_test.py tests/provider_v3_core_metadata_route_sanitizer_test.py \
+            tests/provider_v3_strategy_plan_contract_test.py tests/global_media_type_resolution_test.py MEMORY.md
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
