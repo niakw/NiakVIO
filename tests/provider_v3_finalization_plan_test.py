@@ -13,10 +13,12 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from upgrade_provider_v3_finalization_v1 import patch_finalizer  # noqa: E402
 from upgrade_provider_v3_redirect_route_match_v1 import patch as patch_redirect_route_match  # noqa: E402
 from upgrade_provider_v3_http_block_classification_v1 import patch as patch_http_block_classification  # noqa: E402
+from upgrade_provider_v3_defer_finalization_preserve_validated_data_v3 import patch_validator as patch_failed_live_execution_data  # noqa: E402
 
 patch_finalizer()
 patch_redirect_route_match()
 patch_http_block_classification()
+patch_failed_live_execution_data()
 
 from validate_provider_v3_routes_sequential import evaluate_provider, finalize_provider, should_pass  # noqa: E402
 
@@ -108,6 +110,12 @@ search_candidate = next(
 assert search_candidate["validationState"] == "live-validated", search_candidate
 assert search_candidate.get("attemptEvidence"), search_candidate
 assert search_candidate.get("liveEvidence"), search_candidate
+fallback_candidate = next(
+    row for row in evaluation["candidateRouteData"]
+    if row.get("route") == "/fallback/{tmdbId}" and not row.get("liveDerived")
+)
+assert fallback_candidate["validationState"] == "failed-live", fallback_candidate
+assert fallback_candidate.get("attemptEvidence"), fallback_candidate
 
 derived = [row for row in evaluation["candidateRouteData"] if row.get("liveDerived")]
 assert derived, evaluation["candidateRouteData"]
@@ -141,27 +149,33 @@ finalize_provider(
 final_model = knowledge["providers"]["plan-provider"]["model"]
 final_routes = set(final_model["routes"])
 assert "/search/{query}" in final_routes, final_routes
-assert "/fallback/{tmdbId}" in final_routes, final_routes
+# A route actually traversed and proven 404 is negative evidence, not executable
+# Provider DATA. Keep it in candidate diagnostics but not in the final plan.
+assert "/fallback/{tmdbId}" not in final_routes, final_routes
 assert "/movie/{tmdbId}" in final_routes, final_routes
 assert "/tv/{tmdbId}?season={season}&episode={episode}" in final_routes, final_routes
 assert "/unused/{tmdbId}" not in final_routes, final_routes
 assert not any("gateway/session-" in route for route in final_routes), final_routes
 assert not any(row.get("liveDerived") for row in final_model["routeData"]), final_model["routeData"]
+assert not any(row.get("validationState") == "failed-live" for row in final_model["routeData"]), final_model["routeData"]
 assert final_model["origins"] == base_model["origins"], final_model["origins"]
 assert final_model["observedUrls"] == base_model["observedUrls"], final_model["observedUrls"]
 recognized = knowledge["providers"]["plan-provider"]["knowledge"]["recognizedContract"]
 assert any("gateway/session-837492" in url for url in recognized["runtimeObservedUrls"]), recognized
 assert recognized["runtimeObservationsPersistedAsProviderData"] is False
-fallback = next(row for row in final_model["routeData"] if row["route"] == "/fallback/{tmdbId}")
-assert fallback["validationState"] == "failed-live", fallback
-assert fallback.get("attemptEvidence"), fallback
+assert any(
+    row.get("route") == "/fallback/{tmdbId}" and row.get("validationState") == "failed-live"
+    for row in recognized["candidateRequests"]
+), recognized["candidateRequests"]
 assert final_model["apiRecipe"]["statusUrl"] == "https://plan.test/status", final_model["apiRecipe"]
 patch = overrides["provider_patches"]["plan-provider"]
-assert "/fallback/{tmdbId}" in patch["learned_routes"], patch
+assert "/fallback/{tmdbId}" not in patch["learned_routes"], patch
 assert "/unused/{tmdbId}" not in patch["learned_routes"], patch
 assert not any("gateway/session-" in route for route in patch["learned_routes"]), patch
 assert patch["api_recipe"]["statusUrl"] == "https://plan.test/status", patch
-assert final_model["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is True
+assert final_model["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is False
+assert final_model["routeRecognition"]["executionPlanRetainsFailedLive"] is False
+assert final_model["routeRecognition"]["blockedNon2xxPlanPreserved"] is False
 assert final_model["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
 assert final_model["routeRecognition"]["runtimeObservationsPersistedAsProviderData"] is False
 assert final_model["routeRecognition"]["runtimeDerivedRouteCount"] >= 1
@@ -223,6 +237,9 @@ blocked_recognized = blocked_knowledge["providers"]["blocked-provider"]["knowled
 assert any("transient/session-12345" in url for url in blocked_recognized["runtimeObservedUrls"]), blocked_recognized
 assert blocked_final["apiRecipe"] == base_model["apiRecipe"], blocked_final["apiRecipe"]
 assert blocked_final["routeRecognition"]["blockedPlanPreserved"] is True
+assert blocked_final["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is True
+assert blocked_final["routeRecognition"]["executionPlanRetainsFailedLive"] is False
+assert blocked_final["routeRecognition"]["blockedNon2xxPlanPreserved"] is True
 assert blocked_final["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
 assert blocked_final["routeRecognition"]["runtimeObservationsPersistedAsProviderData"] is False
 assert set(blocked_overrides["provider_patches"]["blocked-provider"]["learned_routes"]) == set(base_model["routes"])
@@ -230,7 +247,8 @@ assert blocked_overrides["provider_patches"]["blocked-provider"]["api_recipe"] =
 
 print(
     "PROVIDER_V3_FINALIZATION_PLAN_OK redirect_request_identity=preserved "
-    "http451=terminal-blocked-not-validated stable_attempted_non2xx=preserved "
-    "runtime_derived=pure-evidence runtime_observations=pure-evidence "
-    "unexecuted_guess=pruned blocked_stable_plan=preserved api_recipe=atomic"
+    "failed_live=diagnostic-only http451=terminal-blocked-not-validated "
+    "blocked_non2xx_plan=preserved runtime_derived=pure-evidence "
+    "runtime_observations=pure-evidence unexecuted_guess=pruned "
+    "blocked_stable_plan=preserved api_recipe=atomic"
 )
