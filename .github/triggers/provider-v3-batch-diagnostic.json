@@ -1,7 +1,7 @@
 {
-  "reason": "Replay providers 1-8 only after reconciling executable candidates against explicit provider overrides, NiakVIO recognition seeds, the current manifest Provider JS config, and historical candidates in that priority order. Suppress stale failed/unexecuted historical candidates, preserve independently live-validated reusable routes, seed recognition/current-config routes as unproven candidates, then repair/probe live and persist validated route/DATA truth.",
-  "start_index": 1,
-  "count": 8,
+  "reason": "Resume route/DATA recognition at providers 59-96 from the exact successful run 33979458656 checkpoint. Restore and Git-persist the recovered 96-provider static knowledge, overrides and 19-58 report before any new probe. Then reconcile current reviewed provider authority, execute the remaining providers live in one bounded batch, preserve independently live-validated reusable routes, keep static/inferred routes candidate-only until HTTP execution, defer provider-scoped unresolved cases to Learn, and Git-checkpoint canonical DATA plus the exact batch report before advancing.",
+  "start_index": 59,
+  "count": 38,
   "publication_gate": false,
   "repair_first": true,
   "repair_attempts": 2,
@@ -23,5 +23,12 @@
   "final_bundle_reprobe": true,
   "playable_chain_type_proof": true,
   "publication_authority": false,
-  "batch_contract_revision": "repair-first-recognition-seed-reconcile-1-8-v2"
+  "recovery_run_id": 33979458656,
+  "recovery_expected_head_sha": "b1891055fc0830f690bc6afa9f7d2708844a1394",
+  "recovery_expected_static_sha256": "8ee6e3f36566971247221c7984ed10e4eff14708c589bb9c334c89e3a6404b5",
+  "recovery_expected_overrides_sha256": "165240e06618b13b0da2eef34ea5a890bde52b7ff958e9116acb100721faf500",
+  "recovery_expected_report_sha256": "e6d51733c7f496cfd338c5c98f179e69ed7c05c0be082edd848bd13056abf8cb",
+  "recovery_completed_range": "1-58",
+  "reconstruction_allowed": false,
+  "batch_contract_revision": "recovered-run33979458656-resume-59-96-v1"
 }
