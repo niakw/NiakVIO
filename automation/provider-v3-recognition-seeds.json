@@ -165,6 +165,45 @@
         "After the selected detail page, release/gateway URLs and form action targets are discovered dynamically from returned HTML; NiakVIO must not invent fixed paths for those steps.",
         "Gateway resolution uses returned landing forms/redirects before DriveSeed/direct-media resolution; those dynamic targets remain stream traversal evidence rather than provider search-route DATA."
       ]
+    },
+    "vegamovies": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title", "year"]
+      },
+      "knownSite": "https://new2.vegamovies.futbol",
+      "officialSite": "https://new2.vegamovies.futbol",
+      "officialHub": "https://vglist.top/",
+      "origins": [
+        "https://new2.vegamovies.futbol",
+        "https://vglist.top"
+      ],
+      "routes": [
+        "/?s={query}"
+      ],
+      "requests": [
+        {
+          "route": "/?s={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": false,
+          "evidence": "current-domain-candidate-unexecuted",
+          "confidence": 0.95
+        }
+      ],
+      "notes": [
+        "Reviewed current-site authority points to new2.vegamovies.futbol with vglist.top as the official directory/hub.",
+        "GET /?s={query} is a candidate search route inferred from the current catalogue search surface; it is intentionally not HTTP-proven here.",
+        "The strict sequential live probe must execute this candidate before it can become validated Provider DATA.",
+        "Historical /search.php and /api routes remain diagnostic candidates until live finalization prunes failed paths; no content-specific /download-* URL is persisted as Provider DATA."
+      ]
     }
   }
 }
