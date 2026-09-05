@@ -1,0 +1,192 @@
+name: CORE - Provider payload version sync
+
+on:
+  push:
+    paths:
+      - 'manifest.json'
+      - 'provider-overrides.json'
+      - 'provider-bases/**'
+      - 'providers/**'
+      - 'provider_catalog.json'
+      - 'sources.json'
+      - 'scripts/provider_release_versioning.py'
+      - 'scripts/materialize_provider_v3_all.py'
+      - 'automation/provider-version-backfill.json'
+      - '.github/workflows/provider-payload-version-sync.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-payload-version-sync-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  synchronize-branch:
+    if: github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact provider branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: true
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Rematerialize exact Provider v3 payload and synchronize versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/manifest-before-provider-sync.json"
+
+          # Keep the materialization report deterministic across the bot's own
+          # follow-up push; provider bytes themselves never depend on GITHUB_SHA.
+          GITHUB_SHA="" NUVIO_PROVIDER_V3_CONTEXT=workspace \
+            python scripts/materialize_provider_v3_all.py
+
+          EXTRA=()
+          if [ -f automation/provider-version-backfill.json ]; then
+            TARGET="$(python - <<'PY'
+          import json
+          from pathlib import Path
+          row=json.loads(Path('automation/provider-version-backfill.json').read_text(encoding='utf-8'))
+          if row.get('forceAll') is not True:
+              raise SystemExit('provider version backfill requires forceAll=true')
+          print(str(row.get('targetRelease') or '').strip())
+          PY
+          )"
+            test -n "$TARGET"
+            EXTRA+=(--force-all --target-release "$TARGET")
+          fi
+
+          python scripts/provider_release_versioning.py \
+            --baseline-manifest "$RUNNER_TEMP/manifest-before-provider-sync.json" \
+            --summary "$RUNNER_TEMP/provider-version-sync.json" \
+            "${EXTRA[@]}"
+
+          rm -f automation/provider-version-backfill.json
+          python scripts/prune_provider_v3_artifacts.py
+          python scripts/generate_language_manifests.py \
+            --manifest manifest.json \
+            --report health-report.json
+          python scripts/validate_language_projection.py
+          python scripts/audit_provider_v3_static.py
+          python tests/provider_release_versioning_test.py
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit cache-safe provider publication state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            manifest.json \
+            vf/manifest.json \
+            no-anime/manifest.json \
+            vf-no-anime/manifest.json \
+            providers \
+            provider-v3-materialization.json \
+            package.json \
+            package-lock.json \
+            provider_catalog.json \
+            sources.json \
+            FILE-HASHES.json \
+            PATCH-SHA256SUMS.txt \
+            SHA256SUMS.json \
+            automation/provider-version-backfill.json
+
+          if git diff --cached --quiet; then
+            echo "FIELD_PROVIDER_VERSION_SYNC_COMMIT changed=false"
+            exit 0
+          fi
+
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin "${GITHUB_REF_NAME}"
+          CURRENT_SHA="$(git rev-parse "origin/${GITHUB_REF_NAME}")"
+          test "$CURRENT_SHA" = "$BASE_SHA" || {
+            echo "Provider branch advanced during version synchronization." >&2
+            exit 1
+          }
+
+          git commit -m "chore(provider): synchronize payload versions"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "FIELD_PROVIDER_VERSION_SYNC_COMMIT changed=true"
+
+  verify-main:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main with parent
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 2
+          persist-credentials: false
+
+      - name: Refuse provider payload changes without cache invalidation
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          import subprocess
+
+          def git(*args):
+              return subprocess.check_output(["git", *args], text=True).strip()
+
+          def manifest_at(ref):
+              return json.loads(git("show", f"{ref}:manifest.json"))
+
+          paths = git("diff", "--name-only", "HEAD^", "HEAD").splitlines()
+          payload = [
+              p for p in paths
+              if p == "provider-overrides.json"
+              or p.startswith("provider-bases/")
+              or p.startswith("providers/")
+          ]
+          if not payload:
+              print("FIELD_PROVIDER_MAIN_VERSION_GATE payload_changed=false")
+              raise SystemExit(0)
+
+          before = manifest_at("HEAD^")
+          after = manifest_at("HEAD")
+          if before.get("version") == after.get("version"):
+              raise SystemExit("provider payload changed on main without manifest release bump")
+
+          old = {str(r.get("id") or "").casefold(): r for r in before.get("scrapers", []) if isinstance(r, dict)}
+          new = {str(r.get("id") or "").casefold(): r for r in after.get("scrapers", []) if isinstance(r, dict)}
+          changed_bytes = {
+              pid for pid in new
+              if pid in old and str(old[pid].get("filename") or "") != str(new[pid].get("filename") or "")
+          }
+          if not changed_bytes:
+              raise SystemExit("provider payload changed on main without rematerialized provider bytes")
+          missing = sorted(
+              pid for pid in changed_bytes
+              if str(old[pid].get("version") or "") == str(new[pid].get("version") or "")
+          )
+          if missing:
+              raise SystemExit(f"provider payload cache version was not bumped: {missing}")
+          print(
+              "FIELD_PROVIDER_MAIN_VERSION_GATE "
+              f"payload_changed=true providers={len(changed_bytes)} release={after.get('version')}"
+          )
+          PY
