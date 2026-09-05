@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "role": "niakvio-owned-recognition-seeds",
+  "externalRepositoryRequired": false,
+  "providerJavaScriptExecuted": false,
+  "providers": {
+    "animekai": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title"]
+      },
+      "knownSite": "https://www3.anikai.cc",
+      "origins": ["https://www3.anikai.cc"],
+      "routes": [
+        "/browser?keyword={query}",
+        "/watch/{slug}",
+        "/watch/{slug}/ep-{episode}"
+      ],
+      "requests": [
+        {
+          "route": "/browser?keyword={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        },
+        {
+          "route": "/watch/{slug}/ep-{episode}",
+          "role": "detail",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        }
+      ],
+      "notes": [
+        "Search is a bounded GET catalogue lookup; selected watch entries resolve to /ep-{episode} pages.",
+        "data-video is an HTML player attribute and must never be emitted as an HTTP route.",
+        "Embed/player URLs are discovered from the selected episode page and require the provider origin as playback context when the stream host requires it."
+      ]
+    },
+    "animezey": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title"]
+      },
+      "origins": [
+        "https://1.animezey23112022.workers.dev",
+        "https://1.animezeydl.workers.dev",
+        "https://animezey16082023.animezey16082023.workers.dev"
+      ],
+      "routes": [
+        "/1:search",
+        "/download.aspx"
+      ],
+      "requests": [
+        {
+          "route": "/1:search",
+          "role": "search",
+          "method": "POST",
+          "bodyFields": ["q", "page_token", "page_index"],
+          "formEncoded": false,
+          "jsonEncoded": true,
+          "refererRequired": true,
+          "originRequired": false,
+          "response": "json",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        },
+        {
+          "route": "/download.aspx",
+          "role": "source",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": true,
+          "originRequired": false,
+          "response": "direct-or-redirect",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        }
+      ],
+      "notes": [
+        "Search rotates between NiakVIO-known worker origins and POSTs JSON to /1:search.",
+        "Episode searches use q, page_token and page_index; movie searches require q.",
+        "Player resolution may use a returned /download.aspx path or a returned worker path opened with a=view; the returned path itself remains DATA and is not guessed."
+      ]
+    },
+    "anime-ultime": {
+      "routes": [
+        "/VideoPlayer.html",
+        "/VideoPlayer"
+      ],
+      "requests": [
+        {
+          "route": "/VideoPlayer.html",
+          "role": "player",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-durable-data",
+          "confidence": 0.95
+        }
+      ],
+      "notes": [
+        "Existing durable NiakVIO player DATA is sufficient to classify this provider as routeful; no external repository lookup is required."
+      ]
+    }
+  }
+}
