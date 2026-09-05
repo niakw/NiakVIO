@@ -62,6 +62,9 @@ movie = {
         fetch("https://api.plan.test/v1/search/Movie", 200),
         fetch("https://api.plan.test/v1/fallback/10", 404),
         fetch("https://api.plan.test/v1/movie/10", 200),
+        # This live landing URL was discovered from a response. It is useful
+        # traversal evidence but its literal session token must never become DATA.
+        fetch("https://api.plan.test/v1/gateway/session-837492", 200),
     ],
 }
 tv = {
@@ -73,12 +76,16 @@ tv = {
         fetch("https://api.plan.test/v1/search/Series", 200),
         fetch("https://api.plan.test/v1/fallback/20", 404),
         fetch("https://api.plan.test/v1/tv/20?season=1&episode=1", 200),
+        fetch("https://api.plan.test/v1/gateway/session-994211", 200),
     ],
 }
 
 evaluation = evaluate_provider("plan-provider", copy.deepcopy(base_model), [movie, tv], 0.75)
 assert should_pass(evaluation), evaluation
 assert evaluation["validatedTypes"] == ["movie", "tv"], evaluation
+derived = [row for row in evaluation["candidateRouteData"] if row.get("liveDerived")]
+assert derived, evaluation["candidateRouteData"]
+assert any("gateway/session-" in str(row.get("route") or "") for row in derived), derived
 
 knowledge = {
     "providers": {
@@ -112,6 +119,8 @@ assert "/fallback/{tmdbId}" in final_routes, final_routes
 assert "/movie/{tmdbId}" in final_routes, final_routes
 assert "/tv/{tmdbId}?season={season}&episode={episode}" in final_routes, final_routes
 assert "/unused/{tmdbId}" not in final_routes, final_routes
+assert not any("gateway/session-" in route for route in final_routes), final_routes
+assert not any(row.get("liveDerived") for row in final_model["routeData"]), final_model["routeData"]
 fallback = next(row for row in final_model["routeData"] if row["route"] == "/fallback/{tmdbId}")
 assert fallback["validationState"] == "failed-live", fallback
 assert fallback.get("attemptEvidence"), fallback
@@ -119,12 +128,15 @@ assert final_model["apiRecipe"]["statusUrl"] == "https://plan.test/status", fina
 patch = overrides["provider_patches"]["plan-provider"]
 assert "/fallback/{tmdbId}" in patch["learned_routes"], patch
 assert "/unused/{tmdbId}" not in patch["learned_routes"], patch
+assert not any("gateway/session-" in route for route in patch["learned_routes"]), patch
 assert patch["api_recipe"]["statusUrl"] == "https://plan.test/status", patch
 assert final_model["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is True
+assert final_model["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
+assert final_model["routeRecognition"]["runtimeDerivedRouteCount"] >= 1
 assert final_model["routeRecognition"]["blockedPlanPreserved"] is False
 
 # A runner-level block is not evidence that downstream typed routes are invalid.
-# Preserve the complete current candidate plan so another network/client can use it.
+# Preserve the complete stable candidate plan so another network/client can use it.
 blocked_model = copy.deepcopy(base_model)
 blocked_evaluation = evaluate_provider(
     "blocked-provider",
@@ -134,7 +146,10 @@ blocked_evaluation = evaluate_provider(
         "fixture_slug": "movie",
         "fixture": {"tmdbId": "10", "mediaType": "movie", "title": "Movie"},
         "status": "no_streams",
-        "fetches": [fetch("https://api.plan.test/v1/search/Movie", 403)],
+        "fetches": [
+            fetch("https://api.plan.test/v1/search/Movie", 403),
+            fetch("https://api.plan.test/v1/transient/session-12345", 403),
+        ],
     }],
     0.75,
 )
@@ -166,12 +181,15 @@ finalize_provider(
 )
 blocked_final = blocked_knowledge["providers"]["blocked-provider"]["model"]
 assert set(blocked_final["routes"]) == set(base_model["routes"]), blocked_final["routes"]
+assert not any("transient/session-" in route for route in blocked_final["routes"]), blocked_final["routes"]
 assert blocked_final["apiRecipe"] == base_model["apiRecipe"], blocked_final["apiRecipe"]
 assert blocked_final["routeRecognition"]["blockedPlanPreserved"] is True
+assert blocked_final["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
 assert set(blocked_overrides["provider_patches"]["blocked-provider"]["learned_routes"]) == set(base_model["routes"])
 assert blocked_overrides["provider_patches"]["blocked-provider"]["api_recipe"] == base_model["apiRecipe"]
 
 print(
-    "PROVIDER_V3_FINALIZATION_PLAN_OK qualified_attempted_non2xx=preserved "
-    "unexecuted_guess=pruned blocked_plan=preserved api_recipe=atomic"
+    "PROVIDER_V3_FINALIZATION_PLAN_OK stable_attempted_non2xx=preserved "
+    "runtime_derived=pure-evidence unexecuted_guess=pruned "
+    "blocked_stable_plan=preserved api_recipe=atomic"
 )
