@@ -1,549 +1,298 @@
 <div align="center">
   <img src="assets/branding/niakvio-logo.svg" alt="NiakVIO" width="560">
+  <br>
+  <img src="assets/branding/nuvio-providers-logo.png" alt="NiakVIO Nuvio Providers" width="360">
 
   <p><a href="README.md">English</a> · <strong>Français</strong></p>
-  <p><strong>Le moteur communautaire qui agrège, teste, répare et maintient les providers Nuvio.</strong></p>
-  <p>VO · VF &nbsp;•&nbsp; Mobile · Desktop · TV</p>
-
-[![Node](https://img.shields.io/badge/Node.js-%E2%89%A524-339933?style=for-the-badge&logo=node.js&logoColor=white)](package.json)
-[![Licence](https://img.shields.io/badge/licence-GPL--3.0-blue?style=for-the-badge)](LICENSE)
-[![Nuvio](https://img.shields.io/badge/Nuvio-Mobile%20%7C%20Desktop%20%7C%20TV-7c3aed?style=for-the-badge)](#compatibilit%C3%A9-nuvio)
-
+  <h3>Une seule couche providers maintenue pour Nuvio.</h3>
+  <p><strong>96 Provider Objects · VO / VF · TV / Mobile / Desktop</strong></p>
+  <p>Installez une fois. Gardez un large catalogue providers sans empiler les addons, pendant que NiakVIO gère maintenance structurée, changements de domaines, validation et publications cache-safe.</p>
 </div>
 
 ---
 
-## Ajouter NiakVIO à Nuvio
+## Installer NiakVIO
 
-### Manifest général — recommandé ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
-
-Tous les providers publiés : VF, VO et autres langues explicitement déclarées par les providers ou les flux.
+### Manifest général — recommandé
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/manifest.json
 ```
 
-### Manifest francophone ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
-
-Projection centrée sur les providers proposant du français lorsque cette langue est explicitement déclarée par le provider ou le flux.
+### Manifest francophone
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf/manifest.json
 ```
 
-### Manifest VO sans anime ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
-
-Copie du manifest général en retirant les providers qui **déclarent uniquement le type `anime`** ou dont l'**id / nom contient `anim`** (insensible à la casse). Un provider mixte film/série/anime reste présent sauf si son identité indique clairement qu'il est orienté anime.
+### Manifest général sans providers orientés anime
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifest.json
 ```
 
-### Manifest VF sans anime ([Comment l’ajouter ?](docs/fr/how-to-add-manifest.md))
-
-Copie du manifest francophone avec le même filtre déterministe : type `anime` seul, ou `anim` présent dans l'id / nom du provider.
+### Manifest francophone sans providers orientés anime
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
 ```
 
-### Badges StreamBadge — recommandé ([Comment les ajouter ?](docs/fr/how-to-add-stream-badges.md))
+Guide manifest : [`docs/fr/how-to-add-manifest.md`](docs/fr/how-to-add-manifest.md)
 
-Pour un réglage unique au niveau du compte Nuvio, utilisez le feed **Fusion v2**. Il emploie les variantes 96×40 avec chip sombre conçues pour rester lisibles sur fonds sombres comme clairs.
-
-**Fusion v2 — recommandé**
+### Feed StreamBadge
 
 ```text
 https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
 ```
 
-> NuvioTV conserve localement les règles d'un feed déjà importé. Si l'ancien `stream-badges-fusion.json` avait déjà été ajouté, supprimez cet import puis ajoutez **Fusion v2** : l'URL versionnée force un import frais des règles corrigées.
+Guide StreamBadge : [`docs/fr/how-to-add-stream-badges.md`](docs/fr/how-to-add-stream-badges.md)
 
-Feeds spécifiques si le client peut sélectionner le thème :
-
-**Fond sombre / gris**
-
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-dark.json
-```
-
-**Fond clair / blanc**
-
-```text
-https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-light.json
-```
-
-Catalogue complet et mapping Core/Brain/UI : [`badge_catalog_v2_complete.json`](assets/badge_catalog_v2_complete.json) · [`mapping_core_brain_ui_v2_complete.json`](assets/mapping_core_brain_ui_v2_complete.json) · [documentation badges/assets](assets/README.md).
-
-Dans Nuvio, copiez l'URL du manifest souhaité dans la gestion des plugins/providers, puis ajoutez le feed badges dans les réglages StreamBadge lorsque cette fonction est disponible. **Le feed StreamBadge est indépendant du manifest providers.**
-
-**Les URL restent stables.** NiakVIO peut faire évoluer derrière elles les bundles, versions, domaines, règles runtime, preuves et états d'activation.
-
-> NiakVIO ne stocke ni n'héberge de vidéo. Le projet maintient des manifests, des métadonnées, des règles de compatibilité et des bundles de providers consommés côté client.
+> NiakVIO n’héberge aucune vidéo. Le projet maintient métadonnées providers, connaissance protocolaire structurée, règles de compatibilité, manifests et bundles providers exécutés côté client.
 
 > [!IMPORTANT]
-> **Références d'œuvres = fixtures de test.** Les titres, années, saisons ou épisodes visibles dans ce README, le code, les logs CI et les artefacts servent uniquement d'**identifiants déterministes de test** pour vérifier le matching, la compatibilité et les régressions de type « mauvais média ». Leur présence ne constitue ni un catalogue, ni une mise à disposition, ni une recommandation, ni une déclaration sur les droits/licences d'un service tiers. NiakVIO ne doit pas publier de média, extrait, sous-titre, clé de déchiffrement, jeton d'accès ou URL complète de lecture. **Les exceptions et limitations au droit d'auteur varient selon les pays : NiakVIO ne présume d'aucune exception locale et n'accorde aucun droit d'accès ou d'utilisation.** Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md) et [`DISCLAIMER.md`](DISCLAIMER.md).
-
----
-
-## Écosystème et sources
-
-### Clients Nuvio officiels
-
-- [Nuvio Mobile — `NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile)
-- [Nuvio Desktop — `NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop)
-- [NuvioTV — `NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV)
-
-### Repositories providers suivis
-
-NiakVIO consulte plusieurs upstreams au lieu de dépendre d'une seule source ; les doublons canoniques sont éliminés avant Health/Repair :
-
-- [Gowaru — `Gowaru/gowaru-nuvio-providers`](https://github.com/Gowaru/gowaru-nuvio-providers)
-- [Yoru — `yoruix/nuvio-providers`](https://github.com/yoruix/nuvio-providers)
-- [All-in-One Nuvio — `NuvioPlugin/All-in-One-Nuvio`](https://github.com/NuvioPlugin/All-in-One-Nuvio)
-
-La provenance et les licences tierces sont suivies dans [`PROVENANCE.json`](PROVENANCE.json) et [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+> Les œuvres citées dans le code, les CI ou la documentation sont des **fixtures de test déterministes**, pas un catalogue. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md) et [`DISCLAIMER.md`](DISCLAIMER.md).
 
 ---
 
 ## Pourquoi NiakVIO ?
 
-Un provider peut fonctionner aujourd'hui puis casser demain à cause d'un domaine déplacé, d'une API modifiée, d'un lecteur remplacé, d'un token devenu obsolète ou d'une différence entre Mobile, Desktop et TV.
+Une couche providers est simple tant que tout reste statique. Le vrai problème commence quand les domaines tournent, les API changent, les lecteurs évoluent, un client Nuvio se comporte différemment d’un autre ou qu’une version provider reste bloquée en cache.
 
-NiakVIO ajoute une couche de maintenance entre les repositories providers et Nuvio :
+NiakVIO est construit autour de ce problème de maintenance.
 
-- **un point d'installation unique** plutôt qu'une collection de manifests à gérer séparément ;
-- **plusieurs upstreams observés**, puis une seule entrée canonique déterministe retenue avant Health/Repair ;
-- **réparation automatique bornée** lorsque la meilleure variante connue ne fonctionne plus ;
-- **contrôle réel du média**, pas seulement de l'URL retournée ;
-- **vérification de l'œuvre, de la saison et de l'épisode** pour éviter les faux positifs ;
-- **attention particulière au français** sans inventer VF à partir d'un simple nom de domaine ;
-- **preuves séparées Mobile, Desktop et TV** ;
-- **dernier état sain conservé** lorsqu'une nouvelle observation est seulement inconclusive ;
-- **publication atomique et fail-closed** pour empêcher une génération partielle de remplacer silencieusement un état sain.
-
-L'objectif n'est donc pas d'afficher le plus grand nombre possible de providers. L'objectif est de publier **le plus de providers réellement utiles possible, avec suffisamment de preuves pour savoir pourquoi ils fonctionnent — ou pourquoi ils ne fonctionnent plus.**
-
----
-
-## Ce que NiakVIO maintient automatiquement
-
-### Providers et variantes
-
-Pour une même famille, NiakVIO peut disposer de plusieurs bundles issus des upstreams, d'un dernier état publié et d'un LKG. La sélection d'un sibling sain est tentée avant une réparation structurelle.
-
-### Domaines et routes
-
-Le moteur distingue notamment :
-
-- hub d'information ;
-- domaine terminal ;
-- redirection ;
-- API ;
-- peer observé ;
-- domaine historique encore cohérent ;
-- route appartenant à un autre provider.
-
-Une migration de domaine n'est pas promue simplement parce qu'un serveur répond en HTTP.
-
-### Extraction média
-
-Lorsque cela est nécessaire, la récupération peut suivre la chaîne réelle :
-
-```text
-provider
-  → recherche / catalogue / API
-  → fiche exacte de l'œuvre
-  → saison / épisode
-  → iframe / lecteur
-  → JavaScript / XHR / JSON
-  → playlist / média final
-```
-
-Les budgets de pages, embeds, hosts, fetches, taille de réponse et temps empêchent cette exploration de devenir une navigation sans limite.
-
-### Lecture réelle
-
-Une URL n'est pas considérée comme valide uniquement parce qu'elle se termine par `.m3u8` ou `.mp4`. Les contrôles peuvent confirmer ou rejeter :
-
-- playlist HLS réelle (`#EXTM3U`) ;
-- DASH/MPD ;
-- signatures de conteneurs ;
-- HTML ou JSON déguisé en média ;
-- publicité, preview ou asset parasite ;
-- redirection incohérente ;
-- premier segment ou contenu inaccessible ;
-- contexte `Referer` / `Origin` / headers nécessaire à la lecture.
-
-### Identité du contenu
-
-Un flux jouable correspondant à la mauvaise œuvre est un **échec**, pas un succès.
-
-Les preuves peuvent combiner titre, alias, année, type, saison, épisode, metadata catalogue/player, nom du média et durée attendue/mesurée.
-
-### Langues
-
-La langue d'un flux n'est jamais déduite d'un seul indice. NiakVIO conserve en priorité les indications explicitement fournies par le provider ou le flux et peut les croiser avec les métadonnées disponibles. **Les sous-titres ne sont ni inférés ni garantis par NiakVIO** : seule une indication explicitement exposée par un provider ou dans la description/métadonnée d'un flux peut être affichée.
-
----
-
-## Compatibilité Nuvio
-
-Les commits clients audités sont suivis dans [`automation/nuvio-client-upstreams.json`](automation/nuvio-client-upstreams.json) et [`sources.json`](sources.json). Les Labs résolvent le **HEAD officiel courant** de chaque branche client suivie, vérifient le drift de contrat, puis utilisent ce SHA exact comme baseline en lecture seule.
-
-| Client | Repository | Preuve native retenue |
-|---|---|---|
-| Nuvio Mobile Android | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | chemin Android officiel et stack de lecture du client |
-| Nuvio Mobile iOS | [`NuvioMedia/NuvioMobile`](https://github.com/NuvioMedia/NuvioMobile) | runtime plugin iOS Full + simulateur iOS + bridge lecteur MPV officiel |
-| Nuvio Desktop | [`NuvioMedia/NuvioDesktop`](https://github.com/NuvioMedia/NuvioDesktop) | bridges/lecteurs natifs **macOS et Windows** ; le stub Linux n'est pas une preuve lecteur |
-| NuvioTV | [`NuvioMedia/NuvioTV`](https://github.com/NuvioMedia/NuvioTV) | Android TV officiel avec Media3/ExoPlayer |
-
-Le contrat logique ARCHI 2 est commun, mais **une preuve Desktop ne vaut jamais automatiquement preuve Mobile ou TV**.
-
-Les labs natifs parcourent les providers compatibles avec la plateforme, **y compris les providers `enabled:false`**. La couverture standard est désormais **1/1/1 par provider selon les types déclarés** : le Lab retient le **premier type déclaré** applicable à chaque catégorie et exécute au maximum une œuvre film, une œuvre série et une œuvre anime, chacune choisie dans la liste centrale de fixtures. Un provider n'est jamais rejoué sur une seconde œuvre du même type dans le Lab standard. Les routes non déclarées ne sont plus ajoutées comme probes automatiques ; leur découverte appartient au Learning/Deep ciblé. Ces Labs produisent des preuves health/lecteur mais ne bloquent pas le fonctionnement ni la publication normale.
-
-Les snapshots AVD TV/Mobile Android restent réutilisables lorsqu'ils évitent une reconstruction coûteuse. Le **cache Gradle est désactivé sur les Labs natifs** pour préserver le quota de cache GitHub Actions, et leurs artifacts temporaires sont conservés **1 jour**. Les retests ciblés par device restent disponibles manuellement.
-
----
-
-<!-- NIAKVIO_PROVIDER_RESULTS_START -->
-## Providers actifs & résultats natifs vérifiés
+- **96 Provider Objects conservés dans le census** — un provider désactivé ou non résolu n’est pas supprimé silencieusement pour améliorer artificiellement un taux de réussite.
+- **Projections VO/VF** — un catalogue maintenu avec des manifests dédiés au français.
+- **Moins d’addons providers empilés** — NiakVIO est pensé pour être la couche providers, pas un pack supplémentaire ajouté au-dessus de plusieurs packs concurrents.
+- **Connaissance structurée** — routes, requêtes, identité média et domaines officiels ne sont pas enfermés uniquement dans du JS publié opaque.
+- **Architecture réparable** — les défauts communs peuvent être corrigés au niveau famille/Core ; les changements incertains passent par Learning au lieu de muter le runtime à l’aveugle.
+- **Preuves natives** — TV Android, Mobile Android, Mobile iOS, macOS et Windows sont traités comme cinq frontières de compatibilité distinctes.
+- **Publication cache-safe** — versions provider/manifest, bundles adressés par contenu et hashes de release restent synchronisés pour que Nuvio reçoive réellement la nouvelle génération.
+- **Validation fail-closed** — zéro flux, mauvais média, conteneur malformé ou panne upstream d’un client restent des états distincts au lieu d’être maquillés en succès.
 
 <div align="center">
-
-![PROVIDERS ACTIFS](https://img.shields.io/badge/PROVIDERS_ACTIFS-63-16a34a?style=for-the-badge)
-![NATIFS VERIFIES](https://img.shields.io/badge/NATIFS_VERIFIES-14-2563eb?style=for-the-badge)
-![PREUVES LECTEUR](https://img.shields.io/badge/PREUVES_LECTEUR-32-7c3aed?style=for-the-badge)
-![DERNIERE PREUVE](https://img.shields.io/badge/DERNIERE_PREUVE-2026--08--23-334155?style=for-the-badge)
-
+  <img src="assets/branding/how-it-works.png" alt="Fonctionnement de NiakVIO" width="820">
 </div>
-
-> **Ici, NiakVIO n'affiche que des succès natifs réellement conservés.** Une preuve signifie que le lecteur officiel Nuvio a atteint un état sain pour le **provider + fixture de test + device exacts**. L'absence de preuve n'est jamais maquillée en succès — et n'est pas non plus présentée comme un échec.
-
-> **Cadre des œuvres citées :** les titres/épisodes du tableau sont des **fixtures de test**, pas un catalogue ni une offre de contenu. Les résultats décrivent uniquement une observation technique sanitizée. Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md) et [`DISCLAIMER.md`](DISCLAIMER.md).
-
-**14 providers** disposent actuellement d'au moins une preuve lecteur native conservée, sur **4 cas de lecture distincts** et **1 plateforme native** déjà représentée. L'inventaire complet reste synchronisé automatiquement sur `manifest.json`.
-
-### 📡 Couverture des lecteurs officiels
-
-Cette vue distingue **support du lecteur** et **preuve positive conservée** : les cinq cibles natives sont suivies en permanence, même lorsqu'aucune preuve saine n'a encore été retenue pour l'une d'elles.
-
-| Lecteur officiel | Preuves positives conservées | Providers avec preuve | Dernière preuve | État |
-|---|---:|---:|---:|---|
-| 📺 **TV** | **32** | **14** | `2026-08-23` | ✅ Couvert par une preuve native |
-| 🤖 **Mobile Android** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
-| 🍎 **Mobile iOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
-| 🖥️ **Desktop macOS** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
-| 🪟 **Desktop Windows** | **0** | **0** | `—` | 🟡 Suivi actif · aucune preuve positive conservée |
-
-### ✅ Lectures natives confirmées
-
-| Provider | Fixtures de test réellement validées | Lecteurs officiels confirmés | Preuves | Dernière validation |
-|---|---|---|---:|---:|
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/cineby.webp" width="42" alt="">&nbsp; **Cineby** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime<br>🎬 Sinners 2025 · Film<br>🎬 Sinners · Film | 📺 **TV** ✅ | **4** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/videasy.webp" width="42" alt="">&nbsp; **VidEasy** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime<br>🎬 Sinners 2025 · Film<br>🎬 Sinners · Film | 📺 **TV** ✅ | **4** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/castle.webp" width="42" alt="">&nbsp; **Castle** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime<br>🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **3** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hindmoviez.webp" width="42" alt="">&nbsp; **HindMoviez** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime<br>🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **3** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/playimdb.webp" width="42" alt="">&nbsp; **PlayIMDb** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime<br>🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **3** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/purstream.webp" width="42" alt="">&nbsp; **Purstream** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime<br>🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **3** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/vegamovies.webp" width="42" alt="">&nbsp; **VegaMovies** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime<br>🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **3** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animezey.webp" width="42" alt="">&nbsp; **AnimeZeY** | 📺 Breaking Bad S01E01 · Série<br>🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **2** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hdghartv.webp" width="42" alt="">&nbsp; **HDGharTV** | 📺 Breaking Bad S01E01 · Série<br>🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **2** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anikototv.webp" width="42" alt="">&nbsp; **AnikotoTV** | 🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **1** | `2026-08-22` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anime-sama.webp" width="42" alt="">&nbsp; **Anime-Sama** | 🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **1** | `2026-08-23` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animesama-co.webp" width="42" alt="">&nbsp; **AnimeSama.co (DLE Mirror)** | 🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **1** | `2026-08-22` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hianime.webp" width="42" alt="">&nbsp; **HiAnime** | 🎌 Jujutsu Kaisen S01E01 · Anime | 📺 **TV** ✅ | **1** | `2026-08-22` |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/streamzo.webp" width="42" alt="">&nbsp; **StreamZo** | 🎬 Sinners 2025 · Film | 📺 **TV** ✅ | **1** | `2026-08-23` |
-
-<details>
-<summary><strong>🟢 Voir les 63 providers actifs</strong> — inventaire complet synchronisé au manifest</summary>
-
-La liste ci-dessous décrit **l'état de publication**, pas une supposition sur la lecture. Les providers déjà prouvés natifs sont signalés ; les autres restent simplement actifs dans le manifest jusqu'à ce qu'une preuve positive soit conservée.
-
-| Provider | Types publiés | État de confiance public |
-|---|---|---|
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anikototv.webp" width="42" alt="">&nbsp; **AnikotoTV** | 🎌 Anime · 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 1 validation lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anime-sama.webp" width="42" alt="">&nbsp; **Anime-Sama** | 🎬 Film · 🎌 Anime · 📺 Série | ✅ **Preuve native conservée** · 1 validation lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animesama-co.webp" width="42" alt="">&nbsp; **AnimeSama.co (DLE Mirror)** | 🎬 Film · 🎌 Anime · 📺 Série | ✅ **Preuve native conservée** · 1 validation lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animezey.webp" width="42" alt="">&nbsp; **AnimeZeY** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 2 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/castle.webp" width="42" alt="">&nbsp; **Castle** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 3 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/cineby.webp" width="42" alt="">&nbsp; **Cineby** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 4 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hdghartv.webp" width="42" alt="">&nbsp; **HDGharTV** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 2 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hianime.webp" width="42" alt="">&nbsp; **HiAnime** | 🎌 Anime · 📺 Série · 🎬 Film | ✅ **Preuve native conservée** · 1 validation lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hindmoviez.webp" width="42" alt="">&nbsp; **HindMoviez** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 3 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/playimdb.webp" width="42" alt="">&nbsp; **PlayIMDb** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 3 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/purstream.webp" width="42" alt="">&nbsp; **Purstream** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 3 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/streamzo.webp" width="42" alt="">&nbsp; **StreamZo** | 🎬 Film · 📺 Série · 🎌 Anime | ✅ **Preuve native conservée** · 1 validation lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/vegamovies.webp" width="42" alt="">&nbsp; **VegaMovies** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 3 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/videasy.webp" width="42" alt="">&nbsp; **VidEasy** | 🎬 Film · 📺 Série | ✅ **Preuve native conservée** · 4 validations lecteur |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/4khdhub.webp" width="42" alt="">&nbsp; **4KHDHub** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/4khdhubnew.webp" width="42" alt="">&nbsp; **4KHDHub-NEW** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/allmovieland.webp" width="42" alt="">&nbsp; **AllMovieLand** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anidb.webp" width="42" alt="">&nbsp; **AniDB** | 🎌 Anime · 📺 Série · 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animekai.webp" width="42" alt="">&nbsp; **AnimeKai** | 🎌 Anime · 📺 Série · 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animepahe.webp" width="42" alt="">&nbsp; **AnimePahe** | 🎌 Anime · 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animesalt.webp" width="42" alt="">&nbsp; **AnimeSalt** | 🎌 Anime · 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animesultra.webp" width="42" alt="">&nbsp; **AnimesUltra** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animetsu.webp" width="42" alt="">&nbsp; **Animetsu** | 🎌 Anime · 📺 Série · 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animevostfr.webp" width="42" alt="">&nbsp; **AnimeVOSTFR** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/animoflix.webp" width="42" alt="">&nbsp; **AnimoFlix** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/anizone.webp" width="42" alt="">&nbsp; **AniZone** | 🎌 Anime · 📺 Série · 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/cinemacity.webp" width="42" alt="">&nbsp; **CinemaCity** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/cinemm.webp" width="42" alt="">&nbsp; **CineMM** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/coflix.webp" width="42" alt="">&nbsp; **Coflix** | 🎬 Film · 📺 Série · 🎌 Anime | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/desiflix.webp" width="42" alt="">&nbsp; **DesiFlix** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/dooflix.webp" width="42" alt="">&nbsp; **DooFlix** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/dulourd.webp" width="42" alt="">&nbsp; **DuLourd** | 🎌 Anime · 📺 Série · 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/flemmix.webp" width="42" alt="">&nbsp; **Flemmix** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/french-manga.webp" width="42" alt="">&nbsp; **French-Manga** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/goated.webp" width="42" alt="">&nbsp; **Goated** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/hdhub4u.webp" width="42" alt="">&nbsp; **HDHub4u** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/kehflix.webp" width="42" alt="">&nbsp; **Kehflix** | 🎬 Film · 📺 Série · 🎌 Anime | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/kurage.webp" width="42" alt="">&nbsp; **Kurage** | 🎌 Anime · 📺 Série · 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/movieblast.webp" width="42" alt="">&nbsp; **MovieBlast** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/movies4u.webp" width="42" alt="">&nbsp; **Movies4u** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/moviesdrive.webp" width="42" alt="">&nbsp; **MoviesDrive** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/movieshunt.webp" width="42" alt="">&nbsp; **MoviesHunt** | 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/moviesmod.webp" width="42" alt="">&nbsp; **MoviesMod** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/mugiwarastream.webp" width="42" alt="">&nbsp; **Mugiwara-no-Streaming** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/nakios.webp" width="42" alt="">&nbsp; **Nakios** | 🎬 Film · 📺 Série · 🎌 Anime | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/neko-sama.webp" width="42" alt="">&nbsp; **Neko-Sama** | 🎌 Anime · 📺 Série · 🎬 Film | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/papadustream.webp" width="42" alt="">&nbsp; **Papadustream** | 🎬 Film · 📺 Série · 🎌 Anime | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/peachify.webp" width="42" alt="">&nbsp; **Peachify** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/persianstremio.webp" width="42" alt="">&nbsp; **PersianStremio** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/sekai.webp" width="42" alt="">&nbsp; **Sekai** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/streamflix.webp" width="42" alt="">&nbsp; **StreamFlix** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/toflix.webp" width="42" alt="">&nbsp; **ToFlix** | 🎬 Film · 📺 Série · 🎌 Anime | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/uhdmovies.webp" width="42" alt="">&nbsp; **UHDMovies** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/vidfast.webp" width="42" alt="">&nbsp; **VidFast** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/vidlink.webp" width="42" alt="">&nbsp; **VidLink** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/vidrock.webp" width="42" alt="">&nbsp; **VidRock** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/voiranime.webp" width="42" alt="">&nbsp; **VoirAnime** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/voiranime-homes.webp" width="42" alt="">&nbsp; **VoirAnime.homes** | 🎌 Anime · 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/voiranime-rip.webp" width="42" alt="">&nbsp; **VoirAnime.rip** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/vostfree.webp" width="42" alt="">&nbsp; **Vostfree** | 🎬 Film · 🎌 Anime · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/wookafr.webp" width="42" alt="">&nbsp; **Wookafr** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/yflix.webp" width="42" alt="">&nbsp; **YFlix** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-| <img src="https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/72x32/zinkmovies.webp" width="42" alt="">&nbsp; **ZinkMovies** | 🎬 Film · 📺 Série | 🟢 **Actif dans le manifest** · prochaine preuve native conservée dès validation positive |
-
-</details>
-
-### Pourquoi ces résultats sont plus stricts qu'une simple liste de providers
-
-| Contrôle | NiakVIO | Manifest/provider brut |
-|---|---|---|
-| Provider présent dans un manifest | ✅ | ✅ |
-| Plusieurs upstreams comparés avant promotion | ✅ | Variable |
-| Média final réellement atteint | ✅ | Non garanti |
-| Lecteur officiel vérifié par plateforme | ✅ TV / Android / iOS / macOS / Windows | Non garanti |
-| Identité œuvre / année / saison / épisode contrôlée | ✅ | Non garanti |
-| HLS / DASH / média direct validé au-delà de l'extension URL | ✅ | Non garanti |
-| Mauvais média jouable classé comme échec | ✅ | Non garanti |
-| Repair Brain puis retest avant promotion | ✅ | Non |
-| Dernier état sain + publication fail-closed | ✅ | Non garanti |
-| Historique machine des preuves positives | ✅ | Variable |
-
-**Lecture de la vitrine :** `✅` signifie *preuve positive conservée*, jamais simple détection d'URL. Les résultats affichés restent fixes tant qu'une nouvelle preuve native plus récente ne vient pas les compléter ; un run inconclusif ne détruit pas une preuve saine existante.
-
-Source machine : [`automation/provider-device-results.json`](automation/provider-device-results.json) · Inventaire : [`manifest.json`](manifest.json) · Les prochains Deep/Brain/Labs enrichissent automatiquement cette vitrine uniquement avec des preuves positives qualifiées.
-<!-- NIAKVIO_PROVIDER_RESULTS_END -->
 
 ---
 
-# Architecture technique
+## Configuration Nuvio recommandée
 
-## Provider v3 : source exécutable reconstruisible
+<div align="center">
+  <img src="assets/thanks/nuvio-bg.png" alt="Nuvio" width="150">
+  <p><strong>Gardez une stack simple : un outil par rôle.</strong></p>
+</div>
 
-La vérité **exécutable** n'est plus un vieux Provider JS publié. Un bundle est généré depuis :
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="assets/branding/niakvio-mark.svg" alt="NiakVIO" width="90"><br>
+      <strong>Providers</strong><br>
+      NiakVIO uniquement
+    </td>
+    <td align="center" width="25%">
+      <img src="assets/thanks/ultramax-bg.png" alt="UltraMax" width="90"><br>
+      <strong>Métadonnées / catalogue</strong><br>
+      UltraMax
+    </td>
+    <td align="center" width="25%">
+      <img src="assets/thanks/subsense-bg.png" alt="SubSense" width="90"><br>
+      <strong>Sous-titres</strong><br>
+      SubSense
+    </td>
+    <td align="center" width="25%">
+      <img src="assets/thanks/simkl-bg.png" alt="SIMKL" width="90"><br>
+      <strong>Favoris / suivi</strong><br>
+      SIMKL
+    </td>
+  </tr>
+</table>
+
+L’idée est volontairement simple : **une couche providers, un addon catalogue/métadonnées, un addon sous-titres et un service de suivi**. Évitez d’empiler plusieurs addons providers qui doublonnent le même rôle et rendent les erreurs, le cache et la sélection des sources plus difficiles à comprendre.
+
+---
+
+## NiakVIO vs un manifest provider brut
+
+Un provider ou manifest autonome peut très bien convenir. NiakVIO prend surtout son sens quand l’objectif devient un **gros catalogue providers mouvant, maintenable sur plusieurs clients Nuvio**.
+
+| Capacité | Provider / manifest brut | NiakVIO |
+|---|---|---|
+| Installation | Un ou plusieurs manifests providers | Une couche stable avec projections générales/VF |
+| Maintenance catalogue | Principalement manuelle | 96 Provider Objects conservés et audités |
+| Source durable | Souvent le JS publié | ProviderBase v3 + DATA structurée + Lego Provider/Core détenus |
+| Connaissance routes | Souvent enfouie dans le code | Routes/requêtes/provenance structurées |
+| Rotation domaines | Changement manuel/statique | Découverte hub officiel + refresh `official_site` borné |
+| Types média | Type de lancement et capacité sémantique parfois mélangés | Capacité canonique séparée de la compatibilité transport Nuvio |
+| Diagnostic | Souvent zéro flux / erreur générique | Preuves search, detail, episode, runtime, player, media, device |
+| Réparation | Réécriture manuelle | Réparation famille/Core + propositions Learning reviewables |
+| Couverture clients | Souvent extrapolée depuis un seul runtime | Cinq Labs natifs indépendants |
+| Publication | Remplacement de fichier | Versions provider cache-safe + génération manifest + hashes d’intégrité |
+| Sécurité | Dépend de la source | Exécution bornée, contrôles réseau/ressources et contrats de sanitization |
+
+---
+
+## Pensé pour les clients Nuvio officiels
+
+Chaque client/device est une frontière de compatibilité indépendante :
+
+- **TV Android** — [NuvioTV](https://github.com/NuvioMedia/NuvioTV)
+- **Mobile Android** — [NuvioMobile](https://github.com/NuvioMedia/NuvioMobile)
+- **Mobile iOS** — [NuvioMobile](https://github.com/NuvioMedia/NuvioMobile)
+- **Desktop macOS** — [NuvioDesktop](https://github.com/NuvioMedia/NuvioDesktop)
+- **Desktop Windows** — [NuvioDesktop](https://github.com/NuvioMedia/NuvioDesktop)
+
+Une preuve Desktop ne vaut jamais automatiquement preuve Android/iOS/TV. Les Labs consomment les clients officiels tels quels : une erreur upstream de compilation, packaging, runtime, player ou QuickJS reste visible au lieu d’être patchée dans NiakVIO uniquement pour obtenir une CI verte.
+
+---
+
+## Sous le capot
+
+### Provider v3
+
+Les bundles providers sont reconstruits depuis :
 
 ```text
-ProviderBase v3 propre
-  + DATA/CONFIG + connaissance statique durable
-  + type/strategy + plan exécutable
-  + Lego PROVIDER.*
-  + frontière Core unique
-  + Lego CORE.*
-  + minimizer NiakVIO-safe pré-hash
-  = providers/<id>-<hash>.js
+ProviderBase v3
++ DATA/connaissance statique provider structurée
++ Lego PROVIDER.*
++ Lego CORE.*
++ minimizer NiakVIO sécurisé
 ```
 
-Les upstreams, hubs et pages publiques servent de connaissance/provenance. Ils ne sont jamais réinjectés comme seed JavaScript canonique.
+Les fichiers publiés `providers/*.js` sont des artefacts runtime adressés par contenu, **jamais des seeds de reconstruction**. Le JavaScript upstream/historique sert uniquement de connaissance et de provenance.
 
-Les blocs appartenant à NiakVIO utilisent exclusivement `STARTFIX:<ID>`, `FIXDATA:<ID>` et `CLOSEFIX:<ID>`. Le marqueur ProviderBase courant est `NIAKVIO_PROVIDER_BASE_OWNED_V3`.
-
-La reconstruction forcée complète appartient uniquement à `.github/workflows/provider-v3-reconstruct-all.yml` sur une branche non-main. Elle doit produire 96/96 providers, prouver les plans compatibles avec la typologie (`91` exécutables + `5` quarantined à la référence retry 25), passer les gates minimizer/sécurité puis prouver un reverse rebuild byte-identical 96/96.
-
-La référence actuelle avant la rematérialisation finale sécurité/minimizer est **retry 25** : génération `8e354389b41b2498`, reconstruction `bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb`, CORE Quick vert `28d98a54264f7d24379c62b310a81b2e60dd7b4b`.
+La reconstruction complète doit finir par une preuve de reverse rebuild byte-identique. Terser est interdit ; `scripts/provider_v3_minimizer.py` reste volontairement conservateur et s’exécute avant le hashing.
 
 Voir [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
----
+### DATA routes / protocoles
 
-## CORE Quick et Deep
+La source durable est :
 
-Le workflow routine unique est [`.github/workflows/sync.yml`](.github/workflows/sync.yml), affiché **CORE - Verify & Publish**.
+```text
+provider.model.routeData
+```
 
-### Quick
+La reconnaissance peut conserver méthode, encodage/body, `Referer`, `Origin`, type de réponse, placeholders, rôle, provenance et confiance. L’analyse statique peut récupérer variables, concaténations et templates sans traiter le bundle provider publié comme source d’autorité.
 
-Quick est un gate rapide sur les bytes Provider v3 exacts :
+Une absence de route prouvée signifie **inconnu**, pas automatiquement mort ou quarantiné.
 
-- tests structurels et contrats Core critiques ;
-- audit du portfolio Lego ;
-- aucune reconstruction ;
-- aucun repair ;
-- aucune mutation Provider/DATA/Core ;
-- aucun full network health ;
-- aucune publication de nouveau code provider.
+### Types média : capacité sémantique vs transport Nuvio
 
-### Deep
+`canonicalSupportedTypes` décrit ce que le catalogue du provider sert réellement (`movie`, `tv`, `anime`). `supportedTypes` décrit comment Nuvio peut lancer le provider.
 
-Deep ajoute :
+Un provider exclusivement anime peut donc légitimement exposer :
 
-- contrats structurels complets ;
-- observation réseau/hubs en lecture seule ;
-- health sur les Provider JS publiés exacts ;
-- re-projection des manifests ;
-- reports et hashes.
+```json
+{
+  "canonicalSupportedTypes": ["anime"],
+  "supportedTypes": ["anime", "tv", "movie"]
+}
+```
 
-Deep **ne répare et ne reconstruit pas** les providers. Sur `main`, ses écritures sont limitées aux rapports, projections et inventaires explicitement autorisés.
+`tv` transporte les anime épisodiques et `movie` les films anime. Ces alias ne transforment **pas** le provider en provider film/série générique ; un contenu non-anime doit toujours être rejeté par la logique d’identité autoritaire.
 
----
+### Règles runtime
 
-## Learning et Domain Refresh
+Le Provider JS est un reader spécialisé, pas un crawler ni un moteur Learning.
 
-Le Learning quotidien (`brain-learning-lab.yml`) est un sandbox indépendant. Il peut observer, classifier, tester des repairs et produire une mémoire sanitizée ou une proposition reviewable ; il n'a aucune voie de publication directe.
+- gate capacité/type avant tout réseau provider ;
+- enrichissement TMDB uniquement si le plan provider en a besoin ;
+- identité scoped par œuvre/type/saison/épisode ;
+- provider incompatible → `[]`, pas recherche arbitraire ;
+- Core ne traite les sorties qu’après présence de flux utiles ;
+- zéro flux ne fabrique jamais un succès ;
+- mauvais média = échec ;
+- un flux cassé ne désactive jamais tout le provider à lui seul.
 
-`engine_v2/` reste la couche d'evidence/classification/Learning. Ce n'est pas un deuxième orchestrateur de production.
+### Reader, transport et lecture
 
-`domain-refresh.yml` est une exception DATA bornée : il peut modifier uniquement un `official_site` validé et rematérialiser le bloc `PROVIDER.<ID>.CONFIG.V1` correspondant. Les bytes hors CONFIG doivent rester identiques.
+Une URL `.m3u8` ou une réponse `#EXTM3U` ne prouve pas une lecture native. NiakVIO sépare extraction, identité, contexte de requête, résolution playlist/variant, intégrité média/conteneur et résultat réel du player natif.
 
----
-
-## Cinq Labs natifs
-
-La surface d'acceptation native est exactement :
-
-1. **TV Android** — NuvioTV officiel ;
-2. **Mobile Android** — NuvioMobile officiel ;
-3. **Mobile iOS** — NuvioMobile officiel ;
-4. **Desktop macOS** — NuvioDesktop officiel ;
-5. **Desktop Windows** — NuvioDesktop officiel.
-
-Le trigger commun est `.github/triggers/full-native-lab-validation.json`. La matrice finale couvre **96 providers / 214 routes déclarées** (`82 movie + 92 tv + 40 anime`), providers désactivés inclus en audit. Les fixtures représentatives sont Interstellar, Breaking Bad S01E01 et Jujutsu Kaisen S01E01.
-
-Les Labs consomment le SHA NiakVIO exact, contrôlent le drift du HEAD client officiel et observent extraction, identité, transport, session et lecture. Ils ne réparent, reconstruisent ou réécrivent jamais un provider.
-
-Un échec de stream individuel est une preuve stream-level ; il ne désactive pas automatiquement le provider entier.
+HTML/JSON déguisé en média ou TS/fMP4 positivement malformé peut être rejeté. Un timeout, une panne temporaire, un flux chiffré ou une API byte indisponible reste **inconclusif**, pas une preuve de panne provider généralisée.
 
 ---
 
-## HLS et intégrité de lecture
+## CORE, Learning et Domain Refresh
 
-Une playlist valide ne garantit pas un segment valide. `CORE.HLS_RUNTIME_INTEGRITY.V1` peut appliquer une preuve premier-segment bornée sur les providers qui en ont besoin :
+`CORE - Verify & Publish` est le workflow courant de publication.
 
-- playlist / variant ;
-- headers `Referer` / `Origin` conservés ;
-- premier segment ou init map lu sur quelques Ko ;
-- sync MPEG-TS ou signature fMP4 ;
-- HTML/JSON à la place d'un segment rejeté ;
-- réseau incertain, timeout ou HLS chiffré conservés comme inconclusifs plutôt que rejetés à tort.
+- **Quick** — checks déterministes structure/runtime/unit/security/minimizer. Aucune réparation/reconstruction provider.
+- **Deep** — observation réseau/hub plus large en lecture seule, health providers, projections, rapports et inventaires d’intégrité. Toujours aucune réparation/reconstruction Provider JS.
+- **Learning** — seul chemin isolé d’évolution/réparation du code. Les changements restent reviewables avant publication.
+- **Domain Refresh** — maintenance volontairement limitée au DATA CONFIG `official_site` validé.
 
-Cette capacité Core générique est activable par DATA provider ; elle n'est pas codée en dur pour un site.
+Cette séparation évite qu’un simple health check réécrive silencieusement un provider parce qu’un site est temporairement indisponible.
 
 ---
 
 ## Publication et intégrité
 
-`provider_catalog.json` reste le registre canonique de métadonnées/projections. `manifest.json`, `vf/manifest.json`, `no-anime/manifest.json` et `vf-no-anime/manifest.json` sont des projections.
+La publication est atomique et fail-closed et peut inclure :
 
-Les Provider JS sont adressés par contenu. Une génération incohérente ne remplace jamais silencieusement une génération validée.
+- `provider_catalog.json` ;
+- bundles providers adressés par contenu ;
+- `manifest.json` et projections VF/no-anime ;
+- état provenance/domaines ;
+- versions providers/cache synchronisées ;
+- hashes de release et rapports allowlistés.
 
-Terser reste interdit. `scripts/provider_v3_minimizer.py` est désormais le minimizer de production pré-hash : il conserve chaque retour ligne, commentaire/marker, littéral et expression, et retire uniquement l'indentation de lignes dont l'état lexical initial est prouvé comme du code JavaScript ordinaire. Preview Node 96/96, idempotence et fixed-point publié sont obligatoires.
+Une génération incohérente ne doit jamais remplacer silencieusement un état publié sain.
 
 ---
 
-## Workflows principaux
+## Principaux workflows
 
-| Workflow | Rôle |
+| Workflow | Responsabilité |
 |---|---|
-| `sync.yml` | CORE Quick/Deep read-only côté providers |
-| `provider-v3-reconstruct-all.yml` | reconstruction manuelle 96/96 + reverse proof sur branche non-main |
-| `brain-learning-lab.yml` | Learning sandbox + propositions reviewables |
-| `domain-refresh.yml` | maintenance `official_site` CONFIG-only |
+| `sync.yml` | **CORE - Verify & Publish** Quick/Deep ; aucune réparation/reconstruction provider |
+| `provider-v3-reconstruct-routes.yml` | reconnaissance route-only / census `routeData` canonique |
+| `provider-v3-reconstruct-all.yml` | reconstruction complète Provider v3 + reverse byte proof |
+| `brain-learning-lab.yml` | observation/réparation Learning sandbox + propositions reviewables |
+| `domain-refresh.yml` | maintenance `official_site` CONFIG uniquement |
 | `add-provider.yml` | onboarding provider structuré |
-| `native-mobile-android-reader.yml` | TV Android + Mobile Android |
-| `native-mobile-ios-reader.yml` | Mobile iOS |
-| `native-desktop-reader-acceptance.yml` | Desktop macOS + Windows |
-| `native-corpus-device-targeted.yml` | retest manuel ciblé |
-| `native-reader-learning-sync.yml` | import de preuves sanitizées dans Learning |
-| `github-actions-gate.yml` | sécurité/invariants Actions |
+| `native-mobile-android-reader.yml` | preuves TV Android + Mobile Android |
+| `native-mobile-ios-reader.yml` | preuves Mobile iOS |
+| `native-desktop-reader-acceptance.yml` | preuves Desktop macOS + Windows |
+| `native-corpus-device-targeted.yml` | diagnostics ciblés device/provider |
+| `github-actions-gate.yml` | invariants sécurité workflows/dépendances |
 | `codeql.yml` | analyse CodeQL |
-| `external-code-audit.yml` | Sonar / DeepSource / CodeScene |
+| `weekly-upstream-provider-discovery.yml` | découverte upstream en lecture seule |
+| `purge-actions-history.yml` | nettoyage historique Actions |
+| `brain-branch-maintenance.yml` | maintenance de la branche Learning/proposals |
 
 ---
 
-## Structure du repository
+## Merci & connaissances upstream
 
-```text
-NiakVIO/
-├── provider-bases/                  # ProviderBase v3 propres
-├── providers/                       # bundles client générés/hashés
-├── provider_catalog.json            # registre de publication
-├── provider-overrides.json          # DATA/options provider
-├── provider-v3-materialization.json # état de matérialisation
-├── scripts/provider_patches/        # Lego PROVIDER.* / CORE.*
-├── engine_v2/                       # evidence / classification / Learning
-├── automation/                      # contrats machine-readable
-├── tests/                           # non-régressions
-├── .github/workflows/               # CORE / Learning / Labs / maintenance
-├── PROVENANCE.json
-├── FILE-HASHES.json
-├── SHA256SUMS.json
-└── PATCH-SHA256SUMS.txt
-```
+NiakVIO est indépendant, mais profite du travail publié dans l’écosystème providers Nuvio.
 
----
-
-## Tests locaux
-
-Prérequis : Node.js 24+ et Python 3.
-
-```bash
-npm install
-npm test
-node engine_v2/tests/provider-catalog.test.mjs
-```
-
-Diagnostics :
-
-```bash
-npm run diagnostics
-```
-
-Les tests locaux ne remplacent pas la validation native lorsqu'un changement touche le playback ou le contrat d'un client Nuvio.
-
----
-
-## Politique de branches
-
-- `main` : unique branche de code, état stable et publiable ;
-- `brain-learning/proposals` : mémoire sanitizée persistante du Brain, sans code de production ni publication autonome ;
-- les Labs TV/Mobile Android/Mobile iOS/Desktop utilisent directement le SHA de `main` et les dépôts clients Nuvio officiels comme baselines en lecture seule ;
-- aucune branche `lab/*`, `fix/*`, `ci/*`, `proof/*`, `tmp/*`, `chore/*`, `refactor/*` ou `brain-repair/*` n'est conservée comme branche de travail.
-
-Les réparations, tests et nettoyages sont matérialisés sur `main`. La mémoire Brain séparée reste non publiable et ne peut pas contourner les gates de production.
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="assets/thanks/gowaru-bg.png" alt="Gowaru" width="150"><br>
+      <strong>Gowaru</strong><br>
+      Implémentations providers et connaissance protocolaire utilisées comme provenance/évidence upstream lorsque pertinent.
+    </td>
+    <td align="center" width="33%">
+      <img src="assets/thanks/yoru-bg.png" alt="Yoru" width="150"><br>
+      <strong>Yoru</strong><br>
+      Travail sur l’écosystème providers et implémentations utiles pour croiser comportements et compatibilité.
+    </td>
+    <td align="center" width="33%">
+      <img src="assets/thanks/deadlyrocket-bg.png" alt="All-in-One Nuvio / D3adlyRocket" width="150"><br>
+      <strong>All-in-One Nuvio / D3adlyRocket</strong><br>
+      Matériel historique d’agrégation/mirror utilisé comme une source de provenance, jamais comme autorité de reconstruction NiakVIO.
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## Sécurité, responsabilité et indépendance
 
-Le moteur applique des budgets de workers, des protections réseau/SSRF, des contrôles d'identité, une publication fail-closed et une sanitisation des artefacts CI. Les secrets, tokens, cookies, headers sensibles et URL signées ne doivent pas être persistés dans la mémoire d'apprentissage publique.
+Le JavaScript provider est traité comme une entrée non fiable. NiakVIO utilise workers bornés, contrôles SSRF/réseau, sandboxing, vérifications d’identité, sanitization CI et publication fail-closed. Le stripping HTML générique par regex est interdit par le contrat sécurité Provider v3.
 
-NiakVIO est un projet communautaire indépendant, non affilié aux développeurs de Nuvio ni aux services tiers référencés. Le projet ne contrôle pas la disponibilité, le contenu, les droits ou les pratiques de sites tiers. L'utilisation doit respecter la législation applicable et les conditions des services concernés.
+NiakVIO est un projet communautaire indépendant, non affilié à Nuvio ni aux services tiers cités. Rien dans ce repository n’accorde de droits sur des médias/services tiers et n’autorise le contournement d’authentification, paywalls, chiffrement ou contrôles d’accès.
 
-Voir [`TESTING_NOTICE.md`](TESTING_NOTICE.md), [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`SECURITY.md`](SECURITY.md), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).### Workflows de maintenance durables
-
-- `weekly-upstream-provider-discovery.yml` — découverte upstream hebdomadaire en lecture seule.
-- `purge-actions-history.yml` — purge planifiée de l'historique GitHub Actions selon la rétention.
-- `brain-branch-maintenance.yml` — maintenance des branches Learning/proposals durables, sans publication directe des Provider JS.
-
+Voir [`SECURITY.md`](SECURITY.md), [`TESTING_NOTICE.md`](TESTING_NOTICE.md), [`DISCLAIMER.md`](DISCLAIMER.md), [`LICENSE`](LICENSE), [`NOTICE`](NOTICE), [`CONTRIBUTING.md`](CONTRIBUTING.md) et [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
