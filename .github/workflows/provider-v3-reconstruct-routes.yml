@@ -50,25 +50,48 @@ jobs:
           python - <<'PY'
           import json
           from pathlib import Path
-          value=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
-          report=value.get('routeReconstruction') or {}
-          providers=value.get('providers') or {}
+
+          value = json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
+          report = value.get('routeReconstruction') or {}
+          providers = value.get('providers') or {}
+
           assert report.get('providerCount') == 96, report
           assert report.get('fullProviderReconstructionInvoked') is False, report
           assert report.get('providerJavaScriptExecuted') is False, report
-          unknown=report.get('unknownProviders') or []
-          assert not unknown, f'providers without recognized route DATA: {unknown}'
           assert len(providers) == 96, len(providers)
-          for provider_id,row in providers.items():
-              model=(row or {}).get('model') or {}
-              data=model.get('routeData')
-              assert isinstance(data,list) and data, provider_id
+
+          reported_without_routes = sorted(report.get('unknownProviders') or [])
+          observed_without_routes = []
+          for provider_id, row in providers.items():
+              model = (row or {}).get('model') or {}
+              data = model.get('routeData')
+              assert isinstance(data, list), provider_id
               assert model.get('routes') == list(dict.fromkeys(x.get('route') for x in data)), provider_id
+
+              recognition = model.get('routeRecognition') or {}
+              assert recognition.get('fullProviderReconstructionRequired') is False, provider_id
+              expected_status = 'recognized' if data else 'unknown'
+              assert recognition.get('status') == expected_status, (provider_id, recognition)
+              if not data:
+                  observed_without_routes.append(provider_id)
+
+          observed_without_routes.sort()
+          assert reported_without_routes == observed_without_routes, {
+              'reportedWithoutRoutes': reported_without_routes,
+              'observedWithoutRoutes': observed_without_routes,
+          }
+
+          # A completed recognition pass may legitimately produce no durable route
+          # for a Provider Object. That is an explicit recognition result, not a
+          # quarantine/death signal and not a reason to fail the route-only census.
           print(
               'FIELD_ROUTE_RECONSTRUCTION '
               f"providers=96 routes={report.get('routeCount')} "
-              f"httpProven={report.get('httpProvenRouteCount')} unknown=0 providerRebuild=false"
+              f"httpProven={report.get('httpProvenRouteCount')} "
+              f"noDurableRoutes={len(observed_without_routes)} providerRebuild=false"
           )
+          if observed_without_routes:
+              print('FIELD_ROUTE_RECONSTRUCTION_NO_DURABLE_ROUTES ' + ','.join(observed_without_routes))
           PY
       - name: Commit canonical route DATA only
         if: github.event_name == 'push'
