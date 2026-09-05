@@ -2,13 +2,14 @@
 from __future__ import annotations
 
 import copy
+import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from provider_route_reconstructor import reconstruct_provider_routes
+from provider_route_reconstructor import reconstruct_all_routes, reconstruct_provider_routes
 
 
 provider = {
@@ -112,4 +113,28 @@ assert unknown["model"]["routeRecognition"]["status"] == "unknown", unknown
 assert unknown["model"]["routeData"] == [], unknown
 assert unknown["model"]["strategy"] == "html_scraper", unknown
 
-print("Provider route reconstructor tests passed: canonical routeData, static source proof, idempotence, unknown != quarantine")
+# Real 96/96 route-only census: every Provider Object receives the canonical field,
+# compact model.routes is always derived from it, and no full provider rebuild is
+# involved. Empty DATA remains an explicit unknown contract for later recognition.
+knowledge = json.loads((ROOT / "automation/provider-v3-static-knowledge.json").read_text(encoding="utf-8"))
+seeds = json.loads((ROOT / "automation/provider-v3-recognition-seeds.json").read_text(encoding="utf-8"))
+overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+reconstructed, census = reconstruct_all_routes(knowledge, seeds=seeds, overrides=overrides)
+assert census["providerCount"] == 96, census
+assert census["fullProviderReconstructionInvoked"] is False, census
+assert census["providerJavaScriptExecuted"] is False, census
+assert reconstructed["routeReconstruction"]["canonicalRouteData"] == "providers.<id>.model.routeData"
+for provider_id, row in reconstructed["providers"].items():
+    model = row.get("model") or {}
+    data = model.get("routeData")
+    assert isinstance(data, list), provider_id
+    assert model.get("routes") == list(dict.fromkeys(item["route"] for item in data)), provider_id
+    recognition = model.get("routeRecognition") or {}
+    assert recognition.get("status") in {"recognized", "unknown"}, (provider_id, recognition)
+    assert recognition.get("fullProviderReconstructionRequired") is False, provider_id
+
+print(
+    "Provider route reconstructor tests passed: canonical routeData, static source proof, "
+    f"idempotence, unknown != quarantine, census=96 routes={census['routeCount']} "
+    f"httpProven={census['httpProvenRouteCount']} unknown={len(census['unknownProviders'])}"
+)
