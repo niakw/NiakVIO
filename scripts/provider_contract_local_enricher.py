@@ -107,6 +107,9 @@ def merge_requests(rows: list[dict[str, Any]], model_routes: list[str]) -> list[
 
 
 def generic_request(route: str, *, explicit: bool) -> dict[str, Any]:
+    # A reviewed/explicit route is strong durable DATA, but it is not by itself
+    # proof that a concrete request call was observed. Preserve that distinction
+    # so confidence cannot silently turn into fabricated executed evidence.
     return {
         "route": route,
         "role": recognizer.route_kind(route),
@@ -117,8 +120,8 @@ def generic_request(route: str, *, explicit: bool) -> dict[str, Any]:
         "refererRequired": False,
         "originRequired": False,
         "response": "unknown",
-        "executedEvidence": explicit,
-        "evidence": "niakvio-owned-route-data",
+        "executedEvidence": False,
+        "evidence": "niakvio-reviewed-route-data" if explicit else "niakvio-owned-route-data",
         "confidence": 0.9 if explicit else 0.75,
     }
 
@@ -175,9 +178,10 @@ def enrich(payload: dict[str, Any], seeds: dict[str, Any], overrides: dict[str, 
         seed_requests = seed.get("requests") if isinstance(seed.get("requests"), list) else []
         requests = merge_requests(list(previous_requests) + list(seed_requests), model["routes"])
         request_routes = {str(x.get("route") or "") for x in requests}
+        normalized_explicit = {sanitize_route(x, explicit=True) for x in explicit_set}
         for route in model["routes"]:
             if route not in request_routes:
-                requests.append(generic_request(route, explicit=route in {sanitize_route(x, explicit=True) for x in explicit_set}))
+                requests.append(generic_request(route, explicit=route in normalized_explicit))
 
         # Knowledge remains useful for diagnostics, but executable route DATA is the
         # cleaned model set. Static fragments that look like source filenames or
