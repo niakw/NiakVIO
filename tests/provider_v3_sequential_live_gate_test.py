@@ -67,7 +67,17 @@ assert "refusing to advance to provider" in source
 assert "write(knowledge_path, knowledge)" in source
 assert "sequentialNoInterProviderConcurrency" in source
 
+probe = (ROOT / "scripts" / "nuvio_tv_probe_route_validation.cjs").read_text(encoding="utf-8")
+assert "function requestPhase()" in probe
+assert "inspectStream|inspectHlsChild" in probe
+assert "network_phase: phase" in probe
+assert "if (phase === 'playback') playbackRequestCount += 1;" in probe
+assert "else routeTrace.push(evidence);" in probe
+assert "playback_request_count: playbackRequestCount" in probe
+assert "schema_version: 2" in probe
+
 print(
     "Provider v3 sequential live gate tests passed: one provider at a time, "
-    "75% useful coverage, no inter-provider concurrency, explicit dead/blocked exceptions."
+    "75% useful provider-route coverage, playback probes excluded from the route denominator, "
+    "no inter-provider concurrency, explicit dead/blocked exceptions."
 )
