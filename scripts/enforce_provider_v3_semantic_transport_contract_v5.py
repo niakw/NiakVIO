@@ -3,13 +3,14 @@
 
 Canonical provider capability answers *what content the provider serves*.
 Transport capability answers *which Nuvio/TMDB namespace can launch it*.
-An anime-only provider therefore remains canonically ``anime`` while accepting
-both TV and movie transport. Authoritative TMDB metadata is still required to
-prove that a TV/movie work is anime before the semantic gate lets it through.
+Every provider whose canonical catalogue includes ``anime`` keeps that semantic
+capability while accepting the real TV/movie transport namespace needed by Nuvio.
+Authoritative TMDB metadata still decides whether the work is anime before the
+semantic gate lets an anime-only catalogue serve a TV/movie-shaped request.
 
 This migration is deliberately idempotent. It patches NiakVIO-owned source,
-normalizes the current manifest, and validates runtime regression expectations
-without rewriting the test suite.
+normalizes current manifest projections from provider_catalog.json semantics,
+and validates runtime regression expectations without rewriting the test suite.
 """
 from __future__ import annotations
 
@@ -21,6 +22,7 @@ from harden_stream_presentation_metadata_fallbacks import main as harden_stream_
 from remove_embedded_tmdb_runtime_key_contract import main as remove_embedded_tmdb_runtime_key
 
 ROOT = Path(__file__).resolve().parents[1]
+CANONICAL_TYPES = {"movie", "tv", "anime"}
 
 
 def replace_once(path: Path, old: str, new: str, label: str) -> bool:
@@ -32,6 +34,51 @@ def replace_once(path: Path, old: str, new: str, label: str) -> bool:
         raise AssertionError(f"{label}: expected one old source shape, got {count}")
     path.write_text(text.replace(old, new, 1), encoding="utf-8")
     return True
+
+
+def normalized_types(values: object) -> list[str]:
+    out: list[str] = []
+    for value in values if isinstance(values, list) else []:
+        item = str(value or "").strip().casefold()
+        if item in CANONICAL_TYPES and item not in out:
+            out.append(item)
+    return out
+
+
+def anime_transport(canonical: list[str]) -> list[str]:
+    wanted = list(canonical)
+    if "anime" not in wanted:
+        return wanted
+    for compatible in ("tv", "movie"):
+        if compatible not in wanted:
+            wanted.append(compatible)
+    return wanted
+
+
+def catalog_semantic_types() -> dict[str, list[str]]:
+    path = ROOT / "provider_catalog.json"
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if value.get("sourceOfTruth") is not True:
+        raise AssertionError("provider_catalog.json must remain sourceOfTruth")
+    result: dict[str, list[str]] = {}
+    for provider in value.get("providers") or []:
+        if not isinstance(provider, dict):
+            continue
+        scraper = provider.get("scraper")
+        if not isinstance(scraper, dict):
+            continue
+        provider_id = str(scraper.get("id") or provider.get("canonicalId") or "").strip().casefold()
+        if not provider_id:
+            continue
+        canonical = normalized_types(
+            scraper.get("canonicalSupportedTypes") or scraper.get("supportedTypes")
+        )
+        if not canonical:
+            raise AssertionError(f"provider_catalog.json:{provider_id}: missing canonical media types")
+        result[provider_id] = canonical
+    if len(result) != 96:
+        raise AssertionError(f"provider_catalog.json semantic rows={len(result)} expected=96")
+    return result
 
 
 def patch_gowaru_route_normalizer() -> bool:
@@ -92,7 +139,7 @@ def patch_materializer() -> bool:
     path = ROOT / "scripts" / "materialize_provider_v3_all.py"
     text = path.read_text(encoding="utf-8")
     changed = False
-    marker = '''def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
+    old_marker = '''def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
     """Keep anime semantic identity while exposing Nuvio TV/movie launch lanes."""
     canonical = []
     for value in entry.get("canonicalSupportedTypes") or []:
@@ -111,12 +158,42 @@ def patch_materializer() -> bool:
 
 
 '''
+    marker = '''def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
+    """Preserve explicit anime semantics while exposing Nuvio TV/movie launch lanes."""
+    canonical = []
+    for value in entry.get("canonicalSupportedTypes") or []:
+        item = str(value or "").strip().casefold()
+        if item in {"movie", "tv", "anime"} and item not in canonical:
+            canonical.append(item)
+    if "anime" not in canonical:
+        return False
+    wanted = list(canonical)
+    for compatible in ("tv", "movie"):
+        if compatible not in wanted:
+            wanted.append(compatible)
+    current = [
+        str(value or "").strip().casefold()
+        for value in entry.get("supportedTypes") or []
+        if str(value or "").strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    if current == wanted and entry.get("canonicalSupportedTypes") == canonical:
+        return False
+    entry["canonicalSupportedTypes"] = canonical
+    entry["supportedTypes"] = wanted
+    return True
+
+
+'''
     anchor = 'def base_version(value: object) -> str:\n'
     if marker not in text:
-        if text.count(anchor) != 1:
-            raise AssertionError("materializer anime compatibility anchor drifted")
-        text = text.replace(anchor, marker + anchor, 1)
-        changed = True
+        if old_marker in text:
+            text = text.replace(old_marker, marker, 1)
+            changed = True
+        else:
+            if text.count(anchor) != 1:
+                raise AssertionError("materializer anime compatibility anchor drifted")
+            text = text.replace(anchor, marker + anchor, 1)
+            changed = True
     call = '''        normalize_anime_transport_compatibility(entry)
         provider_id = canonical_id(str(entry.get("id") or ""))
 '''
@@ -152,24 +229,23 @@ def patch_runtime_regression_expectations() -> bool:
     return False
 
 
-def normalize_manifest() -> int:
-    path = ROOT / "manifest.json"
+def normalize_manifest(path: Path, semantics: dict[str, list[str]]) -> int:
+    if not path.is_file():
+        return 0
     value = json.loads(path.read_text(encoding="utf-8"))
     changed = 0
     for entry in value.get("scrapers") or []:
         if not isinstance(entry, dict):
             continue
-        canonical = {
-            str(item or "").strip().casefold()
-            for item in entry.get("canonicalSupportedTypes") or []
-            if str(item or "").strip()
-        }
-        if canonical != {"anime"}:
+        provider_id = str(entry.get("id") or "").strip().casefold()
+        canonical = list(semantics.get(provider_id) or [])
+        if "anime" not in canonical:
             continue
-        wanted = ["anime", "tv", "movie"]
-        current = [str(item or "").strip().casefold() for item in entry.get("supportedTypes") or []]
-        if current != wanted or entry.get("canonicalSupportedTypes") != ["anime"]:
-            entry["canonicalSupportedTypes"] = ["anime"]
+        wanted = anime_transport(canonical)
+        current_transport = normalized_types(entry.get("supportedTypes"))
+        current_canonical = normalized_types(entry.get("canonicalSupportedTypes"))
+        if current_transport != wanted or current_canonical != canonical:
+            entry["canonicalSupportedTypes"] = canonical
             entry["supportedTypes"] = wanted
             changed += 1
     if changed:
@@ -217,11 +293,16 @@ def main() -> int:
         "materializer_anime_compat": patch_materializer(),
         "runtime_expectations": patch_runtime_regression_expectations(),
     }
-    normalized = normalize_manifest()
+    semantics = catalog_semantic_types()
+    normalized = {
+        "general": normalize_manifest(ROOT / "manifest.json", semantics),
+        "vf": normalize_manifest(ROOT / "vf" / "manifest.json", semantics),
+    }
     print(
         "PROVIDER_V3_SEMANTIC_TRANSPORT_V5_OK "
         + " ".join(f"{key}={str(value).lower()}" for key, value in changes.items())
-        + f" manifest_anime_rows_normalized={normalized}"
+        + " manifest_anime_rows_normalized="
+        + json.dumps(normalized, sort_keys=True, separators=(",", ":"))
     )
     return 0
 
