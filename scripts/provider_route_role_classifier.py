@@ -9,12 +9,15 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from provider_route_normalization_guard import install as install_route_guard
+
 VIDEO_PLAYER_RE = re.compile(r"/(?:video[-_]?player|watchplayer|iframeplayer)(?:[./?#-]|$)", re.I)
 DOWNLOAD_SOURCE_RE = re.compile(r"/(?:download|file|mediafile)(?:[./?#-]|$)", re.I)
 EPISODE_INDEX_RE = re.compile(r"/(?:episodes?(?:\.js|\.json|\.txt)?|season-list|episode-list)(?:[/?#.-]|$)", re.I)
 
 
 def install(recognizer: Any) -> None:
+    install_route_guard(recognizer)
     if getattr(recognizer, "_NIAKVIO_ROUTE_ROLE_CLASSIFIER_INSTALLED", False):
         return
     old = recognizer.route_kind
