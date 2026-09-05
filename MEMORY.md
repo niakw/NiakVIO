@@ -466,3 +466,19 @@ None of the following by itself means NiakVIO is finished:
 - a route list without playback proof.
 
 Done means the full requested workbench is coherent, routes/protocol DATA are materially restored across the catalogue, live yield is materially restored, exact final bytes pass structural/security gates, and the five official Nuvio client Labs provide acceptable reader/playback evidence before merge.
+
+
+## 2026-09-05 route/DATA recovery lock — run 33979458656 {#run-33979458656-route-data-recovery}
+- This is the authoritative recovery checkpoint for route/DATA work after the original successful artifact was not persisted to Git.
+- Source workflow run: `33979458656`, head SHA `b1891055fc0830f690bc6afa9f7d2708844a1394`.
+- Recovered canonical snapshot contains all 96 providers and already carries the previously accumulated 1→18 state.
+- Batch report itself covers providers 19→58: 40 processed, 17 final-bundle verified, 4 terminal-blocked, 19 defer-to-learn, 0 hard failures.
+- Final-bundle verified in 19→58: `animesalt`, `animetsu`, `animevostfr`, `castle`, `cineby`, `cinemm`, `coflix`, `french-manga`, `hianime`, `kurage`, `moviesmod`, `neko-sama`, `playimdb`, `streamzo`, `toflix`, `videasy`, `vidfast`.
+- Terminal-blocked in 19→58: `animesultra`, `animezey`, `cinemacity`, `movix`.
+- `mugiwarastream` is a deliberate validated-DATA-retained/final-bundle-unverified case: keep its validated DATA while provider authority remains demoted until repaired.
+- Exact recovered SHA-256: static knowledge `aab5f7eb12743c1beba7bf37148cb8428307fe3971c30dfe283d06f47ea28df5`; overrides `6f651b8b065438c70501877952653c3879c7baf189f5325231bad713e3f70b5a`; batch report `a0f30ce73d805c720a75d89836cc24fab7a2278c8c67575d1aaf97f322cb58db`.
+- Durable report path: `automation/provider-v3-batch-checkpoints/run-33979458656-batch-019-058.json`.
+- Do NOT rerun 19→58 merely because a chat/session is lost. Resume recognition at provider 59 unless explicitly auditing a regression.
+- A route is validated DATA only after actual live HTTP execution. Static recognition, source inspection, seed data or inferred route shape alone remain candidate/diagnostic evidence.
+- Every subsequent recognition batch MUST commit `automation/provider-v3-static-knowledge.json`, `provider-overrides.json`, its exact batch report checkpoint, and a MEMORY checkpoint before proceeding to another batch.
+- Full Provider reconstruction is intentionally deferred until route/DATA recognition across the full 96-provider catalogue is complete.
