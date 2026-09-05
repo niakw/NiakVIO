@@ -758,8 +758,21 @@ function _crawlUrlScore(url) {
     return score;
   } catch (_) { return -5000; }
 }
+function _crawlEligible(url) {
+  try {
+    if (_directMedia(url) || _playerLike(url)) return true;
+    const parsed = new URL(url);
+    if (!/^https?:$/i.test(parsed.protocol)) return false;
+    const host = _text(parsed.hostname).toLowerCase();
+    const path = (parsed.pathname + parsed.search).toLowerCase();
+    if (/(?:^|\.)(?:t\.me|telegram\.me|facebook\.com|instagram\.com|twitter\.com|x\.com|youtube\.com|youtu\.be)$/i.test(host)) return false;
+    if (/\/(?:feed|comments?\/feed|wp-json\/oembed|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) return false;
+    if (/\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) return false;
+    return _crawlUrlScore(url) > 0;
+  } catch (_) { return false; }
+}
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
-  const queue = _uniq(seedUrls).filter(_playerLike).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 6).map(url => ({ url, depth: 0, referer }));
+  const queue = _uniq(seedUrls).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));
   const seen = new Set();
   const streams = [];
   let requests = 0;
@@ -791,7 +804,7 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
         continue;
       }
       if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
-        for (const next of urls.filter(_playerLike).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 3)) {
+        for (const next of urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 4)) {
           if (!seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
         }
       }
@@ -918,11 +931,19 @@ async function _tmdb(tmdbId, mediaType) {
       row.original_name,
       ...(Array.isArray(alternativeRows) ? alternativeRows.map(item => item && (item.title || item.name)) : [])
     ].map(_text).filter(Boolean));
+    const externalIds = row.external_ids && typeof row.external_ids === "object"
+      ? row.external_ids
+      : {};
+    const imdbId = _text(
+      row.imdb_id || row.imdbId || externalIds.imdb_id || ""
+    ).trim();
     return {
       title: aliases[0] || "",
       aliases,
       year: String(row.release_date || row.first_air_date || row.year || "").slice(0, 4),
-      tmdbId: String(tmdbId || "")
+      tmdbId: String(tmdbId || ""),
+      imdbId,
+      externalIds
     };
   }
   try {
@@ -1684,7 +1705,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       const direct = urls.filter(_directMedia);
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
       if (!direct.length && /iframe|mixed_embed|html_scraper|direct_media/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
-        const discoveredNested = _uniq(urls.filter(_playerLike));
+        const discoveredNested = _uniq(urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))).slice(0, 10);
         if (discoveredNested.length) {
           const runtimeCandidates = _uniq([
             ...discoveredNested,
@@ -1789,6 +1810,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
 }
 /* NIAKVIO_PROVIDER_BASE_SOURCE_PLAN_V4 */
 /* NIAKVIO_PROVIDER_BASE_RUNTIME_V5 */
+/* NIAKVIO_PROVIDER_BASE_RUNTIME_V6 */
 function _spv4Family() {
   return _text(NIAKVIO_PROVIDER_MODEL.sourceRuntimeFamily || "unknown").toLowerCase();
 }
@@ -2028,7 +2050,7 @@ function _spv4DirectStreams(urls, referer) {
   return direct.length ? _streams(direct, referer).slice(0, 12) : [];
 }
 async function _spv4NestedStreams(urls, referer) {
-  const candidates = _uniq(urls).filter(url => _playerLike(url) || /(?:sibnet|vidmoly|streamtape|sendvid|vidoza|myvi)/i.test(url)).slice(0, 6);
+  const candidates = _uniq(urls).filter(url => _crawlEligible(url) || /(?:sibnet|vidmoly|streamtape|sendvid|vidoza|myvi)/i.test(url)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8);
   if (!candidates.length) return [];
   return (await _crawlDirectMedia(candidates, referer, 2)).slice(0, 12);
 }

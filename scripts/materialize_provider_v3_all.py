@@ -234,19 +234,26 @@ def provider_model(
 
 
 def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
-    """Keep anime semantic identity while exposing Nuvio TV/movie launch lanes."""
+    """Preserve explicit anime semantics while exposing Nuvio TV/movie launch lanes."""
     canonical = []
     for value in entry.get("canonicalSupportedTypes") or []:
         item = str(value or "").strip().casefold()
         if item in {"movie", "tv", "anime"} and item not in canonical:
             canonical.append(item)
-    if set(canonical) != {"anime"}:
+    if "anime" not in canonical:
         return False
-    wanted = ["anime", "tv", "movie"]
-    current = [str(value or "").strip().casefold() for value in entry.get("supportedTypes") or []]
-    if current == wanted and canonical == ["anime"]:
+    wanted = list(canonical)
+    for compatible in ("tv", "movie"):
+        if compatible not in wanted:
+            wanted.append(compatible)
+    current = [
+        str(value or "").strip().casefold()
+        for value in entry.get("supportedTypes") or []
+        if str(value or "").strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    if current == wanted and entry.get("canonicalSupportedTypes") == canonical:
         return False
-    entry["canonicalSupportedTypes"] = ["anime"]
+    entry["canonicalSupportedTypes"] = canonical
     entry["supportedTypes"] = wanted
     return True
 
