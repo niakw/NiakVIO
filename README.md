@@ -183,6 +183,8 @@ NiakVIO treats each official client/device as a separate compatibility boundary:
 
 The canonical matrix covers **96 providers / 214 declared routes**: `82 movie + 92 tv + 40 anime`. Disabled providers remain audited. A Desktop result never automatically counts as Mobile or TV evidence.
 
+Standard native coverage is **1/1/1 per provider by declared type**: at most one movie fixture, one TV fixture and one anime fixture are selected when those types are declared. The Labs never add undeclared media types merely to create extra probes.
+
 Labs are observational: they consume exact Provider JS bytes and can diagnose extraction, runtime, player, transport, missing-media and wrong-media failures, but they do not mutate Provider v3 to force a green result.
 
 Official clients:
@@ -203,7 +205,7 @@ A quarantine needs an explicit, evidence-backed functional reason. `routeData=[]
 
 ---
 
-## Publication and integrity
+## publication and integrity
 
 Publication is atomic and fail-closed and can include:
 
