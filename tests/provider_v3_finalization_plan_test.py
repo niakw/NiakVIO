@@ -28,13 +28,13 @@ base_model = {
     "knownSite": "https://plan.test",
     "officialApi": "https://api.plan.test/v1",
     "fixedApi": "https://api.plan.test/v1",
+    "origins": ["https://plan.test", "https://api.plan.test"],
+    "observedUrls": ["https://plan.test/"],
     "apiRecipe": {
         "base": "https://api.plan.test/v1",
         "searchRoute": "/search/{query}",
         "movieRoute": "/movie/{tmdbId}",
         "episodeRoute": "/tv/{tmdbId}?season={season}&episode={episode}",
-        # Optional fallback/control branch: absence of a live call must not delete
-        # the whole recipe after movie+tv have been proven.
         "statusUrl": "https://plan.test/status",
     },
     "routes": [
@@ -62,8 +62,6 @@ movie = {
         fetch("https://api.plan.test/v1/search/Movie", 200),
         fetch("https://api.plan.test/v1/fallback/10", 404),
         fetch("https://api.plan.test/v1/movie/10", 200),
-        # This live landing URL was discovered from a response. It is useful
-        # traversal evidence but its literal session token must never become DATA.
         fetch("https://api.plan.test/v1/gateway/session-837492", 200),
     ],
 }
@@ -121,6 +119,13 @@ assert "/tv/{tmdbId}?season={season}&episode={episode}" in final_routes, final_r
 assert "/unused/{tmdbId}" not in final_routes, final_routes
 assert not any("gateway/session-" in route for route in final_routes), final_routes
 assert not any(row.get("liveDerived") for row in final_model["routeData"]), final_model["routeData"]
+# Full runtime observations must stay out of provider DATA as well. Otherwise a
+# signed/session URL changes the next bundle even when executable routes are clean.
+assert final_model["origins"] == base_model["origins"], final_model["origins"]
+assert final_model["observedUrls"] == base_model["observedUrls"], final_model["observedUrls"]
+recognized = knowledge["providers"]["plan-provider"]["knowledge"]["recognizedContract"]
+assert any("gateway/session-837492" in url for url in recognized["runtimeObservedUrls"]), recognized
+assert recognized["runtimeObservationsPersistedAsProviderData"] is False
 fallback = next(row for row in final_model["routeData"] if row["route"] == "/fallback/{tmdbId}")
 assert fallback["validationState"] == "failed-live", fallback
 assert fallback.get("attemptEvidence"), fallback
@@ -132,11 +137,11 @@ assert not any("gateway/session-" in route for route in patch["learned_routes"])
 assert patch["api_recipe"]["statusUrl"] == "https://plan.test/status", patch
 assert final_model["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is True
 assert final_model["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
+assert final_model["routeRecognition"]["runtimeObservationsPersistedAsProviderData"] is False
 assert final_model["routeRecognition"]["runtimeDerivedRouteCount"] >= 1
 assert final_model["routeRecognition"]["blockedPlanPreserved"] is False
 
 # A runner-level block is not evidence that downstream typed routes are invalid.
-# Preserve the complete stable candidate plan so another network/client can use it.
 blocked_model = copy.deepcopy(base_model)
 blocked_evaluation = evaluate_provider(
     "blocked-provider",
@@ -182,14 +187,19 @@ finalize_provider(
 blocked_final = blocked_knowledge["providers"]["blocked-provider"]["model"]
 assert set(blocked_final["routes"]) == set(base_model["routes"]), blocked_final["routes"]
 assert not any("transient/session-" in route for route in blocked_final["routes"]), blocked_final["routes"]
+assert blocked_final["origins"] == base_model["origins"], blocked_final["origins"]
+assert blocked_final["observedUrls"] == base_model["observedUrls"], blocked_final["observedUrls"]
+blocked_recognized = blocked_knowledge["providers"]["blocked-provider"]["knowledge"]["recognizedContract"]
+assert any("transient/session-12345" in url for url in blocked_recognized["runtimeObservedUrls"]), blocked_recognized
 assert blocked_final["apiRecipe"] == base_model["apiRecipe"], blocked_final["apiRecipe"]
 assert blocked_final["routeRecognition"]["blockedPlanPreserved"] is True
 assert blocked_final["routeRecognition"]["runtimeDerivedRoutesPersisted"] is False
+assert blocked_final["routeRecognition"]["runtimeObservationsPersistedAsProviderData"] is False
 assert set(blocked_overrides["provider_patches"]["blocked-provider"]["learned_routes"]) == set(base_model["routes"])
 assert blocked_overrides["provider_patches"]["blocked-provider"]["api_recipe"] == base_model["apiRecipe"]
 
 print(
     "PROVIDER_V3_FINALIZATION_PLAN_OK stable_attempted_non2xx=preserved "
-    "runtime_derived=pure-evidence unexecuted_guess=pruned "
-    "blocked_stable_plan=preserved api_recipe=atomic"
+    "runtime_derived=pure-evidence runtime_observations=pure-evidence "
+    "unexecuted_guess=pruned blocked_stable_plan=preserved api_recipe=atomic"
 )
