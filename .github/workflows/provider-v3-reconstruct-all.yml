@@ -72,10 +72,15 @@ jobs:
             echo "NiakVIO Provider v3 recognition seeds are missing." >&2
             exit 1
           }
+          # A previous live pass stores rejected/unreached routes as candidates.
+          # Restore them only for this new discovery/probe pass; they are not
+          # executable authority until the live gate promotes them again.
+          python scripts/validate_provider_v3_routes_live.py --prepare-candidates
           python scripts/enrich_provider_v3_static_knowledge.py
           python scripts/sanitize_provider_v3_core_metadata_routes.py
           python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
+          python tests/provider_v3_live_route_validation_test.py
       - name: Refuse direct main mutation
         if: inputs.commit_reconstruction
         shell: bash
@@ -120,9 +125,40 @@ jobs:
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
           python tests/native_hls_integrity_budget_test.py
-      - name: Reconstruct all 96 providers from DATA + Lego
+          python tests/provider_v3_live_route_validation_test.py
+
+      - name: Traverse reconstructed route candidates live
+        shell: bash
         run: |
           set -euo pipefail
+          # Pass 1 is deliberately provisional. Candidate routes are allowed here
+          # only so the real Provider Object can execute them in its actual chain.
+          python scripts/materialize_provider_v3_all.py
+          # The validator observes the requests that were really issued and
+          # rewrites route authority + route-bearing overrides to live-only DATA.
+          python scripts/validate_provider_v3_routes_live.py
+          python tests/provider_v3_live_route_validation_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
+          assert report.get("providerCount") == 96, report.get("providerCount")
+          assert report.get("providersWithProviderHttpCount", 0) > 0, report
+          assert report.get("liveValidatedRouteCount", 0) <= report.get("attemptedRouteCount", 0), report
+          assert report.get("attemptedRouteCount", 0) <= report.get("candidateRouteCount", 0), report
+          print(
+              "FIELD_RECONSTRUCTION_LIVE_ROUTE_GATE "
+              f"candidates={report['candidateRouteCount']} attempted={report['attemptedRouteCount']} "
+              f"live={report['liveValidatedRouteCount']} blocked={report['blockedRouteCount']} "
+              f"failed={report['failedRouteCount']} unexecuted={report['unexecutedCandidateRouteCount']}"
+          )
+          PY
+
+      - name: Reconstruct all 96 providers from live DATA + Lego
+        run: |
+          set -euo pipefail
+          # Pass 2 is authoritative: model.routes and route-bearing overrides have
+          # already been reduced to successful live traversal evidence.
           python scripts/materialize_provider_v3_all.py
           python scripts/prune_unreferenced_providers.py
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
@@ -132,6 +168,7 @@ jobs:
           from pathlib import Path
           m=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
           r=json.loads(Path("provider-v3-materialization.json").read_text(encoding="utf-8"))
+          live=json.loads(Path("provider-v3-live-route-validation.json").read_text(encoding="utf-8"))
           rows=m.get("scrapers") or []
           assert len(rows)==96, len(rows)
           assert r.get("providerCount")==96, r.get("providerCount")
@@ -139,7 +176,11 @@ jobs:
           assert r.get("publication") is False
           assert r.get("mainTouched") is False
           assert all(str(x.get("filename") or "").startswith("providers/") for x in rows)
-          print("FIELD_MANUAL_RECONSTRUCTION providers=96 context=workspace mainTouched=false")
+          assert live.get("candidateRouteCount", 0) >= live.get("liveValidatedRouteCount", 0)
+          print(
+              "FIELD_MANUAL_RECONSTRUCTION providers=96 context=workspace mainTouched=false "
+              f"liveRoutes={live.get('liveValidatedRouteCount', 0)}"
+          )
           PY
       - name: Validate reconstructed runtime and release integrity
         run: |
@@ -162,7 +203,9 @@ jobs:
           python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/published_provider_lego_contract_test.py
+          python tests/provider_v3_live_route_validation_test.py
           python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/audit_provider_quick_yield.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -177,8 +220,11 @@ jobs:
             vf-no-anime/manifest.json
             providers/
             provider-v3-materialization.json
+            provider-v3-live-route-validation.json
+            provider-v3-quick-yield.json
             automation/provider-v3-static-knowledge.json
             automation/provider-v3-recognition-seeds.json
+            provider-overrides.json
             FILE-HASHES.json
             PATCH-SHA256SUMS.txt
             SHA256SUMS.json
@@ -192,18 +238,21 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
-            providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json automation/provider-v3-recognition-seeds.json \
+            providers/ provider-v3-materialization.json provider-v3-live-route-validation.json provider-v3-quick-yield.json \
+            automation/provider-v3-static-knowledge.json automation/provider-v3-recognition-seeds.json provider-overrides.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
             scripts/provider_contract_local_enricher.py scripts/provider_route_expression_analyzer.py \
             scripts/provider_route_normalization_guard.py scripts/provider_route_role_classifier.py scripts/provider_route_scope_guard.py \
             scripts/enrich_provider_v3_static_knowledge.py scripts/sanitize_provider_v3_core_metadata_routes.py \
             scripts/provider_base_store.py scripts/materialize_provider_v3_all.py \
+            scripts/validate_provider_v3_routes_live.py scripts/nuvio_tv_probe_route_validation.cjs \
             scripts/provider_patches/global_media_type_resolution_v1.py scripts/provider_patches/global_stream_presentation_v1.py \
             tests/provider_contract_recognizer_test.py tests/provider_v3_core_metadata_route_sanitizer_test.py \
-            tests/provider_v3_strategy_plan_contract_test.py tests/global_media_type_resolution_test.py MEMORY.md
+            tests/provider_v3_strategy_plan_contract_test.py tests/provider_v3_live_route_validation_test.py \
+            tests/global_media_type_resolution_test.py MEMORY.md
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
           fi
-          git commit -m "chore: reconstruct Provider v3 96/96"
+          git commit -m "chore: reconstruct Provider v3 96/96 with live route proof"
           git push origin "HEAD:${GITHUB_REF_NAME}"
