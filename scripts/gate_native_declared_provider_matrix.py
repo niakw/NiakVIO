@@ -36,6 +36,41 @@ def route(provider: str, media_type: str) -> tuple[str, str]:
     return (provider.casefold(), media_type.casefold())
 
 
+def logical_media_type(
+    marker_fields: dict[str, str],
+    transport_type: str,
+    fixture_by_type: dict[str, str],
+) -> str:
+    """Map an official-client transport type back to the logical corpus type.
+
+    Nuvio desktop intentionally transports anime episodes through its TV media
+    envelope. That alias must not erase the declared anime route from coverage.
+    The mapping is fixture-bound and fail-closed: only the configured anime
+    fixture may translate ``tv`` to ``anime``; mismatched movie/tv transports
+    remain mismatches and therefore cannot satisfy the matrix.
+    """
+    raw_type = transport_type.strip().casefold()
+    fixture = marker_fields.get("fixture", "").strip()
+    if not fixture:
+        return raw_type
+
+    logical_type = next(
+        (
+            kind
+            for kind in TYPES
+            if str(fixture_by_type.get(kind) or "").strip() == fixture
+        ),
+        "",
+    )
+    if not logical_type:
+        return raw_type
+    if logical_type == "anime" and raw_type in {"anime", "tv"}:
+        return "anime"
+    if raw_type == logical_type:
+        return logical_type
+    return raw_type
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--client", required=True, choices=("tv", "mobile", "desktop", "ios"))
@@ -94,7 +129,7 @@ def main() -> int:
                 if line.startswith("FIELD_NATIVE_IOS_PROVIDER_BEGIN "):
                     f = fields(line)
                     provider = f.get("provider", "")
-                    media_type = f.get("type", "")
+                    media_type = logical_media_type(f, f.get("type", ""), fixture_by_type)
                     if provider and media_type:
                         begun.add(route(provider, media_type))
                 elif line.startswith("FIELD_NATIVE_IOS_PROVIDER_END "):
@@ -112,7 +147,7 @@ def main() -> int:
             if line.startswith("FIELD_NATIVE_PROVIDER_BEGIN "):
                 f = fields(line)
                 provider = decode64(f.get("provider64", "")) or f.get("provider", "")
-                media_type = f.get("request_type", "")
+                media_type = logical_media_type(f, f.get("request_type", ""), fixture_by_type)
                 client = f.get("client", "")
                 if client == args.client and provider and media_type:
                     begun.add(route(provider, media_type))
@@ -125,7 +160,7 @@ def main() -> int:
             ):
                 f = fields(line)
                 provider = decode64(f.get("provider64", "")) or f.get("provider", "")
-                media_type = f.get("request_type", "")
+                media_type = logical_media_type(f, f.get("request_type", ""), fixture_by_type)
                 client = f.get("client", "")
                 if client == args.client and provider and media_type:
                     completed.add(route(provider, media_type))
