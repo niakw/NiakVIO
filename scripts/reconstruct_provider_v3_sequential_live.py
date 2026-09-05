@@ -10,7 +10,8 @@ For each provider in manifest order:
    terminally blocked/unreachable;
 5. finalize structured DATA for provider N;
 6. immediately rematerialize provider N final JS from live DATA;
-7. re-probe the final JS and re-prove every declared type;
+7. re-probe the final JS with the minimum evidence-bearing fixture set needed to
+   re-prove every declared type;
 8. only then materialize or touch provider N+1.
 
 Internal search/status/player/source requests remain chain evidence; they are not
@@ -113,6 +114,59 @@ def is_qualified(evaluation: dict[str, Any]) -> bool:
     return evaluation.get("providerSuccessHttp") is True
 
 
+def select_minimal_final_proof_tasks(
+    used_tasks: list[dict[str, Any]],
+    evaluation: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Choose one evidence-bearing candidate fixture per declared semantic type.
+
+    The final bundle gate must re-prove every declared type, but replaying every
+    exploratory candidate fixture creates avoidable provider traffic and can itself
+    trigger rate limiting. Prefer the exact fixture recorded by live type evidence;
+    fall back to the first candidate fixture of that type only when the evidence row
+    has no fixture marker (e.g. legacy direct-output evidence).
+    """
+    required = [
+        str(value or "").strip().casefold()
+        for value in evaluation.get("requiredTypes") or []
+        if str(value or "").strip()
+    ]
+    evidence = evaluation.get("declaredTypeRouteEvidence")
+    if not isinstance(evidence, dict):
+        evidence = {}
+    by_slug = {
+        str(task.get("fixture_slug") or ""): task
+        for task in used_tasks
+        if str(task.get("fixture_slug") or "")
+    }
+    selected_slugs: set[str] = set()
+
+    for media_type in required:
+        chosen_slug = ""
+        for row in evidence.get(media_type) or []:
+            if not isinstance(row, dict):
+                continue
+            slug = str(row.get("fixture") or "")
+            task = by_slug.get(slug)
+            if task and str(task.get("semantic_type") or "").strip().casefold() == media_type:
+                chosen_slug = slug
+                break
+        if not chosen_slug:
+            for task in used_tasks:
+                if str(task.get("semantic_type") or "").strip().casefold() == media_type:
+                    chosen_slug = str(task.get("fixture_slug") or "")
+                    break
+        if chosen_slug:
+            selected_slugs.add(chosen_slug)
+
+    selected = [
+        copy.deepcopy(task)
+        for task in used_tasks
+        if str(task.get("fixture_slug") or "") in selected_slugs
+    ]
+    return selected or [copy.deepcopy(task) for task in used_tasks[:1]]
+
+
 def final_model_from_live(model: dict[str, Any]) -> dict[str, Any]:
     value = copy.deepcopy(model)
     live_data = copy.deepcopy(model.get("routeData") or [])
@@ -179,7 +233,16 @@ def run_until_qualified(
         )
         if is_qualified(evaluation):
             break
-    return rows, evaluation, used_tasks
+
+    proof_tasks = select_minimal_final_proof_tasks(used_tasks, evaluation) if is_qualified(evaluation) else used_tasks
+    print(
+        "FIELD_PROVIDER_FINAL_FIXTURE_SELECTION "
+        f"provider={provider['provider_id']} candidate_used={len(used_tasks)} "
+        f"final_selected={len(proof_tasks)} "
+        f"fixtures={','.join(str(task.get('fixture_slug') or '') for task in proof_tasks) or 'none'}",
+        flush=True,
+    )
+    return rows, evaluation, proof_tasks
 
 
 def prove_final_bundle(
