@@ -4,6 +4,9 @@
 An active provider cannot be compensated by a disabled provider. A provider proven
 blocked/unreachable may be advanced by the sequential discovery loop for audit
 purposes, but it does not satisfy publication while it remains enabled=true.
+Qualification means 100% of the provider's declared semantic types have live route
+proof (or verified direct output per declared type); internal request-shape coverage
+is not a publication criterion.
 """
 from __future__ import annotations
 
@@ -54,29 +57,45 @@ def main() -> int:
         state = str(row.get("completionState") or "").strip()
         live_routes = int(row.get("liveValidatedRouteCount") or 0)
         playable = bool(row.get("playableVerified"))
-        effective = float(row.get("effectiveCoverageRatio") or 0.0)
-        required = float(row.get("requiredCoverageRatio") or 1.0)
+        type_coverage = float(row.get("declaredTypeCoverageRatio") or row.get("effectiveCoverageRatio") or 0.0)
+        type_complete = row.get("typeComplete") is True
+        required_types = [cid(value) for value in row.get("requiredTypes") or [] if cid(value)]
+        validated_types = [cid(value) for value in row.get("validatedTypes") or [] if cid(value)]
+        missing_types = [cid(value) for value in row.get("missingTypes") or [] if cid(value)]
         advanced = row.get("advancedToNextProvider") is True
 
-        route_qualified = state == "coverage-qualified" and live_routes > 0 and effective >= required
-        direct_qualified = state == "direct-output-verified" and playable
+        route_qualified = (
+            state == "declared-types-qualified"
+            and type_complete
+            and type_coverage >= 1.0
+            and not missing_types
+            and live_routes > 0
+        )
+        direct_qualified = (
+            state == "direct-output-verified"
+            and type_complete
+            and type_coverage >= 1.0
+            and not missing_types
+            and playable
+        )
         if advanced and (route_qualified or direct_qualified):
             qualified.add(provider_id)
             continue
         failures.append(
-            f"{provider_id}: active but not live-qualified "
+            f"{provider_id}: active but not declared-type live-qualified "
             f"state={state or 'missing'} liveRoutes={live_routes} "
-            f"coverage={effective:.3f}/{required:.3f} playable={playable}"
+            f"types={','.join(validated_types) or 'none'}/{','.join(required_types) or 'none'} "
+            f"missing={','.join(missing_types) or 'none'} coverage={type_coverage:.3f}/1.000 playable={playable}"
         )
 
     print(
         "FIELD_ACTIVE_PROVIDER_LIVE_COVERAGE "
         f"catalogue={len(rows)} active={len(active)} qualified={len(qualified)} "
-        f"missing={len(active - qualified)}"
+        f"missing={len(active - qualified)} declared_type_gate=1.000"
     )
     if failures:
         raise AssertionError(
-            "active provider live coverage gate failed: "
+            "active provider declared-type live coverage gate failed: "
             f"qualified={len(qualified)}/{len(active)}\n" + "\n".join(failures)
         )
     if len(qualified) != len(active):
