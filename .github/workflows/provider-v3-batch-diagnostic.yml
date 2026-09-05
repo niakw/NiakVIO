@@ -121,6 +121,37 @@ jobs:
               '--report', 'provider-v3-batch-diagnostic.json',
           ]))
           PY
+      - name: Persist validated Provider route and DATA state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+          # Route/DATA truth is the deliverable of this workbench gate. Persist
+          # only those two canonical files; never smuggle generated bundles,
+          # manifests or unrelated workspace mutations into this checkpoint.
+          git add automation/provider-v3-static-knowledge.json provider-overrides.json
+          staged="$(git diff --cached --name-only)"
+          if [ -z "${staged}" ]; then
+            echo 'FIELD_PROVIDER_ROUTE_DATA_PERSIST changed=false'
+            exit 0
+          fi
+          unexpected="$(printf '%s\n' "${staged}" | grep -Ev '^(automation/provider-v3-static-knowledge\.json|provider-overrides\.json)$' || true)"
+          test -z "${unexpected}" || {
+            echo "Unexpected route/DATA checkpoint files:" >&2
+            printf '%s\n' "${unexpected}" >&2
+            exit 1
+          }
+
+          # A source-repair checkpoint may have advanced the workbench earlier
+          # in this job. Rebase this route/DATA-only commit before pushing so a
+          # successful slice cannot silently lose its validated DATA.
+          git commit -m 'data: persist live-validated Provider routes and DATA'
+          git fetch origin workbench/provider-v3-recognition-routes-data
+          git rebase origin/workbench/provider-v3-recognition-routes-data
+          git push origin HEAD:workbench/provider-v3-recognition-routes-data
+          echo 'FIELD_PROVIDER_ROUTE_DATA_PERSIST changed=true'
       - name: Upload provider repair-first evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
