@@ -78,6 +78,8 @@ jobs:
           python tests/provider_v3_safe_runtime_route_promotion_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/provider_v3_batch_diagnostic_contract_test.py
+          python tests/authoritative_hub_domain_refresh_test.py
+          python tests/domain_refresh_workflow_test.py
       - name: Persist tested provider gate source repair
         shell: bash
         run: |
