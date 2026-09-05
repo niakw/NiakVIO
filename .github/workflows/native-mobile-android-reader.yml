@@ -248,7 +248,6 @@ jobs:
           git -C nuvio-mobile checkout "$NUVIO_MOBILE_SHA"
           touch nuvio-mobile/local.properties
           python3 niakvio/scripts/prepare_native_reader_acceptance.py mobile --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams all --initial
-          python3 niakvio/scripts/harden_nuvio_mobile_device_test.py "$GITHUB_WORKSPACE/nuvio-mobile"
       - name: Prebuild Mobile Android reader once before QEMU
         shell: bash
         env:
