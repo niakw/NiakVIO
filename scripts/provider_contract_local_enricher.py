@@ -84,11 +84,28 @@ def enrich(payload: dict[str, Any], seeds: dict[str, Any], overrides: dict[str, 
         seed = seed_providers.get(provider_id) if isinstance(seed_providers.get(provider_id), dict) else {}
         patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
 
-        if seed.get("knownSite"):
-            model["knownSite"] = str(seed["knownSite"])
-            if not model.get("officialSite"):
-                model["officialSite"] = str(seed["knownSite"])
-        origins = unique([str(x) for x in model.get("origins") or []] + [str(x) for x in seed.get("origins") or []], 96)
+        # Reviewed recognition seeds may refresh current provider-site authority
+        # without claiming that any route was executed. This is intentionally
+        # separate from route evidence: knownSite/officialSite/officialHub are
+        # provenance facts, while seed route rows remain candidates unless their
+        # own executedEvidence/httpUsed explicitly says otherwise.
+        seed_known_site = str(seed.get("knownSite") or "").strip()
+        seed_official_site = str(seed.get("officialSite") or "").strip()
+        seed_official_hub = str(seed.get("officialHub") or "").strip()
+        if seed_known_site:
+            model["knownSite"] = seed_known_site
+        if seed_official_site:
+            model["officialSite"] = seed_official_site
+        elif seed_known_site and not model.get("officialSite"):
+            model["officialSite"] = seed_known_site
+        if seed_official_hub:
+            model["officialHub"] = seed_official_hub
+
+        seed_origins = [str(x) for x in seed.get("origins") or []]
+        for value in (seed_official_site, seed_official_hub):
+            if value:
+                seed_origins.append(value)
+        origins = unique([str(x) for x in model.get("origins") or []] + seed_origins, 96)
         if origins:
             model["origins"] = origins
         if isinstance(seed.get("identity"), dict):
