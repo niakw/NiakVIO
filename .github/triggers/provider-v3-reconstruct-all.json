@@ -1,10 +1,12 @@
 {
-  "reason": "retry authoritative 96/96 source-aware rebuild after cumulative source-plan migration idempotence fix",
+  "reason": "rebuild 96/96 after local-only route recognition scope fix",
   "refresh_static_knowledge": false,
-  "source_plan_head": "5ec1ef303efdb0725713da6f1f262d734b6a9920",
+  "source_plan_head": "fa6751b11c3a6d27aeded1f60644a91bdffd3b61",
   "sanitize_core_metadata_routes": true,
   "sanitize_execution_routes": true,
   "runtime_reader_version": 7,
   "finalize_runtime_families": true,
-  "contract_recognizer_version": 2
+  "contract_recognizer_version": 3,
+  "recognition_mode": "niakvio-local-only",
+  "route_scope_guard": true
 }
