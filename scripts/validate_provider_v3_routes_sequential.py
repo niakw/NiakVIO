@@ -52,7 +52,10 @@ from validate_provider_v3_routes_live import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MIN_COVERAGE = 0.75  # diagnostic compatibility only; type gate is always 100%.
-BLOCKED_STATUSES = {401, 403, 407, 429}
+# PROVIDER_V3_HTTP_BLOCK_CLASSIFICATION_V1
+# 451 is an explicit policy/jurisdiction block. It is never positive route
+# proof, but a 451-only traversal is terminal-blocked rather than broken.
+BLOCKED_STATUSES = {401, 403, 407, 429, 451}
 
 
 def canonical(value: object) -> str:
@@ -115,6 +118,11 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
                 selected.append(row)
 
         for media_type in supported:
+            # A provider-targeted fixture is stronger than the generic fallback.
+            # In particular, anime-specialized providers use an anime feature film
+            # for canonical movie proof instead of being forced through Interstellar.
+            if any(existing["semantic_type"] == media_type for existing in selected):
+                continue
             slug = REPRESENTATIVE[media_type]
             row = by_slug.get(slug)
             if row is not None and all(existing["slug"] != slug for existing in selected):
@@ -367,9 +375,24 @@ def _route_matches_model_url(route: str, actual_url: str, model: dict[str, Any])
     return False
 
 
+# PROVIDER_V3_REDIRECT_ROUTE_MATCH_V1
+def _fetch_route_urls(fetch: dict[str, Any]) -> list[str]:
+    """Request URL first; redirect target second. Both are evidence, not authority."""
+    values: list[str] = []
+    for key in ("url", "final_url"):
+        raw = str(fetch.get(key) or "").strip()
+        if raw and raw not in values:
+            values.append(raw)
+    return values
+
+
+def _fetch_matches_model_route(route: str, fetch: dict[str, Any], model: dict[str, Any]) -> bool:
+    return any(_route_matches_model_url(route, raw, model) for raw in _fetch_route_urls(fetch))
+
+
 def _provider_contract_hosts(model: dict[str, Any]) -> set[str]:
     values: list[str] = []
-    for key in ("knownSite", "officialSite", "officialApi", "fixedApi"):
+    for key in ("knownSite", "officialSite", "officialHub", "officialApi", "fixedApi"):
         if model.get(key):
             values.append(str(model[key]))
     values.extend(_recipe_bases(model))
@@ -396,27 +419,34 @@ def _provider_contract_hosts(model: dict[str, Any]) -> set[str]:
 def _fetch_on_contract_host(fetch: dict[str, Any], hosts: set[str]) -> bool:
     if not hosts:
         return True
-    raw = str(fetch.get("final_url") or fetch.get("url") or "")
-    try:
-        host = (urllib.parse.urlsplit(raw).hostname or "").casefold()
-    except ValueError:
-        return False
-    return host in hosts
+    for raw in _fetch_route_urls(fetch):
+        try:
+            host = (urllib.parse.urlsplit(raw).hostname or "").casefold()
+        except ValueError:
+            continue
+        if host in hosts:
+            return True
+    return False
 
 
 def _generic_control_route(route: str) -> bool:
     value = str(route or "").strip().casefold()
-    if not value or value == "/":
+    if not value:
+        return True
+    try:
+        parsed = urllib.parse.urlsplit(value)
+        path = parsed.path or "/"
+    except ValueError:
+        path = value.split("?", 1)[0] or "/"
+    # A homepage remains a generic control surface even when arbitrary query
+    # parameters are accepted.  /?tmdbId=... returning 200 is not proof that
+    # the provider implements a typed movie/TV route.
+    if path in {"", "/"}:
         return True
     if route_role(value) == "search":
         return True
     if re.search(r"/(?:status|health|healthz|ping)(?:[/?#]|$)", value):
         return True
-    try:
-        parsed = urllib.parse.urlsplit(value)
-        path = parsed.path or value.split("?", 1)[0]
-    except ValueError:
-        path = value.split("?", 1)[0]
     segments = [segment for segment in path.split("/") if segment]
     if route_role(value) == "api" and len(segments) <= 2 and "{" not in value:
         return True
@@ -493,8 +523,7 @@ def _validate_declared_type_routes(
                         continue
                     if not _fetch_on_contract_host(fetch, hosts):
                         continue
-                    actual = str(fetch.get("final_url") or fetch.get("url") or "")
-                    if _route_matches_model_url(template, actual, model):
+                    if _fetch_matches_model_route(template, fetch, model):
                         evidence_by_type[media_type].append({
                             "route": template,
                             "source": "declared-type-template-live-match",
@@ -611,8 +640,7 @@ def evaluate_provider(
         route = str(row.get("route") or "").strip()
         matches = []
         for index, (fetch, task) in enumerate(fetch_rows):
-            actual = str(fetch.get("final_url") or fetch.get("url") or "")
-            if route and _route_matches_model_url(route, actual, model):
+            if route and _fetch_matches_model_route(route, fetch, model):
                 matches.append((fetch, task, index))
                 matched_indexes.add(index)
         row["staticCallEvidence"] = bool(row.get("executedEvidence") or row.get("staticCallEvidence"))
@@ -797,30 +825,70 @@ def finalize_provider(
     if not isinstance(model.get("candidateRoutes"), list):
         model["candidateRoutes"] = unique(model.get("routes") or [], 256)
     model["candidateRouteData"] = copy.deepcopy(evaluation["candidateRouteData"])
-    model["routeData"] = copy.deepcopy(evaluation["liveRouteData"])
-    model["routes"] = list(evaluation["liveRoutes"])
 
-    live_origins = list(model.get("origins") or [])
-    observed_urls = list(model.get("observedUrls") or [])
+    # PROVIDER_V3_EXECUTION_PLAN_FINALIZATION_V1
+    # Coverage proof, runtime traversal evidence and persistent Provider DATA are
+    # distinct layers. Dynamic landing/gateway URLs may prove a type without
+    # becoming fixed routes in the next bundle.
+    stable_candidate_rows = [
+        copy.deepcopy(row)
+        for row in evaluation["candidateRouteData"]
+        if isinstance(row, dict)
+        and str(row.get("route") or "").strip()
+        and not row.get("liveDerived")
+    ]
+    runtime_derived_rows = [
+        copy.deepcopy(row)
+        for row in evaluation["candidateRouteData"]
+        if isinstance(row, dict)
+        and str(row.get("route") or "").strip()
+        and row.get("liveDerived")
+    ]
+    if completion_state in {"terminal-blocked", "terminal-unreachable"}:
+        execution_plan_rows = stable_candidate_rows
+    elif completion_state == "declared-types-qualified":
+        execution_plan_rows = [
+            row for row in stable_candidate_rows
+            if row.get("attemptEvidence")
+            or row.get("validationState") == "live-validated"
+        ]
+    else:
+        execution_plan_rows = stable_candidate_rows
+
+    model["routeData"] = execution_plan_rows
+    model["routes"] = unique(
+        [row.get("route") for row in execution_plan_rows if isinstance(row, dict)],
+        256,
+    )
+
+    # Runtime observations are diagnostics, not Provider DATA authority. Preserve
+    # the stable candidate origins/URLs exactly; collect traversal observations
+    # separately for the report so signed/session URLs cannot alter the final build.
+    stable_origins = list(model.get("origins") or [])
+    stable_observed_urls = list(model.get("observedUrls") or [])
+    runtime_observed_urls = []
+    runtime_observed_origins = []
     for row in evaluation["candidateRouteData"]:
         for item in row.get("attemptEvidence") or []:
             raw = str(item.get("finalUrl") or item.get("url") or "")
-            if raw and raw not in observed_urls:
-                observed_urls.append(raw)
+            if raw and raw not in runtime_observed_urls:
+                runtime_observed_urls.append(raw)
             try:
                 parsed = urllib.parse.urlsplit(raw)
                 if parsed.scheme in {"http", "https"} and parsed.hostname:
                     origin = f"{parsed.scheme}://{parsed.netloc}"
-                    if origin not in live_origins:
-                        live_origins.append(origin)
+                    if origin not in runtime_observed_origins:
+                        runtime_observed_origins.append(origin)
             except ValueError:
                 pass
-    model["origins"] = live_origins[:64]
-    model["observedUrls"] = observed_urls[:128]
+    model["origins"] = stable_origins[:64]
+    model["observedUrls"] = stable_observed_urls[:128]
 
     live_set = set(evaluation["liveRoutes"])
-    if isinstance(model.get("apiRecipe"), dict) and not recipe_is_live(model["apiRecipe"], live_set):
-        model.pop("apiRecipe", None)
+    execution_plan_set = set(model.get("routes") or [])
+    candidate_model_recipe = model.get("candidateApiRecipe")
+    if isinstance(candidate_model_recipe, dict):
+        model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
 
     model["routeRecognition"] = {
         "version": 4,
@@ -853,6 +921,14 @@ def finalize_provider(
         "staticEvidenceIsNotHttpProof": True,
         "declaredTypesAreGateDenominator": True,
         "internalRequestsAreNotGateDenominator": True,
+        "executionPlanRouteCount": len(model.get("routes") or []),
+        "executionPlanRetainsAttemptedNon2xx": True,
+        "runtimeDerivedRouteCount": len(runtime_derived_rows),
+        "runtimeDerivedRoutesPersisted": False,
+        "runtimeObservedUrlCount": len(runtime_observed_urls),
+        "runtimeObservedOriginCount": len(runtime_observed_origins),
+        "runtimeObservationsPersistedAsProviderData": False,
+        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
         "sequentialProviderGate": True,
         "advancedToNextProvider": True,
         "originEvidence": origin_evidence,
@@ -876,6 +952,13 @@ def finalize_provider(
     recognized["liveTraversalRequiredForPromotion"] = True
     recognized["staticEvidenceIsNotHttpProof"] = True
     recognized["declaredTypesAreGateDenominator"] = True
+    recognized["executionPlanRequests"] = copy.deepcopy(model.get("routeData") or [])
+    recognized["executionPlanRouteCount"] = len(model.get("routes") or [])
+    recognized["runtimeDerivedRequests"] = copy.deepcopy(runtime_derived_rows[:80])
+    recognized["runtimeDerivedRoutesPersisted"] = False
+    recognized["runtimeObservedUrls"] = runtime_observed_urls[:80]
+    recognized["runtimeObservedOrigins"] = runtime_observed_origins[:40]
+    recognized["runtimeObservationsPersistedAsProviderData"] = False
     recognized["sequentialProviderGate"] = True
     knowledge_row["recognizedContract"] = recognized
     static_row["model"] = model
@@ -885,17 +968,18 @@ def finalize_provider(
         if isinstance(patch.get("learned_routes"), list) and not isinstance(patch.get("candidate_learned_routes"), list):
             patch["candidate_learned_routes"] = list(patch.get("learned_routes") or [])
         candidate_learned = patch.get("candidate_learned_routes") if isinstance(patch.get("candidate_learned_routes"), list) else patch.get("learned_routes") or []
-        patch["learned_routes"] = [str(route) for route in candidate_learned if str(route) in live_set]
-        for route in evaluation["liveRoutes"]:
+        patch["learned_routes"] = [
+            str(route) for route in candidate_learned
+            if str(route) in execution_plan_set
+        ]
+        for route in model.get("routes") or []:
             if route not in patch["learned_routes"]:
                 patch["learned_routes"].append(route)
         if isinstance(patch.get("api_recipe"), dict) and not isinstance(patch.get("candidate_api_recipe"), dict):
             patch["candidate_api_recipe"] = copy.deepcopy(patch["api_recipe"])
         candidate_recipe = patch.get("candidate_api_recipe") if isinstance(patch.get("candidate_api_recipe"), dict) else patch.get("api_recipe")
-        if isinstance(candidate_recipe, dict) and recipe_is_live(candidate_recipe, live_set):
+        if isinstance(candidate_recipe, dict):
             patch["api_recipe"] = copy.deepcopy(candidate_recipe)
-        else:
-            patch.pop("api_recipe", None)
         patch["live_route_gate"] = {
             "completion_state": completion_state,
             "effective_coverage_ratio": evaluation["effectiveCoverageRatio"],
@@ -906,6 +990,13 @@ def finalize_provider(
             "missing_types": evaluation["missingTypes"],
             "provider_request_count": evaluation["providerRequestCount"],
             "live_validated_route_count": evaluation["liveValidatedRouteCount"],
+            "execution_plan_route_count": len(model.get("routes") or []),
+            "runtime_derived_route_count": len(runtime_derived_rows),
+            "runtime_derived_routes_persisted": False,
+            "runtime_observed_url_count": len(runtime_observed_urls),
+            "runtime_observed_origin_count": len(runtime_observed_origins),
+            "runtime_observations_persisted_as_provider_data": False,
+            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
             "declared_types_are_gate_denominator": True,
             "sequential": True,
         }
