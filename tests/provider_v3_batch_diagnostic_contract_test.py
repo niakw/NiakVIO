@@ -54,13 +54,19 @@ assert 'promotedDataRolledBack' not in source
 
 # Explicit failed-live routes stay as diagnostic evidence only; they must not
 # survive as executable routeData in a qualified/finalized Provider model.
-assert 'PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V1' in validator
+# Recognition metadata must report the same contract; only terminal blocked or
+# unreachable plans may retain non-2xx route authority because the environment
+# can be the blocker rather than the route itself.
+assert 'PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V2' in validator
 assert 'row.get("validationState") != "failed-live"' in validator
+assert '"executionPlanRetainsFailedLive": False' in validator
+assert '"blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"}' in validator
 
 print(
     "PROVIDER_V3_BATCH_DIAGNOSTIC_CONTRACT_OK "
     "bounded_slice=true repair_first=true defer_to_learn=true "
     "validated_data_retained=true provider_authority_demoted=true "
-    "failed_live_execution_data=false continue_after_provider_failure=true "
+    "failed_live_execution_data=false failed_live_metadata=false "
+    "blocked_non2xx_plan=terminal-only continue_after_provider_failure=true "
     "publication_gate=false final_bundle_reprobe=true"
 )
