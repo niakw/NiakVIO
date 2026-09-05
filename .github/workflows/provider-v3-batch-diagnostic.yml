@@ -18,11 +18,10 @@ on:
       - '.github/triggers/provider-v3-batch-diagnostic.json'
 
 permissions:
-  contents: read
+  contents: write
 
-# Diagnostic slices never grant publication authority, so independent SHAs may
-# run concurrently. The final 96/96 reconstruction keeps its own strict
-# sequential concurrency contract.
+# Workbench repair slices stay sequential inside each SHA. They never publish,
+# but they may persist a tested source-gate correction back to this workbench branch.
 concurrency:
   group: provider-v3-batch-diagnostic-${{ github.sha }}
   cancel-in-progress: false
@@ -46,6 +45,11 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply redirect-aware host gate repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/apply_provider_v3_redirect_host_gate_patch.py
       - name: Prepare current Provider v3 runtime and DATA
         shell: bash
         run: |
@@ -58,16 +62,31 @@ jobs:
           python scripts/enrich_provider_v3_static_knowledge.py
           python scripts/sanitize_provider_v3_core_metadata_routes.py
           python scripts/materialize_provider_base_v3_store.py
-      - name: Validate batch diagnostic contract
+      - name: Validate repair-first contracts
         shell: bash
         run: |
           set -euo pipefail
           python tests/provider_v3_live_route_validation_test.py
           python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_redirect_host_gate_test.py
           python tests/provider_v3_finalization_plan_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/provider_v3_batch_diagnostic_contract_test.py
-      - name: Run bounded provider batch diagnostic
+      - name: Persist tested redirect host gate source repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- scripts/validate_provider_v3_routes_sequential.py; then
+            echo 'FIELD_PROVIDER_REDIRECT_GATE_PERSIST changed=false'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/validate_provider_v3_routes_sequential.py
+          git commit -m 'fix: accept redirected provider terminals in live gate'
+          git push origin HEAD:workbench/provider-v3-recognition-routes-data
+          echo 'FIELD_PROVIDER_REDIRECT_GATE_PERSIST changed=true'
+      - name: Run bounded provider repair-first gate
         shell: bash
         env:
           DISPATCH_START: ${{ inputs.start_index }}
@@ -90,13 +109,17 @@ jobs:
               'scripts/reconstruct_provider_v3_batch_diagnostic.py',
               '--start-index', str(start),
               '--count', str(count),
+              '--repair-attempts', '2',
               '--report', 'provider-v3-batch-diagnostic.json',
           ]))
           PY
-      - name: Upload provider batch diagnostic
+      - name: Upload provider repair-first evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: provider-v3-batch-diagnostic
-          path: provider-v3-batch-diagnostic.json
+          path: |
+            provider-v3-batch-diagnostic.json
+            automation/provider-v3-static-knowledge.json
+            provider-overrides.json
           if-no-files-found: warn
