@@ -38,10 +38,13 @@ qualified = {
     "providers": [
         {
             "providerId": "a",
-            "completionState": "coverage-qualified",
+            "completionState": "declared-types-qualified",
             "liveValidatedRouteCount": 2,
-            "effectiveCoverageRatio": 0.8,
-            "requiredCoverageRatio": 0.75,
+            "declaredTypeCoverageRatio": 1.0,
+            "typeComplete": True,
+            "requiredTypes": ["movie", "tv"],
+            "validatedTypes": ["movie", "tv"],
+            "missingTypes": [],
             "advancedToNextProvider": True,
             "playableVerified": False,
         },
@@ -49,8 +52,11 @@ qualified = {
             "providerId": "b",
             "completionState": "direct-output-verified",
             "liveValidatedRouteCount": 0,
-            "effectiveCoverageRatio": 0.0,
-            "requiredCoverageRatio": 1.0,
+            "declaredTypeCoverageRatio": 1.0,
+            "typeComplete": True,
+            "requiredTypes": ["movie"],
+            "validatedTypes": ["movie"],
+            "missingTypes": [],
             "advancedToNextProvider": True,
             "playableVerified": True,
         },
@@ -58,8 +64,11 @@ qualified = {
             "providerId": "c",
             "completionState": "terminal-unreachable",
             "liveValidatedRouteCount": 0,
-            "effectiveCoverageRatio": 0.0,
-            "requiredCoverageRatio": 1.0,
+            "declaredTypeCoverageRatio": 0.0,
+            "typeComplete": False,
+            "requiredTypes": ["movie"],
+            "validatedTypes": [],
+            "missingTypes": ["movie"],
             "advancedToNextProvider": True,
             "playableVerified": False,
         },
@@ -68,6 +77,17 @@ qualified = {
 result = run(manifest, qualified)
 assert result.returncode == 0, result.stdout + result.stderr
 assert "active=2 qualified=2 missing=0" in result.stdout, result.stdout
+assert "declared_type_gate=1.000" in result.stdout, result.stdout
+
+partial_type = json.loads(json.dumps(qualified))
+partial_type["providers"][0]["declaredTypeCoverageRatio"] = 0.5
+partial_type["providers"][0]["typeComplete"] = False
+partial_type["providers"][0]["validatedTypes"] = ["movie"]
+partial_type["providers"][0]["missingTypes"] = ["tv"]
+result = run(manifest, partial_type)
+assert result.returncode != 0
+assert "qualified=1/2" in (result.stdout + result.stderr)
+assert "missing=tv" in (result.stdout + result.stderr)
 
 blocked_active = json.loads(json.dumps(qualified))
 blocked_active["providers"][1]["completionState"] = "terminal-blocked"
@@ -75,7 +95,7 @@ blocked_active["providers"][1]["playableVerified"] = False
 result = run(manifest, blocked_active)
 assert result.returncode != 0
 assert "qualified=1/2" in (result.stdout + result.stderr)
-assert "b: active but not live-qualified" in (result.stdout + result.stderr)
+assert "b: active but not declared-type live-qualified" in (result.stdout + result.stderr)
 
 missing_active = {"providers": [qualified["providers"][0], qualified["providers"][2]]}
 result = run(manifest, missing_active)
@@ -86,4 +106,7 @@ current_manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8
 active_count = sum(1 for row in current_manifest.get("scrapers") or [] if isinstance(row, dict) and row.get("enabled") is not False)
 assert active_count == 63, f"current branch expected 63 active providers, got {active_count}"
 
-print("Active provider live coverage tests passed: current active=63 and publication requires 63/63 live-qualified.")
+print(
+    "Active provider live coverage tests passed: current active=63, publication requires 63/63 active providers, "
+    "and each active provider must prove 100% of its declared semantic types."
+)
