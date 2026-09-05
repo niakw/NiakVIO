@@ -1,0 +1,99 @@
+name: LAB - Provider v3 Batch Diagnostic
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_index:
+        description: 1-based provider queue start index
+        required: false
+        default: '1'
+      count:
+        description: Number of providers to diagnose
+        required: false
+        default: '10'
+  push:
+    branches:
+      - workbench/provider-v3-recognition-routes-data
+    paths:
+      - '.github/triggers/provider-v3-batch-diagnostic.json'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-v3-batch-diagnostic-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  batch-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prepare current Provider v3 runtime and DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_v3_finalization_v1.py
+          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+          python scripts/validate_provider_v3_routes_live.py --prepare-candidates
+          python scripts/enrich_provider_v3_static_knowledge.py
+          python scripts/sanitize_provider_v3_core_metadata_routes.py
+          python scripts/materialize_provider_base_v3_store.py
+      - name: Validate batch diagnostic contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_v3_live_route_validation_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_finalization_plan_test.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/provider_v3_batch_diagnostic_contract_test.py
+      - name: Run bounded provider batch diagnostic
+        shell: bash
+        env:
+          DISPATCH_START: ${{ inputs.start_index }}
+          DISPATCH_COUNT: ${{ inputs.count }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          trigger = Path('.github/triggers/provider-v3-batch-diagnostic.json')
+          cfg = json.loads(trigger.read_text(encoding='utf-8')) if trigger.exists() else {}
+          start = int(os.environ.get('DISPATCH_START') or cfg.get('start_index') or 1)
+          count = int(os.environ.get('DISPATCH_COUNT') or cfg.get('count') or 10)
+          print(f'FIELD_PROVIDER_BATCH_CONFIG start={start} count={count}', flush=True)
+          raise SystemExit(subprocess.call([
+              sys.executable,
+              'scripts/reconstruct_provider_v3_batch_diagnostic.py',
+              '--start-index', str(start),
+              '--count', str(count),
+              '--report', 'provider-v3-batch-diagnostic.json',
+          ]))
+          PY
+      - name: Upload provider batch diagnostic
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: provider-v3-batch-diagnostic
+          path: provider-v3-batch-diagnostic.json
+          if-no-files-found: warn
