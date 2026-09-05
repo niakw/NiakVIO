@@ -17,8 +17,6 @@ on:
 permissions:
   contents: write
 
-# Only the newest reconstruction request for a branch is useful. A stale 96/96
-# rebuild must never block or queue a newer route/DATA correction.
 concurrency:
   group: provider-v3-manual-reconstruction-${{ github.ref }}
   cancel-in-progress: true
@@ -42,11 +40,12 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Upgrade common Provider v3 source-plan reader
+      - name: Validate local Provider v3 source-plan/runtime
         run: |
           set -euo pipefail
-          python scripts/upgrade_provider_v3_source_plan_v4.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
           python scripts/upgrade_provider_base_runtime_v5.py
+          python tests/provider_v3_local_recognition_contract_test.py
       - name: Enforce anime semantic and TV/movie transport contract
         run: |
           set -euo pipefail
@@ -94,6 +93,7 @@ jobs:
           python tests/provider_v3_minimizer_contract_test.py
           python tests/provider_v3_minimizer_preview_test.py
           python tests/provider_html_filter_security_test.py
+          python tests/provider_v3_local_recognition_contract_test.py
           python tests/provider_v3_static_knowledge_contract_test.py
           python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
@@ -138,6 +138,7 @@ jobs:
           python tests/provider_brick_portfolio_audit_test.py --published --require-all
           python tests/provider_v3_minimizer_published_test.py
           python tests/provider_html_filter_security_test.py --published
+          python tests/provider_v3_local_recognition_contract_test.py
           python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
@@ -170,6 +171,7 @@ jobs:
             provider-v3-materialization.json
             automation/provider-v3-static-knowledge.json
             automation/provider-v3-recognition-seeds.json
+            sources.json
             FILE-HASHES.json
             PATCH-SHA256SUMS.txt
             SHA256SUMS.json
@@ -184,14 +186,15 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add PROVENANCE.json provider-bases/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             providers/ provider-v3-materialization.json automation/provider-v3-static-knowledge.json automation/provider-v3-recognition-seeds.json \
-            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
+            sources.json FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json \
             scripts/provider_contract_local_enricher.py scripts/provider_route_expression_analyzer.py \
             scripts/provider_route_normalization_guard.py scripts/provider_route_role_classifier.py \
-            scripts/enrich_provider_v3_static_knowledge.py scripts/sanitize_provider_v3_core_metadata_routes.py \
-            scripts/provider_base_store.py scripts/materialize_provider_v3_all.py \
+            scripts/enrich_provider_v3_static_knowledge.py scripts/upgrade_provider_v3_source_plan_v5.py \
+            scripts/sanitize_provider_v3_core_metadata_routes.py scripts/provider_base_store.py scripts/materialize_provider_v3_all.py \
             scripts/provider_patches/global_media_type_resolution_v1.py scripts/provider_patches/global_stream_presentation_v1.py \
-            tests/provider_contract_recognizer_test.py tests/provider_v3_core_metadata_route_sanitizer_test.py \
-            tests/provider_v3_strategy_plan_contract_test.py tests/global_media_type_resolution_test.py MEMORY.md
+            tests/provider_contract_recognizer_test.py tests/provider_v3_local_recognition_contract_test.py \
+            tests/provider_v3_core_metadata_route_sanitizer_test.py tests/provider_v3_strategy_plan_contract_test.py \
+            tests/global_media_type_resolution_test.py MEMORY.md
           if git diff --cached --quiet; then
             echo "Reconstruction already byte-identical; nothing to commit."
             exit 0
