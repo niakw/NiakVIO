@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Provider v3 strategy-to-executable-plan contract for the full 96 catalogue."""
+"""Provider v3 strategy-to-executable-plan contract for the full 96 catalogue.
+
+The child recognizer gate deliberately includes duplicate local route-variable
+coverage, so route scope regressions fail before any expensive 96/96 rebuild.
+"""
 from __future__ import annotations
 
 import importlib.util
