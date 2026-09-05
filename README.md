@@ -4,13 +4,14 @@
   <img src="assets/branding/nuvio-providers-logo.png" alt="NiakVIO Nuvio Providers" width="360">
 
   <p><strong>English</strong> · <a href="README.fr.md">Français</a></p>
-  <p><strong>Community engine for aggregating, recognizing, testing, repairing and maintaining Nuvio providers.</strong></p>
-  <p>96 Provider Objects · VO / VF · Mobile / Desktop / TV</p>
+  <h3>One maintained provider layer for Nuvio.</h3>
+  <p><strong>96 Provider Objects · VO / VF · TV / Mobile / Desktop</strong></p>
+  <p>Install once. Keep a broad provider catalogue without stacking duplicate addons, while NiakVIO handles structured maintenance, domain changes, validation and cache-safe releases.</p>
 </div>
 
 ---
 
-## Install
+## Get NiakVIO
 
 ### General manifest — recommended
 
@@ -36,7 +37,7 @@ https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/no-anime/manifes
 https://raw.githubusercontent.com/niakw/NiakVIO/refs/heads/main/vf-no-anime/manifest.json
 ```
 
-See [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md).
+Manifest guide: [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md)
 
 ### StreamBadge feed
 
@@ -44,164 +45,184 @@ See [`docs/how-to-add-manifest.md`](docs/how-to-add-manifest.md).
 https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/stream-badges-fusion-v2.json
 ```
 
-See [`docs/how-to-add-stream-badges.md`](docs/how-to-add-stream-badges.md).
+StreamBadge guide: [`docs/how-to-add-stream-badges.md`](docs/how-to-add-stream-badges.md)
 
-> NiakVIO does not store or host video. It maintains provider metadata, structured knowledge, compatibility rules, manifests and client-side provider bundles.
+> NiakVIO does not host video. It maintains provider metadata, structured protocol knowledge, compatibility rules, manifests and client-side provider bundles.
 
 > [!IMPORTANT]
-> Named works in code, CI or documentation are deterministic **test fixtures**, not a content catalogue or a statement about third-party rights/licensing. See [`TESTING_NOTICE.md`](TESTING_NOTICE.md) and [`DISCLAIMER.md`](DISCLAIMER.md).
+> Named works in code, CI or documentation are deterministic **test fixtures**, not a catalogue. See [`TESTING_NOTICE.md`](TESTING_NOTICE.md) and [`DISCLAIMER.md`](DISCLAIMER.md).
 
 ---
 
-## What NiakVIO is
+## Why NiakVIO?
 
-A provider can fail because a domain moved, an API changed, a player changed, a transport/container became malformed, an identity mapping is wrong, or one Nuvio client behaves differently from another.
+A provider layer is easy when everything is static. The hard part starts when domains rotate, APIs change, player requirements drift, one client behaves differently from another, or a cached provider version refuses to refresh.
 
-NiakVIO adds a deterministic maintenance and validation layer between provider knowledge and official Nuvio clients. Its goal is **not to make the dashboard green by shrinking the catalogue**: all **96 Provider Objects** stay in the census, including disabled or unresolved providers, and missing evidence is kept distinct from proof of failure.
+NiakVIO is built around that maintenance problem.
 
-The mental model is deliberately simple:
-
-- **Provider Object = black box** containing identity, DATA, routes, strategy, limits, evidence and provenance;
-- **NiakVIO = brain** that recognizes, composes, validates, learns and publishes;
-- **Nuvio clients = laboratory devices** that provide platform-specific extraction/transport/playback evidence.
+- **96 Provider Objects kept in the census** — disabled or unresolved providers are not silently removed just to improve a success rate.
+- **VO and VF projections** — one maintained catalogue with dedicated French-focused manifests.
+- **Less addon duplication** — NiakVIO is designed to be the provider layer, rather than another provider pack stacked on top of several others.
+- **Structured provider knowledge** — routes, request semantics, identity rules and official-domain evidence live outside opaque published bundles.
+- **Repairable architecture** — common failures can be fixed at Provider/Core-family level; uncertain changes go through Learning proposals instead of uncontrolled runtime mutation.
+- **Native compatibility evidence** — TV Android, Mobile Android, Mobile iOS, macOS and Windows are treated as independent compatibility boundaries.
+- **Cache-safe publication** — provider and manifest versions, content-addressed bundles and release integrity are synchronized so Nuvio can actually receive a new generation.
+- **Fail-closed validation** — zero streams, wrong-media playback, malformed media or an upstream client failure are kept distinct instead of being converted into fake success.
 
 <div align="center">
-  <img src="assets/branding/how-it-works.png" alt="How NiakVIO works" width="780">
+  <img src="assets/branding/how-it-works.png" alt="How NiakVIO works" width="820">
 </div>
 
 ---
 
-## Provider v3: canonical architecture
+## Recommended Nuvio setup
 
-Provider v3 is reconstructed from **ProviderBase v3 + structured DATA/static knowledge + owned Provider/Core Lego + the NiakVIO-safe minimizer**.
+<div align="center">
+  <img src="assets/thanks/nuvio-bg.png" alt="Nuvio" width="150">
+  <p><strong>Keep the stack small and let each addon do one job well.</strong></p>
+</div>
 
-Published `providers/*.js` files are content-addressed runtime artifacts. They are **never reconstruction seeds**. Upstream JavaScript is knowledge/provenance input only and is not executed as canonical source.
+<table>
+  <tr>
+    <td align="center" width="25%">
+      <img src="assets/branding/niakvio-mark.svg" alt="NiakVIO" width="90"><br>
+      <strong>Providers</strong><br>
+      NiakVIO only
+    </td>
+    <td align="center" width="25%">
+      <img src="assets/thanks/ultramax-bg.png" alt="UltraMax" width="90"><br>
+      <strong>Metadata / catalogue</strong><br>
+      UltraMax
+    </td>
+    <td align="center" width="25%">
+      <img src="assets/thanks/subsense-bg.png" alt="SubSense" width="90"><br>
+      <strong>Subtitles</strong><br>
+      SubSense
+    </td>
+    <td align="center" width="25%">
+      <img src="assets/thanks/simkl-bg.png" alt="SIMKL" width="90"><br>
+      <strong>Favorites / tracking</strong><br>
+      SIMKL
+    </td>
+  </tr>
+</table>
 
-Canonical envelope:
+The idea is deliberately simple: **one provider layer, one metadata/catalogue addon, one subtitle addon and one tracking service**. Avoid loading several provider addons that duplicate the same role and make failures, caching and source selection harder to understand.
+
+---
+
+## NiakVIO vs a raw provider manifest
+
+A standalone provider or manifest can be perfectly useful. NiakVIO becomes valuable when the objective is a **large, changing provider catalogue that must remain maintainable across multiple Nuvio clients**.
+
+| Capability | Raw provider / standalone manifest | NiakVIO |
+|---|---|---|
+| Installation | One or several provider manifests | One stable provider layer with general/VF projections |
+| Catalogue maintenance | Mostly manual | 96 Provider Objects retained and continuously audited |
+| Durable source | Often the published JS itself | ProviderBase v3 + structured DATA + owned Provider/Core Lego |
+| Route knowledge | Usually embedded in provider code | Structured route/request/provenance data |
+| Domain rotation | Manual/static URL changes | Official-hub discovery + bounded `official_site` refresh |
+| Media types | Launch type and semantic capability can be mixed | Canonical capability separated from Nuvio transport compatibility |
+| Failure diagnosis | Often zero streams / generic error | Search, detail, episode, runtime, player, media and device evidence |
+| Repair | Manual provider rewrite | Family/Core repair + reviewable Learning proposals |
+| Client coverage | Often inferred from one runtime | Five independent native Labs |
+| Publication | File replacement | Cache-safe provider versions + manifest generation + integrity hashes |
+| Security | Source-dependent | Bounded execution, network/resource guards and sanitization contracts |
+
+---
+
+## Built for the official Nuvio clients
+
+NiakVIO treats every official client/device as its own compatibility boundary:
+
+- **TV Android** — [NuvioTV](https://github.com/NuvioMedia/NuvioTV)
+- **Mobile Android** — [NuvioMobile](https://github.com/NuvioMedia/NuvioMobile)
+- **Mobile iOS** — [NuvioMobile](https://github.com/NuvioMedia/NuvioMobile)
+- **Desktop macOS** — [NuvioDesktop](https://github.com/NuvioMedia/NuvioDesktop)
+- **Desktop Windows** — [NuvioDesktop](https://github.com/NuvioMedia/NuvioDesktop)
+
+A Desktop result does not automatically count as Android/iOS/TV evidence. Labs consume official clients as-is: an upstream compile, packaging, runtime, player or QuickJS failure remains visible instead of being patched inside NiakVIO merely to obtain a green CI result.
+
+---
+
+## Under the hood
+
+### Provider v3
+
+Provider bundles are reconstructed from:
 
 ```text
-BEGIN NIAKVIO_PROVIDER
-  ProviderBase v3
-  PROVIDER.<ID>.CONFIG.V1  (STARTFIX / FIXDATA / CLOSEFIX)
-  optional PROVIDER.* Lego
-  NUVIO_GLOBAL_CORE_START_BOUNDARY_V1
-  CORE.* Lego             (STARTFIX / CLOSEFIX)
-END NIAKVIO_PROVIDER
+ProviderBase v3
++ structured provider DATA/static knowledge
++ PROVIDER.* Lego
++ CORE.* Lego
++ NiakVIO-safe minimizer
 ```
 
-Full 96/96 reconstruction belongs only to `.github/workflows/provider-v3-reconstruct-all.yml` on a non-main workbench branch and must finish with a byte-identical reverse rebuild.
+Published `providers/*.js` files are content-addressed runtime artifacts, **never reconstruction seeds**. Historical/upstream JavaScript is knowledge and provenance only.
 
-Terser is forbidden. `scripts/provider_v3_minimizer.py` is a conservative pre-hash transformation that preserves line terminators, managed markers, literals and expressions.
+Canonical ownership uses managed `STARTFIX` / `CLOSEFIX` / `FIXDATA` boundaries and a single global Core boundary. Full reconstruction must finish with a byte-identical reverse rebuild. Terser is forbidden; `scripts/provider_v3_minimizer.py` is deliberately conservative and runs before content hashing.
 
 See [`ARCHITECTURE.md`](ARCHITECTURE.md).
 
----
+### Route and protocol DATA
 
-## Canonical route DATA
+The durable source is:
 
-Route recognition now works directly on the unique Provider Object.
+```text
+provider.model.routeData
+```
 
-- canonical source: **`provider.model.routeData`**;
-- `provider.model.routes`: compact projection derived from `routeData`;
-- `provider.knowledge.recognizedContract.requests`: compatibility projection derived from `routeData`;
-- structured fields such as `searchRoute`, `movieRoute`, `episodeRoute`, `*Path` and `*Endpoint` are scanned directly;
-- onboarding source can be statically analyzed for variables, concatenations and templates **without executing provider JavaScript**;
-- the process is idempotent: projections never become fresh evidence on a second pass.
+Route recognition can preserve method, body encoding/fields, `Referer`, `Origin`, response kind, placeholders, role, provenance and confidence. Static analysis can recover variables, concatenations and templates without treating the published provider bundle as the source of truth.
 
-The dedicated route-only workflow is `.github/workflows/provider-v3-reconstruct-routes.yml`.
+Missing route evidence means **unknown**, not automatically dead or quarantined.
 
-### Latest verified route-only census
+### Media types: semantic capability vs Nuvio transport
 
-Run **`33949700926`** on 5 September 2026:
+`canonicalSupportedTypes` describes what the provider catalogue actually serves (`movie`, `tv`, `anime`). `supportedTypes` describes how Nuvio may launch it.
 
-| Metric | Result |
-|---|---:|
-| Provider Objects analyzed | **96 / 96** |
-| Reconstructed durable routes | **401** |
-| HTTP-proven routes after idempotent normalization | **6** |
-| Providers with non-empty `routeData` | **95 / 96** |
-| Provider JavaScript executed | **0** |
-| Full provider reconstruction invoked | **0** |
+An anime-only provider can therefore legitimately expose:
 
-`topcartoons` is the single object with `routeData=[]`. That means **no durable route is currently identifiable from the available evidence**. It is not, by itself, evidence that the provider is dead or quarantined, and NiakVIO does not invent a route to turn the census green.
+```json
+{
+  "canonicalSupportedTypes": ["anime"],
+  "supportedTypes": ["anime", "tv", "movie"]
+}
+```
 
----
+`tv` supports episodic anime transport and `movie` supports anime films. Those aliases do **not** turn an anime-only provider into a generic movie/TV provider; ordinary non-anime content must still be rejected by authoritative identity logic.
 
-## Runtime contract
+### Runtime rules
 
-Provider JS is a specialized reader, not a crawler or a Learning engine.
+Provider JS is a specialized reader, not a crawler or Learning engine.
 
-- capability/media-type gate happens before provider network work;
-- TMDB identity is canonicalized as `movie:<id>` or `tv:<id>`; anime is a semantic type, not a third TMDB namespace;
-- incompatible providers return `[]` instead of performing arbitrary searches;
-- TMDB enrichment is used only when the provider strategy requires it;
-- Core output processing only matters after streams exist;
-- zero streams never manufactures a result;
-- a stream-level failure never automatically disables the whole provider;
-- wrong-media success is worse than a clean zero-result.
+- capability/type gate before provider network work;
+- TMDB enrichment only when the provider plan needs it;
+- identity scoped by work/type/season/episode;
+- incompatible provider returns `[]` instead of arbitrary searching;
+- Core output processing runs only after useful streams exist;
+- zero streams never manufacture success;
+- wrong-media playback is a failure;
+- one broken stream never disables the whole provider by itself.
 
----
+### Reader, transport and playback
 
-## Reader, transport and playback
+A `.m3u8` URL or `#EXTM3U` response does not prove native playback. NiakVIO separates extraction, identity, request context, playlist/variant resolution, media/container integrity and the actual native player outcome.
 
-A `.m3u8` URL or `#EXTM3U` response does not prove native playback.
-
-NiakVIO separates:
-
-- provider extraction;
-- title/year/season/episode identity;
-- request context (`Referer`, `Origin`, headers);
-- playlist/variant resolution;
-- first-segment/container integrity when evidence requires it;
-- native client/player outcome.
-
-HTML/JSON disguised as media or positively malformed TS/fMP4 can be rejected. A timeout, temporary fetch failure, encrypted stream or missing byte API is **inconclusive**, not a reason to fabricate a provider-wide failure.
+HTML/JSON disguised as media or positively malformed TS/fMP4 can be rejected. A timeout, temporary fetch failure, encrypted stream or missing byte API is **inconclusive**, not evidence for a fabricated provider-wide failure.
 
 ---
 
-## CORE — Verify & Publish
+## CORE, Learning and Domain Refresh
 
-`.github/workflows/sync.yml` is the routine **CORE - Verify & Publish** workflow.
+`CORE - Verify & Publish` is the routine publication workflow.
 
-**Quick** is fast and deterministic: structure/contracts, exact Provider v3 bytes, minimizer/security/Lab invariants. No provider repair, reconstruction or full network health.
+- **Quick** — deterministic structure/runtime/unit/security/minimizer checks. No provider repair or reconstruction.
+- **Deep** — broader read-only network/hub observation, provider health evidence, projections, reports and integrity inventories. Still no Provider JS repair/reconstruction.
+- **Learning** — the isolated code-evolution/repair path. Proposed changes remain reviewable before publication authority.
+- **Domain Refresh** — deliberately narrow maintenance of validated `official_site` CONFIG data only.
 
-**Deep** adds read-only network/hub observation, exact published-provider health, manifest reprojection, reports and integrity inventories. Deep still does **not** repair or reconstruct Provider JS.
-
-Provider code evolution belongs to the independent Learning sandbox and reviewable proposals. Domain Refresh is separately constrained to validated `official_site` CONFIG DATA.
-
----
-
-## Five native Labs
-
-NiakVIO treats each official client/device as a separate compatibility boundary:
-
-- **TV Android** — NuvioTV;
-- **Mobile Android** — NuvioMobile;
-- **Mobile iOS** — NuvioMobile;
-- **Desktop macOS** — NuvioDesktop;
-- **Desktop Windows** — NuvioDesktop.
-
-The canonical matrix covers **96 providers / 214 declared routes**: `82 movie + 92 tv + 40 anime`. Disabled providers remain audited. A Desktop result never automatically counts as Mobile or TV evidence.
-
-Standard native coverage is **1/1/1 per provider by declared type**: at most one movie fixture, one TV fixture and one anime fixture are selected when those types are declared. The Labs never add undeclared media types merely to create extra probes.
-
-Labs are observational: they consume exact Provider JS bytes and can diagnose extraction, runtime, player, transport, missing-media and wrong-media failures, but they do not mutate Provider v3 to force a green result.
-
-Official clients:
-
-- [Nuvio Mobile](https://github.com/NuvioMedia/NuvioMobile)
-- [Nuvio Desktop](https://github.com/NuvioMedia/NuvioDesktop)
-- [NuvioTV](https://github.com/NuvioMedia/NuvioTV)
-
----
-
-## Historical snapshots are not current provider truth
-
-`provider-v3-materialization.json` and `automation/provider-v3-architecture.json.reference_reconstruction` retain frozen reconstruction snapshots needed for reverse-rebuild compatibility and auditability.
-
-Older counts such as **91 executable plans + 5 quarantined plans** describe that historical materialization snapshot. They must not be reused as the current route-recognition, availability or quarantine truth. Current route recognition comes from `automation/provider-v3-static-knowledge.json` and `route_recognition.latest_verified_census`.
-
-A quarantine needs an explicit, evidence-backed functional reason. `routeData=[]`, a timeout, a zero-stream result or one broken stream is not sufficient by itself.
+This separation prevents a health check from silently rewriting a provider just because a site is temporarily unavailable.
 
 ---
 
@@ -211,8 +232,9 @@ Publication is atomic and fail-closed and can include:
 
 - `provider_catalog.json`;
 - content-addressed provider bundles;
-- `manifest.json` and its VF/no-anime projections;
-- provenance/domain/LKG state;
+- `manifest.json` and VF/no-anime projections;
+- provenance/domain state;
+- synchronized provider/cache versions;
 - release hashes and allowlisted reports.
 
 An inconsistent generation must never silently replace a healthy published state.
@@ -224,7 +246,7 @@ An inconsistent generation must never silently replace a healthy published state
 | Workflow | Responsibility |
 |---|---|
 | `sync.yml` | **CORE - Verify & Publish** Quick/Deep; no provider repair/reconstruction |
-| `provider-v3-reconstruct-routes.yml` | route-only recognition/canonical `routeData` census over all 96 objects |
+| `provider-v3-reconstruct-routes.yml` | route-only recognition/canonical `routeData` census |
 | `provider-v3-reconstruct-all.yml` | manual full Provider v3 reconstruction + reverse byte proof |
 | `brain-learning-lab.yml` | sandbox observation/repair learning + reviewable proposals |
 | `domain-refresh.yml` | validated `official_site` CONFIG-only maintenance |
@@ -237,18 +259,33 @@ An inconsistent generation must never silently replace a healthy published state
 | `codeql.yml` | CodeQL analysis |
 | `weekly-upstream-provider-discovery.yml` | read-only upstream discovery |
 | `purge-actions-history.yml` | old Actions-run cleanup |
-| `brain-branch-maintenance.yml` | durable Learning/proposals branch maintenance; no direct Provider JS publication |
+| `brain-branch-maintenance.yml` | durable Learning/proposals branch maintenance |
 
 ---
 
-## Repository policy
+## Thanks & upstream knowledge
 
-- `main` is the only production code branch;
-- structural Provider v3 work is validated on a workbench branch first;
-- current route-recognition workbench: `workbench/provider-v3-recognition-routes-data`;
-- Learning proposals are isolated on `brain-learning/proposals` and never become publication authority directly;
-- official Nuvio repositories are consumed read-only;
-- platform evidence remains platform-specific.
+NiakVIO is independent, but it benefits from the wider Nuvio provider ecosystem and the work published by other maintainers.
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <img src="assets/thanks/gowaru-bg.png" alt="Gowaru" width="150"><br>
+      <strong>Gowaru</strong><br>
+      Provider implementations and protocol knowledge used as upstream evidence/provenance where applicable.
+    </td>
+    <td align="center" width="33%">
+      <img src="assets/thanks/yoru-bg.png" alt="Yoru" width="150"><br>
+      <strong>Yoru</strong><br>
+      Provider ecosystem work and implementation ideas that help cross-check behavior and compatibility.
+    </td>
+    <td align="center" width="33%">
+      <img src="assets/thanks/deadlyrocket-bg.png" alt="All-in-One Nuvio / D3adlyRocket" width="150"><br>
+      <strong>All-in-One Nuvio / D3adlyRocket</strong><br>
+      Historical provider aggregation/mirror material used as one provenance source, never as NiakVIO reconstruction authority.
+    </td>
+  </tr>
+</table>
 
 ---
 
