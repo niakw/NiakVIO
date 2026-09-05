@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,9 +32,19 @@ for forbidden in (
 
 assert "provider_contract_local_enricher" in entry
 assert "provider_contract_recognizer" not in entry
-assert "urllib.request" not in local
-assert "requests." not in local
-assert "httpx." not in local
+
+# Reject actual network client imports/usages, not harmless local variables named
+# `requests` that hold normalized request-contract DATA.
+for pattern in (
+    r"^\s*(?:from\s+urllib|import\s+urllib)(?:\.|\s)",
+    r"^\s*(?:from\s+requests|import\s+requests)(?:\.|\s|$)",
+    r"^\s*(?:from\s+httpx|import\s+httpx)(?:\.|\s|$)",
+    r"^\s*(?:from\s+socket|import\s+socket)(?:\.|\s|$)",
+    r"\burllib\.request\.",
+    r"\brequests\.(?:get|post|put|patch|delete|request|Session)\b",
+    r"\bhttpx\.(?:get|post|put|patch|delete|request|Client|AsyncClient)\b",
+):
+    assert not re.search(pattern, local, re.M), f"local recognition regained network capability: {pattern}"
 assert "raw.githubusercontent.com" not in local
 assert "externalRepositories=0" in local
 
