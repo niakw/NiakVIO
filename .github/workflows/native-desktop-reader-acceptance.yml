@@ -4,6 +4,22 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "20 18 * * 6"
+  pull_request:
+    branches: [main]
+    paths:
+      - "manifest.json"
+      - "vf/manifest.json"
+      - "no-anime/manifest.json"
+      - "vf-no-anime/manifest.json"
+      - "providers/**"
+      - "provider-bases/**"
+      - "provider-overrides.json"
+      - "scripts/patch_nuvio_desktop_test_compat.py"
+      - "tests/patch_nuvio_desktop_test_compat_test.py"
+      - "automation/native-human-ux-policy.json"
+      - ".github/workflows/native-desktop-reader-acceptance.yml"
+      - ".github/triggers/full-native-lab-validation.json"
+      - ".github/triggers/native-desktop-lab-validation.json"
   push:
     branches:
       - main
@@ -18,7 +34,7 @@ permissions:
 # Main revisions are latest-wins. Explicit workflow_dispatch runs stay isolated
 # because the final orchestrator may watch one exact dispatch as authoritative proof.
 concurrency:
-  group: native-desktop-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'main-push' }}
+  group: native-desktop-reader-${{ github.event_name == 'workflow_dispatch' && github.run_id || (github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main-push') }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
@@ -34,7 +50,7 @@ jobs:
         with:
           fetch-depth: 1
           persist-credentials: false
-          ref: ${{ github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
@@ -50,6 +66,7 @@ jobs:
           python3 tests/native_stream_extraction_gate_test.py
           python3 tests/native_desktop_runtime_diagnostics_order_test.py
           python3 tests/nuvio_client_upstream_drift_guard_test.py
+          python3 tests/patch_nuvio_desktop_test_compat_test.py
       - name: Inspect current official Nuvio client drift
         shell: bash
         run: |
@@ -93,7 +110,7 @@ jobs:
     env:
       WEBVIEW2_VERSION: 1.0.4078.44
       # libmpv requires the C numeric locale to be exactly C before mpv_create().
-      # Keep the official NuvioDesktop source untouched; provide its documented
+      # Keep the official NuvioDesktop production source untouched; provide its documented
       # native runtime precondition at process level in the Lab.
       LC_NUMERIC: C
       NIAKVIO_TARGET_PROVIDER: declared-type
@@ -107,7 +124,7 @@ jobs:
         with:
           path: niakvio
           persist-credentials: false
-          ref: ${{ github.sha }}
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
 
       - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
         with: {distribution: temurin, java-version: "17"}
@@ -116,9 +133,7 @@ jobs:
         with: {node-version: "24", package-manager-cache: false}
 
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
-
         with:
-
           cache-disabled: true
 
       - name: Checkout latest official NuvioDesktop HEAD and stage initial route
@@ -131,6 +146,7 @@ jobs:
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
           touch nuvio-desktop/local.properties
+          python3 niakvio/scripts/patch_nuvio_desktop_test_compat.py "$GITHUB_WORKSPACE/nuvio-desktop"
           python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
 
       - name: Install official Windows WebView2 build dependency
@@ -201,6 +217,7 @@ jobs:
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
+
       - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
         shell: bash
