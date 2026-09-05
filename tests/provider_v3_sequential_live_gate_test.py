@@ -50,7 +50,6 @@ base = {
 assert should_pass(base) is True, base
 assert should_pass({**base, "declaredTypeCoverageRatio": 0.5}) is False
 assert should_pass({**base, "typeComplete": False}) is False
-# Internal unresolved request counts can no longer make a complete typed provider fail.
 assert should_pass({
     **base,
     "unresolvedObservedRequestCount": 999,
@@ -59,6 +58,8 @@ assert should_pass({
 
 # Purstream-shaped regression: [movie,tv] means exactly movie + tv route proof.
 # Search/status traffic is chain evidence only and cannot validate a missing type.
+# Routes are relative to the API base, so /stream/{id} must match /api/v1/stream/525
+# without ever promoting the literal provider-internal id 525 as a reusable route.
 model = {
     "canonicalSupportedTypes": ["movie", "tv"],
     "knownSite": "https://purstream.test",
@@ -108,6 +109,10 @@ evaluation = evaluate_provider("purstream", model, [movie_task, tv_search_only],
 assert evaluation["validatedTypes"] == ["movie"], evaluation["declaredTypeRouteEvidence"]
 assert evaluation["missingTypes"] == ["tv"], evaluation
 assert evaluation["declaredTypeCoverageRatio"] == 0.5, evaluation
+movie_evidence = evaluation["declaredTypeRouteEvidence"]["movie"]
+assert movie_evidence and movie_evidence[0]["route"] == "/stream/{id}", movie_evidence
+assert movie_evidence[0]["source"] == "declared-type-template-live-match", movie_evidence
+assert all("/stream/525" != str(row.get("route")) for row in movie_evidence), movie_evidence
 assert should_pass(evaluation) is False
 
 # Once the tv episode route itself answers, both declared types are proven.
@@ -123,6 +128,7 @@ evaluation = evaluate_provider("purstream", model, [movie_task, tv_complete], 0.
 assert evaluation["validatedTypes"] == ["movie", "tv"], evaluation["declaredTypeRouteEvidence"]
 assert evaluation["missingTypes"] == [], evaluation
 assert evaluation["declaredTypeCoverageRatio"] == 1.0, evaluation
+assert evaluation["declaredTypeRouteEvidence"]["tv"][0]["route"] == "/stream/{id}/episode?season={season}&episode={episode}", evaluation["declaredTypeRouteEvidence"]
 assert should_pass(evaluation) is True
 
 source = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
@@ -132,6 +138,8 @@ assert "for index, provider in enumerate(queue, start=1):" in source
 assert "declaredTypesAreGateDenominator" in source
 assert "internalRequestsAreGateDenominator" in source
 assert "missing live route proof for declared types" in source
+assert "_route_matches_model_url" in source
+assert "Unknown literal IDs" in source
 assert "write(knowledge_path, knowledge)" in source
 
 reconstruct = (ROOT / "scripts" / "reconstruct_provider_v3_sequential_live.py").read_text(encoding="utf-8")
@@ -151,6 +159,6 @@ assert "schema_version: 2" in probe
 
 print(
     "Provider v3 sequential live gate tests passed: declared semantic types are the only gate denominator, "
-    "Purstream movie+tv requires both typed routes, search/status/playback traffic cannot inflate coverage, "
-    "and providers still advance strictly one at a time."
+    "Purstream movie+tv requires both typed routes relative to its API base, literal internal ids are never promoted, "
+    "search/status/playback traffic cannot inflate coverage, and providers still advance strictly one at a time."
 )
