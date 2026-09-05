@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 7,
   "mode": "human-ux-observation-only",
   "purpose": "Native labs reproduce the real Nuvio user path and observe launch, stream selection, player opening and playback failures without repairing Nuvio, the OS or the lab environment to improve outcomes.",
   "immutable_principles": [
@@ -128,6 +128,11 @@
         "NuvioTheme",
         "PlatformPlayerSurface"
       ],
+      "allowed_test_plumbing": [
+        "composeApp/src/desktopTest/",
+        "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/PlayerExitOrderingTest.kt (exact no-op interface compatibility shim only)",
+        "local.properties"
+      ],
       "forbidden_retouch": [
         "root execution",
         "sudo",
@@ -186,6 +191,14 @@
         "cause": "Hilt aggregates EntryPoints into the target debug APK before androidTest compilation, so the diagnostic accessor cannot live only in androidTest",
         "resolution": "allow exactly one debug-build-only accessor file exposing the existing production PluginManager singleton; no player, provider, network, manifest or main/release source may be changed",
         "never_repeat": "never widen this exception to app/src/debug generally or use it for runtime behavior changes"
+      },
+      {
+        "id": "desktop-player-language-preference-test-contract-drift",
+        "status": "resolved-by-strict-test-only-compatibility",
+        "signature": "PlayerExitOrderingTest anonymous PlayerEngineController does not implement applyAudioLanguagePreferences(languages: List<String>)",
+        "cause": "official NuvioDesktop Dev added an abstract PlayerEngineController method while its commonTest fake was not updated; desktopTest compilation fails before any NiakVIO provider executes on both macOS and Windows",
+        "resolution": "when and only when the exact known signature is present, add the missing no-op method to that single commonTest fake in the ephemeral checkout; production runtime remains byte-for-byte upstream",
+        "never_repeat": "never widen this exception to commonTest generally, skip failing upstream tests, or patch NuvioDesktop production player/runtime code"
       },
       {
         "id": "reader-run-cancellation-churn",
@@ -256,6 +269,7 @@
     ],
     "desktop": [
       "composeApp/src/desktopTest/",
+      "composeApp/src/commonTest/kotlin/com/nuvio/app/features/player/PlayerExitOrderingTest.kt",
       "local.properties"
     ]
   },
@@ -288,6 +302,7 @@
     "add test-only dependencies for diagnostic probes only",
     "add exactly one debug-build-only Hilt EntryPoint accessor required for diagnostic access to the existing production PluginManager singleton",
     "resolve duplicate C++ runtime packaging in the instrumentation APK only without changing application runtime, player, provider, network or OS behavior",
+    "add an exact no-op method to the single stale NuvioDesktop commonTest PlayerEngineController fake when the official interface changed and compilation otherwise stops before provider observation",
     "use a debug signing configuration when hosted CI cannot access an official release signing key",
     "stage NiakVIO provider bundles as diagnostic test assets",
     "add test code that invokes production Nuvio entry points only as component diagnostics, never as human-UX acceptance proof"
