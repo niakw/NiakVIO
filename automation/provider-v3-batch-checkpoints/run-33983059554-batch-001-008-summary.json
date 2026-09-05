@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "role": "provider-v3-live-recognition-batch-proof-summary",
+  "sourceRunId": 33983059554,
+  "sourceHeadSha": "1fce9723a990f7e254d1e81d55c2c8fbd1e8cecc",
+  "sourceArtifactId": 9974388601,
+  "sourceReportSha256": "484489fb6c357c4f69d4901065bbec45bbc0ae15c7346048ee8d21d315eb06ff",
+  "providerCount": 96,
+  "startIndex": 1,
+  "endIndex": 8,
+  "processedCount": 8,
+  "hardFailureCount": 0,
+  "finalVerifiedCount": 6,
+  "finalVerified": [
+    "anime-sama",
+    "purstream",
+    "uhdmovies",
+    "movieshunt",
+    "vegamovies",
+    "hindmoviez"
+  ],
+  "terminalOnlyCount": 1,
+  "terminalOnly": ["zinkmovies"],
+  "deferredToLearnCount": 1,
+  "deferredToLearn": ["flemmix"],
+  "providers": [
+    {"index": 1, "providerId": "anime-sama", "completionState": "declared-types-qualified", "finalBundleVerified": true, "liveValidatedRouteCount": 12, "validatedTypes": ["anime", "movie"], "missingTypes": [], "learnRequired": false, "deferReason": null},
+    {"index": 2, "providerId": "purstream", "completionState": "declared-types-qualified", "finalBundleVerified": true, "liveValidatedRouteCount": 8, "validatedTypes": ["movie", "tv"], "missingTypes": [], "learnRequired": false, "deferReason": null},
+    {"index": 3, "providerId": "flemmix", "completionState": "defer-to-learn", "finalBundleVerified": false, "liveValidatedRouteCount": 4, "validatedTypes": [], "missingTypes": ["movie", "tv"], "learnRequired": true, "deferReason": "repair-exhausted"},
+    {"index": 4, "providerId": "uhdmovies", "completionState": "declared-types-qualified", "finalBundleVerified": true, "liveValidatedRouteCount": 66, "validatedTypes": ["movie", "tv"], "missingTypes": [], "learnRequired": false, "deferReason": null},
+    {"index": 5, "providerId": "movieshunt", "completionState": "declared-types-qualified", "finalBundleVerified": true, "liveValidatedRouteCount": 13, "validatedTypes": ["movie"], "missingTypes": [], "learnRequired": false, "deferReason": null},
+    {"index": 6, "providerId": "zinkmovies", "completionState": "terminal-blocked", "finalBundleVerified": false, "liveValidatedRouteCount": 0, "validatedTypes": [], "missingTypes": ["movie", "tv"], "learnRequired": false, "deferReason": null},
+    {"index": 7, "providerId": "vegamovies", "completionState": "declared-types-qualified", "finalBundleVerified": true, "liveValidatedRouteCount": 26, "validatedTypes": ["movie", "tv"], "missingTypes": [], "learnRequired": false, "deferReason": null},
+    {"index": 8, "providerId": "hindmoviez", "completionState": "declared-types-qualified", "finalBundleVerified": true, "liveValidatedRouteCount": 27, "validatedTypes": ["movie", "tv"], "missingTypes": [], "learnRequired": false, "deferReason": null}
+  ],
+  "notes": [
+    "This summary is durable Git proof derived from the exact batch report artifact; it does not replace the newer cumulative canonical static knowledge.",
+    "Do not rerun final-verified providers solely because the original batch report remained artifact-only.",
+    "Terminal-blocked and defer-to-learn providers remain repair targets; they are not counted as validated providers."
+  ]
+}
