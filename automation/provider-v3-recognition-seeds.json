@@ -128,6 +128,43 @@
       "notes": [
         "Existing durable NiakVIO player DATA is sufficient to classify this provider as routeful; no external repository lookup is required."
       ]
+    },
+    "uhdmovies": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title", "year"]
+      },
+      "knownSite": "https://uhdmovies.autos",
+      "origins": [
+        "https://uhdmovies.autos",
+        "https://uhdmovies.pink"
+      ],
+      "routes": [
+        "/?s={query}"
+      ],
+      "requests": [
+        {
+          "route": "/?s={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": true,
+          "evidence": "niakvio-static-contract",
+          "confidence": 1.0
+        }
+      ],
+      "notes": [
+        "Movie-only catalogue lookup is GET /?s={query}; candidates are selected from article links using title/year identity.",
+        "The old /movie/ fragment is not a search contract and must not be used as the executable entry route.",
+        "After the selected detail page, release/gateway URLs and form action targets are discovered dynamically from returned HTML; NiakVIO must not invent fixed paths for those steps.",
+        "Gateway resolution uses returned landing forms/redirects before DriveSeed/direct-media resolution; those dynamic targets remain stream traversal evidence rather than provider search-route DATA."
+      ]
     }
   }
 }
