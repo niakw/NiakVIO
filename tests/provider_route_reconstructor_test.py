@@ -90,7 +90,7 @@ assert search["confidence"] == 0.97, search
 for route in ("/browser?keyword={query}", "/ep-{episode}"):
     row = next(item for item in route_data if item["route"] == route)
     assert row["httpUsed"] is True, row
-    assert "fetch-expression" in row["evidenceSources"], row
+    assert any(str(value).startswith("fetch-expression") for value in row["evidenceSources"]), row
 
 recognized = provider["knowledge"]["recognizedContract"]
 assert recognized["version"] == 3, recognized
