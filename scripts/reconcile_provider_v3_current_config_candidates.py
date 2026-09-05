@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 """Reconcile Provider v3 replay candidates with NiakVIO-owned current config.
 
-Priority for executable candidate seeding is:
-  explicit provider override > recognition seed > embedded Provider JS model
+Executable candidate source priority:
+  explicit provider override > recognition seed > current manifest Provider JS
   > historical candidate evidence.
+
+`provider-v3-materialization.json` is an integrity/provenance registry, not a route
+source.  It is used to verify that the manifest file being inspected is the same JS
+that the last materialization recorded.  A mismatch is surfaced explicitly; it never
+turns materialization metadata into HTTP proof.
 
 Historical failed/unexecuted candidates are not replayed merely because they still
 exist in static knowledge. Independently live-validated reusable routes are retained.
 Recognition seeds are durable config/recognition evidence, never HTTP proof by
- themselves; a seed route still has to pass validate_provider_v3_routes_live.py.
+themselves; a seed route still has to pass validate_provider_v3_routes_live.py.
 """
 from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import re
 from pathlib import Path
@@ -24,6 +30,7 @@ MANIFEST = ROOT / "manifest.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 RECOGNITION_SEEDS = ROOT / "automation" / "provider-v3-recognition-seeds.json"
+MATERIALIZATION = ROOT / "provider-v3-materialization.json"
 MODEL_RE = re.compile(
     r"const\s+NIAKVIO_PROVIDER_MODEL\s*=\s*Object\.freeze\((\{.*?\})\);",
     re.DOTALL,
@@ -98,6 +105,26 @@ def read_embedded_model(root: Path, filename: str) -> dict[str, Any] | None:
     except json.JSONDecodeError:
         return None
     return value if isinstance(value, dict) else None
+
+
+def file_sha256(path: Path) -> str | None:
+    if not path.is_file():
+        return None
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def materialization_map(materialization: dict[str, Any] | None) -> dict[str, dict[str, Any]]:
+    rows = materialization.get("providers") if isinstance(materialization, dict) else None
+    out: dict[str, dict[str, Any]] = {}
+    if not isinstance(rows, list):
+        return out
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        provider_id = str(row.get("provider") or "").strip().casefold()
+        if provider_id:
+            out[provider_id] = row
+    return out
 
 
 def infer_role(route: str) -> str:
@@ -232,7 +259,6 @@ def _sync_effective_config(
     seed: dict[str, Any],
     patch: dict[str, Any],
 ) -> None:
-    # Lowest durable config priority: the exact embedded JS model.
     for key in (
         "knownSite", "officialSite", "officialHub", "officialApi", "fixedApi",
         "identityInput", "sourceRuntimeFamily", "strategy", "supportedTypes", "origins",
@@ -240,7 +266,6 @@ def _sync_effective_config(
         if key in embedded:
             model[key] = copy.deepcopy(embedded[key])
 
-    # Recognition seeds intentionally correct/augment stale embedded config.
     for key in ("knownSite", "officialSite", "officialHub", "officialApi", "fixedApi", "origins"):
         if key in seed:
             model[key] = copy.deepcopy(seed[key])
@@ -251,7 +276,6 @@ def _sync_effective_config(
     if notes is not None:
         model["recognitionNotes"] = copy.deepcopy(notes)
 
-    # Explicit provider overrides are authoritative over both seed and JS.
     mapping = {
         "official_site": "officialSite",
         "official_hub": "officialHub",
@@ -285,6 +309,7 @@ def reconcile(
     knowledge: dict[str, Any],
     overrides: dict[str, Any],
     recognition_seeds: dict[str, Any] | None = None,
+    materialization: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     providers = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
@@ -293,6 +318,7 @@ def reconcile(
         if isinstance(recognition_seeds, dict) and isinstance(recognition_seeds.get("providers"), dict)
         else {}
     )
+    materialized = materialization_map(materialization)
     stats = {
         "providersSeen": 0,
         "providersReconciled": 0,
@@ -304,6 +330,10 @@ def reconcile(
         "recognitionSeedsUsed": 0,
         "recognitionSeedRoutes": 0,
         "recognitionSeedRequests": 0,
+        "materializationEntries": len(materialized),
+        "materializationMatched": 0,
+        "materializationMissing": 0,
+        "materializationMismatched": 0,
     }
 
     for manifest_row in manifest.get("scrapers") or []:
@@ -332,6 +362,31 @@ def reconcile(
         model = static_row.get("model") if isinstance(static_row.get("model"), dict) else {}
         _sync_effective_config(model, embedded, seed, patch)
 
+        mat = materialized.get(provider_id)
+        actual_sha = file_sha256(root / filename)
+        expected_file = str(mat.get("file") or "").strip() if isinstance(mat, dict) else ""
+        expected_sha = str(mat.get("sha256") or "").strip().casefold() if isinstance(mat, dict) else ""
+        if not isinstance(mat, dict):
+            integrity_state = "missing"
+            stats["materializationMissing"] += 1
+        elif expected_file != filename or not actual_sha or expected_sha != actual_sha.casefold():
+            integrity_state = "mismatch"
+            stats["materializationMismatched"] += 1
+        else:
+            integrity_state = "matched"
+            stats["materializationMatched"] += 1
+        model["materializationIntegrity"] = {
+            "state": integrity_state,
+            "registryIsRouteSource": False,
+            "expectedFile": expected_file or None,
+            "manifestFile": filename,
+            "expectedSha256": expected_sha or None,
+            "actualSha256": actual_sha,
+            "providerDataSha256": mat.get("providerDataSha256") if isinstance(mat, dict) else None,
+            "sourceSha": materialization.get("sourceSha") if isinstance(materialization, dict) else None,
+            "generation": materialization.get("generation") if isinstance(materialization, dict) else None,
+        }
+
         recipe = _effective_recipe(embedded, seed, patch)
         declared_routes, route_source = _declared_routes(embedded, seed, patch, recipe)
         declared_set = set(declared_routes)
@@ -357,11 +412,10 @@ def reconcile(
             row["route"] = route
             row["candidateCurrentConfig"] = True
             row["candidateConfigSource"] = route_source
+            row["materializationIntegrityState"] = integrity_state
             if route in seed_requests:
                 apply_seed_request_contract(row, seed_requests[route])
             if was_live:
-                # Seed contract metadata may refine method/headers, but existing live
-                # proof for the exact reusable route remains valid.
                 row["validationState"] = "live-validated"
                 row["executedEvidence"] = bool(old.get("executedEvidence", True)) if isinstance(old, dict) else True
                 row["httpUsed"] = bool(old.get("httpUsed", True)) if isinstance(old, dict) else True
@@ -394,11 +448,13 @@ def reconcile(
         model["candidateRouteData"] = reconciled_data
         model["candidateRoutes"] = reconciled_routes
         model["candidateReconciliation"] = {
-            "version": 2,
-            "source": "override>recognition-seed>provider-js>historical-candidate",
+            "version": 3,
+            "source": "override>recognition-seed>provider-js>historical-live",
             "routePlanSource": route_source,
             "currentConfigRouteCount": len(declared_routes),
             "recognitionSeedPresent": bool(seed),
+            "materializationIntegrityState": integrity_state,
+            "materializationIsRouteSource": False,
             "liveValidatedRouteCountPreserved": len(preserved_live),
             "staleCandidateCountSuppressed": len(suppressed),
             "suppressedRoutes": suppressed[:64],
@@ -425,10 +481,12 @@ def reconcile(
             elif "candidate_api_recipe" in patch:
                 patch.pop("candidate_api_recipe", None)
             patch["candidate_config_reconciliation"] = {
-                "version": 2,
+                "version": 3,
                 "route_plan_source": route_source,
                 "current_config_route_count": len(declared_routes),
                 "recognition_seed_present": bool(seed),
+                "materialization_integrity_state": integrity_state,
+                "materialization_is_route_source": False,
                 "live_validated_route_count_preserved": len(preserved_live),
                 "stale_candidate_count_suppressed": len(suppressed),
                 "new_routes_require_live_proof": True,
@@ -447,6 +505,7 @@ def main() -> int:
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--recognition-seeds", type=Path, default=RECOGNITION_SEEDS)
+    parser.add_argument("--materialization", type=Path, default=MATERIALIZATION)
     args = parser.parse_args()
 
     root = args.root.resolve()
@@ -454,11 +513,13 @@ def main() -> int:
     knowledge_path = args.knowledge.resolve()
     overrides_path = args.overrides.resolve()
     recognition_path = args.recognition_seeds.resolve()
+    materialization_path = args.materialization.resolve()
     manifest = load(manifest_path)
     knowledge = load(knowledge_path)
     overrides = load(overrides_path)
     recognition_seeds = load(recognition_path) if recognition_path.is_file() else {}
-    stats = reconcile(root, manifest, knowledge, overrides, recognition_seeds)
+    materialization = load(materialization_path) if materialization_path.is_file() else {}
+    stats = reconcile(root, manifest, knowledge, overrides, recognition_seeds, materialization)
     write(knowledge_path, knowledge)
     write(overrides_path, overrides)
     print(
