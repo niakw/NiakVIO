@@ -51,6 +51,7 @@ jobs:
           python3 tests/native_desktop_runtime_diagnostics_order_test.py
           python3 tests/nuvio_client_upstream_drift_guard_test.py
           python3 tests/patch_nuvio_desktop_test_compat_test.py
+          python3 tests/native_declared_provider_matrix_gate_test.py
       - name: Inspect current official Nuvio client drift
         shell: bash
         run: |
