@@ -4,21 +4,22 @@
 Contract:
 - provider N is reconstructed/probed/finalized before provider N+1 starts;
 - static routes are only candidates;
-- every observed provider HTTP request is captured as evidence immediately;
-- a reachable provider must reach a useful live coverage ratio before advancing;
-- only a proven unavailable/blocked provider, or a verified direct-output provider,
-  may advance without the normal coverage threshold.
+- every observed provider HTTP request may be retained as diagnostic/runtime evidence;
+- advancement is gated by the provider's declared semantic media types, not by
+  arbitrary internal HTTP request-shape coverage;
+- every declared type must have one successful live type route (or a verified
+  direct output for that type) before the provider advances;
+- search/status/player/source traffic can prove the chain but never creates an
+  extra required route or denominator by itself;
+- only a proven unavailable/blocked provider may advance without normal type-route proof.
 
-This file deliberately imports the canonical probe/matching primitives from
-validate_provider_v3_routes_live.py so both gates share the same HTTP evidence
-format. It does NOT use inter-provider concurrency.
+There is deliberately no inter-provider concurrency.
 """
 from __future__ import annotations
 
 import argparse
 import copy
 import json
-import math
 import re
 import urllib.error
 import urllib.parse
@@ -48,7 +49,7 @@ from validate_provider_v3_routes_live import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_MIN_COVERAGE = 0.75
+DEFAULT_MIN_COVERAGE = 0.75  # diagnostic compatibility only; type gate is always 100%.
 BLOCKED_STATUSES = {401, 403, 407, 429}
 
 
@@ -107,22 +108,17 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
         supported = semantic_types(manifest_row)
         selected: list[dict[str, Any]] = []
 
-        # First use fixtures explicitly associated with this provider. They are
-        # the best way to exercise provider-specific branches and aliases.
         for row in fixtures:
             if provider_id in row["providers"] and row["semantic_type"] in supported:
                 selected.append(row)
 
-        # Always include one canonical fixture for every declared semantic type,
-        # even when the corpus has no explicit provider membership for it.
+        # One canonical fixture for every declared semantic type is mandatory.
         for media_type in supported:
             slug = REPRESENTATIVE[media_type]
             row = by_slug.get(slug)
             if row is not None and all(existing["slug"] != slug for existing in selected):
                 selected.append(row)
 
-        # Global fixtures (no provider allowlist) are useful regressions and may
-        # hit route branches not exercised by the canonical fixture.
         for row in fixtures:
             if not row["providers"] and row["semantic_type"] in supported:
                 if all(existing["slug"] != row["slug"] for existing in selected):
@@ -181,13 +177,7 @@ def _slug_candidates(fixture: dict[str, Any]) -> list[str]:
 
 
 def derive_observed_route(fetch: dict[str, Any], task: dict[str, Any]) -> tuple[str | None, dict[str, Any]]:
-    """Derive a reusable route only from values observed in this exact live call.
-
-    We never invent a path. The path/query start from the actual request; only
-    exact fixture values are replaced by placeholders with explicit provenance.
-    If a dynamic value cannot be generalized safely, the exact observed path is
-    retained as evidence but marked non-reusable.
-    """
+    """Derive a reusable route only from values observed in this exact live call."""
     raw = str(fetch.get("final_url") or fetch.get("url") or "")
     fixture = task.get("fixture") if isinstance(task.get("fixture"), dict) else {}
     try:
@@ -239,8 +229,6 @@ def derive_observed_route(fetch: dict[str, Any], task: dict[str, Any]) -> tuple[
             substitutions.append({"value": value, "placeholder": placeholder, "location": f"query:{key}"})
         rendered_query.append((key, replacement))
 
-    # If the exact fixture id/title still survives in the route, we cannot claim
-    # that the observed request is a reusable route template.
     route = path
     if rendered_query:
         route += "?" + urllib.parse.urlencode(rendered_query, doseq=True, safe="{}:/")
@@ -261,6 +249,227 @@ def derive_observed_route(fetch: dict[str, Any], task: dict[str, Any]) -> tuple[
         "fixtureSpecificValues": unique(fixture_specific, 12),
     }
     return (route if reusable else None), meta
+
+
+def _semantic_values(value: Any) -> set[str]:
+    if isinstance(value, str):
+        raw_values = re.split(r"[,|\s]+", value)
+    elif isinstance(value, (list, tuple, set)):
+        raw_values = list(value)
+    else:
+        raw_values = []
+    return {canonical(v) for v in raw_values if canonical(v) in REPRESENTATIVE}
+
+
+def _candidate_type_hints(row: dict[str, Any], required_types: set[str]) -> set[str]:
+    hints: set[str] = set()
+    for key in (
+        "type", "types", "mediaType", "mediaTypes", "semanticType", "semanticTypes",
+        "supportedType", "supportedTypes", "canonicalType", "canonicalTypes",
+    ):
+        hints.update(_semantic_values(row.get(key)))
+
+    route = canonical(row.get("route"))
+    if re.search(r"/(?:movie|movies|film|films)(?:[/?.#_-]|$)", route):
+        hints.add("movie")
+    if re.search(r"/(?:tv|series|serie|shows?|television)(?:[/?.#_-]|$)", route):
+        hints.add("tv")
+    if re.search(r"/(?:anime|animes)(?:[/?.#_-]|$)", route):
+        hints.add("anime")
+    if any(token in route for token in ("{season}", "{episode}", "season=", "episode=")):
+        if "tv" in required_types:
+            hints.add("tv")
+        if "anime" in required_types:
+            hints.add("anime")
+    return hints & required_types
+
+
+def _declared_type_templates(model: dict[str, Any], required_types: set[str]) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {media_type: [] for media_type in required_types}
+
+    recipes: list[dict[str, Any]] = []
+    for key in ("candidateApiRecipe", "apiRecipe"):
+        recipe = model.get(key)
+        if isinstance(recipe, dict) and recipe not in recipes:
+            recipes.append(recipe)
+
+    recipe_keys = {
+        "movie": ("movieRoute", "filmRoute"),
+        "tv": ("tvRoute", "seriesRoute", "showRoute", "episodeRoute"),
+        "anime": ("animeRoute", "episodeRoute"),
+    }
+    for recipe in recipes:
+        for media_type in required_types:
+            for key in recipe_keys.get(media_type, ()):
+                route = str(recipe.get(key) or "").strip()
+                if route and route not in out[media_type]:
+                    out[media_type].append(route)
+
+    current_route_data = model.get("candidateRouteData") if isinstance(model.get("candidateRouteData"), list) else None
+    if current_route_data is None:
+        current_route_data = model.get("routeData") if isinstance(model.get("routeData"), list) else []
+    for row in current_route_data:
+        if not isinstance(row, dict):
+            continue
+        route = str(row.get("route") or "").strip()
+        if not route:
+            continue
+        for media_type in _candidate_type_hints(row, required_types):
+            if route not in out[media_type]:
+                out[media_type].append(route)
+    return out
+
+
+def _provider_contract_hosts(model: dict[str, Any]) -> set[str]:
+    values: list[str] = []
+    for key in ("knownSite", "officialSite", "officialApi", "fixedApi"):
+        if model.get(key):
+            values.append(str(model[key]))
+    for recipe_key in ("candidateApiRecipe", "apiRecipe"):
+        recipe = model.get(recipe_key)
+        if isinstance(recipe, dict):
+            for key in ("base", "api", "baseUrl", "endpoint"):
+                if recipe.get(key):
+                    values.append(str(recipe[key]))
+    hosts: set[str] = set()
+    for value in values:
+        try:
+            host = (urllib.parse.urlsplit(value).hostname or "").casefold()
+        except ValueError:
+            host = ""
+        if host:
+            hosts.add(host)
+    if hosts:
+        return hosts
+    for value in model.get("origins") or []:
+        try:
+            host = (urllib.parse.urlsplit(str(value)).hostname or "").casefold()
+        except ValueError:
+            host = ""
+        if host:
+            hosts.add(host)
+    return hosts
+
+
+def _fetch_on_contract_host(fetch: dict[str, Any], hosts: set[str]) -> bool:
+    if not hosts:
+        return True
+    raw = str(fetch.get("final_url") or fetch.get("url") or "")
+    try:
+        host = (urllib.parse.urlsplit(raw).hostname or "").casefold()
+    except ValueError:
+        return False
+    return host in hosts
+
+
+def _generic_control_route(route: str) -> bool:
+    value = str(route or "").strip().casefold()
+    if not value or value == "/":
+        return True
+    if route_role(value) == "search":
+        return True
+    if re.search(r"/(?:status|health|healthz|ping)(?:[/?#]|$)", value):
+        return True
+    try:
+        parsed = urllib.parse.urlsplit(value)
+        path = parsed.path or value.split("?", 1)[0]
+    except ValueError:
+        path = value.split("?", 1)[0]
+    segments = [segment for segment in path.split("/") if segment]
+    if route_role(value) == "api" and len(segments) <= 2 and "{" not in value:
+        return True
+    return False
+
+
+def _observed_type_entry(
+    media_type: str,
+    task_rows: list[dict[str, Any]],
+    model: dict[str, Any],
+) -> dict[str, Any] | None:
+    hosts = _provider_contract_hosts(model)
+    for task in task_rows:
+        if canonical(task.get("semantic_type")) != media_type:
+            continue
+        for fetch in task.get("fetches") or []:
+            if not isinstance(fetch, dict) or not provider_fetch(fetch) or not success(fetch):
+                continue
+            if not _fetch_on_contract_host(fetch, hosts):
+                continue
+            route, derivation = derive_observed_route(fetch, task)
+            if not route or _generic_control_route(route):
+                continue
+            return {
+                "route": route,
+                "source": "live-observed-type-entry",
+                "fixture": task.get("fixture_slug"),
+                "evidence": live_evidence(fetch, task),
+                "derivation": derivation,
+            }
+    return None
+
+
+def _validate_declared_type_routes(
+    model: dict[str, Any],
+    task_rows: list[dict[str, Any]],
+    required_types: set[str],
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, list[str]], set[str]]:
+    templates = _declared_type_templates(model, required_types)
+    hosts = _provider_contract_hosts(model)
+    evidence_by_type: dict[str, list[dict[str, Any]]] = {media_type: [] for media_type in required_types}
+
+    for media_type in sorted(required_types):
+        # First prove the declared/candidate route that explicitly belongs to this type.
+        for template in templates.get(media_type) or []:
+            for task in task_rows:
+                if canonical(task.get("semantic_type")) != media_type:
+                    continue
+                for fetch in task.get("fetches") or []:
+                    if not isinstance(fetch, dict) or not provider_fetch(fetch) or not success(fetch):
+                        continue
+                    if not _fetch_on_contract_host(fetch, hosts):
+                        continue
+                    actual = str(fetch.get("final_url") or fetch.get("url") or "")
+                    if route_matches_url(template, actual):
+                        evidence_by_type[media_type].append({
+                            "route": template,
+                            "source": "declared-type-template-live-match",
+                            "fixture": task.get("fixture_slug"),
+                            "evidence": live_evidence(fetch, task),
+                        })
+                        break
+                if evidence_by_type[media_type]:
+                    break
+            if evidence_by_type[media_type]:
+                break
+
+        # If the old DATA did not know the current typed route (or it moved), promote
+        # only a reusable successful route actually observed on the provider's own
+        # contract host during a fixture of this exact declared type.
+        if not evidence_by_type[media_type]:
+            observed = _observed_type_entry(media_type, task_rows, model)
+            if observed:
+                evidence_by_type[media_type].append(observed)
+
+        # Direct-media providers may legitimately return a verified stream without
+        # any provider HTTP traversal. This is still validated separately per type.
+        if not evidence_by_type[media_type]:
+            for task in task_rows:
+                if canonical(task.get("semantic_type")) != media_type or task.get("status") != "playable_verified":
+                    continue
+                provider_fetches = [
+                    fetch for fetch in task.get("fetches") or []
+                    if isinstance(fetch, dict) and provider_fetch(fetch)
+                ]
+                if not provider_fetches:
+                    evidence_by_type[media_type].append({
+                        "route": "direct-output",
+                        "source": "verified-direct-output",
+                        "fixture": task.get("fixture_slug"),
+                    })
+                    break
+
+    validated = {media_type for media_type, rows in evidence_by_type.items() if rows}
+    return evidence_by_type, templates, validated
 
 
 def provider_origins(model: dict[str, Any], patch: dict[str, Any]) -> list[str]:
@@ -295,7 +504,6 @@ def probe_origin(url: str, timeout: int = 8) -> dict[str, Any]:
             with urllib.request.urlopen(request, timeout=timeout) as response:
                 return {"url": url, "reachable": True, "status": int(response.status or 0), "method": method, "error": None}
         except urllib.error.HTTPError as exc:
-            # 4xx/5xx still proves the host/service answered. 403 is blocked, not dead.
             return {"url": url, "reachable": True, "status": int(exc.code or 0), "method": method, "error": type(exc).__name__}
         except Exception as exc:
             last = {"url": url, "reachable": False, "status": 0, "method": method, "error": type(exc).__name__}
@@ -303,6 +511,7 @@ def probe_origin(url: str, timeout: int = 8) -> dict[str, Any]:
 
 
 def coverage_target(candidate_count: int, minimum: float) -> float:
+    """Legacy diagnostic only. Advancement uses 100% declared-type coverage."""
     if candidate_count <= 2:
         return 1.0
     return minimum
@@ -376,8 +585,7 @@ def evaluate_provider(
             row["validationState"] = "candidate-not-executed"
         enriched.append(row)
 
-    # Capture every real request shape not represented by the static candidates.
-    # Reusable templates are derived only from the exact live URL + fixture values.
+    # Internal/auxiliary requests are retained as evidence, but they are not the gate denominator.
     derived_by_route: dict[str, dict[str, Any]] = {}
     unresolved_observed: list[dict[str, Any]] = []
     for index, (fetch, task) in enumerate(fetch_rows):
@@ -437,17 +645,28 @@ def evaluate_provider(
     candidate_count = len(original_routes)
     candidate_ratio = attempted / candidate_count if candidate_count else 0.0
     observed_ratio = len(reusable_observed_shapes) / len(observed_shapes) if observed_shapes else 0.0
-    effective_ratio = max(candidate_ratio, observed_ratio)
-    target = coverage_target(candidate_count, minimum)
+
     attempted_types = {canonical(task.get("semantic_type")) for task in task_rows}
     required_types = set(model.get("canonicalSupportedTypes") or [])
     required_types = {canonical(v) for v in required_types if canonical(v) in REPRESENTATIVE}
     if not required_types:
         required_types = attempted_types
-    type_complete = required_types <= attempted_types
+
+    type_route_evidence, type_route_templates, validated_types = _validate_declared_type_routes(
+        model, task_rows, required_types
+    )
+    declared_type_ratio = len(validated_types) / len(required_types) if required_types else 1.0
+    type_complete = required_types <= validated_types
     playable_verified = any(task.get("status") == "playable_verified" for task in task_rows)
     provider_success_http = any(success(fetch) for fetch, _task in fetch_rows)
     provider_blocked_only = bool(fetch_rows) and all(int(fetch.get("status") or 0) in BLOCKED_STATUSES for fetch, _task in fetch_rows)
+    direct_output_only = bool(required_types) and type_complete and not fetch_rows and all(
+        any(
+            canonical(task.get("semantic_type")) == media_type and task.get("status") == "playable_verified"
+            for task in task_rows
+        )
+        for media_type in required_types
+    )
 
     return {
         "providerId": provider_id,
@@ -466,12 +685,19 @@ def evaluate_provider(
         "unresolvedObservedRequestCount": len(unresolved_observed),
         "candidateCoverageRatio": round(candidate_ratio, 4),
         "observedRouteCaptureRatio": round(observed_ratio, 4),
-        "effectiveCoverageRatio": round(effective_ratio, 4),
-        "requiredCoverageRatio": target,
-        "typeComplete": type_complete,
+        # Compatibility aliases now deliberately mean declared semantic type-route coverage.
+        "effectiveCoverageRatio": round(declared_type_ratio, 4),
+        "requiredCoverageRatio": 1.0,
+        "declaredTypeCoverageRatio": round(declared_type_ratio, 4),
         "requiredTypes": sorted(required_types),
         "attemptedTypes": sorted(attempted_types),
+        "validatedTypes": sorted(validated_types),
+        "missingTypes": sorted(required_types - validated_types),
+        "declaredTypeRouteTemplates": type_route_templates,
+        "declaredTypeRouteEvidence": type_route_evidence,
+        "typeComplete": type_complete,
         "playableVerified": playable_verified,
+        "directOutputOnly": direct_output_only,
         "providerSuccessHttp": provider_success_http,
         "providerBlockedOnly": provider_blocked_only,
         "unresolvedObservedRequests": unresolved_observed[:40],
@@ -480,13 +706,10 @@ def evaluate_provider(
 
 
 def should_pass(evaluation: dict[str, Any]) -> bool:
-    if evaluation.get("playableVerified") and evaluation.get("providerRequestCount", 0) == 0:
-        return True
+    # No percentage of internal requests can compensate for a missing declared type.
     return bool(
         evaluation.get("typeComplete")
-        and float(evaluation.get("effectiveCoverageRatio") or 0.0) >= float(evaluation.get("requiredCoverageRatio") or 1.0)
-        and int(evaluation.get("unresolvedObservedRequestCount") or 0)
-            <= math.floor(int(evaluation.get("observedRequestShapeCount") or 0) * 0.25)
+        and float(evaluation.get("declaredTypeCoverageRatio") or 0.0) >= 1.0
     )
 
 
@@ -539,7 +762,7 @@ def finalize_provider(
         model.pop("apiRecipe", None)
 
     model["routeRecognition"] = {
-        "version": 3,
+        "version": 4,
         "status": completion_state,
         "completionState": completion_state,
         "candidateRouteCount": evaluation["candidateRouteCount"],
@@ -556,12 +779,19 @@ def finalize_provider(
         "observedRouteCaptureRatio": evaluation["observedRouteCaptureRatio"],
         "effectiveCoverageRatio": evaluation["effectiveCoverageRatio"],
         "requiredCoverageRatio": evaluation["requiredCoverageRatio"],
+        "declaredTypeCoverageRatio": evaluation["declaredTypeCoverageRatio"],
         "requiredTypes": evaluation["requiredTypes"],
         "attemptedTypes": evaluation["attemptedTypes"],
+        "validatedTypes": evaluation["validatedTypes"],
+        "missingTypes": evaluation["missingTypes"],
+        "declaredTypeRouteTemplates": evaluation["declaredTypeRouteTemplates"],
+        "declaredTypeRouteEvidence": evaluation["declaredTypeRouteEvidence"],
         "typeComplete": evaluation["typeComplete"],
         "providerJavaScriptExecuted": True,
         "liveTraversalRequiredForPromotion": True,
         "staticEvidenceIsNotHttpProof": True,
+        "declaredTypesAreGateDenominator": True,
+        "internalRequestsAreNotGateDenominator": True,
         "sequentialProviderGate": True,
         "advancedToNextProvider": True,
         "originEvidence": origin_evidence,
@@ -576,10 +806,15 @@ def finalize_provider(
     recognized["httpProvenRouteCount"] = evaluation["liveValidatedRouteCount"]
     recognized["effectiveCoverageRatio"] = evaluation["effectiveCoverageRatio"]
     recognized["requiredCoverageRatio"] = evaluation["requiredCoverageRatio"]
+    recognized["declaredTypeCoverageRatio"] = evaluation["declaredTypeCoverageRatio"]
+    recognized["validatedTypes"] = evaluation["validatedTypes"]
+    recognized["missingTypes"] = evaluation["missingTypes"]
+    recognized["declaredTypeRouteEvidence"] = copy.deepcopy(evaluation["declaredTypeRouteEvidence"])
     recognized["completionState"] = completion_state
     recognized["providerJavaScriptExecuted"] = True
     recognized["liveTraversalRequiredForPromotion"] = True
     recognized["staticEvidenceIsNotHttpProof"] = True
+    recognized["declaredTypesAreGateDenominator"] = True
     recognized["sequentialProviderGate"] = True
     knowledge_row["recognizedContract"] = recognized
     static_row["model"] = model
@@ -604,14 +839,19 @@ def finalize_provider(
             "completion_state": completion_state,
             "effective_coverage_ratio": evaluation["effectiveCoverageRatio"],
             "required_coverage_ratio": evaluation["requiredCoverageRatio"],
+            "declared_type_coverage_ratio": evaluation["declaredTypeCoverageRatio"],
+            "required_types": evaluation["requiredTypes"],
+            "validated_types": evaluation["validatedTypes"],
+            "missing_types": evaluation["missingTypes"],
             "provider_request_count": evaluation["providerRequestCount"],
             "live_validated_route_count": evaluation["liveValidatedRouteCount"],
+            "declared_types_are_gate_denominator": True,
             "sequential": True,
         }
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Sequential Provider v3 live route/DATA gate")
+    parser = argparse.ArgumentParser(description="Sequential Provider v3 declared-type live route/DATA gate")
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--output", type=Path, default=OUTPUT)
@@ -668,11 +908,11 @@ def main() -> int:
             print(
                 "FIELD_PROVIDER_SEQUENTIAL_PROBE "
                 f"provider={provider_id} fixture={task.get('fixture_slug')} step={task_index}/{len(provider['tasks'])} "
-                f"candidate_coverage={evaluation['candidateCoverageRatio']:.3f} "
-                f"observed_capture={evaluation['observedRouteCaptureRatio']:.3f} "
-                f"effective={evaluation['effectiveCoverageRatio']:.3f} target={evaluation['requiredCoverageRatio']:.3f} "
-                f"requests={evaluation['providerRequestCount']} live={evaluation['liveValidatedRouteCount']} "
-                f"unresolved_observed={evaluation['unresolvedObservedRequestCount']}",
+                f"declared_types={','.join(evaluation['requiredTypes']) or 'none'} "
+                f"validated_types={','.join(evaluation['validatedTypes']) or 'none'} "
+                f"missing_types={','.join(evaluation['missingTypes']) or 'none'} "
+                f"type_coverage={evaluation['declaredTypeCoverageRatio']:.3f} target=1.000 "
+                f"requests={evaluation['providerRequestCount']} live={evaluation['liveValidatedRouteCount']}",
                 flush=True,
             )
             if should_pass(evaluation):
@@ -680,13 +920,13 @@ def main() -> int:
                 break
 
         origin_evidence: list[dict[str, Any]] = []
-        completion_state = "coverage-qualified"
+        completion_state = "declared-types-qualified"
         if not passed:
             origins = provider_origins(model, patch)
             if evaluation.get("providerRequestCount", 0) == 0 or not evaluation.get("providerSuccessHttp"):
                 origin_evidence = [probe_origin(url, max(3, min(int(args.origin_timeout), 15))) for url in origins]
 
-            if evaluation.get("playableVerified") and evaluation.get("providerRequestCount", 0) == 0:
+            if evaluation.get("directOutputOnly") and evaluation.get("typeComplete"):
                 completion_state = "direct-output-verified"
                 passed = True
             elif evaluation.get("providerBlockedOnly") and evaluation.get("providerRequestCount", 0) > 0:
@@ -698,15 +938,14 @@ def main() -> int:
             else:
                 failure = {
                     **evaluation,
-                    "completionState": "insufficient-live-coverage",
+                    "completionState": "missing-declared-type-route-proof",
                     "originEvidence": origin_evidence,
                     "advancedToNextProvider": False,
                 }
                 report_rows.append(failure)
                 partial = {
-                    "schemaVersion": 2,
-                    "method": "strict-sequential-provider-live-route-data-gate",
-                    "minimumCoverageRatio": minimum,
+                    "schemaVersion": 3,
+                    "method": "strict-sequential-provider-declared-type-live-route-gate",
                     "providerCount": EXPECTED,
                     "completedProviderCount": index - 1,
                     "failedProvider": provider_id,
@@ -716,9 +955,8 @@ def main() -> int:
                 write(knowledge_path, knowledge)
                 write(overrides_path, overrides)
                 raise SystemExit(
-                    f"{provider_id}: live coverage insufficient "
-                    f"effective={evaluation['effectiveCoverageRatio']:.3f} "
-                    f"required={evaluation['requiredCoverageRatio']:.3f}; refusing to advance to provider {index + 1}"
+                    f"{provider_id}: missing live route proof for declared types "
+                    f"{','.join(evaluation['missingTypes']) or 'unknown'}; refusing to advance to provider {index + 1}"
                 )
 
         finalize_provider(provider_id, provider, knowledge, overrides, evaluation, completion_state, origin_evidence)
@@ -737,14 +975,11 @@ def main() -> int:
         totals["requests"] += int(evaluation["providerRequestCount"])
         totals[completion_state] += 1
 
-        # Checkpoint after every provider. If provider N+1 later fails, provider N's
-        # route/DATA evidence remains explicit and auditable in the run workspace.
         write(knowledge_path, knowledge)
         write(overrides_path, overrides)
         write(output_path, {
-            "schemaVersion": 2,
-            "method": "strict-sequential-provider-live-route-data-gate",
-            "minimumCoverageRatio": minimum,
+            "schemaVersion": 3,
+            "method": "strict-sequential-provider-declared-type-live-route-gate",
             "providerCount": EXPECTED,
             "completedProviderCount": index,
             "candidateRouteCount": totals["candidates"],
@@ -759,29 +994,33 @@ def main() -> int:
         print(
             "FIELD_PROVIDER_SEQUENTIAL_PASS "
             f"index={index} provider={provider_id} state={completion_state} "
-            f"effective={evaluation['effectiveCoverageRatio']:.3f} live={evaluation['liveValidatedRouteCount']} "
-            f"requests={evaluation['providerRequestCount']}",
+            f"validated_types={','.join(evaluation['validatedTypes']) or 'none'} "
+            f"type_coverage={evaluation['declaredTypeCoverageRatio']:.3f} "
+            f"live={evaluation['liveValidatedRouteCount']} requests={evaluation['providerRequestCount']}",
             flush=True,
         )
 
     final_report = load(output_path)
     final_report["allProvidersAdvancedSequentially"] = True
     final_report["sequentialNoInterProviderConcurrency"] = True
+    final_report["declaredTypesAreGateDenominator"] = True
     write(output_path, final_report)
     knowledge["liveRouteValidation"] = {
-        "schemaVersion": 2,
-        "method": "strict-sequential-provider-live-route-data-gate",
-        "minimumCoverageRatio": minimum,
+        "schemaVersion": 3,
+        "method": "strict-sequential-provider-declared-type-live-route-gate",
         "providerCount": EXPECTED,
         "completedProviderCount": EXPECTED,
         "allProvidersAdvancedSequentially": True,
+        "declaredTypesAreGateDenominator": True,
+        "requiredDeclaredTypeCoverageRatio": 1.0,
+        "internalRequestsAreGateDenominator": False,
         "staticEvidenceIsHttpProof": False,
         "candidateRoutesAreExecutableAuthority": False,
     }
     write(knowledge_path, knowledge)
     print(
         "FIELD_PROVIDER_ROUTE_SEQUENTIAL_COMPLETE "
-        f"providers={EXPECTED} minimum_coverage={minimum:.2f} "
+        f"providers={EXPECTED} declared_type_coverage=1.00 "
         f"live={final_report.get('liveValidatedRouteCount', 0)} requests={final_report.get('providerRequestCount', 0)}",
         flush=True,
     )
