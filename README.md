@@ -243,7 +243,7 @@ An inconsistent generation must never silently replace a healthy published state
 - `main` is the only production code branch;
 - structural Provider v3 work is validated on a workbench branch first;
 - current route-recognition workbench: `workbench/provider-v3-recognition-routes-data`;
-- Learning/proposal branches never become publication authority;
+- Learning proposals are isolated on `brain-learning/proposals` and never become publication authority directly;
 - official Nuvio repositories are consumed read-only;
 - platform evidence remains platform-specific.
 
