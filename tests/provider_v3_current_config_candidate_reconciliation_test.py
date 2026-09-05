@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import json
 import tempfile
 from pathlib import Path
@@ -20,6 +21,10 @@ def provider_js(model: dict) -> str:
     )
 
 
+def sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -30,7 +35,9 @@ def main() -> int:
                 {"id": "B", "filename": "providers/b.js"},
             ]
         }
-        (root / "providers/a.js").write_text(
+        a_path = root / "providers/a.js"
+        b_path = root / "providers/b.js"
+        a_path.write_text(
             provider_js({
                 "providerId": "a",
                 "knownSite": "https://old.example",
@@ -40,7 +47,7 @@ def main() -> int:
             }),
             encoding="utf-8",
         )
-        (root / "providers/b.js").write_text(
+        b_path.write_text(
             provider_js({
                 "providerId": "b",
                 "knownSite": "https://embedded-b.example",
@@ -134,8 +141,29 @@ def main() -> int:
                 },
             },
         }
+        materialization = {
+            "schemaVersion": 3,
+            "sourceSha": "source-test-sha",
+            "generation": "generation-test",
+            "providerCount": 2,
+            "providers": [
+                {
+                    "provider": "a",
+                    "file": "providers/a.js",
+                    "sha256": sha256(a_path),
+                    "providerDataSha256": "data-a",
+                },
+                {
+                    "provider": "b",
+                    "file": "providers/b.js",
+                    # Deliberately stale registry entry to prove mismatches are visible.
+                    "sha256": "0" * 64,
+                    "providerDataSha256": "data-b",
+                },
+            ],
+        }
 
-        stats = reconcile(root, manifest, knowledge, overrides, recognition_seeds)
+        stats = reconcile(root, manifest, knowledge, overrides, recognition_seeds, materialization)
         a = knowledge["providers"]["a"]["model"]
         b = knowledge["providers"]["b"]["model"]
         patch_a = overrides["provider_patches"]["a"]
@@ -158,6 +186,9 @@ def main() -> int:
         assert patch_a["candidate_learned_routes"] == ["/override-search/{query}", "/live-old/{id}"], patch_a
         assert patch_a["candidate_api_recipe"]["searchRoute"] == "/override-search/{query}", patch_a
         assert a["candidateReconciliation"]["routePlanSource"] == "provider-overrides", a
+        assert a["materializationIntegrity"]["state"] == "matched", a
+        assert a["materializationIntegrity"]["registryIsRouteSource"] is False, a
+        assert a["materializationIntegrity"]["providerDataSha256"] == "data-a", a
 
         # Recognition seed wins over stale embedded JS when there is no explicit override.
         assert b["knownSite"] == "https://seed-b.example", b
@@ -180,11 +211,17 @@ def main() -> int:
         assert patch_b["candidate_learned_routes"] == ["/?s={query}"], patch_b
         assert b["candidateReconciliation"]["recognitionSeedPresent"] is True, b
         assert b["candidateReconciliation"]["recognitionSeedIsHttpProof"] is False, b
+        assert b["materializationIntegrity"]["state"] == "mismatch", b
+        assert b["candidateRouteData"][0]["materializationIntegrityState"] == "mismatch", b
 
         assert stats["providersReconciled"] == 2, stats
         assert stats["recognitionSeedsUsed"] == 2, stats
         assert stats["recognitionSeedRoutes"] == 2, stats
         assert stats["recognitionSeedRequests"] == 2, stats
+        assert stats["materializationEntries"] == 2, stats
+        assert stats["materializationMatched"] == 1, stats
+        assert stats["materializationMismatched"] == 1, stats
+        assert stats["materializationMissing"] == 0, stats
         assert stats["staleCandidatesSuppressed"] >= 2, stats
         assert stats["liveValidatedRoutesPreserved"] == 1, stats
         assert stats["recipesReconciled"] == 1, stats
