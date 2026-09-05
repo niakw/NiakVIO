@@ -9,6 +9,7 @@ provider.
 from __future__ import annotations
 
 import argparse
+import copy
 import hashlib
 import json
 from pathlib import Path
@@ -31,7 +32,150 @@ def _host(value: object) -> str:
     return raw.split("/", 1)[0].strip().casefold()
 
 
-def reconcile_domain_substitutions(overrides: dict[str, object]) -> list[str]:
+def _current_model(static_knowledge: dict[str, object], provider_id: str) -> dict[str, object]:
+    providers = static_knowledge.get("providers")
+    if not isinstance(providers, dict):
+        return {}
+    row = providers.get(provider_id)
+    if not isinstance(row, dict):
+        return {}
+    model = row.get("model")
+    return model if isinstance(model, dict) else {}
+
+
+def _current_authority_hosts(model: dict[str, object]) -> set[str]:
+    values: list[object] = [
+        model.get("knownSite"),
+        model.get("officialSite"),
+        model.get("officialHub"),
+        model.get("officialApi"),
+        model.get("fixedApi"),
+    ]
+    recipe = model.get("apiRecipe")
+    if isinstance(recipe, dict):
+        values.extend(
+            recipe.get(key)
+            for key in ("base", "api", "baseUrl", "endpoint", "statusUrl")
+        )
+    return {_host(value) for value in values if _host(value)}
+
+
+def reconcile_provider_authority(
+    overrides: dict[str, object],
+    static_knowledge: dict[str, object],
+    provider_id: str,
+) -> list[str]:
+    """Project current canonical Provider DATA over stale historical overrides.
+
+    ``automation/provider-v3-static-knowledge.json`` is enriched immediately before
+    the strict sequential loop and is therefore the current canonical DATA for the
+    provider being materialized. ``provider-overrides.json`` can still retain useful
+    historical aliases and migration evidence, but an old endpoint/recipe must not
+    override that current model or redirect one of its canonical hosts away from the
+    current terminal.
+
+    Only provider N is touched here. This preserves the strict N -> proof -> N+1
+    contract instead of pre-mutating future providers.
+    """
+    canonical_id = allmat.canonical_id(provider_id)
+    patches = overrides.get("provider_patches")
+    if not isinstance(patches, dict):
+        return []
+    patch = patches.get(canonical_id)
+    if not isinstance(patch, dict):
+        return []
+    model = _current_model(static_knowledge, canonical_id)
+    if not model:
+        return []
+
+    changed = False
+
+    def assign(key: str, value: object) -> None:
+        nonlocal changed
+        text = str(value or "").strip()
+        if not text:
+            return
+        if patch.get(key) != text:
+            patch[key] = text
+            changed = True
+
+    assign("official_site", model.get("officialSite") or model.get("knownSite"))
+    assign("official_hub", model.get("officialHub"))
+    assign("official_api", model.get("officialApi"))
+
+    fixed_api = str(model.get("fixedApi") or "").strip()
+    if fixed_api:
+        fixed = patch.get("fixed_endpoint")
+        fixed = copy.deepcopy(fixed) if isinstance(fixed, dict) else {}
+        if fixed.get("api") != fixed_api:
+            fixed["api"] = fixed_api
+            patch["fixed_endpoint"] = fixed
+            changed = True
+
+    recipe = model.get("apiRecipe")
+    if isinstance(recipe, dict) and recipe:
+        canonical_recipe = copy.deepcopy(recipe)
+        if patch.get("api_recipe") != canonical_recipe:
+            patch["api_recipe"] = canonical_recipe
+            changed = True
+
+    # Historical replacement graphs may contain the reverse of the current
+    # transition (e.g. current.example -> old.example). Keep aliases and unrelated
+    # evidence, but never let a canonical current host be redirected to a host that
+    # is outside the current model's authority set.
+    authority_hosts = _current_authority_hosts(model)
+    if authority_hosts:
+        for key in ("replacements", "runtime_domain_replacements"):
+            mapping = patch.get(key)
+            if not isinstance(mapping, dict):
+                continue
+            cleaned: dict[object, object] = {}
+            for source, target in mapping.items():
+                source_host = _host(source)
+                target_host = _host(target)
+                if (
+                    source_host in authority_hosts
+                    and target_host
+                    and target_host not in authority_hosts
+                ):
+                    changed = True
+                    continue
+                cleaned[source] = target
+            if cleaned != mapping:
+                patch[key] = cleaned
+
+        substitutions = patch.get("domain_substitutions")
+        if isinstance(substitutions, dict):
+            cleaned_substitutions: dict[object, object] = {}
+            for source, target in substitutions.items():
+                source_host = _host(source)
+                target_host = _host(target)
+                if (
+                    source_host in authority_hosts
+                    and target_host
+                    and target_host not in authority_hosts
+                ):
+                    changed = True
+                    continue
+                cleaned_substitutions[source] = target
+            if cleaned_substitutions != substitutions:
+                patch["domain_substitutions"] = cleaned_substitutions
+
+    if changed:
+        print(
+            "FIELD_PROVIDER_STATIC_AUTHORITY_RECONCILED "
+            f"providers=1 ids={canonical_id}",
+            flush=True,
+        )
+        return [canonical_id]
+    return []
+
+
+def reconcile_domain_substitutions(
+    overrides: dict[str, object],
+    *,
+    provider_id: str | None = None,
+) -> list[str]:
     """Collapse stale domain substitutions through current replacement DATA.
 
     Some providers retain an older terminal in ``domain_substitutions`` while
@@ -42,12 +186,17 @@ def reconcile_domain_substitutions(overrides: dict[str, object]) -> list[str]:
 
     We only rewrite substitution chains that are already connected to replacement
     DATA; unrelated replacement entries are not promoted into routing authority.
+    When ``provider_id`` is supplied, only provider N may be mutated.
     """
     patches = overrides.get("provider_patches")
     if not isinstance(patches, dict):
         return []
+    scope = allmat.canonical_id(provider_id) if provider_id else None
     changed: list[str] = []
-    for provider_id, patch in patches.items():
+    for current_provider_id, patch in patches.items():
+        canonical_current = allmat.canonical_id(str(current_provider_id))
+        if scope and canonical_current != scope:
+            continue
         if not isinstance(patch, dict):
             continue
         raw_substitutions = patch.get("domain_substitutions")
@@ -101,7 +250,7 @@ def reconcile_domain_substitutions(overrides: dict[str, object]) -> list[str]:
         if substitutions == original:
             continue
         patch["domain_substitutions"] = dict(sorted(substitutions.items()))
-        changed.append(str(provider_id))
+        changed.append(canonical_current)
 
     if changed:
         print(
@@ -116,10 +265,20 @@ def materialize_one(provider_id: str) -> dict[str, object]:
     provider_id = allmat.canonical_id(provider_id)
     manifest = allmat.load(allmat.DEFAULT_SOURCE_MANIFEST)
     overrides = allmat.load(allmat.DEFAULT_OVERRIDES)
-    changed_domains = reconcile_domain_substitutions(overrides)
-    if changed_domains:
-        allmat.write_json(allmat.DEFAULT_OVERRIDES, overrides)
     static_knowledge = allmat.load(allmat.DEFAULT_STATIC_KNOWLEDGE)
+
+    authority_changed = reconcile_provider_authority(
+        overrides,
+        static_knowledge,
+        provider_id,
+    )
+    changed_domains = reconcile_domain_substitutions(
+        overrides,
+        provider_id=provider_id,
+    )
+    if authority_changed or changed_domains:
+        allmat.write_json(allmat.DEFAULT_OVERRIDES, overrides)
+
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
     static_rows = static_knowledge.get("providers") or {}
@@ -238,6 +397,7 @@ def materialize_one(provider_id: str) -> dict[str, object]:
         "devices": ["tv", "mobile", "desktop"],
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
+        "staticAuthorityReconciledProviders": authority_changed,
         "domainSubstitutionReconciledProviders": changed_domains,
         "minimizer": {
             "enabled": True,
