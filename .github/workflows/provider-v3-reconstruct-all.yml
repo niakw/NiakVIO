@@ -132,13 +132,10 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Candidate bundles exist only to let each real Provider Object execute.
-          # No route from this pass is publication authority by itself.
-          python scripts/materialize_provider_v3_all.py
-
-          # Strict order: provider N candidate probe -> DATA finalization -> provider
-          # N final rematerialization -> final-bundle live proof -> only then N+1.
-          # There is intentionally no inter-provider concurrency here.
+          # Strict order inside the orchestrator:
+          # candidate N materialize -> live probe -> coverage/DATA finalize ->
+          # final N materialize -> final-bundle live proof -> only then N+1.
+          # No 96-provider candidate materialization occurs before this loop.
           python scripts/reconstruct_provider_v3_sequential_live.py --minimum-coverage 0.75
 
           # Dynamic global invariant. Current manifest has 63 enabled providers,
@@ -152,6 +149,7 @@ jobs:
           assert report.get("completedProviderCount") == 96, report.get("completedProviderCount")
           assert report.get("allProvidersAdvancedSequentially") is True, report
           assert report.get("sequentialNoInterProviderConcurrency") is True, report
+          assert report.get("globalCandidateMaterialization") is False, report
           print(
               "FIELD_RECONSTRUCTION_SEQUENTIAL_LIVE_GATE "
               f"providers={report['providerCount']} completed={report['completedProviderCount']} "
@@ -163,8 +161,8 @@ jobs:
       - name: Reconstruct all 96 providers from final live DATA + Lego
         run: |
           set -euo pipefail
-          # Deterministic full rematerialization after every provider has already
-          # passed its own sequential candidate+final live gate.
+          # This is deterministic packaging only. Every provider has already been
+          # individually candidate-tested, finalized, rebuilt and re-probed.
           python scripts/materialize_provider_v3_all.py
           python scripts/prune_unreferenced_providers.py
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
