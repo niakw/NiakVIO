@@ -83,4 +83,23 @@ for provider_id in ("purstream", "vegamovies", "hindmoviez", "animezey", "4khdhu
         ]
     ), provider_id
 
-print(f"Provider v3 durable static knowledge contract passed providers={len(providers)} routeful={routeful}")
+# Current-site authority and route execution evidence are deliberately separate.
+# The reviewed seed may refresh VegaMovies' terminal before the live loop, but
+# /?s={query} must remain an unexecuted candidate until the N-to-N probe calls it.
+vega = providers["vegamovies"]["model"]
+assert vega.get("knownSite") == "https://new2.vegamovies.futbol", vega.get("knownSite")
+assert vega.get("officialSite") == "https://new2.vegamovies.futbol", vega.get("officialSite")
+assert vega.get("officialHub") == "https://vglist.top/", vega.get("officialHub")
+assert "/?s={query}" in (vega.get("routes") or []), vega.get("routes")
+vega_search = next(
+    row for row in vega.get("routeData") or []
+    if isinstance(row, dict) and row.get("route") == "/?s={query}"
+)
+assert vega_search.get("executedEvidence") is False, vega_search
+assert vega_search.get("httpUsed") is False, vega_search
+assert "current-domain-candidate-unexecuted" in (vega_search.get("evidenceSources") or []), vega_search
+
+print(
+    f"Provider v3 durable static knowledge contract passed providers={len(providers)} routeful={routeful} "
+    "vegamovies_current_domain=reviewed route_candidate=unexecuted"
+)
