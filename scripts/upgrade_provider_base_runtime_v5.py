@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-'''Upgrade the common ProviderBase reader through cumulative runtime v7 fixes.
+'''Upgrade the common ProviderBase reader through cumulative runtime v8 fixes.
 
 The verified v5 upgrader is preserved verbatim in
 upgrade_provider_base_runtime_v5_legacy.py. This stable entry point keeps
@@ -47,6 +47,43 @@ def _patch_v7_safe_html_text() -> bool:
     return True
 
 
+def _patch_v8_api_recipe_precedence() -> bool:
+    """An explicit API recipe is executable authority, not a hint after crawling.
+
+    Providers such as Purstream persist a bounded search -> provider id -> typed
+    movie/episode recipe. Running the generic sourceRuntimeFamily traversal first
+    spends the request budget on the same relative search route expanded against
+    site/hub/API origins and can prevent the declared typed route from ever being
+    reached. Execute the explicit recipe first; only recipes that explicitly opt
+    into generic fallback may continue into source-family discovery.
+    """
+    target = runtime_v7.TARGET
+    text = target.read_text(encoding='utf-8')
+    marker = '/* NIAKVIO_PROVIDER_BASE_API_RECIPE_FIRST_V8 */'
+    if marker in text:
+        if text.count(marker) != 1:
+            raise AssertionError(f'v8-api-recipe-first: marker count={text.count(marker)}')
+        return False
+
+    old = '''async function _spv4GetStreams(tmdbId, mediaType, season, episode) {
+const family = _spv4Family();
+const type = _text(mediaType || "movie").toLowerCase();
+if (family === "stremio-json") {'''
+    new = '''async function _spv4GetStreams(tmdbId, mediaType, season, episode) {
+const family = _spv4Family();
+const type = _text(mediaType || "movie").toLowerCase();
+/* NIAKVIO_PROVIDER_BASE_API_RECIPE_FIRST_V8 */
+if (NIAKVIO_PROVIDER_MODEL.apiRecipe) {
+const recipePrimary = await getStreams(tmdbId, type, season, episode);
+if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
+if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+}
+if (family === "stremio-json") {'''
+    text = _once_whitespace_tolerant(text, old, new, 'v8-api-recipe-first')
+    target.write_text(text, encoding='utf-8')
+    return True
+
+
 def patch() -> bool:
     changed_v5 = runtime_v5.patch()
     runtime_v5.validate()
@@ -57,7 +94,8 @@ def patch() -> bool:
     runtime_v7.once = _once_whitespace_tolerant
     changed_v7 = runtime_v7.patch()
     changed_safe_html = _patch_v7_safe_html_text()
-    return bool(changed_v5 or changed_v6 or changed_v7 or changed_safe_html)
+    changed_recipe_first = _patch_v8_api_recipe_precedence()
+    return bool(changed_v5 or changed_v6 or changed_v7 or changed_safe_html or changed_recipe_first)
 
 
 def validate() -> None:
@@ -69,6 +107,20 @@ def validate() -> None:
         raise AssertionError('runtime v7 DLE parser must use deterministic HTML text scanner')
     if '_text(match[4]).replace(/<[^>]+>/g, " ")' in text:
         raise AssertionError('runtime v7 DLE parser contains forbidden HTML filtering regexp')
+    marker = '/* NIAKVIO_PROVIDER_BASE_API_RECIPE_FIRST_V8 */'
+    if text.count(marker) != 1:
+        raise AssertionError(f'runtime v8 API-recipe precedence marker count={text.count(marker)}')
+    recipe_first = text.index(marker)
+    family_first = text.index('if (family === "stremio-json")', recipe_first)
+    if recipe_first >= family_first:
+        raise AssertionError('runtime v8 API recipe must execute before source-family traversal')
+    required = (
+        'const recipePrimary = await getStreams(tmdbId, type, season, episode);',
+        'NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true',
+    )
+    for needle in required:
+        if needle not in text[recipe_first:family_first]:
+            raise AssertionError(f'runtime v8 API-recipe precedence missing: {needle}')
 
 
 def main() -> int:
@@ -76,9 +128,9 @@ def main() -> int:
     validate()
     print(
         'PROVIDER_BASE_RUNTIME_CURRENT_OK '
-        f'changed={str(changed).lower()} v5=1 v6=1 v7=1 '
+        f'changed={str(changed).lower()} v5=1 v6=1 v7=1 v8=1 '
         'external_ids=1 traversal_eligibility=1 nested_priority=1 '
-        'source_plan_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1'
+        'source_plan_first=1 api_recipe_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1'
     )
     return 0
 
