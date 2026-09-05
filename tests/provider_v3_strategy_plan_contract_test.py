@@ -34,7 +34,7 @@ def route_kind(route: object) -> str:
     # Search semantics must win over a generic /api prefix (/api/search).
     if re.search(r"/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword|search|story)=", value):
         return "search"
-    if re.search(r"/(?:template-php/[^?#]*fetch\.php|engine/ajax/search\.php)(?:[?#]|$)", value):
+    if re.search(r"/template-php/[^?#]*fetch\.php(?:[?#]|$)", value):
         return "search"
     if re.search(r"/api(?:[./?#]|$)", value):
         return "api"
