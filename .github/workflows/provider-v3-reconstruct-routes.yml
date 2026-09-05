@@ -2,14 +2,9 @@ name: MANUAL - Reconstruct Provider Routes 96/96
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - workbench/provider-v3-recognition-routes-data
-    paths:
-      - '.github/triggers/provider-v3-reconstruct-routes.json'
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: provider-v3-route-reconstruction-${{ github.ref }}
@@ -24,6 +19,7 @@ jobs:
         with:
           ref: ${{ github.sha }}
           fetch-depth: 0
+          persist-credentials: false
       - name: Assert exact route reconstruction SHA
         shell: bash
         run: |
@@ -81,9 +77,8 @@ jobs:
               'observedWithoutRoutes': observed_without_routes,
           }
 
-          # A completed recognition pass may legitimately produce no durable route
-          # for a Provider Object. That is an explicit recognition result, not a
-          # quarantine/death signal and not a reason to fail the route-only census.
+          # This workflow is diagnostic only: reconstructed static routes are not
+          # promoted to live validity and are never committed from this job.
           print(
               'FIELD_ROUTE_RECONSTRUCTION '
               f"providers=96 routes={report.get('routeCount')} "
@@ -93,17 +88,3 @@ jobs:
           if observed_without_routes:
               print('FIELD_ROUTE_RECONSTRUCTION_NO_DURABLE_ROUTES ' + ','.join(observed_without_routes))
           PY
-      - name: Commit canonical route DATA only
-        if: github.event_name == 'push'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add automation/provider-v3-static-knowledge.json
-          if git diff --cached --quiet; then
-            echo "Route DATA already byte-identical; nothing to commit."
-            exit 0
-          fi
-          git commit -m "chore: reconstruct Provider route DATA 96/96"
-          git push origin "HEAD:${GITHUB_REF_NAME}"

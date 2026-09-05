@@ -8,11 +8,6 @@ on:
         required: false
         default: false
         type: boolean
-  push:
-    branches:
-      - workbench/provider-v3-recognition-routes-data
-    paths:
-      - '.github/triggers/provider-v3-reconstruct-all.json'
 
 permissions:
   contents: write
@@ -245,7 +240,7 @@ jobs:
           retention-days: 14
           if-no-files-found: error
       - name: Commit verified reconstruction to selected branch
-        if: (github.event_name == 'push' && github.ref == 'refs/heads/workbench/provider-v3-recognition-routes-data') || inputs.commit_reconstruction
+        if: inputs.commit_reconstruction
         shell: bash
         run: |
           set -euo pipefail
