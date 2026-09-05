@@ -58,6 +58,7 @@ jobs:
           python scripts/upgrade_provider_v3_redirect_route_match_v1.py
           python scripts/upgrade_provider_v3_batch_defer_to_learn_v1.py
           python scripts/upgrade_provider_v3_defer_finalization_preserve_validated_data_v3.py
+          python scripts/upgrade_provider_v3_season_query_role_v1.py
           python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
           python scripts/validate_provider_v3_routes_live.py --prepare-candidates
           python scripts/enrich_provider_v3_static_knowledge.py
@@ -70,6 +71,7 @@ jobs:
           python tests/provider_v3_live_route_validation_test.py
           python tests/provider_v3_sequential_live_gate_test.py
           python tests/provider_v3_redirect_host_gate_test.py
+          python tests/provider_v3_season_query_role_test.py
           python tests/provider_v3_finalization_plan_test.py
           python tests/provider_v3_safe_runtime_route_promotion_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
