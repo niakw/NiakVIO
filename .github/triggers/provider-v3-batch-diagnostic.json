@@ -1,5 +1,5 @@
 {
-  "reason": "Replay providers 1-8 only after reconciling candidate routes against the current manifest Provider JS config plus explicit overrides. Suppress stale failed/unexecuted historical candidates, preserve independently live-validated reusable routes, seed newly declared current-config routes as unproven candidates, then repair/probe live and persist validated route/DATA truth.",
+  "reason": "Replay providers 1-8 only after reconciling executable candidates against explicit provider overrides, NiakVIO recognition seeds, the current manifest Provider JS config, and historical candidates in that priority order. Suppress stale failed/unexecuted historical candidates, preserve independently live-validated reusable routes, seed recognition/current-config routes as unproven candidates, then repair/probe live and persist validated route/DATA truth.",
   "start_index": 1,
   "count": 8,
   "publication_gate": false,
@@ -9,11 +9,19 @@
   "refuse_advance_after_unresolved": false,
   "defer_unrepaired_to_learn": true,
   "current_provider_config_reconciliation": true,
+  "recognition_seed_reconciliation": true,
+  "route_source_priority": [
+    "provider-overrides",
+    "provider-v3-recognition-seeds",
+    "embedded-provider-js",
+    "historical-candidate"
+  ],
+  "recognition_seed_is_http_proof": false,
   "stale_candidate_execution": false,
   "preserve_live_validated_reusable_routes": true,
   "new_current_config_routes_require_live_proof": true,
   "final_bundle_reprobe": true,
   "playable_chain_type_proof": true,
   "publication_authority": false,
-  "batch_contract_revision": "repair-first-current-config-reconcile-1-8-v1"
+  "batch_contract_revision": "repair-first-recognition-seed-reconcile-1-8-v2"
 }
