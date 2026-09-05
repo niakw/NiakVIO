@@ -92,12 +92,15 @@ def patch() -> bool:
 
     anikoto = _row(patches, "anikototv")
     anikoto["published_types"] = ["anime", "movie"]
+    # The public AniKotoAPI project documents these as the native site routes
+    # it wraps internally. Do not persist the wrapper's /api/* endpoints on the
+    # source-site domains: those are a different HTTP service.
     anikoto["learned_routes"] = [
         "/search?keyword={query}",
         "/watch/{slug}",
-        "/api/episodes/{slug}",
-        "/api/servers?ids={id}",
-        "/api/stream?id={id}&slug={slug}",
+        "/ajax/episode/list/{id}",
+        "/ajax/server/list?servers={id}",
+        "/ajax/server?get={id}",
     ]
     _set_legos(
         anikoto,
@@ -146,9 +149,12 @@ def validate() -> None:
     if any("session" in str(v).lower() or "aws" in str(v).lower() for v in all_routes):
         raise AssertionError("allmovieland: dynamic traversal URL leaked into stable DATA")
 
-    ani_routes = patches["anikototv"]["learned_routes"]
-    if any("/v4/" in str(v).lower() for v in ani_routes):
-        raise AssertionError("anikototv: obsolete /v4 route survived clean route migration")
+    ani_routes = [str(v).lower() for v in patches["anikototv"]["learned_routes"]]
+    if any("/v4/" in v or v.startswith("/api/") for v in ani_routes):
+        raise AssertionError("anikototv: wrapper/obsolete route survived native-site migration")
+    for required in ("/ajax/episode/list/{id}", "/ajax/server/list?servers={id}", "/ajax/server?get={id}"):
+        if required not in ani_routes:
+            raise AssertionError(f"anikototv: native AJAX route missing: {required}")
 
 
 def main() -> int:
