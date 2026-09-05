@@ -181,6 +181,12 @@ Une quarantaine nécessite une **raison fonctionnelle explicite et prouvée**. `
 - Labs sur SHA exact ; aucune preuve d'un device ne vaut preuve d'un autre ;
 - Learning/proposals : branche dédiée `brain-learning/proposals`, séparée du contrôle de publication et sans voie directe vers `main`.
 
+### Maintenance durable
+
+- `weekly-upstream-provider-discovery.yml` — découverte upstream hebdomadaire en lecture seule ;
+- `purge-actions-history.yml` — purge planifiée de l'historique GitHub Actions selon la rétention ;
+- `brain-branch-maintenance.yml` — maintenance des branches Learning/proposals durables, sans publication directe de Provider JS.
+
 ## 14. Invariants non négociables
 
 1. Pas de seed JS publiée/upstream pour reconstruire Provider v3.
