@@ -1,13 +1,17 @@
 {
-  "reason": "Diagnose providers 49 through 58 while preserving verified-only manifest eligibility. Diagnostic continuation has no publication authority; strict 96/96 remains sequential N-to-N.",
-  "start_index": 49,
+  "reason": "Redo from provider 19 with repair-first semantics. For every provider N: live probe, safe runtime candidate staging, rematerialize N, re-probe N, then advance only after final verification or terminal blocked/unreachable proof.",
+  "start_index": 19,
   "count": 10,
   "publication_gate": false,
-  "continue_after_failure_for_diagnostics": true,
+  "repair_first": true,
+  "repair_attempts": 2,
+  "continue_after_failure_for_diagnostics": false,
+  "refuse_advance_after_unresolved": true,
+  "redirect_request_identity": "accepted-from-canonical-origin",
+  "official_hub_contract_host": true,
   "final_bundle_reprobe": true,
   "playable_chain_type_proof": true,
   "wrong_content_gate_scope": "per-declared-type",
-  "final_probe_diagnostics": "v1-preserved",
   "final_probe_fixture_selection": "minimal-evidence-per-declared-type",
-  "batch_contract_revision": "slice-49-58-v1"
+  "batch_contract_revision": "repair-first-from-19-v1"
 }
