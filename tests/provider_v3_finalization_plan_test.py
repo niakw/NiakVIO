@@ -8,6 +8,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+# Keep this test standalone: apply the migrations it is meant to lock before
+# importing the runtime under test.
+from upgrade_provider_v3_finalization_v1 import patch_finalizer  # noqa: E402
+from upgrade_provider_v3_redirect_route_match_v1 import patch as patch_redirect_route_match  # noqa: E402
+
+patch_finalizer()
+patch_redirect_route_match()
+
 from validate_provider_v3_routes_sequential import evaluate_provider, finalize_provider, should_pass  # noqa: E402
 
 COMMON = {
@@ -19,8 +27,8 @@ COMMON = {
 }
 
 
-def fetch(url: str, status: int) -> dict[str, object]:
-    return {**COMMON, "url": url, "final_url": url, "status": status}
+def fetch(url: str, status: int, final_url: str | None = None) -> dict[str, object]:
+    return {**COMMON, "url": url, "final_url": final_url or url, "status": status}
 
 
 base_model = {
@@ -59,7 +67,13 @@ movie = {
     "fixture": {"tmdbId": "10", "mediaType": "movie", "title": "Movie"},
     "status": "playable_verified",
     "fetches": [
-        fetch("https://api.plan.test/v1/search/Movie", 200),
+        # The stable request identity must survive a server redirect. This is the
+        # exact class of bug that reduced UHDMovies final DATA to routes=0.
+        fetch(
+            "https://api.plan.test/v1/search/Movie",
+            200,
+            "https://api.plan.test/v1/results/movie",
+        ),
         fetch("https://api.plan.test/v1/fallback/10", 404),
         fetch("https://api.plan.test/v1/movie/10", 200),
         fetch("https://api.plan.test/v1/gateway/session-837492", 200),
@@ -71,7 +85,11 @@ tv = {
     "fixture": {"tmdbId": "20", "mediaType": "tv", "title": "Series", "season": 1, "episode": 1},
     "status": "playable_verified",
     "fetches": [
-        fetch("https://api.plan.test/v1/search/Series", 200),
+        fetch(
+            "https://api.plan.test/v1/search/Series",
+            200,
+            "https://api.plan.test/v1/results/series",
+        ),
         fetch("https://api.plan.test/v1/fallback/20", 404),
         fetch("https://api.plan.test/v1/tv/20?season=1&episode=1", 200),
         fetch("https://api.plan.test/v1/gateway/session-994211", 200),
@@ -81,6 +99,14 @@ tv = {
 evaluation = evaluate_provider("plan-provider", copy.deepcopy(base_model), [movie, tv], 0.75)
 assert should_pass(evaluation), evaluation
 assert evaluation["validatedTypes"] == ["movie", "tv"], evaluation
+search_candidate = next(
+    row for row in evaluation["candidateRouteData"]
+    if row.get("route") == "/search/{query}" and not row.get("liveDerived")
+)
+assert search_candidate["validationState"] == "live-validated", search_candidate
+assert search_candidate.get("attemptEvidence"), search_candidate
+assert search_candidate.get("liveEvidence"), search_candidate
+
 derived = [row for row in evaluation["candidateRouteData"] if row.get("liveDerived")]
 assert derived, evaluation["candidateRouteData"]
 assert any("gateway/session-" in str(row.get("route") or "") for row in derived), derived
@@ -199,7 +225,8 @@ assert set(blocked_overrides["provider_patches"]["blocked-provider"]["learned_ro
 assert blocked_overrides["provider_patches"]["blocked-provider"]["api_recipe"] == base_model["apiRecipe"]
 
 print(
-    "PROVIDER_V3_FINALIZATION_PLAN_OK stable_attempted_non2xx=preserved "
-    "runtime_derived=pure-evidence runtime_observations=pure-evidence "
-    "unexecuted_guess=pruned blocked_stable_plan=preserved api_recipe=atomic"
+    "PROVIDER_V3_FINALIZATION_PLAN_OK redirect_request_identity=preserved "
+    "stable_attempted_non2xx=preserved runtime_derived=pure-evidence "
+    "runtime_observations=pure-evidence unexecuted_guess=pruned "
+    "blocked_stable_plan=preserved api_recipe=atomic"
 )
