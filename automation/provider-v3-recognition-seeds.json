@@ -204,6 +204,43 @@
         "The strict sequential live probe must execute this candidate before it can become validated Provider DATA.",
         "Historical /search.php and /api routes remain diagnostic candidates until live finalization prunes failed paths; no content-specific /download-* URL is persisted as Provider DATA."
       ]
+    },
+    "4khdhub": {
+      "identity": {
+        "mode": "catalog-search",
+        "requiresTmdbMetadata": true,
+        "requiredFields": ["tmdbId", "mediaType", "title", "year"]
+      },
+      "knownSite": "https://4khdhub.one",
+      "officialSite": "https://4khdhub.one",
+      "officialHub": "https://4khdhub.one/",
+      "origins": [
+        "https://4khdhub.one"
+      ],
+      "routes": [
+        "/?s={query}"
+      ],
+      "requests": [
+        {
+          "route": "/?s={query}",
+          "role": "search",
+          "method": "GET",
+          "bodyFields": [],
+          "formEncoded": false,
+          "jsonEncoded": false,
+          "refererRequired": false,
+          "originRequired": false,
+          "response": "html-or-text",
+          "executedEvidence": false,
+          "evidence": "current-domain-candidate-unexecuted",
+          "confidence": 0.95
+        }
+      ],
+      "notes": [
+        "Reviewed current 4KHDHub authority is 4khdhub.one; HDHub4u is a separate catalogue and must not replace the 4KHDHub terminal.",
+        "GET /?s={query} remains a candidate until the strict N-to-N live probe executes it against 4khdhub.one.",
+        "The canonical 4khdhub.one host must never be substituted to hdhub4u.* by historical override data."
+      ]
     }
   }
 }
