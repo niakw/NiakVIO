@@ -54,6 +54,7 @@ jobs:
           set -euo pipefail
           python scripts/upgrade_provider_v3_source_plan_v5.py
           python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_v3_finalization_v1.py
       - name: Enforce anime semantic and TV/movie transport contract
         run: |
           set -euo pipefail
@@ -77,6 +78,7 @@ jobs:
           python tests/provider_v3_static_knowledge_contract_test.py
           python tests/provider_v3_live_route_validation_test.py
           python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_finalization_plan_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/active_provider_live_coverage_test.py
       - name: Refuse direct main mutation
@@ -125,6 +127,7 @@ jobs:
           python tests/native_hls_integrity_budget_test.py
           python tests/provider_v3_live_route_validation_test.py
           python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_finalization_plan_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/active_provider_live_coverage_test.py
 
@@ -211,6 +214,7 @@ jobs:
           python tests/published_provider_lego_contract_test.py
           python tests/provider_v3_live_route_validation_test.py
           python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_finalization_plan_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/active_provider_live_coverage_test.py
           python scripts/assert_active_provider_live_coverage.py
