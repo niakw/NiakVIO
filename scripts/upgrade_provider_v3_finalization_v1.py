@@ -1,21 +1,15 @@
 #!/usr/bin/env python3
-"""Upgrade Provider v3 finalization to preserve the stable executable plan.
+"""Upgrade Provider v3 finalization without turning runtime observations into DATA.
 
-Declared semantic types are the publication gate denominator. Internal
-search/detail/player/API requests are chain evidence, not extra coverage items.
-Runtime-discovered landing/gateway URLs are evidence too: they must never become
-persistent provider route DATA merely because a crawler traversed them.
+Stable Provider DATA and runtime evidence are different layers:
+- stable candidate routes actually traversed may remain executable;
+- runtime-derived landing/gateway routes stay evidence-only;
+- runtime-observed full URLs/origins stay evidence-only too;
+- blocked runners preserve the complete stable candidate plan;
+- explicit apiRecipe remains an atomic execution plan.
 
-Rules:
-- normally qualified providers retain stable candidate routes actually traversed
-  by the successful candidate, including non-2xx fallback/control hops;
-- runtime-derived routes (``liveDerived``) stay diagnostic/type evidence only and
-  are never promoted automatically into executable DATA;
-- never-executed non-recipe route candidates are pruned after normal proof;
-- terminal-blocked / terminal-unreachable providers retain the whole *stable*
-  candidate plan because CI could not traverse far enough to safely prune it;
-- an explicit apiRecipe is an atomic executable plan and is retained. Optional
-  recipe branches need not all return 2xx for the recipe to survive.
+The upgrader also adds final-bundle probe diagnostics so candidate -> final drift is
+visible fixture-by-fixture in Actions logs.
 """
 from __future__ import annotations
 
@@ -23,7 +17,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "validate_provider_v3_routes_sequential.py"
+FINAL_PROBE_TARGET = ROOT / "scripts" / "reconstruct_provider_v3_sequential_live.py"
 MARKER = "PROVIDER_V3_EXECUTION_PLAN_FINALIZATION_V1"
+FINAL_PROBE_MARKER = "PROVIDER_V3_FINAL_PROBE_DIAGNOSTICS_V1"
 
 
 def once(text: str, old: str, new: str, label: str) -> str:
@@ -33,10 +29,10 @@ def once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
-def patch() -> bool:
+def patch_finalizer() -> bool:
     text = TARGET.read_text(encoding="utf-8")
     if MARKER in text:
-        validate_text(text)
+        validate_finalizer(text)
         return False
 
     old_plan = '''    model["candidateRouteData"] = copy.deepcopy(evaluation["candidateRouteData"])
@@ -46,9 +42,9 @@ def patch() -> bool:
     new_plan = '''    model["candidateRouteData"] = copy.deepcopy(evaluation["candidateRouteData"])
 
     # PROVIDER_V3_EXECUTION_PLAN_FINALIZATION_V1
-    # Gate coverage, runtime traversal evidence and persistent route DATA are
-    # deliberately different things. Runtime-discovered landing/gateway URLs
-    # may prove a declared type without becoming fixed routes in the next build.
+    # Coverage proof, runtime traversal evidence and persistent Provider DATA are
+    # distinct layers. Dynamic landing/gateway URLs may prove a type without
+    # becoming fixed routes in the next bundle.
     stable_candidate_rows = [
         copy.deepcopy(row)
         for row in evaluation["candidateRouteData"]
@@ -64,28 +60,16 @@ def patch() -> bool:
         and row.get("liveDerived")
     ]
     if completion_state in {"terminal-blocked", "terminal-unreachable"}:
-        # CI could not traverse the stable plan far enough to prove safe pruning.
-        # Preserve it verbatim so another network/client can still reach routes
-        # that occur after the blocked first hop. Dynamic crawl URLs stay evidence.
         execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
-        # Keep every stable route that the working candidate actually attempted.
-        # This includes failed/blocked fallback hops but excludes untouched guesses
-        # and excludes live-derived landing/gateway URLs which the runtime already
-        # discovers from the returned document/response.
         execution_plan_rows = [
             row for row in stable_candidate_rows
             if row.get("attemptEvidence")
             or row.get("validationState") == "live-validated"
         ]
     else:
-        # Direct-output and other exceptional verified states have no stronger
-        # evidence for destructive pruning than the stable candidate plan itself.
         execution_plan_rows = stable_candidate_rows
 
-    # If a provider had no durable route DATA at all, do not manufacture one from
-    # runtime crawl URLs. Its verified direct output / provider Lego remains the
-    # executable authority and the derived calls remain diagnostics only.
     model["routeData"] = execution_plan_rows
     model["routes"] = unique(
         [row.get("route") for row in execution_plan_rows if isinstance(row, dict)],
@@ -93,6 +77,49 @@ def patch() -> bool:
     )
 '''
     text = once(text, old_plan, new_plan, "execution-plan-retention")
+
+    old_observations = '''    live_origins = list(model.get("origins") or [])
+    observed_urls = list(model.get("observedUrls") or [])
+    for row in evaluation["candidateRouteData"]:
+        for item in row.get("attemptEvidence") or []:
+            raw = str(item.get("finalUrl") or item.get("url") or "")
+            if raw and raw not in observed_urls:
+                observed_urls.append(raw)
+            try:
+                parsed = urllib.parse.urlsplit(raw)
+                if parsed.scheme in {"http", "https"} and parsed.hostname:
+                    origin = f"{parsed.scheme}://{parsed.netloc}"
+                    if origin not in live_origins:
+                        live_origins.append(origin)
+            except ValueError:
+                pass
+    model["origins"] = live_origins[:64]
+    model["observedUrls"] = observed_urls[:128]
+'''
+    new_observations = '''    # Runtime observations are diagnostics, not Provider DATA authority. Preserve
+    # the stable candidate origins/URLs exactly; collect traversal observations
+    # separately for the report so signed/session URLs cannot alter the final build.
+    stable_origins = list(model.get("origins") or [])
+    stable_observed_urls = list(model.get("observedUrls") or [])
+    runtime_observed_urls = []
+    runtime_observed_origins = []
+    for row in evaluation["candidateRouteData"]:
+        for item in row.get("attemptEvidence") or []:
+            raw = str(item.get("finalUrl") or item.get("url") or "")
+            if raw and raw not in runtime_observed_urls:
+                runtime_observed_urls.append(raw)
+            try:
+                parsed = urllib.parse.urlsplit(raw)
+                if parsed.scheme in {"http", "https"} and parsed.hostname:
+                    origin = f"{parsed.scheme}://{parsed.netloc}"
+                    if origin not in runtime_observed_origins:
+                        runtime_observed_origins.append(origin)
+            except ValueError:
+                pass
+    model["origins"] = stable_origins[:64]
+    model["observedUrls"] = stable_observed_urls[:128]
+'''
+    text = once(text, old_observations, new_observations, "runtime-observation-separation")
 
     old_recipe = '''    live_set = set(evaluation["liveRoutes"])
     if isinstance(model.get("apiRecipe"), dict) and not recipe_is_live(model["apiRecipe"], live_set):
@@ -102,9 +129,6 @@ def patch() -> bool:
     execution_plan_set = set(model.get("routes") or [])
     candidate_model_recipe = model.get("candidateApiRecipe")
     if isinstance(candidate_model_recipe, dict):
-        # The recipe is one bounded execution plan. Type proof validates the
-        # declared outputs; optional status/fallback branches are not individual
-        # gate requirements. Blocked CI runs preserve the current plan as well.
         model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
 '''
     text = once(text, old_recipe, new_recipe, "atomic-api-recipe")
@@ -146,6 +170,9 @@ def patch() -> bool:
         "executionPlanRetainsAttemptedNon2xx": True,
         "runtimeDerivedRouteCount": len(runtime_derived_rows),
         "runtimeDerivedRoutesPersisted": False,
+        "runtimeObservedUrlCount": len(runtime_observed_urls),
+        "runtimeObservedOriginCount": len(runtime_observed_origins),
+        "runtimeObservationsPersistedAsProviderData": False,
         "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
         "sequentialProviderGate": True,
 '''
@@ -159,6 +186,9 @@ def patch() -> bool:
     recognized["executionPlanRouteCount"] = len(model.get("routes") or [])
     recognized["runtimeDerivedRequests"] = copy.deepcopy(runtime_derived_rows[:80])
     recognized["runtimeDerivedRoutesPersisted"] = False
+    recognized["runtimeObservedUrls"] = runtime_observed_urls[:80]
+    recognized["runtimeObservedOrigins"] = runtime_observed_origins[:40]
+    recognized["runtimeObservationsPersistedAsProviderData"] = False
     recognized["sequentialProviderGate"] = True
 '''
     text = once(text, old_recognized, new_recognized, "recognized-plan-fields")
@@ -171,6 +201,9 @@ def patch() -> bool:
             "execution_plan_route_count": len(model.get("routes") or []),
             "runtime_derived_route_count": len(runtime_derived_rows),
             "runtime_derived_routes_persisted": False,
+            "runtime_observed_url_count": len(runtime_observed_urls),
+            "runtime_observed_origin_count": len(runtime_observed_origins),
+            "runtime_observations_persisted_as_provider_data": False,
             "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
             "declared_types_are_gate_denominator": True,
             "sequential": True,
@@ -178,28 +211,74 @@ def patch() -> bool:
     text = once(text, old_gate, new_gate, "patch-gate-plan-fields")
 
     TARGET.write_text(text, encoding="utf-8")
-    validate_text(text)
+    validate_finalizer(text)
     return True
 
 
-def validate_text(text: str) -> None:
-    if text.count(MARKER) != 1:
-        raise AssertionError(f"finalization marker count={text.count(MARKER)}")
+def patch_final_probe_diagnostics() -> bool:
+    text = FINAL_PROBE_TARGET.read_text(encoding="utf-8")
+    if FINAL_PROBE_MARKER in text:
+        return False
+    old = '''    for task in used_tasks:
+        final_task = copy.deepcopy(task)
+        final_task["filename"] = final_filename
+        result = run_task(final_task, timeout)
+        result["fixture_slug"] = final_task.get("fixture_slug")
+        result["fixture"] = copy.deepcopy(final_task.get("fixture") or {})
+        rows.append(result)
+        evaluation = evaluate_provider(provider["provider_id"], live_model, rows, minimum)
+'''
+    new = '''    # PROVIDER_V3_FINAL_PROBE_DIAGNOSTICS_V1
+    print(
+        "FIELD_PROVIDER_FINAL_MODEL "
+        f"provider={provider['provider_id']} routes={len(live_model.get('routes') or [])} "
+        f"route_data={len(live_model.get('routeData') or [])} "
+        f"origins={len(live_model.get('origins') or [])} "
+        f"observed_urls={len(live_model.get('observedUrls') or [])} "
+        f"api_recipe={str(isinstance(live_model.get('apiRecipe'), dict)).lower()}",
+        flush=True,
+    )
+    for task_index, task in enumerate(used_tasks, start=1):
+        final_task = copy.deepcopy(task)
+        final_task["filename"] = final_filename
+        result = run_task(final_task, timeout)
+        result["fixture_slug"] = final_task.get("fixture_slug")
+        result["fixture"] = copy.deepcopy(final_task.get("fixture") or {})
+        rows.append(result)
+        evaluation = evaluate_provider(provider["provider_id"], live_model, rows, minimum)
+        http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
+        http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
+        print(
+            "FIELD_PROVIDER_FINAL_PROBE "
+            f"provider={provider['provider_id']} fixture={final_task.get('fixture_slug')} "
+            f"step={task_index}/{len(used_tasks)} task_status={result.get('status')} "
+            f"http_statuses={http_summary} "
+            f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
+            f"missing_types={','.join(evaluation.get('missingTypes') or []) or 'none'} "
+            f"requests={evaluation.get('providerRequestCount', 0)} "
+            f"live={evaluation.get('liveValidatedRouteCount', 0)}",
+            flush=True,
+        )
+'''
+    text = once(text, old, new, "final-probe-diagnostics")
+    FINAL_PROBE_TARGET.write_text(text, encoding="utf-8")
+    return True
+
+
+def validate_finalizer(text: str) -> None:
     required = (
+        MARKER,
         'stable_candidate_rows = [',
         'and not row.get("liveDerived")',
         'runtime_derived_rows = [',
         'and row.get("liveDerived")',
-        'if completion_state in {"terminal-blocked", "terminal-unreachable"}:',
-        'elif completion_state == "declared-types-qualified":',
-        'if row.get("attemptEvidence")',
         'model["routeData"] = execution_plan_rows',
+        'model["origins"] = stable_origins[:64]',
+        'model["observedUrls"] = stable_observed_urls[:128]',
+        'runtimeObservationsPersistedAsProviderData": False',
         'execution_plan_set = set(model.get("routes") or [])',
         'model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)',
         'patch["api_recipe"] = copy.deepcopy(candidate_recipe)',
-        '"executionPlanRetainsAttemptedNon2xx": True',
-        '"runtimeDerivedRoutesPersisted": False',
-        '"blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"}',
     )
     for needle in required:
         if needle not in text:
@@ -207,21 +286,23 @@ def validate_text(text: str) -> None:
     forbidden = (
         'model["routeData"] = copy.deepcopy(evaluation["liveRouteData"])',
         'model["routes"] = list(evaluation["liveRoutes"])',
-        'execution_plan_rows = copy.deepcopy(evaluation["liveRouteData"])',
+        'model["origins"] = live_origins[:64]',
+        'model["observedUrls"] = observed_urls[:128]',
         'not recipe_is_live(model["apiRecipe"], live_set)',
-        'candidate_recipe, live_set',
     )
     for needle in forbidden:
         if needle in text:
-            raise AssertionError(f"Provider v3 finalization v1 retained destructive/polluting rule: {needle}")
+            raise AssertionError(f"Provider v3 finalization retained destructive/polluting rule: {needle}")
 
 
 def main() -> int:
-    changed = patch()
+    changed = patch_finalizer()
+    diagnostics_changed = patch_final_probe_diagnostics()
     print(
         "PROVIDER_V3_FINALIZATION_V1_OK "
-        f"changed={str(changed).lower()} attempted_non2xx=preserved "
-        "runtime_derived=pure-evidence blocked_plan=preserved api_recipe=atomic"
+        f"changed={str(changed).lower()} diagnostics_changed={str(diagnostics_changed).lower()} "
+        "attempted_non2xx=preserved runtime_derived=pure-evidence "
+        "runtime_observations=pure-evidence blocked_plan=preserved api_recipe=atomic"
     )
     return 0
 
