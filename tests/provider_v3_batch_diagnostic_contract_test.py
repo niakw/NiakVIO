@@ -3,6 +3,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT / "scripts" / "reconstruct_provider_v3_batch_diagnostic.py").read_text(encoding="utf-8")
+validator = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
 
 assert 'parser.add_argument("--start-index"' in source
 assert 'parser.add_argument("--count"' in source
@@ -37,19 +38,29 @@ window = source[repair_defer_at:repair_defer_at + 900]
 assert 'learn=true' in window
 assert 'continue' in window, "repair-exhausted provider must defer to Learn and advance"
 
-# A candidate can qualify while its finalized rebuild regresses. That failure is
-# Learn evidence, not permission to leave the broken promoted DATA as authority.
-assert 'PROVIDER_V3_DEFER_FINALIZATION_ROLLBACK_V2' in source
-assert 'pre_finalize_static_row = copy.deepcopy(static_row)' in source
-assert 'pre_finalize_patch = copy.deepcopy(patch)' in source
-assert 'providers[provider_id] = pre_finalize_static_row' in source
-assert 'patches[provider_id] = pre_finalize_patch' in source
-assert 'final_proof["promotedDataRolledBack"] = True' in source
-assert '"promotedDataRolledBack": True' in source
+# Candidate/live DATA can be better even if the final rebuilt JS still regresses.
+# Keep that validated DATA, but demote provider/publication authority and defer
+# the remaining bundle/runtime problem to Learn.
+assert 'PROVIDER_V3_PRESERVE_VALIDATED_DATA_ON_FINAL_FAILURE_V3' in source
+assert 'def _demote_unverified_finalization(' in source
+assert 'validated-data-retained-final-bundle-unverified' in source
+assert 'recognition["publicationAuthority"] = False' in source
+assert 'recognized["publicationAuthority"] = False' in source
+assert 'live_gate["publication_authority"] = False' in source
+assert 'final_proof["validatedDataRetained"] = True' in source
+assert 'final_proof["providerAuthorityDemoted"] = True' in source
+assert 'providers[provider_id] = pre_finalize_static_row' not in source
+assert 'promotedDataRolledBack' not in source
+
+# Explicit failed-live routes stay as diagnostic evidence only; they must not
+# survive as executable routeData in a qualified/finalized Provider model.
+assert 'PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V1' in validator
+assert 'row.get("validationState") != "failed-live"' in validator
 
 print(
     "PROVIDER_V3_BATCH_DIAGNOSTIC_CONTRACT_OK "
     "bounded_slice=true repair_first=true defer_to_learn=true "
-    "failed_final_rollback=true continue_after_provider_failure=true "
+    "validated_data_retained=true provider_authority_demoted=true "
+    "failed_live_execution_data=false continue_after_provider_failure=true "
     "publication_gate=false final_bundle_reprobe=true"
 )
