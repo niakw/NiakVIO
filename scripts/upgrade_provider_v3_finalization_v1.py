@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
-"""Upgrade Provider v3 finalization to preserve the executable request plan.
+"""Upgrade Provider v3 finalization to preserve the stable executable plan.
 
 Declared semantic types are the publication gate denominator. Internal
 search/detail/player/API requests are chain evidence, not extra coverage items.
-That distinction must not be confused with deleting those requests after a
-candidate bundle succeeds.
+Runtime-discovered landing/gateway URLs are evidence too: they must never become
+persistent provider route DATA merely because a crawler traversed them.
 
 Rules:
-- normally qualified providers retain every route actually traversed by the
-  successful candidate, including non-2xx fallback/control hops;
-- never-executed non-recipe route candidates are still pruned after normal proof;
-- terminal-blocked / terminal-unreachable providers retain the whole candidate
-  plan because CI could not traverse far enough to safely prune it;
+- normally qualified providers retain stable candidate routes actually traversed
+  by the successful candidate, including non-2xx fallback/control hops;
+- runtime-derived routes (``liveDerived``) stay diagnostic/type evidence only and
+  are never promoted automatically into executable DATA;
+- never-executed non-recipe route candidates are pruned after normal proof;
+- terminal-blocked / terminal-unreachable providers retain the whole *stable*
+  candidate plan because CI could not traverse far enough to safely prune it;
 - an explicit apiRecipe is an atomic executable plan and is retained. Optional
   recipe branches need not all return 2xx for the recipe to survive.
 """
@@ -44,35 +46,46 @@ def patch() -> bool:
     new_plan = '''    model["candidateRouteData"] = copy.deepcopy(evaluation["candidateRouteData"])
 
     # PROVIDER_V3_EXECUTION_PLAN_FINALIZATION_V1
-    # Gate coverage and executable-plan retention are deliberately different.
-    # A route can be required to reproduce the successful chain even when its
-    # own response is 401/403/404 and therefore is not a live-validated route.
-    candidate_plan_rows = [
+    # Gate coverage, runtime traversal evidence and persistent route DATA are
+    # deliberately different things. Runtime-discovered landing/gateway URLs
+    # may prove a declared type without becoming fixed routes in the next build.
+    stable_candidate_rows = [
         copy.deepcopy(row)
         for row in evaluation["candidateRouteData"]
-        if isinstance(row, dict) and str(row.get("route") or "").strip()
+        if isinstance(row, dict)
+        and str(row.get("route") or "").strip()
+        and not row.get("liveDerived")
+    ]
+    runtime_derived_rows = [
+        copy.deepcopy(row)
+        for row in evaluation["candidateRouteData"]
+        if isinstance(row, dict)
+        and str(row.get("route") or "").strip()
+        and row.get("liveDerived")
     ]
     if completion_state in {"terminal-blocked", "terminal-unreachable"}:
-        # CI could not traverse the plan far enough to prove safe pruning.
-        # Preserve it verbatim so a client on a different network can still run
-        # the typed routes that occur after the blocked first hop.
-        execution_plan_rows = candidate_plan_rows
+        # CI could not traverse the stable plan far enough to prove safe pruning.
+        # Preserve it verbatim so another network/client can still reach routes
+        # that occur after the blocked first hop. Dynamic crawl URLs stay evidence.
+        execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
-        # Keep every route that the working candidate actually attempted. This
-        # includes failed/blocked fallback hops but excludes untouched guesses.
+        # Keep every stable route that the working candidate actually attempted.
+        # This includes failed/blocked fallback hops but excludes untouched guesses
+        # and excludes live-derived landing/gateway URLs which the runtime already
+        # discovers from the returned document/response.
         execution_plan_rows = [
-            row for row in candidate_plan_rows
+            row for row in stable_candidate_rows
             if row.get("attemptEvidence")
             or row.get("validationState") == "live-validated"
         ]
     else:
         # Direct-output and other exceptional verified states have no stronger
-        # evidence for destructive pruning than the candidate plan itself.
-        execution_plan_rows = candidate_plan_rows
+        # evidence for destructive pruning than the stable candidate plan itself.
+        execution_plan_rows = stable_candidate_rows
 
-    if not execution_plan_rows and evaluation.get("liveRouteData"):
-        execution_plan_rows = copy.deepcopy(evaluation["liveRouteData"])
-
+    # If a provider had no durable route DATA at all, do not manufacture one from
+    # runtime crawl URLs. Its verified direct output / provider Lego remains the
+    # executable authority and the derived calls remain diagnostics only.
     model["routeData"] = execution_plan_rows
     model["routes"] = unique(
         [row.get("route") for row in execution_plan_rows if isinstance(row, dict)],
@@ -131,6 +144,8 @@ def patch() -> bool:
     new_recognition = '''        "internalRequestsAreNotGateDenominator": True,
         "executionPlanRouteCount": len(model.get("routes") or []),
         "executionPlanRetainsAttemptedNon2xx": True,
+        "runtimeDerivedRouteCount": len(runtime_derived_rows),
+        "runtimeDerivedRoutesPersisted": False,
         "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
         "sequentialProviderGate": True,
 '''
@@ -142,6 +157,8 @@ def patch() -> bool:
     new_recognized = '''    recognized["declaredTypesAreGateDenominator"] = True
     recognized["executionPlanRequests"] = copy.deepcopy(model.get("routeData") or [])
     recognized["executionPlanRouteCount"] = len(model.get("routes") or [])
+    recognized["runtimeDerivedRequests"] = copy.deepcopy(runtime_derived_rows[:80])
+    recognized["runtimeDerivedRoutesPersisted"] = False
     recognized["sequentialProviderGate"] = True
 '''
     text = once(text, old_recognized, new_recognized, "recognized-plan-fields")
@@ -152,6 +169,8 @@ def patch() -> bool:
 '''
     new_gate = '''            "live_validated_route_count": evaluation["liveValidatedRouteCount"],
             "execution_plan_route_count": len(model.get("routes") or []),
+            "runtime_derived_route_count": len(runtime_derived_rows),
+            "runtime_derived_routes_persisted": False,
             "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
             "declared_types_are_gate_denominator": True,
             "sequential": True,
@@ -167,6 +186,10 @@ def validate_text(text: str) -> None:
     if text.count(MARKER) != 1:
         raise AssertionError(f"finalization marker count={text.count(MARKER)}")
     required = (
+        'stable_candidate_rows = [',
+        'and not row.get("liveDerived")',
+        'runtime_derived_rows = [',
+        'and row.get("liveDerived")',
         'if completion_state in {"terminal-blocked", "terminal-unreachable"}:',
         'elif completion_state == "declared-types-qualified":',
         'if row.get("attemptEvidence")',
@@ -175,6 +198,7 @@ def validate_text(text: str) -> None:
         'model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)',
         'patch["api_recipe"] = copy.deepcopy(candidate_recipe)',
         '"executionPlanRetainsAttemptedNon2xx": True',
+        '"runtimeDerivedRoutesPersisted": False',
         '"blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"}',
     )
     for needle in required:
@@ -183,12 +207,13 @@ def validate_text(text: str) -> None:
     forbidden = (
         'model["routeData"] = copy.deepcopy(evaluation["liveRouteData"])',
         'model["routes"] = list(evaluation["liveRoutes"])',
+        'execution_plan_rows = copy.deepcopy(evaluation["liveRouteData"])',
         'not recipe_is_live(model["apiRecipe"], live_set)',
         'candidate_recipe, live_set',
     )
     for needle in forbidden:
         if needle in text:
-            raise AssertionError(f"Provider v3 finalization v1 retained destructive rule: {needle}")
+            raise AssertionError(f"Provider v3 finalization v1 retained destructive/polluting rule: {needle}")
 
 
 def main() -> int:
@@ -196,7 +221,7 @@ def main() -> int:
     print(
         "PROVIDER_V3_FINALIZATION_V1_OK "
         f"changed={str(changed).lower()} attempted_non2xx=preserved "
-        "blocked_plan=preserved api_recipe=atomic"
+        "runtime_derived=pure-evidence blocked_plan=preserved api_recipe=atomic"
     )
     return 0
 
