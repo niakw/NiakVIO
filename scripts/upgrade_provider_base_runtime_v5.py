@@ -4,7 +4,7 @@
 The verified v5 upgrader is preserved verbatim in
 upgrade_provider_base_runtime_v5_legacy.py. This stable entry point keeps
 existing workflows compatible while always applying the current cumulative
-reader fixes.
+reader fixes and shared stream-presentation safety fixes.
 '''
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ import re
 import upgrade_provider_base_runtime_v5_legacy as runtime_v5
 import upgrade_provider_base_runtime_v6 as runtime_v6
 import upgrade_provider_base_runtime_v7 as runtime_v7
+import upgrade_stream_presentation_unknown_quality_v1 as stream_quality_projection
 
 
 def _once_whitespace_tolerant(text: str, old: str, new: str, label: str) -> str:
@@ -95,13 +96,22 @@ def patch() -> bool:
     changed_v7 = runtime_v7.patch()
     changed_safe_html = _patch_v7_safe_html_text()
     changed_recipe_first = _patch_v8_api_recipe_precedence()
-    return bool(changed_v5 or changed_v6 or changed_v7 or changed_safe_html or changed_recipe_first)
+    changed_stream_projection = stream_quality_projection.patch()
+    return bool(
+        changed_v5
+        or changed_v6
+        or changed_v7
+        or changed_safe_html
+        or changed_recipe_first
+        or changed_stream_projection
+    )
 
 
 def validate() -> None:
     runtime_v5.validate()
     runtime_v6.validate()
     runtime_v7.validate()
+    stream_quality_projection.validate()
     text = runtime_v7.TARGET.read_text(encoding='utf-8')
     if '_htmlVisibleText(match[4])' not in text:
         raise AssertionError('runtime v7 DLE parser must use deterministic HTML text scanner')
@@ -130,7 +140,8 @@ def main() -> int:
         'PROVIDER_BASE_RUNTIME_CURRENT_OK '
         f'changed={str(changed).lower()} v5=1 v6=1 v7=1 v8=1 '
         'external_ids=1 traversal_eligibility=1 nested_priority=1 '
-        'source_plan_first=1 api_recipe_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1'
+        'source_plan_first=1 api_recipe_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1 '
+        'unknown_stream_quality_projection=removed'
     )
     return 0
 
