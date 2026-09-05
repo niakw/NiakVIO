@@ -20,9 +20,12 @@ on:
 permissions:
   contents: read
 
+# Diagnostic slices never grant publication authority, so independent SHAs may
+# run concurrently. The final 96/96 reconstruction keeps its own strict
+# sequential concurrency contract.
 concurrency:
-  group: provider-v3-batch-diagnostic-${{ github.ref }}
-  cancel-in-progress: true
+  group: provider-v3-batch-diagnostic-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   batch-diagnostic:
