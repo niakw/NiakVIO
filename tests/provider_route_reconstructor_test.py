@@ -127,17 +127,21 @@ assert provider["model"]["routeData"] == first["model"]["routeData"], (
 )
 assert provider["model"]["routes"] == first["model"]["routes"]
 
-# Unknown route contract is a recognition state, never evidence that the provider
-# is dead/quarantined.
+# Unknown route contract is a completed recognition state, never evidence that
+# the provider is dead/quarantined and never a reason to invent a route.
 unknown = {"model": {"strategy": "html_scraper"}, "knowledge": {}}
 reconstruct_provider_routes("unknown", unknown)
 assert unknown["model"]["routeRecognition"]["status"] == "unknown", unknown
 assert unknown["model"]["routeData"] == [], unknown
+assert unknown["model"]["routes"] == [], unknown
+assert unknown["knowledge"]["recognizedContract"]["requests"] == [], unknown
 assert unknown["model"]["strategy"] == "html_scraper", unknown
+assert "quarantine" not in unknown and "dead" not in unknown, unknown
 
 # Real 96/96 route-only census: every Provider Object receives the canonical field,
 # compact model.routes is always derived from it, and no full provider rebuild is
-# involved. Empty DATA remains an explicit unknown contract for later recognition.
+# involved. Empty DATA is an explicit completed recognition result and is reported
+# consistently rather than converted into provider death/quarantine.
 knowledge = json.loads((ROOT / "automation/provider-v3-static-knowledge.json").read_text(encoding="utf-8"))
 seeds = json.loads((ROOT / "automation/provider-v3-recognition-seeds.json").read_text(encoding="utf-8"))
 overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
@@ -146,6 +150,8 @@ assert census["providerCount"] == 96, census
 assert census["fullProviderReconstructionInvoked"] is False, census
 assert census["providerJavaScriptExecuted"] is False, census
 assert reconstructed["routeReconstruction"]["canonicalRouteData"] == "providers.<id>.model.routeData"
+
+observed_without_routes = []
 for provider_id, row in reconstructed["providers"].items():
     model = row.get("model") or {}
     data = model.get("routeData")
@@ -154,9 +160,19 @@ for provider_id, row in reconstructed["providers"].items():
     recognition = model.get("routeRecognition") or {}
     assert recognition.get("status") in {"recognized", "unknown"}, (provider_id, recognition)
     assert recognition.get("fullProviderReconstructionRequired") is False, provider_id
+    if not data:
+        observed_without_routes.append(provider_id)
+
+reported_without_routes = sorted(census.get("unknownProviders") or [])
+observed_without_routes.sort()
+assert reported_without_routes == observed_without_routes, (
+    reported_without_routes,
+    observed_without_routes,
+)
+assert all(provider_id in reconstructed["providers"] for provider_id in reported_without_routes)
 
 print(
     "Provider route reconstructor tests passed: canonical routeData, structured object scan, "
     f"static source proof, idempotence, unknown != quarantine, census=96 routes={census['routeCount']} "
-    f"httpProven={census['httpProvenRouteCount']} unknown={len(census['unknownProviders'])}"
+    f"httpProven={census['httpProvenRouteCount']} noDurableRoutes={len(reported_without_routes)}"
 )
