@@ -1,0 +1,223 @@
+name: Temporary full provider cache bump
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/tmp-full-cache-bump.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-publication
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        with:
+          python-version: "3.12"
+
+      - name: Bump release and all provider cache versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          semver = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+          expected_old_release = '5.21.31'
+          expected_new_release = '5.21.32'
+
+          def load(path):
+              return json.loads(Path(path).read_text(encoding='utf-8'))
+
+          def dump(path, payload):
+              Path(path).write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+          def bump(value, label):
+              m = semver.fullmatch(str(value or '').strip())
+              if not m:
+                  raise SystemExit(f'invalid semver for {label}: {value!r}')
+              major, minor, patch = map(int, m.groups())
+              return f'{major}.{minor}.{patch + 1}'
+
+          manifest = load('manifest.json')
+          old_release = manifest['version']
+          if old_release != expected_old_release:
+              raise SystemExit(f'refusing unexpected release baseline: {old_release} != {expected_old_release}')
+          new_release = bump(old_release, 'manifest.version')
+          if new_release != expected_new_release:
+              raise SystemExit(f'unexpected target release: {new_release}')
+
+          rows = [row for row in manifest.get('scrapers', []) if isinstance(row, dict)]
+          if len(rows) != 96:
+              raise SystemExit(f'expected exactly 96 providers, got {len(rows)}')
+
+          by_id = {}
+          old_versions = {}
+          for row in rows:
+              cid = str(row.get('id', '')).strip().casefold()
+              if not cid or cid in by_id:
+                  raise SystemExit(f'invalid or duplicate provider id: {row.get("id")!r}')
+              old_versions[cid] = str(row.get('version') or '')
+              row['version'] = bump(row.get('version'), f'provider {cid}')
+              by_id[cid] = row
+
+          manifest['version'] = new_release
+          dump('manifest.json', manifest)
+
+          def sync_projection(path):
+              p = Path(path)
+              data = load(p)
+              data['version'] = new_release
+              for row in [x for x in data.get('scrapers', []) if isinstance(x, dict)]:
+                  cid = str(row.get('id', '')).strip().casefold()
+                  src = by_id.get(cid)
+                  if src is None:
+                      raise SystemExit(f'{path}: provider missing from principal manifest: {cid}')
+                  row['id'] = src['id']
+                  row['version'] = src['version']
+              dump(p, data)
+
+          for projection in ('vf/manifest.json', 'no-anime/manifest.json', 'vf-no-anime/manifest.json'):
+              sync_projection(projection)
+
+          package = load('package.json')
+          package['version'] = new_release
+          dump('package.json', package)
+
+          lock = load('package-lock.json')
+          lock['version'] = new_release
+          if isinstance(lock.get('packages'), dict) and isinstance(lock['packages'].get(''), dict):
+              lock['packages']['']['version'] = new_release
+          dump('package-lock.json', lock)
+
+          sources = load('sources.json')
+          sources['manifest_version'] = new_release
+          repo = sources.setdefault('repository', {})
+          repo['manifest_version'] = new_release
+          if 'version' in repo:
+              repo['version'] = new_release
+          dump('sources.json', sources)
+
+          catalog_path = Path('provider_catalog.json')
+          if catalog_path.exists():
+              catalog = load(catalog_path)
+              meta = catalog.setdefault('manifestMeta', {})
+              for key in ('general', 'vf'):
+                  meta.setdefault(key, {})['version'] = new_release
+              dump(catalog_path, catalog)
+
+          Path('.tmp-provider-old-versions.json').write_text(
+              json.dumps(old_versions, ensure_ascii=False, sort_keys=True) + '\n', encoding='utf-8'
+          )
+          print(f'release {old_release} -> {new_release}')
+          print(f'provider cache versions bumped: {len(rows)}')
+          PY
+
+      - name: Regenerate release integrity metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_release_hashes.py
+
+      - name: Validate official release contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/validate_release_integrity.py
+          python3 scripts/validate_language_projection.py
+          python3 tests/release_version_sync_test.py
+
+      - name: Verify exact 96-provider cache bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          semver = re.compile(r'^(\d+)\.(\d+)\.(\d+)$')
+          target = '5.21.32'
+          old_versions = json.loads(Path('.tmp-provider-old-versions.json').read_text(encoding='utf-8'))
+
+          def load(path):
+              return json.loads(Path(path).read_text(encoding='utf-8'))
+
+          def patch_plus_one(old, new):
+              a = semver.fullmatch(str(old))
+              b = semver.fullmatch(str(new))
+              if not a or not b:
+                  return False
+              av = tuple(map(int, a.groups()))
+              bv = tuple(map(int, b.groups()))
+              return bv == (av[0], av[1], av[2] + 1)
+
+          manifest = load('manifest.json')
+          rows = [r for r in manifest.get('scrapers', []) if isinstance(r, dict)]
+          assert manifest['version'] == target, manifest['version']
+          assert len(rows) == 96, len(rows)
+          current = {}
+          for row in rows:
+              cid = str(row.get('id', '')).strip().casefold()
+              assert cid and cid not in current, cid
+              current[cid] = row
+          assert set(current) == set(old_versions), (len(current), len(old_versions))
+          for cid, old in old_versions.items():
+              assert patch_plus_one(old, current[cid].get('version')), (cid, old, current[cid].get('version'))
+
+          for path in ('vf/manifest.json', 'no-anime/manifest.json', 'vf-no-anime/manifest.json'):
+              projection = load(path)
+              assert projection['version'] == target, (path, projection.get('version'))
+              for row in projection.get('scrapers', []):
+                  cid = str(row.get('id', '')).strip().casefold()
+                  assert cid in current, (path, cid)
+                  assert row.get('version') == current[cid].get('version'), (path, cid)
+
+          assert load('package.json')['version'] == target
+          lock = load('package-lock.json')
+          assert lock['version'] == target
+          assert lock.get('packages', {}).get('', {}).get('version') == target
+          sources = load('sources.json')
+          assert sources['manifest_version'] == target
+          assert sources.get('repository', {}).get('manifest_version') == target
+          if 'version' in sources.get('repository', {}):
+              assert sources['repository']['version'] == target
+          catalog = load('provider_catalog.json')
+          assert catalog.get('manifestMeta', {}).get('general', {}).get('version') == target
+          assert catalog.get('manifestMeta', {}).get('vf', {}).get('version') == target
+          print('exact full cache bump contract passed: release=5.21.32 providers=96')
+          PY
+
+      - name: Remove one-shot workflow and refresh hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/tmp-full-cache-bump.yml .tmp-provider-old-versions.json
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+
+      - name: Commit exact cache bump to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'niakvio-ci'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'release: bump NiakVIO and all provider cache versions'
+          git push origin HEAD:main
