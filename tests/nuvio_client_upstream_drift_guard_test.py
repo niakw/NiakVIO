@@ -117,40 +117,41 @@ def main() -> int:
     assert "adaptation_pending" in brain_source
     assert "contract_review_blocking=false" in brain_source
 
-    # The Desktop canary must materialize the exact durable Core fixed-point before
-    # any provider rebuild. Otherwise a purified Cineby can transiently regain its
-    # retired raw.githubusercontent.com repository dependency and fail validation.
+    # Native Labs are observational only. Desktop must validate the already
+    # materialized provider/Core contracts, resolve the official client HEAD and
+    # execute the reader without mutating/reapplying/reconstructing Provider JS.
     for required in (
-        "python3 scripts/normalize_repository_docs.py --apply",
-        "python3 scripts/normalize_runtime_repository_dependencies.py --apply",
-        "python3 scripts/normalize_provider_rebuild_safety.py --apply",
-        "python3 scripts/normalize_core_fixed_point_contract.py --apply",
-        "python3 scripts/normalize_provider_branding_pipeline.py --apply",
-        "python3 scripts/normalize_core_media_policy.py --apply",
-        "for pass in 1 2 3 4 5 6; do",
-        "python3 scripts/normalize_runtime_repository_dependencies.py --check",
+        "python3 scripts/render_platform_runtime_contracts.py --check",
+        "python3 tests/native_stream_extraction_gate_test.py",
+        "python3 tests/native_desktop_runtime_diagnostics_order_test.py",
         "python3 tests/nuvio_client_upstream_drift_guard_test.py",
+        "python3 scripts/check_nuvio_client_upstreams.py",
+        "python3 scripts/resolve_nuvio_lab_heads.py",
+        "run_native_corpus_desktop_suite.sh",
     ):
         assert required in desktop_canary, required
 
-    materialize_marker = "      - name: Materialize final Core fixed-point for Desktop canary\n"
-    checkout_marker = "      - name: Checkout latest official NuvioDesktop HEAD and stage initial route\n"
-    assert materialize_marker in desktop_canary
-    assert checkout_marker in desktop_canary
-    materialize_block = desktop_canary.split(materialize_marker, 1)[1].split(checkout_marker, 1)[0]
-    for required in (
+    for forbidden in (
+        "normalize_repository_docs.py --apply",
         "normalize_runtime_repository_dependencies.py --apply",
+        "normalize_provider_rebuild_safety.py --apply",
+        "normalize_core_fixed_point_contract.py --apply",
+        "normalize_provider_branding_pipeline.py --apply",
         "normalize_core_media_policy.py --apply",
         "reapply_published_overrides.py",
-        "normalize_runtime_repository_dependencies.py --check",
+        "materialize_provider_v3_all.py",
     ):
-        assert required in materialize_block, required
-    assert materialize_block.index("normalize_runtime_repository_dependencies.py --apply") < materialize_block.index(
-        "normalize_core_media_policy.py --apply"
-    )
-    assert materialize_block.index("normalize_core_media_policy.py --apply") < materialize_block.index(
-        "reapply_published_overrides.py"
-    )
+        assert forbidden not in desktop_canary, forbidden
+
+    validate_marker = "      - name: Validate consolidated Desktop contracts\n"
+    inspect_marker = "      - name: Inspect current official Nuvio client drift\n"
+    resolve_marker = "        name: Resolve latest official Desktop client HEAD\n"
+    checkout_marker = "      - name: Checkout latest official NuvioDesktop HEAD and stage initial route\n"
+    for marker in (validate_marker, inspect_marker, resolve_marker, checkout_marker):
+        assert marker in desktop_canary, marker
+    assert desktop_canary.index(validate_marker) < desktop_canary.index(inspect_marker)
+    assert desktop_canary.index(inspect_marker) < desktop_canary.index(resolve_marker)
+    assert desktop_canary.index(resolve_marker) < desktop_canary.index(checkout_marker)
 
     # Hard contract paths model provider request/result/extraction. Reader/UI stream
     # surfaces remain semantic-review paths so the report records the exact native

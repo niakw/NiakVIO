@@ -16,10 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 240
     steps:
-      - name: Checkout current main
+      - name: Checkout selected ref
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          ref: main
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -49,9 +47,15 @@ jobs:
         env:
           NUVIO_BREADTH_WORKERS: "8"
           NUVIO_BREADTH_TIMEOUT: "80"
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
         run: |
           set -euxo pipefail
-          python3 scripts/audit_provider_catalogue_breadth.py \
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}" || {
+            echo "A TMDB credential is required for the Provider JS breadth census." >&2
+            exit 1
+          }
+          python3 scripts/audit_provider_catalogue_breadth_tmdb_ci.py \
             --output provider-catalogue-breadth.json
 
       - name: Publish census summary

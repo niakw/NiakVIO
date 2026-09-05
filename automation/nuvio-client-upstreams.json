@@ -14,13 +14,13 @@
     "nuvio-mobile": {
       "repository": "NuvioMedia/NuvioMobile",
       "branch": "cmp-rewrite",
-      "verified_ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
+      "verified_ref": "d4891ffaaf975c77de8ea3612f37a7a2b936c79d",
       "platforms": [
         "android",
         "ios"
       ],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-27: Mobile contract advanced through cmp-rewrite HEAD 1b84ee475cea after reviewing the nine-commit delta from 582ae8638004. No configured provider, stream or player runtime contract path changed; only MainAppContent, details/trailer UI, SIMKL receipt, TMDB metadata and watching policies moved. QuickJS positional getStreams, PluginRuntimeResult projection and Android/iOS transport contracts remain unchanged.",
+      "audit_note": "2026-09-03: Mobile runtime re-audited at cmp-rewrite HEAD d4891ffaaf97. Positional getStreams, PluginRuntimeResult projection, Android/iOS transport contracts and client-projection requirements remain documented in automation/platform-runtime-contracts.json; this audited ref is now the registry baseline.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -118,14 +118,14 @@
     "nuvio-desktop": {
       "repository": "NuvioMedia/NuvioDesktop",
       "branch": "Dev",
-      "verified_ref": "24f63e42c6debfc7a20200bc3a9a9586370c44f0",
+      "verified_ref": "b17687e37b1eb7a9ae98aad302cb94b65eed26d9",
       "platforms": [
         "windows",
         "macos",
         "linux"
       ],
       "contract": "automation/platform-runtime-contracts.json",
-      "audit_note": "2026-08-26: Desktop runtime and transport contract re-audited at current Dev HEAD a4fe0bf1a98f. QuickJS positional getStreams and result projection match the current Mobile family, while Desktop keeps its distinct async __native_fetch bridge and JVM OkHttp transport without Proxy.NO_PROXY. Those transport files are now hard contract paths so future silent networking drift blocks advancement.",
+      "audit_note": "2026-09-03: Desktop runtime contract advanced to Dev HEAD b17687e37b1e after diff review. Changes are limited to desktop window maximize bounds/multi-monitor DPI handling; QuickJS, native fetch, PluginRuntimeResult and StreamItem projection paths are unchanged.",
       "contract_paths": [
         "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/",
         "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/",
@@ -202,12 +202,12 @@
     "nuvio-tv": {
       "repository": "NuvioMedia/NuvioTV",
       "branch": "dev",
-      "verified_ref": "ba44afb080d878ba123c978e791be8115e324fe9",
+      "verified_ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
       "platforms": [
         "android-tv"
       ],
       "contract": "automation/nuvio-tv-runtime-contract.json",
-      "audit_note": "2026-08-26: TV contract re-audited through current dev HEAD 0d8f99e2b92b. PluginRuntime positional getStreams, Proxy.NO_PROXY/IPv4FirstDns transport, TMDB_API_KEY injection and LocalScraperResult projection are unchanged. Recent PluginManager changes only bound scraper orchestration to MAX_CONCURRENT_SCRAPERS on low-RAM devices and skip duplicate repository writes; they do not change request arguments or returned stream mapping.",
+      "audit_note": "2026-09-03: TV runtime contract advanced to dev HEAD 4f37e9491997 after diff review. The intervening commits only change ASS/SSA subtitle styling/focus in the player UI; PluginRuntime, provider repository, IPv4/NO_PROXY transport, TMDB_API_KEY injection and stream projection paths are unchanged.",
       "contract_paths": [
         "app/src/full/java/com/nuvio/tv/core/plugin/",
         "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",

@@ -68,7 +68,10 @@ assert "ExoPlayer.Builder" not in mobile
 assert "PlatformPlaybackDataSourceFactory.create" not in mobile
 assert "sourceHeaders = headers.orEmpty()" in mobile
 assert "Auto mode intentionally emits null" in mobile
-assert 'getLaunchIntentForPackage("com.nuviodebug.com")' in mobile
+assert 'Intent().setClassName(' in mobile
+assert '"com.nuviodebug.com"' in mobile
+assert "MainActivity::class.java.name" in mobile
+assert "Intent(context, MainActivity::class.java)" not in mobile
 assert "getLaunchIntentForPackage(context.packageName)" not in mobile
 assert "FIELD_NATIVE_PLAYER_ENTRY client=mobile" in mobile
 assert "FIELD_NATIVE_PLAYER_BEGIN client=mobile" not in mobile

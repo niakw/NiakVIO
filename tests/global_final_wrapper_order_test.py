@@ -37,7 +37,11 @@ def assert_final_order(text: str, label: str) -> None:
 # scoped playback context, run the final safety layer, and only then validate
 # the final HLS graph.  HLS validation running before media recovery is a
 # regression because it only sees intermediate embed/player rows.
-future = b"async function getStreams(){return []};module.exports={getStreams};\n"
+future = b"""/* BEGIN NIAKVIO_PROVIDER */
+/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
+async function getStreams(){return []};module.exports={getStreams};
+/* END NIAKVIO_PROVIDER */
+"""
 patched, _records = module.apply_overrides("kurage", future, phase="discovery")
 assert_final_order(patched.decode("utf-8"), "future-html-provider")
 

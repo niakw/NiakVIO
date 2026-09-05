@@ -42,6 +42,9 @@ assert discovery.normalize_route_literal("/search.php?q=") == "/search.php?q={qu
 assert discovery.normalize_route_literal("/stream/{id}/episode?season=&episode=") == (
     "/stream/{id}/episode?season={season}&episode={episode}"
 )
+assert discovery.normalize_route_literal("/api/resolve?tmdb=&id=&imdb=") == (
+    "/api/resolve?tmdb={tmdbId}&id={id}&imdb={imdbId}"
+)
 
 semantic_entry = discovery.reconstruction_manifest_entry(
     "animekai",

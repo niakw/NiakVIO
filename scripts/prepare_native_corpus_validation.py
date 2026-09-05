@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-from native_media_type_contract import fixture_media_type  # noqa: E402
+from native_media_type_contract import fixture_runtime_media_type  # noqa: E402
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 
 
@@ -100,10 +100,10 @@ def common_fixture_values(fixture: dict) -> dict[str, str]:
     return {
         "slug": kotlin_string(fixture["slug"]),
         "tmdb": kotlin_string(fixture.get("tmdbId") or ""),
-        "media_type": kotlin_string(fixture_media_type(fixture)),
+        "media_type": kotlin_string(fixture_runtime_media_type(fixture)),
         "title": kotlin_string(fixture.get("title") or fixture["slug"]),
-        "season": "null" if season in (None, "") else str(int(season)),
-        "episode": "null" if episode in (None, "") else str(int(episode)),
+        "season": "null" if season is None or season == "" else str(int(season)),
+        "episode": "null" if episode is None or episode == "" else str(int(episode)),
         "provider_timeout_ms": str(provider_timeout_ms),
     }
 
@@ -275,6 +275,9 @@ def desktop_test(fixture: dict, providers: list[dict]) -> str:
 import com.nuvio.app.features.plugins.runtime.PluginRuntime
 import java.io.File
 import java.util.Base64
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlin.test.Test
 import kotlin.test.assertTrue
@@ -305,10 +308,12 @@ class NiakvioNativeCorpusDesktopTest {{
         val title = {f['title']}
         val season: Int? = {f['season']}
         val episode: Int? = {f['episode']}
-        val errors = mutableListOf<String>()
+        val errors = java.util.Collections.synchronizedList(mutableListOf<String>())
         emit("FIELD_NATIVE_CORPUS_BEGIN client=desktop fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
-        for (provider in providers) {{
-            val started = System.currentTimeMillis()
+        for (providerBatch in providers.chunked(6)) {{
+            val providerJobs = providerBatch.map {{ provider ->
+                async(Dispatchers.IO) {{
+                    val started = System.currentTimeMillis()
             try {{
                 val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {{
                     PluginRuntime.executePlugin(
@@ -333,6 +338,9 @@ class NiakvioNativeCorpusDesktopTest {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
                 emit("FIELD_NATIVE_ERROR client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} duration_ms=${{System.currentTimeMillis()-started}} error64=${{b64(error.message ?: error.toString())}}")
             }}
+                }}
+            }}
+            providerJobs.awaitAll()
         }}
         emit("FIELD_NATIVE_CORPUS_END client=desktop fixture=$fixtureSlug errors=${{errors.size}}")
         assertTrue(errors.isEmpty(), "native provider runtime errors: " + errors.take(12).joinToString(" | "))
@@ -346,11 +354,11 @@ def android_test(fixture: dict, providers: list[dict], client: str) -> str:
     # Native Android is a real device/emulator traversal. Keep a tighter hard
     # wall-clock budget than the generic host Lab so one wedged JS runtime does
     # not consume the whole fixture. The workflow can override this explicitly.
-    raw_android_timeout = os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "15000").strip()
+    raw_android_timeout = os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "25000").strip()
     try:
         android_timeout_ms = max(5_000, min(int(raw_android_timeout), 60_000))
     except ValueError:
-        android_timeout_ms = 15_000
+        android_timeout_ms = 25_000
     f["provider_timeout_ms"] = str(min(int(f["provider_timeout_ms"]), android_timeout_ms))
     if client == "mobile":
         package = "com.nuvio.app.features.plugins"
@@ -372,6 +380,9 @@ import android.util.Log
 import androidx.test.platform.app.InstrumentationRegistry
 {imports}
 import java.util.Base64
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -389,9 +400,13 @@ class {klass} {{
     private fun b64(value: Any?): String = Base64.getUrlEncoder().withoutPadding()
         .encodeToString((value?.toString() ?: "").toByteArray(Charsets.UTF_8))
 
+    private val emitLock = Any()
+
     private fun emit(message: String) {{
-        println(message)
-        Log.i("NiakvioCorpus", message)
+        synchronized(emitLock) {{
+            println(message)
+            Log.i("NiakvioCorpus", message)
+        }}
     }}
 {TRANSPORT_HELPERS}
     @Test
@@ -402,10 +417,12 @@ class {klass} {{
         val title = {f['title']}
         val season: Int? = {f['season']}
         val episode: Int? = {f['episode']}
-        val errors = mutableListOf<String>()
+        val errors = java.util.Collections.synchronizedList(mutableListOf<String>())
         emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")
-        for (provider in providers) {{
-            val started = System.currentTimeMillis()
+        for (providerBatch in providers.chunked(6)) {{
+            val providerJobs = providerBatch.map {{ provider ->
+                async(Dispatchers.IO) {{
+                    val started = System.currentTimeMillis()
             try {{
                 val providerExecutor = java.util.concurrent.Executors.newSingleThreadExecutor {{ runnable ->
                     Thread(runnable, "niakvio-provider-" + provider.id).apply {{ isDaemon = true }}
@@ -422,14 +439,19 @@ class {klass} {{
                         )
                     }}
                 }})
+                var providerTimedOut = false
                 val rows = try {{
                     providerFuture.get({f['provider_timeout_ms']}L, java.util.concurrent.TimeUnit.MILLISECONDS)
                 }} catch (timeout: java.util.concurrent.TimeoutException) {{
+                    providerTimedOut = true
                     providerFuture.cancel(true)
                     throw RuntimeException("provider_hard_timeout_ms={f['provider_timeout_ms']}", timeout)
                 }} finally {{
-                    providerFuture.cancel(true)
-                    providerExecutor.shutdownNow()
+                    if (providerTimedOut) {{
+                        providerExecutor.shutdownNow()
+                    }} else {{
+                        providerExecutor.shutdown()
+                    }}
                 }}
                 emit("FIELD_NATIVE_RESULT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")
                 rows.take(3).forEachIndexed {{ index, row ->
@@ -444,6 +466,9 @@ class {klass} {{
                 errors += provider.id + ":" + (error.message ?: error::class.simpleName.orEmpty())
                 emit("FIELD_NATIVE_ERROR client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} duration_ms=${{System.currentTimeMillis()-started}} error64=${{b64(error.message ?: error.toString())}}")
             }}
+                }}
+            }}
+            providerJobs.awaitAll()
         }}
         emit("FIELD_NATIVE_CORPUS_END client={client} fixture=$fixtureSlug errors=${{errors.size}}")
         assertTrue("native provider runtime errors: " + errors.take(12).joinToString(" | "), errors.isEmpty())

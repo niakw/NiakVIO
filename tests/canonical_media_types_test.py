@@ -47,7 +47,6 @@ def validate_catalog(path: Path) -> tuple[dict[str, dict], dict[str, list[str]]]
     assert data.get("sourceOfTruth") is True, f"{path}: sourceOfTruth must stay true"
     providers = data.get("providers", [])
     assert isinstance(providers, list) and providers, f"{path}: providers must be non-empty"
-
     by_canonical: dict[str, dict] = {}
     scraper_ids: set[str] = set()
     for index, entry in enumerate(providers):
@@ -65,19 +64,10 @@ def validate_catalog(path: Path) -> tuple[dict[str, dict], dict[str, list[str]]]
         scraper_ids.add(scraper_key)
         transport_types = canonical_types(scraper.get("supportedTypes"), f"{path}:{canonical_id}/{scraper_id}")
         canonical_raw = scraper.get("canonicalSupportedTypes")
-        types = (
-            canonical_types(canonical_raw, f"{path}:{canonical_id}/{scraper_id}:canonicalSupportedTypes")
-            if canonical_raw
-            else transport_types
-        )
+        types = canonical_types(canonical_raw, f"{path}:{canonical_id}/{scraper_id}:canonicalSupportedTypes") if canonical_raw else transport_types
         projections = entry.get("projections") or {}
         assert isinstance(projections, dict), f"{path}:{canonical_id}: projections must be an object"
-        by_canonical[canonical_key] = {
-            "canonicalId": canonical_id,
-            "scraperId": scraper_id,
-            "types": types,
-            "projections": projections,
-        }
+        by_canonical[canonical_key] = {"canonicalId": canonical_id, "scraperId": scraper_id, "types": types, "projections": projections}
 
     orders = data.get("manifestOrder") or {}
     assert isinstance(orders, dict), f"{path}: manifestOrder must be an object"
@@ -90,56 +80,39 @@ def validate_catalog(path: Path) -> tuple[dict[str, dict], dict[str, list[str]]]
         assert len(order) == len(set(order)), f"{path}: manifestOrder.{projection} contains duplicate ids"
         missing = [value for value in order if value not in by_canonical]
         assert not missing, f"{path}: manifestOrder.{projection} references unknown canonical ids {missing}"
-
-        projected = {
-            key
-            for key, entry in by_canonical.items()
-            if bool(entry["projections"].get(projection))
-        }
+        projected = {key for key, entry in by_canonical.items() if bool(entry["projections"].get(projection))}
         assert set(order) == projected, (
             f"{path}: manifestOrder.{projection} must exactly match providers projected to {projection}; "
             f"missing_from_order={sorted(projected - set(order))} extra_in_order={sorted(set(order) - projected)}"
         )
         normalized_orders[projection] = order
-
     return by_canonical, normalized_orders
 
 
-def assert_projection(
-    manifest_path: Path,
-    projection: str,
-    catalog: dict[str, dict],
-    orders: dict[str, list[str]],
-) -> tuple[int, int]:
+def assert_projection(manifest_path: Path, projection: str, catalog: dict[str, dict], orders: dict[str, list[str]]) -> tuple[int, int]:
     manifest_rows, anime = validate_manifest(manifest_path)
     order = orders[projection]
-    assert len(manifest_rows) == len(order), (
-        f"{manifest_path}: projection size drift {len(manifest_rows)} != catalog order {len(order)}"
-    )
+    assert len(manifest_rows) == len(order), f"{manifest_path}: projection size drift {len(manifest_rows)} != catalog order {len(order)}"
     expected_ids = [catalog[key]["scraperId"].casefold() for key in order]
     actual_ids = [row["key"] for row in manifest_rows]
-    assert actual_ids == expected_ids, (
-        f"{manifest_path}: provider order/identity is not the deterministic {projection} projection of provider_catalog.json"
-    )
+    assert actual_ids == expected_ids, f"{manifest_path}: provider order/identity is not the deterministic {projection} projection of provider_catalog.json"
+
     for row, canonical_key in zip(manifest_rows, order, strict=True):
         expected_types = catalog[canonical_key]["types"]
+        # This normalized equality is the canonical contract. Do not add a second
+        # byte-for-byte assertion on the optional raw canonicalSupportedTypes field.
         assert row["canonical"] == expected_types, (
             f"{manifest_path}:{row['id']}: canonical media types drift from provider_catalog.json: "
             f"{row['canonical']} != {expected_types}"
         )
-        expected_transport = expected_types
-        if "anime" in expected_types and "tv" not in expected_types:
-            expected_transport = tuple([*expected_types, "tv"])
-            assert tuple(row["row"].get("canonicalSupportedTypes") or ()) == expected_types, (
-                f"{manifest_path}:{row['id']}: anime TV transport alias must preserve canonicalSupportedTypes"
-            )
-        if "anime" in expected_types and "movie" not in expected_types:
-            assert "movie" not in row["types"], (
-                f"{manifest_path}:{row['id']}: anime-only provider must not be selected for ordinary movie transport"
-            )
-        assert row["types"] == expected_transport, (
+        expected_transport = list(expected_types)
+        if "anime" in expected_types:
+            for compatible in ("tv", "movie"):
+                if compatible not in expected_transport:
+                    expected_transport.append(compatible)
+        assert row["types"] == tuple(expected_transport), (
             f"{manifest_path}:{row['id']}: Nuvio transport supportedTypes drift: "
-            f"{row['types']} != {expected_transport}"
+            f"{row['types']} != {tuple(expected_transport)}"
         )
     return len(manifest_rows), anime
 
@@ -147,28 +120,21 @@ def assert_projection(
 catalog, orders = validate_catalog(ROOT / "provider_catalog.json")
 canonical_count, canonical_anime = assert_projection(ROOT / "manifest.json", "general", catalog, orders)
 vf_count, vf_anime = assert_projection(ROOT / "vf/manifest.json", "vf", catalog, orders)
-
 assert canonical_count >= 80, canonical_count
 assert canonical_anime > 0, "general projection must retain anime providers"
 assert vf_count > 0, vf_count
 assert vf_anime > 0, "VF projection must retain its anime providers"
 
 corpus = json.loads((ROOT / ".github/triggers/nuvio-client-lab.json").read_text(encoding="utf-8"))
-fixtures = {
-    row["slug"]: row["fixture"]
-    for row in corpus.get("fixtures", [])
-    if isinstance(row, dict) and isinstance(row.get("fixture"), dict)
-}
+fixtures = {row["slug"]: row["fixture"] for row in corpus.get("fixtures", []) if isinstance(row, dict) and isinstance(row.get("fixture"), dict)}
 for slug in ("jujutsu-kaisen-s01e01", "mushoku-tensei-s01e01"):
     fixture = fixtures[slug]
     assert str(fixture.get("category") or "").lower() == "anime", (slug, fixture)
-    # Nuvio may surface episodic anime as tv/series, but trusted metadata owns
-    # the canonical identity. The provider route must resolve to anime, never
-    # duplicate the same work through both tv and anime.
     assert str(fixture.get("mediaType") or "").lower() == "anime", (slug, fixture)
 
 print(
     "canonical media type tests passed: "
     f"catalog={len(catalog)} general={canonical_count} vf={vf_count} "
-    f"anime_general={canonical_anime} anime_vf={vf_anime} vocabulary=movie|tv|anime"
+    f"anime_general={canonical_anime} anime_vf={vf_anime} vocabulary=movie|tv|anime "
+    "anime_transport=anime+tv+movie"
 )

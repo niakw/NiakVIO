@@ -204,7 +204,7 @@ for stale in (
 
 assert "`main` is the only production code branch" in readme
 assert "`main` : unique branche de code" in readme_fr
-assert "## 22. Labs natifs sur `main`" in architecture
+assert "Cinq Native Labs" in architecture
 assert "brain-learning/proposals" in readme
 assert "brain-learning/proposals" in architecture
 assert "healthy sibling selection" not in architecture
@@ -292,8 +292,10 @@ assert '    *) ;;' in frontend_watch
 
 # Secure temporary-file contracts.
 sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+# The release-generation scratch file was retired. Keep the stronger invariant:
+# no fixed /tmp path and no reintroduction of the obsolete scratch artifact.
 assert "/tmp/release-generation.json" not in sync
-assert "$RUNNER_TEMP/release-generation.json" in sync
+assert "release-generation.json" not in sync
 
 catalogue_audit = (ROOT / "scripts/audit_catalogue_identity_media.py").read_text(encoding="utf-8")
 assert 'TEMP_ROOT = Path(os.environ.get("RUNNER_TEMP") or (ROOT / ".tmp")).resolve()' in catalogue_audit

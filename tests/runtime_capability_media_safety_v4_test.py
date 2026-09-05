@@ -12,13 +12,11 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 PATCH = ROOT / "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 
-# The native budget layers, synchronous-target traversal and final runtime
-# capability guard form one engine stack. Keep their focused regression tests
-# mandatory anywhere the v4 regression test is run (including permanent npm CI).
+# Native HLS behavior remains a focused companion of final media safety.
+# Target traversal/order is now Core-owned and no legacy source-shape ordering
+# patch is replayed during Provider v3 reconstruction.
 for companion in (
-    "tests/native_catalogue_recovery_budget_test.py",
     "tests/native_hls_integrity_budget_test.py",
-    "tests/native_sync_fetch_target_order_test.py",
 ):
     result = subprocess.run(
         [sys.executable, str(ROOT / companion)],

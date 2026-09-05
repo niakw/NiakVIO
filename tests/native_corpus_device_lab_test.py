@@ -76,6 +76,16 @@ assert "providerFuture.get(" in prepare_core
 assert "java.util.concurrent.TimeUnit.MILLISECONDS" in prepare_core
 assert "provider_hard_timeout_ms=" in prepare_core
 assert "isDaemon = true" in prepare_core
+assert "providers.chunked(6)" in prepare_core
+assert "async(Dispatchers.IO)" in prepare_core
+assert "providerJobs.awaitAll()" in prepare_core
+assert "java.util.Collections.synchronizedList" in prepare_core
+assert 'os.environ.get("NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS", "25000")' in prepare_core
+assert "niakvioPlayerProbeLock" in reader_codegen
+assert "synchronized(niakvioPlayerProbeLock)" in reader_codegen
+desktop_player_codegen = (ROOT / "scripts/augment_native_desktop_player.py").read_text(encoding="utf-8")
+assert "desktopPlayerProbeLock" in desktop_player_codegen
+assert "synchronized(desktopPlayerProbeLock)" in desktop_player_codegen
 assert corpus.get("retry_provider_timeouts") is False
 
 fixtures = "interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01"
@@ -94,7 +104,7 @@ assert tv_reader.count("tv-route-reader:") == 1
 assert "NIAKVIO_TARGET_FIXTURES: \"interstellar breaking-bad-s01e01 jujutsu-kaisen-s01e01\"" in tv_reader
 assert "NIAKVIO_TV_PRIORITY_APPEND: \"0\"" in tv_reader
 assert "NIAKVIO_TV_ROUTE_TIMEOUT_MINUTES: \"45\"" in tv_reader
-assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "15000"' in tv_reader
+assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"' in tv_reader
 assert "--streams 2" in tv_reader
 assert 'NIAKVIO_PRIMARY_STREAM_SCOPE: "2"' in tv_reader
 assert 'NIAKVIO_REGRESSION_STREAM_SCOPE: "2"' in tv_reader
@@ -115,6 +125,7 @@ for workflow, marker in (
 ):
     assert "retention-days: 8" in artifact_block(workflow, marker), marker
 
+assert "LC_NUMERIC: C" in desktop_reader
 assert "mobile-android-reader:" in mobile_android
 assert "name: NATIVE - Android Reader" in mobile_android
 assert "resolve_tv:" in mobile_android and "resolve_mobile:" in mobile_android

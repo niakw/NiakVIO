@@ -161,26 +161,24 @@ Tests should verify, when applicable:
 
 Regression tests are strongly encouraged.
 
-## Catalog, manifests and versions
+## Provider v3, manifests and versions
 
-`provider_catalog.json` is the canonical published provider registry. `manifest.json` and `vf/manifest.json` are projections, not independent sources of truth.
+`provider_catalog.json` is the canonical published metadata/projection registry. Executable provider code is reconstructed from clean ProviderBase v3 + structured DATA + owned `PROVIDER.*` / `CORE.*` Lego; never from a published or upstream Provider JS seed.
 
-Do **not** manually maintain a provider change by independently editing both manifests or by inventing a cache-bump sequence. The publication pipeline owns finalization.
+For provider code changes:
 
-When a provider transaction is accepted, `sync.yml` automatically:
+- edit the owned ProviderBase/DATA/Lego source, not a generated `providers/*.js` bundle;
+- use `STARTFIX/CLOSEFIX` ownership and keep changes inside the correct Lego;
+- run targeted tests;
+- use the manual 96/96 reconstruction workflow on a non-main branch when materialized provider bytes must change;
+- require reverse byte-identical reconstruction before merge;
+- never add repair/reconstruction behavior to CORE Quick/Deep or Native Labs.
 
-- imports the promoted candidate into the canonical catalog;
-- renders the general and VF projections;
-- bumps the provider patch when its client-visible row changed;
-- rotates the case-only client ID for a genuine `disabled → enabled` recovery when needed to escape Nuvio's persisted local state;
-- bumps the global release when the client-visible generation changed;
-- synchronizes the release across the manifests, `package.json`, `package-lock.json` and `sources.json`;
-- regenerates release hashes and validates integrity;
-- remains idempotent when a rerun contains no client-visible change.
+`sync.yml` verifies Quick/Deep and may publish only the allowlisted Deep reports/projections/hashes on `main`; it does not repair or reconstruct provider code.
 
-A contribution may update provider logic or canonical metadata, but it must not bypass this version/cache finalizer or add a competing bump helper.
+`domain-refresh.yml` is the only routine CONFIG rematerialization exception and may update only a validated `official_site`, with all bytes outside `PROVIDER.<ID>.CONFIG.V1` unchanged.
 
-Do not manually activate a provider that failed real runtime validation.
+Do not manually activate a provider from mocked evidence or disable an entire provider because one stream fails playback.
 
 ## Pull requests
 

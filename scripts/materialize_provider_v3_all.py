@@ -17,6 +17,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from urllib.parse import urlparse
@@ -33,10 +34,12 @@ from provider_base_store import (  # noqa: E402
     compose_provider_bundle,
 )
 from apply_provider_overrides import apply_overrides  # noqa: E402
-from provider_patch_blocks import validate_managed_fixes  # noqa: E402
+from provider_patch_blocks import owned_span, validate_managed_fixes  # noqa: E402
+from provider_v3_minimizer import minimize_text, validate_transform  # noqa: E402
 
 DEFAULT_SOURCE_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
+DEFAULT_STATIC_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 DEFAULT_OUT = ROOT / "providers"
 DEFAULT_REPORT = ROOT / "provider-v3-materialization.json"
 EXPECTED_PROVIDER_COUNT = 96
@@ -67,21 +70,70 @@ def origin(value: object) -> str:
         return ""
 
 
-def identity_input(patch: dict[str, Any]) -> dict[str, Any]:
+def _identity_route_allowed(value: object) -> bool:
+    text = str(value or "").strip()
+    lowered = text.casefold()
+    if not text or "${" in text or "encodeuricomponent(" in lowered:
+        return False
+    if re.search(r"(?:[?&])q=ponyfill(?:&|$)", lowered):
+        return False
+    return lowered.rstrip("/") not in {"/license", "license"}
+
+
+def _identity_mode_from_plan(
+    routes: list[str],
+    api_recipe: dict[str, Any] | None,
+) -> str:
+    candidates: list[str] = []
+    if isinstance(api_recipe, dict):
+        for key in ("searchRoute", "search_route", "directRoute", "direct_route"):
+            value = str(api_recipe.get(key) or "").strip()
+            if value:
+                candidates.append(value)
+    candidates.extend(str(value or "").strip() for value in routes)
+    candidates = [value for value in candidates if _identity_route_allowed(value)]
+
+    # External identifiers are derived by Core from the same authoritative TMDB
+    # metadata request. They therefore need metadata before the provider runs.
+    if any(
+        re.search(r"\{imdb(?:_?id)?\}|(?:[?&])imdb(?:_?id)?=", value, re.I)
+        for value in candidates
+    ):
+        return "external_id"
+
+    # Only plans that actually consume title/query/slug metadata are catalogue
+    # plans. Merely knowing an official site/API must never force a TMDB
+    # preflight across every provider.
+    if any(
+        re.search(
+            r"\{(?:query|title|slug)\}"
+            r"|/(?:search|recherche)(?:[/?#]|$)"
+            r"|(?:[?&])(?:s|q|query|keyword|search|story)="
+            r"|/template-php/[^?#]*fetch\.php(?:[?#]|$)",
+            value,
+            re.I,
+        )
+        for value in candidates
+    ):
+        return "catalog_search"
+
+    return "tmdb_direct"
+
+
+def identity_input(
+    patch: dict[str, Any],
+    routes: list[str] | None = None,
+    api_recipe: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     raw = patch.get("identity_input")
     if not isinstance(raw, dict):
-        mode = "catalog_search" if (
-            patch.get("api_recipe")
-            or patch.get("official_site")
-            or patch.get("learned_urls")
-            or patch.get("learned_routes")
-        ) else "tmdb_direct"
+        mode = _identity_mode_from_plan(list(routes or []), api_recipe)
         return {
             "mode": mode,
             "requiresTmdbBeforeRun": mode != "tmdb_direct",
             "requiredFields": (
                 ["title", "year", "mediaType"]
-                if mode != "tmdb_direct"
+                if mode == "catalog_search"
                 else ["tmdbId", "mediaType"]
             ),
         }
@@ -103,7 +155,7 @@ def identity_input(patch: dict[str, Any]) -> dict[str, Any]:
         ),
         "requiredFields": required or (
             ["title", "year", "mediaType"]
-            if mode != "tmdb_direct"
+            if mode == "catalog_search"
             else ["tmdbId", "mediaType"]
         ),
     }
@@ -113,25 +165,27 @@ def provider_model(
     provider_id: str,
     patch: dict[str, Any],
     capability: dict[str, Any],
+    static_row: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     fixed = patch.get("fixed_endpoint")
     fixed = fixed if isinstance(fixed, dict) else {}
+    static_model = static_row.get("model") if isinstance(static_row, dict) and isinstance(static_row.get("model"), dict) else {}
 
-    official_site = str(patch.get("official_site") or "").strip() or None
-    official_hub = str(patch.get("official_hub") or "").strip() or None
-    official_api = str(patch.get("official_api") or "").strip() or None
-    fixed_api = str(fixed.get("api") or "").strip() or None
+    official_site = str(patch.get("official_site") or static_model.get("officialSite") or static_model.get("knownSite") or "").strip() or None
+    official_hub = str(patch.get("official_hub") or static_model.get("officialHub") or "").strip() or None
+    official_api = str(patch.get("official_api") or static_model.get("officialApi") or "").strip() or None
+    fixed_api = str(fixed.get("api") or static_model.get("fixedApi") or "").strip() or None
 
     origins: list[str] = []
-    for value in (official_site, official_hub, official_api, fixed_api):
+    for value in (official_site, official_hub, official_api, fixed_api, *(static_model.get("origins") or [])):
         item = origin(value)
-        if item and item not in origins:
+        if item and not item.endswith(".invalid") and item not in origins:
             origins.append(item)
 
     observed_urls: list[str] = []
-    for value in patch.get("learned_urls") or []:
+    for value in [*(patch.get("learned_urls") or []), *(static_model.get("observedUrls") or [])]:
         item = str(value).strip()
-        if item and item not in observed_urls:
+        if item and "old.invalid" not in item and item not in observed_urls:
             observed_urls.append(item)
     # Explicit current endpoints are safe provenance facts and help generic
     # route expansion without importing historical/upstream executable code.
@@ -140,11 +194,17 @@ def provider_model(
         if item and item not in observed_urls:
             observed_urls.append(item)
 
-    routes = [
-        str(v).strip()
-        for v in patch.get("learned_routes") or []
-        if str(v).strip()
-    ]
+    routes: list[str] = []
+    for value in [*(patch.get("learned_routes") or []), *(static_model.get("routes") or [])]:
+        item = str(value).strip()
+        if item and item != "/" and item not in routes:
+            routes.append(item)
+
+    api_recipe = (
+        patch.get("api_recipe")
+        if isinstance(patch.get("api_recipe"), dict)
+        else static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
+    )
 
     return {
         "knownSite": official_site,
@@ -152,6 +212,7 @@ def provider_model(
             patch.get("capability")
             or capability.get("strategy")
             or capability.get("capability")
+            or static_model.get("strategy")
             or "unknown"
         ).strip().casefold(),
         "officialSite": official_site,
@@ -161,18 +222,40 @@ def provider_model(
         "origins": origins,
         "observedUrls": observed_urls,
         "routes": routes,
-        "apiRecipe": (
-            patch.get("api_recipe")
-            if isinstance(patch.get("api_recipe"), dict)
-            else None
-        ),
-        "identityInput": identity_input(patch),
+        "apiRecipe": api_recipe,
+        "sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown"),
+        "identityInput": identity_input(patch, routes, api_recipe),
         "strictIdentity": bool(patch.get("strict_identity", False)),
         "strictHtmlIdentity": bool(patch.get("strict_html_identity", False)),
         "outputUrlHostRewrites": patch.get("output_url_host_rewrites") or [],
         "outputLanguageRules": patch.get("output_language_rules") or [],
         "domainSubstitutions": patch.get("domain_substitutions") or {},
     }
+
+
+def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
+    """Preserve explicit anime semantics while exposing Nuvio TV/movie launch lanes."""
+    canonical = []
+    for value in entry.get("canonicalSupportedTypes") or []:
+        item = str(value or "").strip().casefold()
+        if item in {"movie", "tv", "anime"} and item not in canonical:
+            canonical.append(item)
+    if "anime" not in canonical:
+        return False
+    wanted = list(canonical)
+    for compatible in ("tv", "movie"):
+        if compatible not in wanted:
+            wanted.append(compatible)
+    current = [
+        str(value or "").strip().casefold()
+        for value in entry.get("supportedTypes") or []
+        if str(value or "").strip().casefold() in {"movie", "tv", "anime"}
+    ]
+    if current == wanted and entry.get("canonicalSupportedTypes") == canonical:
+        return False
+    entry["canonicalSupportedTypes"] = canonical
+    entry["supportedTypes"] = wanted
+    return True
 
 
 def base_version(value: object) -> str:
@@ -215,11 +298,18 @@ def materialize_all(
     overrides_path: Path = DEFAULT_OVERRIDES,
     output_dir: Path = DEFAULT_OUT,
     report_path: Path = DEFAULT_REPORT,
+    static_knowledge_path: Path = DEFAULT_STATIC_KNOWLEDGE,
     project_manifest_path: Path | None = None,
     project_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     manifest = load(source_manifest_path)
     overrides = load(overrides_path)
+    static_knowledge = load(static_knowledge_path)
+    static_rows = static_knowledge.get("providers")
+    if static_knowledge.get("legacyProviderJsExecuted") is not False or static_knowledge.get("upstreamJsExecuted") is not False:
+        raise ValueError("static Provider v3 knowledge must be knowledge-only")
+    if not isinstance(static_rows, dict):
+        raise ValueError("static Provider v3 knowledge providers map required")
     patches = overrides.get("provider_patches")
     capabilities = overrides.get("provider_capabilities")
     if not isinstance(patches, dict) or not isinstance(capabilities, dict):
@@ -242,10 +332,12 @@ def materialize_all(
     capability_ids = {canonical_id(v) for v in capabilities}
     missing_patches = sorted(set(ids) - patch_ids)
     missing_capabilities = sorted(set(ids) - capability_ids)
-    if missing_patches or missing_capabilities:
+    static_ids = {canonical_id(v) for v in static_rows}
+    missing_static = sorted(set(ids) - static_ids)
+    if missing_patches or missing_capabilities or missing_static:
         raise ValueError(
             f"structured DATA incomplete patches={missing_patches} "
-            f"capabilities={missing_capabilities}"
+            f"capabilities={missing_capabilities} static={missing_static}"
         )
 
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -253,6 +345,7 @@ def materialize_all(
     aggregate = hashlib.sha256()
 
     for index, entry in enumerate(rows, start=1):
+        normalize_anime_transport_compatibility(entry)
         provider_id = canonical_id(str(entry.get("id") or ""))
         print(
             "FIELD_PROVIDER_V3_MATERIALIZE_BEGIN "
@@ -264,7 +357,10 @@ def materialize_all(
         if not isinstance(patch, dict) or not isinstance(capability, dict):
             raise ValueError(f"{provider_id}: missing structured DATA")
 
-        model = provider_model(provider_id, patch, capability)
+        static_row = static_rows.get(provider_id)
+        if not isinstance(static_row, dict):
+            raise ValueError(f"{provider_id}: missing durable static knowledge")
+        model = provider_model(provider_id, patch, capability, static_row)
         seed = build_clean_provider_seed(
             provider_id,
             entry,
@@ -308,6 +404,40 @@ def materialize_all(
         core_ids = [fix_id for fix_id in fix_ids if fix_id.startswith("CORE.")]
         if not core_ids:
             raise ValueError(f"{provider_id}: no Core Lego materialized")
+        boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+        if text.count(boundary) != 1:
+            raise ValueError(
+                f"{provider_id}: Core boundary count={text.count(boundary)} expected=1"
+            )
+        boundary_at = text.index(boundary)
+        provider_fix_positions = []
+        core_fix_positions = []
+        for fix_id in fix_ids:
+            span = owned_span(text, fix_id)
+            if span is None:
+                raise ValueError(f"{provider_id}: managed Lego span missing: {fix_id}")
+            if fix_id.startswith("PROVIDER."):
+                provider_fix_positions.append(span[0])
+            elif fix_id.startswith("CORE."):
+                core_fix_positions.append(span[0])
+        if provider_fix_positions and max(provider_fix_positions) >= boundary_at:
+            raise ValueError(f"{provider_id}: Provider Lego found after Core boundary")
+        if core_fix_positions and min(core_fix_positions) <= boundary_at:
+            raise ValueError(f"{provider_id}: Core Lego found before Core boundary")
+
+        minimized = minimize_text(text)
+        validate_transform(text, minimized.text)
+        text = minimized.text
+        bundle = text.encode("utf-8")
+
+        # Prove minimization kept Lego ownership and envelope byte-addressable.
+        minimized_fix_ids = validate_managed_fixes(text)
+        if minimized_fix_ids != fix_ids:
+            raise ValueError(f"{provider_id}: minimizer changed managed Lego ownership")
+        if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1 or text.count("/* END NIAKVIO_PROVIDER */") != 1:
+            raise ValueError(f"{provider_id}: minimizer changed Provider v3 envelope")
+        if text.count(boundary) != 1:
+            raise ValueError(f"{provider_id}: minimizer changed Core boundary")
 
         digest = hashlib.sha256(bundle).hexdigest()
         filename = f"{provider_id}-{digest[:16]}.js"
@@ -339,6 +469,12 @@ def materialize_all(
             "devices": ["tv", "mobile", "desktop"],
             "legacyProviderJsExecuted": False,
             "upstreamJsExecuted": False,
+            "minimizer": {
+                "enabled": True,
+                "savedBytes": minimized.saved_bytes,
+                "transformedLines": minimized.transformed_lines,
+                "skippedReason": minimized.skipped_reason,
+            },
         })
 
     generation = aggregate.hexdigest()
@@ -349,9 +485,13 @@ def materialize_all(
     )
     write_json(source_manifest_path, manifest)
 
+    context = str(os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") or "workspace").strip().casefold()
+    if context not in {"workspace", "release", "main"}:
+        raise ValueError(f"invalid NUVIO_PROVIDER_V3_CONTEXT: {context}")
     report = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "sourceSha": os.environ.get("GITHUB_SHA") or "",
+        "context": context,
         "generation": generation,
         "providerCount": len(report_rows),
         "expectedProviderCount": EXPECTED_PROVIDER_COUNT,
@@ -362,10 +502,12 @@ def materialize_all(
             "perDeviceProviderForkAllowed": False,
             "clientManifestProjectionAllowed": True,
         },
-        "publication": True,
-        "mainTouched": True,
+        "publication": context in {"release", "main"},
+        "mainTouched": context == "main",
         "legacyProviderJsExecuted": False,
         "upstreamJsExecuted": False,
+        "staticKnowledgeFile": static_knowledge_path.relative_to(ROOT).as_posix(),
+        "staticKnowledgeProviderCount": len(static_rows),
     }
     write_json(report_path, report)
 
@@ -387,6 +529,7 @@ def main() -> int:
     parser.add_argument("--overrides", type=Path, default=DEFAULT_OVERRIDES)
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUT)
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
+    parser.add_argument("--static-knowledge", type=Path, default=DEFAULT_STATIC_KNOWLEDGE)
     parser.add_argument("--project-manifest", type=Path)
     parser.add_argument("--project-ids", default="")
     args = parser.parse_args()
@@ -401,6 +544,7 @@ def main() -> int:
         overrides_path=args.overrides.resolve(),
         output_dir=args.output_dir.resolve(),
         report_path=args.report.resolve(),
+        static_knowledge_path=args.static_knowledge.resolve(),
         project_manifest_path=(
             args.project_manifest.resolve()
             if args.project_manifest is not None

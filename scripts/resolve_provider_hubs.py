@@ -1219,6 +1219,12 @@ def retained_lkg_site(provider_id: str, cfg: dict[str, Any], history_row: dict[s
 def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, Any], mode: str, timeout: float) -> dict[str, Any]:
     item: dict[str, Any] = {"provider_id": provider_id, "status": "inconclusive"}
     candidates, source_observations = gather_candidates(provider_id, cfg, history_row, mode, timeout)
+    if bool(cfg.get("_domain_only")):
+        allowed_source_types = {"hub", "telegram_public", "redirect"}
+        candidates = [
+            candidate for candidate in candidates
+            if str(candidate.get("source_type") or "") in allowed_source_types
+        ]
     item["sources"] = source_observations
     item["site_candidates"] = candidates
     validations: list[dict[str, Any]] = []
@@ -1296,6 +1302,17 @@ def resolve_one(provider_id: str, cfg: dict[str, Any], history_row: dict[str, An
         return item
     item["site_status"] = site_status
     item["site_final_url"] = final_site
+    if bool(cfg.get("_domain_only")):
+        item["api_candidates"] = []
+        item["api_probes"] = []
+        item["validated_api"] = None
+        item["status"] = "site_validated"
+        item["reason"] = (
+            "authoritative_hub_primary_domain_resolved"
+            if selected.get("hub_authoritative")
+            else "primary_domain_runtime_validated"
+        )
+        return item
     api_candidates = extract_api_candidates(final_site, site_document, provider_id, cfg)
     item["api_candidates"] = api_candidates
     validated_api = None
@@ -1431,6 +1448,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="health-output/provider-hub-report.json")
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--domain-only", action="store_true", help="When applying, update only provider_patches.<id>.official_site plus domain history; never API/routes/fix metadata.")
     parser.add_argument("--timeout", type=float, default=8.0)
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--mode", choices=("quick", "deep"), default="quick")
@@ -1451,7 +1469,7 @@ def main() -> int:
     history_providers_before = json.dumps(history_providers, sort_keys=True, ensure_ascii=False)
     security_route_sanitizations = (
         sanitize_unsafe_published_routes(config, hubs, history_providers)
-        if args.apply
+        if args.apply and not args.domain_only
         else []
     )
     selected_ids = {canonical_provider_id(item) for item in args.provider}
@@ -1464,6 +1482,10 @@ def main() -> int:
         if not args.include_disabled and disabled:
             continue
         effective_cfg = dict(cfg)
+        if args.domain_only:
+            if not has_authoritative_hub_source(cfg):
+                continue
+            effective_cfg["_domain_only"] = True
         provider_patch = (
             config.get("provider_patches", {}).get(provider_id, {})
             if isinstance(config.get("provider_patches"), dict)
@@ -1496,10 +1518,22 @@ def main() -> int:
             except Exception as exc:
                 item = {"provider_id": provider_id, "status": "inconclusive", "reason": "exception", "error": f"{type(exc).__name__}: {exc}"}
             if args.apply and item.get("status") in {"validated", "site_validated"}:
-                changes = update_provider_patch(config, provider_id, cfg, str(item["official_site"]), item.get("validated_api"), history_row)
-                item["applied_changes"] = changes
-                report["applied"] += len(changes)
-                update_history_row(history_row, item)
+                if args.domain_only:
+                    patch = config.setdefault("provider_patches", {}).setdefault(provider_id, {})
+                    before_site = str(patch.get("official_site") or "").rstrip("/")
+                    next_site = str(item["official_site"]).rstrip("/")
+                    changes = []
+                    if before_site != next_site:
+                        patch["official_site"] = next_site
+                        changes.append({"from": before_site, "to": next_site, "kind": "official_site"})
+                    item["applied_changes"] = changes
+                    report["applied"] += len(changes)
+                    update_history_row(history_row, item)
+                else:
+                    changes = update_provider_patch(config, provider_id, cfg, str(item["official_site"]), item.get("validated_api"), history_row)
+                    item["applied_changes"] = changes
+                    report["applied"] += len(changes)
+                    update_history_row(history_row, item)
             report["providers"][provider_id] = item
 
     output = ROOT / args.output

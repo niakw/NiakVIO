@@ -33,12 +33,6 @@ TARGET_FIXTURES="${NIAKVIO_TARGET_FIXTURES:-}"
 TARGET_PROVIDER="${NIAKVIO_TARGET_PROVIDER:-declared-type}"
 TARGET_MANIFEST="${NIAKVIO_TARGET_MANIFEST:-manifest.json}"
 PLAYER_PROBES="${NIAKVIO_PLAYER_PROBES:-1}"
-REQUESTED_READER_SUCCESS="${NIAKVIO_REQUIRE_READER_SUCCESS:-0}"
-PLAYER_OUTCOME_GLOBAL_GATE="${NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE:-0}"
-REQUIRE_READER_SUCCESS=0
-if [[ "$PLAYER_OUTCOME_GLOBAL_GATE" = "1" && "$REQUESTED_READER_SUCCESS" = "1" ]]; then
-  REQUIRE_READER_SUCCESS=1
-fi
 READER_ACCEPTANCE="${NIAKVIO_READER_ACCEPTANCE:-0}"
 PRIMARY_FIXTURE="${NIAKVIO_PRIMARY_FIXTURE:-interstellar}"
 PRIMARY_STREAM_SCOPE="${NIAKVIO_PRIMARY_STREAM_SCOPE:-all}"
@@ -109,6 +103,7 @@ PY
 fi
 
 SOFT_FAILURES=0
+READER_FAILURES=0
 PROVIDER_ARGS=()
 if [[ -n "$TARGET_PROVIDER" && "$TARGET_PROVIDER" != "all" && "$TARGET_PROVIDER" != "fixture" ]]; then PROVIDER_ARGS=(--provider "$TARGET_PROVIDER"); fi
 
@@ -123,7 +118,7 @@ python3 "$INSTRUMENTER" tv "$TV_ROOT" || exit $?
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" tv "$TV_ROOT" || exit $?
 if [[ -n "${GITHUB_ENV:-}" ]]; then echo "NIAKVIO_BRAIN_NONBLOCKING=1" >> "$GITHUB_ENV"; fi
 
-echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} tv_priority_fixtures=${#TV_PRIORITY_FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES requested_reader_success=$REQUESTED_READER_SUCCESS require_reader_success=$REQUIRE_READER_SUCCESS player_outcome_global_gate=$PLAYER_OUTCOME_GLOBAL_GATE reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
+echo "FIELD_NATIVE_CORPUS_TV_PROFILE fixtures=${#FIXTURES[@]} tv_priority_fixtures=${#TV_PRIORITY_FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES reader_outcome=observational reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true live_logcat=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 for fixture in "${FIXTURES[@]}"; do
   echo "===== TV CORPUS FIXTURE: $fixture ====="
   STREAM_SCOPE="$REGRESSION_STREAM_SCOPE"
@@ -157,9 +152,11 @@ for fixture in "${FIXTURES[@]}"; do
   FRONT_LOG="${WORKSPACE}/tv-native-frontend-${fixture}.log"
   GRADLE_LOG="${FRONT_DIR}/gradle.log"
   mkdir -p "$FRONT_DIR"
-  rm -f "$FRONT_LOG" "$GRADLE_LOG"
+  rm -f "$FRONT_LOG" "$GRADLE_LOG" "$LOG"
   adb logcat -c || true
-  bash "$FRONTEND_WATCHER" tv "$FRONT_DIR" "$FRONTEND_CAPTURE" > "$FRONT_LOG" 2>&1 &
+  adb logcat -v brief NiakvioCorpus:V NiakvioEvidence:V PluginRuntime:V Plugin:V '*:S' > >(tee "$LOG") 2>&1 &
+  LOGCAT_PID=$!
+  bash "$FRONTEND_WATCHER" tv "$FRONT_DIR" "$FRONTEND_CAPTURE" > >(tee "$FRONT_LOG") 2>&1 &
   WATCH_PID=$!
 
   RUNTIME_STATUS=0
@@ -171,12 +168,11 @@ for fixture in "${FIXTURES[@]}"; do
   sleep 1
   kill "$WATCH_PID" 2>/dev/null || true
   wait "$WATCH_PID" 2>/dev/null || true
+  kill "$LOGCAT_PID" 2>/dev/null || true
+  wait "$LOGCAT_PID" 2>/dev/null || true
 
-  LOG="${WORKSPACE}/tv-native-corpus-${fixture}.log"
-  adb logcat -d -v brief -s NiakvioCorpus:I NiakvioEvidence:I '*:S' > "$LOG" || true
-  echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv" >> "$LOG"
+  echo "FIELD_NATIVE_EVIDENCE_INSTRUMENTED client=tv" | tee -a "$LOG"
   cat "$FRONT_LOG" >> "$LOG" 2>/dev/null || true
-  cat "$LOG" || true
 
   ANALYSIS_STATUS=0
   node "$ANALYZER" "$fixture" "$LOG" || ANALYSIS_STATUS=$?
@@ -195,6 +191,7 @@ for fixture in "${FIXTURES[@]}"; do
   if [[ "$RUNTIME_STATUS" -ne 0 || "$ANALYSIS_STATUS" -ne 0 || "$COVERAGE_STATUS" -ne 0 || "$OBSERVED_READER_STATUS" -ne 0 ]]; then
     SOFT_FAILURES=$((SOFT_FAILURES+1))
   fi
+  if [[ "$OBSERVED_READER_STATUS" -ne 0 ]]; then READER_FAILURES=$((READER_FAILURES+1)); fi
   echo "FIELD_NATIVE_CORPUS_TV_STATUS fixture=$fixture runtime=$RUNTIME_STATUS collection=$ANALYSIS_STATUS coverage=$COVERAGE_STATUS reader_observed=$OBSERVED_READER_STATUS blocking=false stream_scope=$STREAM_SCOPE frontend_dir=$FRONT_DIR"
 done
 
@@ -206,7 +203,17 @@ for fixture in "${FIXTURES[@]}"; do
 done
 
 LOGS=("${WORKSPACE}"/tv-native-corpus-*.log)
+MATRIX_STATUS=0
+python3 "$NIAKVIO/scripts/gate_native_declared_provider_matrix.py" \
+  --client tv \
+  --manifest "$NIAKVIO/$TARGET_MANIFEST" \
+  --corpus "$NIAKVIO/.github/triggers/nuvio-client-lab.json" \
+  "${LOGS[@]}" || MATRIX_STATUS=$?
 SMOKE_STATUS=0
 node "$SMOKE_GATE" "${LOGS[@]}" || SMOKE_STATUS=$?
-echo "FIELD_NATIVE_CORPUS_TV_SUITE_STATUS status=$SMOKE_STATUS soft_failures=$SOFT_FAILURES fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST gate=production_player_reached evidence_root=$EVIDENCE_ROOT"
-exit "$SMOKE_STATUS"
+FINAL_STATUS=$SMOKE_STATUS
+if [[ "$MATRIX_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi
+READER_STATE=healthy
+if [[ "$READER_FAILURES" -gt 0 ]]; then READER_STATE=degraded; fi
+echo "FIELD_NATIVE_CORPUS_TV_SUITE_STATUS status=$FINAL_STATUS soft_failures=$SOFT_FAILURES reader_state=$READER_STATE reader_failures=$READER_FAILURES matrix_status=$MATRIX_STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST gate=production_player_reached evidence_root=$EVIDENCE_ROOT"
+exit "$FINAL_STATUS"

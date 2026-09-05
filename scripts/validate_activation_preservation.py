@@ -439,6 +439,27 @@ def pending_clean_preservation_is_deferred(
     )
 
 
+def preexisting_published_disable_is_deferred(
+    manifest_row: dict[str, Any] | None,
+    baseline_row: dict[str, Any] | None,
+    record: dict[str, Any] | None,
+) -> bool:
+    """Accept an unchanged disabled baseline during non-publishing workspace rebuilds.
+
+    Manual Provider v3 reconstruction does not own activation decisions and may
+    legitimately validate against a committed Deep report that predates an
+    intentional published disablement. Production/Deep keeps the stricter rule:
+    its current report must also describe the provider as disabled.
+    """
+    if not isinstance(manifest_row, dict) or manifest_row.get("enabled") is not False:
+        return False
+    if not isinstance(baseline_row, dict) or baseline_row.get("enabled") is not False:
+        return False
+    if str(os.environ.get("NUVIO_PROVIDER_V3_CONTEXT") or "").strip().casefold() == "workspace":
+        return True
+    return isinstance(record, dict) and record.get("enabled") is False
+
+
 def validate() -> list[str]:
     policy = load(POLICY)
     main_rows = rows(load(MAIN))
@@ -531,10 +552,11 @@ def validate() -> list[str]:
         baseline_row = baseline_by_id.get(provider_id)
         preexisting_published_disable = bool(
             not is_missing
-            and isinstance(baseline_row, dict)
-            and baseline_row.get("enabled") is False
-            and isinstance(record, dict)
-            and record.get("enabled") is False
+            and preexisting_published_disable_is_deferred(
+                manifest_row,
+                baseline_row,
+                record,
+            )
         )
         if preexisting_published_disable:
             deferred_to_learning[provider_id] = "preexisting_published_disabled_state_nonconclusive"

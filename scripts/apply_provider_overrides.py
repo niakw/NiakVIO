@@ -15,9 +15,11 @@ import importlib.util
 import inspect
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any, Iterable
 from override_text_utils import replace_literal
+from provider_v3_minimizer import minimize_text, validate_transform
 from provider_patch_blocks import (
     assert_single_managed_fix,
     decode_managed_data,
@@ -131,7 +133,22 @@ def _load_patch_module(patch_script: str, provider_id: str):
     if not spec or not spec.loader:
         raise ValueError(f"cannot load provider patch script: {patch_script}")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    # Provider Lego families may factor shared implementation into sibling
+    # modules under scripts/provider_patches. spec_from_file_location() does not
+    # add that directory to sys.path, so imports that work in normal package-like
+    # execution would otherwise fail only during clean materialization.
+    parent = str(patch_path.parent)
+    inserted_parent = parent not in sys.path
+    if inserted_parent:
+        sys.path.insert(0, parent)
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        if inserted_parent:
+            try:
+                sys.path.remove(parent)
+            except ValueError:
+                pass
     return module
 
 
@@ -1157,6 +1174,21 @@ def _strip_generated_core_tail(text: str) -> tuple[str, bool]:
         output = text
         for fix_id in core_ids:
             output = strip_managed_fix(output, fix_id)
+        boundary_needle = f"/* {CORE_START_MARKER} */"
+        boundary_count = output.count(boundary_needle)
+        if boundary_count > 1:
+            raise ValueError(f"Provider v3 contains duplicate Core boundaries: {boundary_count}")
+        if boundary_count == 1:
+            boundary_at = output.index(boundary_needle)
+            boundary_end = boundary_at + len(boundary_needle)
+            # The boundary owns the newline that follows it. Consuming that
+            # newline restores the exact pre-Core composed Provider bytes, so
+            # reapplying Core cannot accumulate blank lines before the boundary.
+            if output.startswith("\r\n", boundary_end):
+                boundary_end += 2
+            elif boundary_end < len(output) and output[boundary_end] in "\r\n":
+                boundary_end += 1
+            output = output[:boundary_at] + output[boundary_end:]
         return output, output != text
 
     original = text
@@ -1432,11 +1464,12 @@ def apply_overrides(
 
         # Canonical published layout is one single Provider envelope:
         # BEGIN PROVIDER
-        #   ProviderBase + DATA + PROVIDER.* Lego
+        #   ProviderBase + DATA/CONFIG + PROVIDER.* Lego
+        #   NUVIO_GLOBAL_CORE_START_BOUNDARY_V1
         #   CORE.* Lego
         # END PROVIDER
-        # No second Core envelope and no generated Core separator are needed:
-        # ownership/order is carried by the Lego IDs themselves.
+        # The single Core boundary is machine-readable architecture metadata used
+        # by reverse rebuild/byte-stability audits; it never owns executable logic.
         text = (
             text.replace("/* BEGIN NIAKVIO_CORE */", "")
             .replace("/* END NIAKVIO_CORE */", "")
@@ -1451,6 +1484,17 @@ def apply_overrides(
             )
         if text.count(PROVIDER_BEGIN_MARKER) != 1 or text.count(PROVIDER_END_MARKER) != 1:
             raise ValueError(f"{provider_id}: malformed Provider envelope before Core composition")
+
+        # Provider DATA and every PROVIDER.* Lego are complete at this point.
+        # Insert exactly one non-executable boundary before the first CORE.* Lego.
+        boundary_needle = f"/* {CORE_START_MARKER} */"
+        if boundary_needle in text:
+            raise ValueError(f"{provider_id}: stale Core boundary survived Core-tail stripping")
+        provider_end = text.index(PROVIDER_END_MARKER)
+        before_end = text[:provider_end]
+        if before_end and not before_end.endswith(("\n", "\r")):
+            before_end += "\n"
+        text = before_end + boundary_needle + "\n" + text[provider_end:]
 
         def _apply_playback_stage(hooks: list[str]) -> None:
             nonlocal text
@@ -1511,7 +1555,7 @@ def apply_overrides(
             options.update(
                 _provider_core_options("catalogue_alias_recovery")
             )
-            options.update({"base_url": official_site, "provider_name": provider_id})
+            options.update({"provider_name": provider_id})
             before = text
             text = _apply_patch_script(text, provider_id, patch_script, options, None)
             if text != before:
@@ -1615,6 +1659,35 @@ def apply_overrides(
                     "scope": scope,
                 })
 
+        # Media-type resolution is the outermost request-side wrapper. Provider/core
+        # request logic below receives canonical movie|tv|anime identity, while
+        # output-only presentation/branding/sanitization remain outside it so
+        # deferred positive-result TMDB verification is visible to finalization.
+        before = text
+        semantic_types = _provider_semantic_types(provider_id, specific)
+        media_type_options = {
+            "semantic_types": semantic_types,
+            "request_type_aliases": {
+                str(key).strip().casefold(): str(value).strip().casefold()
+                for key, value in (provider_capability.get("request_type_aliases") or {}).items()
+                if str(key).strip() and str(value).strip()
+            },
+        }
+        text = _apply_patch_script(
+            text,
+            provider_id,
+            GLOBAL_MEDIA_TYPE_RESOLUTION,
+            media_type_options,
+            None,
+        )
+        if text != before:
+            applied.append({
+                "type": "patch_script",
+                "path": GLOBAL_MEDIA_TYPE_RESOLUTION,
+                "phase": phase,
+                "scope": "global_media_type_resolution",
+            })
+
         # Presentation is a Core-wide finalization layer, not a provider capability.
         # Apply it after catalogue/media/playback recovery to every reconstructed
         # provider bundle. It only normalizes structured facts and optionally enriches
@@ -1683,34 +1756,6 @@ def apply_overrides(
                     "scope": "global_terminal_stream_sanitizer",
                 })
 
-        # Media-type resolution must be the outermost request wrapper so every
-        # inner Core/provider layer receives the same canonical movie|tv|anime
-        # identity. Client aliases remain input-only.
-        before = text
-        semantic_types = _provider_semantic_types(provider_id, specific)
-        media_type_options = {
-            "semantic_types": semantic_types,
-            "request_type_aliases": {
-                str(key).strip().casefold(): str(value).strip().casefold()
-                for key, value in (provider_capability.get("request_type_aliases") or {}).items()
-                if str(key).strip() and str(value).strip()
-            },
-        }
-        text = _apply_patch_script(
-            text,
-            provider_id,
-            GLOBAL_MEDIA_TYPE_RESOLUTION,
-            media_type_options,
-            None,
-        )
-        if text != before:
-            applied.append({
-                "type": "patch_script",
-                "path": GLOBAL_MEDIA_TYPE_RESOLUTION,
-                "phase": phase,
-                "scope": "global_media_type_resolution",
-            })
-
         # END PROVIDER is the final byte boundary.
         # Every CORE.* Lego is inserted immediately before it, after PROVIDER.* Lego.
 
@@ -1727,6 +1772,22 @@ def apply_overrides(
                 "fixed_endpoint",
             }
         ]
+
+    # Provider v3 publication bytes have one canonical representation. Apply the
+    # NiakVIO-aware minimizer at the complete-composition boundary, not inside
+    # individual Lego renderers. This makes a regenerated readable STARTFIX block
+    # converge to the same bytes as the published bundle while preserving the
+    # minimizer's whole-file template/comment safety decisions.
+    if (
+        phase == "discovery"
+        and include_global_core
+        and "NIAKVIO_PROVIDER_BASE_OWNED_V3" in text
+        and text.count(PROVIDER_BEGIN_MARKER) == 1
+        and text.count(PROVIDER_END_MARKER) == 1
+    ):
+        minimized = minimize_text(text)
+        validate_transform(text, minimized.text)
+        text = minimized.text
 
     if text == original_text:
         return data, []

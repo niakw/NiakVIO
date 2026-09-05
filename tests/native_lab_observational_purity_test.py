@@ -26,6 +26,12 @@ corpus = (ROOT / "scripts/prepare_native_corpus_validation.py").read_text(encodi
 request_contract = (ROOT / "scripts/augment_native_corpus_request_contract.py").read_text(encoding="utf-8")
 provider_loading = (ROOT / "scripts/augment_native_provider_loading.py").read_text(encoding="utf-8")
 
+lab_workflows = {
+    "android": (ROOT / ".github/workflows/native-mobile-android-reader.yml").read_text(encoding="utf-8"),
+    "ios": (ROOT / ".github/workflows/native-mobile-ios-reader.yml").read_text(encoding="utf-8"),
+    "desktop": (ROOT / ".github/workflows/native-desktop-reader-acceptance.yml").read_text(encoding="utf-8"),
+}
+
 # The policy itself is intentionally strict and fail-closed. Relaxing any of these
 # requires an explicit policy diff instead of an incidental helper change.
 assert policy["version"] >= 5
@@ -224,5 +230,23 @@ for text, label in (
 assert "PluginRepository.clearLocalState()" not in provider_loading
 assert "officialPluginManager.executeScraper(loadedScraper" in provider_loading
 assert "PluginRepository.executeScraper(loadedScraper" in provider_loading
+
+
+for label, workflow in lab_workflows.items():
+    for forbidden in (
+        "materialize_provider_v3_all.py",
+        "reapply_published_overrides.py",
+        "run_adaptive_deep_repair.py",
+        "run_adaptive_quick_repair.py",
+        "runtime_repair.py",
+        "normalize_runtime_repository_dependencies.py --apply",
+        "normalize_provider_rebuild_safety.py --apply",
+        "normalize_core_fixed_point_contract.py --apply",
+        "normalize_provider_branding_pipeline.py --apply",
+        "normalize_core_media_policy.py --apply",
+    ):
+        assert forbidden not in workflow, f"{label} lab may not mutate/reconstruct Provider v3: {forbidden}"
+assert 'NIAKVIO_ANDROID_PROVIDER_TIMEOUT_MS: "25000"' in lab_workflows["android"]
+assert "NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '40000' }}" in lab_workflows["ios"]
 
 print("native human UX observational-purity policy and implementation tests passed")

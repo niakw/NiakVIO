@@ -51,7 +51,7 @@ on:
       - "scripts/merge_native_reader_repair_learning.py"
       - "scripts/merge_native_reader_backlog.py"
       - "scripts/adaptive_runtime/runtime_repair.py"
-      - "scripts/provider_patches/safe_structured_parse_v1.py"
+      - "scripts/adaptive_runtime/safe_structured_parse_v1.py"
       - "scripts/provider_patches/global_stream_facts_v1.py"
       - "scripts/provider_patches/global_stream_identity_v1.py"
       - "scripts/provider_patches/global_stream_presentation_v1.py"
@@ -122,6 +122,7 @@ jobs:
         run: |
           python3 tests/native_media_type_resolution_test.py
           python3 tests/global_media_type_resolution_test.py
+          python3 tests/provider_v3_id_provenance_contract_test.py
           node tests/tmdb_media_type_resolution.test.mjs
       - name: Validate canonical stream contract
         run: node engine_v2/tests/contracts.test.mjs

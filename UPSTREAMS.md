@@ -1,43 +1,54 @@
-# Sources amont et sauvegardes
+# Sources amont et provenance
 
-Le dépôt consolide trois sources communautaires principales.
+NiakVIO observe trois sources communautaires principales. Elles servent de **connaissance, comparaison et provenance** ; elles ne sont jamais une seed JavaScript exécutable pour reconstruire Provider v3.
 
 ## Gowaru
 
 - Dépôt : `https://github.com/Gowaru/gowaru-nuvio-providers`
 - Manifest : `https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/manifest.json`
-- Apport principal : providers VF, VOSTFR et anime francophone.
+- Apport historique : providers VF, VOSTFR et anime francophone.
 
 ## All-in-One-Nuvio
 
 - Dépôt canonique : `https://github.com/NuvioPlugin/All-in-One-Nuvio`
 - Manifest principal : `https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/manifest.json`
-- Ancien miroir accepté : `https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/manifest.json`
-- Apport principal : providers internationaux et correctifs récents.
+- Ancien miroir de connaissance : `https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/manifest.json`
+- Apport historique : providers internationaux et correctifs récents.
 
 ## Yoru
 
 - Dépôt : `https://github.com/yoruix/nuvio-providers`
 - Manifest : `https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/manifest.json`
-- Apport principal : providers exclusifs et variantes complémentaires.
+- Apport historique : providers exclusifs et variantes complémentaires.
 
-## Stratégie de repli
+## Contrat actuel
 
-Pour chacune des trois sources, le workflow profond conserve les **deux dernières générations complètes** du manifest et de ses fichiers providers dans `upstream-lkg/`.
+`.github/workflows/weekly-upstream-provider-discovery.yml` observe les trois sources en lecture seule :
 
-L’ordre de récupération est le suivant :
+1. résout les hubs/manifests accessibles ;
+2. stage temporairement les entrées non-P2P pour comparaison ;
+3. signale les providers absents du catalogue NiakVIO ;
+4. publie uniquement des artifacts/rapports de découverte ;
+5. vérifie par `git diff --exit-code` qu'aucun catalogue, manifest, override ou Provider JS n'a été muté.
 
-1. manifest et provider actuels du dépôt amont ;
-2. dernière sauvegarde amont valide ;
-3. sauvegarde amont précédente ;
-4. provider fonctionnel déjà publié dans ce dépôt.
+Les répertoires `upstream-lkg/manifests/` et `upstream-lkg/providers/` conservent des snapshots historiques/provenance. Ils ne sont **pas** rafraîchis par CORE Deep aujourd'hui et ne constituent ni ProviderBase v3, ni une seed de reconstruction.
 
-Un manifest vide, dupliqué, fortement tronqué ou dont trop de fichiers sont invalides n’écrase jamais une sauvegarde saine. Les snapshots ne sont finalisés qu’après la réussite du cycle profond. Les providers déjà publiés restent le dernier repli fonctionnel, même lorsqu’aucune nouvelle sauvegarde amont ne peut être créée.
+## Relation avec Provider v3
+
+La reconstruction exécutable part exclusivement de :
+
+- `provider-bases/` propres et marqués `NIAKVIO_PROVIDER_BASE_OWNED_V3` ;
+- DATA/CONFIG structurées ;
+- Lego `PROVIDER.*` ;
+- Lego `CORE.*`.
+
+Une observation upstream peut inspirer Learning ou une modification reviewable de DATA/Lego, mais son JavaScript n'est jamais copié comme base canonique.
 
 ## Règles
 
 1. Ne jamais activer deux copies du même provider.
-2. Ne jamais remplacer un provider publié par une variante qui régresse.
-3. Exclure les providers et protocoles P2P.
-4. Conserver les anciennes variantes sous forme de sauvegardes bornées, pas indéfiniment.
-5. Publier les fichiers providers avant le manifest qui les référence.
+2. Ne jamais remplacer une génération publiée par une variante non prouvée.
+3. Exclure les protocoles/providers P2P du flux d'onboarding standard.
+4. Conserver les snapshots upstream comme provenance bornée, pas comme code de production.
+5. Un snapshot LKG ou upstream ne contourne jamais les contrats d'identité, sécurité, HLS ou reverse reconstruction.
+6. Les Provider JS publiés sont générés depuis Provider v3 et adressés par contenu avant toute projection qui les référence.

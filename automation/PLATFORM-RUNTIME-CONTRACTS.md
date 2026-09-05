@@ -2,7 +2,7 @@
 
 > Généré depuis `automation/platform-runtime-contracts.json` par `scripts/render_platform_runtime_contracts.py`. Ne pas éditer la matrice à la main.
 
-Dernier audit du contrat : **2026-08-26**.
+Dernier audit du contrat : **2026-09-03**.
 
 **Lecture rapide :** 🟢 identique sur tous les clients · 🟠 implémentation/sémantique différente · 🔴 capacité absente, incompatible ou à ré-auditer sur au moins un client.
 
@@ -31,20 +31,23 @@ Dernier audit du contrat : **2026-08-26**.
 | WebAssembly | 🔴 **Écart de capacité** — absent | **bridge** — WebAssembly compatibility bridge | **bridge** — WebAssembly compatibility bridge | **bridge** — WebAssembly compatibility bridge | **bridge** — WebAssembly compatibility bridge | **bridge** — WebAssembly compatibility bridge | **absent** — no WebAssembly bridge in current PluginRuntime |
 | Exception getStreams → [] | 🟢 **Identique** | **native** — getStreams failures are caught and surfaced as [] | **native** — getStreams failures are caught and surfaced as [] | **native** — getStreams failures are caught and surfaced as [] | **native** — getStreams failures are caught and surfaced as [] | **native** — getStreams failures are caught and surfaced as [] | **native** — getStreams failures are caught and surfaced as [] |
 | Headers stream | 🟠 **Différence** | **native** — PluginRuntimeResult.headers retained | **native** — PluginRuntimeResult.headers retained | **native** — PluginRuntimeResult.headers retained | **native** — PluginRuntimeResult.headers retained | **native** — PluginRuntimeResult.headers retained | **native** — LocalScraperResult.headers retained |
-| Sous-titres stream | 🔴 **Écart de capacité** — absent | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **absent** — LocalScraperResult has no subtitles field |
+| Sous-titres stream | 🟠 **Différence** | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **native** — PluginRuntimeResult.subtitles retained | **native** — LocalScraperResult.subtitles retained and projected to Stream.subtitles |
 | seeders / peers / infoHash | 🟢 **Identique** | **native** — seeders / peers / infoHash retained | **native** — seeders / peers / infoHash retained | **native** — seeders / peers / infoHash retained | **native** — seeders / peers / infoHash retained | **native** — seeders / peers / infoHash retained | **native** — seeders / peers / infoHash retained |
+| Projection badges du flux | 🟠 **Différence** | **shim** — badgeIds/displayBadges are not parsed from provider JSON; StreamBadgeMatcher re-derives badges by regex over StreamItem name/title/description and parsed fields. | **shim** — badgeIds/displayBadges are not parsed from provider JSON; StreamBadgeMatcher re-derives badges by regex over StreamItem name/title/description and parsed fields. | **shim** — badgeIds/displayBadges are not parsed from provider JSON; StreamBadgeMatcher re-derives badges by regex over StreamItem name/title/description and parsed fields. | **shim** — badgeIds/displayBadges are not parsed from provider JSON; StreamBadgeMatcher re-derives badges by regex over StreamItem name/title/description and parsed fields. | **shim** — badgeIds/displayBadges are not parsed from provider JSON; StreamBadgeMatcher re-derives badges by regex over StreamItem name/title/description and parsed fields. | **shim** — badgeIds/displayBadges are not parsed from provider JSON; StreamBadgeRules re-derives badges by regex over Stream name/title/description and parsed fields. |
+| Projection description du flux | 🟠 **Différence** | **shim** — PluginRuntimeResult has no description field; StreamItem.description is rebuilt from quality + size + language, so NiakVIO tunnels full technical description through size. | **shim** — PluginRuntimeResult has no description field; StreamItem.description is rebuilt from quality + size + language, so NiakVIO tunnels full technical description through size. | **shim** — PluginRuntimeResult has no description field; StreamItem.description is rebuilt from quality + size + language, so NiakVIO tunnels full technical description through size. | **shim** — PluginRuntimeResult has no description field; StreamItem.description is rebuilt from quality + size + language, so NiakVIO tunnels full technical description through size. | **shim** — PluginRuntimeResult has no description field; StreamItem.description is rebuilt from quality + size + language, so NiakVIO tunnels full technical description through size. | **shim** — LocalScraperResult has no description field; Stream.description is projected from LocalScraperResult.size, so NiakVIO tunnels full technical description through size. |
+| Projection titre / nom du flux | 🟠 **Différence** | **shim** — PluginRuntimeResult.title is parsed, but plugin StreamItem uses name ?: title; NiakVIO mirrors branded Provider - Quality into name and title. | **shim** — PluginRuntimeResult.title is parsed, but plugin StreamItem uses name ?: title; NiakVIO mirrors branded Provider - Quality into name and title. | **shim** — PluginRuntimeResult.title is parsed, but plugin StreamItem uses name ?: title; NiakVIO mirrors branded Provider - Quality into name and title. | **shim** — PluginRuntimeResult.title is parsed, but plugin StreamItem uses name ?: title; NiakVIO mirrors branded Provider - Quality into name and title. | **shim** — PluginRuntimeResult.title is parsed, but plugin StreamItem uses name ?: title; NiakVIO mirrors branded Provider - Quality into name and title. | **native** — LocalScraperResult title/name/quality are retained; toStream keeps title/name and appends quality when not already present. |
 | Projection behaviorHints / proxyHeaders | 🔴 **Écart de capacité** — absent | **absent** — runtime result keeps raw headers; behaviorHints is downstream | **absent** — runtime result keeps raw headers; behaviorHints is downstream | **absent** — runtime result keeps raw headers; behaviorHints is downstream | **absent** — runtime result keeps raw headers; behaviorHints is downstream | **absent** — runtime result keeps raw headers; behaviorHints is downstream | **bridge** — headers → behaviorHints.proxyHeaders.request; local-plugin bingeGroup |
 
 ## Révisions auditées
 
 | Device | Dépôt / branche | Révision auditée | État | Transport runtime |
 | --- | --- | --- | --- | --- |
-| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `1b84ee475ceaa120089e38eb9fc60f4e82d66955` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
-| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `1b84ee475ceaa120089e38eb9fc60f4e82d66955` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
-| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `24f63e42c6debfc7a20200bc3a9a9586370c44f0` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
-| Android TV | `NuvioMedia/NuvioTV` / `dev` | `ba44afb080d878ba123c978e791be8115e324fe9` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
+| Android | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `d4891ffaaf975c77de8ea3612f37a7a2b936c79d` | **audited** | `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt` |
+| iOS | `NuvioMedia/NuvioMobile` / `cmp-rewrite` | `d4891ffaaf975c77de8ea3612f37a7a2b936c79d` | **audited** | `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt` |
+| macOS | `NuvioMedia/NuvioDesktop` / `Dev` | `b17687e37b1eb7a9ae98aad302cb94b65eed26d9` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Windows | `NuvioMedia/NuvioDesktop` / `Dev` | `b17687e37b1eb7a9ae98aad302cb94b65eed26d9` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Linux | `NuvioMedia/NuvioDesktop` / `Dev` | `b17687e37b1eb7a9ae98aad302cb94b65eed26d9` | **audited** | `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt` |
+| Android TV | `NuvioMedia/NuvioTV` / `dev` | `4f37e949199732e5d68be8f76c67935cbf4137d5` | **audited** | `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt` |
 
 ## Lecture des états
 
@@ -63,7 +66,10 @@ Dernier audit du contrat : **2026-08-26**.
 - **Desktop utilise un bridge `__native_fetch` asynchrone**, alors que Mobile et TV appellent leur pont natif de manière bloquante derrière l'API JavaScript `fetch`.
 - **iOS utilise Ktor/Darwin**, contrairement à l'OkHttp d'Android, Desktop et TV. Les comportements réseau propres à la plateforme doivent donc rester audités séparément.
 - **TV injecte `TMDB_API_KEY` dans le runtime plugin; Mobile/Desktop ne l'exposent pas comme global runtime.** Un provider portable ne doit pas dépendre de ce global sans fallback.
-- **Mobile/Desktop conservent `subtitles`; TV ne possède pas ce champ dans `LocalScraperResult`.** Les sous-titres retournés uniquement par un provider JS ne sont donc pas projetables de manière identique sur TV aujourd'hui.
+- **Les six clients conservent désormais les sous-titres retournés par le provider.** TV a ajouté `LocalScraperResult.subtitles` depuis l'audit précédent.
+- **Mobile/Desktop ne conservent pas `description` depuis le JSON provider** : leur `StreamItem.description` est reconstruit depuis `quality + size + language`. TV projette également `Stream.description` depuis `LocalScraperResult.size`. NiakVIO utilise donc `size` comme tunnel de description technique complète.
+- **Mobile/Desktop privilégient `name` à `title` pour le label plugin.** NiakVIO doit donc écrire `Provider - Qualité` dans les deux champs ; TV conserve les deux et évite de dupliquer la qualité lorsqu'elle est déjà présente.
+- **Aucun client ne consomme directement `badgeIds` / `displayBadges` depuis le JSON provider.** Les moteurs de badges Mobile/Desktop/TV re-matchent des règles regex sur les champs textuels du stream (`name`, `title`, `description`, champs parsés). Les tokens techniques doivent donc survivre dans le label/description projetés.
 - **TV projette les headers dans `behaviorHints.proxyHeaders.request`** et ajoute son `bingeGroup`; Mobile/Desktop conservent d'abord les headers bruts dans `PluginRuntimeResult`.
 - **TV n'expose actuellement ni TextEncoder/TextDecoder ni WebAssembly dans son PluginRuntime**, contrairement au runtime Mobile/Desktop. Un provider qui en dépend doit être adapté ou déclaré incompatible TV.
 
@@ -83,7 +89,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/androidMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.android.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime audited at current cmp-rewrite HEAD. The only commit after the detailed 071fc431 runtime read changes Android release workflow only.
+- Note d'audit : Runtime re-audited at current cmp-rewrite HEAD. Plugin runtime/result projection remains the same; downstream plugin streams rebuild description from quality + size + language and badge rules match textual StreamItem fields.
 
 ### iOS
 
@@ -91,7 +97,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/iosMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.ios.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime audited at current cmp-rewrite HEAD; Darwin transport differs materially from Android OkHttp.
+- Note d'audit : Runtime re-audited at current cmp-rewrite HEAD. Plugin runtime/result projection remains the same; downstream plugin streams rebuild description from quality + size + language and badge rules match textual StreamItem fields.
 
 ### macOS
 
@@ -99,7 +105,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime audited at current Dev HEAD. Desktop shares the Mobile runtime family but its native fetch bridge is async and its OkHttp client does not force NO_PROXY.
+- Note d'audit : Runtime diff reviewed at Dev HEAD b17687e37b1e; only desktop window maximize/multi-monitor UI code changed. Plugin runtime, native fetch and stream projection contracts are unchanged.
 
 ### Windows
 
@@ -107,7 +113,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime audited at current Dev HEAD. Desktop shares the Mobile runtime family but its native fetch bridge is async and its OkHttp client does not force NO_PROXY.
+- Note d'audit : Runtime diff reviewed at Dev HEAD b17687e37b1e; only desktop window maximize/multi-monitor UI code changed. Plugin runtime, native fetch and stream projection contracts are unchanged.
 
 ### Linux
 
@@ -115,7 +121,7 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt`
 - Transport : `composeApp/src/desktopMain/kotlin/com/nuvio/app/features/addons/AddonPlatform.desktop.kt`
 - Modèle de résultat : `composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt`
-- Note d'audit : Runtime audited at current Dev HEAD. Desktop shares the Mobile runtime family but its native fetch bridge is async and its OkHttp client does not force NO_PROXY.
+- Note d'audit : Runtime diff reviewed at Dev HEAD b17687e37b1e; only desktop window maximize/multi-monitor UI code changed. Plugin runtime, native fetch and stream projection contracts are unchanged.
 
 ### Android TV
 
@@ -123,4 +129,4 @@ Le check CI `python3 scripts/render_platform_runtime_contracts.py --check` garan
 - Repository : `app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt`
 - Transport : `app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt`
 - Modèle de résultat : `app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt`
-- Note d'audit : Runtime audited at current dev HEAD. PluginRuntime itself is unchanged since the previous audited ref; PluginManager changes bound scraper orchestration and avoid duplicate repository writes without changing the positional extraction contract.
+- Note d'audit : Runtime diff reviewed at dev HEAD 4f37e9491997; only ASS/SSA subtitle player UI changed. PluginRuntime, transport and stream projection contracts are unchanged.

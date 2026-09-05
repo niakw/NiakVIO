@@ -23,16 +23,18 @@ def load_path(path: Path, name: str):
 
 
 normalizer = load_path(NORMALIZER, "normalize_stream_presentation_v12")
-normalizer.normalize(apply=True)
+normalizer.normalize(apply=False)
 normalizer.assert_contract()
 presentation = load_path(PATCHES / "global_stream_presentation_v1.py", "global_stream_presentation_v1")
-assert presentation.REVISION == "all-providers-shared-tmdb-cache-native-zero-extra-fetch-v17-jvm-json-utf8"
+assert presentation.REVISION == "all-providers-client-projection-name-mirror-v20"
+presentation_source = (PATCHES / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
+assert "\\nfunction" not in presentation_source, "raw V18 wrapper contains a literal \\n before function declaration"
 
 
 def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None, *, return_raw: bool = False):
     patched = presentation.apply(source, context={"provider_id": provider_id})
     assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in patched
-    assert "all-providers-shared-tmdb-cache-native-zero-extra-fetch-v17-jvm-json-utf8" in patched
+    assert "all-providers-client-projection-name-mirror-v20" in patched
     assert patched == presentation.apply(patched, context={"provider_id": provider_id})
     with tempfile.TemporaryDirectory() as raw:
         root = Path(raw)
@@ -40,9 +42,23 @@ def run(source: str, provider_id: str, call: str, fetch_impl: str | None = None,
         runner = root / "runner.cjs"
         provider.write_text(patched, encoding="utf-8")
         fetch = fetch_impl or "async function(){throw new Error('offline')}"
-        runtime_key = "global.TMDB_API_KEY=String(1);\n" if fetch_impl else ""
+        # Presentation no longer owns TMDB transport or credentials. When this
+        # isolated test supplies a TMDB fixture, expose it through the same Core
+        # metadata capability that composed provider bundles expose at runtime.
+        core_capability = ""
+        if fetch_impl:
+            core_capability = r"""
+global.__nuvioCoreGetTmdbDataV1=async function(q){
+  const kind=(q&&q.tmdbNamespace)==='tv'||(q&&q.mediaType)==='tv'||(q&&q.mediaType)==='series'||(q&&q.mediaType)==='anime'?'tv':'movie';
+  const id=String(q&&q.tmdbId||'');
+  const response=await global.fetch('https://api.themoviedb.org/3/'+kind+'/'+encodeURIComponent(id));
+  if(!response||!response.ok)return {state:'unavailable',tmdbId:id,tmdbNamespace:kind,metadata:null,episodeMetadata:null};
+  const metadata=await response.json();
+  return {state:'ok',tmdbId:id,tmdbNamespace:kind,metadata,episodeMetadata:null};
+};
+"""
         runner.write_text(
-            runtime_key + "global.fetch=" + fetch + ";\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
+            "global.fetch=" + fetch + ";\n" + core_capability + "\nconst p=require(" + json.dumps(str(provider)) + ");\n" + call + "\n",
             encoding="utf-8",
         )
         # The contract intentionally contains emoji. Never inherit the Windows
@@ -69,13 +85,14 @@ tmdb = r"""async function(url){
 source = "module.exports={getStreams:async()=>[{name:'Purstream | 4K | VF',url:'https://media.example/master.m3u8',quality:'4K',language:'VF',subtitles:'VOSTFR',codec:'x265 10bit',audio:'DDP 5.1',duration:169,sourceType:'WEB-DL',format:'m3u8',size:'8.4 GB',headers:{Referer:'https://purstream.example/'}}]};\n"
 row = run(source, "purstream", "p.getStreams({tmdbId:'157336',mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))", tmdb)
 assert row["title"] == "Purstream - 4K", row
+assert row["name"] == row["title"], row
 assert row["quality"] == "2160p"
 assert row["language"] == "MULTI (VF/VO)", row
 assert row["codec"] == "HEVC"
 assert row["duration"] == 169
 assert row["sourceType"] == "WEB-DL"
 assert row["format"] == "HLS"
-assert row["size"] == "8.4 GB"
+assert row["size"] == row["description"], row
 assert row["headers"] == {"Referer": "https://purstream.example/"}
 assert {"4k-ultra-hd", "webdl", "hevc", "multi"}.issubset(set(row["badgeIds"])), row
 lines = row["description"].splitlines()
@@ -103,9 +120,10 @@ roundtrip = json.loads(raw_stream_json)[0]
 assert roundtrip["description"].splitlines()[0] == "🎬 Interstellar • 2014", roundtrip
 assert "🇫🇷 MULTI (VF/VO)" in roundtrip["description"], roundtrip
 
-# NuvioTV's official local-plugin model discards provider description and maps
-# LocalScraperResult.size -> Stream.description. On TV only, tunnel the complete
-# Core description through size so emojis/technical facts and regex badge tokens survive.
+# Cross-client projection contract: Mobile/Desktop rebuild plugin StreamItem.description
+# from quality + size + language; TV maps LocalScraperResult.size -> Stream.description.
+# Therefore the complete Core description is tunneled through size on every client so
+# media identity and technical tokens survive to each client's regex badge matcher.
 tv_row = run(
     source,
     "purstream",
@@ -152,6 +170,23 @@ assert "🎬 Sinners • 2025" in sparse["description"]
 assert "Unknown" not in sparse["description"]
 assert "BLU-RAY" not in sparse["description"]
 
+url_quality = run(
+    "module.exports={getStreams:async()=>[{name:'Kehflix',url:'https://cdn.example/interstellar/FHD/main.m3u8',quality:'Unknown'}]};\n",
+    "kehflix",
+    "p.getStreams({mediaType:'movie',title:'Interstellar',year:2014}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert url_quality["quality"] == "1080p", url_quality
+assert url_quality["title"].endswith(" - 1080p"), url_quality
+assert "1080p-full-hd" in url_quality["badgeIds"], url_quality
+
+numeric_height = run(
+    "module.exports={getStreams:async()=>[{name:'Source',url:'https://cdn.example/master.m3u8',height:2160}]};\n",
+    "generic",
+    "p.getStreams({mediaType:'movie',title:'Film',year:2026}).then(v=>console.log(JSON.stringify(v[0])))",
+)
+assert numeric_height["quality"] == "2160p", numeric_height
+assert numeric_height["title"].endswith(" - 4K"), numeric_height
+
 # Native Desktop bridge: optional TMDB enrichment is skipped when the client does
 # not expose a runtime-owned TMDB_API_KEY. Provider streams must return immediately.
 desktop_native = run(
@@ -161,6 +196,7 @@ desktop_native = run(
 )
 assert desktop_native["calls"] == 0, desktop_native
 assert desktop_native["row"]["title"] == "Cineby - 1080p", desktop_native
+assert desktop_native["row"]["name"] == desktop_native["row"]["title"], desktop_native
 assert desktop_native["row"]["url"] == "https://x.example/a.mp4", desktop_native
 
 
@@ -176,4 +212,4 @@ assert native_cached["calls"] == 0, native_cached
 assert native_cached["row"]["duration"] == 169, native_cached
 assert "Interstellar • 2014" in native_cached["row"]["description"], native_cached
 
-print("global stream presentation V17 JVM-safe JSON contract tests passed")
+print("global stream presentation V20 client-projection name-mirror tests passed")

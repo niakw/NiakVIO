@@ -10,6 +10,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+from provider_patch_blocks import begin_marker, end_marker  # noqa: E402
+
 spec = importlib.util.spec_from_file_location(
     "apply_provider_overrides",
     ROOT / "scripts/apply_provider_overrides.py",
@@ -18,6 +20,18 @@ if not spec or not spec.loader:
     raise RuntimeError("cannot import apply_provider_overrides")
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+
+
+def clean_v3_fixture(source: bytes) -> bytes:
+    if b"/* BEGIN NIAKVIO_PROVIDER */" in source:
+        assert b"NIAKVIO_PROVIDER_BASE_OWNED_V3" in source
+        return source
+    return (
+        b"/* BEGIN NIAKVIO_PROVIDER */\n"
+        b"/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        + source.strip()
+        + b"\n/* END NIAKVIO_PROVIDER */\n"
+    )
 
 cfg = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
 policy = cfg.get("playback_integrity_policy") or {}
@@ -47,9 +61,7 @@ for provider_id, row in (cfg.get("provider_patches") or {}).items():
     if hls_options is not None:
         assert isinstance(hls_options, dict), provider_id
 
-streamzo_hls_options = cfg["provider_patches"]["streamzo"]["patch_script_options"][
-    "scripts/provider_patches/hls_runtime_integrity_v1.py"
-]
+streamzo_hls_options = cfg["provider_patches"]["streamzo"]["core_options"]["hls_runtime_integrity"]
 assert streamzo_hls_options["probe_all_urls"] is True
 assert streamzo_hls_options["fail_closed_unknown"] is False
 
@@ -60,7 +72,11 @@ def capture_scheduler(text, provider_id, patch_script, options, profile_name):
     return text
 module._apply_patch_script = capture_scheduler
 try:
-    module.apply_overrides("streamzo", b"globalThis.getStreams=async function(){return []};\n", phase="discovery")
+    module.apply_overrides(
+        "streamzo",
+        clean_v3_fixture(b"globalThis.getStreams=async function(){return []};\n"),
+        phase="discovery",
+    )
 finally:
     module._apply_patch_script = original_apply_patch_script
 wanted = [
@@ -79,7 +95,7 @@ assert wanted == [
     module.GLOBAL_STREAM_PRESENTATION,
 ], wanted
 
-future = b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n'''
+future = clean_v3_fixture(b'''\nasync function helper(t){let x=await fetch(t.url).then(r=>r.text());if(!/#EXT-X-STREAM-INF/i.test(x))return [{url:t.url,type:"hls"}];return []}\nglobalThis.getStreams=async function(){return [{url:"https://media.example/master.m3u8",type:"hls"}]};\n''')
 patched, records = module.apply_overrides("future-provider-never-seen-before", future, phase="discovery")
 text = patched.decode("utf-8")
 assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in text
@@ -118,7 +134,8 @@ assert reapplied_text.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1") == 1
 assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in reapplied_text
 assert '"implementationRevision":"field-safety-v6-core-repair-types"' not in reapplied_text
 assert '"implementationRevision":"scoped-playback-context-v4"' not in reapplied_text
-assert reapplied_text.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert reapplied_text.count(begin_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")) == 1
+assert reapplied_text.count(end_marker("CORE.HLS_RUNTIME_INTEGRITY.V1")) == 1
 assert reapplied_text.count("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") == 1
 assert reapplied_text.rfind("NUVIO_HLS_RUNTIME_INTEGRITY_V1") < reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1")
 assert reapplied_text.rfind("NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1") < reapplied_text.rfind("NUVIO_GLOBAL_STREAM_FACTS_V1")

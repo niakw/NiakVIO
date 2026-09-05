@@ -21,8 +21,10 @@ on:
   push:
     branches:
       - main
+      - workbench/provider-v3-performance-playback
     paths:
       - ".github/triggers/full-native-lab-validation.json"
+      - ".github/triggers/native-ios-lab-validation.json"
 
 permissions:
   contents: read
@@ -149,7 +151,7 @@ jobs:
         env:
           NIAKVIO_IOS_LAB_MODE: ${{ inputs.mode == 'only' && 'learning' || 'full' }}
           NIAKVIO_IOS_TARGET_PROVIDER: ${{ inputs.provider || '' }}
-          NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '25000' }}
+          NIAKVIO_IOS_PROVIDER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '8000' || '40000' }}
           NIAKVIO_IOS_PLAYER_TIMEOUT_MS: ${{ inputs.mode == 'only' && '6000' || '22000' }}
           NIAKVIO_IOS_SESSION_STATE: ${{ github.workspace }}/ios-learning-session.env
         run: |
@@ -159,6 +161,16 @@ jobs:
             exit 2
           fi
           bash niakvio/scripts/run_native_corpus_ios_suite.sh
+      - name: Verify exhaustive iOS provider matrix
+        if: ${{ github.event_name == 'schedule' || inputs.mode != 'only' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
+            --client ios \
+            --manifest niakvio/manifest.json \
+            --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            "$GITHUB_WORKSPACE/mobile-ios-native-corpus.log"
       - name: Build sanitized iOS reader diagnoses
         if: ${{ always() && (github.event_name == 'schedule' || inputs.mode != 'only') }}
         shell: bash

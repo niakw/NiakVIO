@@ -18,7 +18,7 @@ La chaîne de preuve distingue notamment :
 | Média | HLS, DASH, conteneur, playlist/segment, payload réel |
 | Identité | titre/alias, année, saison/épisode, fichier média, durée |
 | Langue | metadata, catalogue, pistes audio/sous-titres, indices cohérents |
-| Compatibilité | Mobile, Desktop et TV prouvés séparément |
+| Compatibilité | TV Android, Mobile Android, Mobile iOS, Desktop macOS et Desktop Windows prouvés séparément |
 | Stabilité | preuve courante, LKG, failures répétées, récupération |
 | Publication | catalogue, manifests, provenance, versions, hashes, intégrité |
 
@@ -26,35 +26,26 @@ Une validation par corpus reste un échantillonnage : elle ne prétend pas prouv
 
 ## Quick
 
-Quick est une **maintenance réparatrice et publiable**.
+Quick est un **gate de vérification non-mutant côté providers**.
 
-Il :
+Il valide notamment les bytes Provider v3 exacts, les contrats Core critiques, les cinq Labs déclarés et l'intégrité structurelle. Il ne lance ni discovery de réparation, ni repair, ni reconstruction, ni publication de nouveau code provider.
 
-1. actualise hubs/domaines ;
-2. redécouvre les variantes upstream ;
-3. conserve les versions publiées/LKG comme siblings de secours ;
-4. préfère un sibling déjà sain ;
-5. répare de façon bornée les familles encore non résolues ;
-6. valide les résultats ;
-7. conserve le LKG si la nouvelle observation reste inconclusive ;
-8. peut publier immédiatement une amélioration prouvée.
-
-Quick ne crée donc pas un simple rapport passif et n'attend pas systématiquement un Deep.
-
-Un provider totalement nouveau n'est pas activé aveuglément par Quick.
+Une simple migration de domaine n'appartient pas à Quick : elle est gérée par `domain-refresh.yml` dans son périmètre CONFIG-only.
 
 ## Deep
 
-Deep est la reconstruction/validation large. Il est utilisé notamment pour :
+Deep ajoute une observation plus large :
 
-- nouveaux providers ;
-- nouvelles variantes ou structures ;
-- persistance/apprentissage de recipes ;
-- corpus et profondeur de probe supérieurs ;
-- modifications importantes du moteur ;
-- preuve stricte d'identité et de playback.
+- contrats structurels complets ;
+- hubs/domaines observés en lecture seule ;
+- health réseau des Provider JS publiés exacts ;
+- diagnostics ;
+- re-projection manifests ;
+- hashes et release integrity.
 
-Deep n'est pas exécuté à chaque mise à jour. Il dispose d'une cadence séparée et du trigger explicite `.github/triggers/deep-provider-repair`.
+Deep ne répare pas et ne reconstruit pas les providers. Sur `main`, seules les sorties de rapport/projection/hashes explicitement allowlistées peuvent être publiées.
+
+Le repair appartient au Learning sandbox et aux propositions reviewables ; un run Deep n'est jamais un repair déguisé.
 
 ## Classification
 

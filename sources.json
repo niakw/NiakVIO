@@ -10,10 +10,16 @@
       "name": "Gowaru's Repo",
       "repository": "https://github.com/Gowaru/gowaru-nuvio-providers",
       "manifest_urls": [
-        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/manifest.json"
+        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/manifest.json"
       ],
       "license": "GPL-3.0",
-      "license_evidence": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/LICENSE"
+      "license_evidence": "https://github.com/Gowaru/gowaru-nuvio-providers/blob/main/LICENSE",
+      "knowledge_raw_templates": [
+        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/config.js",
+        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/extractor.js",
+        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/http.js",
+        "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/c3ce6f43a1ba8ccf2f3838b5cd9db40745c33fa2/src/{provider_id}/index.js"
+      ]
     },
     "aio": {
       "name": "All-in-One-Nuvio",
@@ -23,7 +29,11 @@
         "https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/manifest.json"
       ],
       "license": "GPL-3.0",
-      "license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license"
+      "license_evidence": "https://github.com/NuvioPlugin/All-in-One-Nuvio#license",
+      "knowledge_raw_templates": [
+        "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/{provider_id}.js",
+        "https://raw.githubusercontent.com/D3adlyRocket/All-in-One-Nuvio/refs/heads/main/providers/{provider_id}.js"
+      ]
     },
     "yoru": {
       "name": "Yoru's Repo",
@@ -32,7 +42,10 @@
         "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/manifest.json"
       ],
       "license": "GPL-3.0",
-      "license_evidence": "https://github.com/yoruix/nuvio-providers/blob/main/LICENSE"
+      "license_evidence": "https://github.com/yoruix/nuvio-providers/blob/main/LICENSE",
+      "knowledge_raw_templates": [
+        "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/{provider_id}.js"
+      ]
     }
   },
   "selection_policy": {
@@ -159,89 +172,34 @@
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
     "clients": {
       "nuvio-mobile": {
-        "contract_ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
-        "accepted_ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
-        "accepted_at": "2026-08-27T00:00:00+00:00",
-        "acceptance": "manual-contract-safe-advance",
-        "changed_file_count": 8,
+        "contract_ref": "d4891ffaaf975c77de8ea3612f37a7a2b936c79d",
+        "accepted_ref": "d4891ffaaf975c77de8ea3612f37a7a2b936c79d",
+        "accepted_at": "2026-09-03T00:00:00+00:00",
+        "acceptance": "manual-contract-audited-advance",
+        "changed_file_count": 0,
         "observed_sensitive_changed_files": [],
-        "unrelated_changed_files": [
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/MainAppContent.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/HeroTrailerSelector.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/details/MetaDetailsModels.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/simkl/SimklMutationReceipt.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataService.kt",
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/watching/domain/WatchingPolicies.kt",
-          "composeApp/src/commonTest/kotlin/com/nuvio/app/features/tmdb/TmdbMetadataServiceTest.kt",
-          "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/trailer/InAppYouTubeExtractor.kt"
-        ],
-        "manual_review_note": "Nine-commit delta from 582ae8638004 reviewed on 2026-08-27. No configured provider/stream/player contract path changed; only UI/details/trailer/SIMKL/TMDB/watching-policy files moved, so the official Mobile head is accepted without provider mutation."
+        "unrelated_changed_files": [],
+        "manual_review_note": "2026-09-03 source re-audit completed; accepted_ref and contract_ref aligned to d4891ffaaf975c77de8ea3612f37a7a2b936c79d. See automation/platform-runtime-contracts.json."
       },
       "nuvio-desktop": {
-        "contract_ref": "463cd0b72a8f08e2529efcbacfff2e7da8d4453a",
-        "accepted_ref": "71502db2513071e9c5e9a3011140d90991e080f2",
-        "accepted_at": "2026-08-17T16:41:18.584081+00:00",
-        "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 4,
-        "observed_sensitive_changed_files": [
-          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeUi.kt"
-        ],
-        "unrelated_changed_files": [
-          "composeApp/src/desktopMain/native/macos/player_bridge.mm",
-          "composeApp/src/desktopMain/native/windows/player_bridge.cpp",
-          "composeApp/src/desktopMain/resources/player-ui/controls.js"
-        ]
+        "contract_ref": "9390d5844e53d1f4d9829490d6f3deb057d7ab14",
+        "accepted_ref": "9390d5844e53d1f4d9829490d6f3deb057d7ab14",
+        "accepted_at": "2026-09-03T00:00:00+00:00",
+        "acceptance": "manual-contract-audited-advance",
+        "changed_file_count": 0,
+        "observed_sensitive_changed_files": [],
+        "unrelated_changed_files": [],
+        "manual_review_note": "2026-09-03 source re-audit completed; accepted_ref and contract_ref aligned to 9390d5844e53d1f4d9829490d6f3deb057d7ab14. See automation/platform-runtime-contracts.json."
       },
       "nuvio-tv": {
-        "contract_ref": "6103a144485277f06ebc31456f1949c65b304e8e",
-        "accepted_ref": "bf74e28792d7adfbd49497ce02f78f5aa28f5999",
-        "accepted_at": "2026-08-17T16:41:18.584081+00:00",
-        "acceptance": "automatic-contract-safe-advance",
-        "changed_file_count": 40,
-        "observed_sensitive_changed_files": [
-          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerRuntimeController.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/player/PlayerRuntimeControllerPlaybackEvents.kt"
-        ],
-        "unrelated_changed_files": [
-          "app/src/main/java/com/nuvio/tv/NuvioApplication.kt",
-          "app/src/main/java/com/nuvio/tv/core/sync/androidtv/TvChannelPreferences.kt",
-          "app/src/main/java/com/nuvio/tv/core/torrent/TorrentSettings.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/AppOnboardingDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/AuthSessionNoticeDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/DebugSettingsDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/DeviceLocalPlayerPreferences.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/LayoutPreferenceDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/ProfileDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/ProfileLockStateDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/local/SentrySettingsDataStore.kt",
-          "app/src/main/java/com/nuvio/tv/data/simkl/SimklLibraryProjection.kt",
-          "app/src/main/java/com/nuvio/tv/domain/model/LibraryModels.kt",
-          "app/src/main/java/com/nuvio/tv/ui/components/ContinueWatchingSection.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/cast/CastDetailScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/cast/CastDetailViewModel.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/collection/FolderDetailScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/collection/FolderDetailViewModel.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/CollectionSection.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsUiState.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MetaDetailsViewModel.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/detail/MoreLikeThisSection.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ClassicHomeContent.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/GridHomeContent.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/HomeScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/HomeUiState.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/HomeViewModel.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/HomeViewModelPresentationPipeline.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeContent.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeRows.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/home/ModernHomeRowsList.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/library/LibraryViewModel.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutSettingsScreen.kt",
-          "app/src/main/java/com/nuvio/tv/ui/screens/settings/LayoutSettingsViewModel.kt",
-          "app/src/main/res/values-pl/strings.xml",
-          "app/src/main/res/values/strings.xml",
-          "app/src/test/java/com/nuvio/tv/ui/components/ContinueWatchingImageModelTest.kt"
-        ]
+        "contract_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
+        "accepted_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
+        "accepted_at": "2026-09-03T00:00:00+00:00",
+        "acceptance": "manual-contract-audited-advance",
+        "changed_file_count": 0,
+        "observed_sensitive_changed_files": [],
+        "unrelated_changed_files": [],
+        "manual_review_note": "2026-09-03 source re-audit completed; accepted_ref and contract_ref aligned to 49c753de3f193e3a74ea54194df3d331ce6302f0. See automation/platform-runtime-contracts.json and automation/nuvio-tv-runtime-contract.json."
       }
     }
   }

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -147,6 +148,31 @@ assert adapter._record_requires_baseline_restore({
     "enabled": True,
     "failed_gates": ["current_playable_stream"],
 }) is False
+
+original_context = os.environ.get("NUVIO_PROVIDER_V3_CONTEXT")
+try:
+    os.environ["NUVIO_PROVIDER_V3_CONTEXT"] = "workspace"
+    assert legacy.preexisting_published_disable_is_deferred(
+        {"enabled": False},
+        {"enabled": False},
+        {"enabled": True, "action": "preserved-current-enabled-ci-uncertain"},
+    ) is True
+    os.environ["NUVIO_PROVIDER_V3_CONTEXT"] = "production"
+    assert legacy.preexisting_published_disable_is_deferred(
+        {"enabled": False},
+        {"enabled": False},
+        {"enabled": True},
+    ) is False
+    assert legacy.preexisting_published_disable_is_deferred(
+        {"enabled": False},
+        {"enabled": False},
+        {"enabled": False},
+    ) is True
+finally:
+    if original_context is None:
+        os.environ.pop("NUVIO_PROVIDER_V3_CONTEXT", None)
+    else:
+        os.environ["NUVIO_PROVIDER_V3_CONTEXT"] = original_context
 
 print("activation preservation deterministic Core rehash tests passed")
 

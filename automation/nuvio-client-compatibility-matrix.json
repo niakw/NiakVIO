@@ -69,13 +69,13 @@
         "version_code": 109
       },
       "current_audited": {
-        "ref": "1b84ee475ceaa120089e38eb9fc60f4e82d66955",
-        "version_name": "0.4.11",
-        "version_code": 115
+        "ref": "d4891ffaaf975c77de8ea3612f37a7a2b936c79d",
+        "version_name": "0.4.13",
+        "version_code": 117
       },
       "supported_version_code": {
         "min": 109,
-        "max": 115
+        "max": 117
       },
       "provider_contract": {
         "runtime": "quickjs-positional-getStreams",
@@ -96,7 +96,7 @@
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
         "lab_error_policy": "diagnostic runtime trap preserves swallowed errors before collection/cross-client gates",
         "surface_note": "Mobile and Desktop currently share several runtime bridge subtrees, but their PluginRuntime/JsBindings/network sources are independently versioned and must be diffed separately.",
-        "audited_change": "Nine commits from 582ae8638004 to 1b84ee475cea were reviewed on 2026-08-27. They touch MainAppContent, details/trailer UI, SIMKL receipt, TMDB metadata and watching policies only; no configured provider/stream/player contract path changed. QuickJS positional getStreams, PluginRuntimeResult projection and transport contracts remain unchanged."
+        "audited_change": "2026-09-03 source re-audit at cmp-rewrite HEAD d4891ffaaf97: positional getStreams, PluginRuntimeResult projection and Android/iOS transport contracts remain compatible. Platform-specific response/body and player behavior remain documented in automation/platform-runtime-contracts.json; Mobile must still be proven in its own official Android/iOS runtimes."
       },
       "brain_capabilities": [
         "invocation",
@@ -171,13 +171,13 @@
         "version_code": 17
       },
       "current_audited": {
-        "ref": "24f63e42c6debfc7a20200bc3a9a9586370c44f0",
-        "version_name": "0.1.20-alpha",
-        "version_code": 20
+        "ref": "b17687e37b1eb7a9ae98aad302cb94b65eed26d9",
+        "version_name": "0.1.22-alpha",
+        "version_code": 22
       },
       "supported_version_code": {
         "min": 17,
-        "max": 20
+        "max": 22
       },
       "provider_contract": {
         "runtime": "quickjs-positional-getStreams",
@@ -188,7 +188,7 @@
           "composeApp/src/commonMain/kotlin/com/nuvio/app/features/plugins/PluginModels.kt",
           "composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt"
         ],
-        "audited_change": "Desktop repository refresh/cache behavior advanced while QuickJS positional getStreams, PluginRuntimeResult projection and forceRefresh no-cache semantics remain compatible at the audited Dev HEAD. No provider/stream contract path changed in the fourteen commits up to 24f63e42c6debfc7a20200bc3a9a9586370c44f0.",
+        "audited_change": "2026-09-03 source re-audit advanced to Dev HEAD b17687e37b1e: intervening changes are desktop window maximize/multi-monitor DPI UI only; positional getStreams, async native fetch/JVM OkHttp and PluginRuntimeResult/StreamItem projection are unchanged.",
         "runtime_validation": "execute the exact official Desktop runtime and re-prove macOS/Windows reader behavior; Mobile success is not Desktop proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",
@@ -263,13 +263,13 @@
         "version_code": 1045
       },
       "current_audited": {
-        "ref": "ba44afb080d878ba123c978e791be8115e324fe9",
-        "version_name": "0.8.9-beta",
-        "version_code": 1050
+        "ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
+        "version_name": "0.8.12-beta",
+        "version_code": 1053
       },
       "supported_version_code": {
         "min": 1045,
-        "max": 1050
+        "max": 1053
       },
       "provider_contract": {
         "runtime": "quickjs-positional-getStreams",
@@ -280,7 +280,7 @@
           "app/src/main/java/com/nuvio/tv/domain/repository/StreamRepository.kt",
           "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt"
         ],
-        "audited_change": "forceRefresh/session-cache keys remain compatible, but cross-work native execution teardown is not proven; PluginManager now bounds scraper orchestration and avoids duplicate repository writes without changing positional getStreams or returned stream/header ingestion. The seventeen-commit delta up to ba44afb080d878ba123c978e791be8115e324fe9 only adds an episode-overlay UI model in the audited contract scope; getStreams/repository/header ingestion remains unchanged.",
+        "audited_change": "2026-09-03 source re-audit advanced to dev HEAD 4f37e9491997: intervening changes are ASS/SSA subtitle styling/focus in player UI only; positional getStreams, repository/header ingestion, Proxy.NO_PROXY + IPv4FirstDns transport and TMDB_API_KEY injection remain unchanged.",
         "runtime_validation": "execute NuvioTV's own Android-TV QuickJS/host implementation; Desktop/Mobile success is never TV proof",
         "runtime_family_equivalent_to_sibling_clients": false,
         "official_getStreams_error_behavior": "application runtime catches JavaScript getStreams errors and captures []",

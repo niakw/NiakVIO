@@ -14,7 +14,7 @@ sys.path.insert(0, str(SCRIPTS))
 
 from apply_provider_overrides import apply_overrides
 from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS, canonical_id, requires_clean_reconstruction, resolve_runtime_base
-from provider_patch_blocks import validate_managed_fixes
+from provider_patch_blocks import begin_marker, end_marker, owned_span, validate_managed_fixes
 
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 PROVENANCE = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
@@ -22,8 +22,8 @@ ROWS = PROVENANCE.get("providers") or {}
 FORCE_TRIGGER = ROOT / ".github" / "triggers" / "force-clean-provider-reconstruction.json"
 
 CORE_ORDER = [
-    # Textual/materialization order. getStreams wrapper execution is the reverse:
-    # media-type is intentionally outermost and executes first.
+    # Textual/materialization order. Request-side media type resolution wraps
+    # provider/facts/identity; output-only presentation/branding/sanitizer wrap it.
     "CORE.CATALOGUE_ALIAS_RECOVERY.V2",
     "CORE.MEDIA_ENRICHMENT.V1",
     "CORE.RUNTIME_MEDIA_SAFETY.V4",
@@ -32,10 +32,10 @@ CORE_ORDER = [
     "CORE.RUNTIME_COMPAT.V1",
     "CORE.STREAM_FACTS.V1",
     "CORE.STREAM_IDENTITY.V1",
+    "CORE.MEDIA_TYPE_RESOLUTION.V1",
     "CORE.STREAM_PRESENTATION.V1",
     "CORE.PROVIDER_BRANDING.V1",
     "CORE.STREAM_SANITIZER.V6",
-    "CORE.MEDIA_TYPE_RESOLUTION.V1",
 ]
 
 BLOCK_START = re.compile(r"/\* START NIAKVIO_FIX:([^*]+?) \*/")
@@ -79,14 +79,12 @@ def stage_rows(stage: Path) -> dict[str, dict]:
 
 def block_fingerprints(text: str) -> dict[str, str]:
     result: dict[str, str] = {}
-    for match in BLOCK_START.finditer(text):
-        fix_id = match.group(1).strip()
-        end_marker = f"/* END NIAKVIO_FIX:{fix_id} */"
-        end = text.find(end_marker, match.end())
-        if end < 0:
-            result[fix_id] = "unterminated"
+    for fix_id in validate_managed_fixes(text):
+        span = owned_span(text, fix_id)
+        if span is None:
+            result[fix_id] = "missing-owned-span"
             continue
-        body = text[match.start(): end + len(end_marker)]
+        body = text[span[0]:span[1]]
         result[fix_id] = hashlib.sha256(body.encode("utf-8")).hexdigest()[:12]
     return result
 
@@ -102,9 +100,9 @@ def first_diff(left: str, right: str) -> tuple[int, str, str]:
 
 def audit_order(provider_id: str, text: str) -> None:
     positions = {
-        fix_id: text.find(f"/* START NIAKVIO_FIX:{fix_id} */")
+        fix_id: text.find(begin_marker(fix_id))
         for fix_id in CORE_ORDER
-        if f"/* START NIAKVIO_FIX:{fix_id} */" in text
+        if begin_marker(fix_id) in text
     }
     previous = -1
     for fix_id in CORE_ORDER:
@@ -163,6 +161,11 @@ def main() -> int:
         help="Audit already reconstructed/materialized staging candidates instead of current ProviderBase files.",
     )
     parser.add_argument(
+        "--published",
+        action="store_true",
+        help="Audit the exact Provider JS files referenced by the current manifest.",
+    )
+    parser.add_argument(
         "--require-all",
         action="store_true",
         help="Require every manifest provider to exist in the supplied staging registry.",
@@ -175,6 +178,8 @@ def main() -> int:
     applied_script_counts: dict[str, int] = {}
     portfolio_errors: list[str] = []
     force = forced_ids()
+    if args.stage and args.published:
+        raise SystemExit("--stage and --published are mutually exclusive")
     staged = stage_rows(args.stage.resolve()) if args.stage else {}
 
     for entry in MANIFEST.get("scrapers") or []:
@@ -188,7 +193,31 @@ def main() -> int:
         if not isinstance(row, dict):
             raise AssertionError(f"{provider_id}: missing provenance row")
 
-        if args.stage:
+        if args.published:
+            local_path = str(entry.get("filename") or "").strip()
+            if not local_path:
+                portfolio_errors.append(f"{provider_id}: manifest provider filename missing")
+                continue
+            target = (ROOT / local_path).resolve()
+            providers_root = (ROOT / "providers").resolve()
+            if providers_root not in target.parents or not target.is_file():
+                portfolio_errors.append(f"{provider_id}: published provider file missing: {local_path}")
+                continue
+            first_text = target.read_text(encoding="utf-8", errors="strict")
+            try:
+                second, records = apply_overrides(
+                    provider_id,
+                    first_text.encode("utf-8"),
+                    phase="discovery",
+                )
+                second_text = second.decode("utf-8", errors="strict") if isinstance(second, bytes) else str(second)
+                errors, record_paths = audit_composed(provider_id, first_text, second_text, records)
+                portfolio_errors.extend(errors)
+                fix_ids = validate_managed_fixes(first_text)
+            except Exception as exc:
+                portfolio_errors.append(f"{provider_id}: published composition exception: {type(exc).__name__}: {exc}")
+                continue
+        elif args.stage:
             candidate = staged.get(provider_id)
             if not candidate:
                 if args.require_all:
@@ -240,7 +269,14 @@ def main() -> int:
             original_bytes = base_path.read_bytes()
             original_sha = hashlib.sha256(original_bytes).hexdigest()
             base_text = original_bytes.decode("utf-8", errors="strict")
-            if "NIAKVIO_FIX" in base_text:
+            forbidden_markers = (
+                "/* STARTFIX:",
+                "/* CLOSEFIX:",
+                "/* FIXDATA:",
+                "/* START NIAKVIO_FIX:",
+                "/* END NIAKVIO_FIX:",
+            )
+            if any(marker in base_text for marker in forbidden_markers):
                 raise AssertionError(f"{provider_id}: managed fix leaked into ProviderBase")
 
             try:
@@ -272,7 +308,10 @@ def main() -> int:
         x for x in MANIFEST.get("scrapers") or []
         if isinstance(x, dict) and str(x.get("id") or "").strip()
     ])
-    if args.stage:
+    if args.published:
+        if args.require_all and checked != expected:
+            portfolio_errors.append(f"published audit incomplete: checked={checked} expected={expected}")
+    elif args.stage:
         if args.require_all and checked != expected:
             portfolio_errors.append(f"staging audit incomplete: checked={checked} expected={expected}")
     elif checked + deferred != expected:
@@ -285,7 +324,7 @@ def main() -> int:
             print("FIELD_PROVIDER_BRICK_ERROR " + error)
         raise AssertionError(f"provider brick portfolio errors={len(portfolio_errors)}")
 
-    scope = "staging" if args.stage else "providerbase"
+    scope = "published" if args.published else ("staging" if args.stage else "providerbase")
     print(
         "FIELD_PROVIDER_BRICK_AUDIT "
         f"scope={scope} providers={checked} deferred={deferred} "

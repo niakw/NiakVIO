@@ -57,7 +57,7 @@ assert module.apply(
     context={"provider_id": "future-provider-never-seen-before"},
 ) == future_source
 
-source = 'globalThis.getStreams=async function(){return [{url:"https://example.com/video.m3u8",name:"old"}]};\n'
+source = 'globalThis.getStreams=async function(){return [{url:"https://example.com/video.m3u8",name:"old",title:"Peachify - 1080p",quality:"1080p"}]};\n'
 output = module.apply(source, context={"provider_id": "peachify"})
 assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output
 assert "🍑" in output and "Peachify" in output
@@ -67,7 +67,7 @@ with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-
     handle.write(output)
     handle.write(
         '\nPromise.resolve(globalThis.getStreams()).then(function(rows){'
-        'if(!Array.isArray(rows)||rows.length!==1||rows[0].name!=="🍑 Peachify")'
+        'if(!Array.isArray(rows)||rows.length!==1||rows[0].name!=="🍑 Peachify - 1080p"||rows[0].title!=="🍑 Peachify - 1080p")'
         '{console.error(JSON.stringify(rows));process.exit(2)}'
         'console.log(rows[0].name)'
         '}).catch(function(error){console.error(error);process.exit(3)});\n'
@@ -83,8 +83,8 @@ try:
         check=False,
     )
     assert result.returncode == 0, result.stdout + result.stderr
-    assert "🍑 Peachify" in result.stdout
+    assert "🍑 Peachify - 1080p" in result.stdout
 finally:
     artifact.unlink(missing_ok=True)
 
-print(f"provider branding contract passed: providers={len(rows)} local_stream_fallback=semantic_or_initial_emoji+clean_name")
+print(f"provider branding V6 contract passed: providers={len(rows)} client_visible_name_title_quality=1")

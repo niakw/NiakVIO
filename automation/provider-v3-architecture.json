@@ -1,0 +1,221 @@
+{
+  "schema_version": 3,
+  "branch_contract": "provider-v3-clean-architecture",
+  "provider_source_of_truth": {
+    "runtime_artifacts": "providers/*.js",
+    "reconstruction_inputs": [
+      "manifest.json",
+      "provider-overrides.json",
+      "provider_catalog.json",
+      "provider-type-policy.json",
+      "automation/provider-v3-static-knowledge.json",
+      "scripts/provider_base_store.py",
+      "scripts/provider_patches/**",
+      "scripts/provider_v3_minimizer.py"
+    ],
+    "reconstruction_rule": "ProviderBase + structured DATA/static knowledge + owned Core/Provider Lego + NiakVIO-safe minimizer only",
+    "legacy_provider_js_seed_allowed": false,
+    "upstream_provider_js_seed_allowed": false,
+    "canonical_provider_base_marker": "NIAKVIO_PROVIDER_BASE_OWNED_V3",
+    "managed_markers": [
+      "STARTFIX",
+      "CLOSEFIX",
+      "FIXDATA"
+    ],
+    "core_boundary": "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+    "published_provider_js_is_reconstruction_seed": false
+  },
+  "routine": {
+    "deep": {
+      "repair_allowed": false,
+      "provider_fix_mutation_allowed": false,
+      "provider_reconstruction_allowed": false,
+      "responsibilities": [
+        "run full Provider v3 structural contracts",
+        "observe domains/hubs read-only",
+        "observe exact published providers through deep health",
+        "reproject derived manifests",
+        "regenerate diagnostics and integrity inventories",
+        "publish allowlisted reports/manifests/hashes only"
+      ],
+      "static_published_byte_audit": true
+    },
+    "learning": {
+      "repair_allowed": true,
+      "production_write_allowed": false,
+      "proposal_pr_only": true,
+      "responsibilities": [
+        "observe failures",
+        "attempt sandbox repairs of owned fix blocks",
+        "validate repaired candidate",
+        "persist sanitized learning",
+        "open/refresh repair PR for human merge"
+      ],
+      "exclusive_code_evolution_owner": true,
+      "includes_disabled_providers": true
+    },
+    "quick": {
+      "repair_allowed": false,
+      "provider_fix_mutation_allowed": false,
+      "provider_reconstruction_allowed": false,
+      "responsibilities": [
+        "run fast Provider v3/Core structural tests",
+        "audit exact published Provider JS bytes",
+        "validate five-lab and observational-purity contracts",
+        "make no provider/DATA/Core mutations"
+      ],
+      "static_published_byte_audit": true
+    }
+  },
+  "manual_reconstruction": {
+    "full_catalogue": true,
+    "expected_provider_count": 96,
+    "command": "python scripts/materialize_provider_v3_all.py && python scripts/verify_provider_v3_reverse_rebuild.py",
+    "requires_byte_identical_reverse_proof": true,
+    "workflow": ".github/workflows/provider-v3-reconstruct-all.yml",
+    "main_write_allowed": false,
+    "published_or_upstream_js_seed_allowed": false,
+    "executable_plan_gate": "tests/provider_v3_strategy_plan_contract_test.py",
+    "security_html_filter_gate": "tests/provider_html_filter_security_test.py --published"
+  },
+  "native_labs": [
+    "TVAndroid",
+    "MobileAndroid",
+    "MobileIOS",
+    "DesktopMACOS",
+    "DesktopWindows"
+  ],
+  "minifier": {
+    "enabled_in_production": true,
+    "phase": "pre-hash-safe-whitespace",
+    "tool": "scripts/provider_v3_minimizer.py",
+    "transformations_enabled": [
+      "code-line-leading-indentation"
+    ],
+    "comment_architecture_must_be_preserved": true,
+    "managed_markers_must_be_preserved": true,
+    "newline_asi_contract": "preserve every line terminator",
+    "template_literal_policy": "leave complete provider byte-stable when template literals are present",
+    "identifier_renaming_allowed": false,
+    "expression_reordering_allowed": false,
+    "literal_rewriting_allowed": false,
+    "regex_rewriting_allowed": false,
+    "required_tests": [
+      "tests/provider_v3_minimizer_contract_test.py",
+      "tests/provider_v3_minimizer_preview_test.py",
+      "tests/provider_v3_minimizer_published_test.py",
+      "scripts/verify_provider_v3_reverse_rebuild.py"
+    ],
+    "terser_allowed": false
+  },
+  "domain_refresh": {
+    "schedule": "daily",
+    "autonomous_main_write": true,
+    "allowed_provider_data_fields": [
+      "official_site"
+    ],
+    "history_write_allowed": true,
+    "repair_allowed": false,
+    "provider_fix_mutation_allowed": false,
+    "api_mutation_allowed": false,
+    "route_mutation_allowed": false,
+    "deterministic_rematerialization_of_affected_provider": false,
+    "provider_config_data_update_only": true,
+    "provider_js_structure_must_remain_byte_identical_outside_config": true,
+    "content_addressed_filename_refresh": true
+  },
+  "routine_workflow": {
+    "path": ".github/workflows/sync.yml",
+    "display_name": "CORE - Verify & Publish",
+    "workflow_count": 1,
+    "profiles": {
+      "quick": {
+        "purpose": "fast event-driven validation on PR/push/domain follow-up",
+        "scheduled": false,
+        "network_health": false,
+        "manifest_publication": false,
+        "provider_reconstruction": false
+      },
+      "deep": {
+        "purpose": "full scheduled/manual validation and publication",
+        "scheduled": "Tuesday and Friday 04:47 UTC",
+        "network_health": true,
+        "manifest_publication": true,
+        "provider_reconstruction": false
+      }
+    },
+    "provider_mutation_allowed": false,
+    "provider_reconstruction_allowed": false
+  },
+  "legacy_duplicate_core_workflow_removed": true,
+  "documentation": {
+    "markdown_source": "ARCHITECTURE.md",
+    "docx_projection": "ARCHITECTURE.docx",
+    "drift_test": "tests/provider_v3_documentation_contract_test.py"
+  },
+  "native_labs_trigger": ".github/triggers/full-native-lab-validation.json",
+  "hls_integrity": {
+    "core_fix_id": "CORE.HLS_RUNTIME_INTEGRITY.V1",
+    "native_first_segment_proof": "opt-in by provider DATA after positive playback-malformation evidence",
+    "positive_invalid_examples": [
+      "MPEG-TS sync byte missing",
+      "HTML/JSON segment payload",
+      "fMP4 signature missing"
+    ],
+    "inconclusive_is_not_rejected": [
+      "network timeout",
+      "temporary fetch failure",
+      "encrypted HLS segment"
+    ]
+  },
+  "reference_reconstruction": {
+    "date": "2026-09-03",
+    "retry": 25,
+    "generation": "8e354389b41b2498",
+    "provider_count": 96,
+    "executable_provider_plans": 91,
+    "quarantined_provider_plans": 5,
+    "reverse_byte_identical": "96/96",
+    "reconstruction_sha": "bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb",
+    "release_integrity": true,
+    "quick_validation_sha": "28d98a54264f7d24379c62b310a81b2e60dd7b4b",
+    "note": "Reference before final HTML-filter security + minimizer rematerialization; next reconstruction must supersede this entry."
+  },
+  "native_lab_contract": {
+    "provider_count": 96,
+    "declared_routes": 214,
+    "declared_routes_by_type": {
+      "movie": 82,
+      "tv": 92,
+      "anime": 40
+    },
+    "coverage_gate": "scripts/gate_native_declared_provider_matrix.py",
+    "coverage_is_blocking": true,
+    "reader_outcomes_are_observational": true,
+    "external_nuvio_repo_repairs_allowed": false,
+    "harness_repairs_allowed_only_when_test_plumbing_is_wrong": true
+  },
+  "provider_plan_contract": {
+    "catalogue_provider_count": 96,
+    "disabled_providers_are_audited": true,
+    "executable_non_quarantined": 91,
+    "quarantined": 5,
+    "quarantine_requires_explicit_reason": true,
+    "strategy_taxonomy": [
+      "official_domain_hub",
+      "api_stream_resolver",
+      "html_scraper",
+      "mixed_embed_resolver",
+      "direct_media",
+      "iframe_player",
+      "quarantined"
+    ]
+  },
+  "security_html_filtering": {
+    "codeql_rule_family": "Bad HTML filtering regexp",
+    "regex_html_stripping_allowed": false,
+    "provider_base_scanner": "_htmlVisibleText",
+    "catalogue_alias_scanner": "plainHtml",
+    "source_and_published_gate": "tests/provider_html_filter_security_test.py"
+  }
+}

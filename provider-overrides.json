@@ -14,19 +14,51 @@
     "anime-sama": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://anime-sama.store",
+      "official_site": "https://anime-sama.to",
       "manifest_overrides": {},
       "domain_substitutions": {
-        "animes-sama.fr": "anime-sama.store"
+        "animes-sama.fr": "anime-sama.to",
+        "anime-sama.store": "anime-sama.to",
+        "anime-sama.fr": "anime-sama.to"
       },
-      "replacements": {
-        "animes-sama.fr": "anime-sama.store"
+      "published_types": [
+        "movie",
+        "anime"
+      ],
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
       },
-      "runtime_domain_replacements": {
-        "animes-sama.fr": "anime-sama.store"
+      "learned_routes": [
+        "/template-php/defaut/fetch.php",
+        "/catalogue/{slug}/saison{season}/{lang}/episodes.js",
+        "/catalogue/{slug}/{lang}/episodes.js",
+        "/catalogue/{slug}/film/{lang}/episodes.js"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/anime_sama_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/anime_sama_runtime_v1.py": {
+          "base": "https://anime-sama.to",
+          "fallbackBases": [
+            "https://anime-sama.store"
+          ],
+          "languages": [
+            "vostfr",
+            "vf"
+          ],
+          "targetStreams": 3
+        }
       },
-      "patch_script_options": {},
-      "required_values": []
+      "notes": [
+        "Provider v3 runtime is a NiakVIO-owned catalogue/episodes.js Lego derived from the current upstream contract; upstream JavaScript is not embedded or executed."
+      ]
     },
     "purstream": {
       "notes": [
@@ -115,9 +147,7 @@
         "api.purstream.wiki": "purstream.ad",
         "purstream.id": "purstream.ad",
         "api.purstream.id": "purstream.ad"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "flemmix": {
       "capability": "mixed_embed_resolver",
@@ -199,9 +229,7 @@
         "ww1.wiflix-adresses.fun": "flemmix.kim",
         "ww547.wiflix-hd.vip": "flemmix.kim",
         "flemmix.men": "flemmix.kim"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "uhdmovies": {
       "notes": [
@@ -217,11 +245,7 @@
       ],
       "domain_substitutions": {
         "uhdmovies.pink": "uhdmovies.autos"
-      },
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "movieshunt": {
       "capability": "direct_media",
@@ -229,7 +253,10 @@
       "official_site": "https://movieshunt.casa",
       "domain_substitutions": {
         "movieshunt.work": "movieshunt.casa"
-      }
+      },
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "zinkmovies": {
       "capability": "direct_media",
@@ -250,17 +277,7 @@
       "domain_substitutions": {
         "vegamovies.catering": "1vegamovies.me",
         "1vegamovies.cc": "1vegamovies.me"
-      },
-      "replacements": {
-        "1vegamovies.cc": "1vegamovies.me",
-        "vegamovies.catering": "1vegamovies.me"
-      },
-      "runtime_domain_replacements": {
-        "1vegamovies.cc": "1vegamovies.me",
-        "vegamovies.catering": "1vegamovies.me"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "hindmoviez": {
       "capability": "direct_media",
@@ -290,15 +307,7 @@
       },
       "domain_substitutions": {
         "hindmovie.icu": "hindmovie.fit"
-      },
-      "replacements": {
-        "hindmovie.icu": "hindmovie.fit"
-      },
-      "runtime_domain_replacements": {
-        "hindmovie.icu": "hindmovie.fit"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "4khdhub": {
       "capability": "html_scraper",
@@ -325,38 +334,79 @@
         "new4.hdhub4u.cl": "hdhub4u.bi",
         "new5.hdhub4u.cl": "hdhub4u.bi"
       },
-      "replacements": {
-        "4khdhub.click": "hdhub4u.bi",
-        "4khdhub.one": "hdhub4u.bi",
-        "new3.hdhub4u.cl": "hdhub4u.bi",
-        "new4.hdhub4u.cl": "hdhub4u.bi",
-        "new5.hdhub4u.cl": "hdhub4u.bi"
-      },
-      "runtime_domain_replacements": {
-        "4khdhub.click": "hdhub4u.bi",
-        "4khdhub.one": "hdhub4u.bi",
-        "new3.hdhub4u.cl": "hdhub4u.bi",
-        "new4.hdhub4u.cl": "hdhub4u.bi",
-        "new5.hdhub4u.cl": "hdhub4u.bi"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "persianstremio": {
-      "capability": "direct_media",
+      "capability": "api_stream_resolver",
       "published_types": [
         "movie",
         "tv"
+      ],
+      "official_site": "https://persianstremio.vercel.app",
+      "official_api": "https://persianstremio.vercel.app",
+      "learned_routes": [
+        "/stream/movie/{id}.json",
+        "/stream/series/{id}:{season}:{episode}.json"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/persianstremio_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/persianstremio_runtime_v1.py": {
+          "base": "https://persianstremio.vercel.app"
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Deterministic provider-owned Stremio JSON runtime: type selects movie vs series route.",
+        "IMDb id from Core metadata is preferred when available; TMDB id is the deterministic fallback.",
+        "Upstream JavaScript remains knowledge-only and is never executed."
       ]
     },
     "desiflix": {
-      "capability": "html_scraper",
+      "capability": "api_stream_resolver",
       "manifest_overrides": {
         "supportsExternalPlayer": false
       },
       "published_types": [
         "movie",
         "tv"
+      ],
+      "official_site": "https://manifest.desitvhub.eu.org",
+      "official_api": "https://manifest.desitvhub.eu.org",
+      "learned_routes": [
+        "/stream/movie/{id}.json",
+        "/stream/series/{id}:{season}:{episode}.json"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/desiflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/desiflix_runtime_v1.py": {
+          "base": "https://manifest.desitvhub.eu.org"
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Deterministic provider-owned Stremio JSON runtime: type selects movie vs series route.",
+        "IMDb id from Core metadata is preferred when available; TMDB id is the deterministic fallback.",
+        "Upstream JavaScript remains knowledge-only and is never executed."
       ]
     },
     "kehflix": {
@@ -365,7 +415,8 @@
         "Preserve the observed same-origin signed chain: detail -> signed /player -> /api/streams/movie or /api/streams/episode -> /api/stream-gw.",
         "Kehflix episodic playback uses /api/streams/episode?id&season&episode&k; Nuvio tv/anime remain semantic types while the provider runtime uses its episodic route.",
         "External embeds remain fallback observations; the signed same-origin runtime API is attempted first.",
-        "Activation remains disabled until canonical publication proof accepts the rebuilt ProviderBase."
+        "Kehflix is currently enabled; activation remains governed by normal publication evidence and stream-level playback failures do not disable the whole provider.",
+        "Native HLS playback uses the generic Core first-segment container proof for up to three HLS rows: malformed TS/HTML payloads are rejected before player hand-off while timeout/network uncertainty remains non-blocking."
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
@@ -392,10 +443,13 @@
         "/api/streams/dead",
         "/api/streams/warm"
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "core_options": {
+        "hls_runtime_integrity": {
+          "probe_first_segment_native": true,
+          "native_probe_max_rows": 3,
+          "native_probe_timeout_ms": 2500
+        }
+      }
     },
     "4khdhubnew": {
       "capability": "html_scraper"
@@ -412,11 +466,7 @@
       "domain_substitutions": {
         "allmovieland.you": "allmovieland.art",
         "allmovieland.one": "allmovieland.art"
-      },
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "anidb": {
       "capability": "html_scraper",
@@ -435,24 +485,12 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ],
-      "replacements": {
-        "anidb.app": "anidb.pics"
-      },
-      "runtime_domain_replacements": {
-        "anidb.app": "anidb.pics"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      ]
     },
     "anikototv": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://streamingsiteshub.com/",
-      "official_site": "https://anikototv.to/home",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "official_site": "https://anikototv.to/home"
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
@@ -490,25 +528,13 @@
       "manifest_overrides": {},
       "domain_substitutions": {
         "animesalt.link": "animesalt.cx"
-      },
-      "replacements": {
-        "animesalt.link": "animesalt.cx"
-      },
-      "runtime_domain_replacements": {
-        "animesalt.link": "animesalt.cx"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "animesama-co": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
       "official_site": "https://anime-sama.store",
-      "manifest_overrides": {},
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "manifest_overrides": {}
     },
     "animesultra": {
       "capability": "mixed_embed_resolver",
@@ -517,15 +543,7 @@
       "official_site": "https://v2.animesultra.org",
       "domain_substitutions": {
         "ww.animesultra.org": "v2.animesultra.org"
-      },
-      "replacements": {
-        "ww.animesultra.org": "v2.animesultra.org"
-      },
-      "runtime_domain_replacements": {
-        "ww.animesultra.org": "v2.animesultra.org"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "animetsu": {
       "capability": "direct_media",
@@ -545,11 +563,7 @@
       "capability": "mixed_embed_resolver",
       "official_hub": null,
       "official_site": "https://v2.animevostfr.org",
-      "manifest_overrides": {},
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "manifest_overrides": {}
     },
     "animezey": {
       "capability": "direct_media",
@@ -569,11 +583,11 @@
       "manifest_overrides": {}
     },
     "anizone": {
-      "capability": "api_stream_resolver",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://everythingmoe.com/s/anizone",
       "official_site": "https://anizone.to",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
           "tmdbId",
@@ -581,12 +595,28 @@
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Provider-owned AniZone runtime consumes Core TMDB external_ids; it never calls TMDB itself.",
+        "TV anime resolves IMDb -> MAL/episode mapping, then AniZone catalogue slug and provider-owned HLS. Anime movie namespace uses the already resolved Core title.",
+        "Upstream JavaScript is knowledge-only and never executed in reconstruction."
       ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/anime?search={query}",
+        "/anime/{slug}/{episode}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/anizone_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/anizone_runtime_v1.py": {
+          "base": "https://anizone.to",
+          "mapping": "https://id-mapping-api-malid.hf.space/api/resolve",
+          "jikan": "https://api.jikan.moe/v4/anime/"
+        }
+      }
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -634,10 +664,12 @@
     "cineby": {
       "capability": "api_stream_resolver",
       "official_hub": "https://warflix.cv/",
-      "official_site": "https://cineby.top",
+      "official_site": "https://www.cineby.at",
       "official_api": "https://api.speedracelight.com",
       "notes": [
-        "Cineby runtime domain discovery is materialized from NiakVIO's persisted terminal/API; upstream repository registries are maintenance-only and never fetched during playback."
+        "Clean v3 Cineby uses the shared Wings/speedracelight seed + mvm1 encrypted-source family through a provider-owned Lego.",
+        "The dynamic GitHub domain registry and embedded provider TMDB key are removed from playback; api.speedracelight.com is persisted DATA.",
+        "Core supplies title/year/TMDB identity; the provider performs no TMDB lookup."
       ],
       "learned_urls": [
         "https://cineby.top",
@@ -646,28 +678,76 @@
       "domain_substitutions": {
         "warflix.im": "cineby.top"
       },
-      "replacements": {
-        "warflix.im": "cineby.top"
+      "learned_routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/cineby_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/cineby_runtime_v1.py": {
+          "api_base": "https://api.speedracelight.com",
+          "origin": "https://www.cineby.at",
+          "referer": "https://www.cineby.at/",
+          "endpoints": [
+            {
+              "label": "CDN",
+              "path": "cdn/sources-with-title"
+            }
+          ]
+        }
       },
-      "runtime_domain_replacements": {
-        "warflix.im": "cineby.top"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      }
     },
     "cinemacity": {
       "capability": "direct_media",
-      "manifest_overrides": {}
+      "manifest_overrides": {},
+      "official_site": "https://cinemacity.cc",
+      "learned_routes": [
+        "/news_pages.xml",
+        "/movies/{id}-{slug}.html",
+        "/tv-series/{id}-{slug}.html"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/cinemacity_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/cinemacity_runtime_v1.py": {
+          "site": "https://cinemacity.cc",
+          "proxy_base": "https://cc.realbestia.com",
+          "sitemap_path": "/news_pages.xml",
+          "max_pages": 8
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 CinemaCity uses the statically recovered /news_pages.xml catalogue and cc.realbestia.com proxy.",
+        "Movie/TV kind plus strict Core title/year identify the candidate; TV additionally requires requested episode evidence near the final media URL.",
+        "Historical provider JavaScript and embedded TMDB key are never executed or copied into the runtime."
+      ]
     },
     "cinemm": {
       "capability": "html_scraper",
       "official_hub": null,
       "official_site": "https://cinemm.com",
-      "manifest_overrides": {},
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "manifest_overrides": {}
     },
     "coflix": {
       "notes": [
@@ -722,25 +802,7 @@
         "coflix.to": "coflix.group",
         "coflix.blog": "coflix.group",
         "coflix.esq": "coflix.group"
-      },
-      "replacements": {
-        "coflix.blue": "coflix.group",
-        "coflix.cymru": "coflix.group",
-        "coflix.esq": "coflix.group",
-        "coflix.fr": "coflix.group",
-        "coflix.life": "coflix.group",
-        "coflix.wiki": "coflix.group"
-      },
-      "runtime_domain_replacements": {
-        "coflix.blue": "coflix.group",
-        "coflix.cymru": "coflix.group",
-        "coflix.esq": "coflix.group",
-        "coflix.fr": "coflix.group",
-        "coflix.life": "coflix.group",
-        "coflix.wiki": "coflix.group"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "dooflix": {
       "capability": "html_scraper",
@@ -796,11 +858,7 @@
         "/{slug}",
         "/engine/ajax/search.php",
         "/engine/ajax/manga_episodes_api.php?id={id}"
-      ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      ]
     },
     "goated": {
       "capability": "api_stream_resolver",
@@ -827,11 +885,7 @@
       "manifest_overrides": {},
       "domain_substitutions": {
         "download.hdghartv.com.pk": "hdghartv.cc"
-      },
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "hdhub4u": {
       "capability": "html_scraper",
@@ -841,17 +895,7 @@
       "domain_substitutions": {
         "new3.hdhub4u.cl": "new5.hdhub4u.cl",
         "new4.hdhub4u.cl": "new5.hdhub4u.cl"
-      },
-      "replacements": {
-        "new3.hdhub4u.cl": "new5.hdhub4u.cl",
-        "new4.hdhub4u.cl": "new5.hdhub4u.cl"
-      },
-      "runtime_domain_replacements": {
-        "new3.hdhub4u.cl": "new5.hdhub4u.cl",
-        "new4.hdhub4u.cl": "new5.hdhub4u.cl"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "hianime": {
       "capability": "html_scraper",
@@ -914,18 +958,9 @@
         "new2.movies4u.clinic": "movies4u.review",
         "new3.movies4u.clinic": "movies4u.review"
       },
-      "replacements": {
-        "m4uplay.store": "movies4u.review",
-        "new2.movies4u.clinic": "movies4u.review",
-        "new3.movies4u.clinic": "movies4u.review"
-      },
-      "runtime_domain_replacements": {
-        "m4uplay.store": "movies4u.review",
-        "new2.movies4u.clinic": "movies4u.review",
-        "new3.movies4u.clinic": "movies4u.review"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      "learned_routes": [
+        "/?s={query}"
+      ]
     },
     "moviesdrive": {
       "notes": [
@@ -940,19 +975,7 @@
         "new1.moviesdrive.christmas": "moviesdrives.cfd",
         "new2.moviesdrive.christmas": "moviesdrives.cfd",
         "new3.moviesdrive.christmas": "moviesdrives.cfd"
-      },
-      "replacements": {
-        "new1.moviesdrive.christmas": "moviesdrives.cfd",
-        "new2.moviesdrive.christmas": "moviesdrives.cfd",
-        "new3.moviesdrive.christmas": "moviesdrives.cfd"
-      },
-      "runtime_domain_replacements": {
-        "new1.moviesdrive.christmas": "moviesdrives.cfd",
-        "new2.moviesdrive.christmas": "moviesdrives.cfd",
-        "new3.moviesdrive.christmas": "moviesdrives.cfd"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "moviesmod": {
       "notes": [
@@ -965,10 +988,9 @@
       "domain_substitutions": {
         "moviesmod.money": "moviesmod.zone"
       },
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "learned_routes": [
+        "/search/{query}"
+      ]
     },
     "movix": {
       "notes": [
@@ -1057,10 +1079,12 @@
         "logo": "https://nakios.live/favicon.ico"
       },
       "notes": [
-        "Use the catalogue/streaming service identified by nakios.org rather than the retired .store route."
+        "Clean v3 Nakios is a direct API DATA plan; historical JavaScript is knowledge-only.",
+        "Movie and TV routes use TMDB identity directly against api.nakios.store; no provider-side TMDB lookup is required.",
+        "Final stream URL filtering remains Core-owned."
       ],
       "official_hub": "https://nakios.org/",
-      "official_site": "https://nakios.live",
+      "official_site": "https://nakios.store",
       "published_types": [
         "movie",
         "tv",
@@ -1069,21 +1093,54 @@
       "domain_substitutions": {
         "nakios.store": "nakios.live",
         "api.nakios.store": "api.nakios.live"
+      },
+      "official_api": "https://api.nakios.store",
+      "learned_routes": [
+        "/api/sources/movie/{id}",
+        "/api/sources/tv/{id}/{season}/{episode}"
+      ],
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
       }
     },
     "neko-sama": {
       "capability": "mixed_embed_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://animes-sama.su",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/anime/{slug}-saison-{season}/",
+        "/anime/{slug}/",
+        "/?s={query}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/neko_sama_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/neko_sama_runtime_v1.py": {
+          "base": "https://animes-sama.su"
+        }
+      }
     },
     "papadustream": {
       "capability": "html_scraper",
@@ -1109,37 +1166,129 @@
       "notes": [
         "Clean v3 keeps anime as semantic anime and maps provider transport anime -> tv through provider_capabilities.request_type_aliases.",
         "Legacy papadustream_anime_tv_v1 and native sync-fetch source-shape patches are not executed in v3."
-      ],
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      ]
     },
     "peachify": {
       "capability": "mixed_embed_resolver",
-      "manifest_overrides": {}
+      "manifest_overrides": {},
+      "official_site": "https://peachify.top",
+      "learned_routes": [
+        "/moviebox/{media}/{id}",
+        "/air/{media}/{id}",
+        "/holly/{media}/{id}",
+        "/multi/{media}/{id}",
+        "/net/{media}/{id}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/peachify_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/peachify_runtime_v1.py": {
+          "key_hex": "a8f2a1b5e9c470814f6b2c3a5d8e7f9c1a2b3c4d5e3f7a8b8cad1e2d0a4d5c5d",
+          "origin": "https://peachify.top",
+          "referer": "https://peachify.top/",
+          "servers": [
+            {
+              "label": "Iron",
+              "base": "https://uwu.eat-peach.sbs",
+              "path": "moviebox"
+            },
+            {
+              "label": "Wolf",
+              "base": "https://usa.eat-peach.sbs",
+              "path": "air"
+            },
+            {
+              "label": "Spider",
+              "base": "https://usa.eat-peach.sbs",
+              "path": "holly"
+            },
+            {
+              "label": "Multi",
+              "base": "https://usa.eat-peach.sbs",
+              "path": "multi"
+            },
+            {
+              "label": "Dark",
+              "base": "https://uwu.eat-peach.sbs",
+              "path": "net"
+            }
+          ]
+        }
+      },
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 Peachify uses five statically recovered eat-peach endpoints and pure-JS AES-256-GCM decryption.",
+        "The historical node-forge payload and embedded TMDB key are not carried into Provider v3.",
+        "Movie/TV identity is TMDB-direct; TV appends requested season/episode to each endpoint."
+      ]
     },
     "playimdb": {
-      "capability": "direct_media"
+      "capability": "direct_media",
+      "official_site": "https://nextgencloudfabric.com",
+      "official_api": "https://streamdata.vaplayer.ru",
+      "learned_routes": [
+        "/api.php?tmdb={id}&type={media}",
+        "/api.php?tmdb={id}&type={media}&season={season}&episode={episode}"
+      ],
+      "identity_input": {
+        "mode": "tmdb_direct",
+        "requires_tmdb_before_run": false,
+        "required_fields": [
+          "tmdbId",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 PlayIMDB executes the statically recovered vaplayer API route as DATA; historical JavaScript is knowledge-only.",
+        "TV appends season/episode; movie transport uses the same TMDB-direct endpoint without provider-side metadata lookup."
+      ]
     },
     "sekai": {
       "capability": "html_scraper",
       "official_hub": null,
-      "official_site": "https://sekai.one/?v=15",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "official_site": "https://sekai.one/?v=15"
     },
     "streamflix": {
       "capability": "api_stream_resolver",
       "official_hub": null,
       "official_site": "https://streamflix.mom",
       "manifest_overrides": {},
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "official_api": "https://api.streamflix.app",
+      "learned_routes": [
+        "/data.json",
+        "/config/config-streamflixapp.json"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/streamflix_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/streamflix_runtime_v1.py": {
+          "api_base": "https://api.streamflix.app",
+          "firebase_base": "https://chilflix-410be-default-rtdb.asia-southeast1.firebasedatabase.app"
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 StreamFlix uses HTTP catalogue/config DATA plus bounded Firebase REST for one requested episode.",
+        "The historical 30-second Firebase WebSocket path is intentionally not carried into native QuickJS.",
+        "TMDB title/year come only from Core metadata; no provider-side TMDB key/network call is embedded."
+      ]
     },
     "streamzo": {
       "notes": [
@@ -1206,11 +1355,7 @@
           "year",
           "mediaType"
         ]
-      },
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "toflix": {
       "capability": "direct_media",
@@ -1243,22 +1388,49 @@
     },
     "videasy": {
       "notes": [
-        "Automatically migrated player.videasy.net to player.videasy.to after DNS/HTTP preflight validation of a redirect or a reachable same-role provider endpoint."
+        "Clean v3 VidEasy uses the shared Wings/speedracelight seed + mvm1 encrypted-source family through a provider-owned Lego.",
+        "Ten statically recovered source endpoints are explicit DATA; historical obfuscated JavaScript and provider-side TMDB calls are not carried into v3.",
+        "Core supplies title/year/TMDB identity and final stream sanitation remains Core-owned."
       ],
       "capability": "api_stream_resolver",
       "official_hub": "https://www.videasy.to/docs",
-      "official_site": "https://player.videasy.to/fr",
+      "official_site": "https://www.vidking.net",
       "domain_substitutions": {
         "player.videasy.net": "player.videasy.to"
       },
-      "replacements": {
-        "player.videasy.net": "player.videasy.to"
+      "official_api": "https://api.speedracelight.com",
+      "learned_routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title",
+        "/tejo/sources-with-title",
+        "/neon2/sources-with-title",
+        "/downloader2/sources-with-title",
+        "/ym/sources-with-title",
+        "/mb-flix/sources-with-title",
+        "/lamovie/sources-with-title",
+        "/m4uhd/sources-with-title",
+        "/superflix/sources-with-title",
+        "/1movies/sources-with-title"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/videasy_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/videasy_runtime_v1.py": {
+          "api_base": "https://api.speedracelight.com",
+          "origin": "https://www.vidking.net",
+          "referer": "https://www.vidking.net/"
+        }
       },
-      "runtime_domain_replacements": {
-        "player.videasy.net": "player.videasy.to"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      }
     },
     "vidfast": {
       "notes": [
@@ -1282,11 +1454,7 @@
       "capability": "mixed_embed_resolver",
       "official_hub": "https://voiranime.org.uk/",
       "official_site": "https://voiranime.homes",
-      "manifest_overrides": {},
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "manifest_overrides": {}
     },
     "voiranime-homes": {
       "capability": "mixed_embed_resolver"
@@ -1295,11 +1463,7 @@
       "capability": "mixed_embed_resolver",
       "official_hub": null,
       "official_site": "https://voiranime.rip",
-      "manifest_overrides": {},
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "manifest_overrides": {}
     },
     "vostfree": {
       "capability": "mixed_embed_resolver",
@@ -1328,23 +1492,7 @@
         "wookafr.app": "wookafr.blog",
         "wookafr.to": "wookafr.blog",
         "wookafr.center": "wookafr.blog"
-      },
-      "replacements": {
-        "wookafr.app": "wookafr.blog",
-        "wookafr.center": "wookafr.blog",
-        "wookafr.cymru": "wookafr.blog",
-        "wookafr.fyi": "wookafr.blog",
-        "wookafr.to": "wookafr.blog"
-      },
-      "runtime_domain_replacements": {
-        "wookafr.app": "wookafr.blog",
-        "wookafr.center": "wookafr.blog",
-        "wookafr.cymru": "wookafr.blog",
-        "wookafr.fyi": "wookafr.blog",
-        "wookafr.to": "wookafr.blog"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "yflix": {
       "capability": "mixed_embed_resolver",
@@ -1371,41 +1519,49 @@
       },
       "notes": [
         "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ],
-      "replacements": {
-        "ww2.aniwatch.fit": "aniwatchtv.watch"
-      },
-      "runtime_domain_replacements": {
-        "ww2.aniwatch.fit": "aniwatchtv.watch"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      ]
     },
     "allwish": {
       "capability": "html_scraper",
       "official_hub": "https://t.me/s/allwishme",
-      "official_site": "https://all-wish.me",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "official_site": "https://all-wish.me"
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver"
     },
     "animevost-fr": {
-      "capability": "mixed_embed_resolver",
+      "capability": "api_stream_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://animevost.fr",
+      "official_api": "https://animevost.fr",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/api/animes/search?q={query}",
+        "/api/animes/{slug}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/animevost_fr_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/animevost_fr_runtime_v1.py": {
+          "base": "https://animevost.fr"
+        }
+      }
     },
     "animeworld": {
       "capability": "html_scraper",
@@ -1428,7 +1584,35 @@
       "capability": "html_scraper"
     },
     "cinevibe": {
-      "capability": "direct_media"
+      "capability": "direct_media",
+      "official_site": "https://cinevibe.asia",
+      "learned_routes": [
+        "/api/stream/fetch?server=cinebox-1&type={media}&mediaId={id}&title={title}&releaseYear={year}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/cinevibe_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/cinevibe_runtime_v1.py": {
+          "base": "https://cinevibe.asia",
+          "fingerprint": "eyJzY3JlZW4iOiIzNjB4ODA2eDI0Iiwi",
+          "session": "pjght152dw2rb.ssst4bzleDI0Iiwibv78"
+        }
+      },
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 CineVibe uses a provider-owned tokenized API Lego; historical JavaScript is knowledge-only.",
+        "TMDB title/year come from Core metadata; no TMDB key or TMDB network call is embedded in the provider.",
+        "CineVibe currently resolves movie transport only; TV remains fail-closed until the upstream API contract supports episodes."
+      ]
     },
     "ctgmovies": {
       "capability": "direct_media"
@@ -1451,18 +1635,18 @@
     },
     "frenchstream": {
       "notes": [
-        "Resolve the current terminal site from fstream.org before applying the provider.",
-        "Reject known short preview/troll players independently from the Frenchstream site address.",
-        "Expose current episode mirrors before the legacy Frenchstream resolver, resolve Vidzy/FSVid/Uqload target media, then sanitize the final output instead of accepting the troll fallback.",
-        "Quarantined after playable media returned for Revenant S01E01 measured 2144 seconds versus 4620 expected (ratio 0.464) on TV, macOS and mobile; publish an inert bundle for cache-safe client behavior."
+        "Use https://fstream.website/ as the maintenance/discovery hub; the terminal streaming domain is mutable DATA and must not be hard-coded as the provider identity.",
+        "Reject known short preview/troll players independently from the current Frenchstream terminal domain.",
+        "Resolve current episode mirrors before generic nested-host crawling, then keep identity/duration rejection at stream level instead of quarantining the whole provider.",
+        "Historical Revenant S01E01 duration mismatch remains regression evidence, not a permanent provider quarantine."
       ],
       "manifest_overrides": {
         "logo": "https://fs23.lol/favicon.ico",
         "supportsExternalPlayer": false,
         "enabled": false
       },
-      "capability": "quarantined",
-      "official_hub": "https://fstream.org/",
+      "capability": "mixed_embed_resolver",
+      "official_hub": "https://fstream.website/",
       "official_site": "https://fs23.lol",
       "published_types": [
         "movie",
@@ -1474,7 +1658,6 @@
         "/?do=search&subaction=search&story={query}",
         "/?s={query}"
       ],
-      "quarantine_reason": "revenant_episode_duration_mismatch",
       "core_options": {
         "desktop_runtime_compat": {
           "normalize_missing_episodes": true
@@ -1493,6 +1676,23 @@
         "fs03.lol": "fs16.lol",
         "fs09.lol": "fs16.lol"
       },
+      "capability_promotion": {
+        "reason": "official_hub_recovered",
+        "evidence": [
+          "https://fstream.website/"
+        ],
+        "transitions": {
+          "strategy": {
+            "from": "quarantined",
+            "to": "mixed_embed_resolver"
+          },
+          "validation": {
+            "from": "blocked_revenant_episode_duration_mismatch",
+            "to": "requires_stream_identity_and_duration_gate"
+          }
+        },
+        "activation_policy": "remain_disabled_until_native_reader_acceptance"
+      },
       "replacements": {
         "french-stream.one": "fs23.lol",
         "frenchstream.food": "fs23.lol",
@@ -1506,23 +1706,41 @@
         "fs03.lol": "fs23.lol",
         "fs09.lol": "fs23.lol",
         "fs16.lol": "fs23.lol"
-      },
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "fullanime": {
       "capability": "mixed_embed_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://www.fullanime.fr",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/search?s={query}",
+        "/voir-anime/{slug}",
+        "/voir-anime/{slug}/episode/{episode}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/fullanime_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/fullanime_runtime_v1.py": {
+          "base": "https://www.fullanime.fr"
+        }
+      }
     },
     "goatapi": {
       "capability": "html_scraper"
@@ -1545,21 +1763,13 @@
       "domain_substitutions": {
         "mallumv.gay": "mallumv.space",
         "mallumv.cyou": "mallumv.space"
-      },
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "moonflix": {
       "capability": "direct_media",
       "manifest_overrides": {},
       "official_hub": "https://t.me/s/Moonflix_official_Channel",
-      "official_site": "https://moonflix.website",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "official_site": "https://moonflix.website"
     },
     "moviebox": {
       "capability": "quarantined",
@@ -1569,11 +1779,7 @@
         "enabled": false
       },
       "notes": "Fail-closed safety quarantine: non_playable_html_output. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof.",
-      "quarantine_reason": "non_playable_html_output",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "quarantine_reason": "non_playable_html_output"
     },
     "mycima": {
       "notes": [
@@ -1584,11 +1790,7 @@
       "official_site": "https://mycima.chat",
       "domain_substitutions": {
         "mycima.red": "mycima.chat"
-      },
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      }
     },
     "netmirror": {
       "capability": "quarantined",
@@ -1598,11 +1800,7 @@
         "enabled": false
       },
       "notes": "Fail-closed safety quarantine: cross_title_search_identity_mismatch. Published bundle is inert; re-enable only after fresh strict identity and direct-media proof.",
-      "quarantine_reason": "cross_title_search_identity_mismatch",
-      "replacements": {},
-      "runtime_domain_replacements": {},
-      "patch_script_options": {},
-      "required_values": []
+      "quarantine_reason": "cross_title_search_identity_mismatch"
     },
     "onlykdrama": {
       "capability": "html_scraper"
@@ -1652,21 +1850,85 @@
       ]
     },
     "vidnest": {
-      "capability": "direct_media"
-    },
-    "vidnest-anime": {
-      "capability": "api_stream_resolver",
+      "capability": "direct_media",
+      "official_site": "https://vidnest.fun",
+      "official_api": "https://first.vidnest.fun",
+      "learned_routes": [
+        "/hollymoviehd/{media}/{id}/{season}/{episode}",
+        "/primesrc/{media}/{id}/{season}/{episode}",
+        "/ophim/{media}/{id}/{season}/{episode}",
+        "/flixhq/{media}/{id}/{season}/{episode}?server=upcloud",
+        "/vidlink/{media}/{id}/{season}/{episode}",
+        "/rogflix/{media}/{id}/{season}/{episode}"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidnest_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/vidnest_runtime_v1.py": {
+          "api_base": "https://first.vidnest.fun",
+          "proxy_url": "https://vidnest.animanga.fun/proxy",
+          "decrypt_url": "https://aesdec.nuvioapp.space/decrypt",
+          "passphrase": "A7kP9mQeXU2BWcD4fRZV+Sg8yN0/M5tLbC1HJQwYe6o=",
+          "servers": [
+            "hollymoviehd",
+            "primesrc",
+            "ophim",
+            "flixhq",
+            "vidlink",
+            "rogflix"
+          ]
+        }
+      },
       "identity_input": {
         "mode": "tmdb_direct",
-        "requires_tmdb_before_run": true,
+        "requires_tmdb_before_run": false,
         "required_fields": [
           "tmdbId",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Clean v3 Vidnest calls first.vidnest.fun directly by TMDB identity and keeps the historical Nuvio decrypt service as explicit DATA.",
+        "Protected flashstream/streamsvr URLs are wrapped through the existing Vidnest proxy; Core remains responsible for final playback sanitation.",
+        "Historical TMDB calls and executable provider JavaScript are not carried into v3."
       ]
+    },
+    "vidnest-anime": {
+      "capability": "api_stream_resolver",
+      "identity_input": {
+        "mode": "catalog_search",
+        "requires_tmdb_before_run": true,
+        "required_fields": [
+          "title",
+          "year",
+          "mediaType"
+        ]
+      },
+      "notes": [
+        "Clean v3 Vidnest-Anime maps Core title/year to AniList, then calls the five statically recovered backend.vidnest.fun server families.",
+        "Season >1 requires previous-season episode counts already present in Core TMDB metadata; otherwise it fails closed instead of guessing an absolute episode.",
+        "Encrypted responses use the same explicit Nuvio decrypt service contract as Vidnest."
+      ],
+      "official_site": "https://vidnest.fun",
+      "official_api": "https://backend.vidnest.fun",
+      "learned_routes": [
+        "/animeworld/{id}/{episode}/server/my%20server",
+        "/satoru/{id}/{episode}",
+        "/aniwave/{id}/{episode}/{media}/wave",
+        "/aniwave/{id}/{episode}/{media}/pahe",
+        "/aniwave/{id}/{episode}/{media}/anya"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidnest_anime_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/vidnest_anime_runtime_v1.py": {
+          "api_base": "https://backend.vidnest.fun",
+          "decrypt_url": "https://aesdec.nuvioapp.space/decrypt",
+          "passphrase": "A7kP9mQeXU2BWcD4fRZV+Sg8yN0/M5tLbC1HJQwYe6o="
+        }
+      }
     },
     "vidsrc": {
       "capability": "mixed_embed_resolver"
@@ -1683,18 +1945,39 @@
       "quarantine_reason": "interstellar_duration_mismatch"
     },
     "waveanime": {
-      "capability": "html_scraper",
+      "capability": "api_stream_resolver",
       "identity_input": {
-        "mode": "tmdb_direct",
+        "mode": "catalog_search",
         "requires_tmdb_before_run": true,
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
         ]
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
-      ]
+        "Clean Provider v3 adapter re-implements the current provider transport contract from structured upstream knowledge; upstream JavaScript remains knowledge-only.",
+        "Core resolves TMDB metadata before provider network calls; this anime-semantic provider accepts the Nuvio tv transport alias but never maps anime to movie.",
+        "Provider-specific runtime is bounded to the provider catalogue/API routes below; stream/player recovery remains in shared Core where applicable."
+      ],
+      "official_site": "https://waveanime.fr",
+      "official_api": "https://waveanime.fr",
+      "published_types": [
+        "anime",
+        "tv"
+      ],
+      "learned_routes": [
+        "/api/series?query={query}",
+        "/api/series/{id}",
+        "/playback/{episode}/manifest.mpd"
+      ],
+      "provider_lego_scripts": [
+        "scripts/provider_patches/waveanime_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/waveanime_runtime_v1.py": {
+          "base": "https://waveanime.fr"
+        }
+      }
     },
     "xpass": {
       "capability": "html_scraper"
@@ -1925,10 +2208,15 @@
       "allow_html_url": false,
       "requires_direct_media": true,
       "observed_origins": [
-        "https://old.invalid"
+        "https://persianstremio.vercel.app"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ],
+      "identity_request_source": "original_nuvio_request"
     },
     "desiflix": {
       "strategy": "html_scraper",
@@ -1936,11 +2224,15 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://manifest.desitvhub.eu.org",
-        "https://old.invalid"
+        "https://manifest.desitvhub.eu.org"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "movie",
+        "tv"
+      ],
+      "identity_request_source": "original_nuvio_request"
     },
     "kehflix": {
       "strategy": "html_scraper",
@@ -2222,11 +2514,17 @@
       "observed_origins": [
         "https://anizone.to",
         "https://id-mapping-api-malid.hf.space",
-        "https://api.jikan.moe",
-        "https://old.invalid"
+        "https://api.jikan.moe"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "castle": {
       "strategy": "api_stream_resolver",
@@ -2251,7 +2549,11 @@
         "https://api.speedracelight.com",
         "https://old.invalid"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title"
+      ]
     },
     "cinemacity": {
       "strategy": "direct_media",
@@ -2263,7 +2565,12 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/news_pages.xml",
+        "/movies/{id}-{slug}.html",
+        "/tv-series/{id}-{slug}.html"
+      ]
     },
     "cinemm": {
       "strategy": "html_scraper",
@@ -2574,19 +2881,28 @@
         "movie",
         "tv",
         "anime"
+      ],
+      "routes": [
+        "/api/sources/movie/{id}",
+        "/api/sources/tv/{id}/{season}/{episode}"
       ]
     },
     "neko-sama": {
       "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "validation": "provider_native_and_final_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://kitsu.io",
-        "https://animes-sama.su",
-        "https://old.invalid"
+        "https://animes-sama.su"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "papadustream": {
       "strategy": "html_scraper",
@@ -2624,7 +2940,14 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/moviebox/{media}/{id}",
+        "/air/{media}/{id}",
+        "/holly/{media}/{id}",
+        "/multi/{media}/{id}",
+        "/net/{media}/{id}"
+      ]
     },
     "playimdb": {
       "strategy": "direct_media",
@@ -2637,7 +2960,11 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/api.php?tmdb={id}&type={media}",
+        "/api.php?tmdb={id}&type={media}&season={season}&episode={episode}"
+      ]
     },
     "sekai": {
       "strategy": "html_scraper",
@@ -2672,7 +2999,11 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/data.json",
+        "/config/config-streamflixapp.json"
+      ]
     },
     "streamzo": {
       "strategy": "mixed_embed_resolver",
@@ -2735,7 +3066,20 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/seed?mediaId={id}",
+        "/cdn/sources-with-title",
+        "/tejo/sources-with-title",
+        "/neon2/sources-with-title",
+        "/downloader2/sources-with-title",
+        "/ym/sources-with-title",
+        "/mb-flix/sources-with-title",
+        "/lamovie/sources-with-title",
+        "/m4uhd/sources-with-title",
+        "/superflix/sources-with-title",
+        "/1movies/sources-with-title"
+      ]
     },
     "vidfast": {
       "strategy": "iframe_player",
@@ -3049,16 +3393,21 @@
       "generated_from_manifest_or_stage": true
     },
     "animevost-fr": {
-      "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "strategy": "api_stream_resolver",
+      "validation": "api_and_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://animevost.fr",
-        "https://kitsu.io",
-        "https://old.invalid"
+        "https://animevost.fr"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "animeworld": {
       "strategy": "html_scraper",
@@ -3186,15 +3535,20 @@
     },
     "fullanime": {
       "strategy": "mixed_embed_resolver",
-      "validation": "provider_native",
-      "allow_html_url": true,
-      "requires_direct_media": false,
+      "validation": "provider_native_and_final_direct_media",
+      "allow_html_url": false,
+      "requires_direct_media": true,
       "observed_origins": [
-        "https://kitsu.io",
-        "https://www.fullanime.fr",
-        "https://old.invalid"
+        "https://www.fullanime.fr"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "goatapi": {
       "strategy": "html_scraper",
@@ -3365,7 +3719,15 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/hollymoviehd/{media}/{id}/{season}/{episode}",
+        "/primesrc/{media}/{id}/{season}/{episode}",
+        "/ophim/{media}/{id}/{season}/{episode}",
+        "/flixhq/{media}/{id}/{season}/{episode}?server=upcloud",
+        "/vidlink/{media}/{id}/{season}/{episode}",
+        "/rogflix/{media}/{id}/{season}/{episode}"
+      ]
     },
     "vidnest-anime": {
       "strategy": "api_stream_resolver",
@@ -3381,7 +3743,14 @@
         "https://old.invalid"
       ],
       "generated_from_manifest": true,
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "routes": [
+        "/animeworld/{id}/{episode}/server/my%20server",
+        "/satoru/{id}/{episode}",
+        "/aniwave/{id}/{episode}/{media}/wave",
+        "/aniwave/{id}/{episode}/{media}/pahe",
+        "/aniwave/{id}/{episode}/{media}/anya"
+      ]
     },
     "vidsrc": {
       "strategy": "mixed_embed_resolver",
@@ -3414,15 +3783,16 @@
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://waveanime.fr",
-        "https://kitsu.io",
-        "https://npms.io",
-        "https://lodash.com",
-        "https://openjsf.org",
-        "http://underscorejs.org",
-        "https://old.invalid"
+        "https://waveanime.fr"
       ],
-      "generated_from_manifest_or_stage": true
+      "generated_from_manifest_or_stage": true,
+      "catalogue_types": [
+        "anime"
+      ],
+      "request_type_aliases": {
+        "anime": "tv"
+      },
+      "identity_request_source": "original_nuvio_request"
     },
     "xpass": {
       "strategy": "html_scraper",

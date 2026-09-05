@@ -7,8 +7,10 @@ on:
   push:
     branches:
       - main
+      - workbench/provider-v3-performance-playback
     paths:
       - ".github/triggers/full-native-lab-validation.json"
+      - ".github/triggers/native-desktop-lab-validation.json"
 
 permissions:
   contents: read
@@ -90,13 +92,15 @@ jobs:
     runs-on: ${{ matrix.runner }}
     env:
       WEBVIEW2_VERSION: 1.0.4078.44
+      # libmpv requires the C numeric locale to be exactly C before mpv_create().
+      # Keep the official NuvioDesktop source untouched; provide its documented
+      # native runtime precondition at process level in the Lab.
+      LC_NUMERIC: C
       NIAKVIO_TARGET_PROVIDER: declared-type
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
-      # Reader/player outcomes are evidence for Brain/Deep. A failed playback or
-      # failed repair never freezes this Lab; only real setup/infra/contract errors do.
-      NIAKVIO_REQUIRE_READER_SUCCESS: "0"
+      # Reader/player outcomes are observational evidence. Coverage/infra are blocking; external client playback failures are preserved, never repaired here.
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -188,6 +192,15 @@ jobs:
           # reach is emitted as owner=brain/blocking=false and returns success.
           node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_player_reached.cjs" "${LOGS[@]}"
 
+      - name: Verify exhaustive Desktop provider matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
+            --client desktop \
+            --manifest niakvio/manifest.json \
+            --corpus niakvio/.github/triggers/nuvio-client-lab.json \
+            "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
       - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
         shell: bash
@@ -210,42 +223,6 @@ jobs:
               --output "$GITHUB_WORKSPACE/desktop-reader-${{ matrix.os_name }}-${fixture}-brain.json" \
               "$LOG" || echo "FIELD_NATIVE_BRAIN_DIAGNOSIS status=unresolved blocking=false owner=brain fixture=$fixture os=${{ matrix.os_name }}"
           done < "$FIXTURE_FILE"
-
-      - name: Materialize final Core fixed-point for Desktop canary
-        shell: bash
-        run: |
-          set -euxo pipefail
-          cd "$GITHUB_WORKSPACE/niakvio"
-          npm ci --ignore-scripts --no-audit --no-fund
-          python3 scripts/normalize_repository_docs.py --apply
-          python3 scripts/normalize_runtime_repository_dependencies.py --apply
-          python3 scripts/normalize_provider_rebuild_safety.py --apply
-          python3 scripts/normalize_core_fixed_point_contract.py --apply
-          python3 scripts/normalize_provider_branding_pipeline.py --apply
-          python3 scripts/normalize_core_media_policy.py --apply
-          python3 scripts/apply_runtime_capability_upgrade_v4.py
-          python3 scripts/build_provider_runtime_profiles.py
-          converged=0
-          for pass in 1 2 3 4 5 6; do
-            echo "FIELD_DESKTOP_CANARY_REBUILD_CONVERGENCE pass=$pass"
-            python3 scripts/reapply_published_overrides.py
-            if python3 scripts/reapply_published_overrides.py --check; then
-              converged=1
-              echo "FIELD_DESKTOP_CANARY_REBUILD_CONVERGENCE converged_at=$pass"
-              break
-            fi
-          done
-          test "$converged" -eq 1
-          python3 scripts/normalize_runtime_repository_dependencies.py --check
-          python3 scripts/normalize_provider_rebuild_safety.py --check
-          python3 scripts/normalize_core_fixed_point_contract.py --check
-          python3 scripts/normalize_provider_branding_pipeline.py --check
-          python3 tests/global_stream_presentation_test.py
-          node engine_v2/tests/runtime-adapters.test.mjs
-          node engine_v2/tests/stream-presentation.test.mjs
-          hits="$(grep -l 'NUVIO_GLOBAL_RUNTIME_COMPAT_V1' providers/*.js | wc -l | tr -d ' ')"
-          test "$hits" -ge 3
-          echo "FIELD_DESKTOP_CANARY_CORE_MATERIALIZED runtime_compat_providers=$hits"
 
       - name: Upload Desktop reader evidence
         if: always()

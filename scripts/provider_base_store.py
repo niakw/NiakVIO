@@ -118,6 +118,38 @@ def canonical_id(value: str) -> str:
     return safe_fragment(value).casefold().replace("_", "-")
 
 
+NON_EXECUTABLE_KNOWLEDGE_HOSTS = {
+    "npms.io", "lodash.com", "www.lodash.com", "openjsf.org", "www.openjsf.org",
+    "underscorejs.org", "www.underscorejs.org", "arm.haglund.dev", "v3-cinemeta.strem.io",
+}
+
+
+def _provider_data_url_is_executable(value: object) -> bool:
+    text = str(value or "").strip()
+    if not text or "${" in text or "encodeURIComponent(" in text:
+        return False
+    lowered = text.casefold()
+    return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
+
+
+def _provider_data_route_is_executable(value: object) -> bool:
+    text = str(value or "").strip()
+    if not text or "${" in text or "encodeURIComponent(" in text or "decodeURIComponent(" in text:
+        return False
+    lowered = text.casefold()
+    if "q=ponyfill" in lowered or lowered.rstrip("/") == "/license":
+        return False
+    if text.count("{") != text.count("}") or text.count("[") != text.count("]") or text.count("(") != text.count(")"):
+        return False
+    if re.search(r"(?:\(\?:|\(\?=|\(\?!|\\[dDsSwW][+*?]?|\[[^\]]*$|(?:^|[/_-])i\[$)", text, re.I):
+        return False
+    if re.search(r"\.(?:css|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)", text, re.I):
+        return False
+    if re.search(r"/(?:refs/heads/[^/]+/)?domains?\.json(?:[?#]|$)", text, re.I):
+        return False
+    return True
+
+
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -140,6 +172,103 @@ def safe_base_path(relative: str) -> Path | None:
 def forbidden_base_markers(data: bytes) -> list[str]:
     text = data.decode("utf-8", errors="strict")
     return [marker for marker in DERIVED_BASE_MARKERS if marker in text]
+
+
+def _strip_leaked_provider_model_data(text: str) -> tuple[str, bool]:
+    """Remove only the serialized Provider DATA declaration from a contaminated base.
+
+    References to NIAKVIO_PROVIDER_MODEL are part of the common skeleton and are
+    preserved. This helper never derives code from a published provider and never
+    rewrites executable logic outside the single declaration statement.
+    """
+    prefixes = (
+        "const NIAKVIO_PROVIDER_MODEL = Object.freeze(",
+        "let NIAKVIO_PROVIDER_MODEL = Object.freeze(",
+        "var NIAKVIO_PROVIDER_MODEL = Object.freeze(",
+    )
+    starts = [(text.find(prefix), prefix) for prefix in prefixes if text.find(prefix) >= 0]
+    if not starts:
+        return text, False
+    if len(starts) != 1:
+        raise ValueError("ProviderBase contains multiple provider model DATA declarations")
+    start, prefix = starts[0]
+    open_paren = start + len(prefix) - 1
+    depth = 0
+    quote = ""
+    escaped = False
+    end = None
+    for index in range(open_paren, len(text)):
+        ch = text[index]
+        if quote:
+            if escaped:
+                escaped = False
+            elif ch == "\\":
+                escaped = True
+            elif ch == quote:
+                quote = ""
+            continue
+        if ch in ("'", '"', "`"):
+            quote = ch
+            continue
+        if ch == "(":
+            depth += 1
+        elif ch == ")":
+            depth -= 1
+            if depth == 0:
+                cursor = index + 1
+                while cursor < len(text) and text[cursor] in " \t":
+                    cursor += 1
+                if cursor >= len(text) or text[cursor] != ";":
+                    raise ValueError("ProviderBase provider model DATA declaration has no terminating semicolon")
+                cursor += 1
+                if cursor < len(text) and text[cursor] == "\r":
+                    cursor += 1
+                if cursor < len(text) and text[cursor] == "\n":
+                    cursor += 1
+                end = cursor
+                break
+    if end is None:
+        raise ValueError("ProviderBase provider model DATA declaration is unterminated")
+    cleaned = text[:start] + text[end:]
+    return cleaned, True
+
+
+def _strip_leaked_provider_identity_data(text: str) -> tuple[str, bool]:
+    """Remove only a standalone generated NIAKVIO_PROVIDER_ID comment."""
+    pattern = re.compile(r"(?m)^\s*/\*\s*NIAKVIO_PROVIDER_ID:[^*]+\*/\s*\r?\n?")
+    cleaned, count = pattern.subn("", text)
+    if count > 1:
+        raise ValueError("ProviderBase contains multiple provider identity DATA comments")
+    return cleaned, bool(count)
+
+
+def clean_derived_provider_base(provider_id: str, data: bytes) -> tuple[bytes, bool]:
+    """Strip only generated/composed layers from an existing ProviderBase.
+
+    This is the manual reconstruction cleanup path. It never consults published
+    Provider JS, upstream JS, snapshots or Git history.
+    """
+    text = data.decode("utf-8", errors="strict")
+    if PROVIDER_BEGIN_MARKER in text or PROVIDER_END_MARKER in text:
+        raise ValueError(f"{provider_id}: ProviderBase envelope contamination requires Learning review")
+    text, model_stripped = _strip_leaked_provider_model_data(text)
+    text, identity_stripped = _strip_leaked_provider_identity_data(text)
+    text, managed_fixes = strip_all_managed_fixes(
+        text,
+        restore_replaced_source=True,
+        require_provider_base_restore=True,
+    )
+    text, stripped_core = _strip_generated_core_tail(text)
+    text, stripped_adaptive = strip_adaptive_runtime_wrappers(text)
+    data_out = text.encode("utf-8")
+    prefix, body = split_owned_prefix_bootstraps(data_out)
+    if prefix:
+        data_out = body
+    assert_base_layering(data_out, provider_id)
+    return data_out, bool(
+        model_stripped or identity_stripped or managed_fixes
+        or stripped_core or stripped_adaptive or prefix
+    )
 
 
 def assert_base_layering(data: bytes, provider_id: str) -> None:
@@ -433,23 +562,24 @@ def build_provider_data_model(
         "origins": [
             str(value).strip()
             for value in incoming_model.get("origins") or []
-            if str(value).strip()
+            if _provider_data_url_is_executable(value)
         ][:24],
         "observedUrls": [
             str(value).strip()
             for value in incoming_model.get("observedUrls") or []
-            if str(value).strip()
+            if _provider_data_url_is_executable(value)
         ][:32],
         "routes": [
             str(value).strip()
             for value in incoming_model.get("routes") or []
-            if str(value).strip()
+            if _provider_data_route_is_executable(value)
         ][:64],
         "apiRecipe": (
             incoming_model.get("apiRecipe")
             if isinstance(incoming_model.get("apiRecipe"), dict)
             else None
         ),
+        "sourceRuntimeFamily": str(incoming_model.get("sourceRuntimeFamily") or "unknown"),
         "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),
         "strictIdentity": bool(incoming_model.get("strictIdentity", False)),
         "strictHtmlIdentity": bool(incoming_model.get("strictHtmlIdentity", False)),
@@ -599,17 +729,66 @@ function _mediaNamespace(mediaType) {
 function _playerLike(url) {
   try {
     const parsed = new URL(url);
-    return /\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);
+    const host = _text(parsed.hostname).toLowerCase();
+    // Shared download/intermediate hosts used by multiple catalogue providers.
+    // They are resolver pages, not playable output, so the bounded crawler may
+    // traverse them but _directMedia() must still prove the final stream.
+    if (/(?:^|\.)(?:abhilinks\.(?:site|life)|vcloud\.zip|hubcloud\.[a-z0-9.-]+|driveseed\.[a-z0-9.-]+|hubdrive\.[a-z0-9.-]+|gdflix\.[a-z0-9.-]+)$/i.test(host)) {
+      return true;
+    }
+    return /\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);
   } catch (_) {
     return false;
   }
 }
+function _crawlUrlScore(url) {
+  try {
+    if (_directMedia(url)) return 5000;
+    const parsed = new URL(url);
+    const host = _text(parsed.hostname).toLowerCase();
+    const path = (parsed.pathname + parsed.search).toLowerCase();
+    let score = 0;
+    if (/(?:^|\.)(?:vcloud|hubcloud|driveseed|hubdrive|gdflix|gofile|pixeldrain|streamtape|vidmoly|filelions|filemoon|streamwish|wishfast|dood|doodstream|mixdrop|voe|lulustream|savefiles)\./i.test(host)) score += 900;
+    if (/(?:^|\.)(?:abhilinks\.(?:site|life))$/i.test(host)) score += 500;
+    if (/\/(?:watch|embed|player|play|video|stream|source|server|resolve|proxy|drive|download|dl|links?|redirect)(?:[/?#.-]|$)/i.test(path)) score += 420;
+    if (/\/archives?\/\d+/i.test(path)) score += 180;
+    if (/(?:^|\.)(?:t\.me|telegram\.me|facebook\.com|instagram\.com|twitter\.com|x\.com|youtube\.com|youtu\.be)$/i.test(host)) score -= 1600;
+    if (/\/(?:feed|comments?\/feed|wp-json\/oembed|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) score -= 1200;
+    if (/\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) score -= 1600;
+    return score;
+  } catch (_) { return -5000; }
+}
+function _crawlCanonical(url) {
+try {
+const parsed = new URL(url);
+if (!/^https?:$/i.test(parsed.protocol)) return "";
+parsed.hash = "";
+return parsed.toString();
+} catch (_) { return ""; }
+}
+function _crawlEligible(url) {
+  try {
+    if (_directMedia(url)) return true;
+    const parsed = new URL(url);
+    if (!/^https?:$/i.test(parsed.protocol)) return false;
+    const host = _text(parsed.hostname).toLowerCase();
+    const path = (parsed.pathname + parsed.search).toLowerCase();
+    const hash = _text(parsed.hash).toLowerCase();
+    if (/^#(?:comments?|respond|reply|share)/i.test(hash)) return false;
+    if (/(?:^|\.)(?:t\.me|telegram\.me|facebook\.com|instagram\.com|twitter\.com|x\.com|youtube\.com|youtu\.be)$/i.test(host)) return false;
+    if (/\/(?:feed|comments?\/feed|wp-json(?:\/|$)|wp-admin|admin|login|register|assets?|static|images?|icons?|fonts?)(?:[/?#.-]|$)/i.test(path)) return false;
+    if (/\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) return false;
+    if (/(?:\+t\.uri|code%3a|message%3a|xhr%3a|\{status:)/i.test(path)) return false;
+    return _playerLike(url) || _crawlUrlScore(url) > 0;
+  } catch (_) { return false; }
+}
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
-  const queue = _uniq(seedUrls).filter(_playerLike).slice(0, 3).map(url => ({ url, depth: 0, referer }));
+  const queue = _uniq(seedUrls.map(_crawlCanonical)).filter(Boolean).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));
   const seen = new Set();
   const streams = [];
   let requests = 0;
-  while (queue.length && requests < 4 && streams.length < 12) {
+  while (queue.length && requests < 10 && streams.length < 12) {
+    queue.sort((a,b)=>_crawlUrlScore(b.url)-_crawlUrlScore(a.url));
     const row = queue.shift();
     if (!row || seen.has(row.url)) continue;
     seen.add(row.url);
@@ -636,7 +815,7 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
         continue;
       }
       if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
-        for (const next of urls.filter(_playerLike).slice(0, 2)) {
+        for (const next of _uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 4)) {
           if (!seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
         }
       }
@@ -659,8 +838,16 @@ function _candidateScore(url, meta) {
   if (/\/(?:movie|movies|film|films|series|tv|show|watch|title|media)\//i.test(path)) score += 12;
   return score;
 }
-function _expandLearnedRoute(pattern, meta, mediaType, season, episode) {
+function _identityMode() {
+  const raw = NIAKVIO_PROVIDER_MODEL && NIAKVIO_PROVIDER_MODEL.identityInput;
+  return _text(raw && raw.mode || "tmdb_direct").toLowerCase();
+}
+function _identityUsesTmdbId() {
+  return _identityMode() === "tmdb_direct";
+}
+function _expandLearnedRoute(pattern, meta, mediaType, season, episode, bases) {
   let route = _text(pattern);
+  if (/\$\{|encodeURIComponent\s*\(/i.test(route)) return [];
   if (!route || /^https?:\/\//i.test(route) && !/\{[^}]+\}/.test(route)) {
     return /^https?:\/\//i.test(route) ? [route] : [];
   }
@@ -668,8 +855,15 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode) {
   const title = _text(meta && meta.title);
   const slug = _slug(title);
   const transport = mediaType === "movie" ? "movie" : "tv";
+  route = route.replace(/\{tmdb_?id\}/gi, encodeURIComponent(id));
+  // {id} has no universal meaning across providers. It can be a provider
+  // catalogue/session/file/MAL id. Only the explicit tmdb_direct identity
+  // contract permits using the incoming TMDB id as its implicit value.
+  if (/\{id\}/i.test(route)) {
+    if (!_identityUsesTmdbId()) return [];
+    route = route.replace(/\{id\}/gi, encodeURIComponent(id));
+  }
   route = route
-    .replace(/\{(?:tmdb_?id|id)\}/gi, encodeURIComponent(id))
     .replace(/\{slug\}/gi, encodeURIComponent(slug))
     .replace(/\{(?:title|query|q)\}/gi, encodeURIComponent(title))
     .replace(/\{(?:media|media_?type|type)\}/gi, encodeURIComponent(transport))
@@ -677,7 +871,7 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode) {
     .replace(/\{episode\}/gi, encodeURIComponent(episode == null ? "" : episode));
   if (/\{[^}]+\}/.test(route)) return [];
   const out = [];
-  for (const base of _runtimeBases()) {
+  for (const base of (bases || _runtimeBases())) {
     const absolute = _absolute(route, base);
     if (absolute) out.push(absolute);
   }
@@ -686,17 +880,21 @@ function _expandLearnedRoute(pattern, meta, mediaType, season, episode) {
 function _routeKind(route) {
   const value = _text(route).toLowerCase();
   if (!value || /\/(?:track|report|warm|dead|working|ad-link|fp)(?:[/?#]|$)/i.test(value)) return "ignore";
-  if (/\/(?:api)(?:[/?#]|$)/i.test(value)) return "api";
-  if (/\/(?:player|embed|play)(?:[/?#]|$)/i.test(value)) return "player";
+  // Search semantics are more specific than a generic /api prefix. A route
+  // such as /api?m=search&q={query} must carry Core title metadata instead of
+  // falling into _apiUrls(), where title is intentionally empty for ID routes.
   if (/\/(?:search|recherche)(?:[/?#]|$)|[?&](?:s|q|query|keyword)=/i.test(value)) return "search";
+  if (/\/(?:api)(?:[./?#]|$)/i.test(value)) return "api";
+  if (/\/(?:player|embed|play)(?:[/?#]|$)/i.test(value)) return "player";
   if (/\{(?:tmdb_?id|id|slug|title)\}/i.test(value) || /\/(?:title|movie|film|series|tv|show|watch|media)(?:[/?#]|$)/i.test(value)) return "detail";
   return "ignore";
 }
 function _learnedUrls(kind, meta, mediaType, season, episode) {
   const out = [];
+  const bases = kind === "api" ? _apiBases() : _searchBases();
   for (const route of NIAKVIO_PROVIDER_MODEL.routes || []) {
     if (_routeKind(route) !== kind) continue;
-    out.push(..._expandLearnedRoute(route, meta, mediaType, season, episode));
+    out.push(..._expandLearnedRoute(route, meta, mediaType, season, episode, bases));
   }
   return _uniq(out);
 }
@@ -744,11 +942,19 @@ async function _tmdb(tmdbId, mediaType) {
       row.original_name,
       ...(Array.isArray(alternativeRows) ? alternativeRows.map(item => item && (item.title || item.name)) : [])
     ].map(_text).filter(Boolean));
+    const externalIds = row.external_ids && typeof row.external_ids === "object"
+      ? row.external_ids
+      : {};
+    const imdbId = _text(
+      row.imdb_id || row.imdbId || externalIds.imdb_id || ""
+    ).trim();
     return {
       title: aliases[0] || "",
       aliases,
       year: String(row.release_date || row.first_air_date || row.year || "").slice(0, 4),
-      tmdbId: String(tmdbId || "")
+      tmdbId: String(tmdbId || ""),
+      imdbId,
+      externalIds
     };
   }
   try {
@@ -763,45 +969,71 @@ async function _tmdb(tmdbId, mediaType) {
   try {
     const cache = typeof globalThis !== "undefined" ? globalThis.__nuvioTmdbMetadataCacheV1 : null;
     const cached = cache && cache[identity];
-    if (cached && typeof cached.then !== "function") {
-      const row = cached.metadata && typeof cached.metadata === "object" ? cached.metadata : cached;
+    if (cached) {
+      const settled = typeof cached.then === "function" ? await cached : cached;
+      const row = settled && settled.metadata && typeof settled.metadata === "object" ? settled.metadata : settled;
+      const projected = project(row);
+      if (projected) return projected;
+    }
+  } catch (_) {}
+  try {
+    const getTmdbData = typeof globalThis !== "undefined" ? globalThis.__nuvioCoreGetTmdbDataV1 : null;
+    if (typeof getTmdbData === "function") {
+      const result = await getTmdbData({ tmdbId: String(tmdbId), mediaType: type, tmdbNamespace: type });
+      const row = result && result.metadata && typeof result.metadata === "object" ? result.metadata : null;
       const projected = project(row);
       if (projected) return projected;
     }
   } catch (_) {}
   return null;
 }
-function _runtimeBases() {
+function _searchBases() {
   return _uniq([
     NIAKVIO_PROVIDER_MODEL.officialSite,
     NIAKVIO_PROVIDER_MODEL.knownSite,
-    ...(NIAKVIO_PROVIDER_MODEL.origins || [])
+    NIAKVIO_PROVIDER_MODEL.officialHub
   ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
 }
-function _searchBases() {
-  return _runtimeBases();
+function _apiBases() {
+  return _uniq([
+    NIAKVIO_PROVIDER_MODEL.fixedApi,
+    NIAKVIO_PROVIDER_MODEL.officialApi,
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+}
+function _runtimeBases() {
+  return _uniq([..._searchBases(), ..._apiBases()]);
 }
 function _searchUrls(meta, mediaType, season, episode) {
   return _learnedUrls("search", meta, mediaType, season, episode);
 }
 function _runtimePlanAvailable() {
   if (NIAKVIO_PROVIDER_MODEL.apiRecipe) return true;
-  if ((NIAKVIO_PROVIDER_MODEL.observedUrls || []).some(value => /api|stream|source|embed|player/i.test(_text(value)))) return true;
   return (NIAKVIO_PROVIDER_MODEL.routes || []).some(route => ["search","detail","player","api"].includes(_routeKind(route)));
 }
 function _apiUrls(tmdbId, mediaType, season, episode) {
-  const configuredBases = NIAKVIO_PROVIDER_MODEL.allowGenericApiBase === true
-    ? [NIAKVIO_PROVIDER_MODEL.fixedApi, NIAKVIO_PROVIDER_MODEL.officialApi]
-    : [];
-  const bases = _uniq([
-    ...configuredBases,
-    ...(NIAKVIO_PROVIDER_MODEL.observedUrls || []).filter(value => /api|stream|source|embed|player/i.test(value))
-  ].map(_substituteDomain));
+  const bases = _apiBases();
   const out = [];
+  // Route DATA is executable knowledge. API-family providers commonly persist
+  // only a relative route plus one trusted origin; consume that plan directly
+  // instead of requiring an observed full endpoint URL.
+  out.push(..._learnedUrls(
+    "api",
+    { tmdbId: _text(tmdbId), title: "" },
+    mediaType,
+    season,
+    episode
+  ));
+  // A bare API origin is not an executable request plan. The legacy fallback
+  // that appended ?tmdbId=... is valid only for providers explicitly classified
+  // tmdb_direct; catalogue providers must execute an observed route/search chain.
+  if (!_identityUsesTmdbId()) return _uniq(out);
   for (const base of bases) {
     if (!/^https?:/i.test(base)) continue;
     let url = base
-      .replace(/\{(?:tmdb_?id|id)\}/gi, encodeURIComponent(tmdbId || ""))
+      .replace(/\{tmdb_?id\}/gi, encodeURIComponent(tmdbId || ""))
+      .replace(/\{id\}/gi, encodeURIComponent(tmdbId || ""))
       .replace(/\{(?:media_?type|type)\}/gi, encodeURIComponent(mediaType || "movie"))
       .replace(/\{season\}/gi, encodeURIComponent(season == null ? "" : season))
       .replace(/\{episode\}/gi, encodeURIComponent(episode == null ? "" : episode));
@@ -824,7 +1056,7 @@ function _apiUrls(tmdbId, mediaType, season, episode) {
   return _uniq(out);
 }
 function _directPlayerUrls(tmdbId, mediaType) {
-  if (!tmdbId) return [];
+  if (!tmdbId || !_identityUsesTmdbId()) return [];
   const hasPlayerRoute = (NIAKVIO_PROVIDER_MODEL.routes || []).some(route =>
     /^\/player(?:[?#]|$)/i.test(_text(route))
   );
@@ -869,7 +1101,7 @@ function _runtimeApiUrls(playerUrl, mediaType, tmdbId, season, episode) {
     for (const key of keys) {
       const lower = key.toLowerCase();
       let value = player.searchParams.get(key);
-      if (value == null && lower === "id") value = _text(tmdbId);
+      if (value == null && lower === "id" && _identityUsesTmdbId()) value = _text(tmdbId);
       if (value == null && /^(?:m|media|type)$/.test(lower)) value = desiredMedia;
       if (value == null && /^(?:season|s)$/.test(lower) && season != null) value = _text(season);
       if (value == null && /^(?:episode|e)$/.test(lower) && episode != null) value = _text(episode);
@@ -1229,7 +1461,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
   const searchQueries = _uniq([
     meta && meta.title,
     ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])
-  ].map(_text).filter(Boolean));
+  ].map(_text).filter(Boolean)).slice(0, 3);
 
   let statusFallbackBlocked = false;
   async function findProvider(baseList) {
@@ -1240,7 +1472,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
         .filter(value => Number.isFinite(value))
     );
     const candidates = baseList.slice(0, 3);
-    for (const query of searchQueries.slice(0, 3)) {
+    for (const query of searchQueries) {
       values.query = query;
       for (const base of candidates) {
         if (blockedBases.has(base)) continue;
@@ -1382,13 +1614,50 @@ async function _resolveKnownPlayer(tmdbId, mediaType, season, episode) {
   }
   return [];
 }
+function _htmlVisibleText(value) {
+  const source = _text(value);
+  const lower = source.toLowerCase();
+  let out = "";
+  let cursor = 0;
+  let hidden = "";
+  while (cursor < source.length) {
+    if (hidden) {
+      const closeAt = lower.indexOf("</" + hidden, cursor);
+      if (closeAt < 0) break;
+      cursor = closeAt;
+      hidden = "";
+      continue;
+    }
+    if (source.charAt(cursor) !== "<") {
+      out += source.charAt(cursor);
+      cursor += 1;
+      continue;
+    }
+    const end = source.indexOf(">", cursor + 1);
+    if (end < 0) {
+      out += source.slice(cursor);
+      break;
+    }
+    let raw = source.slice(cursor + 1, end).trim();
+    let closing = raw.charAt(0) === "/";
+    if (closing) raw = raw.slice(1).trim();
+    let name = "";
+    for (let i = 0; i < raw.length; i += 1) {
+      const code = raw.charCodeAt(i);
+      const alpha = (code >= 65 && code <= 90) || (code >= 97 && code <= 122);
+      if (!alpha) break;
+      name += raw.charAt(i).toLowerCase();
+    }
+    if (!closing && (name === "script" || name === "style")) hidden = name;
+    out += " ";
+    cursor = end + 1;
+  }
+  return out;
+}
 function _strictHtmlIdentityOk(html, meta) {
   if (!NIAKVIO_PROVIDER_MODEL.strictHtmlIdentity) return true;
   if (!meta || !meta.title) return false;
-  const visible = _text(html)
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<[^>]+>/g, " ");
+  const visible = _htmlVisibleText(html);
   const normalized = _slug(visible);
   const titles = _uniq([meta.title, ...((Array.isArray(meta.aliases) ? meta.aliases : []))])
     .map(_slug)
@@ -1446,8 +1715,8 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       }
       const direct = urls.filter(_directMedia);
       if (direct.length) streams.push(..._streams(direct, response.url || detailUrl));
-      if (!direct.length && /iframe|mixed_embed|html_scraper/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
-        const discoveredNested = _uniq(urls.filter(_playerLike));
+      if (!direct.length && /iframe|mixed_embed|html_scraper|direct_media/i.test(NIAKVIO_PROVIDER_MODEL.strategy)) {
+        const discoveredNested = _uniq(urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))).slice(0, 10);
         if (discoveredNested.length) {
           const runtimeCandidates = _uniq([
             ...discoveredNested,
@@ -1472,7 +1741,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
             const crawled = await _crawlDirectMedia(
               discoveredNested,
               response.url || detailUrl,
-              1
+              2
             );
             if (crawled.length) streams.push(...crawled);
           }
@@ -1499,8 +1768,7 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   const type = String(mediaType || "movie").toLowerCase();
   if (NIAKVIO_PROVIDER_MODEL.supportedTypes.length &&
       !NIAKVIO_PROVIDER_MODEL.supportedTypes.includes(type) &&
-      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime")) &&
-      !(type === "movie" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
+      !(type === "tv" && NIAKVIO_PROVIDER_MODEL.supportedTypes.includes("anime"))) {
     return [];
   }
   if (!_runtimePlanAvailable()) return [];
@@ -1551,8 +1819,611 @@ async function getStreams(tmdbId, mediaType, season, episode) {
   }
   return [];
 }
+/* NIAKVIO_PROVIDER_BASE_SOURCE_PLAN_V4 */
+/* NIAKVIO_PROVIDER_BASE_RUNTIME_V5 */
+/* NIAKVIO_PROVIDER_BASE_RUNTIME_V6 */
+/* NIAKVIO_PROVIDER_BASE_RUNTIME_V7 */
+function _spv4Family() {
+  return _text(NIAKVIO_PROVIDER_MODEL.sourceRuntimeFamily || "unknown").toLowerCase();
+}
+function _spv4Routes() {
+  return Array.isArray(NIAKVIO_PROVIDER_MODEL.routes) ? NIAKVIO_PROVIDER_MODEL.routes.map(_text).filter(Boolean) : [];
+}
+function _spv4Titles(meta) {
+  return _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])])
+    .map(_text).filter(Boolean).slice(0, 4);
+}
+function _spv4Base64(value) {
+  const raw = _text(value).replace(/\s+/g, "");
+  try { if (typeof atob === "function") return atob(raw); } catch (_) {}
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  let bits = 0, bitCount = 0, out = "";
+  for (let i = 0; i < raw.length; i += 1) {
+    if (raw[i] === "=") break;
+    const n = alphabet.indexOf(raw[i]);
+    if (n < 0) continue;
+    bits = (bits << 6) | n;
+    bitCount += 6;
+    if (bitCount >= 8) {
+      bitCount -= 8;
+      out += String.fromCharCode((bits >> bitCount) & 255);
+    }
+  }
+  return out;
+}
+function _spv4Expand(pattern, meta, vars, mediaType, season, episode) {
+  let route = _text(pattern);
+  if (!route) return [];
+  vars = vars || {};
+  const values = {
+    query: vars.query != null ? vars.query : (meta && meta.title),
+    title: vars.query != null ? vars.query : (meta && meta.title),
+    slug: vars.slug != null ? vars.slug : _slug(meta && meta.title),
+    id: vars.providerId != null ? vars.providerId : "",
+    providerid: vars.providerId != null ? vars.providerId : "",
+    tmdbid: meta && meta.tmdbId,
+    tmdb_id: meta && meta.tmdbId,
+    imdbid: meta && meta.imdbId,
+    imdb_id: meta && meta.imdbId,
+    media: mediaType === "movie" ? "movie" : "tv",
+    type: mediaType === "movie" ? "movie" : "tv",
+    season,
+    episode
+  };
+  const encodedQuery = values.query == null ? "" : encodeURIComponent(_text(values.query));
+  if (encodedQuery) route = route.replace(/([?&](?:s|q|query|keyword|search|story)=)(?:\.{3})?(?=&|#|$)/gi, function(_, prefix) { return prefix + encodedQuery; });
+  route = route.replace(/\{([^}]+)\}/g, function(match, key) {
+    const value = values[_text(key).toLowerCase()];
+    return value == null || value === "" ? "" : encodeURIComponent(_text(value));
+  });
+  if (/\{[^}]+\}/.test(route)) return [];
+  if (/^https?:\/\//i.test(route)) return [route];
+  const out = [];
+  for (const base of _runtimeBases()) {
+    const absolute = _absolute(route, base);
+    if (absolute) out.push(absolute);
+  }
+  return _uniq(out);
+}
+function _spv4IsSearchRoute(route, family) {
+  const value = _text(route).toLowerCase();
+  if (/\{query\}|[?&](?:s|q|query|keyword|search|story)=/i.test(value)) return true;
+  if (/\/api\/search(?:[/?#]|$)/i.test(value)) return true;
+  return /form/.test(family) && /\/template-php\/[^?#]*fetch\.php(?:[?#]|$)/i.test(value);
+}
+function _spv4IsActionRoute(route) {
+  return /full-story\.php|controller\.php\?mod=playepisode/i.test(_text(route));
+}
+function _spv4IsDetailRoute(route, family) {
+  const value = _text(route).toLowerCase();
+  if (!value || _spv4IsSearchRoute(value, family) || _spv4IsActionRoute(value)) return false;
+  return /\{(?:slug|id|imdbid|imdb_id|tmdbid|tmdb_id|season|episode)\}/i.test(value) ||
+    /\/(?:anime|animes|movie|movies|film|films|serie|series|voir-series|episode|saison|season|saga|catalogue|watch)(?:[/?#.-]|$)/i.test(value);
+}
+function _spv4SameProviderOrigin(url) {
+const candidate = _origin(_substituteDomain(url));
+return !!candidate && _runtimeBases().some(base => _origin(_substituteDomain(base)) === candidate);
+}
+function _spv4AttrUrls(text, base) {
+  const out = [];
+  const value = _embeddedText(text);
+  const re = /(?:src|href|file|url|data-[a-z0-9_:-]+)\s*=\s*["']([^"']+)["']/gi;
+  let match;
+  while ((match = re.exec(value)) !== null) {
+    const absolute = _absolute(match[1], base);
+    if (absolute && /^https?:/i.test(absolute)) out.push(absolute);
+    if (out.length >= 160) break;
+  }
+  return _uniq(out.concat(_extractUrls(value, base)));
+}
+function _spv4UrlScore(url, meta) {
+  let score = _candidateScore(url, meta);
+  try {
+    const path = decodeURIComponent(new URL(url).pathname || "").toLowerCase();
+    const wanted = _spv4Titles(meta).map(_slug).filter(Boolean);
+    for (const title of wanted) {
+      if (title && path.includes(title)) score += 100;
+      for (const token of title.split("-").filter(v => v.length >= 3)) if (path.includes(token)) score += 16;
+    }
+    if (/\/(?:anime|animes|movie|movies|film|films|serie|series|voir-series|watch|title)\//i.test(path)) score += 24;
+  } catch (_) {}
+  return score;
+}
+function _spv7DetailUrlEligible(url) {
+try {
+const parsed = new URL(url);
+const path = _text(parsed.pathname).toLowerCase();
+const hash = _text(parsed.hash).toLowerCase();
+if (/^#(?:comments?|respond|reply|share)/i.test(hash)) return false;
+if (/\/(?:feed|wp-json|wp-admin|admin|login|register|privacy|terms)(?:[/?#.-]|$)/i.test(path)) return false;
+if (/\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(path)) return false;
+return true;
+} catch (_) { return false; }
+}
+function _spv4HtmlDetails(html, base, meta) {
+return _spv4AttrUrls(html, base)
+.filter(_spv4SameProviderOrigin)
+.filter(_spv7DetailUrlEligible)
+.map(url => ({ url: _substituteDomain(url), score: _spv4UrlScore(url, meta) }))
+.filter(row => row.score >= 36)
+.sort((a, b) => b.score - a.score)
+.map(row => row.url)
+.slice(0, 8);
+}
+function _spv4JsonRows(value, out) {
+  out = out || [];
+  if (Array.isArray(value)) {
+    for (const child of value) _spv4JsonRows(child, out);
+    return out;
+  }
+  if (!value || typeof value !== "object") return out;
+  out.push(value);
+  for (const child of Object.values(value)) {
+    if (child && typeof child === "object") _spv4JsonRows(child, out);
+    if (out.length >= 300) break;
+  }
+  return out;
+}
+function _spv4TitleScore(title, meta) {
+  const actual = _slug(title);
+  if (!actual) return 0;
+  let best = 0;
+  for (const expected of _spv4Titles(meta).map(_slug).filter(Boolean)) {
+    if (actual === expected) best = Math.max(best, 240);
+    else if (actual.includes(expected) || expected.includes(actual)) best = Math.max(best, 110);
+    else {
+      let score = 0;
+      for (const token of expected.split("-").filter(v => v.length >= 3)) if (actual.includes(token)) score += 18;
+      best = Math.max(best, score);
+    }
+  }
+  return best;
+}
+function _spv4Scalar(value) {
+  if (value == null) return "";
+  if (typeof value === "string" || typeof value === "number") return _text(value);
+  if (typeof value !== "object") return "";
+  for (const key of ["rendered","raw","value","text","title","name","slug","href","url","link","path"]) {
+    const child = value[key];
+    if (typeof child === "string" || typeof child === "number") return _text(child);
+  }
+  return "";
+}
+function _spv4JsonDetails(value, base, meta, mediaType, season, episode, family) {
+  const details = [];
+  const detailRoutes = _spv4Routes().filter(route => _spv4IsDetailRoute(route, family));
+  const rows = _spv4JsonRows(value, [])
+    .map(row => ({
+      row,
+      score: _spv4TitleScore(_spv4Scalar(row.title) || _spv4Scalar(row.name) || _spv4Scalar(row.original_title) || _spv4Scalar(row.post_title) || _spv4Scalar(row.label) || "", meta)
+    }))
+    .filter(item => item.score >= 36)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 6);
+  for (const item of rows) {
+    const row = item.row;
+    const direct = _spv4Scalar(row.url) || _spv4Scalar(row.href) || _spv4Scalar(row.permalink) || _spv4Scalar(row.link) || _spv4Scalar(row.path) || _spv4Scalar(row.guid) || "";
+    if (direct) {
+      const absolute = _absolute(direct, base);
+      if (absolute && _spv4SameProviderOrigin(absolute)) details.push(absolute);
+    }
+    const vars = {
+      slug: _spv4Scalar(row.slug) || _spv4Scalar(row.permalink_slug) || _spv4Scalar(row.seo_slug) || _slug(_spv4Scalar(row.title) || _spv4Scalar(row.name) || meta.title),
+      providerId: _spv4Scalar(row.id) || _spv4Scalar(row.ID) || _spv4Scalar(row._id) || _spv4Scalar(row.media_id) || _spv4Scalar(row.post_id)
+    };
+    for (const route of detailRoutes) {
+      details.push(..._spv4Expand(route, meta, vars, mediaType, season, episode));
+    }
+  }
+  return _uniq(details).slice(0, 12);
+}
+async function _spv4SearchResponse(url, query, family) {
+  const form = /form/.test(family) && /\/template-php\/[^?#]*fetch\.php(?:[?#]|$)/i.test(url);
+  const options = form ? {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "X-Requested-With": "XMLHttpRequest",
+      "Referer": _searchBases()[0] || ""
+    },
+    body: "query=" + encodeURIComponent(_text(query))
+  } : {};
+  const response = await _fetch(url, options);
+  const contentType = _text(response.headers.get("content-type")).toLowerCase();
+  if (contentType.includes("json")) return { json: await response.json(), text: "", base: response.url || url };
+  const text = await response.text();
+  try {
+    if (/^\s*[\[{]/.test(text)) return { json: JSON.parse(text), text: "", base: response.url || url };
+  } catch (_) {}
+  return { json: null, text, base: response.url || url };
+}
+async function _spv4FindDetails(meta, mediaType, season, episode, family) {
+  const out = [];
+  const searchRoutes = _spv4Routes().filter(route => _spv4IsSearchRoute(route, family));
+  for (const query of _spv4Titles(meta).slice(0, 3)) {
+    for (const route of searchRoutes.slice(0, 3)) {
+      const urls = _spv4Expand(route, Object.assign({}, meta, { title: query }), { query }, mediaType, season, episode);
+      for (const url of urls.slice(0, 2)) {
+        try {
+          const payload = await _spv4SearchResponse(url, query, family);
+          if (payload.json != null) out.push(..._spv4JsonDetails(payload.json, payload.base, meta, mediaType, season, episode, family));
+          else out.push(..._spv4HtmlDetails(payload.text, payload.base, meta));
+        } catch (_) {}
+        if (out.length) break;
+      }
+      if (out.length) break;
+    }
+    if (out.length) break;
+  }
+
+  // Slug-driven catalogues (Sekai and similar) do not expose a search endpoint.
+  // Generate only deterministic title slugs from Core metadata.
+  const detailRoutes = _spv4Routes().filter(route => _spv4IsDetailRoute(route, family));
+  for (const title of _spv4Titles(meta).slice(0, 3)) {
+    const slug = _slug(title);
+    if (!slug) continue;
+    for (const route of detailRoutes) {
+      if (!/\{slug\}/i.test(route) || /\{id\}/i.test(route)) continue;
+      out.push(..._spv4Expand(route, Object.assign({}, meta, { title }), { slug }, mediaType, season, episode));
+    }
+  }
+  return _uniq(out).slice(0, 16);
+}
+function _spv4DirectStreams(urls, referer) {
+  const direct = _uniq(urls).filter(_directMedia);
+  return direct.length ? _streams(direct, referer).slice(0, 12) : [];
+}
+async function _spv4NestedStreams(urls, referer) {
+  const candidates = _uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(url => _crawlEligible(url) || /(?:sibnet|vidmoly|streamtape|sendvid|vidoza|myvi)/i.test(url)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8);
+  if (!candidates.length) return [];
+  return (await _crawlDirectMedia(candidates, referer, 2)).slice(0, 12);
+}
+async function _spv4FullStory(detailUrl, meta, mediaType, season, episode) {
+  const idMatch = _text(detailUrl).match(/\/(\d+)-/);
+  if (!idMatch) return [];
+  const route = _spv4Routes().find(value => /full-story\.php/i.test(value));
+  if (!route) return [];
+  const targets = _spv4Expand(route, meta, { providerId: idMatch[1] }, mediaType, season, episode);
+  for (const target of targets.slice(0, 2)) {
+    try {
+      const response = await _fetch(target, { headers: { "X-Requested-With": "XMLHttpRequest", "Referer": detailUrl } });
+      let html = "";
+      const contentType = _text(response.headers.get("content-type")).toLowerCase();
+      if (contentType.includes("json")) {
+        const value = await response.json();
+        html = _text(value && value.html);
+      } else {
+        const raw = await response.text();
+        try { const value = JSON.parse(raw); html = _text(value && value.html); } catch (_) { html = raw; }
+      }
+      if (!html) continue;
+      const wanted = Math.max(1, Number(episode) || 1);
+      const epNumbers = [];
+      const epRe = /data-number\s*=\s*["'](\d+)["']/gi;
+      let epMatch;
+      while ((epMatch = epRe.exec(html)) !== null) epNumbers.push(Number(epMatch[1]));
+      const players = [];
+      const cpRe = /id\s*=\s*["']content_player_(\d+)[a-z]*["'][^>]*>\s*(\d+)\s*</gi;
+      let cp;
+      while ((cp = cpRe.exec(html)) !== null) players.push(cp[2]);
+      const index = epNumbers.indexOf(wanted);
+      if (index >= 0 && index < players.length && /^\d+$/.test(players[index])) {
+        return _streams(["https://video.sibnet.ru/shell.php?videoid=" + players[index]], detailUrl).slice(0, 4);
+      }
+      const urls = _spv4AttrUrls(html, target);
+      const direct = _spv4DirectStreams(urls, target);
+      if (direct.length) return direct;
+      const nested = await _spv4NestedStreams(urls, target);
+      if (nested.length) return nested;
+    } catch (_) {}
+  }
+  return [];
+}
+async function _spv4PlayEpisode(detailUrl, html, meta, mediaType, season, episode) {
+  let pageUrl = detailUrl;
+  let pageHtml = html;
+  if (mediaType !== "movie" && season != null && episode != null && /\.html(?:[?#]|$)/i.test(detailUrl)) {
+    pageUrl = detailUrl.replace(/\.html(?:[?#].*)?$/i, "") + "/" + Number(season || 1) + "-saison/" + Number(episode || 1) + "-episode.html";
+    try {
+      const response = await _fetch(pageUrl);
+      pageHtml = await response.text();
+    } catch (_) { return []; }
+  }
+  const pairs = [];
+  const pairRe = /playEpisode\([^,]+,\s*["'](\d+)["']\s*,\s*["']([^"']+)["']/gi;
+  let match;
+  while ((match = pairRe.exec(pageHtml)) !== null) {
+    const key = match[1] + "\u0000" + match[2];
+    if (!pairs.some(row => row.key === key)) pairs.push({ key, id: match[1], xfield: match[2] });
+    if (pairs.length >= 6) break;
+  }
+  if (!pairs.length) return [];
+  const actionRoute = _spv4Routes().find(value => /controller\.php\?mod=playepisode/i.test(value));
+  if (!actionRoute) return [];
+  const actionUrls = _spv4Expand(actionRoute, meta, {}, mediaType, season, episode);
+  for (const actionUrl of actionUrls.slice(0, 2)) {
+    for (const pair of pairs.slice(0, 4)) {
+      try {
+        const response = await _fetch(actionUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "X-Requested-With": "XMLHttpRequest",
+            "Referer": pageUrl
+          },
+          body: "id=" + encodeURIComponent(pair.id) + "&xfield=" + encodeURIComponent(pair.xfield) + "&action=playEpisode"
+        });
+        const text = await response.text();
+        const urls = _spv4AttrUrls(text, response.url || actionUrl);
+        const direct = _spv4DirectStreams(urls, pageUrl);
+        if (direct.length) return direct;
+        const nested = await _spv4NestedStreams(urls, pageUrl);
+        if (nested.length) return nested;
+      } catch (_) {}
+    }
+  }
+  return [];
+}
+function _spv4SagaTargets(episode) {
+  const out = [];
+  try {
+    const ctx = typeof globalThis !== "undefined" ? globalThis.__nuvioMediaContext : null;
+    for (const key of ["absoluteEpisode", "absoluteEpisodeNumber", "episodeAbsolute", "absolute_episode"]) {
+      const n = Number(ctx && ctx[key]);
+      if (Number.isFinite(n) && n > 0 && !out.includes(n)) out.push(n);
+    }
+  } catch (_) {}
+  const ep = Number(episode);
+  if (Number.isFinite(ep) && ep > 0 && !out.includes(ep)) out.push(ep);
+  return out;
+}
+function _spv4ParseSagaMedia(html, targets) {
+  const constants = Object.create(null);
+  const constRe = /var\s+([A-Za-z0-9_]+)\s*=\s*atob\(["']([^"']+)["']\)/g;
+  let cm;
+  while ((cm = constRe.exec(html)) !== null) constants[cm[1]] = _spv4Base64(cm[2]);
+  const found = [];
+  const assignment = /(episodeHD|episodeLow|episode)\s*\[\s*(\d+)\s*\]\s*=\s*([A-Za-z0-9_]+)\s*\+\s*["']([^"']+\.(?:mp4|m3u8))["']/gi;
+  let row;
+  while ((row = assignment.exec(html)) !== null) {
+    const number = Number(row[2]);
+    if (!targets.includes(number)) continue;
+    const url = _text(constants[row[3]]) + row[4];
+    if (/^https?:\/\//i.test(url)) found.push(url);
+  }
+  return _uniq(found);
+}
+async function _spv4Saga(detailUrl, html, episode) {
+  const targets = _spv4SagaTargets(episode);
+  if (!targets.length) return [];
+  let urls = _spv4ParseSagaMedia(html, targets);
+  if (urls.length) return _streams(urls, detailUrl).slice(0, 6);
+  const sagaUrls = _spv4AttrUrls(html, detailUrl).filter(url => /\/saga-\d+(?:[/?#]|$)/i.test(url)).slice(0, 6);
+  for (const sagaUrl of sagaUrls) {
+    try {
+      const response = await _fetch(sagaUrl);
+      const sagaHtml = await response.text();
+      urls = _spv4ParseSagaMedia(sagaHtml, targets);
+      if (urls.length) return _streams(urls, sagaUrl).slice(0, 6);
+    } catch (_) {}
+  }
+  return [];
+}
+function _spv5SafeHttpStreamUrl(value) {
+  const url = _text(value).trim();
+  if (!/^https?:\/\//i.test(url)) return "";
+  if (/\.torrent(?:[?#]|$)|[?&](?:magnet|infohash|btih)=/i.test(url)) return "";
+  return url;
+}
+async function _spv5Stremio(tmdbId, mediaType, season, episode) {
+  const type = mediaType === "movie" ? "movie" : "tv";
+  const routes = _spv4Routes().filter(route => {
+    const low = _text(route).toLowerCase();
+    return /\/stream\//.test(low) && (type === "movie" ? /\/stream\/movie\//.test(low) : /\/stream\/(?:series|tv)\//.test(low));
+  });
+  for (const route of routes.slice(0, 4)) {
+    for (const target of _spv4Expand(route, {tmdbId:_text(tmdbId),title:""}, {providerId:_text(tmdbId)}, type, season, episode).slice(0,3)) {
+      try {
+        const response = await _fetch(target, {headers:{Accept:"application/json"}});
+        let value = null;
+        const ct = _text(response.headers.get("content-type")).toLowerCase();
+        if (ct.includes("json")) value = await response.json(); else { const raw=await response.text(); try{value=JSON.parse(raw)}catch(_){} }
+        const urls=[];
+        for (const row of (value && Array.isArray(value.streams) ? value.streams : []).slice(0,40)) {
+          if (!row || typeof row !== "object" || row.infoHash || row.infohash || row.magnet || row.torrent) continue;
+          const url=_spv5SafeHttpStreamUrl(row.url || row.streamUrl || row.stream_url || "");
+          if (url) urls.push(url);
+        }
+        if (urls.length) return _streams(urls, response.url || target).slice(0,20);
+      } catch (_) {}
+    }
+  }
+  return [];
+}
+async function _spv5DleFilmApi(detailUrl, html, meta, mediaType, season, episode) {
+  if (mediaType !== "movie") return [];
+  const route = _spv4Routes().find(value => /\/engine\/ajax\/film_api\.php/i.test(_text(value)));
+  if (!route) return [];
+  const idMatch = _text(detailUrl).match(/\/(\d{2,})-[^/?#]+/) || _text(html).match(/(?:news[_-]?id|data-id|post[_-]?id)\s*[:=]\s*["']?(\d{2,})/i);
+  if (!idMatch) return [];
+  let targets = _spv4Expand(route, meta, {providerId:idMatch[1]}, mediaType, season, episode);
+  targets = targets.map(value => /[?&]id=\d+/i.test(value) ? value : value + (value.includes("?") ? "&" : "?") + "id=" + encodeURIComponent(idMatch[1]));
+  for (const target of targets.slice(0,3)) {
+    try {
+      const response = await _fetch(target,{headers:{"X-Requested-With":"XMLHttpRequest",Referer:detailUrl}});
+      const ct=_text(response.headers.get("content-type")).toLowerCase();
+      let urls=[];
+      if (ct.includes("json")) { const value=await response.json(); urls=_uniq(_sourceUrls(value,response.url||target).concat(_jsonUrls(value))); }
+      else { const raw=await response.text(); try{const value=JSON.parse(raw);urls=_uniq(_sourceUrls(value,response.url||target).concat(_jsonUrls(value)))}catch(_){urls=_spv4AttrUrls(raw,response.url||target)} }
+      const direct=_spv4DirectStreams(urls,detailUrl); if (direct.length) return direct;
+      const nested=await _spv4NestedStreams(urls,detailUrl); if (nested.length) return nested;
+    } catch (_) {}
+  }
+  return [];
+}
+async function _spv4ResolveDetail(detailUrl, meta, mediaType, season, episode, family) {
+  let response, html;
+  try {
+    response = await _fetch(detailUrl);
+    html = await response.text();
+  } catch (_) { return []; }
+  const base = response.url || detailUrl;
+  if (!_strictHtmlIdentityOk(html, meta)) return [];
+
+  if (family === "dle-full-story") {
+    const special = await _spv4FullStory(base, meta, mediaType, season, episode);
+    if (special.length) return special;
+  }
+  if (family === "dle-playepisode-form") {
+    const special = await _spv4PlayEpisode(base, html, meta, mediaType, season, episode);
+    if (special.length) return special;
+  }
+  if (family === "slug-saga-inline-media") {
+    const special = await _spv4Saga(base, html, episode);
+    if (special.length) return special;
+  }
+  if (family === "dle-film-api") {
+    const special = await _spv5DleFilmApi(base, html, meta, mediaType, season, episode);
+    if (special.length) return special;
+  }
+
+  let urls = _spv4AttrUrls(html, base);
+  if (mediaType !== "movie" && season != null && episode != null) {
+    const s = Math.max(1, Number(season) || 1);
+    const e = Math.max(1, Number(episode) || 1);
+    const patterns = [
+      new RegExp("/saison[-_/]?0*" + s + "[^?#]*episode[-_/]?0*" + e + "(?:[./?#]|$)", "i"),
+      new RegExp("/0*" + s + "-saison/0*" + e + "-episode(?:[./?#]|$)", "i"),
+      new RegExp("/episode[-_/]?0*" + e + "(?:[./?#]|$)", "i")
+    ];
+    const episodeLinks = urls.filter(url => patterns.some(pattern => pattern.test(url))).slice(0, 3);
+    for (const episodeUrl of episodeLinks) {
+      try {
+        const epResponse = await _fetch(episodeUrl);
+        const epHtml = await epResponse.text();
+        urls = urls.concat(_spv4AttrUrls(epHtml, epResponse.url || episodeUrl));
+      } catch (_) {}
+    }
+  }
+
+  // DLE/legacy pages sometimes expose a numeric Sibnet id without a URL.
+  const numeric = [];
+  const sibRe = /(?:content_player_[^>]+>|videoid\s*[:=]\s*["']?)(\d{3,})/gi;
+  let sm;
+  while ((sm = sibRe.exec(html)) !== null) numeric.push("https://video.sibnet.ru/shell.php?videoid=" + sm[1]);
+  urls = urls.concat(numeric);
+
+  const direct = _spv4DirectStreams(urls, base);
+  if (direct.length) return direct;
+  return _spv4NestedStreams(urls, base);
+}
+function _spv7ProviderSiteBases() {
+  return _uniq([NIAKVIO_PROVIDER_MODEL.officialSite, NIAKVIO_PROVIDER_MODEL.knownSite])
+    .map(_substituteDomain).filter(value => /^https?:/i.test(value));
+}
+function _spv7DleDetailLinks(html, base, meta) {
+  const out = [];
+  const text = _embeddedText(html);
+  const re = /<a\b([^>]*)href=["']([^"']*(?:newsid=\d+|\/\d+[^"']*))['"]([^>]*)>([\s\S]*?)<\/a>/gi;
+  let match;
+  while ((match = re.exec(text)) !== null) {
+    const label = _text(match[1]) + " " + _text(match[3]) + " " + _htmlVisibleText(match[4]);
+    const score = _spv4TitleScore(label, meta);
+    const url = _absolute(match[2], base);
+    if (url && score >= 36 && _spv4SameProviderOrigin(url)) out.push({url:_substituteDomain(url), score});
+    if (out.length >= 12) break;
+  }
+  return out.sort((a,b)=>b.score-a.score).map(row=>row.url).slice(0,6);
+}
+async function _spv7DleFindDetails(meta, mediaType, season, episode) {
+  const out = [];
+  for (const base of _spv7ProviderSiteBases().slice(0,2)) {
+    try {
+      const target = new URL("/engine/ajax/search.php", base).toString();
+      const response = await _fetch(target, {
+        method:"POST",
+        headers:{"Content-Type":"application/x-www-form-urlencoded; charset=UTF-8","X-Requested-With":"XMLHttpRequest",Referer:base+"/"},
+        body:"query="+encodeURIComponent(_text(meta && meta.title))+"&page=1"
+      });
+      out.push(..._spv7DleDetailLinks(await response.text(), response.url || target, meta));
+    } catch (_) {}
+    if (out.length) break;
+  }
+  if (out.length) return _uniq(out).slice(0,8);
+  return _spv4FindDetails(meta, mediaType, season, episode, "dle-film-api");
+}
+async function _spv7DleTv(tmdbId, mediaType, season, episode) {
+  if (mediaType === "movie" || tmdbId == null || episode == null) return [];
+  const wantedSeason = Math.max(1, Number(season) || 1);
+  const wantedEpisode = String(Math.max(1, Number(episode) || 1));
+  for (const base of _spv7ProviderSiteBases().slice(0,2)) {
+    try {
+      const seasonsUrl = new URL("/engine/ajax/get_seasons.php?serie_tag=s-"+encodeURIComponent(_text(tmdbId))+"&news_id=0", base).toString();
+      const response = await _fetch(seasonsUrl, {headers:{Accept:"application/json,text/plain,*/*",Referer:base+"/"}});
+      const raw = await response.text();
+      let seasons = null; try { seasons = JSON.parse(raw); } catch (_) {}
+      if (!Array.isArray(seasons) || !seasons.length) continue;
+      let chosen = seasons.find(row => {
+        const match = _text(row && row.title).match(/saison\s*(\d+)/i);
+        return match && Number(match[1]) === wantedSeason;
+      }) || seasons[0];
+      const seasonId = _text(chosen && chosen.id).trim();
+      if (!seasonId) continue;
+      const epsUrl = new URL("/data/eps_"+encodeURIComponent(seasonId)+".txt?v="+Math.floor(Date.now()/30000), base).toString();
+      const epsResponse = await _fetch(epsUrl, {headers:{Accept:"application/json,text/plain,*/*",Referer:base+"/"}});
+      const epsRaw = await epsResponse.text();
+      let eps = null; try { eps = JSON.parse(epsRaw); } catch (_) {}
+      if (!eps || typeof eps !== "object") continue;
+      const rows = [];
+      const seen = new Set();
+      for (const lang of ["vf","vostfr","vo"]) {
+        const bucket = eps[lang];
+        const players = bucket && (bucket[wantedEpisode] || bucket[Number(wantedEpisode)]);
+        if (!players || typeof players !== "object") continue;
+        for (const [host, value] of Object.entries(players)) {
+          const url = _text(value).trim();
+          if (!/^https?:\/\//i.test(url) || seen.has(url)) continue;
+          seen.add(url);
+          rows.push({name:NIAKVIO_PROVIDER_MODEL.displayName,title:"["+lang.toUpperCase()+"] "+_text(host).toUpperCase(),url,language:lang,headers:{Referer:base+"/"}});
+        }
+      }
+      if (rows.length) return rows.slice(0,24);
+    } catch (_) {}
+  }
+  return [];
+}
+async function _spv4GetStreams(tmdbId, mediaType, season, episode) {
+const family = _spv4Family();
+const type = _text(mediaType || "movie").toLowerCase();
+if (family === "stremio-json") {
+const stremio = await _spv5Stremio(tmdbId, type, season, episode);
+if (stremio.length) return stremio;
+}
+if (family && family !== "unknown") {
+const meta = await _tmdb(tmdbId, type);
+// Known source families execute their typed source plan before the generic
+// fallback. This prevents broad catalogue/API guesses from spending the
+// provider budget on category pages, dead aliases and placeholder routes.
+if (meta && meta.title) {
+if (family === "dle-film-api" && type !== "movie") {
+const tv = await _spv7DleTv(tmdbId, type, season, episode);
+if (tv.length) return tv;
+}
+const details = family === "dle-film-api"
+? await _spv7DleFindDetails(meta, type, season, episode)
+: await _spv4FindDetails(meta, type, season, episode, family);
+for (const detail of details.slice(0, 8)) {
+const streams = await _spv4ResolveDetail(detail, meta, type, season, episode, family);
+if (streams.length) return streams;
+}
+}
+}
+const primary = await getStreams(tmdbId, type, season, episode);
+if (Array.isArray(primary) && primary.length) return primary;
+return [];
+}
 module.exports = {
-  getStreams,
+  getStreams: _spv4GetStreams,
   get __niakvioProviderBase(){ return NIAKVIO_PROVIDER_MODEL; }
 };
 '''
@@ -1773,11 +2644,16 @@ def repair_derived_base_tails() -> dict[str, Any]:
         path, _digest = resolve_base(provider_id, row, require=True)
         assert path is not None
         data = path.read_bytes()
+        text = data.decode("utf-8", errors="strict")
         leaked = forbidden_base_markers(data)
+        if "NIAKVIO_PROVIDER_MODEL = Object.freeze(" in text:
+            leaked.append("NIAKVIO_PROVIDER_MODEL_DATA")
+        if "NIAKVIO_PROVIDER_ID:" in text:
+            leaked.append("NIAKVIO_PROVIDER_ID_DATA")
         if not leaked:
             continue
 
-        clean, stripped = clean_base_from_published(provider_id, data)
+        clean, stripped = clean_derived_provider_base(provider_id, data)
         if not stripped or clean == data:
             raise ValueError(
                 f"{provider_id}: derived ProviderBase layer detected but deterministic strip made no change: "

@@ -62,6 +62,9 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     max_recovery_candidates = max(2, min(int(cfg.get("max_recovery_candidates", 12)), 24))
     probe_all_urls = bool(cfg.get("probe_all_urls", False))
     fail_closed_unknown = bool(cfg.get("fail_closed_unknown", False))
+    probe_first_segment_native = bool(cfg.get("probe_first_segment_native", False))
+    native_probe_max_rows = max(1, min(int(cfg.get("native_probe_max_rows", 3)), 8))
+    native_probe_timeout_ms = max(900, min(int(cfg.get("native_probe_timeout_ms", 2500)), 5000))
     payload_config = {
         "timeoutMs": timeout_ms,
         "maxChildren": max_children,
@@ -78,6 +81,15 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
                 "probeAllUrls": probe_all_urls,
                 "failClosedUnknown": fail_closed_unknown,
                 "implementationRevision": "final-output-order-v6-native-budget-owned",
+            }
+        )
+    if probe_first_segment_native:
+        payload_config.update(
+            {
+                "probeFirstSegmentNative": True,
+                "nativeProbeMaxRows": native_probe_max_rows,
+                "nativeProbeTimeoutMs": native_probe_timeout_ms,
+                "implementationRevision": "native-first-segment-container-proof-v8-tv-byte-capability",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -133,11 +145,11 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(!out.Accept)out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,application/dash+xml,video/*,text/plain,*/*";
     return out;
   }
-  async function fetchBounded(url,stream,referer,range){
+  async function fetchBounded(url,stream,referer,range,timeoutOverride){
     if(!g||typeof g.fetch!=="function")return {state:"unknown",reason:"fetch_unavailable"};
     var controller=typeof AbortController!=="undefined"?new AbortController():null;
-    var timer=null;
-    if(controller&&typeof setTimeout==="function")timer=setTimeout(function(){try{controller.abort()}catch(_e){}},config.timeoutMs);
+    var timer=null,timeoutMs=Number(timeoutOverride||config.timeoutMs)||config.timeoutMs;
+    if(controller&&typeof setTimeout==="function")timer=setTimeout(function(){try{controller.abort()}catch(_e){}},timeoutMs);
     try{
       var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream,referer,range),signal:controller?controller.signal:void 0});
       if(!response)return {state:"unknown",reason:"no_response"};
@@ -154,6 +166,61 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     try{if(typeof response.arrayBuffer==="function"){var ab=await response.arrayBuffer();return clean(new TextDecoder("utf-8").decode(ab))}}catch(_e){}
     try{if(response.body&&typeof response.body.getReader==="function"){var reader=response.body.getReader(),chunks=[],total=0;while(total<131072){var part=await reader.read();if(part&&part.value){chunks.push(part.value);total+=part.value.byteLength||part.value.length||0}if(!part||part.done)break}try{if(typeof reader.cancel==="function")await reader.cancel()}catch(_e){}var merged=new Uint8Array(total),offset=0;for(var i=0;i<chunks.length;i++){var value=chunks[i],take=Math.min(value.byteLength||value.length||0,total-offset);merged.set(value.subarray?value.subarray(0,take):value,offset);offset+=take;if(offset>=total)break}return clean(new TextDecoder("utf-8").decode(merged))}}catch(_e){}
     return "";
+  }
+  async function responseBytes(result,cap){
+    var response=result&&result.response,limit=Math.max(188,Number(cap||4096)||4096);if(!response)return new Uint8Array(0);
+    try{
+      if(response.body&&typeof response.body.getReader==="function"){
+        var reader=response.body.getReader(),chunks=[],total=0;
+        while(total<limit){var part=await reader.read();if(part&&part.value){var take=Math.min(part.value.byteLength||part.value.length||0,limit-total);chunks.push(part.value.subarray?part.value.subarray(0,take):part.value);total+=take}if(!part||part.done||total>=limit)break}
+        try{if(typeof reader.cancel==="function")await reader.cancel()}catch(_e){}
+        var merged=new Uint8Array(total),offset=0;for(var i=0;i<chunks.length;i++){var value=chunks[i],len=value.byteLength||value.length||0;merged.set(value,offset);offset+=len}return merged;
+      }
+    }catch(_e){}
+    try{if(typeof response.arrayBuffer==="function"){var ab=await response.arrayBuffer(),bytes=new Uint8Array(ab);return bytes.length>limit?bytes.slice(0,limit):bytes}}catch(_e){}
+    return new Uint8Array(0);
+  }
+  function asciiPrefix(bytes,cap){var out="",n=Math.min(bytes&&bytes.length||0,Number(cap||96)||96);for(var i=0;i<n;i++){var b=bytes[i];out+=b>=32&&b<=126?String.fromCharCode(b):" "}return out.trim().toLowerCase()}
+  function hasTsSync(bytes){var n=bytes&&bytes.length||0;if(n<188)return n>0&&bytes[0]===0x47;var max=Math.min(187,n-1);for(var o=0;o<=max;o++){if(bytes[o]!==0x47)continue;if(o+188<n&&bytes[o+188]!==0x47)continue;if(o+376<n&&bytes[o+376]!==0x47)continue;return true}return false}
+  function hasMp4Box(bytes){if(!bytes||bytes.length<8)return false;for(var o=0;o+8<=bytes.length&&o<64;o+=4){var a=String.fromCharCode(bytes[o+4]||0,bytes[o+5]||0,bytes[o+6]||0,bytes[o+7]||0);if(a==="ftyp"||a==="styp"||a==="moof"||a==="moov")return true}return false}
+  function nonMediaPayload(bytes,contentType){var ct=String(contentType||"").toLowerCase(),p=asciiPrefix(bytes,160);if(/text\/html|application\/(?:json|problem\+json)|text\/plain|application\/xhtml\+xml/.test(ct))return true;return /^<!doctype\s+html|^<html\b|^<\?xml\b|^\{|^\[/.test(p)}
+  function mapUri(body,base){var m=clean(body).match(/#EXT-X-MAP\s*:[^\n\r]*\bURI\s*=\s*"([^"]+)"/i)||clean(body).match(/#EXT-X-MAP\s*:[^\n\r]*\bURI\s*=\s*([^,\s]+)/i);return m?absolute(m[1],base):""}
+  function firstMediaUri(body,base){var lines=clean(body).split(/\r?\n/);for(var i=0;i<lines.length;i++){var v=clean(lines[i]);if(!v||v.charAt(0)==="#")continue;var u=absolute(v,base);if(u)return u}return ""}
+  function playlistEncrypted(body){var lines=clean(body).match(/#EXT-X-KEY\s*:[^\n\r]*/gi)||[];for(var i=0;i<lines.length;i++){var m=lines[i].match(/METHOD\s*=\s*([^,\s]+)/i),method=clean(m&&m[1]).toUpperCase();if(method&&method!=="NONE")return true}return false}
+  function segmentProof(bytes,contentType,url,hasMap,encrypted){
+    if(!bytes||!bytes.length)return {state:"unknown",reason:"segment_bytes_unavailable"};
+    if(nonMediaPayload(bytes,contentType))return {state:"invalid",reason:"segment_non_media_payload"};
+    if(encrypted)return {state:"unknown",reason:"encrypted_segment"};
+    var u=String(url||"").toLowerCase(),ct=String(contentType||"").toLowerCase();
+    var ts=/\.ts(?:[?#]|$)/i.test(u)||/video\/(?:mp2t|mpegts)|application\/(?:mp2t|mpegts)/i.test(ct);
+    if(ts)return hasTsSync(bytes)?{state:"valid",kind:"mpegts"}:{state:"invalid",reason:"ts_sync_missing"};
+    var fragmented=hasMap||/\.(?:m4s|mp4)(?:[?#]|$)/i.test(u)||/video\/mp4|application\/mp4/i.test(ct);
+    if(fragmented)return hasMp4Box(bytes)?{state:"valid",kind:"fmp4"}:{state:"invalid",reason:"fmp4_signature_missing"};
+    return {state:"unknown",reason:"segment_container_unknown"};
+  }
+  async function proveMediaPlaylist(body,playlistUrl,stream,referer){
+    var encrypted=playlistEncrypted(body),init=mapUri(body,playlistUrl),target=init||firstMediaUri(body,playlistUrl);
+    if(!target)return {state:"unknown",reason:"segment_uri_missing"};
+    var result=await fetchBounded(target,stream,referer,true,config.nativeProbeTimeoutMs||config.timeoutMs);
+    if(result.state==="invalid")return result;if(result.state!=="ok")return {state:"unknown",reason:result.reason||"segment_fetch_unknown"};
+    var bytes=await responseBytes(result,4096),proof=segmentProof(bytes,result.contentType,result.url||target,!!init,encrypted);
+    if(init&&proof.state==="valid"&&proof.kind==="fmp4")return proof;
+    return proof;
+  }
+  async function nativeFirstSegmentProof(stream){
+    var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+    if(root.state==="invalid")return root;if(root.state!=="ok")return {state:"unknown",reason:root.reason||"playlist_fetch_unknown"};
+    var body=await responseText(root),kind=playlistKind(body),base=root.url||String(stream.url||"");
+    if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"playlist_"+kind};
+    if(kind==="master"){
+      var variants=variantUris(body,base);if(!variants.length)return {state:"invalid",reason:"master_without_variants"};
+      var child=await fetchBounded(variants[0],stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+      if(child.state==="invalid")return child;if(child.state!=="ok")return {state:"unknown",reason:child.reason||"variant_fetch_unknown"};
+      body=await responseText(child);kind=playlistKind(body);base=child.url||variants[0];
+      if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"variant_"+kind};
+      if(kind==="master")return {state:"unknown",reason:"nested_master"};
+    }
+    return proveMediaPlaylist(body,base,stream,referer);
   }
   function playlistKind(body){
     var text=clean(body);if(!/^#EXTM3U(?:\s|$)/i.test(text))return "invalid";
@@ -301,8 +368,24 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     return null;
   }
   async function filterRows(value){
-    if(nativeHlsHost())return value;
     var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
+    if(nativeHlsHost()){
+      if(!config.probeFirstSegmentNative||!rows||!rows.length)return value;
+      var remaining=Math.max(1,Number(config.nativeProbeMaxRows||1)||1);
+      var checks=await Promise.all(rows.map(async function(stream){
+        if(!hlsHint(stream)||remaining<=0)return stream;
+        remaining-=1;
+        var proof=await nativeFirstSegmentProof(stream);
+        if(proof.state==="invalid"){
+          try{console.warn("[Nuvio HLS integrity] rejected invalid first media container",proof.reason||"invalid",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
+          return null;
+        }
+        return stream;
+      }));
+      var nativeFiltered=checks.filter(Boolean);
+      if(Array.isArray(value))return nativeFiltered;
+      var nativeCopy=Object.assign({},value);nativeCopy.streams=nativeFiltered;return nativeCopy;
+    }
     if(!rows||!rows.length)return value;
     var checks=await Promise.all(rows.map(async function(stream){
       if(!config.probeAllUrls&&!hlsHint(stream))return stream;

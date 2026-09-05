@@ -34,6 +34,9 @@ LABELS = {
     "stream_headers": "Headers stream",
     "subtitles": "Sous-titres stream",
     "torrent_fields": "seeders / peers / infoHash",
+    "stream_title_projection": "Projection titre / nom du flux",
+    "stream_description_projection": "Projection description du flux",
+    "stream_badge_projection": "Projection badges du flux",
     "behavior_hints_projection": "Projection behaviorHints / proxyHeaders",
 }
 
@@ -178,7 +181,10 @@ def render(data: dict) -> str:
         "- **Desktop utilise un bridge `__native_fetch` asynchrone**, alors que Mobile et TV appellent leur pont natif de manière bloquante derrière l'API JavaScript `fetch`.",
         "- **iOS utilise Ktor/Darwin**, contrairement à l'OkHttp d'Android, Desktop et TV. Les comportements réseau propres à la plateforme doivent donc rester audités séparément.",
         "- **TV injecte `TMDB_API_KEY` dans le runtime plugin; Mobile/Desktop ne l'exposent pas comme global runtime.** Un provider portable ne doit pas dépendre de ce global sans fallback.",
-        "- **Mobile/Desktop conservent `subtitles`; TV ne possède pas ce champ dans `LocalScraperResult`.** Les sous-titres retournés uniquement par un provider JS ne sont donc pas projetables de manière identique sur TV aujourd'hui.",
+        "- **Les six clients conservent désormais les sous-titres retournés par le provider.** TV a ajouté `LocalScraperResult.subtitles` depuis l'audit précédent.",
+        "- **Mobile/Desktop ne conservent pas `description` depuis le JSON provider** : leur `StreamItem.description` est reconstruit depuis `quality + size + language`. TV projette également `Stream.description` depuis `LocalScraperResult.size`. NiakVIO utilise donc `size` comme tunnel de description technique complète.",
+        "- **Mobile/Desktop privilégient `name` à `title` pour le label plugin.** NiakVIO doit donc écrire `Provider - Qualité` dans les deux champs ; TV conserve les deux et évite de dupliquer la qualité lorsqu'elle est déjà présente.",
+        "- **Aucun client ne consomme directement `badgeIds` / `displayBadges` depuis le JSON provider.** Les moteurs de badges Mobile/Desktop/TV re-matchent des règles regex sur les champs textuels du stream (`name`, `title`, `description`, champs parsés). Les tokens techniques doivent donc survivre dans le label/description projetés.",
         "- **TV projette les headers dans `behaviorHints.proxyHeaders.request`** et ajoute son `bingeGroup`; Mobile/Desktop conservent d'abord les headers bruts dans `PluginRuntimeResult`.",
         "- **TV n'expose actuellement ni TextEncoder/TextDecoder ni WebAssembly dans son PluginRuntime**, contrairement au runtime Mobile/Desktop. Un provider qui en dépend doit être adapté ou déclaré incompatible TV.",
         "",

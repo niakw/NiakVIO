@@ -21,9 +21,17 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from apply_provider_overrides import apply_overrides
 
+def clean_v3(source: bytes) -> bytes:
+    return (
+        b"/* BEGIN NIAKVIO_PROVIDER */\n"
+        b"/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n"
+        + source.strip()
+        + b"\n/* END NIAKVIO_PROVIDER */\n"
+    )
+
 
 # Stable replacements still happen during discovery.
-patched, records = apply_overrides("movix", b'const API="https://api.movix.cash/";')
+patched, records = apply_overrides("movix", b'const API="https://api.movix.cash/";', include_global_core=False)
 assert b"api.movix.fun" in patched
 assert b"api.movix.cash" not in patched
 assert records and records[0]["count"] == 1
@@ -34,7 +42,7 @@ def test_staged_artifact_contract() -> None:
         stage = Path(tmp)
         (stage / "providers" / "gowaru").mkdir(parents=True)
         upstream = b'const APIS=["https://api.movix.cloud","https://api.movix.cash"];'
-        output, patch_records = apply_overrides("movix", upstream)
+        output, patch_records = apply_overrides("movix", upstream, include_global_core=False)
         target = stage / "providers" / "gowaru" / "movix.js"
         target.write_bytes(output)
         registry = {
@@ -63,23 +71,19 @@ def test_staged_artifact_contract() -> None:
 
 
 def test_domain_overrides() -> None:
-    source = b"const BASE='https://french-stream.one';"
-    output, patch_records = apply_overrides("frenchstream", source)
-    # A configured terminal safety quarantine replaces the provider with an
-    # inert artifact. Historical route/domain mappings are intentionally pruned
-    # from terminal quarantines so a later reapply cannot resurrect a stale
-    # repair path. Domain replacement behavior remains covered by active
-    # providers below.
-    assert b"NUVIO_PROVIDER_QUARANTINE_V1" in output
-    assert b"french-stream.one" not in output
-    assert not any(
-        row.get("type") == "replace"
-        and row.get("from") == "french-stream.one"
-        for row in patch_records
-    )
+    config = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
+    frenchstream = config["provider_patches"]["frenchstream"]
+    assert frenchstream["capability"] == "mixed_embed_resolver"
+    assert frenchstream["official_hub"] == "https://fstream.website/"
+    assert frenchstream["official_site"] == "https://fs23.lol"
+    runtime_domains = frenchstream.get("runtime_domain_replacements") or {}
+    assert runtime_domains
+    assert set(runtime_domains.values()) == {"fs23.lol"}
+    assert runtime_domains.get("fs16.lol") == "fs23.lol"
+    assert frenchstream["capability_promotion"]["activation_policy"] == "remain_disabled_until_native_reader_acceptance"
 
     movix_source = b"const A='https://api.movix.cash'; const B='https://api.movix.cloud';"
-    movix_output, movix_records = apply_overrides("movix", movix_source)
+    movix_output, movix_records = apply_overrides("movix", movix_source, include_global_core=False)
     assert b"api.movix.fun" in movix_output
     assert b"api.movix.cash" not in movix_output
     assert b"api.movix.cloud" not in movix_output
@@ -88,7 +92,7 @@ def test_domain_overrides() -> None:
 
 def test_runtime_profiles_are_not_blindly_applied() -> None:
     source = b'''function*(x){if(x.length===0)return[];return {signal:true,effectiveSeason:1}}'''
-    output, patch_records = apply_overrides("example-provider", source)
+    output, patch_records = apply_overrides("example-provider", clean_v3(source))
 
     # Discovery-time Core finalization is intentionally universal. This test is
     # only about runtime repair profiles: matching their old structural markers
@@ -115,7 +119,7 @@ def test_runtime_domain_prefix_collisions_are_globally_idempotent() -> None:
     for provider_id, patch in patches.items():
         if not isinstance(patch, dict):
             continue
-        replacements = patch.get("runtime_domain_replacements") or patch.get("replacements") or {}
+        replacements = patch.get("runtime_domain_replacements") or patch.get("replacements") or patch.get("domain_substitutions") or {}
         if not isinstance(replacements, dict) or len(replacements) < 2:
             continue
 

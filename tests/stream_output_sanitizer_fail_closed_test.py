@@ -9,12 +9,16 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
+
+from provider_patch_blocks import begin_marker, end_marker  # noqa: E402
 PATCH = ROOT / "scripts" / "provider_patches" / "stream_output_sanitizer_v6.py"
 
 spec = importlib.util.spec_from_file_location("stream_output_sanitizer_v6_test", PATCH)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+
+SANITIZER_FIX_ID = "CORE.STREAM_SANITIZER.V6"
 
 
 def sanitizer_region(text: str) -> str:
@@ -43,7 +47,8 @@ def main() -> int:
     first = module.apply(source, options=options)
     second = module.apply(first, options=options)
     assert second == first, "fail-closed sanitizer must be byte-idempotent"
-    assert first.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    assert first.count(begin_marker(SANITIZER_FIX_ID)) == 1
+    assert first.count(end_marker(SANITIZER_FIX_ID)) == 1
     assert module.MARKER not in first
     assert '"probeAllUrls":true' in first
     assert '"maxProbes":20' in first
@@ -53,7 +58,7 @@ def main() -> int:
     for path in options["blocked_path_patterns"]:
         assert f'"{path}"' in first
 
-    # Rebuild inputs are often Terser-formatted rather than source-formatted.
+    # Rebuild inputs can be compact/minifier-formatted rather than source-formatted.
     # Compact only the signatures/spacing that V6 needs to locate structurally;
     # the generic repair must still find the local region and remain idempotent.
     compacted = first
@@ -78,7 +83,8 @@ def main() -> int:
     assert '"maxProbes":12' in changed
     assert '"maxProbes":20' not in changed
     assert module.apply(changed, options=changed_options) == changed
-    assert changed.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    assert changed.count(begin_marker(SANITIZER_FIX_ID)) == 1
+    assert changed.count(end_marker(SANITIZER_FIX_ID)) == 1
     assert module.MARKER not in changed
     assert module.NEW in changed
     assert module.PROBE_ALIAS_RE.search(sanitizer_region(changed))
@@ -92,7 +98,8 @@ def main() -> int:
     target_pos = relocated.rfind("/* NUVIO_TV_TARGET_MEDIA_V3:fixture */")
     assert target_pos >= 0 and sanitizer_pos > target_pos, (target_pos, sanitizer_pos)
     assert relocated.count(module.SANITIZER_PREFIX) == 1
-    assert relocated.count("/* START NIAKVIO_FIX:CORE.STREAM_SANITIZER.V6 */") == 1
+    assert relocated.count(begin_marker(SANITIZER_FIX_ID)) == 1
+    assert relocated.count(end_marker(SANITIZER_FIX_ID)) == 1
     assert module.MARKER not in relocated
     assert module.PROBE_ALIAS_RE.search(sanitizer_region(relocated))
     assert module.apply(relocated, options=options) == relocated

@@ -5,7 +5,7 @@ import importlib.util
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PATCH = ROOT / "scripts/provider_patches/safe_structured_parse_v1.py"
+PATCH = ROOT / "scripts/adaptive_runtime/safe_structured_parse_v1.py"
 
 spec = importlib.util.spec_from_file_location("safe_structured_parse_v1", PATCH)
 assert spec and spec.loader
