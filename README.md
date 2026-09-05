@@ -205,7 +205,7 @@ A quarantine needs an explicit, evidence-backed functional reason. `routeData=[]
 
 ---
 
-## publication and integrity
+## Publication and integrity
 
 Publication is atomic and fail-closed and can include:
 
