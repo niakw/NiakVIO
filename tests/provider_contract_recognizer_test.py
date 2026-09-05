@@ -8,6 +8,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import provider_contract_recognizer as r
+from provider_route_expression_analyzer import install as install_route_analyzer
+
+install_route_analyzer(r)
 
 
 # Gowaru-style modular Anime-Sama: POST catalogue search + typed episodes.js path.
@@ -44,18 +47,18 @@ assert "tmdb-metadata" in input_contract["metadataDependencies"]
 assert "movie" in input_contract["typeEvidence"]
 
 
-# Yoru template: method/interface evidence must not invent executable provider routes.
-yoru_template = r'''
+# Interface-only source must never invent executable provider routes.
+template_interface = r'''
 export async function extractStreams(tmdbId, mediaType, season, episode) { return []; }
 async function getStreams(tmdbId, mediaType, season, episode) {
   return extractStreams(tmdbId, mediaType, season, episode);
 }
 '''
-assert r.extract_routes(yoru_template) == []
-yoru_input = r.recognize_input_contract("", yoru_template)
-assert yoru_input["acceptsTmdbId"] is True
-assert yoru_input["acceptsSeasonEpisode"] is True
-assert yoru_input["templateInterfaceEvidence"] is True
+assert r.extract_routes(template_interface) == []
+template_input = r.recognize_input_contract("", template_interface)
+assert template_input["acceptsTmdbId"] is True
+assert template_input["acceptsSeasonEpisode"] is True
+assert template_input["templateInterfaceEvidence"] is True
 
 
 # Frenchstream/DLE family: POST search, season lookup and eps_<id>.txt must be recognized.
@@ -98,14 +101,104 @@ assert any("/api/streams/episode" in route for route in keh_routes), keh_routes
 assert r.infer_family(kehflix, keh_routes, r.recognize_request_contracts(kehflix, keh_routes)) == "signed-player-api"
 
 
-# Minified/compiled bundle: literals near fetch calls still become request contracts.
+# Compiled bundle literals near fetch calls still become request contracts.
 aio = "async function g(e){let r=await fetch('/search?q='+encodeURIComponent(e));return fetch('/api/source?id='+e)}"
 aio_routes = r.extract_routes(aio)
 assert any(route.startswith("/search?q=") for route in aio_routes), aio_routes
 assert any(route.startswith("/api/source?id=") for route in aio_routes), aio_routes
+
 aio_contracts = r.recognize_request_contracts(aio, aio_routes)
 assert any(row["role"] == "search" for row in aio_contracts), aio_contracts
 assert any(row["role"] in {"api", "source"} for row in aio_contracts), aio_contracts
+
+
+# AnimeKai-shaped route construction: base + browser query, then result.url + episode suffix.
+# The analyzer must recover paths from expressions, not require one static URL literal.
+animekai_shape = r'''
+const BASE = 'https://www3.example.invalid';
+async function searchProvider(query) {
+  const endpoint = BASE + '/browser?keyword=' + encodeURIComponent(query);
+  return fetch(endpoint, {headers:{'Referer':BASE}});
+}
+async function watchEpisode(result, episode) {
+  const watchUrl = result.url + '/ep-' + episode;
+  const html = await fetch(watchUrl, {headers:{Referer:BASE}});
+  const embed = html.match(/data-video="([^"]+)/);
+  return embed;
+}
+'''
+animekai_routes = r.extract_routes(animekai_shape)
+assert "/browser?keyword={query}" in animekai_routes, animekai_routes
+assert "/ep-{episode}" in animekai_routes, animekai_routes
+animekai_contracts = r.recognize_request_contracts(animekai_shape, animekai_routes)
+assert any(row["route"] == "/browser?keyword={query}" and row["executedEvidence"] for row in animekai_contracts), animekai_contracts
+assert any(row["route"] == "/ep-{episode}" and row["refererRequired"] for row in animekai_contracts), animekai_contracts
+
+
+# AnimeZey-shaped worker API: endpoint assembled through a variable, POST JSON body
+# passed through a helper, Referer required. Object keys must survive the helper layer.
+animezey_shape = r'''
+async function postSearch(payload) {
+  const searchPath = '/api/search';
+  const endpoint = 'https://' + workerDomain + searchPath;
+  return fetchPlain(endpoint, {
+    method: 'POST',
+    headers: {'content-type':'application/json', Referer:endpoint},
+    body: JSON.stringify(payload)
+  });
+}
+async function searchEpisodes(query) {
+  return postSearch({q: query, page_token: null, page_index: 0});
+}
+async function searchMovies(query) {
+  return postSearch({q: query});
+}
+'''
+animezey_routes = r.extract_routes(animezey_shape)
+assert "/api/search" in animezey_routes, animezey_routes
+animezey_contracts = r.recognize_request_contracts(animezey_shape, animezey_routes)
+az_search = next(row for row in animezey_contracts if row["route"] == "/api/search")
+assert az_search["method"] == "POST", az_search
+assert az_search.get("jsonEncoded") is True, az_search
+assert az_search["refererRequired"] is True, az_search
+assert {"q", "page_token", "page_index"}.issubset(set(az_search["bodyFields"])), az_search
+assert az_search["executedEvidence"] is True, az_search
+
+
+# Bounded static string decoding: useful route strings may be recovered from a
+# common custom-base64 table without executing the decoder/rotation JavaScript.
+obfuscated_shape = r'''
+const alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+const table=['L2FwaS9zZWFyY2g','aHR0cHM6Ly93b3JrZXIuZXhhbXBsZS9hcGkvc2VhcmNo'];
+function decoder(i){ return table[i]; }
+'''
+obfuscated_routes = r.extract_routes(obfuscated_shape)
+assert "/api/search" in obfuscated_routes, obfuscated_routes
+obfuscated_contracts = r.recognize_request_contracts(obfuscated_shape, obfuscated_routes)
+obfuscated_search = next(row for row in obfuscated_contracts if row["route"] == "/api/search")
+assert obfuscated_search["executedEvidence"] is False, obfuscated_search
+assert obfuscated_search.get("evidence") == "decoded-static-string", obfuscated_search
+
+
+# Anime-Ultime-shaped catalogue/player knowledge already present in NiakVIO DATA.
+# A player endpoint plus typed catalogue evidence must remain a usable route family.
+anime_ultime_shape = r'''
+const BASE='https://v5.example.invalid';
+async function search(query) {
+  const endpoint = BASE + '/search?query=' + encodeURIComponent(query);
+  return fetchText(endpoint, {headers:{Referer:BASE}});
+}
+async function player(id) {
+  const endpoint = BASE + '/VideoPlayer.html?id=' + id;
+  return fetchText(endpoint, {headers:{Referer:BASE}});
+}
+'''
+au_routes = r.extract_routes(anime_ultime_shape)
+assert "/search?query={query}" in au_routes, au_routes
+assert "/VideoPlayer.html?id={id}" in au_routes, au_routes
+au_contracts = r.recognize_request_contracts(anime_ultime_shape, au_routes)
+assert any(row["role"] == "search" and row["executedEvidence"] for row in au_contracts), au_contracts
+assert any(row["role"] == "player" and row["executedEvidence"] for row in au_contracts), au_contracts
 
 
 # Junk/static infrastructure must never become executable Provider DATA.
