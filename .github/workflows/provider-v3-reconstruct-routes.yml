@@ -1,0 +1,86 @@
+name: MANUAL - Reconstruct Provider Routes 96/96
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - workbench/provider-v3-recognition-routes-data
+    paths:
+      - '.github/triggers/provider-v3-reconstruct-routes.json'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-v3-route-reconstruction-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  reconstruct-routes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Assert exact route reconstruction SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "${GITHUB_SHA}" || {
+            echo "Route reconstruction checkout drifted from event SHA." >&2
+            exit 1
+          }
+          echo "FIELD_ROUTE_RECONSTRUCTION_SHA sha=${GITHUB_SHA}"
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - name: Validate route reconstruction engine
+        run: |
+          set -euo pipefail
+          python tests/provider_contract_recognizer_test.py
+          python tests/provider_route_reconstructor_test.py
+          python tests/provider_v3_local_recognition_contract_test.py
+      - name: Reconstruct route DATA only for all 96 Provider Objects
+        run: |
+          set -euo pipefail
+          python scripts/provider_route_reconstructor.py
+          python tests/provider_route_reconstructor_test.py
+          python tests/provider_v3_static_knowledge_contract_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          value=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
+          report=value.get('routeReconstruction') or {}
+          providers=value.get('providers') or {}
+          assert report.get('providerCount') == 96, report
+          assert report.get('fullProviderReconstructionInvoked') is False, report
+          assert report.get('providerJavaScriptExecuted') is False, report
+          unknown=report.get('unknownProviders') or []
+          assert not unknown, f'providers without recognized route DATA: {unknown}'
+          assert len(providers) == 96, len(providers)
+          for provider_id,row in providers.items():
+              model=(row or {}).get('model') or {}
+              data=model.get('routeData')
+              assert isinstance(data,list) and data, provider_id
+              assert model.get('routes') == list(dict.fromkeys(x.get('route') for x in data)), provider_id
+          print(
+              'FIELD_ROUTE_RECONSTRUCTION '
+              f"providers=96 routes={report.get('routeCount')} "
+              f"httpProven={report.get('httpProvenRouteCount')} unknown=0 providerRebuild=false"
+          )
+          PY
+      - name: Commit canonical route DATA only
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add automation/provider-v3-static-knowledge.json
+          if git diff --cached --quiet; then
+            echo "Route DATA already byte-identical; nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore: reconstruct Provider route DATA 96/96"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
