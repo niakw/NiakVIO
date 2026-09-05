@@ -226,7 +226,9 @@ def main() -> int:
     hard_failures: list[str] = []
     terminal_only: list[str] = []
     final_verified: list[str] = []
-    refused_provider: str | None = None
+    # PROVIDER_V3_DEFER_TO_LEARN_V1
+    # Provider-scoped repair exhaustion is evidence for Learn, not a slice blocker.
+    deferred_to_learn: list[dict[str, Any]] = []
 
     print(
         f"FIELD_PROVIDER_BATCH_BEGIN start={start} end={end} count={len(selected)} total={EXPECTED} repair_first=true",
@@ -238,16 +240,16 @@ def main() -> int:
         static_row = providers.get(provider_id)
         patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
         if not isinstance(static_row, dict):
-            hard_failures.append(provider_id)
-            refused_provider = provider_id
+            deferred_to_learn.append({"index": absolute_index, "providerId": provider_id, "reason": "missing-static-knowledge"})
             rows.append({
-                "index": absolute_index,
-                "providerId": provider_id,
-                "result": "missing-static-knowledge",
-                "advancedForDiagnostics": False,
-                "refusedToAdvance": True,
+                "index": absolute_index, "providerId": provider_id,
+                "result": "defer-to-learn", "completionState": "defer-to-learn",
+                "learnRequired": True, "deferReason": "missing-static-knowledge",
+                "advancedAfterDefer": True, "refusedToAdvance": False,
+                "finalBundleVerified": False,
             })
-            break
+            print(f"FIELD_PROVIDER_BATCH_PROVIDER_DEFER index={absolute_index} provider={provider_id} reason=missing-static-knowledge advancing_next=true learn=true", flush=True)
+            continue
 
         model = static_row.get("model") if isinstance(static_row.get("model"), dict) else {}
         model["canonicalSupportedTypes"] = list(provider.get("supported_types") or [])
@@ -262,16 +264,16 @@ def main() -> int:
         candidate = materialize_one(provider_id)
         candidate_filename = str(candidate.get("file") or "")
         if not candidate_filename:
-            hard_failures.append(provider_id)
-            refused_provider = provider_id
+            deferred_to_learn.append({"index": absolute_index, "providerId": provider_id, "reason": "candidate-materialization-failed"})
             rows.append({
-                "index": absolute_index,
-                "providerId": provider_id,
-                "result": "candidate-materialization-failed",
-                "advancedForDiagnostics": False,
-                "refusedToAdvance": True,
+                "index": absolute_index, "providerId": provider_id,
+                "result": "defer-to-learn", "completionState": "defer-to-learn",
+                "learnRequired": True, "deferReason": "candidate-materialization-failed",
+                "advancedAfterDefer": True, "refusedToAdvance": False,
+                "finalBundleVerified": False,
             })
-            break
+            print(f"FIELD_PROVIDER_BATCH_PROVIDER_DEFER index={absolute_index} provider={provider_id} reason=candidate-materialization-failed advancing_next=true learn=true", flush=True)
+            continue
         for task in provider["tasks"]:
             task["filename"] = candidate_filename
 
@@ -348,31 +350,41 @@ def main() -> int:
                     break
 
         if completion_state is None:
-            hard_failures.append(provider_id)
-            refused_provider = provider_id
+            deferred_to_learn.append({
+                "index": absolute_index,
+                "providerId": provider_id,
+                "reason": "repair-exhausted",
+                "missingTypes": list(evaluation.get("missingTypes") or []),
+                "validatedTypes": list(evaluation.get("validatedTypes") or []),
+                "providerRequestCount": int(evaluation.get("providerRequestCount") or 0),
+                "liveValidatedRouteCount": int(evaluation.get("liveValidatedRouteCount") or 0),
+                "repairHistory": repair_history,
+            })
             rows.append({
                 **evaluation,
                 "index": absolute_index,
                 "providerId": provider_id,
-                "result": "repair-exhausted",
-                "completionState": "repair-exhausted",
+                "result": "defer-to-learn",
+                "completionState": "defer-to-learn",
                 "originEvidence": origin_evidence,
                 "candidateBundleFile": candidate_filename,
                 "candidateBundleSha256": candidate.get("sha256"),
                 "repairHistory": repair_history,
-                "advancedForDiagnostics": False,
-                "refusedToAdvance": True,
+                "learnRequired": True,
+                "deferReason": "repair-exhausted",
+                "advancedAfterDefer": True,
+                "refusedToAdvance": False,
                 "finalBundleVerified": False,
             })
             print(
-                "FIELD_PROVIDER_BATCH_PROVIDER_FAIL "
+                "FIELD_PROVIDER_BATCH_PROVIDER_DEFER "
                 f"index={absolute_index} provider={provider_id} repair_exhausted=true "
                 f"missing={','.join(evaluation.get('missingTypes') or []) or 'unknown'} "
                 f"validated={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
-                f"refusing_next={absolute_index + 1 if absolute_index < EXPECTED else 'none'}",
+                f"advancing_next={str(absolute_index < EXPECTED).lower()} learn=true",
                 flush=True,
             )
-            break
+            continue
 
         finalize_provider(
             provider_id,
@@ -401,8 +413,16 @@ def main() -> int:
             if final_proof.get("verified"):
                 final_verified.append(provider_id)
             else:
-                hard_failures.append(provider_id)
-                refused_provider = provider_id
+                final_proof["deferToLearn"] = True
+                final_proof["deferReason"] = "final-bundle-verification-failed"
+                deferred_to_learn.append({
+                    "index": absolute_index,
+                    "providerId": provider_id,
+                    "reason": "final-bundle-verification-failed",
+                    "candidateValidatedTypes": list(evaluation.get("validatedTypes") or []),
+                    "candidateMissingTypes": list(evaluation.get("missingTypes") or []),
+                    "finalProof": final_proof,
+                })
         else:
             terminal_only.append(provider_id)
             final_proof = {
@@ -416,7 +436,7 @@ def main() -> int:
             **evaluation,
             "index": absolute_index,
             "providerId": provider_id,
-            "result": "ok" if final_proof.get("verified") else completion_state,
+            "result": "ok" if final_proof.get("verified") else ("defer-to-learn" if final_proof.get("deferToLearn") else completion_state),
             "completionState": completion_state,
             "originEvidence": origin_evidence,
             "candidateBundleFile": candidate_filename,
@@ -426,8 +446,10 @@ def main() -> int:
             "finalBundleSha256": final_materialized.get("sha256"),
             "finalBundleVerified": bool(final_proof.get("verified")),
             "finalBundleProof": final_proof,
-            "advancedForDiagnostics": refused_provider is None,
-            "refusedToAdvance": refused_provider is not None,
+            "learnRequired": bool(final_proof.get("deferToLearn")),
+            "deferReason": final_proof.get("deferReason"),
+            "advancedAfterDefer": bool(final_proof.get("deferToLearn")),
+            "refusedToAdvance": False,
         })
         print(
             "FIELD_PROVIDER_BATCH_PROVIDER_RESULT "
@@ -437,16 +459,21 @@ def main() -> int:
             f"final_verified={str(bool(final_proof.get('verified'))).lower()}",
             flush=True,
         )
-        if refused_provider is not None:
-            break
+        if final_proof.get("deferToLearn"):
+            print(
+                f"FIELD_PROVIDER_BATCH_PROVIDER_DEFER index={absolute_index} provider={provider_id} reason={final_proof.get('deferReason')} advancing_next=true learn=true",
+                flush=True,
+            )
 
     report = {
-        "schemaVersion": 2,
-        "method": "provider-v3-bounded-repair-first-gate",
+        "schemaVersion": 3,
+        "method": "provider-v3-bounded-repair-first-defer-to-learn",
         "publicationGate": False,
         "diagnosticOnly": False,
         "repairFirst": True,
-        "refuseAdvanceAfterUnresolved": True,
+        "refuseAdvanceAfterUnresolved": False,
+        "continueAfterRepairExhausted": True,
+        "providerScopedFailuresDeferToLearn": True,
         "providerCount": EXPECTED,
         "startIndex": start,
         "endIndex": end,
@@ -454,7 +481,9 @@ def main() -> int:
         "processedCount": len(rows),
         "hardFailureCount": len(hard_failures),
         "hardFailures": hard_failures,
-        "refusedProvider": refused_provider,
+        "refusedProvider": None,
+        "deferredToLearnCount": len(deferred_to_learn),
+        "deferredToLearn": deferred_to_learn,
         "terminalOnlyCount": len(terminal_only),
         "terminalOnly": terminal_only,
         "finalVerifiedCount": len(final_verified),
@@ -465,8 +494,8 @@ def main() -> int:
     print(
         "FIELD_PROVIDER_BATCH_COMPLETE "
         f"start={start} end={end} processed={len(rows)} "
-        f"hard_failures={len(hard_failures)} terminal={len(terminal_only)} "
-        f"final_verified={len(final_verified)} refused={refused_provider or 'none'}",
+        f"hard_failures={len(hard_failures)} deferred={len(deferred_to_learn)} "
+        f"terminal={len(terminal_only)} final_verified={len(final_verified)} refused=none",
         flush=True,
     )
     if hard_failures:

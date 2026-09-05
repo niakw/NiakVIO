@@ -244,8 +244,35 @@ def derive_observed_route(fetch: dict[str, Any], task: dict[str, Any]) -> tuple[
     fixture_specific = []
     if tmdb and tmdb in route:
         fixture_specific.append(tmdb)
+
+    # PROVIDER_V3_SEMANTIC_QUERY_RESIDUE_V1
+    # Detect leaked fixture titles only in path/query values that can actually
+    # carry content identity. Canonical semantic constants (type=movie|tv|anime)
+    # are stable Provider contract DATA, not fixture-specific residue.
+    try:
+        residue_parts = urllib.parse.urlsplit(route)
+        residue_haystacks = [urllib.parse.unquote(residue_parts.path or "/").casefold()]
+        semantic_query_keys = {
+            "type", "mediatype", "media_type", "media", "category", "kind"
+        }
+        for residue_key, residue_value in urllib.parse.parse_qsl(
+            residue_parts.query, keep_blank_values=True
+        ):
+            if (
+                residue_key.casefold() in semantic_query_keys
+                and canonical(residue_value) in REPRESENTATIVE
+            ):
+                continue
+            residue_haystacks.append(urllib.parse.unquote(residue_value).casefold())
+    except ValueError:
+        residue_haystacks = [urllib.parse.unquote(route).casefold()]
+
     for raw_title in title_values:
-        if raw_title and len(raw_title) >= 4 and raw_title in urllib.parse.unquote(route).casefold():
+        if (
+            raw_title
+            and len(raw_title) >= 4
+            and any(raw_title in haystack for haystack in residue_haystacks)
+        ):
             fixture_specific.append(raw_title)
     if fixture_specific:
         reusable = False
@@ -862,6 +889,20 @@ def finalize_provider(
         and str(row.get("route") or "").strip()
         and row.get("liveDerived")
     ]
+    # PROVIDER_V3_SAFE_RUNTIME_ROUTE_PROMOTION_V2
+    # Runtime-derived does not automatically mean volatile. A route template may
+    # be discovered from live execution and still be safe Provider DATA when its
+    # derivation proves that all fixture-specific values were abstracted away.
+    safe_runtime_derived_rows = [
+        copy.deepcopy(row)
+        for row in runtime_derived_rows
+        if row.get("validationState") == "live-validated"
+        and isinstance(row.get("derivation"), dict)
+        and row["derivation"].get("reusable") is True
+        and not (row["derivation"].get("fixtureSpecificValues") or [])
+        and "{" in str(row.get("route") or "")
+        and "}" in str(row.get("route") or "")
+    ]
     if completion_state in {"terminal-blocked", "terminal-unreachable"}:
         execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
@@ -870,6 +911,14 @@ def finalize_provider(
             if row.get("attemptEvidence")
             or row.get("validationState") == "live-validated"
         ]
+        execution_plan_routes = {
+            str(row.get("route") or "") for row in execution_plan_rows if isinstance(row, dict)
+        }
+        for row in safe_runtime_derived_rows:
+            route = str(row.get("route") or "")
+            if route and route not in execution_plan_routes:
+                execution_plan_rows.append(row)
+                execution_plan_routes.add(route)
     else:
         execution_plan_rows = stable_candidate_rows
 
@@ -943,6 +992,10 @@ def finalize_provider(
         "executionPlanRetainsAttemptedNon2xx": True,
         "runtimeDerivedRouteCount": len(runtime_derived_rows),
         "runtimeDerivedRoutesPersisted": False,
+        "safeRuntimeDerivedRouteCount": len(safe_runtime_derived_rows),
+        "safeRuntimeDerivedRoutesPromoted": (
+            len(safe_runtime_derived_rows) if completion_state == "declared-types-qualified" else 0
+        ),
         "runtimeObservedUrlCount": len(runtime_observed_urls),
         "runtimeObservedOriginCount": len(runtime_observed_origins),
         "runtimeObservationsPersistedAsProviderData": False,
@@ -974,6 +1027,10 @@ def finalize_provider(
     recognized["executionPlanRouteCount"] = len(model.get("routes") or [])
     recognized["runtimeDerivedRequests"] = copy.deepcopy(runtime_derived_rows[:80])
     recognized["runtimeDerivedRoutesPersisted"] = False
+    recognized["safeRuntimeDerivedRequests"] = copy.deepcopy(safe_runtime_derived_rows[:80])
+    recognized["safeRuntimeDerivedRoutesPromoted"] = (
+        len(safe_runtime_derived_rows) if completion_state == "declared-types-qualified" else 0
+    )
     recognized["runtimeObservedUrls"] = runtime_observed_urls[:80]
     recognized["runtimeObservedOrigins"] = runtime_observed_origins[:40]
     recognized["runtimeObservationsPersistedAsProviderData"] = False
@@ -1011,6 +1068,10 @@ def finalize_provider(
             "execution_plan_route_count": len(model.get("routes") or []),
             "runtime_derived_route_count": len(runtime_derived_rows),
             "runtime_derived_routes_persisted": False,
+            "safe_runtime_derived_route_count": len(safe_runtime_derived_rows),
+            "safe_runtime_derived_routes_promoted": (
+                len(safe_runtime_derived_rows) if completion_state == "declared-types-qualified" else 0
+            ),
             "runtime_observed_url_count": len(runtime_observed_urls),
             "runtime_observed_origin_count": len(runtime_observed_origins),
             "runtime_observations_persisted_as_provider_data": False,
