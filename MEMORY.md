@@ -1,493 +1,299 @@
 # NiakVIO — Recovery Memory
 
-Last authoritative rewrite: 2026-09-05.
-This file is the recovery source of truth if ChatGPT/session context is lost. Prefer current repository state over older chat summaries. Older retry-by-retry history remains in Git history; this file intentionally records current architecture, non-negotiable product decisions, active branches, proven regressions, current route/DATA work and exact completion order.
+Last authoritative rewrite: 2026-09-06.
 
-## Branch safety / current topology
-- Production baseline is `main`.
-- Current active development branch for route/DATA recognition: `workbench/provider-v3-recognition-routes-data`.
-- Draft PR for the current recognition lab: PR #89, `workbench/provider-v3-recognition-routes-data` -> `main`.
-- The earlier runtime/yield workbench was `workbench/provider-v3-performance-playback`; do not assume it is still the active write target after the route-recognition branch was cut.
-- DO NOT write directly to `main` while the current workbench is incomplete.
-- Reconstruction may commit only to a selected non-main workbench branch.
-- Before deleting branches/PRs, ensure no code, DATA, docs or generated artifacts needed for the final main state are left behind.
+This file is the durable recovery source of truth when conversation context is lost. Prefer the current repository state over historical chat summaries. Git history remains the source for retry-by-retry details; this file records the architecture, non-negotiable product decisions, current cleanup state, known failure families and release rules that must survive between sessions.
 
-## Non-negotiable execution method
-- User expects complete execution, not a plan or a partial diagnosis.
-- Do NOT ask for confirmation when the next implementation/test step is already implied by the task.
-- Do NOT stop after one edit, one green test, one workflow or one reconstruction.
-- For every candidate SHA, collect all visible failing jobs when practical, group failures by common root cause, then batch the correction.
-- Avoid the wasteful loop `one failing test -> one tiny fix -> expensive rebuild -> discover next test`.
-- Use cheap/unit/structural gates before another expensive 96/96 materialization or native Lab run.
-- When a newer reconstruction request supersedes an older one on the same branch, cancel/replace the stale run rather than letting it hold the branch.
-- If a tool/run fails, diagnose it, try a correction/alternate route and continue.
-- Before declaring completion, re-check the user request and explicitly account for every requested deliverable.
+## Current repository topology
 
-## Absolute current priority — ROUTES / DATA
-The user explicitly re-confirmed on 2026-09-05: **routes are always the priority**.
+- Repository: `niakw/NiakVIO`.
+- Production branch: `main`.
+- Current secondary-clean branch: `chore/secondary-clean-20260906-sync`.
+- Durable Learning proposal branch: `brain-learning/proposals`.
+- The former `chore/secondary-clean-20260906` branch has been superseded by the sync branch and is safe to delete once no external reference still needs it.
+- PR #91 was a closed, superseded reverse-sync attempt and must not be merged.
+- Deleted `workbench/*` branches are historical references only and must not appear as active workflow triggers or current write targets.
+- Do not write provider/reconstruction work directly to `main`; publication happens only after the relevant gates are accepted.
+- Before deleting any branch or PR, verify that no code, DATA, docs or generated artifacts needed for the final state exist only there.
 
-Order of attention while provider yield is weak:
-1. recover/validate executable provider routes and business protocol DATA;
-2. recover request semantics (GET/POST, body fields, form/JSON encoding, Referer/Origin, response kind, dynamic path construction);
-3. recover provider identity/type requirements;
-4. materialize clean ProviderBase + DATA + Lego;
-5. run yield/playback verification;
-6. only then spend significant time on secondary docs/diagrams/cleanup.
+## Execution method
 
-Do not let documentation, style cleanups or green structural checks distract from missing route/protocol DATA.
+- Complete the requested task; do not stop at a plan, diagnosis, first edit or first green test.
+- Do not ask for confirmation when the next implementation/test step is already implied.
+- Group failures by common root cause and batch corrections before expensive rebuilds.
+- Use cheap structural/unit/security gates before expensive 96-provider materialization or native Labs.
+- If a tool or test fails, diagnose, retry or use an alternate path and continue.
+- Never claim a test or workflow passed if it was not actually executed.
+- Before completion, re-check every requested deliverable.
 
-## Primary target
-- Catalogue target: ALL 96 providers, including disabled/off providers for structural completeness and future recoverability.
-- A low live yield such as 3/96, 7/96 or 10/96 is a systemic regression, not an acceptable release state.
-- Do not focus only on Kehflix/Castle/StreamZo/Purstream or any small currently-working subset.
-- Objective is maximum real usable provider count, then official native client/playback acceptance.
-- A provider returning zero streams in one request should not automatically be globally disabled.
-- Stream-level failures must not globally disable a provider.
-- Quarantine only when NiakVIO has sufficiently strong evidence that a provider cannot safely execute; never use quarantine to hide missing reconstruction logic.
+## Current work priority
+
+Primary provider recovery remains the strategic priority when live yield is weak, but the current active task is the requested secondary clean while the large Native Lab pile is already congested. Do not relaunch the full Native Lab pile merely for cleanup.
+
+When provider recovery resumes, order of attention is:
+1. recover and validate real executable routes/protocol DATA;
+2. recover request semantics: method, body, encoding, headers, response kind and dynamic construction;
+3. recover provider identity/media-type requirements;
+4. materialize clean ProviderBase + DATA + Provider/Core Lego;
+5. run yield and playback verification;
+6. publish only after the required validation pile is accepted.
+
+Catalogue target remains **all 96 Provider Objects**, including disabled/off entries for census and recoverability. Never shrink the catalogue to improve a metric.
 
 ## Provider v3 architecture
+
 A generated provider is composed from:
 1. clean ProviderBase v3;
-2. structured provider DATA;
+2. structured provider DATA/static knowledge;
 3. provider-owned `PROVIDER.*` Lego;
-4. shared `CORE.*` Lego.
+4. shared `CORE.*` Lego;
+5. the conservative NiakVIO minimizer before content hashing.
 
 Hard rules:
-- Historical/upstream/published provider JS is knowledge/reference only, never an executable reconstruction seed.
-- ProviderBase is conceptually immutable/clean; provider-specific behavior belongs in DATA or owned Lego rather than ad-hoc corruption of the base.
-- Provider envelope markers are mandatory:
-  - `/* BEGIN NIAKVIO_PROVIDER */`
-  - `/* END NIAKVIO_PROVIDER */`
-- Provider Lego precedes exactly one Core boundary.
-- Core Lego follows that boundary.
-- Managed Lego uses STARTFIX/CLOSEFIX + FIXDATA ownership.
-- Reverse reconstruction must remain deterministic/byte-verifiable.
-- No Terser.
+- Published/upstream/historical provider JS is knowledge/reference only, never a reconstruction seed.
+- ProviderBase stays clean; provider-specific behavior belongs in DATA or owned Lego.
+- Managed Lego uses `STARTFIX` / `CLOSEFIX` and `FIXDATA` ownership where required.
+- Provider Lego precedes exactly one global Core boundary; Core Lego follows it.
+- Reverse reconstruction must be deterministic and byte-verifiable.
+- Terser is forbidden.
+- Runtime provider JS is a specialized reader, not a crawler or Learning engine.
 
-Conceptual provider envelope previously agreed with the user:
+Conceptual runtime order:
 ```text
 BEGIN PROVIDER
-  if provider is selected / launchable
-    if this provider protocol requires TMDB metadata before its first provider call
-      resolve/cache TMDB data first
-    endif
-    run provider DATA/Core protocol
-    if streams > 0
-      run provider/core stream fixes and presentation
-    endif
+  gate provider selection/capability before network work
+  if the provider protocol requires TMDB metadata before its first provider call
+    resolve/cache the needed identity first
+  endif
+  execute the provider DATA/protocol plan
+  if useful streams > 0
+    run provider/core stream fixes, identity, presentation and sanitization
   endif
 END PROVIDER
 ```
-This is a logical contract, not permission to add unnecessary TMDB calls.
 
-## Provider taxonomy
-Use the existing architecture taxonomy; do not invent a parallel provider type system:
-- `official_domain_hub`
-- `api_stream_resolver`
-- `html_scraper`
-- `mixed_embed_resolver`
-- `direct_media`
-- `iframe_player`
-- `quarantined`
+## Canonical media type vs Nuvio transport — critical
 
-Last structurally validated quarantine set was five providers:
-- DVDPLAY
-- MOVIEBOX
-- NETMIRROR
-- TOPCARTOONS
-- VIXSRC
-
-Frenchstream is NOT a permanent quarantine.
-- maintenance/address hub: `https://fstream.website/`
-- actual provider protocol: DLE-style search/detail/player business flow.
-- Hub supplements/locates the active service; it must not blindly replace provider protocol DATA.
-
-## Canonical media type vs Nuvio transport — CRITICAL
 Never collapse semantic capability and client transport into one field.
 
-### Canonical capability
-`canonicalSupportedTypes` describes WHAT the provider catalogue semantically serves:
+`canonicalSupportedTypes` describes what the provider semantically serves:
 - `movie`
 - `tv`
 - `anime`
 
-An anime-only provider can correctly have:
-- `canonicalSupportedTypes = ["anime"]`
+`supportedTypes` describes how Nuvio may launch the provider.
 
-Do NOT add ordinary `movie` semantic capability merely because anime films launch through movie-shaped transport.
+An anime-only provider may intentionally expose:
+```json
+{
+  "canonicalSupportedTypes": ["anime"],
+  "supportedTypes": ["anime", "tv", "movie"]
+}
+```
 
-### Nuvio launch compatibility
-`supportedTypes` is the transport/launch surface consumed by Nuvio.
+`tv` is transport compatibility for episodic anime and `movie` is transport compatibility for anime films. These aliases do **not** make the provider a generic movie/TV provider. Authoritative identity logic must still reject ordinary non-anime works.
 
-Anime providers MUST be compatible with:
-- `anime`
-- `tv` for episodic anime / Nuvio series-shaped requests
-- `movie` for anime films present in anime catalogues
-
-Therefore this is valid and intentional:
-- `canonicalSupportedTypes = ["anime"]`
-- `supportedTypes = ["anime", "tv", "movie"]`
-
-`movie` here is transport compatibility, NOT permission to return arbitrary non-anime movies.
-Authoritative TMDB/canonical classification must still reject non-anime works for anime-only providers.
-
-Client aliases:
-- `series`, `show`, `other` normalize to TV-shaped input.
-- Anime may be discovered from trusted TMDB metadata and then transported through the real TV/movie namespace.
-
-Castle example: semantically/movie+tv provider; anime requests must not be accepted merely because anime can alias to TV transport elsewhere.
+Castle-like generic movie/TV providers must not accept anime merely because anime can use TV-shaped transport elsewhere.
 
 ## TMDB / identity contract
-Official Nuvio provider signature remains conceptually:
-- `getStreams(tmdbId, mediaType, season, episode)`
 
-Core owns TMDB metadata resolution/cache and normalized identity context.
-Important gates:
-- Provider capability/type gate must happen before network work.
-- Non-launch provider events return `[]` before provider/network work.
-- Zero-output providers should not pay unnecessary TMDB work unless their declared DATA plan requires metadata BEFORE execution.
-- Catalogue/title/external-id plans may require TMDB preflight.
-- Ordinary direct plans can run first and pay canonical verification only when needed.
-- TMDB metadata cache must be request-safe and must not leak media context between works.
-- External IDs such as IMDb must be retained/exposed when provider protocol needs them.
-- Provider JS/runtime receives TMDB identity from Nuvio/Core; do not redesign around arbitrary user-supplied title strings as the primary API contract.
+Official Nuvio provider input remains conceptually `getStreams(tmdbId, mediaType, season, episode)`.
 
-## Source repositories are references, not runtime dependencies
-The user explicitly does NOT want NiakVIO to become dependent on the three historical provider repositories.
+- Capability/type gate happens before provider network work.
+- Non-launch events return `[]` before provider/network work.
+- TMDB enrichment is paid only when the declared provider plan needs it.
+- Catalogue/title/external-id plans can require preflight identity before the first provider call.
+- Direct plans should not pay unnecessary metadata work.
+- Identity/cache is scoped safely by work/type/season/episode.
+- IMDb/external IDs remain available when provider protocol requires them.
+- Zero streams never manufacture success.
+- One broken stream never disables a provider globally.
 
-Observed repository layouts:
-- Gowaru: real provider-local modular source exists (`src/<provider>/extractor.js`, `http.js`, `index.js`, config/build); useful as knowledge when available.
-- Yoru: template branch exposes `_template` interface files plus compiled provider bundles; template describes method/interface, not provider-specific route DATA.
-- All-in-One: mostly compiled/obfuscated `providers/*.js`; not a proper reusable source tree.
+## Source repositories: references, not runtime dependencies
 
-Architectural rule:
-- These repositories may be consulted during research/recovery, but **production reconstruction and durable Provider v3 recognition must work from NiakVIO-owned DATA/observations/materialized contracts**.
-- Do not require Gowaru/Yoru/AIO network access during ordinary 96/96 reconstruction.
-- Do not identify runtime behavior by repository name.
-- Do not embed or execute their JavaScript.
-- Once useful behavior is understood, persist the route/request/identity contract in NiakVIO DATA and make that the durable authority.
+Historical/provider repositories such as Gowaru, Yoru and All-in-One may be consulted during reverse engineering, but NiakVIO production reconstruction must rely on NiakVIO-owned DATA, observations and contracts.
 
-## Route recognition skill — generalized Kehflix requirement
-The user explicitly asked for a genuine generalized route/type/data recognition skill similar to the manual reverse coding that recovered Kehflix, not shallow literal grep and not provider-by-provider hardcoding.
+- Do not require those repositories during ordinary 96/96 reconstruction.
+- Do not embed or execute their provider JavaScript.
+- Persist learned request/route/identity behavior into NiakVIO DATA.
+- Repository/source shape is provenance, not runtime provider taxonomy.
 
-Recognizer must understand, statically and safely:
-- literal routes and full URLs;
-- template strings;
-- string concatenation such as `BASE + '/browser?keyword=' + encodeURIComponent(query)`;
-- routes assigned to variables before `fetch(variable)`;
-- dynamic suffixes such as `selected.url + '/ep-' + episode`;
-- dynamic hosts such as `'https://' + workerDomain + path` while retaining provider path DATA separately;
-- GET/POST/PUT/PATCH/DELETE where observable;
-- form encoding / URLSearchParams;
-- JSON body encoding;
-- body field names;
-- Referer / Origin requirements;
+## Route recognition contract
+
+The generalized recognizer must statically and safely understand, where observable:
+- literal URLs/routes;
+- template strings and concatenations;
+- variables passed later to `fetch`;
+- dynamic paths/hosts while retaining meaningful provider path DATA;
+- GET/POST/PUT/PATCH/DELETE;
+- JSON/form bodies and body field names;
+- `Referer` / `Origin` requirements;
 - JSON vs HTML/text response evidence;
-- search/detail/player/source/episode-index route roles;
+- search/detail/player/source/episode-index roles;
 - TMDB/IMDb/title/season/episode identity dependencies;
 - movie/tv/anime evidence;
-- safe bounded static decoding of common obfuscated string tables, without executing JS;
-- garbage-route rejection (`resolvers.js`, assets, admin/login/oEmbed, HTML data attributes, etc.).
+- bounded static decoding of common string tables without executing JS;
+- junk-route rejection for assets, helper files, admin/login/oEmbed and HTML attributes.
 
-Fail closed on truly missing executable plans; do not invent routes.
+Fail closed on missing evidence. Do not invent routes merely because a shape looks plausible.
 
-## Current route-recognition implementation — 2026-09-05
-New NiakVIO modules on `workbench/provider-v3-recognition-routes-data`:
-- `scripts/provider_route_expression_analyzer.py`
-  - static expression/concatenation analysis;
-  - fetch-variable recovery;
-  - POST JSON/form + body fields + Referer/Origin evidence;
-  - consumes bounded static decoded strings from NiakVIO discovery decoder;
-  - never executes provider JavaScript.
-- `scripts/provider_route_role_classifier.py`
-  - extends route-role classification, including `VideoPlayer.html`-style player paths.
-- `scripts/provider_route_normalization_guard.py`
-  - preserves `{query}` / `{episode}` placeholders through legacy normalization;
-  - rejects HTML attributes such as `/data-video=` as fake routes.
-- `scripts/provider_contract_local_enricher.py`
-  - production/local-only contract enrichment from NiakVIO durable knowledge + seeds + overrides;
-  - no external provider-repository HTTP request.
-- `automation/provider-v3-recognition-seeds.json`
-  - NiakVIO-owned reviewed route/request seeds for contracts that were recovered and must survive external source disappearance.
+Durable route/protocol ownership is `provider.model.routeData`. Other projections are derived views, not new evidence sources.
 
-Compatibility entry point:
-- `scripts/enrich_provider_v3_static_knowledge.py` now routes ordinary enrichment through the local-only enricher rather than the external-source recognizer.
+## Important recovered provider examples
 
-Tests:
-- `tests/provider_contract_recognizer_test.py` covers Gowaru-shaped modular requests, template-interface no-route behavior, DLE/Frenchstream, Kehflix title->player->streams, compiled bundles, AnimeKai-shaped concatenation, AnimeZey-shaped POST JSON helper/worker route, bounded string decoding, Anime-Ultime player classification and junk-route rejection.
-- The test is invoked from `tests/provider_v3_strategy_plan_contract_test.py`, so it is part of the real Quick/reconstruction gate rather than a decorative test.
+### Frenchstream
+- Maintenance/address hub: `https://fstream.website/`.
+- The hub locates/supplements the active provider; it does not replace the actual DLE-style search/detail/player protocol.
+- Frenchstream is not a permanent quarantine.
 
-## Exact recent recognizer/reconstruction history
-Earlier source-aware recognizer commits on the predecessor workbench:
-- `c0b2c34a...` — add provider contract recognition skill.
-- `34cf73bc...` — compatibility wrapper.
-- `90f5fce3...` — recognizer tests.
-- `a69b5276...` — wire recognizer test into strategy gate.
-- `5ec1ef303efdb0725713da6f1f262d734b6a9920` — migration-idempotence fix.
+### Kehflix
+- Manual recovery proved the title -> player -> `/api/streams/...` chain and became a reference case for generalized route recognition.
 
-Runs:
-- reconstruction #81, run `33942206137`: failed before recognizer because cumulative source-plan migration expected canonical source text; fixed by restoring migration-compatible classifier shape.
-- reconstruction #82, run `33942264556`: reached recognizer and intentionally fail-closed on exactly three providers with no executable recognized route at that point:
-  - `animekai`
-  - `animezey`
-  - `anime-ultime`
-
-This failure was useful evidence, not a reason to quarantine the providers.
-
-## Recovered routes/contracts for the three fail-closed providers
 ### AnimeKai
-Recovered business chain:
-- base known at recovery: `https://www3.anikai.cc`
-- catalogue search: `GET /browser?keyword={query}`
-- result page: `/watch/{slug}`
-- episode page: `/watch/{slug}/ep-{episode}`
-- episode HTML contains player/embed `data-video` values;
-- embed/player page then yields stream media, commonly HLS.
-
-Important recognizer lesson:
-- `/data-video=` is an HTML attribute, NOT an HTTP route.
-- concatenation/variable analysis is required because important AnimeKai paths are not always one quoted literal.
+- Search route: `/browser?keyword={query}`.
+- Result/watch and episode paths are dynamically assembled.
+- `data-video` is extraction evidence, not an HTTP route.
 
 ### AnimeZey
-Recovered contract:
-- worker-domain search API rotates between NiakVIO-known worker origins;
-- search route recovered as `/1:search`;
-- method `POST`;
-- JSON body;
-- episode search fields: `q`, `page_token`, `page_index`;
-- movie search at minimum requires `q`;
-- Referer required by observed request contract;
-- result paths can resolve through returned worker player paths and/or `/download.aspx`;
-- download path may carry `file`, `expiry`, `mac` query material.
-
-Durable NiakVIO worker-origin DATA currently seeded:
-- `https://1.animezey23112022.workers.dev`
-- `https://1.animezeydl.workers.dev`
-- `https://animezey16082023.animezey16082023.workers.dev`
-
-Do not hardcode this provider into the generic recognizer; persist these as DATA and let generic request/route machinery execute them.
+- Search uses worker-hosted `/1:search` behavior with POST JSON and provider-specific request fields/Referer evidence.
+- Worker origins are DATA and may rotate; generic recognizer logic must not hardcode the provider.
 
 ### Anime-Ultime
-Durable NiakVIO DATA already contained player evidence such as:
-- `/VideoPlayer.html`
-- `/VideoPlayer`
+- `/VideoPlayer.html` / `/VideoPlayer` are player route evidence; the historic problem was role classification rather than justification for another external dependency.
 
-The missing piece was route-role recognition, not justification for another repository dependency. `VideoPlayer.html` must classify as player/executable route evidence.
+## Quarantine and provider health
 
-## Durable DATA quality rules
-- `model.routes` is executable route DATA and must be aggressively clean.
-- `knowledge.routes` / `routeFragments` may retain useful diagnostics, but junk/infrastructure routes should still be pruned.
-- Never emit source filenames or helper assets as executable routes.
-- `resolvers.js` is not a provider request route.
-- `/wp-json/oembed/...`, admin/login endpoints and image/css/font assets are not executable provider media plans.
-- HTML attributes such as `data-video` are extraction evidence, not routes.
-- Route placeholders must remain syntactically complete, e.g. `{query}` not `{query`.
-- Persist method/body/header semantics when known instead of reducing every route to generic GET scraping.
+Historically validated quarantine evidence included DVDPLAY, MOVIEBOX, NETMIRROR, TOPCARTOONS and VIXSRC, but quarantine is evidence-based and can change. Do not use it to hide missing reconstruction logic.
 
-## Source-plan/runtime recovery families
-Systemic losses found during Provider v3 reconstruction were not just dead domains:
-- business protocols were flattened into generic scraping;
-- generic crawler ordering could waste budget on feeds/comments instead of download intermediates;
-- JSON APIs were treated as generic media URLs;
-- corrupted/templated routes survived into executable DATA;
-- source-family classification selected wrong handlers;
-- dynamic/concatenated URLs were missed;
-- POST/headers/body semantics were lost.
+- Missing route evidence means unknown, not automatically dead.
+- Zero streams from one request do not globally disable a provider.
+- Stream-level failures are not provider-level disable evidence.
+- Temporary timeout/fetch failure can be inconclusive.
 
-Known family examples:
-- Frenchstream: DLE POST search -> detail/news id -> movie/season/episode endpoints -> players; TV historically uses `get_seasons.php` and `eps_<id>.txt`-style data.
-- Kehflix: title -> player -> `/api/streams/...` chain; recovered manually and used as the model for generalized route recognition.
-- Anime-Sama: catalogue search POST -> typed `/catalogue/.../episodes.js` routes -> provider player resolution.
-- MoviesHunt/HindMoviez/MoviesMod/UHDMovies/4KHDHub family: search/detail -> Abhilinks/HubCloud/VCloud/Driveseed-style intermediates -> final host.
-- JSON stream-API family: source response objects must be converted to Nuvio stream rows after correct identity resolution.
+## Runtime / player evidence
 
-Fix families/shared Core where possible; do not hand-patch 89 providers when one lost protocol explains many reds.
+A `.m3u8` URL or `#EXTM3U` response is not proof of native playback. Keep distinct:
+1. extraction;
+2. identity;
+3. request context/headers;
+4. playlist/variant resolution;
+5. media/container integrity;
+6. official native player outcome.
 
-## Yield checkpoints
-Historic baseline:
-- Fast-yield run `33927727936` on reconstructed v5: about 7/96 unique providers playable.
+HTML/JSON disguised as media or positively malformed transport/container data can be rejected. Temporary fetch failure, unsupported diagnostic byte access or encryption is not automatically a provider-wide failure.
 
-Later shared runtime/source-plan work improved the fast-yield baseline to roughly 10/96 unique providers playable, still far below target.
-At that checkpoint, approximately 86/96 providers produced no playable result and the dominant systemic families were generic `catalogue-html` / `catalogue-html-embed`, proving route/protocol recovery remained the main problem.
+## Five first-class Native Labs
 
-Therefore:
-- never describe 10/96 as success;
-- every new yield comparison must run against the exact newly reconstructed bot SHA;
-- a structural 96/96 generation without materially improved live yield is not completion.
+Exactly five platform proofs are first-class:
+1. TV Android — official NuvioTV;
+2. Mobile Android — official NuvioMobile;
+3. Mobile iOS — official NuvioMobile;
+4. Desktop macOS — official NuvioDesktop;
+5. Desktop Windows — official NuvioDesktop.
 
-## ProviderBase/source-plan runtime checkpoints
-Important predecessor commits:
-- `e7b02f20...` — ProviderBase v7 source plan upgrader.
-- `42a0261e...` — deterministic DLE source-plan parser.
-- previous green reconstruction bot commit before the new recognizer: `b872a18b...`.
+Native Labs are observational:
+- consume official clients as-is;
+- consume exact NiakVIO candidate bytes;
+- test-only plumbing is allowed only when behavior-neutral and needed to expose the official path;
+- **never patch NuvioTV, NuvioMobile or NuvioDesktop production behavior merely to make a Lab green**;
+- upstream compile, dependency, packaging, runtime, player and QuickJS failures remain visible upstream evidence.
 
-The current route/DATA branch exists because runtime improvements alone were insufficient while DATA still lacked executable routes/protocols.
+Known upstream evidence seen historically includes Windows QuickJS native crashes, Desktop API/test drift and NuvioMobile Android duplicate native-library packaging. These are not NiakVIO provider fixes.
 
-## JSON stream-API family clarification
-Some providers expose a JSON `streams[]`-style API. This is a SOURCE API contract, not a change of target client.
-Nuvio remains the target runtime/client.
-Do not describe the work as "moving to Stremio"; adapt those source JSON responses into Nuvio stream objects.
-
-DesiFlix/Persian-style observation showed 200 responses with zero output when provider identity was wrong/fell back to raw TMDB.
-Earlier commit `0691e922` added a path that can obtain external IMDb identity from Core TMDB metadata before calling those source APIs.
-This still requires validation on the exact final reconstructed generation/yield.
-
-## Native Labs
-Final acceptance surface is exactly five first-class client/platform Labs:
-1. TVAndroid — official NuvioTV
-2. MobileAndroid — official NuvioMobile
-3. MobileIOS — official NuvioMobile
-4. DesktopMACOS — official NuvioDesktop
-5. DesktopWindows — official NuvioDesktop
-
-Labs are observational evidence only:
-- no provider reconstruction;
-- no repair;
-- no mutation of Nuvio clients to manufacture greens;
-- preserve reader/player errors;
-- save/keep Labs open where possible to avoid repeated expensive startup;
-- use the fastest path to the exact provider/work playback evidence under test.
-
-Do NOT launch the full five Labs while shared 96-provider route/runtime/yield is still structurally weak. First get reconstruction + fast yield credible, then use Labs for native proof.
-
-## Playback / reader integrity
-Kehflix previously produced `Cannot find sync byte / parsing_container_malformed` on a real playback path.
-Shared HLS Core therefore needs bounded first-segment/container proof:
-- preserve Referer/Origin;
-- validate MPEG-TS sync or fMP4 structure when bytes are readable;
-- reject positive HTML/JSON/malformed container evidence;
-- network uncertainty/encrypted HLS remain non-blocking;
-- stream-level failures must not disable whole provider.
-
-Final acceptance must inspect actual reader/player logs, not only provider result counts or green workflows.
-
-## Runtime platform contract
-Authoritative comparison document:
-- `automation/PLATFORM-RUNTIME-CONTRACTS.md`
-
-Key differences that matter:
-- all clients execute JS through QuickJS-compatible native runtimes;
-- Android/TV and Desktop/iOS fetch bridges differ;
-- TV lacks some capabilities exposed elsewhere; TextEncoder/TextDecoder/WebAssembly gaps have historically mattered;
-- transport/header/subtitle/description/name projection differs by client.
-
-Whenever official Nuvio client refs change, re-audit the platform contract rather than guessing.
-
-## Minifier
-- Terser is forbidden.
-- `scripts/provider_v3_minimizer.py` is the NiakVIO-aware conservative minimizer integrated into materialization.
-- It must preserve BEGIN/END provider envelope, STARTFIX/CLOSEFIX/FIXDATA, Core boundary and ownership comments.
-- It must adapt safely to comments/owned markers rather than global textual replacements.
-- It must not rename identifiers, reorder expressions, fold literals or perform unsafe transforms.
-- Providers with risky template-literal state may remain byte-stable.
-- Fixed-point + Node parse + reverse reconstruction + native parity are required.
-
-## Security
-The earlier ~25 CodeQL high alerts were traced to a shared unsafe HTML-filtering regex shape in generated provider code.
-ProviderBase/Core moved to deterministic HTML scanners and published bundles must remain gated against reintroduction.
-Before final merge:
-- exact final 96/96 generated bytes pass HTML-filter security tests;
-- npm audit/high dependency gate is clean;
-- CodeQL/security is checked on exact final branch/PR SHA;
-- distinguish GitHub security-agent/model infrastructure errors from actual NiakVIO findings.
+The old Android helper `scripts/harden_nuvio_mobile_device_test.py` was an upstream-masking workaround and is intentionally removed.
 
 ## Workflow ownership
-Routine workflow:
-- `CORE - Verify & Publish` (`.github/workflows/sync.yml`)
 
-Quick:
-- static/runtime/unit safety;
-- no reconstruction/repair.
+### `CORE - Verify & Publish`
+`sync.yml` owns routine verification/publication.
 
-Deep:
-- broader read-only observation and report/manifest projection;
-- still no provider repair/reconstruction.
+- **Quick**: deterministic structural/runtime/unit/security/minimizer checks over candidate bytes.
+- **Deep**: broader read-only network/hub/provider observations, diagnostics, projections and integrity evidence.
+- Quick and Deep do **not** repair or reconstruct Provider JS.
 
-Manual full reconstruction:
-- `.github/workflows/provider-v3-reconstruct-all.yml`
-- only path for full 96/96 materialization;
-- non-main only for commits;
-- rebuild from ProviderBase + NiakVIO DATA + owned Lego;
-- reverse proof + runtime/integrity gates required.
+### Learning
+`brain-learning-lab.yml` is the isolated code-evolution/repair sandbox. Learning can produce reviewable proposals; it is not uncontrolled direct production mutation.
 
-Current route/DATA architectural change:
-- ordinary reconstruction enrichment must be local-only and must not call Gowaru/Yoru/AIO.
-- the old `refresh_static_knowledge` branch that refetched external provider repositories is being removed from the active reconstruction path.
-- `finalize_gowaru_provider_v3_source_plans.py` must not be part of ordinary reconstruction because it refetches Gowaru; any still-useful knowledge must already be persisted in NiakVIO DATA.
+### Domain Refresh
+`domain-refresh.yml` is deliberately narrow:
+- validates official provider hubs/domains;
+- updates only validated `official_site` CONFIG data;
+- must not repair APIs/routes/Core/provider code;
+- must not require unrelated staged candidate registries such as `staging/candidates.json` merely to refresh official domains.
 
-LEARN:
-- only automated code-evolution/repair owner;
-- proposals/sandbox/PR flow, not silent production mutation.
+The historical `missing staged candidate registry` failure was workflow coupling and must not be reintroduced.
 
-Domain Refresh:
-- only routine narrow DATA-write exception;
-- official domain/config scope only;
-- never a substitute full provider repair/reconstruction engine.
+### Full reconstruction / route recognition
+- Full reconstruction/materialization owns ProviderBase + DATA + Lego generation and reverse byte proof.
+- Route-only recognition/census updates route/protocol DATA/projections only; it does not rebuild Provider JS by implication.
 
-## Current active implementation checkpoint
-Current branch commits added during the new route-recognition lab include:
-- `c35f9f6d33ad7c647580790324f71cb6944b8735` — route role classifier.
-- `06fb8ffa2a18e31d7a0af87a3b644bef67f806db` — placeholder-preserving normalization guard.
-- `bcd1b1caa76775f91990e4e8a230fd896223835a` — install normalization/role handling in recognition tests/pipeline.
-- `d10abd2e3e21b27e3254a669f36f7ffcda854198` — persist NiakVIO recognition seeds for AnimeKai/AnimeZey/Anime-Ultime.
-- `1da4b5711b49838b8175df2a05b658ea04a4f6b5` — local-only Provider contract enricher.
-- `ecf6c4d456bbc95cea1cde01595cfde447efda2d` — route compatibility entry point to local-only enrichment.
+## Version / cache / release rule — critical
 
-First Quick failure after adding expression analysis proved routes were recovered but legacy normalization truncated closing braces:
-- observed routes: `/browser?keyword={query`, `/ep-{episode` plus junk `/data-video=`.
-- the normalization guard was added specifically to fix this class globally.
+**Do not bump provider/manifest/cache/release versions during cleanup or before the validation pile is accepted.**
 
-Python CodeQL analysis for the first recognizer batch completed successfully; `CORE - Verify & Publish` then failed in the real recognizer test, which is expected useful gate behavior rather than a hidden failure.
+Decision contract:
+- route-only recognition/census with no published Provider JS byte change -> **no bump**;
+- docs/tests/workflow-only cleanup with no published provider-byte change -> **no bump**;
+- full reconstruction/materialization that changes published provider bytes -> a bump is required, but **deferred until the validation pile is accepted**;
+- an applied Learning repair that changes published provider bytes -> same cache-safe bump rule;
+- repeated identical materialization -> idempotent, no repeated bump;
+- final accepted publication -> bump affected provider versions plus synchronized manifest/global cache/release metadata atomically, regenerate hashes/integrity and validate projections.
 
-## Completion order from this checkpoint
-1. Finish conversion of `provider-v3-reconstruct-all.yml` to local-only route/DATA enrichment; remove ordinary external repository fetches.
-2. Ensure the workflow tracks the current workbench branch and commits generated DATA/artifacts safely only there.
-3. Run/observe Quick gates and collect all reds for the latest exact SHA.
-4. Fix all known recognizer/local-enricher failures in a batch.
-5. Trigger full 96/96 reconstruction on the current route/DATA workbench.
-6. Require reverse rebuild + release/runtime/security integrity green.
-7. Inspect generated durable DATA for at least AnimeKai, AnimeZey, Anime-Ultime, Frenchstream and Anime-Sama; verify route placeholders/roles/methods and ensure junk such as `resolvers.js` or `data-video` is not executable DATA.
-8. Capture exact bot reconstruction SHA.
-9. Run one fast-yield 96/96 census against exactly that bot SHA.
-10. If yield remains weak, group every live failure by protocol/family and continue route/DATA/shared-runtime corrections; do not stop at a few providers.
-11. Once yield is credible, run all five native Labs on exact bytes and inspect actual reader/playback evidence.
-12. Fix native-specific/runtime/player gaps, then final security/docs/minifier/clean/PR/merge preparation.
-13. Merge only when the final requested work is actually viable; after merge, clean obsolete branches/PRs without losing any required artifact.
+A temporary one-shot full-cache-bump workflow appeared on `main` before the pile was accepted on 2026-09-06. It was removed immediately by commit `c89d4e993da2f8c9b6038360b1d452a586a4a460`. Never restore that premature behavior.
 
-## Never infer "done" from these alone
-None of the following by itself means NiakVIO is finished:
-- 96/96 files generated;
-- reverse reconstruction 96/96;
-- one green GitHub workflow;
-- 3, 7 or 10 providers returning streams;
-- a few working providers on one client;
-- structurally valid manifests;
-- a green recognizer unit test;
-- a route list without playback proof.
+## Minimizer contract
 
-Done means the full requested workbench is coherent, routes/protocol DATA are materially restored across the catalogue, live yield is materially restored, exact final bytes pass structural/security gates, and the five official Nuvio client Labs provide acceptable reader/playback evidence before merge.
+`scripts/provider_v3_minimizer.py` is the only production minimizer policy.
 
+- Production enabled.
+- Terser forbidden.
+- Conservative, marker/comment-aware transforms only.
+- Preserve `BEGIN/END`, `STARTFIX/CLOSEFIX`, `FIXDATA` and the Core boundary.
+- No arbitrary replacements, identifier renaming, semantic reordering or risky folding.
+- Template-literal providers may remain byte-stable when safe minimization cannot be proven.
+- Final proof requires fixed-point/idempotence, Node parse where applicable, exact portfolio coverage and reverse reconstruction/native parity gates.
 
-## 2026-09-05 route/DATA recovery lock — run 33979458656 {#run-33979458656-route-data-recovery}
-- This is the authoritative recovery checkpoint for route/DATA work after the original successful artifact was not persisted to Git.
-- Source workflow run: `33979458656`, head SHA `b1891055fc0830f690bc6afa9f7d2708844a1394`.
-- Recovered canonical snapshot contains all 96 providers and already carries the previously accumulated 1→18 state.
-- Batch report itself covers providers 19→58: 40 processed, 17 final-bundle verified, 4 terminal-blocked, 19 defer-to-learn, 0 hard failures.
-- Final-bundle verified in 19→58: `animesalt`, `animetsu`, `animevostfr`, `castle`, `cineby`, `cinemm`, `coflix`, `french-manga`, `hianime`, `kurage`, `moviesmod`, `neko-sama`, `playimdb`, `streamzo`, `toflix`, `videasy`, `vidfast`.
-- Terminal-blocked in 19→58: `animesultra`, `animezey`, `cinemacity`, `movix`.
-- `mugiwarastream` is a deliberate validated-DATA-retained/final-bundle-unverified case: keep its validated DATA while provider authority remains demoted until repaired.
-- Exact recovered SHA-256: static knowledge `aab5f7eb12743c1beba7bf37148cb8428307fe3971c30dfe283d06f47ea28df5`; overrides `6f651b8b065438c70501877952653c3879c7baf189f5325231bad713e3f70b5a`; batch report `a0f30ce73d805c720a75d89836cc24fab7a2278c8c67575d1aaf97f322cb58db`.
-- Durable report path: `automation/provider-v3-batch-checkpoints/run-33979458656-batch-019-058.json`.
-- Do NOT rerun 19→58 merely because a chat/session is lost. Resume recognition at provider 59 unless explicitly auditing a regression.
-- A route is validated DATA only after actual live HTTP execution. Static recognition, source inspection, seed data or inferred route shape alone remain candidate/diagnostic evidence.
-- Every subsequent recognition batch MUST commit `automation/provider-v3-static-knowledge.json`, `provider-overrides.json`, its exact batch report checkpoint, and a MEMORY checkpoint before proceeding to another batch.
-- Full Provider reconstruction is intentionally deferred until route/DATA recognition across the full 96-provider catalogue is complete.
+## Security contract
 
+Security completion is measured on the exact final candidate bytes, not only on source scripts.
 
-## Route/DATA batch checkpoint run 33985303336 {#batch-run-33985303336-route-data-checkpoint}
-- Range: 59→96; processed: 38; hard failures: 0.
-- Final-bundle verified (12): `voiranime`, `wookafr`, `1shows`, `allanime`, `allwish`, `animevost-fr`, `dvdplay`, `fullanime`, `mallumv`, `moviebox`, `showbox`, `vidsrc`.
-- Terminal-blocked (8): `animeworld`, `cinevibe`, `ctgmovies`, `fibwatch`, `onlykdrama`, `vidlove`, `vidnest-anime`, `vixsrc`.
-- Deferred-to-learn (18): `voiranime-homes`, `voiranime-rip`, `vostfree`, `yflix`, `anime-ultime`, `cinefreak`, `einthusan`, `frenchstream`, `goatapi`, `gramcinema`, `kisskh`, `moonflix`, `mycima`, `netmirror`, `topcartoons`, `vidnest`, `waveanime`, `xpass`.
-- Exact durable report: `automation/provider-v3-batch-checkpoints/run-33985303336-batch-059-096.json`. Canonical static knowledge and overrides were committed in the same checkpoint commit.
-- Resume only after this Git checkpoint exists; never advance a recognition batch from artifact-only state.
+- Keep deterministic HTML/sanitization scanners; do not reintroduce unsafe catastrophic regex patterns.
+- Do not disable CodeQL/security rules to obtain green CI.
+- Keep bounded execution/network/resource/redirect/SSRF guards.
+- Run dependency/high-severity audit where applicable.
+- Review CodeQL on the exact final candidate SHA.
+- Distinguish GitHub infrastructure/model/action failures from actual NiakVIO findings.
+
+The historical cluster of ~25 CodeQL findings around shared unsafe HTML-filter regex behavior must remain fixed on final generated/published bytes.
+
+## Documentation / repository hygiene
+
+Current secondary-clean expectations:
+- EN/FR README parity and visual assets under `assets/branding` / `assets/thanks`;
+- recommended Nuvio stack: NiakVIO providers, UltraMax metadata/catalogue, SubSense subtitles, SIMKL tracking;
+- architecture docs describe contracts, not stale frozen route counts;
+- `ARCHITECTURE.docx` must be regenerated when normative `ARCHITECTURE.md` materially changes;
+- `automation/PLATFORM-RUNTIME-CONTRACTS.md` must stay consistent with five-Lab/type semantics;
+- PR template requires root cause, exact-SHA evidence, security, native/upstream responsibility and version/cache decision;
+- remove stale deleted-workbench triggers and one-shot/retry/temp helpers after confirming no useful artifact exists only there;
+- release hashes/integrity are regenerated only when final content is settled.
+
+## Final publication completion order
+
+When the provider pile is ready for release:
+1. settle provider DATA/Core/runtime fixes;
+2. materialize exact Provider v3 bytes;
+3. conservative minimizer + fixed-point + parse/reverse proof;
+4. structural/runtime/security gates;
+5. provider/network/yield evidence;
+6. five Native Labs, preserving upstream failures as external evidence rather than masking them;
+7. accept the validation pile;
+8. **then** perform synchronized provider + manifest/cache/release version bump if published bytes changed;
+9. regenerate/validate release hashes, projections and integrity metadata;
+10. final docs/changelog/release integrity review;
+11. merge/publish;
+12. delete superseded work branches only after verifying nothing required remains unique.
+
+## Completion principle
+
+A green structural workflow is not proof that 96 providers produce streams, and a native client failure is not automatically a provider failure. Keep each layer explicit, preserve evidence, fix common NiakVIO root causes where NiakVIO owns them, and never manufacture success by deleting providers or patching official Nuvio clients.
