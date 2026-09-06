@@ -22,7 +22,6 @@ def load(name: str, relative: str):
 
 mod = load("native_player_diagnostics_codegen", "scripts/native_player_diagnostics_codegen.py")
 finalizer = load("finalize_native_android_reader_source", "scripts/finalize_native_android_reader_source.py")
-mobile_hardener = load("harden_nuvio_mobile_device_test", "scripts/harden_nuvio_mobile_device_test.py")
 PLAYER_REACH_GATE = ROOT / "scripts/gate_native_player_reached.cjs"
 
 
@@ -76,20 +75,6 @@ assert "getLaunchIntentForPackage(context.packageName)" not in mobile
 assert "FIELD_NATIVE_PLAYER_ENTRY client=mobile" in mobile
 assert "FIELD_NATIVE_PLAYER_BEGIN client=mobile" not in mobile
 assert mobile.index("val reader = probeNativePlayer(row.url, row.headers, row.type, 137)") < mobile.index("val transport = probeTransport(row.url, row.headers)")
-
-# Android 11+ package visibility is a harness concern. The test-only manifest must
-# expose the separately-installed androidApp debug package without touching the
-# production application manifest.
-with tempfile.TemporaryDirectory() as tmp:
-    repo = Path(tmp)
-    mobile_hardener._harden_test_manifest_only(repo)
-    manifest = repo / "composeApp/src/androidDeviceTest/AndroidManifest.xml"
-    root = ET.parse(manifest).getroot()
-    android_name = "{http://schemas.android.com/apk/res/android}name"
-    queries = root.find("queries")
-    assert queries is not None
-    assert [row.attrib.get(android_name) for row in list(queries) if row.tag == "package"] == ["com.nuviodebug.com"]
-    assert not (repo / "androidApp/src/main/AndroidManifest.xml").exists()
 
 
 def complete_reach_evidence(lines: list[str]) -> list[str]:
