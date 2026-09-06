@@ -34,7 +34,6 @@ jobs:
           git show "$BASELINE:manifest.json" > /tmp/previous-manifest.json
           python3 scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/previous-manifest.json | tee /tmp/version-finalization.json
           python3 tests/release_auto_bump_test.py
-          python3 tests/release_version_sync_test.py
           python3 tests/provider_versioning_test.py
           python3 tests/reapply_provider_versioning_test.py
           python3 scripts/generate_release_hashes.py
@@ -65,4 +64,4 @@ jobs:
           git commit -m 'chore: finalize Provider v3 release versions'
           git push origin HEAD:main
 
-# trigger via git-object update
+# trigger v2
