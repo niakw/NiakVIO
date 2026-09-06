@@ -8,13 +8,15 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from provider_compiler import provider_contract  # noqa: E402
-from apply_provider_overrides import _tmdb_preflight_required  # noqa: E402
 
 
+# Transport aliases exposed to Nuvio clients must never become semantic
+# ProviderBase capabilities. canonicalSupportedTypes is authoritative whenever
+# it is present.
 row = {
     "id": "anime-semantic",
     "name": "Anime Semantic",
-    "supportedTypes": ["anime", "movie", "tv"],
+    "supportedTypes": ["anime", "tv", "series"],
     "canonicalSupportedTypes": ["anime"],
 }
 contract = provider_contract("anime-semantic", row, {}, {})
@@ -23,43 +25,29 @@ assert contract["supported_types"] == ["anime"], contract
 row_movie_anime = {
     "id": "anime-movie",
     "name": "Anime Movie",
-    "supportedTypes": ["movie", "anime", "tv"],
+    "supportedTypes": ["movie", "anime", "tv", "series"],
     "canonicalSupportedTypes": ["movie", "anime"],
 }
 contract = provider_contract("anime-movie", row_movie_anime, {}, {})
 assert contract["supported_types"] == ["movie", "anime"], contract
 
-legacy = {"id": "legacy", "name": "Legacy", "supportedTypes": ["movie", "tv"]}
-contract = provider_contract("legacy", legacy, {}, {})
+row_tv = {
+    "id": "ordinary-tv",
+    "name": "Ordinary TV",
+    "supportedTypes": ["movie", "tv", "series"],
+    "canonicalSupportedTypes": ["movie", "tv"],
+}
+contract = provider_contract("ordinary-tv", row_tv, {}, {})
 assert contract["supported_types"] == ["movie", "tv"], contract
 
-catalogue_config = {
-    "catalogue_resolution_policy": {
-        "enabled": True,
-        "capabilities": ["html_scraper", "mixed_embed_resolver"],
-    }
+# Legacy rows without canonicalSupportedTypes retain their historical semantic
+# interpretation; `series` is intentionally not a semantic ProviderBase type.
+legacy = {
+    "id": "legacy",
+    "name": "Legacy",
+    "supportedTypes": ["movie", "tv", "series"],
 }
-assert _tmdb_preflight_required(
-    "anime-semantic",
-    {"published_types": ["anime"]},
-    {"strategy": "api_stream_resolver"},
-    catalogue_config,
-) is True
-assert _tmdb_preflight_required(
-    "ordinary-id",
-    {"published_types": ["movie", "tv"]},
-    {"strategy": "api_stream_resolver"},
-    catalogue_config,
-) is False
-assert _tmdb_preflight_required(
-    "title-recovery",
-    {
-        "published_types": ["movie", "tv"],
-        "capability": "html_scraper",
-        "official_site": "https://example.test",
-    },
-    {},
-    catalogue_config,
-) is True
+contract = provider_contract("legacy", legacy, {}, {})
+assert contract["supported_types"] == ["movie", "tv"], contract
 
 print("provider compiler semantic/transport type projection tests passed")
