@@ -1,7 +1,7 @@
 name: SEC - CodeQL
-# Default Setup owns GitHub code-scanning uploads. This advanced security-extended
-# workflow remains an independent exact-SHA proof and exports its local SARIF as
-# an Actions artifact for full finding remediation without conflicting uploads.
+# Default Setup owns GitHub code-scanning uploads. This security-extended workflow
+# remains an independent exact-SHA proof and exports local SARIF as an Actions
+# artifact so every current finding can be remediated without conflicting uploads.
 
 on:
   push:
@@ -16,12 +16,32 @@ permissions:
   contents: read
   packages: read
   actions: read
+  security-events: read
 
 concurrency:
   group: codeql-${{ github.event_name == 'workflow_dispatch' && github.run_id || github.event.pull_request.number || 'main' }}
   cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
+  dependency-audit:
+    name: Audit production dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: "24"
+          package-manager-cache: false
+      - name: Validate local SARIF evidence parser contract
+        run: python3 tests/codeql_local_sarif_test.py
+      - name: Fail on High/Critical production dependency advisories
+        run: npm audit --omit=dev --audit-level=high
+
   analyze:
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
@@ -49,65 +69,21 @@ jobs:
         uses: github/codeql-action/analyze@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28
         with:
           category: "/language:${{ matrix.language }}"
-          output: ../results
+          output: codeql-results
           upload: never
           upload-database: false
 
+      - name: Summarize complete local SARIF evidence
+        run: python3 scripts/codeql_local_sarif.py codeql-results
+
       - name: Export complete local SARIF evidence
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: codeql-security-extended-${{ matrix.language }}-${{ github.run_id }}
-          path: ../results/*.sarif
+          path: codeql-results/*.sarif
           retention-days: 8
           if-no-files-found: error
 
       - name: Gate local security-extended High/Critical findings
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import collections
-          import json
-          from pathlib import Path
-
-          sarifs = sorted(Path('../results').glob('*.sarif'))
-          if not sarifs:
-              raise SystemExit('CodeQL local analysis produced no SARIF')
-
-          high = []
-          result_count = 0
-          by_rule = collections.Counter()
-          for path in sarifs:
-              payload = json.loads(path.read_text(encoding='utf-8'))
-              for run in payload.get('runs') or []:
-                  rules = {}
-                  driver = ((run.get('tool') or {}).get('driver') or {})
-                  for rule in driver.get('rules') or []:
-                      if not isinstance(rule, dict):
-                          continue
-                      rule_id = str(rule.get('id') or '')
-                      props = rule.get('properties') or {}
-                      raw_score = props.get('security-severity')
-                      try:
-                          score = float(raw_score)
-                      except (TypeError, ValueError):
-                          score = None
-                      rules[rule_id] = (score, str(rule.get('name') or rule_id))
-                  for result in run.get('results') or []:
-                      if not isinstance(result, dict):
-                          continue
-                      result_count += 1
-                      rule_id = str(result.get('ruleId') or '')
-                      by_rule[rule_id] += 1
-                      score, name = rules.get(rule_id, (None, rule_id))
-                      if score is not None and score >= 7.0:
-                          high.append((rule_id, name, score))
-
-          print(f'FIELD_CODEQL_LOCAL_EXTENDED results={result_count} high_or_critical={len(high)} sarif={len(sarifs)}')
-          for rule_id, count in by_rule.most_common():
-              print(f'CODEQL_LOCAL_RULE_COUNT={rule_id}|{count}')
-          for rule_id, name, score in high:
-              print(f'OPEN_LOCAL_HIGH_ALERT={rule_id}|{score}|{name}')
-          if high:
-              raise SystemExit('local CodeQL security-extended High/Critical findings remain')
-          PY
+        run: python3 scripts/codeql_local_sarif.py codeql-results --fail-high
