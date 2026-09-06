@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Augment generated native-corpus tests with the real Nuvio media-type contract.
 
-The manifest vocabulary is strictly movie|tv|anime. Catalogue/user aliases are a
-client input concern. The lab still traverses every staged provider (including
-manifest-disabled rows), but executes only meaningful media routes.
+Canonical provider identity is strictly movie|tv|anime, while Nuvio transport
+metadata may additionally expose aliases such as series. The lab still traverses every
+staged provider (including manifest-disabled rows), but executes only canonical media routes.
 
 Canonical native acceptance executes exactly the fixture media type when that type
 is declared by the provider. Cross-type capability discovery belongs to Learning/Deep,
@@ -21,6 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 CORPUS = ROOT / ".github/triggers/nuvio-client-lab.json"
 CANONICAL = {"movie", "tv", "anime"}
+TRANSPORT = CANONICAL | {"series"}
 
 from native_media_type_contract import canonical_media_type, fixture_media_type  # noqa: E402
 
@@ -54,21 +55,59 @@ def manifest_types(path: Path) -> dict[str, list[str]]:
         if key in seen:
             raise SystemExit(f"duplicate provider id in canonical manifest: {provider_id}")
         seen.add(key)
-        raw_types = row.get("supportedTypes")
-        if not isinstance(raw_types, list) or not raw_types:
+        raw_supported = row.get("supportedTypes")
+        if not isinstance(raw_supported, list) or not raw_supported:
             raise SystemExit(
-                f"provider {provider_id}: supportedTypes must be a non-empty list of canonical types"
+                f"provider {provider_id}: supportedTypes must be a non-empty transport list"
             )
+        supported: list[str] = []
+        for raw in raw_supported:
+            typ = str(raw or "").strip().lower()
+            if typ not in TRANSPORT:
+                raise SystemExit(f"provider {provider_id}: invalid transport supportedType {typ!r}")
+            if typ not in supported:
+                supported.append(typ)
+
+        raw_canonical = row.get("canonicalSupportedTypes")
+        if isinstance(raw_canonical, list) and raw_canonical:
+            canonical_source = raw_canonical
+        else:
+            canonical_source = [value for value in supported if value in CANONICAL]
         types: list[str] = []
-        for raw in raw_types:
+        for raw in canonical_source:
             typ = str(raw or "").strip().lower()
             if typ not in CANONICAL:
-                raise SystemExit(f"provider {provider_id}: non-canonical supportedType {typ!r}")
+                raise SystemExit(f"provider {provider_id}: non-canonical canonicalSupportedType {typ!r}")
             if typ not in types:
                 types.append(typ)
+        if not types:
+            raise SystemExit(f"provider {provider_id}: canonicalSupportedTypes must not be empty")
         out[key] = types
     if not out:
         raise SystemExit(f"manifest contains no providers: {path}")
+    return out
+
+
+def manifest_transport_types(path: Path) -> dict[str, list[str]]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    out: dict[str, list[str]] = {}
+    for row in data.get("scrapers", []):
+        if not isinstance(row, dict):
+            continue
+        provider_id = str(row.get("id") or "").strip()
+        if not provider_id:
+            continue
+        raw_supported = row.get("supportedTypes")
+        if not isinstance(raw_supported, list) or not raw_supported:
+            raise SystemExit(f"provider {provider_id}: supportedTypes must be a non-empty transport list")
+        values: list[str] = []
+        for raw in raw_supported:
+            typ = str(raw or "").strip().lower()
+            if typ not in TRANSPORT:
+                raise SystemExit(f"provider {provider_id}: invalid transport supportedType {typ!r}")
+            if typ not in values:
+                values.append(typ)
+        out[provider_id.casefold()] = values
     return out
 
 
@@ -101,11 +140,12 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     f = fixture(slug)
     resolved_fixture_media_type = fixture_media_type(f)
     types = manifest_types(manifest)
+    transport_types = manifest_transport_types(manifest)
 
     provider_list = re.search(r"(    private val providers = listOf\(\n.*?\n    \)\n)", text, flags=re.S)
     if not provider_list:
         raise SystemExit("request-contract provider list anchor missing")
-    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        return listOf<String>(fixtureMediaType).filter {{ it in declared }}\n            .map {{ type -> ProviderRequestRoute(type) }}\n    }}\n'''
+    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private val transportTypesByProvider: Map<String, Set<String>> = {kotlin_map(transport_types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        return listOf<String>(fixtureMediaType).filter {{ it in declared }}\n            .map {{ type -> ProviderRequestRoute(type) }}\n    }}\n'''
     text = text[: provider_list.end()] + helpers + text[provider_list.end() :]
 
     if client in {"tv", "mobile"}:

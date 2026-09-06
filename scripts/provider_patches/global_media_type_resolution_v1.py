@@ -6,9 +6,10 @@ identity, including TMDB metadata, may refine that TV-shaped request to anime
 before any provider-specific resolver sees it.
 
 TMDB API metadata is authoritative when available. Core owns one dynamic
-metadata capability backed by request context/cache, a credential explicitly
-supplied by the host runtime/CI, or the trusted native fetch bridge. Provider
-bundles never embed, receive, recover or decrypt a TMDB credential.
+metadata capability backed by request context/cache or a credential explicitly
+supplied by the host runtime/CI. The native fetch bridge is transport only and is
+never treated as TMDB authentication. Provider bundles never embed, receive,
+recover or decrypt a TMDB credential.
 
 A conclusive TMDB classification still enforces provider semantic capabilities.
 Only infrastructure failure (timeout/network/auth/rate-limit/5xx/unparseable
@@ -64,7 +65,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v27-anime-semantic-transport",
+        "revision": "tmdb-data-contract-launch-gate-v28-dual-id-input",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -81,6 +82,22 @@ function s(v){return String(v==null?"":v).trim()}
 function normalizeKey(v){var x=s(v);if(x.length===33&&x.charCodeAt(0)===92&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
 function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
 function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
+function sourceIdentity(v){
+  var raw=s(v),x=raw,kind="unknown";
+  x=x.replace(/^https?:\/\/(?:www\.)?imdb\.com\/title\//i,"");
+  var prefix=/^(tmdb|imdb|movie|tv|series)[:/]/i.exec(x);
+  if(prefix){kind=prefix[1].toLowerCase()==="imdb"?"imdb":"tmdb";x=x.slice(prefix[0].length)}
+  x=x.split(/[\/?#]/)[0];
+  var episodic=/^(tt\d+|\d+):\d+:\d+$/i.exec(x);if(episodic)x=episodic[1];
+  if(/^tt\d+$/i.test(x)){kind="imdb";x=x.toLowerCase()}
+  else if(/^\d+$/.test(x))kind="tmdb";
+  return{raw:raw,id:x,kind:kind};
+}
+function metadataImdb(m){
+  if(!m||typeof m!=="object")return"";
+  var x=s(m.imdb_id||m.imdbId||(m.external_ids&&m.external_ids.imdb_id)||"").toLowerCase();
+  return /^tt\d+$/.test(x)?x:"";
+}
 function providerTransport(canonical,namespace){
   var map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
   var mapped=s(map[canonical]).toLowerCase();
@@ -118,7 +135,6 @@ function animeMeta(m){
   return animation&&japanese;
 }
 function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
-function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_){return false}}
 function localKey(){
   var key="";
   try{key=normalizeKey(g&&g.TMDB_API_KEY);if(key)return key}catch(_){}
@@ -141,8 +157,8 @@ function hasTmdbMetadata(m){
   ));
 }
 async function apiJson(url){
-  var key=coreCredentialKey,token=coreCredentialToken,nativeBridge=nativeFetchBridge();
-  if(!g||typeof g.fetch!=="function"||(!key&&!token&&!nativeBridge))return{state:"unavailable",value:null};
+  var key=coreCredentialKey,token=coreCredentialToken;
+  if(!g||typeof g.fetch!=="function"||(!key&&!token))return{state:"unavailable",value:null};
   try{
     if(key)url+=(url.indexOf("?")>=0?"&":"?")+"api_key="+encodeURIComponent(key);
     var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
@@ -198,16 +214,23 @@ async function tmdb(namespaceValue,tmdbId){
 }
 async function coreGetTmdbData(request){
   var q=request&&typeof request==="object"&&!Array.isArray(request)?request:{};
-  var id=s(q.tmdbId||q.tmdb_id||q.id).replace(/^tmdb:/i,"");
-  if(!/^\d+$/.test(id))return{state:"not_found",tmdbId:"",tmdbNamespace:"",metadata:null,episodeMetadata:null};
+  var source=sourceIdentity(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id),id="",imdbId="";
   var explicit=s(q.tmdbNamespace||q.namespace).toLowerCase();
   var candidates=explicit==="movie"||explicit==="tv"?[explicit]:namespaceCandidates(q.mediaType||q.type,q.season,q.episode);
+  if(source.kind==="imdb"){
+    imdbId=source.id;
+    var found=await findTmdb(imdbId,candidates);
+    if(!found||found.state!=="ok"||!/^\d+$/.test(s(found.tmdbId)))return{state:found&&found.state||"unavailable",tmdbId:"",imdbId:imdbId,tmdbNamespace:"",metadata:null,episodeMetadata:null};
+    id=s(found.tmdbId);candidates=[found.namespace];
+  }else if(source.kind==="tmdb")id=source.id;
+  else return{state:"not_found",tmdbId:"",imdbId:"",tmdbNamespace:"",metadata:null,episodeMetadata:null};
   var unavailable=false;
   for(var i=0;i<candidates.length;i++){
     var namespace=candidates[i]==="movie"?"movie":"tv";
     var probe=await tmdb(namespace,id);
     if(!probe||probe.state==="unavailable"){unavailable=true;continue}
     if(probe.state!=="ok"||!probe.metadata)continue;
+    imdbId=imdbId||metadataImdb(probe.metadata);
     var episodeMetadata=null;
     var season=Number(q.season||0)||0,episode=Number(q.episode||0)||0;
     if(namespace==="tv"&&season>0&&episode>0){
@@ -227,9 +250,9 @@ async function coreGetTmdbData(request){
         episodeMetadata=episodeResult&&episodeResult.metadata||null;
       }
     }
-    return{state:"ok",tmdbId:id,tmdbNamespace:namespace,metadata:probe.metadata,episodeMetadata:episodeMetadata};
+    return{state:"ok",tmdbId:id,imdbId:imdbId,tmdbNamespace:namespace,metadata:probe.metadata,episodeMetadata:episodeMetadata};
   }
-  return{state:unavailable?"unavailable":"not_found",tmdbId:id,tmdbNamespace:"",metadata:null,episodeMetadata:null};
+  return{state:unavailable?"unavailable":"not_found",tmdbId:id,imdbId:imdbId,tmdbNamespace:"",metadata:null,episodeMetadata:null};
 }
 try{if(g)g.__nuvioCoreGetTmdbDataV1=coreGetTmdbData}catch(_){}
 function fallbackType(input,semantic){
@@ -241,10 +264,8 @@ function fallbackType(input,semantic){
 }
 async function canonicalResolution(id,input,metadata,season,episode,semantic){
   var candidates=namespaceCandidates(input,season,episode);
-  var rawId=s(id),tmdbId=rawId.replace(/^tmdb:/i,""),imdbId="",seedMetadata=null;
-  var imdbMatch=/^(?:imdb:)?(tt\d+)$/i.exec(rawId);
-  if(imdbMatch){
-    imdbId=imdbMatch[1].toLowerCase();
+  var source=sourceIdentity(id),rawId=source.id,tmdbId=source.kind==="tmdb"?source.id:"",imdbId=source.kind==="imdb"?source.id:"",seedMetadata=null;
+  if(imdbId){
     var found=await findTmdb(imdbId,candidates);
     if(found&&found.state==="ok"){
       tmdbId=found.tmdbId;
@@ -260,6 +281,7 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
     var namespace=declared==="movie"?"movie":declared==="tv"?"tv":candidates[0];
     var declaredId=s(metadata&&metadata.__nuvioTmdbId||metadata&&metadata.id);
     if(/^\d+$/.test(declaredId))tmdbId=declaredId;
+    imdbId=imdbId||metadataImdb(metadata);
     var type=animeMeta(metadata)?"anime":namespace;
     return{type:type,namespace:namespace,tmdbId:/^\d+$/.test(tmdbId)?tmdbId:"",imdbId:imdbId,metadata:metadata,authoritative:true,degraded:false};
   }
@@ -268,7 +290,7 @@ async function canonicalResolution(id,input,metadata,season,episode,semantic){
     var namespace=candidates[i],probe=await tmdb(namespace,tmdbId);
     if(!probe||probe.state==="unavailable"){unavailable=true;continue}
     if(probe.state==="not_found")continue;
-    var m=probe.metadata,type=animeMeta(m)?"anime":namespace;
+    var m=probe.metadata;imdbId=imdbId||metadataImdb(m);var type=animeMeta(m)?"anime":namespace;
     return{type:type,namespace:namespace,tmdbId:tmdbId,imdbId:imdbId,metadata:m,authoritative:true,degraded:false};
   }
   if(unavailable&&seedMetadata){
@@ -300,15 +322,17 @@ function provisional(a){
     else if(semantic.length===1)type=semantic[0];
     else return null;
   }
-  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
+  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first),source=sourceIdentity(id);
   var providerType=providerTransport(type,namespace);
-  var resolvedTmdbId=/^\d+$/.test(id)?id:"";
-  var resolvedImdbId=s(obj&&(q.imdbId||q.imdb_id)||(/^tt\d+$/i.test(id)?id:"")).toLowerCase();
+  var resolvedTmdbId=source.kind==="tmdb"?source.id:"";
+  var resolvedImdbId=s(obj&&(q.imdbId||q.imdb_id)||(source.kind==="imdb"?source.id:"")).toLowerCase();
   var context={
+    sourceId:source.id,
+    sourceIdType:source.kind,
     tmdbId:resolvedTmdbId,
     imdbId:resolvedImdbId,
     tmdbNamespace:namespace,
-    tmdbIdentity:namespace+":"+(resolvedTmdbId||id),
+    tmdbIdentity:namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id),
     tmdbMetadata:null,
     canonicalMediaType:type,
     tmdbResolutionDegraded:true,
@@ -317,18 +341,19 @@ function provisional(a){
     providerMediaType:providerType
   };
   if(obj){
+    q.sourceId=source.id;q.sourceIdType=source.kind;
     q.nuvioInputMediaType=input;
     if(resolvedTmdbId)q.tmdbId=resolvedTmdbId;
     if(resolvedImdbId)q.imdbId=resolvedImdbId;
     q.tmdbNamespace=namespace;
-    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||id);
+    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id);
     q.canonicalMediaType=type;
     q.providerMediaType=providerType;
     q.mediaType=providerType;q.type=providerType;
     if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
     var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
   }
-  var out=Array.prototype.slice.call(a);out[1]=providerType;out.__nuvioContext=context;return out;
+  var out=Array.prototype.slice.call(a);out[0]=resolvedTmdbId||resolvedImdbId||source.id||out[0];out[1]=providerType;out.__nuvioContext=context;return out;
 }
 function hasProviderOutput(value){
   if(Array.isArray(value))return value.length>0;
@@ -376,6 +401,12 @@ function invocationEvent(a){
   event=event.toLowerCase();
   return event||"launch";
 }
+function requestHasExternalIdentity(a){
+  try{
+    var first=a&&a[0],raw=objectRequest(first)?s(first.tmdbId||first.tmdb_id||first.imdbId||first.imdb_id||first.id):s(first);
+    return sourceIdentity(raw).kind==="imdb";
+  }catch(_){return false}
+}
 function providerNeedsTmdbBeforeStreams(container){
   try{
     var model=container&&container.__niakvioProviderBase;
@@ -400,20 +431,22 @@ async function resolve(a){
   // Per-request isolation: canonical type/metadata must come only from the
   // current work request (plus TMDB), never from a previous getStreams call.
   var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
-  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first);
+  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first),source=sourceIdentity(id);
   var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
   var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
   if(!resolved)return null;
   var type=resolved.type;namespace=resolved.namespace;
   if(resolved.authoritative&&semantic.length&&semantic.indexOf(type)<0)return null;
   var providerType=providerTransport(type,namespace);
-  var resolvedTmdbId=s(resolved.tmdbId||(/^\d+$/.test(id)?id:""));
-  var resolvedImdbId=s(resolved.imdbId||obj&&(q.imdbId||q.imdb_id)||(/^tt\d+$/i.test(id)?id:"")).toLowerCase();
+  var resolvedTmdbId=s(resolved.tmdbId||(source.kind==="tmdb"?source.id:""));
+  var resolvedImdbId=s(resolved.imdbId||obj&&(q.imdbId||q.imdb_id)||(source.kind==="imdb"?source.id:"")).toLowerCase();
   var context={
+    sourceId:source.id,
+    sourceIdType:source.kind,
     tmdbId:resolvedTmdbId,
     imdbId:resolvedImdbId,
     tmdbNamespace:namespace,
-    tmdbIdentity:namespace+":"+(resolvedTmdbId||id),
+    tmdbIdentity:namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id),
     tmdbMetadata:resolved.metadata||null,
     canonicalMediaType:type,
     tmdbResolutionDegraded:resolved.degraded===true,
@@ -421,11 +454,12 @@ async function resolve(a){
     providerMediaType:providerType
   };
   if(obj){
+    q.sourceId=source.id;q.sourceIdType=source.kind;
     q.nuvioInputMediaType=input;
     if(resolvedTmdbId)q.tmdbId=resolvedTmdbId;
     if(resolvedImdbId)q.imdbId=resolvedImdbId;
     q.tmdbNamespace=namespace;
-    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||id);
+    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id);
     q.tmdbMetadata=resolved.metadata||q.tmdbMetadata||q.tmdb_metadata||null;
     q.canonicalMediaType=type;
     q.providerMediaType=providerType;
@@ -433,7 +467,7 @@ async function resolve(a){
     if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
     var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
   }
-  var out=Array.prototype.slice.call(a);if(resolvedTmdbId)out[0]=resolvedTmdbId;out[1]=providerType;out.__nuvioContext=context;return out;
+  var out=Array.prototype.slice.call(a);out[0]=resolvedTmdbId||resolvedImdbId||source.id||out[0];out[1]=providerType;out.__nuvioContext=context;return out;
 }
 var requestSerial=0;
 function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
@@ -518,16 +552,18 @@ function install(o,k){
       if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
       if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
 
-      var verified=null;
-      var tmdbBeforeStreams=providerNeedsTmdbBeforeStreams(o);
-      if(tmdbBeforeStreams){
-        verified=await resolve(originalArgs);
-        if(!verified||deadlineExpired(requestDeadline))return [];
+      var verified=null,preResolved=null;
+      var needsPlanMetadata=providerNeedsTmdbBeforeStreams(o);
+      var needsIdNormalization=requestHasExternalIdentity(originalArgs);
+      if(needsPlanMetadata||needsIdNormalization){
+        preResolved=await resolve(originalArgs);
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
-        if(!hasResolvedTmdbMetadata(verified))return [];
-        if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
-        if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
-        a=verified;
+        if(preResolved&&!deadlineExpired(requestDeadline)&&hasResolvedTmdbMetadata(preResolved)){
+          verified=preResolved;
+          if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
+          if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
+          a=verified;
+        }
       }
 
       var value=await native.apply(this,a);
@@ -540,7 +576,7 @@ function install(o,k){
       // with verified context, so the same verified object is reused with no
       // second metadata call.
       if(!verified){
-        verified=await resolve(originalArgs);
+        verified=preResolved||await resolve(originalArgs);
         if(!verified||deadlineExpired(requestDeadline))return [];
         if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
       }

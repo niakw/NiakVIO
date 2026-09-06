@@ -36,6 +36,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 CANONICAL_TYPES = {"movie", "tv", "anime"}
+TRANSPORT_TYPES = CANONICAL_TYPES | {"series"}
 LOCAL_LAB_HOSTS = {"127.0.0.1", "localhost", "10.0.2.2"}
 
 
@@ -76,9 +77,19 @@ def load_manifest(path: Path) -> list[dict]:
         if key in seen:
             raise SystemExit(f"{path}: duplicate provider id {provider_id}")
         seen.add(key)
-        types = [str(value or "").strip().lower() for value in raw.get("supportedTypes", [])]
-        if not types or any(value not in CANONICAL_TYPES for value in types):
-            raise SystemExit(f"{path}: provider {provider_id} has invalid supportedTypes={types}")
+        supported = [str(value or "").strip().lower() for value in raw.get("supportedTypes", [])]
+        canonical_raw = raw.get("canonicalSupportedTypes")
+        canonical = (
+            [str(value or "").strip().lower() for value in canonical_raw]
+            if isinstance(canonical_raw, list) and canonical_raw
+            else [value for value in supported if value in CANONICAL_TYPES]
+        )
+        if not supported or any(value not in TRANSPORT_TYPES for value in supported):
+            raise SystemExit(f"{path}: provider {provider_id} has invalid supportedTypes={supported}")
+        if not canonical or any(value not in CANONICAL_TYPES for value in canonical):
+            raise SystemExit(f"{path}: provider {provider_id} has invalid canonicalSupportedTypes={canonical}")
+        if "series" in canonical:
+            raise SystemExit(f"{path}: provider {provider_id} leaked series into canonicalSupportedTypes")
         rows.append(raw)
     if not rows:
         raise SystemExit(f"{path}: no providers")
@@ -197,7 +208,7 @@ def tv_helpers(manifest_url: str, blocked: list[str]) -> str:
                     emit("FIELD_NATIVE_PROVIDER_LOAD_ERROR client=tv fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=missing_after_repository_install")
                 }} else {{
                     val loadedTypes = scraper.supportedTypes.map {{ it.lowercase() }}.distinct().sorted()
-                    val declaredTypes = declaredTypesByProvider[key].orEmpty().sorted()
+                    val declaredTypes = transportTypesByProvider[key].orEmpty().sorted()
                     val metadataMatch = scraper.manifestEnabled == provider.enabled && loadedTypes == declaredTypes
                     emit("FIELD_NATIVE_PROVIDER_LOAD_RESULT client=tv fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} manifest_enabled=${{scraper.manifestEnabled}} runtime_enabled=${{scraper.enabled}} supported_types64=${{b64(loadedTypes.joinToString(\",\"))}} metadata_match=$metadataMatch")
                     if (!metadataMatch) {{
@@ -265,7 +276,7 @@ def repository_helpers(client: str, manifest_url: str, blocked: list[str]) -> st
                     emit("FIELD_NATIVE_PROVIDER_LOAD_ERROR client={client} fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} reason=missing_after_repository_install")
                 }} else {{
                     val loadedTypes = scraper.supportedTypes.map {{ it.lowercase() }}.distinct().sorted()
-                    val declaredTypes = declaredTypesByProvider[key].orEmpty().sorted()
+                    val declaredTypes = transportTypesByProvider[key].orEmpty().sorted()
                     val metadataMatch = scraper.manifestEnabled == provider.enabled && loadedTypes == declaredTypes && scraper.code.isNotBlank()
                     emit("FIELD_NATIVE_PROVIDER_LOAD_RESULT client={client} fixture=$fixtureSlugForLoad provider64=${{b64(provider.id)}} manifest_enabled=${{scraper.manifestEnabled}} runtime_enabled=${{scraper.enabled}} code_bytes=${{scraper.code.toByteArray(Charsets.UTF_8).size}} supported_types64=${{b64(loadedTypes.joinToString(\",\"))}} metadata_match=$metadataMatch")
                     if (!metadataMatch) {{

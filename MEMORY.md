@@ -439,3 +439,12 @@ Final hygiene audit still required:
 ## Completion principle
 
 A green structural workflow is not proof that 96 providers produce streams, and a native client failure is not automatically a provider failure. Keep each layer explicit, preserve evidence, fix common NiakVIO root causes where NiakVIO owns them, and never manufacture success by deleting providers, weakening validation, or patching official Nuvio production clients.
+
+## 2026-09-06 — Canonical dual-ID input contract
+- NiakVIO historically accepts provider work identity as either TMDB or IMDb. This is a permanent Core contract, not a provider exception.
+- Regression identified in 5.21.33: stronger TMDB title/category/year verification left early Core gates TMDB-only, so a valid IMDb request could be converted into an empty provider result before provider execution.
+- Input forms must accept numeric/prefixed TMDB and IMDb (`tt...`), including episodic transport suffixes such as `tt11198330:3:1`; season/episode are preserved separately.
+- TMDB metadata remains the authoritative enrichment/classification source when available, but failure/unavailability of enrichment must not make a syntactically valid IMDb/TMDB identity invalid.
+- `series` is a Nuvio transport alias for canonical `tv`; it belongs in `supportedTypes`, never in `canonicalSupportedTypes`.
+- Native Labs must test production selection for both `tv` and `series`, not only direct provider execution.
+- Domain Refresh owns terminal-domain derivatives (domain substitution/replacement maps and provider-owned manifest icon URLs) as well as `official_site`; historical alias keys are retained while their destination is reconciled to the authoritative terminal.

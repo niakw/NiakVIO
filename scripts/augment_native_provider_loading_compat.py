@@ -78,6 +78,35 @@ def unwrap_runtime_trap(path: Path, client: str) -> bool:
     return False
 
 
+
+def inject_app_path_diagnostics(path: Path, client: str) -> None:
+    if client == "tv":
+        print("FIELD_NATIVE_PROVIDER_APP_PATH client=tv injected=false reason=plugin_manager_path")
+        return
+    if client not in {"desktop", "mobile"}:
+        raise SystemExit(f"unsupported app-path diagnostics client: {client}")
+    text = path.read_text(encoding="utf-8")
+    marker = f"FIELD_NATIVE_REPOSITORY_APP_PATH client={client}"
+    if marker in text:
+        print(f"FIELD_NATIVE_PROVIDER_APP_PATH client={client} injected=false already=true")
+        return
+    anchor = "        return byId\n    }\n"
+    if text.count(anchor) != 1:
+        raise SystemExit(f"provider-loading app-path return anchor client={client} count={text.count(anchor)}")
+    diagnostic = f'''        val appMovieScrapers = PluginRepository.getEnabledScrapersForType("movie")
+            .filter {{ it.repositoryUrl == repositoryUrl }}
+        val appTvScrapers = PluginRepository.getEnabledScrapersForType("tv")
+            .filter {{ it.repositoryUrl == repositoryUrl }}
+        val appSeriesScrapers = PluginRepository.getEnabledScrapersForType("series")
+            .filter {{ it.repositoryUrl == repositoryUrl }}
+        val pluginStateForAppPath = PluginRepository.uiState.value
+        emit("FIELD_NATIVE_REPOSITORY_APP_PATH client={client} fixture=$fixtureSlugForLoad plugins_enabled=${{pluginStateForAppPath.pluginsEnabled}} group_by_repository=${{pluginStateForAppPath.groupStreamsByRepository}} loaded=${{byId.size}} movie_enabled=${{appMovieScrapers.size}} tv_enabled=${{appTvScrapers.size}} series_enabled=${{appSeriesScrapers.size}}")
+        return byId
+    }}
+'''
+    path.write_text(text.replace(anchor, diagnostic, 1), encoding="utf-8")
+    print(f"FIELD_NATIVE_PROVIDER_APP_PATH client={client} injected=true already=false")
+
 def normalize_async_provider_skips(path: Path, client: str) -> None:
     text = path.read_text(encoding="utf-8")
     first = "                continue\n            }\n            val loadedScraper = loadedProviders[providerKey]"
@@ -117,6 +146,7 @@ def main() -> int:
     source = source_argument(sys.argv)
     unwrap_runtime_trap(source, client)
     run_canonical()
+    inject_app_path_diagnostics(source, client)
     normalize_async_provider_skips(source, client)
     return 0
 

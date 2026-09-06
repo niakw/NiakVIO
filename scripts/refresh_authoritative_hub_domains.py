@@ -161,6 +161,50 @@ def resolve_authoritative_hub_domain(
     return item
 
 
+
+def _domain_host(value: str) -> str:
+    raw=str(value or "").strip()
+    if not raw:return ""
+    return hubresolver.host(raw if "://" in raw else "https://"+raw)
+
+
+def _reconcile_domain_derivatives(patch: dict[str, Any], before_site: str, next_site: str) -> list[dict[str, str]]:
+    changes=[];before_host=_domain_host(before_site);next_host=_domain_host(next_site)
+    if not next_host:return changes
+    maps=[]
+    for name in ("domain_substitutions","replacements","runtime_domain_replacements"):
+        row=patch.get(name)
+        if isinstance(row,dict):maps.append((name,row))
+    edges={}
+    for _name,row in maps:
+        for source,target in row.items():
+            sh,th=_domain_host(source),_domain_host(target)
+            if sh and th:edges[sh]=th
+    if before_host and before_host!=next_host:edges[before_host]=next_host
+    def canonical(hostname):
+        seen=set();current=hostname
+        while current and current not in seen and current in edges:seen.add(current);current=edges[current]
+        return current
+    for name,row in maps:
+        for source,target in list(row.items()):
+            th=_domain_host(target)
+            if th and canonical(th)==next_host and th!=next_host:
+                row[source]=next_host;changes.append({"from":str(target),"to":next_host,"kind":name})
+        if before_host and before_host!=next_host and row.get(before_host)!=next_host:
+            row[before_host]=next_host;changes.append({"from":before_host,"to":next_host,"kind":name})
+    manifest=patch.get("manifest_overrides")
+    if isinstance(manifest,dict):
+        for field in ("logo","icon","favicon"):
+            value=manifest.get(field);vh=_domain_host(value)
+            if value and vh and canonical(vh)==next_host and vh!=next_host:
+                manifest[field]=str(value).replace(vh,next_host);changes.append({"from":str(value),"to":str(manifest[field]),"kind":f"manifest_overrides.{field}"})
+    notes=patch.get("notes")
+    if isinstance(notes,list) and before_host and before_host!=next_host:
+        patch["notes"]=[str(v).replace(before_host,next_host) for v in notes]
+    elif isinstance(notes,str) and before_host and before_host!=next_host:
+        patch["notes"]=notes.replace(before_host,next_host)
+    return changes
+
 def _update_history_on_change(history_row: dict[str, Any], item: dict[str, Any]) -> None:
     terminal = str(item.get("official_site") or "").rstrip("/")
     if not terminal:
@@ -261,6 +305,8 @@ def main() -> int:
                         changes.append({"from": before_site, "to": next_site, "kind": "official_site"})
                         report["applied"] += 1
                         _update_history_on_change(history_row, item)
+                    if next_site:
+                        changes.extend(_reconcile_domain_derivatives(patch, before_site, next_site))
                     item["applied_changes"] = changes
             report["providers"][provider_id] = item
 
