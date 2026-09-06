@@ -30,88 +30,74 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
-
           identity = Path('scripts/provider_patches/global_stream_identity_v1.py')
           text = identity.read_text(encoding='utf-8')
-
           old_rev = 'cross-client-shared-tmdb-cache-lazy-episode-v7'
           new_rev = 'cross-client-shared-tv-year-soft-v8'
           if old_rev in text:
               text = text.replace(old_rev, new_rev, 1)
           elif new_rev not in text:
               raise SystemExit('identity revision anchor missing')
-
           old_req = 'q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}'
           new_req = 'q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.seriesYear=Number(q.seriesYear||q.series_year||q.year||0)||0;q.seasonYear=Number(q.seasonYear||q.season_year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}'
           if old_req in text:
               text = text.replace(old_req, new_req, 1)
           elif new_req not in text:
               raise SystemExit('identity request anchor missing')
-
           old_year = 'if(m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;'
           new_year = 'if(!episodic(q)&&m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;'
           if old_year in text:
               text = text.replace(old_year, new_year, 1)
           elif new_year not in text:
               raise SystemExit('identity year anchor missing')
-
           identity.write_text(text, encoding='utf-8')
-
           existing = Path('tests/global_stream_identity_test.py')
-          existing_text = existing.read_text(encoding='utf-8').replace(
-              old_rev,
-              new_rev,
-          )
-          existing.write_text(existing_text, encoding='utf-8')
+          existing.write_text(existing.read_text(encoding='utf-8').replace(old_rev, new_rev), encoding='utf-8')
+          PY
+          cat > tests/episodic_year_identity_regression_test.py <<'PY'
+          #!/usr/bin/env python3
+          from __future__ import annotations
+          import importlib.util
+          import subprocess
+          import sys
+          import tempfile
+          from pathlib import Path
 
-          regression = Path('tests/episodic_year_identity_regression_test.py')
-          regression.write_text("""#!/usr/bin/env python3
-from __future__ import annotations
-import importlib.util
-import subprocess
-import sys
-import tempfile
-from pathlib import Path
+          ROOT = Path(__file__).resolve().parents[1]
+          sys.path.insert(0, str(ROOT / 'scripts'))
+          PATCH = ROOT / 'scripts/provider_patches/global_stream_identity_v1.py'
+          spec = importlib.util.spec_from_file_location('global_stream_identity_year_regression', PATCH)
+          assert spec and spec.loader
+          identity = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(identity)
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'scripts'))
-PATCH = ROOT / 'scripts/provider_patches/global_stream_identity_v1.py'
-spec = importlib.util.spec_from_file_location('global_stream_identity_year_regression', PATCH)
-assert spec and spec.loader
-identity = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(identity)
+          source = "module.exports={getStreams:async()=>[{name:'Server 1',title:'Shared Show 2020',url:'https://cdn.example/shared-show-2020.m3u8'}]};"
+          patched = identity.apply(source, context={'provider_id': 'example'})
+          assert 'cross-client-shared-tv-year-soft-v8' in patched
+          assert 'if(!episodic(q)&&m.year&&years.length' in patched
 
-source = r'''module.exports={getStreams:async()=>[
- {name:'Server 1',title:'Shared Show 2020',url:'https://cdn.example/shared-show-2020.m3u8'}
-]};'''
-patched = identity.apply(source, context={'provider_id': 'example'})
-assert 'cross-client-shared-tv-year-soft-v8' in patched
-assert 'if(!episodic(q)&&m.year&&years.length' in patched
+          runner = """
+          const assert=require('assert');
+          PATCHED
+          (async()=>{
+            for(const mediaType of ['tv','series','anime']){
+              const rows=await module.exports.getStreams({tmdbId:'',mediaType,title:'Shared Show',year:2024,season:1,episode:1});
+              assert.equal(rows.length,1,mediaType+': '+JSON.stringify(rows));
+            }
+            const movieRows=await module.exports.getStreams({tmdbId:'',mediaType:'movie',title:'Shared Show',year:2024});
+            assert.equal(movieRows.length,0,'movie year mismatch must remain authoritative: '+JSON.stringify(movieRows));
+          })().catch(e=>{console.error(e);process.exit(3)});
+          """.replace('PATCHED', patched)
 
-runner = r'''
-const assert=require('assert');
-PATCHED
-(async()=>{
-  for(const mediaType of ['tv','series','anime']){
-    const rows=await module.exports.getStreams({tmdbId:'',mediaType,title:'Shared Show',year:2024,season:1,episode:1});
-    assert.equal(rows.length,1,mediaType+': '+JSON.stringify(rows));
-  }
-  const movieRows=await module.exports.getStreams({tmdbId:'',mediaType:'movie',title:'Shared Show',year:2024});
-  assert.equal(movieRows.length,0,'movie year mismatch must remain authoritative: '+JSON.stringify(movieRows));
-})().catch(e=>{console.error(e);process.exit(3)});
-'''.replace('PATCHED', patched)
-
-with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
-    handle.write(runner)
-    path = Path(handle.name)
-try:
-    proc = subprocess.run(['node', str(path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
-    assert proc.returncode == 0, proc.stdout + proc.stderr
-finally:
-    path.unlink(missing_ok=True)
-
-print('episodic year identity regression tests passed')
-""", encoding='utf-8')
+          with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+              handle.write(runner)
+              path = Path(handle.name)
+          try:
+              proc = subprocess.run(['node', str(path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+              assert proc.returncode == 0, proc.stdout + proc.stderr
+          finally:
+              path.unlink(missing_ok=True)
+          print('episodic year identity regression tests passed')
           PY
 
       - name: Run identity regressions before publication
@@ -120,13 +106,13 @@ print('episodic year identity regression tests passed')
           python tests/episodic_year_identity_regression_test.py
           python tests/global_stream_identity_test.py
 
-      - name: Materialize the fix into all published provider bundles
+      - name: Materialize fix into published provider bundles
         run: |
           set -euo pipefail
           python scripts/reapply_published_overrides.py
           python scripts/reapply_published_overrides.py --check
 
-      - name: Run publication regressions
+      - name: Run publication integrity regressions
         run: |
           set -euo pipefail
           python tests/provider_versioning_test.py
