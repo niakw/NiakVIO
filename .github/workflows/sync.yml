@@ -56,7 +56,6 @@ on:
   push:
     branches:
       - main
-      - workbench/provider-v3-performance-playback
     paths:
       - 'manifest.json'
       - 'vf/manifest.json'
@@ -198,7 +197,12 @@ jobs:
         if: steps.mode.outputs.validation_mode == 'deep'
         run: |
           mkdir -p health-output
-          python scripts/resolve_provider_hubs.py             --mode deep             --include-disabled             --workers 8             --timeout 8             --output health-output/provider-hub-report.json
+          python scripts/resolve_provider_hubs.py \
+            --mode deep \
+            --include-disabled \
+            --workers 8 \
+            --timeout 8 \
+            --output health-output/provider-hub-report.json
           git diff --exit-code -- provider-overrides.json provider-domain-history.json providers provider-bases
 
       - name: Deep - observe all exact published providers
@@ -212,8 +216,13 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/health_check.mjs --deep
-          python scripts/build_observational_health_report.py             --results health-output/health-results.json             --manifest manifest.json             --output health-output/health-report.json
-          python scripts/generate_diagnostics.py             --results health-output/health-results.json             --output health-output
+          python scripts/build_observational_health_report.py \
+            --results health-output/health-results.json \
+            --manifest manifest.json \
+            --output health-output/health-report.json
+          python scripts/generate_diagnostics.py \
+            --results health-output/health-results.json \
+            --output health-output
           test -s health-output/health-report.json
           test -s health-output/diagnostics-report.json
 
@@ -256,7 +265,17 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-          git add             health-report.json             provider-hub-report.json             diagnostics-report.json             diagnostics-report.html             vf/manifest.json             no-anime/manifest.json             vf-no-anime/manifest.json             FILE-HASHES.json             PATCH-SHA256SUMS.txt             SHA256SUMS.json
+          git add \
+            health-report.json \
+            provider-hub-report.json \
+            diagnostics-report.json \
+            diagnostics-report.html \
+            vf/manifest.json \
+            no-anime/manifest.json \
+            vf-no-anime/manifest.json \
+            FILE-HASHES.json \
+            PATCH-SHA256SUMS.txt \
+            SHA256SUMS.json
 
           if git diff --cached --name-only | grep -Ev '^(health-report\.json|provider-hub-report\.json|diagnostics-report\.json|diagnostics-report\.html|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json)$'; then
             echo 'Deep staged a forbidden runtime/DATA path.' >&2
