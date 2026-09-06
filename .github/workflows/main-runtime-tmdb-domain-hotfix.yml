@@ -1,0 +1,646 @@
+name: MAIN - Runtime TMDB + Domain Projection Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-runtime-tmdb-domain-hotfix.yml'
+
+permissions:
+  contents: write
+
+env:
+  TARGET_VERSION: 5.21.34
+
+jobs:
+  hotfix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Patch global TMDB identity fallback and Domain Refresh projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(text: str, old: str, new: str, label: str) -> str:
+              if old not in text:
+                  raise SystemExit(f"missing patch anchor: {label}")
+              if text.count(old) != 1:
+                  raise SystemExit(f"non-unique patch anchor: {label} count={text.count(old)}")
+              return text.replace(old, new, 1)
+
+          # ------------------------------------------------------------------
+          # CORE.MEDIA_TYPE_RESOLUTION.V1: authenticated API first, bounded
+          # public TMDB identity fallback (title/year only) when native hosts do
+          # not expose credentials to QuickJS. Public HTML is never authoritative
+          # for anime/movie/tv semantic classification.
+          # ------------------------------------------------------------------
+          p = Path('scripts/provider_patches/global_media_type_resolution_v1.py')
+          s = p.read_text(encoding='utf-8')
+          s = replace_once(
+              s,
+              'metadata capability backed by request context/cache, a credential explicitly\n'
+              'supplied by the host runtime/CI, or the trusted native fetch bridge. Provider\n'
+              'bundles never embed, receive, recover or decrypt a TMDB credential.\n',
+              'metadata capability backed by request context/cache or a credential explicitly\n'
+              'supplied by the host runtime/CI. A native fetch bridge is transport only and is\n'
+              'never mistaken for TMDB authentication. Provider bundles never embed, receive,\n'
+              'recover or decrypt a TMDB credential.\n',
+              'resolver doc credential contract',
+          )
+          s = replace_once(
+              s,
+              'response) degrades to a fail-open transport/semantic fallback so one metadata\n'
+              'outage cannot suppress the entire provider catalogue. No public HTML scraping is\n'
+              'used as a classification substitute.\n',
+              'response) degrades to a fail-open transport/semantic fallback so one metadata\n'
+              'outage cannot suppress the entire provider catalogue. A bounded public TMDB page\n'
+              'fallback may supply title/year identity when a native host withholds credentials;\n'
+              'that fallback is never an authoritative semantic classifier.\n',
+              'resolver doc public identity fallback',
+          )
+          s = replace_once(
+              s,
+              '"revision": "tmdb-data-contract-launch-gate-v27-anime-semantic-transport",',
+              '"revision": "tmdb-data-contract-launch-gate-v28-native-identity-fallback",',
+              'resolver revision',
+          )
+          s = replace_once(
+              s,
+              'function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_){return false}}\n',
+              '',
+              'remove native bridge auth inference',
+          )
+          s = replace_once(
+              s,
+              'async function apiJson(url){\n'
+              '  var key=coreCredentialKey,token=coreCredentialToken,nativeBridge=nativeFetchBridge();\n'
+              '  if(!g||typeof g.fetch!=="function"||(!key&&!token&&!nativeBridge))return{state:"unavailable",value:null};\n',
+              'async function apiJson(url){\n'
+              '  var key=coreCredentialKey,token=coreCredentialToken;\n'
+              '  if(!g||typeof g.fetch!=="function"||(!key&&!token))return{state:"unavailable",value:null};\n',
+              'apiJson credential gate',
+          )
+
+          public_helpers = r'''
+function decodeHtmlIdentity(v){
+  return String(v==null?"":v)
+    .replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&#x27;/gi,"'")
+    .replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/&nbsp;/gi," ");
+}
+function stripHtmlIdentity(v){return decodeHtmlIdentity(String(v==null?"":v).replace(/<[^>]*>/g," ")).replace(/\s+/g," ").trim()}
+function publicIdentityFromHtml(html,namespace,id){
+  var source=String(html||""),titleTag=/<title[^>]*>([\s\S]*?)<\/title>/i.exec(source),og=null;
+  og=/<meta[^>]+property=["']og:title["'][^>]+content=["']([^"']+)["']/i.exec(source)
+    || /<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:title["']/i.exec(source);
+  var rawTitle=stripHtmlIdentity(titleTag&&titleTag[1]||"");
+  rawTitle=rawTitle.replace(/\s+[—-]\s+The Movie Database(?:\s*\(TMDB\))?.*$/i,"").trim();
+  var display=stripHtmlIdentity(og&&og[1]||"")||rawTitle;
+  display=display.replace(/\s+[—-]\s+The Movie Database(?:\s*\(TMDB\))?.*$/i,"").trim();
+  var yearMatch=/\((?:TV Series\s+)?((?:19|20)\d{2})[^)]*\)\s*$/i.exec(rawTitle)
+    || /\((?:TV Series\s+)?((?:19|20)\d{2})[^)]*\)\s*$/i.exec(display);
+  var year=yearMatch?yearMatch[1]:"";
+  display=display.replace(/\s*\((?:TV Series\s+)?(?:19|20)\d{2}[^)]*\)\s*$/i,"").trim();
+  if(!display)return null;
+  var row={id:Number(id)||0,__nuvioTmdbId:String(id||""),__nuvioTmdbNamespace:namespace,__nuvioPublicIdentityOnly:true};
+  if(namespace==="movie"){
+    row.title=display;row.original_title=display;if(year)row.release_date=year+"-01-01";
+  }else{
+    row.name=display;row.original_name=display;if(year)row.first_air_date=year+"-01-01";
+  }
+  return row;
+}
+async function publicTmdbIdentity(namespaceValue,tmdbId){
+  var namespace=namespaceValue==="movie"?"movie":"tv",id=s(tmdbId);
+  if(!/^\d+$/.test(id)||!g||typeof g.fetch!=="function")return{state:"unavailable",metadata:null};
+  try{
+    var url="https://www.themoviedb.org/"+namespace+"/"+encodeURIComponent(id)+"?language=en-US";
+    var response=await g.fetch(url,{headers:{Accept:"text/html,application/xhtml+xml;q=0.9,*/*;q=0.1"},redirect:"follow",signal:timeout()});
+    if(!response)return{state:"unavailable",metadata:null};
+    if(response.status===404)return{state:"not_found",metadata:null};
+    if(!response.ok||typeof response.text!=="function")return{state:"unavailable",metadata:null};
+    var row=publicIdentityFromHtml(await response.text(),namespace,id);
+    return row?{state:"ok",metadata:row}:{state:"unavailable",metadata:null};
+  }catch(_){return{state:"unavailable",metadata:null}}
+}
+'''
+          s = replace_once(
+              s,
+              'async function tmdb(namespaceValue,tmdbId){\n',
+              public_helpers + 'async function tmdb(namespaceValue,tmdbId){\n',
+              'insert public identity helpers',
+          )
+          s = replace_once(
+              s,
+              '    var probe=await apiJson("https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response="+encodeURIComponent(append)+"&language=fr-FR");\n'
+              '    if(!probe||probe.state!=="ok")return{state:probe&&probe.state||"unavailable",metadata:null};\n'
+              '    var value=probe.value;\n'
+              '    if(Number(value.id||0)<=0)return{state:"unavailable",metadata:null};\n'
+              '    value.__nuvioTmdbNamespace=namespace;\n'
+              '    value.__nuvioTmdbId=id;\n'
+              '    return{state:"ok",metadata:value};\n',
+              '    var probe=await apiJson("https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response="+encodeURIComponent(append)+"&language=fr-FR");\n'
+              '    if(!probe||probe.state!=="ok"){\n'
+              '      if(probe&&probe.state==="not_found")return{state:"not_found",metadata:null,degraded:false};\n'
+              '      var publicProbe=await publicTmdbIdentity(namespace,id);\n'
+              '      if(publicProbe&&publicProbe.state==="ok"&&publicProbe.metadata)return{state:"ok",metadata:publicProbe.metadata,degraded:true};\n'
+              '      return{state:probe&&probe.state||"unavailable",metadata:null,degraded:true};\n'
+              '    }\n'
+              '    var value=probe.value;\n'
+              '    if(Number(value.id||0)<=0)return{state:"unavailable",metadata:null,degraded:false};\n'
+              '    value.__nuvioTmdbNamespace=namespace;\n'
+              '    value.__nuvioTmdbId=id;\n'
+              '    return{state:"ok",metadata:value,degraded:false};\n',
+              'tmdb API/public fallback',
+          )
+          s = replace_once(
+              s,
+              '    return{state:"ok",tmdbId:id,tmdbNamespace:namespace,metadata:probe.metadata,episodeMetadata:episodeMetadata};\n',
+              '    return{state:"ok",tmdbId:id,tmdbNamespace:namespace,metadata:probe.metadata,episodeMetadata:episodeMetadata,degraded:probe.degraded===true};\n',
+              'coreGetTmdbData degraded marker',
+          )
+          s = replace_once(
+              s,
+              '    var m=probe.metadata,type=animeMeta(m)?"anime":namespace;\n'
+              '    return{type:type,namespace:namespace,tmdbId:tmdbId,imdbId:imdbId,metadata:m,authoritative:true,degraded:false};\n',
+              '    var m=probe.metadata,isDegraded=probe.degraded===true,type=isDegraded?fallbackType(input,semantic):(animeMeta(m)?"anime":namespace);\n'
+              '    return{type:type,namespace:namespace,tmdbId:tmdbId,imdbId:imdbId,metadata:m,authoritative:!isDegraded,degraded:isDegraded};\n',
+              'canonical degraded identity',
+          )
+          p.write_text(s, encoding='utf-8')
+
+          # Regression coverage: native fetch exists but no TMDB credential is
+          # exposed. Core must not issue an unauthenticated API request and must
+          # still provide title/year to a catalogue-search provider.
+          t = Path('tests/global_media_type_resolution_test.py')
+          ts = t.read_text(encoding='utf-8')
+          ts = replace_once(ts, 'assert "www.themoviedb.org/" not in mixed\n', 'assert "www.themoviedb.org/" in mixed\n', 'public TMDB fallback assertion')
+          marker = "credentialless native runtime public TMDB identity fallback passed"
+          if marker not in ts:
+              ts += r'''
+
+# Native NuvioTV/NuvioMobile expose a fetch bridge but do not expose their TMDB
+# credential to provider QuickJS. A catalogue-search provider must therefore get
+# title/year from the bounded public TMDB identity fallback, never from an
+# unauthenticated /3 API request.
+def run_case_without_key(source: str, runner: str) -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp_path = Path(tmp)
+        provider = tmp_path / "provider.cjs"
+        test = tmp_path / "test.cjs"
+        provider.write_text(source, encoding="utf-8")
+        test.write_text(runner, encoding="utf-8")
+        result = subprocess.run(["node", str(test), str(provider)], capture_output=True, text=True)
+        assert result.returncode == 0, result.stdout + result.stderr
+
+credentialless_catalog = mod.apply(r'''
+"use strict";
+async function getStreams(tmdbId, mediaType, season, episode) {
+  const ctx = globalThis.__nuvioMediaContext || {};
+  const meta = ctx.tmdbMetadata || {};
+  const title = String(meta.title || meta.name || "");
+  if (!title) return [];
+  return [{
+    url: "https://media.example/stream.m3u8",
+    title,
+    tmdbId,
+    mediaType,
+    degraded: ctx.tmdbResolutionDegraded === true
+  }];
+}
+module.exports = {
+  getStreams,
+  __niakvioProviderBase: {
+    identityInput: { mode: "catalog_search", requiresTmdbBeforeRun: true }
+  }
+};
+''', options={"semantic_types": ["movie", "tv"]})
+
+run_case_without_key(credentialless_catalog, r'''
+let apiCalls = 0;
+let pageCalls = 0;
+global.__native_fetch = function() {};
+global.fetch = async (url) => {
+  const value = String(url);
+  if (value.includes('api.themoviedb.org/3/')) {
+    apiCalls++;
+    throw new Error('unauthenticated TMDB API request must not happen: ' + value);
+  }
+  if (value.includes('www.themoviedb.org/tv/94997')) {
+    pageCalls++;
+    return {
+      ok: true,
+      status: 200,
+      text: async () => '<html><head><title>House of the Dragon (TV Series 2022- ) — The Movie Database (TMDB)</title></head></html>'
+    };
+  }
+  throw new Error('unexpected URL ' + value);
+};
+const provider = require(process.argv[2]);
+(async () => {
+  const value = await provider.getStreams('94997', 'series', 3, 1);
+  if (!Array.isArray(value) || value.length !== 1) throw new Error('catalogue provider remained suppressed: ' + JSON.stringify(value));
+  if (value[0].title !== 'House of the Dragon') throw new Error('public TMDB identity title missing: ' + JSON.stringify(value));
+  if (value[0].mediaType !== 'tv') throw new Error('series transport was not normalized to tv: ' + JSON.stringify(value));
+  if (value[0].degraded !== true) throw new Error('public identity must stay degraded/non-authoritative');
+  if (apiCalls !== 0) throw new Error('unauthenticated TMDB API calls=' + apiCalls);
+  if (pageCalls !== 1) throw new Error('public TMDB identity calls=' + pageCalls);
+})().catch(e => { console.error(e); process.exit(1); });
+''')
+
+print("credentialless native runtime public TMDB identity fallback passed")
+'''
+          t.write_text(ts, encoding='utf-8')
+
+          # ------------------------------------------------------------------
+          # Domain Refresh: official_site is the authority, but all persistent
+          # terminal-domain destinations must converge to that terminal. Alias
+          # keys remain historical inputs; only their destination values move.
+          # ------------------------------------------------------------------
+          p = Path('scripts/refresh_authoritative_hub_domains.py')
+          s = p.read_text(encoding='utf-8')
+          s = replace_once(
+              s,
+              '- only provider_patches.<id>.official_site and provider-domain-history.json may change.\n',
+              '- provider_patches.<id>.official_site is authoritative and every durable terminal-domain destination is reconciled to it; alias keys are preserved as historical inputs.\n'
+              '- provider-domain-history.json records authoritative terminal changes.\n',
+              'domain refresh doc scope',
+          )
+          s = replace_once(
+              s,
+              'from pathlib import Path\nfrom typing import Any\n',
+              'from pathlib import Path\nfrom typing import Any\nfrom urllib.parse import urlsplit, urlunsplit\n',
+              'domain refresh url imports',
+          )
+          helper = r'''
+
+DOMAIN_DESTINATION_MAP_FIELDS = (
+    "domain_substitutions",
+    "replacements",
+    "runtime_domain_replacements",
+)
+
+
+def _replace_url_hostname(value: str, known_hosts: set[str], new_site_host: str, new_api_host: str) -> str:
+    raw = str(value or "")
+    if not raw.startswith(("http://", "https://")):
+        return raw
+    try:
+        parsed = urlsplit(raw)
+    except ValueError:
+        return raw
+    host = str(parsed.hostname or "").casefold().strip(".")
+    if not host:
+        return raw
+    matched = host in known_hosts or any(host.endswith("." + old) for old in known_hosts if old)
+    if not matched:
+        return raw
+    api_like = host.startswith("api.")
+    target = new_api_host if api_like and new_api_host else new_site_host
+    if not target:
+        return raw
+    port = f":{parsed.port}" if parsed.port else ""
+    return urlunsplit((parsed.scheme, target + port, parsed.path, parsed.query, parsed.fragment))
+
+
+def _synchronize_terminal_references(
+    patch: dict[str, Any],
+    before_site: str,
+    next_site: str,
+) -> list[dict[str, str]]:
+    """Converge durable terminal destinations on the authoritative hub result.
+
+    Mapping keys remain intact because they are historical aliases that must
+    continue to rewrite. Mapping values, current terminal URLs and active-domain
+    notes are updated. The official hub itself is never rewritten.
+    """
+    next_site = str(next_site or "").strip().rstrip("/")
+    new_site_host = hubresolver.host(next_site)
+    if not next_site or not new_site_host:
+        return []
+
+    old_site_host = hubresolver.host(str(before_site or ""))
+    known_hosts: set[str] = {old_site_host} if old_site_host else set()
+    for field in DOMAIN_DESTINATION_MAP_FIELDS:
+        mapping = patch.get(field)
+        if isinstance(mapping, dict):
+            for value in mapping.values():
+                raw = str(value or "").strip()
+                host = hubresolver.host(raw) or raw.casefold().strip(".")
+                if host:
+                    known_hosts.add(host)
+
+    old_api_url = str(patch.get("official_api") or "").strip()
+    old_api_host = hubresolver.host(old_api_url)
+    if old_api_host:
+        known_hosts.add(old_api_host)
+    if old_api_host and old_site_host and old_api_host.endswith("." + old_site_host):
+        prefix = old_api_host[: -(len(old_site_host) + 1)]
+        new_api_host = f"{prefix}.{new_site_host}" if prefix else new_site_host
+    elif old_api_host == old_site_host:
+        new_api_host = new_site_host
+    else:
+        new_api_host = old_api_host or new_site_host
+
+    changes: list[dict[str, str]] = []
+
+    def record(path: str, before: Any, after: Any) -> Any:
+        if before != after:
+            changes.append({"kind": "terminal_domain_projection", "path": path, "from": str(before), "to": str(after)})
+        return after
+
+    before_official = str(patch.get("official_site") or "").rstrip("/")
+    patch["official_site"] = record("official_site", before_official, next_site)
+
+    # Destination maps: preserve historical alias keys, converge every target.
+    for field in DOMAIN_DESTINATION_MAP_FIELDS:
+        mapping = patch.get(field)
+        if not isinstance(mapping, dict):
+            continue
+        for alias_key in list(mapping):
+            before = str(mapping.get(alias_key) or "").strip()
+            target = new_api_host if str(alias_key).casefold().startswith("api.") else new_site_host
+            mapping[alias_key] = record(f"{field}.{alias_key}", before, target)
+
+    def rewrite(value: Any, path: str = "") -> Any:
+        if isinstance(value, dict):
+            out = value
+            for key in list(out):
+                if key in DOMAIN_DESTINATION_MAP_FIELDS or key == "official_site" or key == "official_hub":
+                    continue
+                out[key] = rewrite(out[key], f"{path}.{key}" if path else key)
+            return out
+        if isinstance(value, list):
+            for index, child in enumerate(list(value)):
+                value[index] = rewrite(child, f"{path}[{index}]")
+            return value
+        if isinstance(value, str):
+            before = value
+            after = _replace_url_hostname(before, known_hosts, new_site_host, new_api_host)
+            if path.startswith("notes["):
+                for stale in sorted(known_hosts, key=len, reverse=True):
+                    if stale and stale != new_site_host:
+                        after = after.replace(stale, new_site_host)
+            return record(path, before, after)
+        return value
+
+    rewrite(patch)
+    return changes
+'''
+          s = replace_once(s, '\ndef main() -> int:\n', helper + '\ndef main() -> int:\n', 'insert domain projection helper')
+          old_apply = '''                    before_site = str(patch.get("official_site") or "").rstrip("/")
+                    next_site = str(item.get("official_site") or "").rstrip("/")
+                    changes: list[dict[str, str]] = []
+                    if next_site and next_site != before_site:
+                        patch["official_site"] = next_site
+                        changes.append({"from": before_site, "to": next_site, "kind": "official_site"})
+                        report["applied"] += 1
+                        _update_history_on_change(history_row, item)
+                    item["applied_changes"] = changes
+'''
+          new_apply = '''                    before_site = str(patch.get("official_site") or "").rstrip("/")
+                    next_site = str(item.get("official_site") or "").rstrip("/")
+                    changes = _synchronize_terminal_references(patch, before_site, next_site)
+                    if changes:
+                        report["applied"] += 1
+                    if next_site and next_site != before_site:
+                        _update_history_on_change(history_row, item)
+                    item["applied_changes"] = changes
+'''
+          s = replace_once(s, old_apply, new_apply, 'domain refresh apply block')
+          p.write_text(s, encoding='utf-8')
+
+          # Scope validator now verifies the deterministic projection itself,
+          # rather than permitting arbitrary CONFIG mutation.
+          p = Path('scripts/validate_domain_refresh_scope.py')
+          p.write_text('''#!/usr/bin/env python3
+"""Fail closed unless Domain Refresh matches the deterministic terminal-domain projection."""
+from __future__ import annotations
+import argparse, copy, json
+from pathlib import Path
+from typing import Any
+import refresh_authoritative_hub_domains as refresh
+
+
+def load(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise SystemExit(f"{path}: object required")
+    return value
+
+
+def main() -> int:
+    p = argparse.ArgumentParser()
+    p.add_argument("--before", type=Path, required=True)
+    p.add_argument("--after", type=Path, required=True)
+    p.add_argument("--output", type=Path, required=True)
+    args = p.parse_args()
+    before = load(args.before)
+    after = load(args.after)
+    for key in sorted(set(before) | set(after)):
+        if key == "provider_patches":
+            continue
+        if before.get(key) != after.get(key):
+            raise SystemExit(f"domain refresh changed forbidden top-level key: {key}")
+    bp = before.get("provider_patches") or {}
+    ap = after.get("provider_patches") or {}
+    if set(bp) != set(ap):
+        raise SystemExit("domain refresh may not add/remove provider patches")
+    changed: list[str] = []
+    for pid in sorted(bp):
+        b = bp[pid]
+        a = ap[pid]
+        if b == a:
+            continue
+        if not isinstance(b, dict) or not isinstance(a, dict):
+            raise SystemExit(f"{pid}: provider patch object shape changed")
+        after_site = str(a.get("official_site") or "").rstrip("/")
+        if not after_site:
+            raise SystemExit(f"{pid}: domain refresh may not clear official_site")
+        expected = copy.deepcopy(b)
+        refresh._synchronize_terminal_references(
+            expected,
+            str(b.get("official_site") or "").rstrip("/"),
+            after_site,
+        )
+        if expected != a:
+            raise SystemExit(f"{pid}: domain refresh changed DATA outside deterministic terminal projection")
+        changed.append(pid)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    args.output.write_text(
+        json.dumps({"changed": changed, "field": "terminal_domain_projection"}, indent=2, ensure_ascii=False) + "\\n",
+        encoding="utf-8",
+    )
+    print(f"FIELD_DOMAIN_REFRESH_SCOPE providers={len(changed)} field=terminal_domain_projection fix_mutation=false")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+''', encoding='utf-8')
+
+          # Extend refresh unit test with stale-destination reconciliation.
+          t = Path('tests/authoritative_hub_domain_refresh_test.py')
+          ts = t.read_text(encoding='utf-8')
+          marker = 'terminal destination projection reconciliation passed'
+          if marker not in ts:
+              ts = ts.replace(
+                  'print("authoritative hub domain refresh skips terminal validation and accepts current hub destination")\n',
+                  r'''
+# Regression: even when official_site is already current, stale durable
+# destinations must converge to it (the Flemmix .men -> .kim class of bug).
+projection = {
+    "official_site": "https://flemmix.kim",
+    "domain_substitutions": {"flemmix.me": "flemmix.men", "wiflix.name": "flemmix.men"},
+    "replacements": {"flemmix.men": "flemmix.kim"},
+    "runtime_domain_replacements": {"flemmix.men": "flemmix.kim"},
+    "manifest_overrides": {"logo": "https://flemmix.men/favicon.ico"},
+    "notes": ["Resolve the active domain to flemmix.men."],
+}
+changes = refresh._synchronize_terminal_references(
+    projection, projection["official_site"], projection["official_site"]
+)
+assert changes, projection
+assert set(projection["domain_substitutions"].values()) == {"flemmix.kim"}, projection
+assert projection["manifest_overrides"]["logo"] == "https://flemmix.kim/favicon.ico", projection
+assert "flemmix.men" not in projection["notes"][0], projection
+
+api_projection = {
+    "official_site": "https://old.example",
+    "official_api": "https://api.old.example/v1",
+    "domain_substitutions": {"api.legacy.example": "api.old.example", "legacy.example": "old.example"},
+}
+refresh._synchronize_terminal_references(api_projection, "https://old.example", "https://new.example")
+assert api_projection["official_site"] == "https://new.example", api_projection
+assert api_projection["official_api"] == "https://api.new.example/v1", api_projection
+assert api_projection["domain_substitutions"]["api.legacy.example"] == "api.new.example", api_projection
+assert api_projection["domain_substitutions"]["legacy.example"] == "new.example", api_projection
+
+print("terminal destination projection reconciliation passed")
+print("authoritative hub domain refresh skips terminal validation and accepts current hub destination")
+'''
+              )
+          t.write_text(ts, encoding='utf-8')
+
+          # Update workflow contract language and its static regression test.
+          wf = Path('.github/workflows/domain-refresh.yml')
+          w = wf.read_text(encoding='utf-8')
+          w = w.replace('Resolve authoritative hub primary domains', 'Resolve authoritative hub terminal domains')
+          w = w.replace('Enforce authoritative domain-only immutability', 'Enforce authoritative terminal-domain projection')
+          w = w.replace('Publish authoritative primary-domain update', 'Publish authoritative terminal-domain update')
+          w = w.replace("git commit -m 'chore(domains): update authoritative Provider v3 primary domains'", "git commit -m 'chore(domains): update authoritative Provider v3 terminal domain projection'")
+          w = w.replace("echo 'No authoritative hub primary-domain change.'", "echo 'No authoritative hub terminal-domain projection change.'")
+          wf.write_text(w, encoding='utf-8')
+
+          t = Path('tests/domain_refresh_workflow_test.py')
+          ts = t.read_text(encoding='utf-8')
+          ts = ts.replace('assert "Provider v3 primary domains" in commit_line', 'assert "Provider v3 terminal domain projection" in commit_line')
+          old_contract = '''assert '\"kind\": \"official_site\"' in authority
+
+assert 'out.pop(\"official_site\",None)' in scope
+for forbidden in (\"official_api\",\"api_recipe\",\"runtime_domain_replacements\",\"replacements\",\"patch_script_options\"):
+    assert forbidden not in scope, f\"domain refresh scope must not allow {forbidden}\"
+'''
+          new_contract = '''assert 'DOMAIN_DESTINATION_MAP_FIELDS' in authority
+assert '_synchronize_terminal_references' in authority
+assert '\"terminal_domain_projection\"' in scope
+assert '_synchronize_terminal_references' in scope
+'''
+          ts = replace_once(ts, old_contract, new_contract, 'domain refresh workflow test contract')
+          ts = ts.replace('print("CORE domain refresh authoritative-hub official_site-only contract passed")', 'print("CORE domain refresh authoritative terminal-domain projection contract passed")')
+          t.write_text(ts, encoding='utf-8')
+
+          # Reconcile the already-known Flemmix current terminal immediately.
+          import json, sys
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          import refresh_authoritative_hub_domains as refresh
+          cfg_path = Path('provider-overrides.json')
+          cfg = json.loads(cfg_path.read_text(encoding='utf-8'))
+          flemmix = cfg.get('provider_patches', {}).get('flemmix')
+          if not isinstance(flemmix, dict):
+              raise SystemExit('missing flemmix provider patch')
+          current = str(flemmix.get('official_site') or '').rstrip('/')
+          changes = refresh._synchronize_terminal_references(flemmix, current, current)
+          if not changes:
+              raise SystemExit('expected Flemmix stale domain projection to be reconciled')
+          cfg_path.write_text(json.dumps(cfg, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(f'FLEMMIX_DOMAIN_RECONCILED changes={len(changes)} terminal={current}')
+          PY
+
+      - name: Validate source contracts before materialization
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/provider_patches/global_media_type_resolution_v1.py scripts/refresh_authoritative_hub_domains.py scripts/validate_domain_refresh_scope.py
+          python3 tests/global_media_type_resolution_test.py
+          python3 tests/authoritative_hub_domain_refresh_test.py
+          python3 tests/domain_refresh_workflow_test.py
+
+      - name: Rematerialize all providers and derived manifest views
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python3 tests/reapply_manifest_type_projection_test.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/global_media_type_resolution_test.py
+
+      - name: Publish release 5.21.34 metadata and integrity hashes
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_release_versions.py --version "$TARGET_VERSION"
+          python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 tests/release_version_sync_test.py
+          python3 tests/language_projection_test.py
+          python3 tests/language_manifest_metadata_consistency_test.py
+          python3 tests/platform_filter_semantics_test.py
+          python3 tests/global_media_type_resolution_test.py
+          python3 tests/authoritative_hub_domain_refresh_test.py
+          python3 tests/domain_refresh_workflow_test.py
+
+      - name: Verify published TV transport aliases remain global
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          for rel in ('manifest.json', 'no-anime/manifest.json', 'vf/manifest.json', 'vf-no-anime/manifest.json'):
+              data=json.loads(Path(rel).read_text(encoding='utf-8'))
+              for row in data.get('scrapers', []):
+                  canonical=[str(x).lower() for x in row.get('canonicalSupportedTypes', row.get('supportedTypes', []))]
+                  supported=[str(x).lower() for x in row.get('supportedTypes', [])]
+                  if 'tv' in canonical and 'series' not in supported:
+                      raise SystemExit(f'{rel}:{row.get("id")}: tv missing series transport alias')
+                  if 'series' in canonical:
+                      raise SystemExit(f'{rel}:{row.get("id")}: series leaked into canonical types')
+          print('GLOBAL_SERIES_TRANSPORT_ALIAS_OK')
+          PY
+
+      - name: Commit verified hotfix to main and remove executor
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/main-runtime-tmdb-domain-hotfix.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'No hotfix changes to publish.'
+            exit 0
+          fi
+          git commit -m 'fix: restore native TV series identity and domain projection'
+          git push origin HEAD:main
