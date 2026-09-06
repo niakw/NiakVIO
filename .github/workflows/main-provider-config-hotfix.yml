@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: niakvio-main-provider-config-hotfix
@@ -19,6 +20,40 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 70
     steps:
+      - name: Cancel superseded main CodeQL and gate runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > "$RUNNER_TEMP/cancel-runs.txt"
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          current=int(os.environ['GITHUB_RUN_ID'])
+          raw=subprocess.check_output(['gh','api',f'repos/{repo}/actions/runs?per_page=100'],text=True)
+          rows=json.loads(raw).get('workflow_runs') or []
+          active={'queued','in_progress','waiting','pending','requested'}
+          for row in rows:
+              run_id=int(row.get('id') or 0)
+              if not run_id or run_id == current or str(row.get('status') or '') not in active:
+                  continue
+              if str(row.get('head_branch') or '') != 'main':
+                  continue
+              name=str(row.get('name') or '')
+              lowered=name.casefold()
+              if 'codeql' in lowered or name in {
+                  'SEC - Final Gate',
+                  'CORE - Workflow Gate',
+                  'MAIN - Provider CONFIG Publication Hotfix',
+              }:
+                  print(f"{run_id}\t{name}\t{row.get('head_sha') or ''}")
+          PY
+          while IFS=$'\t' read -r run_id run_name run_sha; do
+            [ -n "${run_id:-}" ] || continue
+            echo "CANCEL_SUPERSEDED run=$run_id name=$run_name sha=$run_sha"
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
+          done < "$RUNNER_TEMP/cancel-runs.txt"
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: main
@@ -40,6 +75,52 @@ jobs:
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/apply_provider_config_publication_hotfix.py
           python -m py_compile scripts/reapply_published_overrides.py scripts/validate_published_provider_config.py tests/final_published_provider_config_test.py
+
+      - name: Collapse redundant main workflow fan-out
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          security=Path('.github/workflows/security-final-gate.yml')
+          text=security.read_text(encoding='utf-8')
+          start=text.index('on:\n')
+          end=text.index('\npermissions:\n', start)
+          text=(
+              text[:start]
+              + 'on:\n  workflow_dispatch:\n'
+              + text[end:]
+          )
+          text=text.replace(
+              '# Final main validation marker: exact-SHA hardening + CodeQL.',
+              '# Accepted-release validation only. GitHub Default Setup owns every-push CodeQL; do not fan this gate out on publication commits.',
+          )
+          security.write_text(text, encoding='utf-8')
+
+          workflow_gate=Path('.github/workflows/github-actions-gate.yml')
+          text=workflow_gate.read_text(encoding='utf-8')
+          push_at=text.index('  push:\n')
+          dispatch_at=text.index('  workflow_dispatch:\n', push_at)
+          text=text[:push_at] + text[dispatch_at:]
+          if '# PR/manual only:' not in text:
+              text=text.replace(
+                  'name: CORE - Workflow Gate\n',
+                  'name: CORE - Workflow Gate\n# PR/manual only: direct publication workflows must validate their own candidate before the single final main commit.\n',
+                  1,
+              )
+          workflow_gate.write_text(text, encoding='utf-8')
+
+          policy=Path('tests/workflow_security_policy_test.py')
+          text=policy.read_text(encoding='utf-8')
+          old='''for required_path in (\n    "scripts/provider_base_store.py",\n    "scripts/add_provider.py",\n    "scripts/probe_provider_runtime_parity.py",\n):\n    if f"- '{required_path}'" not in security_gate:\n        errors.append(f"security-final-gate.yml: missing security trigger for {required_path}")\n'''
+          new='''if re.search(r'^\\s{2}push\\s*:', security_gate, re.MULTILINE):\n    errors.append('security-final-gate.yml: accepted-release security gate must not fan out on every main push')\nif 'workflow_dispatch:' not in security_gate:\n    errors.append('security-final-gate.yml: manual accepted-release security gate is required')\n\nworkflow_gate = (WORKFLOWS / 'github-actions-gate.yml').read_text(encoding='utf-8')\nif re.search(r'^\\s{2}push\\s*:', workflow_gate, re.MULTILINE):\n    errors.append('github-actions-gate.yml: workflow gate must stay PR/manual only')\nif 'pull_request:' not in workflow_gate or 'workflow_dispatch:' not in workflow_gate:\n    errors.append('github-actions-gate.yml: PR and manual workflow gates are required')\n'''
+          if old not in text:
+              raise SystemExit('workflow security policy trigger anchor not found')
+          policy.write_text(text.replace(old,new,1), encoding='utf-8')
+          PY
+          python tests/workflow_security_policy_test.py
+
       - name: Run source regressions before rebuild
         shell: bash
         run: |
@@ -47,6 +128,7 @@ jobs:
           python tests/native_dual_id_identity_test.py
           python tests/global_media_type_resolution_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/workflow_security_policy_test.py
       - name: Rematerialize authoritative 96 Provider v3 bundles
         env:
           NUVIO_PROVIDER_V3_CONTEXT: main
@@ -65,6 +147,18 @@ jobs:
           set -euo pipefail
           python scripts/sync_release_versions.py --previous "$RUNNER_TEMP/manifest.before.json"
           python scripts/apply_provider_config_publication_hotfix.py --memory-only
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md')
+          text=p.read_text(encoding='utf-8').rstrip()
+          marker='## CI queue hygiene — 2026-09-06'
+          section='''\n\n## CI queue hygiene — 2026-09-06\n\n- GitHub Default Setup remains the continuous CodeQL owner for pushes. The repository `SEC - CodeQL` workflow stays PR/scheduled/manual only.\n- `SEC - Final Gate` is accepted-release/manual only; it no longer fans out and waits for exact-SHA CodeQL on every provider/manifest commit.\n- `CORE - Workflow Gate` is PR/manual only. Publication/hotfix workflows must validate their candidate before writing one final `main` commit.\n- Temporary/intermediate repair commits must be built on a work branch whenever possible; avoid chains of direct `main` commits because each one creates a Default Setup CodeQL analysis.\n- Emergency publication workflows cancel superseded `main` CodeQL/final-gate/workflow-gate runs before doing expensive work, leaving the final published SHA as the only useful continuous scan.\n'''
+          if marker in text:
+              text=text.split(marker,1)[0].rstrip()+section
+          else:
+              text+=section
+          p.write_text(text.rstrip()+'\n',encoding='utf-8')
+          PY
       - name: Validate final published bytes
         shell: bash
         run: |
@@ -74,10 +168,41 @@ jobs:
           python tests/native_dual_id_identity_test.py
           python tests/global_media_type_resolution_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/workflow_security_policy_test.py
           python scripts/audit_provider_v3_static.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           python scripts/reapply_published_overrides.py --check
+
+      - name: Cancel intermediate main CodeQL and gate runs before publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY' > "$RUNNER_TEMP/cancel-runs-final.txt"
+          import json, os, subprocess
+          repo=os.environ['GITHUB_REPOSITORY']
+          current=int(os.environ['GITHUB_RUN_ID'])
+          raw=subprocess.check_output(['gh','api',f'repos/{repo}/actions/runs?per_page=100'],text=True)
+          rows=json.loads(raw).get('workflow_runs') or []
+          active={'queued','in_progress','waiting','pending','requested'}
+          for row in rows:
+              run_id=int(row.get('id') or 0)
+              if not run_id or run_id == current or str(row.get('status') or '') not in active:
+                  continue
+              if str(row.get('head_branch') or '') != 'main':
+                  continue
+              name=str(row.get('name') or '')
+              if 'codeql' in name.casefold() or name in {'SEC - Final Gate','CORE - Workflow Gate'}:
+                  print(f"{run_id}\t{name}\t{row.get('head_sha') or ''}")
+          PY
+          while IFS=$'\t' read -r run_id run_name run_sha; do
+            [ -n "${run_id:-}" ] || continue
+            echo "CANCEL_INTERMEDIATE run=$run_id name=$run_name sha=$run_sha"
+            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
+          done < "$RUNNER_TEMP/cancel-runs-final.txt"
+
       - name: Publish repaired generation to main
         env:
           GH_TOKEN: ${{ github.token }}
