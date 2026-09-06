@@ -8,13 +8,9 @@ runtime validation/publication.
 from __future__ import annotations
 
 import hashlib
-import importlib.util
 import re
-from pathlib import Path
 from typing import Any
 
-ROOT = Path(__file__).resolve().parents[1]
-SAFE_PARSE_PATH = ROOT / "scripts" / "provider_patches" / "safe_structured_parse_v1.py"
 MARKER = "NUVIO_PROVIDER_SECURITY_HARDENING_V1"
 
 _DOMAIN = r"(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}"
@@ -138,14 +134,6 @@ _CONSOLE_OBJECT = r'''var console={
 _CONSOLE_SHADOW = "/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */\n" + _SILENT_LOG_HELPER + "\n" + _CONSOLE_OBJECT
 
 
-def _load_safe_parse():
-    spec = importlib.util.spec_from_file_location("nuvio_safe_structured_parse", SAFE_PARSE_PATH)
-    if spec is None or spec.loader is None:
-        raise RuntimeError(f"cannot load {SAFE_PARSE_PATH}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
 
 def _insert_prelude(source: str, snippets: list[str], digest: str) -> str:
     if not snippets:
@@ -261,9 +249,6 @@ def _rewrite_console_sinks(source: str) -> tuple[str, int]:
 
 def harden_text(source: str) -> tuple[str, dict[str, Any]]:
     had_marker = MARKER in source
-    structured = _load_safe_parse().apply(source)
-    structured_changed = structured != source
-    source = structured
 
     source, literal_changes = _UNSAFE_LITERAL_DECODE.subn(
         lambda match: f"__nuvioDecodeEscapedLiteral({match.group('expr')})",
@@ -309,7 +294,7 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
             snippets.append(_CONSOLE_SHADOW)
         console_shadow = True
 
-    changed = structured_changed or bool(
+    changed = bool(
         literal_changes
         or hostname_changes
         or percent_decode_changes
@@ -321,7 +306,7 @@ def harden_text(source: str) -> tuple[str, dict[str, Any]]:
     report = {
         "changed": changed,
         "alreadyHardened": had_marker and not changed,
-        "structuredParseChanges": 1 if structured_changed else 0,
+        "structuredParseChanges": 0,
         "literalDecodeChanges": literal_changes,
         "hostnameChanges": hostname_changes,
         "percentDecodeChanges": percent_decode_changes,
@@ -367,11 +352,6 @@ def known_unsafe_findings(source: str) -> list[str]:
         findings.append("incomplete_percent_byte_decode")
     if _double_html_entity_chains(source):
         findings.append("double_html_entity_unescape")
-    try:
-        if _load_safe_parse().apply(source) != source:
-            findings.append("destructive_structured_unescape")
-    except Exception:
-        findings.append("structured_parse_scan_failed")
     if _CONSOLE_METHOD.search(source) or _CONSOLE_BRACKET_METHOD.search(source):
         findings.append("provider_console_sensitive_sink")
     if _SILENT_LOG_USE.search(source) and not _SILENT_LOG_DECL.search(source):

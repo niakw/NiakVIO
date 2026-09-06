@@ -960,12 +960,17 @@ def main() -> int:
         removed_wrappers_total += len(removed_wrappers)
         isolated = isolated_text.encode("utf-8")
         migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)
-        migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
         clean_v2_base = runtime_base_is_clean_v2(
             provider_id,
             provider_provenance,
             provider_base_path,
         )
+        if clean_v2_base:
+            # Clean ProviderBase v3 deliberately excludes historical adaptive source
+            # patches. Never replay intentionally absent legacy migrators here.
+            domain_revision_records = []
+        else:
+            migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)
         patched, records = apply_overrides(
             provider_id,
             migrated,
@@ -990,7 +995,10 @@ def main() -> int:
             }] + list(records)
         if domain_revision_records:
             records = list(records) + domain_revision_records
-        patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
+        if clean_v2_base:
+            runtime_revision_records = []
+        else:
+            patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)
         if runtime_revision_records:
             records = list(records) + runtime_revision_records
         if adaptive_language_repairs:
