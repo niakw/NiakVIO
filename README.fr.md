@@ -229,7 +229,9 @@ Cette séparation évite qu’un simple health check réécrive silencieusement 
 
 La publication est atomique et fail-closed. Tout changement des bytes provider publiés impose une synchronisation des versions provider/manifest/cache/release, mais **le bump n’est effectué qu’une fois la pile de validation acceptée**.
 
-Un census route-only, une mise à jour documentation ou un changement workflow qui ne modifie pas les bytes provider publiés ne déclenche **aucun bump provider/cache**.
+La release acceptée est finalisée explicitement via `release-finalize.yml`. Le workflow checkout le SHA accepté exact, utilise soit une baseline explicite soit le commit le plus ancien de la génération de version courante, puis synchronise versions provider/manifest/cache/release, projections des manifests, hashes et métadonnées d’intégrité dans une seule transaction de release. Il ne répare ni ne reconstruit les bytes providers.
+
+Un census route-only, une mise à jour documentation ou un changement workflow qui ne modifie pas les bytes provider publiés ne déclenche **aucun bump provider/cache**. `sync.yml` Quick/Deep reste orienté validation et ne mute pas les versions de release en routine.
 
 La publication finale peut inclure :
 
@@ -246,7 +248,8 @@ La publication finale peut inclure :
 
 | Workflow | Responsabilité |
 | --- | --- |
-| `sync.yml` | **CORE - Verify & Publish** Quick/Deep ; aucune réparation/reconstruction provider |
+| `sync.yml` | **CORE - Verify & Publish** Quick/Deep ; aucune réparation/reconstruction provider ni bump release de routine |
+| `release-finalize.yml` | finalisation release acceptée au SHA exact : versions, projections, hashes et intégrité synchronisés |
 | `provider-v3-reconstruct-routes.yml` | reconnaissance route-only / census `routeData` canonique |
 | `provider-v3-reconstruct-all.yml` | reconstruction complète Provider v3 + reverse byte proof |
 | `brain-learning-lab.yml` | observation/réparation Learning sandbox + propositions reviewables |
@@ -256,8 +259,8 @@ La publication finale peut inclure :
 | `native-mobile-ios-reader.yml` | preuves Mobile iOS |
 | `native-desktop-reader-acceptance.yml` | preuves Desktop macOS + Windows |
 | `native-corpus-device-targeted.yml` | diagnostics ciblés device/provider |
-| `github-actions-gate.yml` | invariants sécurité workflows/dépendances |
-| `codeql.yml` | analyse CodeQL |
+| `github-actions-gate.yml` | invariants sécurité/compatibilité workflows et repository |
+| `codeql.yml` | preuve locale CodeQL `security-extended` + audit High/Critical des dépendances production |
 | `weekly-upstream-provider-discovery.yml` | découverte upstream en lecture seule |
 | `purge-actions-history.yml` | nettoyage historique Actions |
 | `brain-branch-maintenance.yml` | maintenance du store Learning/proposals |
