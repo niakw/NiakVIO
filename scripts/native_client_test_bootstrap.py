@@ -21,6 +21,23 @@ MOBILE_HOST_TEST_ANCHORS = (
     "        withHostTest { isIncludeAndroidResources = true }\n\n        compilerOptions {",
     "        withHostTest {}\n\n        compilerOptions {",
 )
+MOBILE_DEVICE_TEST_MANIFEST = '''<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!--
+          The official androidApp manifest disables Sentry auto-init because the
+          application initializes Sentry itself after settings/config are loaded.
+          The standalone instrumentation APK does not inherit androidApp's manifest,
+          so mirror that one metadata bit in the test APK only. This prevents the
+          SentryInitProvider in com.nuvio.app.test from requiring a DSN before any
+          instrumentation test can start; production/main manifests remain untouched.
+        -->
+        <meta-data
+            android:name="io.sentry.auto-init"
+            android:value="false" />
+    </application>
+</manifest>
+'''
 TV_RUNNER = 'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"'
 TV_EXT_JUNIT = 'androidTestImplementation("androidx.test.ext:junit:1.3.0")'
 TV_TEST_RUNNER = 'androidTestImplementation("androidx.test:runner:1.7.0")'
@@ -56,7 +73,8 @@ def _mobile_compilation_anchor(text: str) -> str:
 
 def enable_mobile_device_tests(repo: Path) -> None:
     """Enable only the Android device-test source set in NuvioMobile."""
-    build = Path(repo) / "composeApp/build.gradle.kts"
+    repo = Path(repo)
+    build = repo / "composeApp/build.gradle.kts"
     text = build.read_text(encoding="utf-8")
 
     if "withDeviceTest {" not in text:
@@ -112,9 +130,27 @@ def enable_mobile_device_tests(repo: Path) -> None:
         )
 
     build.write_text(text, encoding="utf-8")
+
+    # NuvioMobile's official androidApp manifest already declares
+    # io.sentry.auto-init=false. The androidDeviceTest APK is a separate package
+    # (com.nuvio.app.test) and does not inherit that application manifest, so
+    # SentryInitProvider otherwise starts before the runner and aborts on the
+    # intentionally absent Lab DSN. Mirror the official setting in the device-test
+    # source set only; never mutate androidMain/androidApp production manifests.
+    test_manifest = repo / "composeApp/src/androidDeviceTest/AndroidManifest.xml"
+    test_manifest.parent.mkdir(parents=True, exist_ok=True)
+    if test_manifest.exists():
+        existing = test_manifest.read_text(encoding="utf-8")
+        if existing != MOBILE_DEVICE_TEST_MANIFEST:
+            raise SystemExit(
+                f"unexpected existing mobile device-test manifest content: {test_manifest}"
+            )
+    else:
+        test_manifest.write_text(MOBILE_DEVICE_TEST_MANIFEST, encoding="utf-8")
+
     print(
         "FIELD_NATIVE_TEST_BOOTSTRAP client=mobile scope=test-only "
-        "libcxx_pick_first=true runtime_mutation=false"
+        "libcxx_pick_first=true sentry_auto_init=false runtime_mutation=false"
     )
 
 
