@@ -1,3 +1,5 @@
+import { normalizeTitle, scoreCatalogueIdentity } from "../src/catalogue-identity-policy.mjs";
+
 const DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 export function createPurstreamAdapter(options = {}) {
@@ -153,22 +155,17 @@ export function derivePurstreamEndpoint(terminalUrl) {
 }
 
 export function strictIdentityScore(item, metadata, targetType) {
-  const candidateTitle = normalizeTitle(itemTitle(item));
-  const targetTitles = unique([metadata.title, ...(metadata.aliases ?? [])].map(normalizeTitle).filter(Boolean));
-  if (!candidateTitle || !targetTitles.includes(candidateTitle)) return 0;
-  let score = 100;
-  const type = itemType(item);
-  if (type && targetType && type !== targetType) return 0;
-  if (type === targetType) score += 20;
-  const targetYear = asYear(metadata.year);
-  const year = itemYear(item);
-  if (targetYear && year) {
-    const delta = Math.abs(targetYear - year);
-    if (delta > 1) return 0;
-    score += delta === 0 ? 20 : 10;
-  }
-  if (providerId(item)) score += 5;
-  return score;
+  return scoreCatalogueIdentity({
+    title: itemTitle(item),
+    expectedTitles: [metadata?.title, ...(metadata?.aliases ?? [])].filter(Boolean),
+    actualMedia: itemType(item),
+    expectedMedia: targetType,
+    year: itemYear(item),
+    expectedYear: metadata?.year,
+    providerId: providerId(item),
+    strictIdentity: true,
+    requireProviderTypeEvidence: false,
+  });
 }
 
 export function collectSearchItems(payload) {
@@ -217,7 +214,6 @@ function normalizeSource(item, endpoint, userAgent, request) {
   const declaredAgeRating = cleanText(item.age_rating ?? item.ageRating ?? item.certification);
 
   return {
-    // Purstream supplies facts only. The Core owns all user-facing presentation.
     title: "Purstream",
     name: "Purstream",
     url,
@@ -393,15 +389,6 @@ function derivePurstreamEndpointUnchecked(url) {
   const host = url.hostname.toLowerCase().replace(/^www\./, "");
   if (host === "purstream.wiki" || host.endsWith(".purstream.wiki")) throw new Error("Purstream hub is not a terminal provider domain");
   if (!/^(?:api\.)?purstream\.[a-z0-9.-]+$/i.test(host)) throw new Error(`unsupported Purstream terminal host: ${host}`);
-}
-
-function normalizeTitle(value) {
-  return String(value ?? "")
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
 }
 
 function asYear(value) {
