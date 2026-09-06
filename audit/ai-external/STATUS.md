@@ -1,6 +1,6 @@
 # External code-audit status
 
-Generated from `niakw/NiakVIO` at commit `b777a31ac79d350d7db9024faea20167dec5aa81`.
+Generated from `niakw/NiakVIO` at commit `1a7f3b7a17627b3768a57cf152fa62a45b3a9571`.
 
 | Source | Status | Findings/files | Access | Notes |
 |---|---:|---:|---|---|
