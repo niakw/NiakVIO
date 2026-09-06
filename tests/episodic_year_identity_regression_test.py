@@ -16,16 +16,23 @@ spec.loader.exec_module(identity)
 
 source = "module.exports={getStreams:async()=>[{name:'Server 1',title:'Shared Show 2020',url:'https://cdn.example/shared-show-2020.m3u8'}]};"
 patched = identity.apply(source, context={'provider_id': 'example'})
-assert 'cross-client-shared-tv-year-soft-v8' in patched
+assert 'cross-client-shared-catalogue-policy-zero-episodic-year-v10' in patched
 assert 'if(!episodic(q)&&m.year&&years.length' in patched
+assert 'function contentLike(candidate,q)' in patched
+assert 'if(!episodic(q)&&years.length&&w.length>=1)return true;' in patched
+assert 'function contentLike(candidate){' not in patched
+assert 'if(years.length&&w.length>=1)return true;' not in patched
 
 runner = """
 const assert=require('assert');
 PATCHED
 (async()=>{
   for(const mediaType of ['tv','series','anime']){
-    const rows=await module.exports.getStreams({tmdbId:'',mediaType,title:'Shared Show',year:2024,season:1,episode:1});
-    assert.equal(rows.length,1,mediaType+': '+JSON.stringify(rows));
+    const withYear=await module.exports.getStreams({tmdbId:'',mediaType,title:'Shared Show',year:2024,season:1,episode:1});
+    const withoutYear=await module.exports.getStreams({tmdbId:'',mediaType,title:'Shared Show',season:1,episode:1});
+    assert.equal(withYear.length,1,mediaType+' with year: '+JSON.stringify(withYear));
+    assert.equal(withoutYear.length,1,mediaType+' without year: '+JSON.stringify(withoutYear));
+    assert.deepEqual(withYear,withoutYear,mediaType+': year must have zero direct/indirect identity effect');
   }
   const movieRows=await module.exports.getStreams({tmdbId:'',mediaType:'movie',title:'Shared Show',year:2024});
   assert.equal(movieRows.length,0,'movie year mismatch must remain authoritative: '+JSON.stringify(movieRows));
@@ -40,4 +47,4 @@ try:
     assert proc.returncode == 0, proc.stdout + proc.stderr
 finally:
     path.unlink(missing_ok=True)
-print('episodic year identity regression tests passed')
+print('episodic zero-year identity regression tests passed')
