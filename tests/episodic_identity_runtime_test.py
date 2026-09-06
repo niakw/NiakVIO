@@ -4,10 +4,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 CORE = ROOT / "scripts" / "provider_patches" / "global_stream_identity_v1.py"
 
 spec = importlib.util.spec_from_file_location("global_stream_identity_runtime_test", CORE)
