@@ -1,4 +1,4 @@
-name: MAIN - Core Identity Publication Retry
+name: MAIN - Core Identity Publication Retry 2
 
 on:
   push:
@@ -51,34 +51,35 @@ jobs:
           print('IDENTITY_PUBLICATION_BASELINE_OK version=5.21.35 providers=96')
           PY
 
-      - name: Apply single-owner identity architecture cleanup
+      - name: Apply single-owner zero-year episodic identity cleanup
         shell: bash
         run: |
           set -euo pipefail
-          # Retry-1 correction: the old helper signature occurs once at the call
-          # site and once in the definition that the migration removes next.
-          python3 - <<'PY'
-          from pathlib import Path
-          p=Path('scripts/apply_core_identity_ownership_cleanup.py')
-          text=p.read_text(encoding='utf-8')
-          old='''    count = text.count(rank_old)\n    if count != 1:\n        raise AssertionError(f"Purstream rank identity call count={count}")\n    text = text.replace(rank_old, rank_new)\n'''
-          new='''    count = text.count(rank_old)\n    if count != 2:\n        raise AssertionError(f"Purstream rank identity call count={count}")\n    text = text.replace(rank_old, rank_new, 1)\n'''
-          if old not in text:
-              raise SystemExit('retry rank-count anchor missing')
-          p.write_text(text.replace(old,new,1),encoding='utf-8')
-          PY
           python scripts/apply_core_identity_ownership_cleanup.py
           python3 - <<'PY'
           from pathlib import Path
           p=Path('.github/workflows/github-actions-gate.yml')
           text=p.read_text(encoding='utf-8')
           anchor='          python3 tests/provider_js_lego_ownership_test.py\n'
-          line='          python3 tests/episodic_identity_runtime_test.py\n'
-          if line not in text:
-              if anchor not in text: raise SystemExit('Workflow Gate ownership anchor missing')
-              p.write_text(text.replace(anchor,anchor+line,1),encoding='utf-8')
+          lines=(
+              '          python3 tests/episodic_identity_runtime_test.py\n',
+              '          python3 tests/episodic_year_identity_regression_test.py\n',
+          )
+          for line in lines:
+              if line not in text:
+                  if anchor not in text:
+                      raise SystemExit('Workflow Gate ownership anchor missing')
+                  text=text.replace(anchor,anchor+line,1)
+                  anchor=line
+          p.write_text(text,encoding='utf-8')
           PY
-          python -m py_compile scripts/provider_patches/global_stream_identity_v1.py scripts/provider_patches/runtime_capability_media_safety_v4.py tests/global_identity_policy_ownership_test.py tests/provider_js_lego_ownership_test.py tests/episodic_identity_runtime_test.py
+          python -m py_compile \
+            scripts/provider_patches/global_stream_identity_v1.py \
+            scripts/provider_patches/runtime_capability_media_safety_v4.py \
+            tests/global_identity_policy_ownership_test.py \
+            tests/provider_js_lego_ownership_test.py \
+            tests/episodic_identity_runtime_test.py \
+            tests/episodic_year_identity_regression_test.py
 
       - name: Prove cleanup did not touch provider route or domain DATA
         shell: bash
@@ -100,6 +101,7 @@ jobs:
           set -euo pipefail
           python tests/global_identity_policy_ownership_test.py
           python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
           node engine_v2/tests/purstream-adapter.test.mjs
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/priority_tv_year_domain_refresh_test.py
@@ -115,6 +117,7 @@ jobs:
           set -euo pipefail
           python scripts/materialize_provider_base_identity_only.py
           python tests/global_identity_policy_ownership_test.py
+          python tests/episodic_year_identity_regression_test.py
           python tests/purstream_original_bug_matrix_contract_test.py
 
       - name: Recompose the published 96 from Base plus DATA plus Lego
@@ -128,6 +131,7 @@ jobs:
           python tests/provider_js_lego_ownership_test.py
           python tests/global_stream_output_guard_test.py
           python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
 
       - name: Derive projections and synchronize release versions
         shell: bash
@@ -166,6 +170,7 @@ jobs:
           python tests/provider_js_lego_ownership_test.py
           python tests/global_identity_policy_ownership_test.py
           python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
           node engine_v2/tests/purstream-adapter.test.mjs
           python tests/runtime_capability_media_safety_v4_test.py
           python tests/native_hls_integrity_budget_test.py
@@ -187,9 +192,14 @@ jobs:
               assert text.count('STARTFIX:CORE.STREAM_IDENTITY.V1')==1, pid
               assert text.count('CLOSEFIX:CORE.STREAM_IDENTITY.V1')==1, pid
               assert '__nuvioIdentityPolicyV1' in text, pid
+              assert 'cross-client-shared-catalogue-policy-zero-episodic-year-v10' in text, pid
+              assert 'function contentLike(candidate,q)' in text, pid
+              assert 'if(!episodic(q)&&years.length&&w.length>=1)return true;' in text, pid
+              assert 'function contentLike(candidate){' not in text, pid
+              assert 'if(years.length&&w.length>=1)return true;' not in text, pid
               for forbidden in ('strictIdentityScore','function routeIdentity(','wrong_release_year','season_episode_identity_mismatch','collisionFixtures'):
                   assert forbidden not in text,(pid,forbidden)
-          print('FINAL_MAIN_5_21_36_IDENTITY_OK providers=96')
+          print('FINAL_MAIN_5_21_36_IDENTITY_OK providers=96 episodic_year_influence=0')
           PY
 
       - name: Write durable publication checkpoint
@@ -199,7 +209,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           p=Path('MEMORY.md'); text=p.read_text(encoding='utf-8')
-          block='''\n## 2026-09-07 — Core identity ownership publication 5.21.36\n\n- First publication attempt run `34065556338`, job `101573573889`, failed safely before materialization: the one-shot Purstream migration expected one `strictIdentityScore(item, metadata, targetType)` occurrence but correctly found two (call site + definition). No publication bytes were pushed. Retry changes only that migration cardinality: replace first call, then delete local definition.\n- `CORE.STREAM_IDENTITY.V1` is the sole identity owner in all 96 active Provider JS.\n- ProviderBase v9 delegates catalogue/HTML identity to `__nuvioIdentityPolicyV1`; no local year acceptance remains.\n- Purstream no longer exports/defines `strictIdentityScore`; synthetic HOTD S3E1 (TMDB origin 2022 vs provider row 2026) passes through shared policy.\n- `CORE.RUNTIME_MEDIA_SAFETY.V4` is media/playability-only v8; no title/year/season/episode collision policy remains there.\n- Generic catalogue DATA no longer declares `year` universally required. Year is movie-only identity evidence in Core.\n- Kehflix-shaped runtime regression: HOTD S03E01 2026 survives, S03E02 contradicts, movie year mismatch rejects.\n- `provider_patches` and `provider_capabilities` remained unchanged during identity-only migration; no route/domain census or repair was mixed into this release.\n- 96 ProviderBase/bundles were recomposed from common Base + existing DATA/CONFIG + managed Provider/Core Lego and passed ownership/static/reverse/integrity gates before publication.\n- Published target: 5.21.36. Real Desktop HOTD S3E1 retest remains required after publication.\n'''
+          block='''\n## 2026-09-07 — Core identity ownership publication 5.21.36\n\n- First publication attempt run `34065556338`, job `101573573889`, failed safely before materialization because the one-shot Purstream migration found two old `strictIdentityScore(item, metadata, targetType)` occurrences (rank call + local definition) while its first cardinality expected one. No publication bytes were pushed.\n- Retry #1 run `34065727473` was superseded by the final v10 zero-year episodic refinement before publication; its old workspace pre-patch is not publication authority.\n- Final identity policy revision: `cross-client-shared-catalogue-policy-zero-episodic-year-v10`. For tv/series/anime year has zero direct or indirect identity effect, including `contentLike`; movie keeps year evidence.\n- `CORE.STREAM_IDENTITY.V1` is the sole identity owner in all 96 active Provider JS.\n- ProviderBase v9 delegates catalogue/HTML identity to `__nuvioIdentityPolicyV1`; no local year acceptance remains.\n- Purstream no longer exports/defines `strictIdentityScore`; synthetic HOTD S3E1 (TMDB origin 2022 vs provider row 2026) passes through shared policy.\n- `CORE.RUNTIME_MEDIA_SAFETY.V4` is media/playability-only v8; no title/year/season/episode collision policy remains there.\n- Generic catalogue DATA no longer declares `year` universally required.\n- Kehflix-shaped final-row regression proves HOTD S03E01 2026 survives, S03E02 contradicts, and movie year mismatch rejects.\n- `provider_patches` and `provider_capabilities` remained unchanged during identity-only migration; no route/domain census or repair was mixed into this release.\n- 96 ProviderBase/bundles were recomposed from common Base + existing DATA/CONFIG + managed Provider/Core Lego and passed ownership/static/reverse/integrity gates before publication.\n- Published target: 5.21.36. Real Desktop HOTD S3E1 retest remains required after publication.\n'''
           if '## 2026-09-07 — Core identity ownership publication 5.21.36' not in text:
               p.write_text(text.rstrip()+"\n"+block,encoding='utf-8')
           PY
@@ -212,7 +222,11 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git rm -f scripts/apply_core_identity_ownership_cleanup.py scripts/materialize_provider_base_identity_only.py .github/workflows/main-core-identity-publication.yml .github/workflows/main-core-identity-publication-retry.yml
+          git rm -f \
+            scripts/apply_core_identity_ownership_cleanup.py \
+            scripts/materialize_provider_base_identity_only.py \
+            .github/workflows/main-core-identity-publication.yml \
+            .github/workflows/main-core-identity-publication-retry.yml
           git add -A
           git diff --cached --stat
           git diff --cached --quiet && { echo 'No identity publication changes'; exit 1; }
