@@ -38,6 +38,77 @@ def remove_block(text: str, start_marker: str, end_marker: str, label: str) -> s
     return text[:start] + text[end:]
 
 
+def patch_core_identity_zero_year_episodic() -> None:
+    """Make year completely inert for tv/series/anime, including heuristics."""
+    path = "scripts/provider_patches/global_stream_identity_v1.py"
+    text = read(path)
+    text = replace_once(
+        text,
+        '"implementationRevision": "cross-client-shared-catalogue-policy-movie-year-only-v9",',
+        '"implementationRevision": "cross-client-shared-catalogue-policy-zero-episodic-year-v10",',
+        "Core identity revision v10",
+    )
+    text = replace_once(
+        text,
+        "function contentLike(candidate){",
+        "function contentLike(candidate,q){",
+        "Core contentLike request context",
+    )
+    text = replace_once(
+        text,
+        "if(years.length&&w.length>=1)return true;",
+        "if(!episodic(q)&&years.length&&w.length>=1)return true;",
+        "Core contentLike movie-only year heuristic",
+    )
+    text = replace_once(
+        text,
+        "if(!contentLike(candidate)||overlapsExpected(text,expected))return false;",
+        "if(!contentLike(candidate,q)||overlapsExpected(text,expected))return false;",
+        "Core contentLike call request context",
+    )
+    if "function contentLike(candidate){" in text:
+        raise AssertionError("Core identity retained context-free contentLike")
+    if "if(years.length&&w.length>=1)return true;" in text:
+        raise AssertionError("Core identity retained episodic year contentLike heuristic")
+    if "function contentLike(candidate,q){" not in text:
+        raise AssertionError("Core identity v10 contentLike missing")
+    if "if(!episodic(q)&&years.length&&w.length>=1)return true;" not in text:
+        raise AssertionError("Core identity v10 movie-only contentLike year gate missing")
+    write(path, text)
+
+    for test_path in (
+        "tests/global_identity_policy_ownership_test.py",
+        "tests/priority_tv_year_domain_refresh_test.py",
+    ):
+        test = read(test_path)
+        test = test.replace(
+            "cross-client-shared-catalogue-policy-movie-year-only-v9",
+            "cross-client-shared-catalogue-policy-zero-episodic-year-v10",
+        )
+        if test_path.endswith("global_identity_policy_ownership_test.py"):
+            anchor = 'assert \'yearPolicy:"movie-only"\' in compiled\n'
+            extra = (
+                'source = CORE.read_text(encoding="utf-8")\n'
+                'assert "function contentLike(candidate,q)" in source\n'
+                'assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in source\n'
+                'assert "function contentLike(candidate){" not in source\n'
+                'assert "if(years.length&&w.length>=1)return true;" not in source\n'
+            )
+            if extra not in test:
+                test = replace_once(test, anchor, anchor + extra, "Core zero-year ownership assertions")
+        else:
+            anchor = 'assert "if(!episodic(q)&&m.year&&years.length" in identity\n'
+            extra = (
+                'assert "function contentLike(candidate,q)" in identity\n'
+                'assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in identity\n'
+                'assert "function contentLike(candidate){" not in identity\n'
+                'assert "if(years.length&&w.length>=1)return true;" not in identity\n'
+            )
+            if extra not in test:
+                test = replace_once(test, anchor, anchor + extra, "priority zero-year heuristic assertions")
+        write(test_path, test)
+
+
 def patch_engine_policy() -> None:
     path = "engine_v2/src/catalogue-identity-policy.mjs"
     text = read(path)
@@ -62,13 +133,13 @@ def patch_purstream_adapter() -> None:
     count = text.count(call_old)
     if count != 1:
         raise AssertionError(f"Purstream search identity call count={count}")
-    text = text.replace(call_old, call_new)
+    text = text.replace(call_old, call_new, 1)
     rank_old = "strictIdentityScore(item, metadata, targetType)"
     rank_new = "scoreCatalogueItem({ id: providerId(item), title: itemTitle(item), type: itemType(item), year: itemYear(item) }, metadata, targetType)"
     count = text.count(rank_old)
-    if count != 1:
+    if count != 2:
         raise AssertionError(f"Purstream rank identity call count={count}")
-    text = text.replace(rank_old, rank_new)
+    text = text.replace(rank_old, rank_new, 1)
     start = "export function strictIdentityScore(item, metadata, targetType) {\n"
     end = "export function collectSearchItems(payload) {\n"
     text = remove_block(text, start, end, "remove Purstream local identity wrapper")
@@ -237,6 +308,7 @@ def validate_source_state() -> None:
     safety = read("scripts/provider_patches/runtime_capability_media_safety_v4.py")
     base = read("scripts/provider_base_store.py")
     materializer = read("scripts/materialize_provider_v3_all.py")
+    identity = read("scripts/provider_patches/global_stream_identity_v1.py")
     assert "strictIdentityScore" not in purstream
     assert "scoreCatalogueItem" in purstream
     for forbidden in ("routeIdentity(", "wrong_release_year", "season_episode_identity_mismatch", "collisionFixtures"):
@@ -245,9 +317,15 @@ def validate_source_state() -> None:
     assert '["title", "year", "mediaType"]' not in materializer
     assert '["title", "mediaType"]' in base
     assert '["title", "mediaType"]' in materializer
+    assert "cross-client-shared-catalogue-policy-zero-episodic-year-v10" in identity
+    assert "function contentLike(candidate,q)" in identity
+    assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in identity
+    assert "function contentLike(candidate){" not in identity
+    assert "if(years.length&&w.length>=1)return true;" not in identity
 
 
 def main() -> int:
+    patch_core_identity_zero_year_episodic()
     patch_engine_policy()
     patch_purstream_adapter()
     patch_purstream_test()
@@ -257,7 +335,7 @@ def main() -> int:
     patch_runtime_media_safety_test()
     patch_workflow_gate()
     validate_source_state()
-    print("CORE_IDENTITY_OWNERSHIP_CLEANUP_OK")
+    print("CORE_IDENTITY_OWNERSHIP_CLEANUP_OK episodic_year_influence=0")
     return 0
 
 
