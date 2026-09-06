@@ -49,15 +49,7 @@ def _patch_v7_safe_html_text() -> bool:
 
 
 def _patch_v8_api_recipe_precedence() -> bool:
-    """An explicit API recipe is executable authority, not a hint after crawling.
-
-    Providers such as Purstream persist a bounded search -> provider id -> typed
-    movie/episode recipe. Running the generic sourceRuntimeFamily traversal first
-    spends the request budget on the same relative search route expanded against
-    site/hub/API origins and can prevent the declared typed route from ever being
-    reached. Execute the explicit recipe first; only recipes that explicitly opt
-    into generic fallback may continue into source-family discovery.
-    """
+    """An explicit API recipe is executable authority, not a hint after crawling."""
     target = runtime_v7.TARGET
     text = target.read_text(encoding='utf-8')
     marker = '/* NIAKVIO_PROVIDER_BASE_API_RECIPE_FIRST_V8 */'
@@ -85,19 +77,19 @@ if (family === "stremio-json") {'''
     return True
 
 
-def _patch_v9_no_episodic_year_identity() -> bool:
-    """Keep release-year identity strictly movie-only.
+def _patch_v9_shared_identity_policy() -> bool:
+    """Delegate catalogue identity to CORE.STREAM_IDENTITY.V1.
 
-    TV/series/anime identity is title/type plus season+episode. Series origin
-    year and season/episode year are intentionally ignored by ProviderBase
-    acceptance logic because provider catalogues may expose either one.
+    ProviderBase must not own a second title/type/year policy. The Core Lego is
+    evaluated after ProviderBase declarations but before any getStreams call, so
+    these functions resolve the shared policy lazily at invocation time.
     """
     target = runtime_v7.TARGET
     text = target.read_text(encoding='utf-8')
-    marker = '/* NIAKVIO_PROVIDER_BASE_NO_EPISODIC_YEAR_V9 */'
+    marker = '/* NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9 */'
     if marker in text:
         if text.count(marker) != 1:
-            raise AssertionError(f'v9-no-episodic-year: marker count={text.count(marker)}')
+            raise AssertionError(f'v9-shared-identity-policy: marker count={text.count(marker)}')
         return False
 
     old_score = '''function _recipeScore(row, meta, recipe, expectedMedia) {
@@ -136,45 +128,29 @@ def _patch_v9_no_episodic_year_identity() -> bool:
   if (providerId) score += 15;
   return score;
 }'''
-    new_score = '''/* NIAKVIO_PROVIDER_BASE_NO_EPISODIC_YEAR_V9 */
+    new_score = '''/* NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9 */
+function _identityPolicy() {
+  try {
+    const policy = typeof globalThis !== "undefined" ? globalThis.__nuvioIdentityPolicyV1 : null;
+    return policy && typeof policy.catalogueScore === "function" && typeof policy.htmlIdentityOk === "function" ? policy : null;
+  } catch (_) { return null; }
+}
 function _recipeScore(row, meta, recipe, expectedMedia) {
-  const title = _slug(_recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]));
-  const expectedTitles = _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])])
-    .map(_slug).filter(Boolean);
-  const expected = expectedTitles[0] || "";
-  const actualMedia = _recipeMediaType(row, recipe);
-  const year = _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4);
-  const expectedYear = _text(meta && meta.year).slice(0, 4);
-  const providerId = _recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"]);
-  const movieIdentity = expectedMedia === "movie";
-
-  if (recipe.strictIdentity) {
-    if (!providerId || !title || !expectedTitles.length || !expectedTitles.includes(title)) return -1;
-    if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
-    if (recipe.requireProviderTypeEvidence === true && (!actualMedia || !expectedMedia)) return -1;
-    if (movieIdentity && expectedYear) {
-      if (!year || !/^\\d{4}$/.test(year)) return -1;
-      if (Math.abs(Number(year) - Number(expectedYear)) > 1) return -1;
-    }
-    return 120 + (movieIdentity && year === expectedYear ? 20 : 0);
-  }
-
-  if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
-  if (movieIdentity && year && expectedYear && year !== expectedYear) return -1;
-  let score = 0;
-  if (title && expected && title === expected) score += 200;
-  else if (title && expected && (title.includes(expected) || expected.includes(title))) score += 90;
-  if (title && expected) {
-    for (const token of expected.split("-").filter(value => value.length >= 3)) {
-      if (title.includes(token)) score += 10;
-    }
-  }
-  if (movieIdentity && year && expectedYear && year === expectedYear) score += 40;
-  if (actualMedia && expectedMedia && actualMedia === expectedMedia) score += 60;
-  if (providerId) score += 15;
-  return score;
+  const policy = _identityPolicy();
+  if (!policy) return -1;
+  return Number(policy.catalogueScore({
+    title: _recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]),
+    expectedTitles: _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])]).filter(Boolean),
+    actualMedia: _recipeMediaType(row, recipe),
+    expectedMedia,
+    year: _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4),
+    expectedYear: _text(meta && meta.year).slice(0, 4),
+    providerId: _recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"]),
+    strictIdentity: recipe.strictIdentity === true,
+    requireProviderTypeEvidence: recipe.requireProviderTypeEvidence === true
+  }));
 }'''
-    text = _once_whitespace_tolerant(text, old_score, new_score, 'v9-recipe-year-movie-only')
+    text = _once_whitespace_tolerant(text, old_score, new_score, 'v9-recipe-shared-identity-policy')
 
     old_html = '''function _strictHtmlIdentityOk(html, meta) {
   if (!NIAKVIO_PROVIDER_MODEL.strictHtmlIdentity) return true;
@@ -194,28 +170,23 @@ function _recipeScore(row, meta, recipe, expectedMedia) {
 }'''
     new_html = '''function _strictHtmlIdentityOk(html, meta, mediaType) {
   if (!NIAKVIO_PROVIDER_MODEL.strictHtmlIdentity) return true;
-  if (!meta || !meta.title) return false;
-  const visible = _htmlVisibleText(html);
-  const normalized = _slug(visible);
-  const titles = _uniq([meta.title, ...((Array.isArray(meta.aliases) ? meta.aliases : []))])
-    .map(_slug)
-    .filter(Boolean);
-  if (!titles.length || !titles.some(title => normalized.includes(title))) return false;
-  if (_mediaNamespace(mediaType) === "movie") {
-    const year = _text(meta.year).slice(0, 4);
-    if (year && /^\\d{4}$/.test(year)) {
-      const years = _text(html).match(/\\b(?:19|20)\\d{2}\\b/g) || [];
-      if (years.length && !years.includes(year)) return false;
-    }
-  }
-  return true;
+  const policy = _identityPolicy();
+  if (!policy) return false;
+  return policy.htmlIdentityOk({
+    strictIdentity: true,
+    html,
+    visibleText: _htmlVisibleText(html),
+    expectedTitles: _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])]).filter(Boolean),
+    expectedYear: _text(meta && meta.year).slice(0, 4),
+    mediaType
+  }) === true;
 }'''
-    text = _once_whitespace_tolerant(text, old_html, new_html, 'v9-html-year-movie-only')
+    text = _once_whitespace_tolerant(text, old_html, new_html, 'v9-html-shared-identity-policy')
     text = _once_whitespace_tolerant(
         text,
         'if (!_strictHtmlIdentityOk(html, meta)) continue;',
         'if (!_strictHtmlIdentityOk(html, meta, mediaType)) continue;',
-        'v9-html-year-call-media-type',
+        'v9-html-identity-call-media-type',
     )
     target.write_text(text, encoding='utf-8')
     return True
@@ -226,13 +197,11 @@ def patch() -> bool:
     runtime_v5.validate()
     changed_v6 = runtime_v6.patch()
     runtime_v6.validate()
-    # Runtime v7 targets the verified v6 JavaScript skeleton. Keep matching
-    # fail-closed on tokens/cardinality, but do not bind migrations to indentation.
     runtime_v7.once = _once_whitespace_tolerant
     changed_v7 = runtime_v7.patch()
     changed_safe_html = _patch_v7_safe_html_text()
     changed_recipe_first = _patch_v8_api_recipe_precedence()
-    changed_no_episodic_year = _patch_v9_no_episodic_year_identity()
+    changed_identity_policy = _patch_v9_shared_identity_policy()
     changed_stream_projection = stream_quality_projection.patch()
     return bool(
         changed_v5
@@ -240,7 +209,7 @@ def patch() -> bool:
         or changed_v7
         or changed_safe_html
         or changed_recipe_first
-        or changed_no_episodic_year
+        or changed_identity_policy
         or changed_stream_projection
     )
 
@@ -262,34 +231,34 @@ def validate() -> None:
     family_first = text.index('if (family === "stremio-json")', recipe_first)
     if recipe_first >= family_first:
         raise AssertionError('runtime v8 API recipe must execute before source-family traversal')
-    required = (
+    for needle in (
         'const recipePrimary = await getStreams(tmdbId, type, season, episode);',
         'NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true',
-    )
-    for needle in required:
+    ):
         if needle not in text[recipe_first:family_first]:
             raise AssertionError(f'runtime v8 API-recipe precedence missing: {needle}')
 
-    v9 = '/* NIAKVIO_PROVIDER_BASE_NO_EPISODIC_YEAR_V9 */'
+    v9 = '/* NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9 */'
     if text.count(v9) != 1:
-        raise AssertionError(f'runtime v9 no-episodic-year marker count={text.count(v9)}')
-    required_v9 = (
-        'const movieIdentity = expectedMedia === "movie";',
-        'if (movieIdentity && expectedYear)',
-        'if (movieIdentity && year && expectedYear && year !== expectedYear) return -1;',
-        'if (_mediaNamespace(mediaType) === "movie")',
+        raise AssertionError(f'runtime v9 shared identity marker count={text.count(v9)}')
+    for needle in (
+        'globalThis.__nuvioIdentityPolicyV1',
+        'policy.catalogueScore({',
+        'policy.htmlIdentityOk({',
+        'if (!policy) return -1;',
+        'if (!policy) return false;',
         'if (!_strictHtmlIdentityOk(html, meta, mediaType)) continue;',
-    )
-    for needle in required_v9:
+    ):
         if needle not in text:
-            raise AssertionError(f'runtime v9 no-episodic-year missing: {needle}')
-    forbidden_v9 = (
+            raise AssertionError(f'runtime v9 shared identity policy missing: {needle}')
+    for needle in (
         'if (year && expectedYear && year !== expectedYear) return -1;',
+        'Math.abs(Number(year) - Number(expectedYear))',
+        'const movieIdentity = expectedMedia === "movie";',
         'if (!_strictHtmlIdentityOk(html, meta)) continue;',
-    )
-    for needle in forbidden_v9:
+    ):
         if needle in text:
-            raise AssertionError(f'runtime v9 retained episodic year-sensitive legacy path: {needle}')
+            raise AssertionError(f'runtime v9 retained local identity semantics: {needle}')
 
 
 def main() -> int:
@@ -300,7 +269,8 @@ def main() -> int:
         f'changed={str(changed).lower()} v5=1 v6=1 v7=1 v8=1 v9=1 '
         'external_ids=1 traversal_eligibility=1 nested_priority=1 '
         'source_plan_first=1 api_recipe_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1 '
-        'episodic_year_checks=0 movie_year_identity=1 unknown_stream_quality_projection=removed'
+        'identity_policy=core_stream_identity_v1 episodic_year_checks=0 movie_year_identity=core-owned '
+        'unknown_stream_quality_projection=removed'
     )
     return 0
 
