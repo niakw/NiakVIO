@@ -35,6 +35,18 @@ jobs:
           path = Path('scripts/reapply_published_overrides.py')
           text = path.read_text(encoding='utf-8')
 
+          old_secondary = 'SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")'
+          new_secondary = '''SECONDARY = (
+              ROOT / "vf" / "manifest.json",
+              ROOT / "vostfr" / "manifest.json",
+              ROOT / "no-anime" / "manifest.json",
+              ROOT / "vf-no-anime" / "manifest.json",
+          )'''
+          if old_secondary in text:
+              text = text.replace(old_secondary, new_secondary, 1)
+          elif new_secondary not in text:
+              raise SystemExit('published manifest set anchor missing')
+
           transport_fn = '''\n\ndef _normalized_transport_types(values: object) -> list[str]:\n    \"\"\"Normalize client transport aliases without promoting them to semantic types.\"\"\"\n    result: list[str] = []\n    for value in values if isinstance(values, list) else []:\n        item = str(value).strip().casefold()\n        if item in {\"movie\", \"tv\", \"anime\", \"series\"} and item not in result:\n            result.append(item)\n    return result\n'''
           anchor = '\n\ndef projected_transport_types(semantic_types: object) -> list[str]:'
           if '_normalized_transport_types' not in text:
@@ -135,11 +147,16 @@ jobs:
           import json
           from pathlib import Path
 
-          manifests = [Path('manifest.json'), Path('vf/manifest.json'), Path('no-anime/manifest.json'), Path('vf-no-anime/manifest.json')]
+          manifests = [
+              Path('manifest.json'),
+              Path('vf/manifest.json'),
+              Path('vostfr/manifest.json'),
+              Path('no-anime/manifest.json'),
+              Path('vf-no-anime/manifest.json'),
+          ]
           checked = 0
           for path in manifests:
-              if not path.exists():
-                  continue
+              assert path.exists(), f"published manifest missing: {path}"
               payload = json.loads(path.read_text(encoding='utf-8'))
               for row in payload.get('scrapers', []):
                   supported = [str(v).lower() for v in row.get('supportedTypes', [])]
