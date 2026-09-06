@@ -17,6 +17,10 @@ MOBILE_RUNNER = 'instrumentationRunner = "androidx.test.runner.AndroidJUnitRunne
 MOBILE_EXT_JUNIT = 'implementation("androidx.test.ext:junit:1.3.0")'
 MOBILE_TEST_RUNNER = 'implementation("androidx.test:runner:1.7.0")'
 MOBILE_LIBCXX_PICK_FIRST = 'pickFirsts.add("lib/*/libc++_shared.so")'
+MOBILE_HOST_TEST_ANCHORS = (
+    "        withHostTest { isIncludeAndroidResources = true }\n\n        compilerOptions {",
+    "        withHostTest {}\n\n        compilerOptions {",
+)
 TV_RUNNER = 'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"'
 TV_EXT_JUNIT = 'androidTestImplementation("androidx.test.ext:junit:1.3.0")'
 TV_TEST_RUNNER = 'androidTestImplementation("androidx.test:runner:1.7.0")'
@@ -42,24 +46,29 @@ interface NiakvioPlayerSettingsEntryPoint {
 '''
 
 
+def _mobile_compilation_anchor(text: str) -> str:
+    matches = [anchor for anchor in MOBILE_HOST_TEST_ANCHORS if text.count(anchor) == 1]
+    if len(matches) != 1:
+        counts = ",".join(str(text.count(anchor)) for anchor in MOBILE_HOST_TEST_ANCHORS)
+        raise SystemExit(f"mobile device-test compilation anchor matches={len(matches)} counts={counts}")
+    return matches[0]
+
+
 def enable_mobile_device_tests(repo: Path) -> None:
     """Enable only the Android device-test source set in NuvioMobile."""
     build = Path(repo) / "composeApp/build.gradle.kts"
     text = build.read_text(encoding="utf-8")
 
     if "withDeviceTest {" not in text:
-        compilation_needle = "        withHostTest {}\n\n        compilerOptions {"
-        compilation_replacement = '''        withHostTest {}
-        withDeviceTest {
+        compilation_needle = _mobile_compilation_anchor(text)
+        host_test_line = compilation_needle.split("\n\n", 1)[0]
+        compilation_replacement = f'''{host_test_line}
+        withDeviceTest {{
             instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             execution = "HOST"
-        }
+        }}
 
-        compilerOptions {'''
-        if text.count(compilation_needle) != 1:
-            raise SystemExit(
-                f"mobile device-test compilation anchor count={text.count(compilation_needle)}"
-            )
+        compilerOptions {{'''
         text = text.replace(compilation_needle, compilation_replacement, 1)
 
     if "val androidDeviceTest by getting {" not in text:
