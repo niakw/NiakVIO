@@ -17,7 +17,6 @@ desktop = (ROOT / "scripts/augment_native_desktop_player.py").read_text(encoding
 resolver = (ROOT / "scripts/resolve_native_repository.sh").read_text(encoding="utf-8")
 desktop_suite = (ROOT / "scripts/run_native_corpus_desktop_suite.sh").read_text(encoding="utf-8")
 android_transport = (ROOT / "scripts/configure_native_android_lab_transport.py").read_text(encoding="utf-8")
-mobile_hardener = (ROOT / "scripts/harden_nuvio_mobile_device_test.py").read_text(encoding="utf-8")
 bootstrap = (ROOT / "scripts/native_client_test_bootstrap.py").read_text(encoding="utf-8")
 checkout_audit = (ROOT / "scripts/audit_native_client_checkout.py").read_text(encoding="utf-8")
 reader_acceptance = (ROOT / "scripts/prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
@@ -139,12 +138,12 @@ assert '.set(f"{ANDROID}usesCleartextTraffic"' not in android_transport
 assert "android.permission.INTERNET" not in android_transport
 
 # Mobile has one persisted behavior-neutral exception: the ephemeral device-test APK
-# may select one duplicate libc++ runtime so instrumentation can be packaged. This
-# must never spread into application/player/network/runtime behavior.
-assert 'pickFirsts.add("lib/*/libc++_shared.so")' in mobile_hardener
-assert "composeApp/build.gradle.kts" in mobile_hardener
-assert "device-test" in mobile_hardener
-assert "instrumentation APK" in mobile_hardener
+# may select one duplicate libc++ runtime so instrumentation can be packaged. The
+# shared bootstrap owns this now; the retired hardener must not be recreated.
+assert 'MOBILE_LIBCXX_PICK_FIRST = \'pickFirsts.add("lib/*/libc++_shared.so")\'' in bootstrap
+assert 'pickFirsts.add("lib/*/libc++_shared.so")' in bootstrap
+assert "composeApp/build.gradle.kts" in bootstrap
+assert "instrumentation APK" in bootstrap
 assert 'pickFirsts.add("lib/*/libc++_shared.so")' in policy["allowed_gradle_additions"]["mobile"]
 assert any(
     row.get("id") == "mobile-device-test-libcxx-packaging-conflict" and row.get("status") == "resolved"
@@ -167,7 +166,7 @@ for forbidden in (
     'setRequestProperty("Origin"',
     'setRequestProperty("User-Agent"',
 ):
-    assert forbidden not in mobile_hardener, f"mobile-hardener:{forbidden}"
+    assert forbidden not in bootstrap, f"mobile-bootstrap:{forbidden}"
 
 # The only supported Android checkout edits are test plumbing. The shared bootstrap
 # must never manufacture a production network/player/runtime capability.
@@ -230,7 +229,6 @@ for text, label in (
 assert "PluginRepository.clearLocalState()" not in provider_loading
 assert "officialPluginManager.executeScraper(loadedScraper" in provider_loading
 assert "PluginRepository.executeScraper(loadedScraper" in provider_loading
-
 
 for label, workflow in lab_workflows.items():
     for forbidden in (
