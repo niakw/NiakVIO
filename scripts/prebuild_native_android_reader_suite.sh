@@ -20,7 +20,6 @@ REPOSITORY_HTTP_INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_repository_ht
 REQUEST_CONTRACT="${NIAKVIO}/scripts/augment_native_corpus_request_contract.py"
 PROVIDER_LOADING="${NIAKVIO}/scripts/augment_native_provider_loading_compat.py"
 ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
-MOBILE_HARDEN="${NIAKVIO}/scripts/harden_nuvio_mobile_device_test.py"
 
 case "$CLIENT" in
   tv)
@@ -45,11 +44,10 @@ MANIFEST_URL="$NIAKVIO_RESOLVED_MANIFEST_URL"
 URL_ARGS=()
 if [[ "$NIAKVIO_RESOLVED_ALLOW_LOCAL" = "1" ]]; then URL_ARGS+=(--allow-local-lab-url); fi
 
-# Mobile hardening changes only test packaging/Sentry startup. Apply it before the
-# prebuild so QEMU never has to invalidate and rebuild the device-test APK later.
-if [[ "$CLIENT" = "mobile" ]]; then
-  python3 "$MOBILE_HARDEN" "$ROOT"
-fi
+# prepare_native_reader_acceptance.py owns the consolidated test-only client
+# bootstrap. The initial workflow preparation enables Mobile device tests (including
+# behavior-neutral libc++ packaging) or TV instrumentation before this prebuild.
+# Do not keep a second hardening path here: it can drift from the canonical bootstrap.
 python3 "$LAB_TRANSPORT" "$TEST_MANIFEST"
 python3 "$INSTRUMENTER" "$CLIENT" "$ROOT"
 python3 "$REPOSITORY_HTTP_INSTRUMENTER" "$CLIENT" "$ROOT"
