@@ -5,6 +5,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = ROOT / "scripts" / "augment_native_corpus_request_contract.py"
+LOADER = ROOT / "scripts" / "augment_native_provider_loading.py"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -72,9 +73,41 @@ def main() -> int:
         out[key] = types
 '''
     text = replace_once(text, old, new, "request contract manifest type boundary")
+
+    transport_helper = '''\n\ndef manifest_transport_types(path: Path) -> dict[str, list[str]]:\n    data = json.loads(path.read_text(encoding="utf-8"))\n    out: dict[str, list[str]] = {}\n    for row in data.get("scrapers", []):\n        if not isinstance(row, dict):\n            continue\n        provider_id = str(row.get("id") or "").strip()\n        if not provider_id:\n            continue\n        raw_supported = row.get("supportedTypes")\n        if not isinstance(raw_supported, list) or not raw_supported:\n            raise SystemExit(f"provider {provider_id}: supportedTypes must be a non-empty transport list")\n        values: list[str] = []\n        for raw in raw_supported:\n            typ = str(raw or "").strip().lower()\n            if typ not in TRANSPORT:\n                raise SystemExit(f"provider {provider_id}: invalid transport supportedType {typ!r}")\n            if typ not in values:\n                values.append(typ)\n        out[provider_id.casefold()] = values\n    return out\n'''
+    text = replace_once(
+        text,
+        '\n\ndef kotlin_map(values: dict[str, list[str]]) -> str:\n',
+        transport_helper + '\n\ndef kotlin_map(values: dict[str, list[str]]) -> str:\n',
+        "transport manifest map helper",
+    )
+    text = replace_once(
+        text,
+        '    types = manifest_types(manifest)\n',
+        '    types = manifest_types(manifest)\n    transport_types = manifest_transport_types(manifest)\n',
+        "request contract manifest maps",
+    )
+    text = replace_once(
+        text,
+        '    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private fun requestRoutesFor',
+        '    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private val transportTypesByProvider: Map<String, Set<String>> = {kotlin_map(transport_types)}\n\n    private fun requestRoutesFor',
+        "generated canonical/transport maps",
+    )
     compile(text, str(PATH), "exec")
     PATH.write_text(text, encoding="utf-8")
-    print("NATIVE_REQUEST_CONTRACT_SERIES_ALIAS_OK")
+
+    loader = LOADER.read_text(encoding="utf-8")
+    old_compare = '                    val declaredTypes = declaredTypesByProvider[key].orEmpty().sorted()\n'
+    count = loader.count(old_compare)
+    if count != 2:
+        raise SystemExit(f"loader transport metadata comparison anchors: expected 2, got {count}")
+    loader = loader.replace(
+        old_compare,
+        '                    val declaredTypes = transportTypesByProvider[key].orEmpty().sorted()\n',
+    )
+    compile(loader, str(LOADER), "exec")
+    LOADER.write_text(loader, encoding="utf-8")
+    print("NATIVE_REQUEST_CONTRACT_SERIES_ALIAS_OK canonical_routes=true transport_metadata=true")
     return 0
 
 
