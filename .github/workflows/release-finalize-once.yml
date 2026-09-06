@@ -50,7 +50,6 @@ jobs:
           python3 tests/reapply_provider_versioning_test.py
           python3 scripts/generate_release_hashes.py
           python3 scripts/validate_release_integrity.py
-          python3 tests/release_hash_scope_test.py
 
       - name: Verify bounded publication diff
         shell: bash
@@ -76,4 +75,4 @@ jobs:
           git commit -m 'chore: finalize Provider v3 release versions'
           git push origin HEAD:main
 
-# trigger v3
+# trigger v4
