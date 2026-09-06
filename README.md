@@ -54,7 +54,7 @@ NiakVIO is built around that problem.
 - **Fail-closed validation** — zero streams, wrong-media playback, malformed media and upstream client failures remain distinct states instead of fake success.
 
 <div align="center">
-  <img src="assets/branding/how-it-works.png" alt="How NiakVIO works" width="820">
+  <img src="assets/branding/how-it-works-en.svg" alt="How NiakVIO works" width="820">
 </div>
 
 ---
@@ -229,7 +229,9 @@ This separation prevents a health check from silently rewriting a provider just 
 
 Publication is atomic and fail-closed. Published provider-byte changes require synchronized provider/manifest/cache/release metadata, but **the bump happens only after the validation pile is accepted**.
 
-Route-only census, documentation and workflow-only changes that do not alter published provider bytes do **not** trigger a provider/cache bump.
+The accepted release is finalized explicitly through `release-finalize.yml`. It checks out the exact accepted SHA, uses either an explicit baseline or the oldest commit in the current release-version generation, and then synchronizes provider/manifest/cache/release versions, manifest projections, hashes and integrity metadata as one release transaction. It does **not** repair or reconstruct provider bytes.
+
+Route-only census, documentation and workflow-only changes that do not alter published provider bytes do **not** trigger a provider/cache bump. `sync.yml` Quick/Deep remains validation-oriented and does not routinely mutate release versions.
 
 Final publication can include:
 
@@ -246,7 +248,8 @@ Final publication can include:
 
 | Workflow | Responsibility |
 | --- | --- |
-| `sync.yml` | **CORE - Verify & Publish** Quick/Deep; no provider repair/reconstruction |
+| `sync.yml` | **CORE - Verify & Publish** Quick/Deep; no provider repair/reconstruction or routine release bump |
+| `release-finalize.yml` | exact-SHA accepted-release finalization: synchronized versions, projections, hashes and integrity |
 | `provider-v3-reconstruct-routes.yml` | route-only recognition / canonical `routeData` census |
 | `provider-v3-reconstruct-all.yml` | full Provider v3 reconstruction + reverse byte proof |
 | `brain-learning-lab.yml` | sandbox observation/repair Learning + reviewable proposals |
@@ -256,8 +259,8 @@ Final publication can include:
 | `native-mobile-ios-reader.yml` | Mobile iOS evidence |
 | `native-desktop-reader-acceptance.yml` | Desktop macOS + Windows evidence |
 | `native-corpus-device-targeted.yml` | targeted device/provider diagnostics |
-| `github-actions-gate.yml` | workflow/dependency security invariants |
-| `codeql.yml` | CodeQL analysis |
+| `github-actions-gate.yml` | workflow/repository security and compatibility invariants |
+| `codeql.yml` | local CodeQL `security-extended` evidence + High/Critical production dependency audit |
 | `weekly-upstream-provider-discovery.yml` | read-only upstream discovery |
 | `purge-actions-history.yml` | old Actions-run cleanup |
 | `brain-branch-maintenance.yml` | Learning/proposals store maintenance |
