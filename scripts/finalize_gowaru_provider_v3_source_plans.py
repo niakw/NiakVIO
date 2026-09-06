@@ -29,6 +29,7 @@ TEMPLATE_RE = re.compile(r"`([^`]{1,1600})`", re.S)
 QUOTED_ROUTE_RE = re.compile(r"[\"']((?:https?://|/)[^\"'\r\n]{1,900})[\"']", re.I)
 FULL_URL_RE = re.compile(r"https?://[^\s\"'`<>)]+", re.I)
 EXPR_RE = re.compile(r"\$\{([^{}]{1,220})\}")
+TMDB_ERASED_HOST_RE = re.compile(r"^/+(?:api\.)?themoviedb\.org(?:/|$)", re.I)
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -123,14 +124,12 @@ def normalize_route(raw: str) -> str | None:
             return None
         # Historical static extraction could leave an erased absolute host as
         # /api.themoviedb.org/... . Fail closed for that form too.
-        if re.match(r"^/api\.themoviedb\.org(?:/|$)", value, re.I):
+        if TMDB_ERASED_HOST_RE.match(value):
             return None
 
     if len(value) > 900:
         return None
     low = value.casefold()
-    if "api.themoviedb.org" in low:
-        return None
     if any(token in low for token in ("q=ponyfill", "/license", "lodash.com", "openjsf.org", "underscorejs.org", "npms.io")):
         return None
     if "${" in value or "encodeuricomponent(" in low:
