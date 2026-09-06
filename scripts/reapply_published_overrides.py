@@ -36,11 +36,15 @@ from provider_engine_normalizer import (
 )
 from provider_base_store import (
     CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,
+    build_provider_data_model,
+    canonical_id,
+    compose_provider_bundle,
     is_clean_reconstructed,
     is_clean_reconstruction_candidate,
     resolve_base,
     resolve_runtime_base,
 )
+from materialize_provider_v3_all import provider_model as build_structured_provider_model
 from quarantine_catalogue_audit_failures import scoped_quarantine_source
 from provider_patches.quarantine_provider_v1 import apply as apply_terminal_quarantine
 
@@ -50,6 +54,7 @@ SECONDARY = ()
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 OVERRIDES = ROOT / "provider-overrides.json"
+STATIC_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 VERSION_FLOORS = ROOT / "provider-version-floors.json"
 ADAPTIVE_MARKER = "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V"
 ADAPTIVE_MARKER_V5 = "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5"
@@ -84,17 +89,34 @@ CLEAN_V2_DERIVED_CORE_MARKERS = (
 
 
 def _canonicalize_clean_v2_core_boundary(data: bytes, provider_id: str) -> bytes:
-    """Place one publisher-owned boundary between provider logic and derived Core."""
+    """Place one publisher-owned boundary between provider logic and whole Core Lego blocks."""
+    # FINAL_CORE_BOUNDARY_OWNERSHIP_V1
     text = data.decode("utf-8", errors="strict").replace(CLEAN_V2_CORE_BOUNDARY_MARKER, "")
-    starts = [
-        pos
-        for marker in CLEAN_V2_DERIVED_CORE_MARKERS
-        for pos in [text.find(f"/* {marker}")]
-        if pos >= 0
+
+    # STARTFIX/CLOSEFIX defines the ownership rectangle. The historical
+    # finalizer searched for an implementation marker inside the first Core
+    # body, which inserted the global boundary *inside* that CORE.* rectangle.
+    # Replacing that Core could then delete the boundary, and the static audit
+    # correctly rejected the published order. Prefer the exact managed Lego
+    # start; retain the legacy implementation-marker fallback only for older
+    # non-managed clean bundles.
+    managed_core_starts = [
+        match.start()
+        for match in re.finditer(r"/\* STARTFIX:CORE\.[A-Z0-9_.:-]+ \*/", text)
     ]
-    if not starts:
-        raise ValueError(f"{provider_id}: clean v2 publication has no derived Core marker")
-    start = min(starts)
+    if managed_core_starts:
+        start = min(managed_core_starts)
+    else:
+        starts = [
+            pos
+            for marker in CLEAN_V2_DERIVED_CORE_MARKERS
+            for pos in [text.find(f"/* {marker}")]
+            if pos >= 0
+        ]
+        if not starts:
+            raise ValueError(f"{provider_id}: clean v2 publication has no derived Core marker")
+        start = min(starts)
+
     return (
         text[:start].rstrip()
         + "\n"
@@ -601,7 +623,34 @@ def publication_audit_quarantine(
     return text.encode("utf-8"), "terminal"
 
 
+def assert_final_provider_config(data: bytes, provider_id: str) -> None:
+    # FINAL_PROVIDER_CONFIG_INVARIANT_V1
+    text = data.decode("utf-8", errors="strict")
+    if "NIAKVIO_PROVIDER_BASE_OWNED_V3" not in text:
+        return
+    canonical = canonical_id(provider_id)
+    fix_id = f"PROVIDER.{canonical.upper()}.CONFIG.V1"
+    start = f"/* STARTFIX:{fix_id} */"
+    close = f"/* CLOSEFIX:{fix_id} */"
+    declaration = "const NIAKVIO_PROVIDER_MODEL = Object.freeze("
+    if text.count(start) != 1 or text.count(close) != 1:
+        raise ValueError(
+            f"{provider_id}: final published Provider CONFIG cardinality invalid "
+            f"start={text.count(start)} close={text.count(close)}"
+        )
+    if text.count(declaration) != 1:
+        raise ValueError(
+            f"{provider_id}: final published NIAKVIO_PROVIDER_MODEL declaration "
+            f"count={text.count(declaration)} expected=1"
+        )
+    if not (text.index(start) < text.index(declaration) < text.index(close)):
+        raise ValueError(f"{provider_id}: Provider model declaration escaped CONFIG Lego")
+    if text.count("/* BEGIN NIAKVIO_PROVIDER */") != 1 or text.count("/* END NIAKVIO_PROVIDER */") != 1:
+        raise ValueError(f"{provider_id}: final Provider envelope cardinality invalid")
+
+
 def validate_artifact(data: bytes, provider_id: str) -> None:
+    assert_final_provider_config(data, provider_id)
     with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as handle:
         handle.write(data)
         temporary = Path(handle.name)
@@ -645,6 +694,9 @@ PUBLICATION_CONTRACT_SCHEMA = 2
 PUBLICATION_CONTRACT_FILES = (
     "scripts/reapply_published_overrides.py",
     "scripts/apply_provider_overrides.py",
+    "scripts/provider_base_store.py",
+    "scripts/materialize_provider_v3_all.py",
+    "automation/provider-v3-static-knowledge.json",
     "scripts/override_text_utils.py",
     "scripts/provider_engine_normalizer.py",
     "scripts/provider_security_hardening.py",
@@ -809,6 +861,10 @@ def fast_fixed_point_check(
             return False, f"unsafe-public-path:{provider_id}"
         if not public_path.is_file():
             return False, f"missing-public-bundle:{provider_id}"
+        try:
+            assert_final_provider_config(public_path.read_bytes(), provider_id)
+        except ValueError as exc:
+            return False, f"final-provider-config:{provider_id}:{exc}"
         actual_public_sha = hashlib.sha256(public_path.read_bytes()).hexdigest()
         if actual_public_sha != str(row.get("sha256") or "").casefold():
             return False, f"public-sha-drift:{provider_id}"
@@ -915,6 +971,14 @@ def main() -> int:
 
     override_config, removed_hooks = sanitize_provider_hooks(load_overrides(), ROOT)
     override_config, removed_origins = sanitize_capability_origins(override_config)
+    static_knowledge = json.loads(STATIC_KNOWLEDGE.read_text(encoding="utf-8"))
+    static_rows = static_knowledge.get("providers")
+    if not isinstance(static_rows, dict):
+        raise ValueError("Provider v3 static knowledge providers map required")
+    structured_patches = override_config.get("provider_patches")
+    structured_capabilities = override_config.get("provider_capabilities")
+    if not isinstance(structured_patches, dict) or not isinstance(structured_capabilities, dict):
+        raise ValueError("structured Provider DATA maps required for publication")
     if not args.check:
         write_json(OVERRIDES, override_config)
 
@@ -980,6 +1044,24 @@ def main() -> int:
             provider_base_path,
         )
         if clean_v2_base:
+            patch_row = structured_patches.get(provider_id)
+            capability_row = structured_capabilities.get(provider_id)
+            static_row = static_rows.get(provider_id)
+            if not isinstance(patch_row, dict) or not isinstance(capability_row, dict) or not isinstance(static_row, dict):
+                raise ValueError(f"{provider_id}: structured DATA incomplete during final publication")
+            structured_model = build_structured_provider_model(
+                provider_id, patch_row, capability_row, static_row
+            )
+            provider_data = build_provider_data_model(
+                provider_id,
+                entry,
+                known_site=structured_model.get("knownSite"),
+                provider_model=structured_model,
+            )
+            # Recreate the same Base + DATA envelope used by the authoritative
+            # materializer before Provider/Core Lego are replayed. Publication
+            # must never execute a clean ProviderBase without its CONFIG model.
+            migrated = compose_provider_bundle(provider_id, migrated, provider_data)
             # Clean ProviderBase v3 deliberately excludes historical adaptive source
             # patches. Never replay intentionally absent legacy migrators here.
             domain_revision_records = []

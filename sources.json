@@ -2,7 +2,7 @@
   "schema_version": 68,
   "repository": {
     "name": "NiakVIO",
-    "manifest_version": "5.21.34",
+    "manifest_version": "5.21.35",
     "description": "NiakVIO-owned provider catalogue and routing policy. ProviderBase, structured DATA, owned Lego, official address discovery and validated runtime observations are the operational sources of truth. External provider repositories are not required for ordinary reconstruction or playback."
   },
   "selection_policy": {
@@ -124,40 +124,37 @@
     "external_provider_repository_required": false,
     "route_learning_owner": "NiakVIO"
   },
-  "manifest_version": "5.21.34",
+  "manifest_version": "5.21.35",
   "nuvio_client_compatibility": {
     "schema_version": 1,
     "policy": "accepted_ref may advance automatically only when hard and semantic runtime contract checks remain unchanged",
     "clients": {
       "nuvio-mobile": {
-        "contract_ref": "d4891ffaaf975c77de8ea3612f37a7a2b936c79d",
-        "accepted_ref": "d4891ffaaf975c77de8ea3612f37a7a2b936c79d",
-        "accepted_at": "2026-09-03T00:00:00+00:00",
-        "acceptance": "manual-contract-audited-advance",
-        "changed_file_count": 0,
-        "observed_sensitive_changed_files": [],
-        "unrelated_changed_files": [],
-        "manual_review_note": "2026-09-03 source re-audit completed; accepted_ref and contract_ref aligned to d4891ffaaf975c77de8ea3612f37a7a2b936c79d. See automation/platform-runtime-contracts.json."
+        "contract_ref": "68337ffac8578b986d0c3f6e432abf75f4a33521",
+        "accepted_ref": "68337ffac8578b986d0c3f6e432abf75f4a33521",
+        "accepted_at": "2026-09-06T21:39:34.863388+00:00",
+        "acceptance": "contract-audited-baseline"
       },
       "nuvio-desktop": {
-        "contract_ref": "9390d5844e53d1f4d9829490d6f3deb057d7ab14",
-        "accepted_ref": "9390d5844e53d1f4d9829490d6f3deb057d7ab14",
-        "accepted_at": "2026-09-03T00:00:00+00:00",
-        "acceptance": "manual-contract-audited-advance",
-        "changed_file_count": 0,
-        "observed_sensitive_changed_files": [],
-        "unrelated_changed_files": [],
-        "manual_review_note": "2026-09-03 source re-audit completed; accepted_ref and contract_ref aligned to 9390d5844e53d1f4d9829490d6f3deb057d7ab14. See automation/platform-runtime-contracts.json."
+        "contract_ref": "323c1037f3c0fbe0ebe255b77d42331c3fdeb2d7",
+        "accepted_ref": "21aabeeb49fc6de835f9031a65cc5f8489419330",
+        "accepted_at": "2026-09-06T21:39:34.863388+00:00",
+        "acceptance": "automatic-contract-safe-advance",
+        "changed_file_count": 4,
+        "observed_sensitive_changed_files": [
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerEngine.kt",
+          "composeApp/src/commonMain/kotlin/com/nuvio/app/features/player/PlayerScreenRuntimeUi.kt",
+          "composeApp/src/desktopMain/kotlin/com/nuvio/app/features/player/desktop/NativePlayerController.kt"
+        ],
+        "unrelated_changed_files": [
+          "composeApp/src/desktopMain/resources/player-ui/controls.js"
+        ]
       },
       "nuvio-tv": {
-        "contract_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
-        "accepted_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
-        "accepted_at": "2026-09-03T00:00:00+00:00",
-        "acceptance": "manual-contract-audited-advance",
-        "changed_file_count": 0,
-        "observed_sensitive_changed_files": [],
-        "unrelated_changed_files": [],
-        "manual_review_note": "2026-09-03 source re-audit completed; accepted_ref and contract_ref aligned to 49c753de3f193e3a74ea54194df3d331ce6302f0. See automation/platform-runtime-contracts.json and automation/nuvio-tv-runtime-contract.json."
+        "contract_ref": "23d1fe478e380860dae3eb41c8770533361a0cc5",
+        "accepted_ref": "23d1fe478e380860dae3eb41c8770533361a0cc5",
+        "accepted_at": "2026-09-06T21:39:34.863388+00:00",
+        "acceptance": "contract-audited-baseline"
       }
     }
   }

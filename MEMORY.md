@@ -467,3 +467,14 @@ A green structural workflow is not proof that 96 providers produce streams, and 
 - Commit `bdf11932ea5b949837c29b71c8a61b903e91c57b` changes `audit_provider_v3_static.py` to rebuild the expected Provider DATA in-memory from the current authoritative sources (`provider-overrides.json` + `provider_capabilities` + `provider-v3-static-knowledge.json` + current manifest entry) and compare the decoded final CONFIG to that exact deterministic projection.
 - The audit remains read-only and does **not** reconstruct Provider JS. It no longer treats a historical materialization DATA hash as final-publication authority.
 - Next action is another short publication retry from current `main`; heavy Repair remains unnecessary unless this stronger current-source comparison proves a genuine DATA mismatch.
+
+## Final-byte Provider CONFIG invariant — 2026-09-06
+
+- Current corrected manifest generation at this checkpoint: **`5.21.35`**.
+- `NIAKVIO_PROVIDER_MODEL` is NiakVIO-owned structured runtime DATA, materialized as exactly one `PROVIDER.<ID>.CONFIG.V1`; ProviderBase and Source Plan v4 (`_spv4Family`) may reference it but ProviderBase itself must remain DATA-free.
+- Regression found in `5.21.34`: the authoritative materializer correctly composed Base + CONFIG + Lego, but `reapply_published_overrides.py` restarted final publication from the clean ProviderBase and replayed Core without re-running `compose_provider_bundle()`. This produced final bundles that referenced `NIAKVIO_PROVIDER_MODEL` without defining it.
+- Final publication now reuses the same structured `provider_model -> build_provider_data_model -> compose_provider_bundle` path as the 96-provider materializer before replaying Provider/Core Lego.
+- The final Core boundary is outside every managed Core ownership rectangle: `PROVIDER.* -> NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 -> STARTFIX:CORE.*`. The previous finalizer searched for an implementation marker inside the first Core body, which could place the boundary inside that Core Lego; `audit_provider_v3_static.py` correctly rejected this and the producer was fixed rather than weakening the audit.
+- A final-manifest 96/96 gate validates the actual hashed JS referenced by `manifest.json`, not only `provider-v3-materialization.json`: one CONFIG START/CLOSE pair, one `NIAKVIO_PROVIDER_MODEL = Object.freeze(...)`, matching providerId, safe final path and Provider envelope. A missing model is publication-fatal.
+- Identity remains dual-source: valid TMDB **or IMDb** input is accepted; TMDB enrichment verifies/enriches identity but cannot invalidate a valid IMDb input. Episodic IMDb suffixes such as `tt11198330:3:1` retain season/episode.
+- `series` remains a Nuvio transport alias for canonical `tv`; it belongs in `supportedTypes`, never in `canonicalSupportedTypes`.
