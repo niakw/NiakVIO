@@ -25,6 +25,8 @@ REPRESENTATIVE = {
     "tv": "breaking-bad-s01e01",
     "anime": "jujutsu-kaisen-s01e01",
 }
+TMDB_ERASED_HOST_RE = re.compile(r"^/+(?:api\.)?themoviedb\.org(?:/|$)", re.I)
+TMDB_CORE_ROUTE_RE = re.compile(r"^/3/(?:movie|tv)(?:/|$)", re.I)
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -133,10 +135,16 @@ def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dic
         raw_url = str(row.get("url") or "")
         try:
             parsed = urlsplit(raw_url)
+            host = str(parsed.hostname or "").casefold()
             path = str(parsed.path or "")
         except ValueError:
+            host = ""
             path = raw_url
-        if "api.themoviedb.org" in path.casefold() or re.search(r"^/3/(?:movie|tv)(?:/|$)", path, re.I):
+        if (
+            host == "api.themoviedb.org"
+            or TMDB_ERASED_HOST_RE.match(path)
+            or TMDB_CORE_ROUTE_RE.match(path)
+        ):
             return "source_plan_core_metadata_leak"
 
     if any(row.get("error") for row in provider_fetches):
