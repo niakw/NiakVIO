@@ -4,16 +4,18 @@ from __future__ import annotations
 import hashlib, json, re
 from pathlib import Path
 from provider_patch_blocks import decode_managed_data, owned_span, validate_managed_fixes
+from provider_base_store import build_provider_data_model
+from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
 
 ROOT=Path(__file__).resolve().parents[1]
 def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
 def canon(v): return str(v or "").strip().casefold()
 
-manifest=load(ROOT/"manifest.json"); overrides=load(ROOT/"provider-overrides.json"); material=load(ROOT/"provider-v3-materialization.json")
+manifest=load(ROOT/"manifest.json"); overrides=load(ROOT/"provider-overrides.json"); material=load(ROOT/"provider-v3-materialization.json"); static=load(ROOT/"automation/provider-v3-static-knowledge.json")
 rows=manifest.get("scrapers") or []; reports=material.get("providers") or []
 assert len(rows)==96 and len(reports)==96, (len(rows),len(reports))
 rb={canon(r.get("provider")):r for r in reports if isinstance(r,dict)}
-patches=overrides.get("provider_patches") or {}; seen=set()
+patches=overrides.get("provider_patches") or {}; capabilities=overrides.get("provider_capabilities") or {}; static_rows=static.get("providers") or {}; seen=set()
 for row in rows:
     pid=canon(row.get("id")); assert pid and pid not in seen, pid; seen.add(pid)
     rel=str(row.get("filename") or ""); path=ROOT/rel
@@ -51,11 +53,20 @@ for row in rows:
     data=decode_managed_data(text,cfg); assert canon(data.get("providerId"))==pid, pid
     expected=str((patches.get(pid) or {}).get("official_site") or "").rstrip("/")
     if expected: assert str(data.get("officialSite") or "").rstrip("/")==expected, pid
-    # CONFIG data itself must remain semantically identical to the structured
-    # model emitted at materialization; only the final publication envelope,
-    # source channel and composed runtime bytes are allowed to differ.
-    dsha=hashlib.sha256(json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
-    assert rep.get("providerDataSha256")==dsha, pid
+
+    # Final CONFIG is authoritative only when it is a deterministic projection
+    # of the *current* structured sources. The materialization report is earlier
+    # stage evidence and may legitimately retain an older providerDataSha256
+    # after Domain Refresh / CONFIG reconciliation (Flemmix exposed this drift).
+    # Never compare final publication DATA to that historical stage hash.
+    patch=patches.get(pid); capability=capabilities.get(pid); static_row=static_rows.get(pid)
+    assert isinstance(patch,dict) and isinstance(capability,dict) and isinstance(static_row,dict), pid
+    entry=json.loads(json.dumps(row))
+    normalize_anime_transport_compatibility(entry)
+    current_model=provider_model(pid,patch,capability,static_row)
+    expected_data=build_provider_data_model(pid,entry,known_site=current_model.get("knownSite"),provider_model=current_model)
+    assert data==expected_data, pid
+
 assert set(rb)==seen
 assert material.get("providerCount")==96 and material.get("expectedProviderCount")==96
-print("PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false publication_stage=final")
+print("PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false publication_stage=final structured_data=current")
