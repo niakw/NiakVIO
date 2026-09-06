@@ -1,0 +1,124 @@
+name: MAIN - Episodic Year Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-episodic-year-hotfix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+      - name: Apply canonical episodic year identity fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          from pathlib import Path
+
+          identity = Path('scripts/provider_patches/global_stream_identity_v1.py')
+          text = identity.read_text(encoding='utf-8')
+          old_rev = 'cross-client-shared-tmdb-cache-lazy-episode-v7'
+          new_rev = 'cross-client-shared-tv-year-soft-v8'
+          if old_rev in text:
+              text = text.replace(old_rev, new_rev, 1)
+          elif new_rev not in text:
+              raise SystemExit('identity revision anchor missing')
+
+          old_req = 'q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}'
+          new_req = 'q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.seriesYear=Number(q.seriesYear||q.series_year||q.year||0)||0;q.seasonYear=Number(q.seasonYear||q.season_year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}'
+          if old_req in text:
+              text = text.replace(old_req, new_req, 1)
+          elif new_req not in text:
+              raise SystemExit('identity request anchor missing')
+
+          old_year = 'if(m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;'
+          new_year = 'if(!episodic(q)&&m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;'
+          if old_year in text:
+              text = text.replace(old_year, new_year, 1)
+          elif new_year not in text:
+              raise SystemExit('identity year anchor missing')
+          identity.write_text(text, encoding='utf-8')
+
+          test = Path('tests/global_stream_identity_test.py')
+          t = test.read_text(encoding='utf-8').replace(
+              'cross-client-shared-tmdb-cache-lazy-episode-v7',
+              'cross-client-shared-tv-year-soft-v8',
+          )
+          marker = '# Episodic year independence regression.'
+          if marker not in t:
+              t += r'''
+
+# Episodic year independence regression.
+# A series/anime may expose a file/catalogue year that describes a season,
+# release batch or encode date rather than the TMDB show's first-air year.
+# Year is therefore a movie-only contradiction signal; season/episode + title/id
+# remain the authoritative episodic identity evidence.
+episodic_year_source = r'''module.exports={getStreams:async()=>[
+ {name:'Server 1',title:'Shared Show 2020',url:'https://cdn.example/shared-show-2020.m3u8'}
+]};'''
+episodic_year_patched = identity.apply(eposodic_year_source if False else episodic_year_source, context={"provider_id": "example"})
+episodic_year_runner = r'''
+const assert=require('assert');
+PATCHED
+(async()=>{
+  for(const mediaType of ['tv','series','anime']){
+    const rows=await module.exports.getStreams({tmdbId:'',mediaType,title:'Shared Show',year:2024,season:1,episode:1});
+    assert.equal(rows.length,1,mediaType+': '+JSON.stringify(rows));
+  }
+  const movieRows=await module.exports.getStreams({tmdbId:'',mediaType:'movie',title:'Shared Show',year:2024});
+  assert.equal(movieRows.length,0,'movie year mismatch must remain authoritative: '+JSON.stringify(movieRows));
+})().catch(e=>{console.error(e);process.exit(3)});
+'''.replace('PATCHED', episodic_year_patched)
+with tempfile.NamedTemporaryFile('w', suffix='.cjs', encoding='utf-8', delete=False) as handle:
+    handle.write(eposodic_year_runner if False else episodic_year_runner)
+    episodic_year_path = Path(handle.name)
+try:
+    proc = subprocess.run(['node', str(eposodic_year_path if False else episodic_year_path)], cwd=ROOT, text=True, capture_output=True, timeout=20)
+    assert proc.returncode == 0, proc.stdout + proc.stderr
+finally:
+    episodic_year_path.unlink(missing_ok=True)
+'''
+          test.write_text(t, encoding='utf-8')
+          PY
+
+      - name: Materialize the fix into all published provider bundles
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/reapply_published_overrides.py --check
+
+      - name: Run focused regressions
+        run: |
+          set -euo pipefail
+          python tests/global_stream_identity_test.py
+          python tests/provider_versioning_test.py
+          python tests/reapply_provider_versioning_test.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit hotfix and remove temporary executor
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm .github/workflows/main-episodic-year-hotfix.yml
+          git add -A
+          git commit -m 'fix: make episodic stream identity independent of year'
+          git pull --rebase origin main
+          git push origin HEAD:main
