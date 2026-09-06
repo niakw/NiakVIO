@@ -2,10 +2,12 @@
 """Minimal test-only bootstrap for official Nuvio client checkouts.
 
 This module may enable an upstream project's instrumentation source set, test
-runner, test dependencies, and (for TV) a debug signing configuration required
-to install the debug APK on the emulator. It must never change production
-Android manifests, networking policy, player code, stream headers, storage,
-DNS, proxying, decoder settings, or any other runtime behaviour.
+runner, test dependencies, and behavior-neutral packaging required for the
+instrumentation APK to start. For TV it may also select a debug signing
+configuration required to install the debug APK on the emulator. It must never
+change production Android manifests, networking policy, player code, stream
+headers, storage, DNS, proxying, decoder settings, or any other runtime
+behaviour.
 """
 from __future__ import annotations
 
@@ -14,6 +16,7 @@ from pathlib import Path
 MOBILE_RUNNER = 'instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"'
 MOBILE_EXT_JUNIT = 'implementation("androidx.test.ext:junit:1.3.0")'
 MOBILE_TEST_RUNNER = 'implementation("androidx.test:runner:1.7.0")'
+MOBILE_LIBCXX_PICK_FIRST = 'pickFirsts.add("lib/*/libc++_shared.so")'
 TV_RUNNER = 'testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"'
 TV_EXT_JUNIT = 'androidTestImplementation("androidx.test.ext:junit:1.3.0")'
 TV_TEST_RUNNER = 'androidTestImplementation("androidx.test:runner:1.7.0")'
@@ -75,8 +78,35 @@ def enable_mobile_device_tests(repo: Path) -> None:
             )
         text = text.replace(source_needle, source_replacement, 1)
 
+    # The generated instrumentation APK merges duplicate copies of libc++ from
+    # upstream native dependencies. Selecting one identical runtime copy is
+    # packaging-only test plumbing: it does not alter the application/player,
+    # provider, networking, Android permissions, or OS policy.
+    if MOBILE_LIBCXX_PICK_FIRST not in text:
+        compiler_needle = "        compilerOptions {"
+        packaging_replacement = '''        packaging {
+            jniLibs {
+                pickFirsts.add("lib/*/libc++_shared.so")
+            }
+        }
+
+        compilerOptions {'''
+        if text.count(compiler_needle) != 1:
+            raise SystemExit(
+                f"mobile device-test packaging anchor count={text.count(compiler_needle)}"
+            )
+        text = text.replace(compiler_needle, packaging_replacement, 1)
+
+    if text.count(MOBILE_LIBCXX_PICK_FIRST) != 1:
+        raise SystemExit(
+            f"mobile device-test libc++ packaging rule count={text.count(MOBILE_LIBCXX_PICK_FIRST)}"
+        )
+
     build.write_text(text, encoding="utf-8")
-    print("FIELD_NATIVE_TEST_BOOTSTRAP client=mobile scope=test-only runtime_mutation=false")
+    print(
+        "FIELD_NATIVE_TEST_BOOTSTRAP client=mobile scope=test-only "
+        "libcxx_pick_first=true runtime_mutation=false"
+    )
 
 
 def enable_tv_tests(repo: Path) -> None:
