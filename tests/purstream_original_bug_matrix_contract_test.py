@@ -15,7 +15,9 @@ playback = overrides.get("playback_integrity_policy") or {}
 
 # Original P0 identity failures: provider-owned search must be strict and typed.
 assert (purstream.get("patch_scripts") or []) == [], purstream.get("patch_scripts")
-assert purstream.get("published_types") == ["movie", "tv", "anime"]
+# Purstream publishes movie/tv transport lanes; anime remains a distinct semantic
+# request handled through the capability alias below instead of a duplicate lane.
+assert purstream.get("published_types") == ["movie", "tv"]
 fixed = purstream.get("fixed_endpoint") or {}
 official_api = str(purstream.get("official_api") or "")
 official_site = str(purstream.get("official_site") or "").rstrip("/") + "/"
