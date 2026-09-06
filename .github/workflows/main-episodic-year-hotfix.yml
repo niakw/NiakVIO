@@ -30,6 +30,7 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
+
           identity = Path('scripts/provider_patches/global_stream_identity_v1.py')
           text = identity.read_text(encoding='utf-8')
           old_rev = 'cross-client-shared-tmdb-cache-lazy-episode-v7'
@@ -51,9 +52,31 @@ jobs:
           elif new_year not in text:
               raise SystemExit('identity year anchor missing')
           identity.write_text(text, encoding='utf-8')
+
           existing = Path('tests/global_stream_identity_test.py')
           existing.write_text(existing.read_text(encoding='utf-8').replace(old_rev, new_rev), encoding='utf-8')
+
+          hardener = Path('scripts/provider_security_hardening.py')
+          hard = hardener.read_text(encoding='utf-8')
+          hard = hard.replace('import importlib.util\n', '')
+          hard = hard.replace('from pathlib import Path\n', '')
+          hard = hard.replace('ROOT = Path(__file__).resolve().parents[1]\n', '')
+          hard = hard.replace('SAFE_PARSE_PATH = ROOT / "scripts" / "provider_patches" / "safe_structured_parse_v1.py"\n', '')
+          retired_loader = '''\ndef _load_safe_parse():\n    spec = importlib.util.spec_from_file_location("nuvio_safe_structured_parse", SAFE_PARSE_PATH)\n    if spec is None or spec.loader is None:\n        raise RuntimeError(f"cannot load {SAFE_PARSE_PATH}")\n    module = importlib.util.module_from_spec(spec)\n    spec.loader.exec_module(module)\n    return module\n\n'''
+          hard = hard.replace(retired_loader, '\n')
+          retired_apply = '''    had_marker = MARKER in source\n    structured = _load_safe_parse().apply(source)\n    structured_changed = structured != source\n    source = structured\n'''
+          hard = hard.replace(retired_apply, '    had_marker = MARKER in source\n')
+          hard = hard.replace('    changed = structured_changed or bool(\n', '    changed = bool(\n')
+          hard = hard.replace('        "structuredParseChanges": 1 if structured_changed else 0,\n', '        "structuredParseChanges": 0,\n')
+          retired_scan = '''    try:\n        if _load_safe_parse().apply(source) != source:\n            findings.append("destructive_structured_unescape")\n    except Exception:\n        findings.append("structured_parse_scan_failed")\n'''
+          hard = hard.replace(retired_scan, '')
+          forbidden = ('SAFE_PARSE_PATH', '_load_safe_parse', 'structured_changed', 'importlib.util')
+          leftovers = [token for token in forbidden if token in hard]
+          if leftovers:
+              raise SystemExit('retired durable safe-parse dependency still present: ' + ','.join(leftovers))
+          hardener.write_text(hard, encoding='utf-8')
           PY
+
           cat > tests/episodic_year_identity_regression_test.py <<'PY'
           #!/usr/bin/env python3
           from __future__ import annotations
@@ -100,11 +123,24 @@ jobs:
           print('episodic year identity regression tests passed')
           PY
 
-      - name: Run identity regressions before publication
+      - name: Run identity and hardener regressions before publication
+        shell: bash
         run: |
           set -euo pipefail
           python tests/episodic_year_identity_regression_test.py
           python tests/global_stream_identity_test.py
+          python -m py_compile scripts/provider_security_hardening.py
+          python - <<'PY'
+          import sys
+          sys.path.insert(0, 'scripts')
+          import provider_security_hardening as hardening
+          output, report = hardening.harden_text("var value='ok';")
+          assert output == "var value='ok';"
+          assert report['structuredParseChanges'] == 0
+          findings = hardening.known_unsafe_findings("var value='ok';")
+          assert 'structured_parse_scan_failed' not in findings
+          print('provider security hardener retired-dependency regression tests passed')
+          PY
 
       - name: Materialize fix into published provider bundles
         run: |
