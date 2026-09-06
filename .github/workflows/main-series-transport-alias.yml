@@ -126,6 +126,7 @@ jobs:
         run: |
           set -euo pipefail
           python tests/reapply_manifest_type_projection_test.py
+          python tests/provider_compiler_type_projection_test.py
           python tests/global_media_type_resolution_test.py
           python tests/reapply_provider_versioning_test.py
 
