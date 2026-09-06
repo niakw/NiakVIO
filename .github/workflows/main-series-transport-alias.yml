@@ -1,0 +1,212 @@
+name: MAIN - Series Transport Alias Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-series-transport-alias.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+
+      - name: Patch canonical transport projection
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/published-manifest-before-series-alias.json"
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/reapply_published_overrides.py')
+          text = path.read_text(encoding='utf-8')
+
+          transport_fn = '''\n\ndef _normalized_transport_types(values: object) -> list[str]:\n    \"\"\"Normalize client transport aliases without promoting them to semantic types.\"\"\"\n    result: list[str] = []\n    for value in values if isinstance(values, list) else []:\n        item = str(value).strip().casefold()\n        if item in {\"movie\", \"tv\", \"anime\", \"series\"} and item not in result:\n            result.append(item)\n    return result\n'''
+          anchor = '\n\ndef projected_transport_types(semantic_types: object) -> list[str]:'
+          if '_normalized_transport_types' not in text:
+              if anchor not in text:
+                  raise SystemExit('transport projection insertion anchor missing')
+              text = text.replace(anchor, transport_fn + anchor, 1)
+
+          old_projection = '        transport.append("tv")\n    return transport\n'
+          new_projection = '        transport.append("tv")\n    if "tv" in transport and "series" not in transport:\n        # Some Nuvio client paths request episodic content as `series` before\n        # their local type normalizer runs. Publish it as a transport alias only.\n        transport.append("series")\n    return transport\n'
+          if old_projection in text:
+              text = text.replace(old_projection, new_projection, 1)
+          elif new_projection not in text:
+              raise SystemExit('TV transport projection anchor missing')
+
+          old_match = '    if _normalized_media_types(entry.get("supportedTypes")) != transport:\n'
+          new_match = '    if _normalized_transport_types(entry.get("supportedTypes")) != transport:\n'
+          if old_match in text:
+              text = text.replace(old_match, new_match, 1)
+          elif new_match not in text:
+              raise SystemExit('supportedTypes transport matcher anchor missing')
+
+          path.write_text(text, encoding='utf-8')
+          PY
+
+          cat > tests/reapply_manifest_type_projection_test.py <<'PY'
+          #!/usr/bin/env python3
+          from __future__ import annotations
+
+          import sys
+          from pathlib import Path
+
+          ROOT = Path(__file__).resolve().parents[1]
+          sys.path.insert(0, str(ROOT / "scripts"))
+
+          from reapply_published_overrides import (  # noqa: E402
+              apply_manifest_type_projection,
+              manifest_type_projection_matches,
+              projected_transport_types,
+              semantic_manifest_types,
+          )
+
+          assert projected_transport_types(["anime"]) == ["anime", "tv", "series"]
+          assert projected_transport_types(["movie", "anime"]) == ["movie", "anime", "tv", "series"]
+          assert projected_transport_types(["tv", "anime"]) == ["tv", "anime", "series"]
+          assert projected_transport_types(["movie", "tv"]) == ["movie", "tv", "series"]
+
+          anime_only = {"supportedTypes": ["anime"]}
+          assert apply_manifest_type_projection(anime_only, ["anime"]) is True
+          assert anime_only == {
+              "supportedTypes": ["anime", "tv", "series"],
+              "canonicalSupportedTypes": ["anime"],
+          }
+          assert semantic_manifest_types(anime_only) == ["anime"]
+          assert manifest_type_projection_matches(anime_only, ["anime"])
+          assert apply_manifest_type_projection(anime_only, ["anime"]) is False
+
+          anime_movie = {"supportedTypes": ["movie", "anime"]}
+          assert apply_manifest_type_projection(anime_movie, ["movie", "anime"]) is True
+          assert anime_movie == {
+              "supportedTypes": ["movie", "anime", "tv", "series"],
+              "canonicalSupportedTypes": ["movie", "anime"],
+          }
+          assert manifest_type_projection_matches(anime_movie, ["movie", "anime"])
+
+          ordinary = {
+              "supportedTypes": ["movie", "tv"],
+              "canonicalSupportedTypes": ["movie", "tv"],
+          }
+          assert apply_manifest_type_projection(ordinary, ["movie", "tv"]) is True
+          assert ordinary == {
+              "supportedTypes": ["movie", "tv", "series"],
+              "canonicalSupportedTypes": ["movie", "tv"],
+          }
+          assert semantic_manifest_types(ordinary) == ["movie", "tv"]
+          assert manifest_type_projection_matches(ordinary, ["movie", "tv"])
+          assert apply_manifest_type_projection(ordinary, ["movie", "tv"]) is False
+
+          stale_transport_only = {"supportedTypes": ["anime", "movie", "tv"]}
+          assert semantic_manifest_types(stale_transport_only) == ["anime", "movie", "tv"]
+          assert not manifest_type_projection_matches(stale_transport_only, ["anime"])
+          assert apply_manifest_type_projection(stale_transport_only, ["anime"]) is True
+          assert stale_transport_only == {
+              "supportedTypes": ["anime", "tv", "series"],
+              "canonicalSupportedTypes": ["anime"],
+          }
+          assert manifest_type_projection_matches(stale_transport_only, ["anime"])
+
+          # `series` is never semantic: it must not leak into canonicalSupportedTypes.
+          assert semantic_manifest_types({
+              "supportedTypes": ["tv", "series"],
+              "canonicalSupportedTypes": ["tv"],
+          }) == ["tv"]
+
+          print("reapply manifest semantic/transport projection tests passed")
+          PY
+
+      - name: Validate projection source before publication
+        run: |
+          set -euo pipefail
+          python tests/reapply_manifest_type_projection_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/reapply_provider_versioning_test.py
+
+      - name: Rematerialize published manifests and finalize cache versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/sync_release_versions.py \
+            --manifest manifest.json \
+            --previous "$RUNNER_TEMP/published-manifest-before-series-alias.json"
+
+      - name: Verify published transport aliases
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          manifests = [
+              Path('manifest.json'),
+              Path('vf/manifest.json'),
+              Path('no-anime/manifest.json'),
+              Path('vf-no-anime/manifest.json'),
+          ]
+          checked = 0
+          for path in manifests:
+              if not path.exists():
+                  continue
+              payload = json.loads(path.read_text(encoding='utf-8'))
+              for row in payload.get('scrapers', []):
+                  supported = [str(v).lower() for v in row.get('supportedTypes', [])]
+                  canonical = [str(v).lower() for v in row.get('canonicalSupportedTypes', [])]
+                  semantic = canonical or [v for v in supported if v in {'movie', 'tv', 'anime'}]
+                  if 'tv' in supported:
+                      assert 'series' in supported, f"{path}:{row.get('id')} missing series transport alias"
+                      checked += 1
+                  assert 'series' not in canonical, f"{path}:{row.get('id')} leaked series into canonical types"
+                  if canonical:
+                      assert all(v in {'movie', 'tv', 'anime'} for v in canonical)
+          assert checked > 0, 'no TV-capable provider rows checked'
+          print(f'verified series transport alias on {checked} published TV-capable rows')
+          PY
+          python scripts/reapply_published_overrides.py --check
+          python tests/reapply_manifest_type_projection_test.py
+          python tests/provider_versioning_test.py
+          python tests/reapply_provider_versioning_test.py
+          python tests/release_auto_bump_test.py
+          python tests/release_version_sync_test.py
+          python tests/provider_compiler_type_projection_test.py
+          python tests/global_media_type_resolution_test.py
+
+      - name: Regenerate and validate release integrity
+        run: |
+          set -euo pipefail
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit canonical hotfix and remove executor
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/main-series-transport-alias.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --check
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$(git rev-parse HEAD)" || {
+            echo 'main advanced during hotfix; refusing non-fast-forward publication' >&2
+            exit 1
+          }
+          git commit -m "fix: expose series as TV transport alias"
+          git push origin HEAD:main
