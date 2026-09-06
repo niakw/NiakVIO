@@ -83,13 +83,30 @@ assert "NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9" in upgrader
 assert "globalThis.__nuvioIdentityPolicyV1" in upgrader
 assert "policy.catalogueScore({" in upgrader
 assert "policy.htmlIdentityOk({" in upgrader
-# ProviderBase may transport year evidence to Core, but it must not own year
-# rejection/scoring semantics after v9.
+
+# Inspect the replacement snippets that become ProviderBase runtime code, not the
+# migration script as a whole. The script deliberately contains legacy source
+# anchors and validation guard strings so it can recognize and reject old code.
+def triple_quoted_assignment(name: str) -> str:
+    marker = name + " = '''"
+    start = upgrader.find(marker)
+    assert start >= 0, name
+    start += len(marker)
+    end = upgrader.find("'''", start)
+    assert end >= 0, name
+    return upgrader[start:end]
+
+transformed_identity = triple_quoted_assignment("new_score") + "\n" + triple_quoted_assignment("new_html")
+assert "globalThis.__nuvioIdentityPolicyV1" in transformed_identity
+assert "policy.catalogueScore({" in transformed_identity
+assert "policy.htmlIdentityOk({" in transformed_identity
+# ProviderBase may transport year evidence to Core, but transformed ProviderBase
+# must not own year rejection/scoring semantics after v9.
 for forbidden in (
     'const movieIdentity = expectedMedia === "movie";',
     'Math.abs(Number(year) - Number(expectedYear))',
     'if (year && expectedYear && year !== expectedYear) return -1;',
 ):
-    assert forbidden not in upgrader, forbidden
+    assert forbidden not in transformed_identity, forbidden
 
 print("global identity policy ownership tests passed")
