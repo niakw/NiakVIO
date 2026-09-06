@@ -19,7 +19,12 @@ for row in rows:
     rel=str(row.get("filename") or ""); path=ROOT/rel
     assert rel.startswith("providers/") and path.is_file(), (pid,rel)
     raw=path.read_bytes(); sha=hashlib.sha256(raw).hexdigest()
-    assert path.name==f"{pid}-{sha[:16]}.js", (pid,path.name,sha[:16])
+    # Published bundles are source-qualified (for example --nuvio-- or
+    # --published-baseline--) while remaining content-addressed by SHA-256.
+    # Validate the canonical provider id + source channel + exact hash suffix
+    # instead of the retired single-dash filename shape.
+    expected_name=rf"{re.escape(pid)}--[A-Za-z0-9._-]+--{sha[:16]}\.js"
+    assert re.fullmatch(expected_name,path.name), (pid,path.name,sha[:16])
     rep=rb.get(pid); assert rep and rep.get("file")==rel and rep.get("sha256")==sha, pid
     agg.update(pid.encode("utf-8")); agg.update(bytes.fromhex(sha))
     text=raw.decode("utf-8")
