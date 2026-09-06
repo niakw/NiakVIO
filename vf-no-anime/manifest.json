@@ -1,18 +1,19 @@
 {
   "name": "NiakVIO — VF uniquement — Without anime providers",
-  "version": "5.21.32",
+  "version": "5.21.33",
   "scrapers": [
     {
       "id": "PURSTREAM",
       "name": "💧 Purstream",
       "description": "Films and series in French (VF) / subtitled French (VOSTFR) / multi-language (MULTI) from purstream.art.",
-      "version": "3.0.68",
+      "version": "3.0.70",
       "author": "wooodyhood",
       "supportedTypes": [
         "movie",
-        "tv"
+        "tv",
+        "series"
       ],
-      "filename": "../providers/purstream-b3e8930647419ef5.js",
+      "filename": "../providers/purstream--nuvio--bebf360a4ac6148a.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -24,19 +25,24 @@
         "en",
         "fr"
       ],
-      "disabledPlatforms": []
+      "disabledPlatforms": [],
+      "canonicalSupportedTypes": [
+        "movie",
+        "tv"
+      ]
     },
     {
       "id": "FLEMMIX",
       "name": "🔥 Flemmix",
       "description": "Films et séries en streaming VF/VOSTFR sur Flemmix.",
-      "version": "1.0.74",
+      "version": "1.0.76",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
-        "tv"
+        "tv",
+        "series"
       ],
-      "filename": "../providers/flemmix-7cdadf05fe06f158.js",
+      "filename": "../providers/flemmix--nuvio--634949d36b774775.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/flemmix.webp",
       "contentLanguage": [
@@ -48,18 +54,23 @@
       ],
       "limited": false,
       "disabledPlatforms": [],
-      "supportsExternalPlayer": true
+      "supportsExternalPlayer": true,
+      "canonicalSupportedTypes": [
+        "movie",
+        "tv"
+      ]
     },
     {
       "id": "KEHFLIX",
       "name": "🎬 Kehflix",
       "description": "Kehflix provider géré par NiakVIO via son hub officiel et son domaine terminal.",
-      "version": "1.0.46",
+      "version": "1.0.48",
       "author": "NiakVIO",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/kehflix.webp",
       "contentLanguage": [
@@ -67,7 +78,7 @@
       ],
       "formats": [],
       "hasSettings": false,
-      "filename": "../providers/kehflix-030944be903451a0.js",
+      "filename": "../providers/kehflix--nuvio--9bcfdb1fda58b228.js",
       "enabled": true,
       "disabledPlatforms": [],
       "canonicalSupportedTypes": [
@@ -80,14 +91,15 @@
       "id": "COFLIX",
       "name": "🎥 Coflix",
       "description": "Films et séries en streaming VF/VOSTFR sur Coflix.wiki.",
-      "version": "1.0.69",
+      "version": "1.0.71",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
-      "filename": "../providers/coflix-8b4add06709477b5.js",
+      "filename": "../providers/coflix--nuvio--168f988bd6e1915f.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/coflix.webp",
       "contentLanguage": [
@@ -110,14 +122,14 @@
       "id": "DULOURD",
       "name": "🏋️ DuLourd",
       "description": "Séries, animes et cartoons en streaming VF et VOSTFR.",
-      "version": "1.0.48",
+      "version": "1.0.50",
       "author": "Gowaru",
       "supportedTypes": [
         "anime",
         "tv",
-        "movie"
+        "series"
       ],
-      "filename": "../providers/dulourd-cc6471d438d83218.js",
+      "filename": "../providers/dulourd--nuvio--7c830febaa89eb54.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/dulourd.webp",
       "contentLanguage": [
@@ -139,14 +151,15 @@
       "id": "french-manga",
       "name": "🇫🇷 French-Manga",
       "description": "Animes VF et VOSTFR en streaming sur French-Manga.net",
-      "version": "1.0.96",
+      "version": "1.0.98",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime",
-        "tv"
+        "tv",
+        "series"
       ],
-      "filename": "../providers/french-manga-d2aa4efa88026344.js",
+      "filename": "../providers/french-manga--nuvio--b81819b1ece354a0.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/french-manga.webp",
       "contentLanguage": [
@@ -168,14 +181,15 @@
       "id": "MOVIX",
       "name": "🎥 Movix",
       "description": "Films, Séries et Animes en VF et VOSTFR.",
-      "version": "1.0.60",
+      "version": "1.0.62",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
-      "filename": "../providers/movix-52b1d0c5d10cc6de.js",
+      "filename": "../providers/movix--nuvio--a83c545022e44ec3.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/movix.webp",
       "contentLanguage": [
@@ -199,14 +213,15 @@
       "id": "MUGIWARASTREAM",
       "name": "👒 Mugiwara-no-Streaming",
       "description": "Streaming gratuit d'animes et scans en bonne qualite via API Next.js.",
-      "version": "1.0.84",
+      "version": "1.0.86",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime",
-        "tv"
+        "tv",
+        "series"
       ],
-      "filename": "../providers/mugiwarastream-df03cf1fca3fdac5.js",
+      "filename": "../providers/mugiwarastream--nuvio--34700399beab43c0.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/mugiwarastream.webp",
       "contentLanguage": [
@@ -229,14 +244,15 @@
       "id": "nakios",
       "name": "🇳 Nakios",
       "description": "Films et séries en streaming MP4 via Nakios (API REST, TMDB natif, CDN direct).",
-      "version": "3.8.71",
+      "version": "3.8.73",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
-      "filename": "../providers/nakios-7927ab0678f58f95.js",
+      "filename": "../providers/nakios--nuvio--e5560f8ca538981d.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/nakios.webp",
       "contentLanguage": [
@@ -256,17 +272,47 @@
       ]
     },
     {
+      "id": "NEKO-SAMA",
+      "name": "🐱 Neko-Sama",
+      "description": "Anime VF et VOSTFR en streaming sur animes-sama.su (via neko-sama.lol).",
+      "version": "0.0.28",
+      "author": "Gowaru",
+      "supportedTypes": [
+        "anime",
+        "tv",
+        "series"
+      ],
+      "filename": "../providers/neko-sama--nuvio--f77f7bb0bd48bc55.js",
+      "enabled": true,
+      "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/neko-sama.webp",
+      "contentLanguage": [
+        "fr"
+      ],
+      "formats": [
+        "mp4",
+        "m3u8"
+      ],
+      "limited": false,
+      "disabledPlatforms": [],
+      "supportsExternalPlayer": false,
+      "canonicalSupportedTypes": [
+        "anime",
+        "tv"
+      ]
+    },
+    {
       "id": "PAPADUSTREAM",
       "name": "🍿 Papadustream",
       "description": "Films et séries TV en streaming HLS via Papadustream.",
-      "version": "1.0.51",
+      "version": "1.0.53",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
-      "filename": "../providers/papadustream-b9ca638ac540e053.js",
+      "filename": "../providers/papadustream--nuvio--978864cf6c948cc2.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/papadustream.webp",
       "contentLanguage": [
@@ -289,14 +335,15 @@
       "id": "SEKAI",
       "name": "🌏 Sekai",
       "description": "Fournisseur spécialisé sur les gros animes. Streams directs très rapides sans iFrames.",
-      "version": "1.0.63",
+      "version": "1.0.65",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime",
-        "tv"
+        "tv",
+        "series"
       ],
-      "filename": "../providers/sekai-5d18b0d67713db52.js",
+      "filename": "../providers/sekai--nuvio--1327831c8b905506.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/sekai.webp",
       "contentLanguage": [
@@ -318,14 +365,15 @@
       "id": "STREAMZO",
       "name": "🌊 StreamZo",
       "description": "Films et séries en streaming VF/VOSTFR sur Streamzo.fr (SPA, iframe injecté, multi-serveurs).",
-      "version": "1.0.84",
+      "version": "1.0.86",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
-      "filename": "../providers/streamzo-bd8444b2f34fbe98.js",
+      "filename": "../providers/streamzo--nuvio--6c242c5fcd039b18.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/streamzo.webp",
       "contentLanguage": [
@@ -347,14 +395,15 @@
       "id": "TOFLIX",
       "name": "▶️ ToFlix",
       "description": "Films, séries et animes en anglais et en français.",
-      "version": "1.0.26",
+      "version": "1.0.28",
       "author": "wooodyhood",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
-      "filename": "../providers/toflix-971dffca9dbada53.js",
+      "filename": "../providers/toflix--nuvio--f7d5df00c691cf0d.js",
       "enabled": true,
       "hasSettings": true,
       "formats": [
@@ -377,14 +426,15 @@
       "id": "VOSTFREE",
       "name": "🆓 Vostfree",
       "description": "Animes VF et VOSTFR en streaming et téléchargement.",
-      "version": "1.1.89",
+      "version": "1.1.91",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "anime",
-        "tv"
+        "tv",
+        "series"
       ],
-      "filename": "../providers/vostfree-929f881c7c7343ba.js",
+      "filename": "../providers/vostfree--nuvio--8c0eb72fef86798d.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/vostfree.webp",
       "contentLanguage": [
@@ -406,13 +456,14 @@
       "id": "WOOKAFR",
       "name": "🇫🇷 Wookafr",
       "description": "Films et séries en streaming VF sur Wookafr.",
-      "version": "1.0.59",
+      "version": "1.0.61",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
-        "tv"
+        "tv",
+        "series"
       ],
-      "filename": "../providers/wookafr-faed582f3891f08f.js",
+      "filename": "../providers/wookafr--nuvio--92482ff2bb2400c9.js",
       "enabled": true,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/wookafr.webp",
       "contentLanguage": [
@@ -424,20 +475,25 @@
       ],
       "limited": false,
       "disabledPlatforms": [],
-      "supportsExternalPlayer": false
+      "supportsExternalPlayer": false,
+      "canonicalSupportedTypes": [
+        "movie",
+        "tv"
+      ]
     },
     {
       "id": "frenchstream",
       "name": "🇫🇷 Frenchstream",
       "description": "Films, séries et animes en VF et VOSTFR, avec récupération des lecteurs depuis la fiche lorsque l’ancienne API est indisponible.",
-      "version": "2.0.59",
+      "version": "2.0.61",
       "author": "Gowaru",
       "supportedTypes": [
         "movie",
         "tv",
-        "anime"
+        "anime",
+        "series"
       ],
-      "filename": "../providers/frenchstream-a76a55b0be8282d1.js",
+      "filename": "../providers/frenchstream--nuvio--a877f597e9b985c8.js",
       "enabled": false,
       "logo": "https://raw.githubusercontent.com/niakw/NiakVIO/main/assets/providers/96x96/frenchstream.webp",
       "contentLanguage": [

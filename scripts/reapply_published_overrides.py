@@ -46,7 +46,7 @@ from provider_patches.quarantine_provider_v1 import apply as apply_terminal_quar
 
 ROOT = Path(__file__).resolve().parents[1]
 PRIMARY = ROOT / "manifest.json"
-SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")
+SECONDARY = ()
 PROVENANCE = ROOT / "PROVENANCE.json"
 PROVIDERS = ROOT / "providers"
 OVERRIDES = ROOT / "provider-overrides.json"
@@ -199,6 +199,16 @@ def _normalized_media_types(values: object) -> list[str]:
     return result
 
 
+def _normalized_transport_types(values: object) -> list[str]:
+    """Normalize client transport aliases without promoting them to semantic types."""
+    result: list[str] = []
+    for value in values if isinstance(values, list) else []:
+        item = str(value).strip().casefold()
+        if item in {"movie", "tv", "anime", "series"} and item not in result:
+            result.append(item)
+    return result
+
+
 def projected_transport_types(semantic_types: object) -> list[str]:
     """Project semantic provider capabilities onto Nuvio's transport filter."""
     semantic = _normalized_media_types(semantic_types)
@@ -207,6 +217,10 @@ def projected_transport_types(semantic_types: object) -> list[str]:
         # Nuvio may surface episodic anime as series/tv. Movie is not a generic
         # anime alias: only semantic movie capability may select movie transport.
         transport.append("tv")
+    if "tv" in transport and "series" not in transport:
+        # Some Nuvio client paths request episodic content as `series` before
+        # their local type normalizer runs. Publish it as a transport alias only.
+        transport.append("series")
     return transport
 
 
@@ -223,7 +237,7 @@ def manifest_type_projection_matches(entry: dict[str, Any], semantic_types: obje
     transport = projected_transport_types(semantic)
     if semantic_manifest_types(entry) != semantic:
         return False
-    if _normalized_media_types(entry.get("supportedTypes")) != transport:
+    if _normalized_transport_types(entry.get("supportedTypes")) != transport:
         return False
     canonical = _normalized_media_types(entry.get("canonicalSupportedTypes"))
     if transport != semantic:
@@ -810,7 +824,7 @@ def fast_fixed_point_check(
         if str(proof.get("sha256") or "").casefold() != actual_public_sha:
             return False, f"fixed-point-proof-sha-drift:{provider_id}"
 
-        authoritative_types = configured_authoritative_types(config, provider_id)
+        authoritative_types = configured_authoritative_types(config, provider_id) or semantic_manifest_types(entry)
         if authoritative_types and not manifest_type_projection_matches(entry, authoritative_types):
             return False, f"supported-types-drift:{provider_id}"
         for key, value in configured_manifest_overrides(config, provider_id).items():
@@ -934,7 +948,7 @@ def main() -> int:
         if PROVIDERS.resolve() not in path.parents or not path.is_file():
             raise ValueError(f"missing or unsafe published provider: {relative}")
 
-        authoritative_types = configured_authoritative_types(override_config, provider_id)
+        authoritative_types = configured_authoritative_types(override_config, provider_id) or semantic_manifest_types(entry)
         types_changed = bool(authoritative_types and apply_manifest_type_projection(entry, authoritative_types))
         manifest_overrides = configured_manifest_overrides(override_config, provider_id)
         manifest_changed = any(entry.get(key) != value for key, value in manifest_overrides.items())
