@@ -63,7 +63,11 @@ Canonical year behavior:
 - MOVIE: title + type + movie year; year mismatch is strong evidence and may reject in strict mode.
 - TV: title + media type primary; `seriesYear` = original series year, `seasonYear` = season/episode year secondary evidence; **neither year may hard-reject TV by itself**.
 - Episode resolution uses season + episode. A provider result such as `House of the Dragon - Saison 3 (2026)` must not be rejected because the series origin year is 2022.
-- Current shared TV soft-year contract is already implemented/tested; the 2026-09-07 Desktop HOTD failure below occurs **after** identity/series transport selection, so do not regress into an artificial year exception.
+- Shared Core TV soft-year logic is implemented/tested, but a 2026-09-07 source audit found **two ProviderBase-local hard-year leaks** that escaped the prior Core-level test:
+  1. `scripts/provider_base_store.py::_recipeScore()` rejects `year !== expectedYear` in non-strict mode and rejects `abs(year-expectedYear)>1` in strict mode regardless of media type.
+  2. `_strictHtmlIdentityOk(html, meta)` rejects an HTML detail page when its visible years do not contain the TMDB series origin year, again regardless of media type.
+- These ProviderBase paths must be migrated so year is hard/required only for `movie`; for `tv/series`, year is only a score bonus/signal and title+media type remain primary. Add a real ProviderBase/Node regression using HOTD-like `seriesYear=2022` and provider season/page year `2026`.
+- The 2026-09-07 Desktop HOTD failure below occurs after identity/series transport selection; do not regress into a HOTD-specific exception.
 
 ## Stream/player integrity
 
@@ -143,7 +147,7 @@ Observed chain:
 - Metadata resolves correctly: IMDb `tt11198330`, TMDB `94997`, `type=series`, title `House of the Dragon`, 26 videos.
 - Requested stream identity reaches the stream stage exactly as **`type=series id=tt11198330:3:1`**.
 - Log line: `StreamsRepo Found 0 addons for stream type=series id=tt11198330:3:1`. This is the ordinary addon list, **not** proof that zero NiakVIO Provider JS ran: PluginRuntime network calls follow immediately.
-- Therefore the S3E1 failure is **after** metadata/transport identity and is not evidence for a hard TV year rejection.
+- Therefore the S3E1 failure is **after** metadata/transport identity and is not evidence for a hard TV year rejection in the early Core gate; the ProviderBase-local year leaks above can still affect catalogue/API matching later.
 
 Provider/runtime requests visible immediately after the S3E1 request:
 - YFlix family (`1moviesz.to`): `GET https://1moviesz.to/api?#` and root `/?#` -> `UnknownHostException`.
@@ -161,15 +165,16 @@ Interpretation / next correction priority:
 
 ## Active completion sequence after this checkpoint
 
-1. Diagnose/fix HOTD S3E1 route/domain/source-plan failures generically across all 96, starting with the concrete YFlix/Nakios/Peachify/VidLink evidence above; do not special-case HOTD.
-2. Run real provider/route probes for the affected route families and update DATA only from observed/authoritative evidence.
-3. Fix the Domain Refresh transaction defects so future domain rotations correctly project full CONFIG and preserve final filename contract.
-4. Re-materialize/reverse/minimize only as required by actual provider DATA/Core changes; if published provider bytes change, finalize a new synchronized release after validation.
-5. Re-run exact HOTD S3E1 Desktop test and representative movie/anime fixtures; confirm visible streams and player behavior, not merely structural green.
-6. Run complete five Native Labs on one exact candidate SHA.
-7. Finish `CORE - Workflow Gate`, `SEC - CodeQL`, `SEC - Final Gate`, dependency audit, Default Setup evidence on the final exact SHA.
-8. Clean docs/machine architecture contracts/trigger metadata and regenerate `ARCHITECTURE.docx`.
-9. Final branch/PR hygiene audit and final `MEMORY.md` checkpoint with exact SHA/run/artifact IDs.
+1. Fix ProviderBase-local TV hard-year leaks generically and add HOTD-like 2022-vs-2026 runtime regression while retaining strict movie behavior.
+2. Diagnose/fix HOTD S3E1 route/domain/source-plan failures generically across all 96, starting with YFlix/Nakios/Peachify/VidLink; do not special-case HOTD.
+3. Run real provider/route probes for the affected route families and update DATA only from observed/authoritative evidence.
+4. Fix the Domain Refresh transaction defects so future domain rotations correctly project full CONFIG and preserve final filename contract.
+5. Re-materialize/reverse/minimize only as required by actual provider DATA/Core changes; if published provider bytes change, finalize a new synchronized release after validation.
+6. Re-run exact HOTD S3E1 Desktop test and representative movie/anime fixtures; confirm visible streams and player behavior, not merely structural green.
+7. Run complete five Native Labs on one exact candidate SHA.
+8. Finish `CORE - Workflow Gate`, `SEC - CodeQL`, `SEC - Final Gate`, dependency audit, Default Setup evidence on the final exact SHA.
+9. Clean docs/machine architecture contracts/trigger metadata and regenerate `ARCHITECTURE.docx`.
+10. Final branch/PR hygiene audit and final `MEMORY.md` checkpoint with exact SHA/run/artifact IDs.
 
 ## Completion principle
 
