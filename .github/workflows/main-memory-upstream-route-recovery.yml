@@ -1,0 +1,43 @@
+name: MAIN - Upstream Route Recovery Memory Checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-memory-upstream-route-recovery.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Append durable upstream route recovery checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat >> MEMORY.md <<'EOF'
+
+## 2026-09-07 — Upstream Provider JS route recovery checkpoint
+
+- Clarified the three historical Provider JS sources used by NiakVIO: `Gowaru/gowaru-nuvio-providers`, `NuvioPlugin/All-in-One-Nuvio` (fallback `D3adlyRocket/All-in-One-Nuvio`), and `yoruix/nuvio-providers`. These are provider-source repositories, not NuvioTV/Mobile/Desktop client repositories.
+- `automation/provider-upstream-parity.json` proves 91/96 current NiakVIO providers were matched to one of those upstreams with zero provider download errors in the last parity run. Missing upstream providers are exactly: `4khdhubnew`, `cinemm`, `goatapi`, `kehflix`, `toflix`.
+- Classification counts from that report: `both_ok=3`, `both_zero=64`, `inconclusive_timeout=4`, `niakvio_ok_upstream_ko=1`, `upstream_ok_niakvio_ko=19`. The 19 upstream-ok/NiakVIO-ko providers are priority proof that route/plan reconstruction regressed real upstream behavior.
+- `upstream-lkg.json` retains exact historical snapshots, including provider raw URL, SHA-256 and byte count. Gowaru alone has a preserved 26-provider generation. Therefore route recovery must prefer exact upstream/LKG Provider JS when available rather than probing already-reconstructed NiakVIO bundles as the only authority.
+- `scripts/run_provider_upstream_parity.py` already downloads upstream Provider JS into a throw-away directory and executes them through hardened `scripts/provider_worker.cjs`. This harness is the correct base for route recovery.
+- `provider_worker.cjs` already records provider network observations, but its health `path_pattern` heuristically replaces numeric segments with `{id}`. That pattern is diagnostic only and MUST NOT become executable route authority.
+- New route recovery design: execute exact upstream Provider JS; capture a proof trace with exact sanitized request URL/method/query/body/header shape; capture bounded non-sensitive response identity hints (id/_id/media_id/post_id/slug); correlate a later request value to a previous provider response before replacing it with `{id}`; derive route; require successful live HTTP evidence; only then promote to NiakVIO executable DATA. Static/upstream strings remain candidates only.
+- For the five providers without historical upstream, use their current NiakVIO-native/recent source and the same proof trace model. Kehflix belongs to this group.
+- Added shared `scripts/provider_route_proof.py` + `tests/provider_route_proof_authority_test.py` to formalize proof-first route derivation, including search -> internal provider id -> episode route correlation.
+EOF
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add MEMORY.md
+          git commit -m "docs: checkpoint upstream route recovery model"
+          git push origin HEAD:main
+          git push origin --delete tmp-route-proof-build || true
