@@ -6,11 +6,12 @@
   "runtime_contract": "getStreams(tmdbId, mediaType, season, episode) plus global SCRAPER_ID, SCRAPER_SETTINGS and TV-only TMDB_API_KEY",
   "source_repository": "NuvioMedia/NuvioTV",
   "source_branch": "dev",
-  "source_ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
+  "source_ref": "23d1fe478e380860dae3eb41c8770533361a0cc5",
   "runtime_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginRuntime.kt",
   "settings_source": "app/src/main/java/com/nuvio/tv/data/local/PluginDataStore.kt",
   "stream_repository_source": "app/src/main/java/com/nuvio/tv/data/repository/StreamRepositoryImpl.kt",
   "manifest_model_source": "app/src/main/java/com/nuvio/tv/domain/model/Plugin.kt",
+  "subtitle_model_source": "app/src/main/java/com/nuvio/tv/domain/model/Subtitle.kt",
   "plugin_manager_source": "app/src/full/java/com/nuvio/tv/core/plugin/PluginManager.kt",
   "transport_dns_source": "app/src/main/java/com/nuvio/tv/core/network/IPv4FirstDns.kt",
   "player_source_prefix": "app/src/main/java/com/nuvio/tv/ui/screens/player/",
@@ -19,11 +20,7 @@
   "promoter": "scripts/promote_global_nuvio_tv_candidates.py",
   "direct_media_patch": "scripts/provider_patches/nuvio_tv_direct_media_v2.py",
   "promotion_report": "automation/nuvio-tv-global-promotion.json",
-  "media_gate": [
-    "hls-extm3u",
-    "dash-mpd",
-    "real-video-container-signature"
-  ],
+  "media_gate": ["hls-extm3u", "dash-mpd", "real-video-container-signature"],
   "player_model": "direct-media-first",
   "runtime_capabilities": {
     "fetch_transport": "OkHttp + Proxy.NO_PROXY + IPv4FirstDns",
@@ -34,6 +31,7 @@
     "text_encoder_decoder": false,
     "webassembly": false,
     "subtitles_projected": true,
+    "subtitle_headers_projected": true,
     "headers_projected_to_behavior_hints": true,
     "stream_session_teardown_guaranteed": false,
     "navigation_cancels_inflight_native_execution": false,
@@ -42,38 +40,38 @@
     "stream_badges_projection": "provider badgeIds/displayBadges are not parsed; StreamBadgeRules re-matches textual Stream fields"
   },
   "manifest_platform_filtering": {
-    "fields_parsed": [
-      "supportedPlatforms",
-      "disabledPlatforms"
-    ],
+    "fields_parsed": ["supportedPlatforms", "disabledPlatforms"],
     "enforced_by_plugin_manager": false,
     "consequence": "Do not rely on manifest platform fields to hide an unsafe provider from NuvioTV; the provider output itself must be strict-media safe or globally disabled."
   },
   "audit": {
-    "date": "2026-09-03",
-    "previous_ref": "49c753de3f193e3a74ea54194df3d331ce6302f0",
-    "audited_ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
-    "hard_contract_paths_changed": false,
+    "date": "2026-09-06",
+    "previous_ref": "4f37e949199732e5d68be8f76c67935cbf4137d5",
+    "audited_ref": "23d1fe478e380860dae3eb41c8770533361a0cc5",
+    "hard_contract_paths_changed": true,
     "plugin_runtime_positional_getstreams_unchanged": true,
-    "provider_stream_repository_contract_unchanged": true,
+    "provider_stream_repository_contract_unchanged": false,
     "provider_url_header_ingestion_unchanged": true,
     "semantic_changes_reviewed": [
-      "Intervening commits only modify ASS/SSA subtitle styling/focus in PlayerScreen and subtitle UI components",
-      "PluginRuntime positional getStreams, SCRAPER_ID/SCRAPER_SETTINGS/TMDB_API_KEY injection and native fetch semantics remain unchanged",
-      "Provider repository, LocalScraperResult URL/header/subtitle projection and behaviorHints proxy-header mapping remain unchanged"
+      "PluginRuntime still calls positional getStreams(tmdbId, mediaType, season, episode), injects SCRAPER_ID/SCRAPER_SETTINGS/TMDB_API_KEY and preserves Proxy.NO_PROXY + IPv4FirstDns transport semantics",
+      "PluginRuntime still exposes 30-second HTTP timeouts and a 60-second plugin runtime timeout; the outer scraper safety budget remains 120 seconds",
+      "Subtitle projection changed additively: the current Subtitle model carries Map<String,String>? headers and those subtitle-specific headers must survive provider projection/sanitization independently from the main stream headers",
+      "TextEncoder/TextDecoder and WebAssembly remain absent from the current TV PluginRuntime"
     ],
-    "runtime_reproof_required": false
+    "runtime_reproof_required": true,
+    "runtime_reproof_reason": "TV subtitle result projection changed after the previous audited ref; source audit is complete but a fresh Android-TV Native Lab must prove the current result path before the contract is considered fully re-proven."
   },
   "notes": [
     "NuvioTV provider compatibility is a distinct runtime family from Nuvio Mobile and Nuvio Desktop.",
     "The source_ref is the exact official NuvioTV commit most recently source-audited against this contract.",
     "NuvioTV injects TMDB_API_KEY into the plugin runtime; Mobile/Desktop do not expose that runtime global.",
-    "Provider extraction still uses positional getStreams and preserves returned URL/header material; playback networking consumes behaviorHints/proxyHeaders.",
+    "Provider extraction uses positional getStreams and preserves returned URL/header material; main playback networking consumes behaviorHints/proxyHeaders.",
+    "Subtitle entries now preserve their own headers separately from the main stream headers.",
     "NuvioTV parses supportedPlatforms/disabledPlatforms in the manifest model but PluginManager does not apply those fields when building enabled scrapers.",
     "A zero-stream result is not by itself proof of incompatibility.",
     "Providers blocked on every Mobile/Desktop runtime but still enabled in the shared manifest must sanitize all NuvioTV-returned URLs against real media payloads.",
     "Promoted direct-media wrappers require strict HLS, DASH or real container evidence.",
-    "Cross-work infinite loading that clears immediately after restarting NuvioTV is classified as client lifecycle/executor exhaustion evidence, not provider disablement proof.",
-    "NuvioTV still does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime; subtitles are now preserved by LocalScraperResult."
+    "Cross-work infinite loading that clears immediately after restarting NuvioTV is client lifecycle/executor exhaustion evidence, not provider disablement proof.",
+    "NuvioTV does not expose TextEncoder/TextDecoder or WebAssembly from PluginRuntime."
   ]
 }
