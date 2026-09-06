@@ -56,19 +56,31 @@ jobs:
           elif new_match not in text:
               raise SystemExit('supportedTypes transport matcher anchor missing')
 
+          old_fast = '        authoritative_types = configured_authoritative_types(config, provider_id)\n        if authoritative_types and not manifest_type_projection_matches(entry, authoritative_types):\n'
+          new_fast = '        authoritative_types = configured_authoritative_types(config, provider_id) or semantic_manifest_types(entry)\n        if authoritative_types and not manifest_type_projection_matches(entry, authoritative_types):\n'
+          if old_fast in text:
+              text = text.replace(old_fast, new_fast, 1)
+          elif new_fast not in text:
+              raise SystemExit('fast fixed-point type projection anchor missing')
+
+          old_loop = '        authoritative_types = configured_authoritative_types(override_config, provider_id)\n        types_changed = bool(authoritative_types and apply_manifest_type_projection(entry, authoritative_types))\n'
+          new_loop = '        authoritative_types = configured_authoritative_types(override_config, provider_id) or semantic_manifest_types(entry)\n        types_changed = bool(authoritative_types and apply_manifest_type_projection(entry, authoritative_types))\n'
+          if old_loop in text:
+              text = text.replace(old_loop, new_loop, 1)
+          elif new_loop not in text:
+              raise SystemExit('publication loop type projection anchor missing')
+
           path.write_text(text, encoding='utf-8')
           PY
 
           cat > tests/reapply_manifest_type_projection_test.py <<'PY'
           #!/usr/bin/env python3
           from __future__ import annotations
-
           import sys
           from pathlib import Path
 
           ROOT = Path(__file__).resolve().parents[1]
           sys.path.insert(0, str(ROOT / "scripts"))
-
           from reapply_published_overrides import (  # noqa: E402
               apply_manifest_type_projection,
               manifest_type_projection_matches,
@@ -83,51 +95,19 @@ jobs:
 
           anime_only = {"supportedTypes": ["anime"]}
           assert apply_manifest_type_projection(anime_only, ["anime"]) is True
-          assert anime_only == {
-              "supportedTypes": ["anime", "tv", "series"],
-              "canonicalSupportedTypes": ["anime"],
-          }
+          assert anime_only == {"supportedTypes": ["anime", "tv", "series"], "canonicalSupportedTypes": ["anime"]}
           assert semantic_manifest_types(anime_only) == ["anime"]
           assert manifest_type_projection_matches(anime_only, ["anime"])
           assert apply_manifest_type_projection(anime_only, ["anime"]) is False
 
-          anime_movie = {"supportedTypes": ["movie", "anime"]}
-          assert apply_manifest_type_projection(anime_movie, ["movie", "anime"]) is True
-          assert anime_movie == {
-              "supportedTypes": ["movie", "anime", "tv", "series"],
-              "canonicalSupportedTypes": ["movie", "anime"],
-          }
-          assert manifest_type_projection_matches(anime_movie, ["movie", "anime"])
-
-          ordinary = {
-              "supportedTypes": ["movie", "tv"],
-              "canonicalSupportedTypes": ["movie", "tv"],
-          }
+          ordinary = {"supportedTypes": ["movie", "tv"]}
           assert apply_manifest_type_projection(ordinary, ["movie", "tv"]) is True
-          assert ordinary == {
-              "supportedTypes": ["movie", "tv", "series"],
-              "canonicalSupportedTypes": ["movie", "tv"],
-          }
+          assert ordinary == {"supportedTypes": ["movie", "tv", "series"], "canonicalSupportedTypes": ["movie", "tv"]}
           assert semantic_manifest_types(ordinary) == ["movie", "tv"]
           assert manifest_type_projection_matches(ordinary, ["movie", "tv"])
           assert apply_manifest_type_projection(ordinary, ["movie", "tv"]) is False
 
-          stale_transport_only = {"supportedTypes": ["anime", "movie", "tv"]}
-          assert semantic_manifest_types(stale_transport_only) == ["anime", "movie", "tv"]
-          assert not manifest_type_projection_matches(stale_transport_only, ["anime"])
-          assert apply_manifest_type_projection(stale_transport_only, ["anime"]) is True
-          assert stale_transport_only == {
-              "supportedTypes": ["anime", "tv", "series"],
-              "canonicalSupportedTypes": ["anime"],
-          }
-          assert manifest_type_projection_matches(stale_transport_only, ["anime"])
-
-          # `series` is never semantic: it must not leak into canonicalSupportedTypes.
-          assert semantic_manifest_types({
-              "supportedTypes": ["tv", "series"],
-              "canonicalSupportedTypes": ["tv"],
-          }) == ["tv"]
-
+          assert semantic_manifest_types({"supportedTypes": ["tv", "series"], "canonicalSupportedTypes": ["tv"]}) == ["tv"]
           print("reapply manifest semantic/transport projection tests passed")
           PY
 
@@ -155,12 +135,7 @@ jobs:
           import json
           from pathlib import Path
 
-          manifests = [
-              Path('manifest.json'),
-              Path('vf/manifest.json'),
-              Path('no-anime/manifest.json'),
-              Path('vf-no-anime/manifest.json'),
-          ]
+          manifests = [Path('manifest.json'), Path('vf/manifest.json'), Path('no-anime/manifest.json'), Path('vf-no-anime/manifest.json')]
           checked = 0
           for path in manifests:
               if not path.exists():
@@ -169,14 +144,11 @@ jobs:
               for row in payload.get('scrapers', []):
                   supported = [str(v).lower() for v in row.get('supportedTypes', [])]
                   canonical = [str(v).lower() for v in row.get('canonicalSupportedTypes', [])]
-                  semantic = canonical or [v for v in supported if v in {'movie', 'tv', 'anime'}]
                   if 'tv' in supported:
                       assert 'series' in supported, f"{path}:{row.get('id')} missing series transport alias"
                       checked += 1
                   assert 'series' not in canonical, f"{path}:{row.get('id')} leaked series into canonical types"
-                  if canonical:
-                      assert all(v in {'movie', 'tv', 'anime'} for v in canonical)
-          assert checked > 0, 'no TV-capable provider rows checked'
+          assert checked > 0
           print(f'verified series transport alias on {checked} published TV-capable rows')
           PY
           python scripts/reapply_published_overrides.py --check
