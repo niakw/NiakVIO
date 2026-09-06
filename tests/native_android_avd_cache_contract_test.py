@@ -31,12 +31,11 @@ assert "Execute movie TV anime in one Mobile Android boot" in ANDROID
 
 for suite in (tv_suite, mobile_suite):
     # Reader/playback outcomes are observational evidence. The suite may fail
-    # only on the production smoke gate or declared-provider matrix, not on a
-    # retired global reader-success switch.
+    # only on the production smoke gate or declared-provider/app-selection gates,
+    # not on a retired global reader-success switch.
     assert 'reader_outcome=observational' in suite
     assert 'blocking=false' in suite
     assert 'FINAL_STATUS=$SMOKE_STATUS' in suite
-    assert 'if [[ "$MATRIX_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi' in suite
     assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE" not in suite
     assert "REQUIRE_READER_SUCCESS" not in suite
     # Android Lab evidence must be visible while the single persistent AVD is
@@ -45,6 +44,17 @@ for suite in (tv_suite, mobile_suite):
     assert '> >(tee "$LOG") 2>&1 &' in suite
     assert '> >(tee "$FRONT_LOG") 2>&1 &' in suite
     assert 'adb logcat -d' not in suite
+
+# TV owns its PluginManager path and therefore has only the declared-provider
+# matrix beyond the production smoke gate. Mobile additionally proves the real
+# app discovery path through getEnabledScrapersForType().
+assert 'if [[ "$MATRIX_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi' in tv_suite
+assert 'APP_SELECTION_GATE=' not in tv_suite
+assert 'APP_SELECTION_STATUS=0' in mobile_suite
+assert 'python3 "$APP_SELECTION_GATE" --client mobile "${LOGS[@]}"' in mobile_suite
+assert 'if [[ "$MATRIX_STATUS" -ne 0 || "$APP_SELECTION_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi' in mobile_suite
+assert "app_selection_status=$APP_SELECTION_STATUS" in mobile_suite
+
 assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE: \"1\"" not in TV
 assert "NIAKVIO_NATIVE_PLAYER_OUTCOME_GLOBAL_GATE: \"1\"" not in ANDROID
 
@@ -60,4 +70,4 @@ assert '\ncat "$LOG"\n' not in ios_suite
 assert "NuvioPlayerBridgeFactory" in (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")
 assert "PluginRepository.executeScraper" in (ROOT / "scripts/prepare_native_ios_reader_acceptance.py").read_text(encoding="utf-8")
 
-print("native platform persistence contract passed: android_tv_mobile_one_workflow=true tv_single_boot=true android_single_boot=true ios_simulator=true live_logs=true")
+print("native platform persistence contract passed: android_tv_mobile_one_workflow=true tv_single_boot=true android_single_boot=true ios_simulator=true live_logs=true app_selection_gate=true")
