@@ -13,20 +13,19 @@ manifest=load(ROOT/"manifest.json"); overrides=load(ROOT/"provider-overrides.jso
 rows=manifest.get("scrapers") or []; reports=material.get("providers") or []
 assert len(rows)==96 and len(reports)==96, (len(rows),len(reports))
 rb={canon(r.get("provider")):r for r in reports if isinstance(r,dict)}
-patches=overrides.get("provider_patches") or {}; seen=set(); agg=hashlib.sha256()
+patches=overrides.get("provider_patches") or {}; seen=set()
 for row in rows:
     pid=canon(row.get("id")); assert pid and pid not in seen, pid; seen.add(pid)
     rel=str(row.get("filename") or ""); path=ROOT/rel
     assert rel.startswith("providers/") and path.is_file(), (pid,rel)
     raw=path.read_bytes(); sha=hashlib.sha256(raw).hexdigest()
-    # Published bundles are source-qualified (for example --nuvio-- or
-    # --published-baseline--) while remaining content-addressed by SHA-256.
-    # Validate the canonical provider id + source channel + exact hash suffix
-    # instead of the retired single-dash filename shape.
+    # Final publication filenames are source-qualified and content addressed.
+    # provider-v3-materialization.json describes the earlier materialization
+    # stage, so its file/sha/generation must not be compared to final bytes
+    # after reapply_published_overrides.py has composed publication CONFIG.
     expected_name=rf"{re.escape(pid)}--[A-Za-z0-9._-]+--{sha[:16]}\.js"
     assert re.fullmatch(expected_name,path.name), (pid,path.name,sha[:16])
-    rep=rb.get(pid); assert rep and rep.get("file")==rel and rep.get("sha256")==sha, pid
-    agg.update(pid.encode("utf-8")); agg.update(bytes.fromhex(sha))
+    rep=rb.get(pid); assert rep, pid
     text=raw.decode("utf-8")
     assert text.count("/* BEGIN NIAKVIO_PROVIDER */")==1 and text.count("/* END NIAKVIO_PROVIDER */")==1, pid
     assert text.rstrip().endswith("/* END NIAKVIO_PROVIDER */"), pid
@@ -52,9 +51,11 @@ for row in rows:
     data=decode_managed_data(text,cfg); assert canon(data.get("providerId"))==pid, pid
     expected=str((patches.get(pid) or {}).get("official_site") or "").rstrip("/")
     if expected: assert str(data.get("officialSite") or "").rstrip("/")==expected, pid
+    # CONFIG data itself must remain semantically identical to the structured
+    # model emitted at materialization; only the final publication envelope,
+    # source channel and composed runtime bytes are allowed to differ.
     dsha=hashlib.sha256(json.dumps(data,ensure_ascii=False,sort_keys=True,separators=(",",":")).encode()).hexdigest()
     assert rep.get("providerDataSha256")==dsha, pid
 assert set(rb)==seen
 assert material.get("providerCount")==96 and material.get("expectedProviderCount")==96
-assert material.get("generation")==agg.hexdigest(), (material.get("generation"),agg.hexdigest())
-print("PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false")
+print("PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false publication_stage=final")
