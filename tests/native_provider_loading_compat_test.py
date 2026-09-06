@@ -126,6 +126,38 @@ with tempfile.TemporaryDirectory() as raw_tmp:
         raw_path.read_text(encoding="utf-8"), "desktop"
     )
 
+    # Mobile/Desktop native evidence must expose the same scraper-selection path
+    # used by the real Streams repositories. A repository being installed is not
+    # sufficient proof if getEnabledScrapersForType() returns zero providers.
+    for client in ("desktop", "mobile"):
+        app_path = tmp / f"{client}-app-path.kt"
+        app_path.write_text(
+            """    private suspend fun loadProvidersThroughNuvio(): Map<String, PluginScraper> {
+        val repositoryUrl = repositoryManifestUrl
+        val byId = emptyMap<String, PluginScraper>()
+        return byId
+    }
+""",
+            encoding="utf-8",
+        )
+        compat.inject_app_path_diagnostics(app_path, client)
+        injected = app_path.read_text(encoding="utf-8")
+        assert 'PluginRepository.getEnabledScrapersForType("movie")' in injected, client
+        assert 'PluginRepository.getEnabledScrapersForType("tv")' in injected, client
+        assert f"FIELD_NATIVE_REPOSITORY_APP_PATH client={client}" in injected, client
+        assert "plugins_enabled=${pluginStateForAppPath.pluginsEnabled}" in injected, client
+        assert "group_by_repository=${pluginStateForAppPath.groupStreamsByRepository}" in injected, client
+        assert "movie_enabled=${appMovieScrapers.size}" in injected, client
+        assert "tv_enabled=${appTvScrapers.size}" in injected, client
+        before = injected
+        compat.inject_app_path_diagnostics(app_path, client)
+        assert app_path.read_text(encoding="utf-8") == before, client
+
+    tv_app_path = tmp / "tv-app-path.kt"
+    tv_app_path.write_text("return manager to byId\n", encoding="utf-8")
+    compat.inject_app_path_diagnostics(tv_app_path, "tv")
+    assert "getEnabledScrapersForType" not in tv_app_path.read_text(encoding="utf-8")
+
     # Ambiguous generated code must fail closed rather than silently rewriting a
     # random occurrence and producing misleading native evidence.
     bad = tmp / "bad.kt"
