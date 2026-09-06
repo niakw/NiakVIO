@@ -1,5 +1,5 @@
 name: MAIN - Dual ID Runtime Hotfix
-# retry: node-fixture-newlines-v2
+# retry: native-request-contract-series-v3
 
 on:
   push:
@@ -39,12 +39,15 @@ jobs:
         run: cp manifest.json "$RUNNER_TEMP/manifest-before.json"
 
       - name: Repair and apply global Core/native-contract fixes
-        run: python3 scripts/apply_main_dual_id_hotfix_bootstrap.py
+        run: |
+          set -euo pipefail
+          python3 scripts/apply_main_dual_id_hotfix_bootstrap.py
+          python3 scripts/patch_native_request_contract_series.py
 
       - name: Validate source contracts
         run: |
           set -euo pipefail
-          python3 -m py_compile scripts/provider_patches/global_media_type_resolution_v1.py scripts/augment_native_provider_loading.py scripts/augment_native_provider_loading_compat.py scripts/gate_native_app_provider_selection.py scripts/refresh_authoritative_hub_domains.py
+          python3 -m py_compile scripts/provider_patches/global_media_type_resolution_v1.py scripts/augment_native_provider_loading.py scripts/augment_native_provider_loading_compat.py scripts/augment_native_corpus_request_contract.py scripts/gate_native_app_provider_selection.py scripts/refresh_authoritative_hub_domains.py
           python3 tests/global_media_type_resolution_test.py
           python3 tests/native_dual_id_identity_test.py
           python3 tests/native_app_provider_selection_gate_test.py
@@ -129,7 +132,7 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git rm .github/workflows/main-runtime-tmdb-domain-hotfix.yml scripts/apply_main_dual_id_hotfix.py scripts/apply_main_dual_id_hotfix_bootstrap.py
+          git rm .github/workflows/main-runtime-tmdb-domain-hotfix.yml scripts/apply_main_dual_id_hotfix.py scripts/apply_main_dual_id_hotfix_bootstrap.py scripts/patch_native_request_contract_series.py
           git add -A
           git diff --cached --check
           git commit -m 'fix: restore dual IMDb/TMDB provider identity contract'
