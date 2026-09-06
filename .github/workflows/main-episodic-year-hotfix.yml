@@ -75,6 +75,22 @@ jobs:
           if leftovers:
               raise SystemExit('retired durable safe-parse dependency still present: ' + ','.join(leftovers))
           hardener.write_text(hard, encoding='utf-8')
+
+          reapply = Path('scripts/reapply_published_overrides.py')
+          replay = reapply.read_text(encoding='utf-8')
+          old_domain = '''        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)\n        migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)\n        clean_v2_base = runtime_base_is_clean_v2(\n            provider_id,\n            provider_provenance,\n            provider_base_path,\n        )\n'''
+          new_domain = '''        migrated, adaptive_language_repairs = strip_unproven_adaptive_language(isolated)\n        clean_v2_base = runtime_base_is_clean_v2(\n            provider_id,\n            provider_provenance,\n            provider_base_path,\n        )\n        if clean_v2_base:\n            # Clean ProviderBase v3 deliberately excludes historical adaptive source\n            # patches. Never replay intentionally absent legacy migrators here.\n            domain_revision_records = []\n        else:\n            migrated, domain_revision_records = reapply_adaptive_domain_revision(migrated)\n'''
+          if old_domain in replay:
+              replay = replay.replace(old_domain, new_domain, 1)
+          elif new_domain not in replay:
+              raise SystemExit('clean-base adaptive-domain replay anchor missing')
+          old_runtime = '''        patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)\n        if runtime_revision_records:\n            records = list(records) + runtime_revision_records\n'''
+          new_runtime = '''        if clean_v2_base:\n            runtime_revision_records = []\n        else:\n            patched, runtime_revision_records = reapply_adaptive_runtime_revision(patched, provider_provenance)\n        if runtime_revision_records:\n            records = list(records) + runtime_revision_records\n'''
+          if old_runtime in replay:
+              replay = replay.replace(old_runtime, new_runtime, 1)
+          elif new_runtime not in replay:
+              raise SystemExit('clean-base adaptive-runtime replay anchor missing')
+          reapply.write_text(replay, encoding='utf-8')
           PY
 
           cat > tests/episodic_year_identity_regression_test.py <<'PY'
@@ -123,13 +139,14 @@ jobs:
           print('episodic year identity regression tests passed')
           PY
 
-      - name: Run identity and hardener regressions before publication
+      - name: Run identity, base-store and hardener regressions before publication
         shell: bash
         run: |
           set -euo pipefail
           python tests/episodic_year_identity_regression_test.py
           python tests/global_stream_identity_test.py
-          python -m py_compile scripts/provider_security_hardening.py
+          python tests/provider_base_store_test.py
+          python -m py_compile scripts/provider_security_hardening.py scripts/reapply_published_overrides.py
           python - <<'PY'
           import sys
           sys.path.insert(0, 'scripts')
