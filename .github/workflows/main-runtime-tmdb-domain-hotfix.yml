@@ -9,6 +9,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: main-dual-id-runtime-hotfix
+  cancel-in-progress: true
+
 env:
   TARGET_VERSION: 5.21.34
 
@@ -33,8 +37,8 @@ jobs:
       - name: Snapshot current publication
         run: cp manifest.json "$RUNNER_TEMP/manifest-before.json"
 
-      - name: Apply global Core and native-contract fixes
-        run: python3 scripts/apply_main_dual_id_hotfix.py
+      - name: Repair and apply global Core/native-contract fixes
+        run: python3 scripts/apply_main_dual_id_hotfix_bootstrap.py
 
       - name: Validate source contracts
         run: |
@@ -70,19 +74,21 @@ jobs:
           python3 scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python3 - <<'PY'
           import json
+          import os
           from pathlib import Path
-          before=json.loads(Path("${RUNNER_TEMP}/manifest-before.json").read_text(encoding="utf-8"))
-          after=json.loads(Path("manifest.json").read_text(encoding="utf-8"))
-          assert after.get("version")=="5.21.34", after.get("version")
-          old={str(r.get("id","")).casefold():r for r in before.get("scrapers",[]) if isinstance(r,dict)}
+          before=json.loads((Path(os.environ['RUNNER_TEMP'])/'manifest-before.json').read_text(encoding='utf-8'))
+          after=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          assert after.get('version')=='5.21.34', after.get('version')
+          old={str(r.get('id','')).casefold():r for r in before.get('scrapers',[]) if isinstance(r,dict)}
           changed=[]
-          for row in after.get("scrapers",[]):
-              if not isinstance(row,dict): continue
-              prev=old.get(str(row.get("id","")).casefold())
-              if prev and (prev.get("filename")!=row.get("filename") or prev.get("supportedTypes")!=row.get("supportedTypes")):
-                  changed.append(str(row.get("id")))
-                  ov=[int(x) for x in str(prev.get("version","0.0.0")).split('.')]
-                  nv=[int(x) for x in str(row.get("version","0.0.0")).split('.')]
+          for row in after.get('scrapers',[]):
+              if not isinstance(row,dict):
+                  continue
+              prev=old.get(str(row.get('id','')).casefold())
+              if prev and (prev.get('filename')!=row.get('filename') or prev.get('supportedTypes')!=row.get('supportedTypes')):
+                  changed.append(str(row.get('id')))
+                  ov=[int(x) for x in str(prev.get('version','0.0.0')).split('.')]
+                  nv=[int(x) for x in str(row.get('version','0.0.0')).split('.')]
                   assert nv>ov, f"provider version not bumped: {row.get('id')} {prev.get('version')} -> {row.get('version')}"
           assert len(changed)>=90, f"global Core change touched too few provider rows: {len(changed)}"
           print(f"GLOBAL_PROVIDER_VERSION_BUMP_OK changed={len(changed)}")
@@ -122,7 +128,7 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git rm .github/workflows/main-runtime-tmdb-domain-hotfix.yml scripts/apply_main_dual_id_hotfix.py
+          git rm .github/workflows/main-runtime-tmdb-domain-hotfix.yml scripts/apply_main_dual_id_hotfix.py scripts/apply_main_dual_id_hotfix_bootstrap.py
           git add -A
           git diff --cached --check
           git commit -m 'fix: restore dual IMDb/TMDB provider identity contract'
