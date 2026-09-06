@@ -19,6 +19,19 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def patch_core_boundary() -> None:
+    """Keep the global Core boundary outside every managed CORE.* Lego rectangle."""
+    text = REAPPLY.read_text(encoding="utf-8")
+    marker = "FINAL_CORE_BOUNDARY_OWNERSHIP_V1"
+    if marker in text:
+        print("final Core boundary ownership fix already applied")
+        return
+    old = '''def _canonicalize_clean_v2_core_boundary(data: bytes, provider_id: str) -> bytes:\n    """Place one publisher-owned boundary between provider logic and derived Core."""\n    text = data.decode("utf-8", errors="strict").replace(CLEAN_V2_CORE_BOUNDARY_MARKER, "")\n    starts = [\n        pos\n        for marker in CLEAN_V2_DERIVED_CORE_MARKERS\n        for pos in [text.find(f"/* {marker}")]\n        if pos >= 0\n    ]\n    if not starts:\n        raise ValueError(f"{provider_id}: clean v2 publication has no derived Core marker")\n    start = min(starts)\n    return (\n        text[:start].rstrip()\n        + "\\n"\n        + CLEAN_V2_CORE_BOUNDARY_MARKER\n        + "\\n"\n        + text[start:].lstrip()\n    ).encode("utf-8")\n'''
+    new = '''def _canonicalize_clean_v2_core_boundary(data: bytes, provider_id: str) -> bytes:\n    """Place one publisher-owned boundary between provider logic and whole Core Lego blocks."""\n    # FINAL_CORE_BOUNDARY_OWNERSHIP_V1\n    text = data.decode("utf-8", errors="strict").replace(CLEAN_V2_CORE_BOUNDARY_MARKER, "")\n\n    # STARTFIX/CLOSEFIX defines the ownership rectangle. The historical\n    # finalizer searched for an implementation marker inside the first Core\n    # body, which inserted the global boundary *inside* that CORE.* rectangle.\n    # Replacing that Core could then delete the boundary, and the static audit\n    # correctly rejected the published order. Prefer the exact managed Lego\n    # start; retain the legacy implementation-marker fallback only for older\n    # non-managed clean bundles.\n    managed_core_starts = [\n        match.start()\n        for match in re.finditer(r"/\\* STARTFIX:CORE\\.[A-Z0-9_.:-]+ \\*/", text)\n    ]\n    if managed_core_starts:\n        start = min(managed_core_starts)\n    else:\n        starts = [\n            pos\n            for marker in CLEAN_V2_DERIVED_CORE_MARKERS\n            for pos in [text.find(f"/* {marker}")]\n            if pos >= 0\n        ]\n        if not starts:\n            raise ValueError(f"{provider_id}: clean v2 publication has no derived Core marker")\n        start = min(starts)\n\n    return (\n        text[:start].rstrip()\n        + "\\n"\n        + CLEAN_V2_CORE_BOUNDARY_MARKER\n        + "\\n"\n        + text[start:].lstrip()\n    ).encode("utf-8")\n'''
+    text = replace_once(text, old, new, "Core boundary ownership")
+    REAPPLY.write_text(text, encoding="utf-8")
+
+
 def patch_reapply() -> None:
     text = REAPPLY.read_text(encoding="utf-8")
     if "FINAL_PROVIDER_CONFIG_INVARIANT_V1" in text:
@@ -85,7 +98,7 @@ def update_memory() -> None:
     version = str(manifest.get("version") or "unknown")
     text = MEMORY.read_text(encoding="utf-8")
     marker = "## Final-byte Provider CONFIG invariant — 2026-09-06"
-    section = f'''\n\n{marker}\n\n- Current corrected manifest generation at this checkpoint: **`{version}`**.\n- `NIAKVIO_PROVIDER_MODEL` is NiakVIO-owned structured runtime DATA, materialized as exactly one `PROVIDER.<ID>.CONFIG.V1`; ProviderBase and Source Plan v4 (`_spv4Family`) may reference it but ProviderBase itself must remain DATA-free.\n- Regression found in `5.21.34`: the authoritative materializer correctly composed Base + CONFIG + Lego, but `reapply_published_overrides.py` restarted final publication from the clean ProviderBase and replayed Core without re-running `compose_provider_bundle()`. This produced final bundles that referenced `NIAKVIO_PROVIDER_MODEL` without defining it.\n- Final publication now reuses the same structured `provider_model -> build_provider_data_model -> compose_provider_bundle` path as the 96-provider materializer before replaying Provider/Core Lego.\n- A final-manifest 96/96 gate validates the actual hashed JS referenced by `manifest.json`, not only `provider-v3-materialization.json`: one CONFIG START/CLOSE pair, one `NIAKVIO_PROVIDER_MODEL = Object.freeze(...)`, matching providerId, safe final path and Provider envelope. A missing model is publication-fatal.\n- Identity remains dual-source: valid TMDB **or IMDb** input is accepted; TMDB enrichment verifies/enriches identity but cannot invalidate a valid IMDb input. Episodic IMDb suffixes such as `tt11198330:3:1` retain season/episode.\n- `series` remains a Nuvio transport alias for canonical `tv`; it belongs in `supportedTypes`, never in `canonicalSupportedTypes`.\n'''
+    section = f'''\n\n{marker}\n\n- Current corrected manifest generation at this checkpoint: **`{version}`**.\n- `NIAKVIO_PROVIDER_MODEL` is NiakVIO-owned structured runtime DATA, materialized as exactly one `PROVIDER.<ID>.CONFIG.V1`; ProviderBase and Source Plan v4 (`_spv4Family`) may reference it but ProviderBase itself must remain DATA-free.\n- Regression found in `5.21.34`: the authoritative materializer correctly composed Base + CONFIG + Lego, but `reapply_published_overrides.py` restarted final publication from the clean ProviderBase and replayed Core without re-running `compose_provider_bundle()`. This produced final bundles that referenced `NIAKVIO_PROVIDER_MODEL` without defining it.\n- Final publication now reuses the same structured `provider_model -> build_provider_data_model -> compose_provider_bundle` path as the 96-provider materializer before replaying Provider/Core Lego.\n- The final Core boundary is outside every managed Core ownership rectangle: `PROVIDER.* -> NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 -> STARTFIX:CORE.*`. The previous finalizer searched for an implementation marker inside the first Core body, which could place the boundary inside that Core Lego; `audit_provider_v3_static.py` correctly rejected this and the producer was fixed rather than weakening the audit.\n- A final-manifest 96/96 gate validates the actual hashed JS referenced by `manifest.json`, not only `provider-v3-materialization.json`: one CONFIG START/CLOSE pair, one `NIAKVIO_PROVIDER_MODEL = Object.freeze(...)`, matching providerId, safe final path and Provider envelope. A missing model is publication-fatal.\n- Identity remains dual-source: valid TMDB **or IMDb** input is accepted; TMDB enrichment verifies/enriches identity but cannot invalidate a valid IMDb input. Episodic IMDb suffixes such as `tt11198330:3:1` retain season/episode.\n- `series` remains a Nuvio transport alias for canonical `tv`; it belongs in `supportedTypes`, never in `canonicalSupportedTypes`.\n'''
     if marker in text:
         head = text.split(marker, 1)[0].rstrip()
         text = head + section
@@ -101,6 +114,7 @@ def main() -> int:
     if args.memory_only:
         update_memory()
         return 0
+    patch_core_boundary()
     patch_reapply()
     write_validator()
     write_test()
