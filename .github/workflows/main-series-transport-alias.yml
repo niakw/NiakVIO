@@ -38,7 +38,6 @@ jobs:
           old_secondary = 'SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")'
           new_secondary = '''SECONDARY = (
               ROOT / "vf" / "manifest.json",
-              ROOT / "vostfr" / "manifest.json",
               ROOT / "no-anime" / "manifest.json",
               ROOT / "vf-no-anime" / "manifest.json",
           )'''
@@ -150,7 +149,6 @@ jobs:
           manifests = [
               Path('manifest.json'),
               Path('vf/manifest.json'),
-              Path('vostfr/manifest.json'),
               Path('no-anime/manifest.json'),
               Path('vf-no-anime/manifest.json'),
           ]
