@@ -20,6 +20,7 @@ on:
       - "scripts/**/*.py"
       - "tests/**/*.py"
       - "tests/native_provider_loading_compat_test.py"
+      - "tests/native_app_provider_selection_gate_test.py"
       - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/workflow_security_policy_test.py"
   push:
@@ -41,6 +42,7 @@ on:
       - "scripts/**/*.py"
       - "tests/**/*.py"
       - "tests/native_provider_loading_compat_test.py"
+      - "tests/native_app_provider_selection_gate_test.py"
       - "tests/native_evidence_codegen_pipeline_test.py"
       - "tests/workflow_security_policy_test.py"
   workflow_dispatch:
@@ -143,6 +145,7 @@ jobs:
       - name: Validate native provider-loading compatibility
         run: |
           python3 tests/native_provider_loading_compat_test.py
+          python3 tests/native_app_provider_selection_gate_test.py
           python3 tests/native_evidence_codegen_pipeline_test.py
 
       - name: Prove compatibility checks are side-effect free
