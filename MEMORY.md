@@ -7,14 +7,12 @@ This file is the durable recovery source of truth when conversation context is l
 ## Current repository topology
 
 - Repository: `niakw/NiakVIO`.
-- Production branch: `main`.
-- Current secondary-clean branch: `chore/secondary-clean-20260906-sync`.
-- Durable Learning proposal branch: `brain-learning/proposals`.
-- The former `chore/secondary-clean-20260906` branch has been superseded by the sync branch and is safe to delete once no external reference still needs it.
+- **Current and only active write target: `main`.**
+- Durable Learning proposal branch: `brain-learning/proposals` is a passive proposal store, not an active implementation branch and never a direct publication authority.
 - PR #91 was a closed, superseded reverse-sync attempt and must not be merged.
-- Deleted `workbench/*` branches are historical references only and must not appear as active workflow triggers or current write targets.
-- Do not write provider/reconstruction work directly to `main`; publication happens only after the relevant gates are accepted.
-- Before deleting any branch or PR, verify that no code, DATA, docs or generated artifacts needed for the final state exist only there.
+- Historical `chore/secondary-clean-*` / `workbench/*` refs are not active write targets and must not appear in workflow triggers or current instructions.
+- All current secondary-clean changes have been fast-forwarded onto `main`.
+- Before deleting any historical branch/PR, verify that no code, DATA, docs or generated artifacts needed for the final state exist only there.
 
 ## Execution method
 
