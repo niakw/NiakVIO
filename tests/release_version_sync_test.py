@@ -9,29 +9,28 @@ import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 script_path = ROOT / "scripts" / "sync_release_versions.py"
-workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
+baseline_path = ROOT / "scripts" / "release_version_baseline.py"
+workflow_path = ROOT / ".github" / "workflows" / "release-finalize.yml"
+workflow = workflow_path.read_text(encoding="utf-8")
 script_source = script_path.read_text(encoding="utf-8")
+baseline_source = baseline_path.read_text(encoding="utf-8")
 
-version_call = "python scripts/sync_release_versions.py"
-baseline_arg = '--previous "$NUVIO_PUBLISHED_MANIFEST_BASELINE"'
-assert workflow.count(version_call) >= 2
-assert "--manifest manifest.json" in workflow
-assert workflow.count(baseline_arg) >= 2
-assert "Capture published manifest baseline" in workflow
-assert 'git show HEAD:manifest.json > "$NUVIO_PUBLISHED_MANIFEST_BASELINE"' in workflow
-# Exact-published verification must use the Core-rehash-aware adapter. The
-# adapter delegates to the strict legacy validator and only permits a
-# deterministic content-hash/path rebinding of already-proven inert quarantine
-# bundles; it does not relax activation evidence.
-assert "python scripts/activation_preservation_core_rehash.py" in workflow
-assert (ROOT / "scripts" / "activation_preservation_core_rehash.py").is_file()
-assert "python scripts/validate_language_projection.py" in workflow
-assert workflow.index(version_call) < workflow.index("python scripts/validate_language_projection.py")
-assert workflow.rindex(version_call) < workflow.index("python scripts/generate_release_hashes.py")
-assert "git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json provider_catalog.json" in workflow
-assert "package.json package-lock.json sources.json nuvio-client-id-state.json" in workflow
-assert "Verify exact published main" in workflow
-assert "git diff --exit-code" in workflow
+# Accepted-release finalization is explicit and exact-SHA-bound. The routine
+# Verify & Publish workflow must not silently bump cache/release versions before
+# the native/provider validation pile has been accepted.
+assert "name: CORE - Finalize Accepted Release" in workflow
+assert "workflow_dispatch:" in workflow
+assert "expected_sha:" in workflow
+assert 'test "$ACTUAL" = "${{ inputs.expected_sha }}"' in workflow
+assert "python3 scripts/release_version_baseline.py" in workflow
+assert "python3 scripts/sync_release_versions.py" in workflow
+assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in workflow
+assert workflow.index("python3 scripts/sync_release_versions.py") < workflow.index("python3 scripts/generate_release_hashes.py")
+assert workflow.index("python3 scripts/generate_release_hashes.py") < workflow.index("python3 scripts/validate_release_integrity.py")
+assert "Verify bounded finalization diff" in workflow
+assert "git push origin HEAD:main" in workflow
+assert "--first-parent" in baseline_source
+assert "current_version" in baseline_source
 assert "auto_accept_safe_nuvio_client_heads()" in script_source
 assert 'os.environ.get("GITHUB_ACTIONS") != "true"' in script_source
 assert '"--apply-safe-advance"' in script_source

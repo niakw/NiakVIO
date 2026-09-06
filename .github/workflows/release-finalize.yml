@@ -1,0 +1,95 @@
+name: CORE - Finalize Accepted Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Exact accepted main SHA to finalize
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: provider-v3-release-finalization
+  cancel-in-progress: false
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
+    steps:
+      - name: Checkout accepted main candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Enforce exact accepted SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          ACTUAL="$(git rev-parse HEAD)"
+          test "$ACTUAL" = "${{ inputs.expected_sha }}" || {
+            echo "accepted SHA mismatch expected=${{ inputs.expected_sha }} actual=$ACTUAL" >&2
+            exit 1
+          }
+
+      - name: Export current release-generation baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/release_version_baseline.py \
+            --manifest manifest.json \
+            --output "$RUNNER_TEMP/published-manifest-baseline.json"
+
+      - name: Finalize synchronized release and provider cache versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/sync_release_versions.py \
+            --manifest manifest.json \
+            --previous "$RUNNER_TEMP/published-manifest-baseline.json"
+          python3 tests/release_auto_bump_test.py
+          python3 tests/provider_versioning_test.py
+          python3 tests/reapply_provider_versioning_test.py
+
+      - name: Regenerate and validate release integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/generate_release_hashes.py
+          python3 scripts/validate_release_integrity.py
+          python3 tests/release_hash_scope_test.py
+
+      - name: Verify bounded finalization diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | tee "$RUNNER_TEMP/release-finalization-files.txt"
+          if grep -Ev '^(manifest\.json|vf/manifest\.json|no-anime/manifest\.json|vf-no-anime/manifest\.json|package\.json|package-lock\.json|sources\.json|provider_catalog\.json|nuvio-client-id-state\.json|automation/PLATFORM-RUNTIME-CONTRACTS\.md|FILE-HASHES\.json|PATCH-SHA256SUMS\.txt|SHA256SUMS\.json)$' "$RUNNER_TEMP/release-finalization-files.txt"; then
+            echo 'Unexpected path changed by accepted-release finalization' >&2
+            exit 1
+          fi
+
+      - name: Commit accepted release atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'Accepted release finalization is already a no-op.'
+            exit 0
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add \
+            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            package.json package-lock.json sources.json provider_catalog.json nuvio-client-id-state.json \
+            automation/PLATFORM-RUNTIME-CONTRACTS.md \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m 'chore: finalize accepted Provider v3 release'
+          git push origin HEAD:main

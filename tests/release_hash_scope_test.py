@@ -27,12 +27,22 @@ assert "scripts/validate_platform_runtime_policy.py" in module.CORE_FILES
 assert "scripts/validate_nuvio_tv_runtime_policy.py" in module.CORE_FILES
 assert "scripts/apply_provider_overrides.py" in module.CORE_FILES
 assert "scripts/reapply_published_overrides.py" in module.CORE_FILES
-assert "scripts/provider_patches/vf_catalogue_recovery.py" in module.CORE_FILES
 assert "scripts/provider_patches/stream_output_sanitizer_v5.py" in module.CORE_FILES
-assert "scripts/provider_patches/nuvio_tv_target_media_v3.py" in module.CORE_FILES
-assert "scripts/provider_patches/nuvio_tv_target_media_v4.py" in module.CORE_FILES
-assert "scripts/provider_patches/expose_strict_wrapper_original.py" in module.CORE_FILES
-assert "scripts/provider_patches/target_media_host_filter_v4.py" in module.CORE_FILES
+assert "scripts/provider_patches/stream_output_sanitizer_v6.py" in module.CORE_FILES
+assert "scripts/provider_patches/runtime_capability_media_safety_v4.py" in module.CORE_FILES
+assert "scripts/provider_patches/global_stream_identity_v1.py" in module.CORE_FILES
+assert "scripts/provider_patches/global_stream_presentation_v1.py" in module.CORE_FILES
+assert "scripts/provider_patches/global_catalogue_alias_recovery_v2.py" in module.CORE_FILES
+# Removed historical patch modules must not be reintroduced merely to satisfy
+# a stale hash-scope assertion.
+for removed in (
+    "scripts/provider_patches/vf_catalogue_recovery.py",
+    "scripts/provider_patches/nuvio_tv_target_media_v3.py",
+    "scripts/provider_patches/nuvio_tv_target_media_v4.py",
+    "scripts/provider_patches/expose_strict_wrapper_original.py",
+    "scripts/provider_patches/target_media_host_filter_v4.py",
+):
+    assert removed not in module.CORE_FILES
 assert "automation/platform-runtime-matrix.json" in module.OPTIONAL_CORE_FILES
 assert "automation/platform-runtime-policy.json" in module.OPTIONAL_CORE_FILES
 
@@ -59,8 +69,6 @@ with tempfile.TemporaryDirectory() as tmp:
     assert ".github/workflows/release.yml" in before
     assert ".github/workflows/tmp-diagnostic.yml" not in before
 
-    # Independent operational telemetry and disposable tmp workflows may change
-    # without changing the release checksum inventory. Durable inputs still do.
     (root / "availability-history.json").write_text('{"value":2}\n', encoding="utf-8")
     (root / "availability-report.json").write_text('{"value":2}\n', encoding="utf-8")
     (root / ".github/ci-status/current-runs.json").write_text('{"run":2}\n', encoding="utf-8")

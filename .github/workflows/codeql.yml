@@ -1,7 +1,7 @@
 name: SEC - CodeQL
 # Default Setup owns GitHub code-scanning uploads. This advanced security-extended
-# workflow remains an independent exact-SHA proof, but never uploads SARIF and
-# therefore cannot conflict with Default Setup.
+# workflow remains an independent exact-SHA proof and exports its local SARIF as
+# an Actions artifact for full finding remediation without conflicting uploads.
 
 on:
   push:
@@ -42,8 +42,6 @@ jobs:
         with:
           languages: ${{ matrix.language }}
           queries: security-extended
-          # Keep the repository Actions cache budget for native/device workflows.
-          # These caches only improve analysis speed; they are not required for correctness.
           trap-caching: false
           dependency-caching: false
 
@@ -55,11 +53,20 @@ jobs:
           upload: never
           upload-database: false
 
+      - name: Export complete local SARIF evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: codeql-security-extended-${{ matrix.language }}-${{ github.run_id }}
+          path: ../results/*.sarif
+          retention-days: 8
+          if-no-files-found: error
+
       - name: Gate local security-extended High/Critical findings
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import collections
           import json
           from pathlib import Path
 
@@ -69,6 +76,7 @@ jobs:
 
           high = []
           result_count = 0
+          by_rule = collections.Counter()
           for path in sarifs:
               payload = json.loads(path.read_text(encoding='utf-8'))
               for run in payload.get('runs') or []:
@@ -90,11 +98,14 @@ jobs:
                           continue
                       result_count += 1
                       rule_id = str(result.get('ruleId') or '')
+                      by_rule[rule_id] += 1
                       score, name = rules.get(rule_id, (None, rule_id))
                       if score is not None and score >= 7.0:
                           high.append((rule_id, name, score))
 
           print(f'FIELD_CODEQL_LOCAL_EXTENDED results={result_count} high_or_critical={len(high)} sarif={len(sarifs)}')
+          for rule_id, count in by_rule.most_common():
+              print(f'CODEQL_LOCAL_RULE_COUNT={rule_id}|{count}')
           for rule_id, name, score in high:
               print(f'OPEN_LOCAL_HIGH_ALERT={rule_id}|{score}|{name}')
           if high:

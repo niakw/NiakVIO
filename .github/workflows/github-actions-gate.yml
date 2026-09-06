@@ -14,7 +14,6 @@ on:
       - "scripts/**"
       - "tests/**"
       - "engine_v2/**"
-
       - ".github/triggers/nuvio-client-lab.json"
       - "manifest.json"
       - "scripts/**/*.py"
@@ -58,7 +57,6 @@ on:
       - "scripts/**"
       - "tests/**"
       - "engine_v2/**"
-
       - ".github/triggers/nuvio-client-lab.json"
       - "manifest.json"
       - "scripts/**/*.py"
@@ -142,6 +140,9 @@ jobs:
         run: |
           python3 tests/workflow_security_policy_test.py
           python3 tests/repository_hygiene_contract_test.py
+          python3 tests/release_version_sync_test.py
+          python3 tests/release_version_baseline_test.py
+          python3 tests/release_hash_scope_test.py
           python3 tests/provider_hub_registry_test.py
           python3 tests/domain_refresh_workflow_test.py
           python3 tests/generic_recovery_hardening_test.py
