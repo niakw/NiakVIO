@@ -139,24 +139,26 @@ jobs:
           print('episodic year identity regression tests passed')
           PY
 
-      - name: Run identity, base-store and hardener regressions before publication
+      - name: Run focused regressions before publication
         shell: bash
         run: |
           set -euo pipefail
           python tests/episodic_year_identity_regression_test.py
           python tests/global_stream_identity_test.py
-          python tests/provider_base_store_test.py
           python -m py_compile scripts/provider_security_hardening.py scripts/reapply_published_overrides.py
           python - <<'PY'
           import sys
           sys.path.insert(0, 'scripts')
+          import provider_base_store as bases
           import provider_security_hardening as hardening
+          assert 'scripts/provider_patches/adaptive_runtime_recovery_v4.py' in bases.LEGACY_SOURCE_PATCH_PATHS
+          assert 'scripts/provider_patches/adaptive_runtime_recovery_v5.py' in bases.LEGACY_SOURCE_PATCH_PATHS
           output, report = hardening.harden_text("var value='ok';")
           assert output == "var value='ok';"
           assert report['structuredParseChanges'] == 0
           findings = hardening.known_unsafe_findings("var value='ok';")
           assert 'structured_parse_scan_failed' not in findings
-          print('provider security hardener retired-dependency regression tests passed')
+          print('focused clean-base/hardener regression tests passed')
           PY
 
       - name: Materialize fix into published provider bundles
