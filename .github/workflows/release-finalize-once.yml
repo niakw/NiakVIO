@@ -30,6 +30,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          path = Path('manifest.json')
+          data = json.loads(path.read_text(encoding='utf-8'))
+          matches = [row for row in data.get('scrapers', []) if str(row.get('id', '')).casefold() == 'movix']
+          if len(matches) != 1:
+              raise SystemExit(f'expected exactly one movix row, got {len(matches)}')
+          matches[0]['enabled'] = True
+          path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print('FIELD_ACTIVATION_RESTORED provider=movix reason=promotion_report_still_marks_provider_enabled')
+          PY
           BASELINE=1bca5442942dc8f2ef01cb87461b7b9898ba68c3
           git show "$BASELINE:manifest.json" > /tmp/previous-manifest.json
           python3 scripts/sync_release_versions.py --manifest manifest.json --previous /tmp/previous-manifest.json | tee /tmp/version-finalization.json
@@ -64,4 +76,4 @@ jobs:
           git commit -m 'chore: finalize Provider v3 release versions'
           git push origin HEAD:main
 
-# trigger v2
+# trigger v3
