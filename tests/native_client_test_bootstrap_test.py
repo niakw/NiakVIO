@@ -48,4 +48,13 @@ for host_test in HOST_TEST_VARIANTS:
         twice = build.read_text(encoding="utf-8")
         assert twice == once
 
+# The canonical bootstrap is invoked by prepare_native_reader_acceptance.py before
+# Android prebuild. A retired secondary hardener must never reappear as a dangling
+# prebuild dependency after repository cleanup.
+prebuild = (ROOT / "scripts/prebuild_native_android_reader_suite.sh").read_text(encoding="utf-8")
+prepare = (ROOT / "scripts/prepare_native_reader_acceptance.py").read_text(encoding="utf-8")
+assert "harden_nuvio_mobile_device_test.py" not in prebuild
+assert "enable_mobile_device_tests" in prepare
+assert "enable_tv_tests" in prepare
+
 print("native client test bootstrap upstream-DSL compatibility passed")
