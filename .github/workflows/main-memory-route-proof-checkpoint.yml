@@ -21,7 +21,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat >> MEMORY.md <<'EOF'
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('MEMORY.md')
+          text = p.read_text(encoding='utf-8')
+          marker = '## 2026-09-07 — Route reconstruction authority bug / proof-first redesign'
+          block = '''
 
 ## 2026-09-07 — Route reconstruction authority bug / proof-first redesign
 
@@ -34,7 +39,10 @@ jobs:
 - Final route model: **static/upstream/recognition data = candidate only; executable route/API recipe = provider-specific live HTTP proof only**. A route proof must preserve method, origin/base, route template, query/body fields, headers needed, semantic role/type, and evidence; static fragments never count as HTTP proof.
 - `/stream/{id}` was NOT introduced by the current identity work. It was already in Purstream DATA on 5.21.35. Current Purstream engine adapter instead uses movie detail `/media/{id}/sheet` and episodic `/stream/{id}/episode?...`, exposing an existing route-authority inconsistency. Do not repair Purstream routes opportunistically inside the identity release; requalify them under the new proof-first route model.
 - Next mandatory execution: patch reconstruction authority, reconcile all current routes to candidates, sequentially execute/requalify all 96 Provider Objects, persist only live-proven reusable routes, regenerate the 96 Provider v3 bundles from sanitized DATA, then run reverse/static/integrity proof before publication/testing.
-EOF
+'''
+          if marker not in text:
+              p.write_text(text.rstrip() + block + '\n', encoding='utf-8')
+          PY
           git rm .github/workflows/main-memory-route-proof-checkpoint.yml
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
