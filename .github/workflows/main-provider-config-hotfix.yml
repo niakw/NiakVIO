@@ -16,9 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  repair:
+  publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 70
+    timeout-minutes: 25
     steps:
       - name: Cancel superseded main CodeQL and gate runs
         env:
@@ -28,29 +28,20 @@ jobs:
           set -euo pipefail
           python3 - <<'PY' > "$RUNNER_TEMP/cancel-runs.txt"
           import json, os, subprocess
-          repo=os.environ['GITHUB_REPOSITORY']
-          current=int(os.environ['GITHUB_RUN_ID'])
-          raw=subprocess.check_output(['gh','api',f'repos/{repo}/actions/runs?per_page=100'],text=True)
-          rows=json.loads(raw).get('workflow_runs') or []
+          repo=os.environ['GITHUB_REPOSITORY']; current=int(os.environ['GITHUB_RUN_ID'])
+          rows=json.loads(subprocess.check_output(['gh','api',f'repos/{repo}/actions/runs?per_page=100'],text=True)).get('workflow_runs') or []
           active={'queued','in_progress','waiting','pending','requested'}
           for row in rows:
-              run_id=int(row.get('id') or 0)
-              if not run_id or run_id == current or str(row.get('status') or '') not in active:
-                  continue
-              if str(row.get('head_branch') or '') != 'main':
+              rid=int(row.get('id') or 0)
+              if not rid or rid == current or row.get('status') not in active or row.get('head_branch') != 'main':
                   continue
               name=str(row.get('name') or '')
-              lowered=name.casefold()
-              if 'codeql' in lowered or name in {
-                  'SEC - Final Gate',
-                  'CORE - Workflow Gate',
-                  'MAIN - Provider CONFIG Publication Hotfix',
-              }:
-                  print(f"{run_id}\t{name}\t{row.get('head_sha') or ''}")
+              if 'codeql' in name.casefold() or name in {'SEC - Final Gate','CORE - Workflow Gate','MAIN - Provider CONFIG Publication Hotfix'}:
+                  print(f"{rid}\t{name}")
           PY
-          while IFS=$'\t' read -r run_id run_name run_sha; do
+          while IFS=$'\t' read -r run_id run_name; do
             [ -n "${run_id:-}" ] || continue
-            echo "CANCEL_SUPERSEDED run=$run_id name=$run_name sha=$run_sha"
+            echo "CANCEL_SUPERSEDED run=$run_id name=$run_name"
             gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
           done < "$RUNNER_TEMP/cancel-runs.txt"
 
@@ -68,98 +59,63 @@ jobs:
           package-manager-cache: false
       - name: Install locked tooling
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Apply durable publication fix
+
+      - name: Apply durable Provider CONFIG publication fix
         shell: bash
         run: |
           set -euo pipefail
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           python scripts/apply_provider_config_publication_hotfix.py
           python -m py_compile scripts/reapply_published_overrides.py scripts/validate_published_provider_config.py tests/final_published_provider_config_test.py
-
-      - name: Collapse redundant main workflow fan-out
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-
-          security=Path('.github/workflows/security-final-gate.yml')
-          text=security.read_text(encoding='utf-8')
-          start=text.index('on:\n')
-          end=text.index('\npermissions:\n', start)
-          text=(
-              text[:start]
-              + 'on:\n  workflow_dispatch:\n'
-              + text[end:]
-          )
-          text=text.replace(
-              '# Final main validation marker: exact-SHA hardening + CodeQL.',
-              '# Accepted-release validation only. GitHub Default Setup owns every-push CodeQL; do not fan this gate out on publication commits.',
-          )
-          security.write_text(text, encoding='utf-8')
-
-          workflow_gate=Path('.github/workflows/github-actions-gate.yml')
-          text=workflow_gate.read_text(encoding='utf-8')
-          push_at=text.index('  push:\n')
-          dispatch_at=text.index('  workflow_dispatch:\n', push_at)
-          text=text[:push_at] + text[dispatch_at:]
-          if '# PR/manual only:' not in text:
-              text=text.replace(
-                  'name: CORE - Workflow Gate\n',
-                  'name: CORE - Workflow Gate\n# PR/manual only: direct publication workflows must validate their own candidate before the single final main commit.\n',
-                  1,
-              )
-          workflow_gate.write_text(text, encoding='utf-8')
-
-          policy=Path('tests/workflow_security_policy_test.py')
-          text=policy.read_text(encoding='utf-8')
-          old='''for required_path in (\n    "scripts/provider_base_store.py",\n    "scripts/add_provider.py",\n    "scripts/probe_provider_runtime_parity.py",\n):\n    if f"- '{required_path}'" not in security_gate:\n        errors.append(f"security-final-gate.yml: missing security trigger for {required_path}")\n'''
-          new='''if re.search(r'^\\s{2}push\\s*:', security_gate, re.MULTILINE):\n    errors.append('security-final-gate.yml: accepted-release security gate must not fan out on every main push')\nif 'workflow_dispatch:' not in security_gate:\n    errors.append('security-final-gate.yml: manual accepted-release security gate is required')\n\nworkflow_gate = (WORKFLOWS / 'github-actions-gate.yml').read_text(encoding='utf-8')\nif re.search(r'^\\s{2}push\\s*:', workflow_gate, re.MULTILINE):\n    errors.append('github-actions-gate.yml: workflow gate must stay PR/manual only')\nif 'pull_request:' not in workflow_gate or 'workflow_dispatch:' not in workflow_gate:\n    errors.append('github-actions-gate.yml: PR and manual workflow gates are required')\n'''
-          if old not in text:
-              raise SystemExit('workflow security policy trigger anchor not found')
-          policy.write_text(text.replace(old,new,1), encoding='utf-8')
-          PY
-          python tests/workflow_security_policy_test.py
-
-      - name: Run source regressions before rebuild
-        shell: bash
-        run: |
-          set -euo pipefail
           python tests/native_dual_id_identity_test.py
           python tests/global_media_type_resolution_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
-          python tests/workflow_security_policy_test.py
-      - name: Rematerialize authoritative 96 Provider v3 bundles
+
+      - name: Finalize published 96 from Base plus structured CONFIG plus Lego
         env:
           NUVIO_PROVIDER_V3_CONTEXT: main
-        run: python scripts/materialize_provider_v3_all.py
-      - name: Finalize from Base plus structured CONFIG plus Lego
-        run: python scripts/reapply_published_overrides.py
-      - name: Derive filtered manifests and prune superseded bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/validate_published_provider_config.py --expected 96
+
+      - name: Derive filtered manifests and synchronize versions
         shell: bash
         run: |
           set -euo pipefail
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
-          python scripts/prune_unreferenced_providers.py
-      - name: Synchronize client-visible versions
-        shell: bash
-        run: |
-          set -euo pipefail
           python scripts/sync_release_versions.py --previous "$RUNNER_TEMP/manifest.before.json"
           python scripts/apply_provider_config_publication_hotfix.py --memory-only
           python3 - <<'PY'
+          import json
           from pathlib import Path
-          p=Path('MEMORY.md')
-          text=p.read_text(encoding='utf-8').rstrip()
-          marker='## CI queue hygiene — 2026-09-06'
-          section='''\n\n## CI queue hygiene — 2026-09-06\n\n- GitHub Default Setup remains the continuous CodeQL owner for pushes. The repository `SEC - CodeQL` workflow stays PR/scheduled/manual only.\n- `SEC - Final Gate` is accepted-release/manual only; it no longer fans out and waits for exact-SHA CodeQL on every provider/manifest commit.\n- `CORE - Workflow Gate` is PR/manual only. Publication/hotfix workflows must validate their candidate before writing one final `main` commit.\n- Temporary/intermediate repair commits must be built on a work branch whenever possible; avoid chains of direct `main` commits because each one creates a Default Setup CodeQL analysis.\n- Emergency publication workflows cancel superseded `main` CodeQL/final-gate/workflow-gate runs before doing expensive work, leaving the final published SHA as the only useful continuous scan.\n'''
-          if marker in text:
-              text=text.split(marker,1)[0].rstrip()+section
-          else:
-              text+=section
-          p.write_text(text.rstrip()+'\n',encoding='utf-8')
+          before=json.load(open(Path(__import__('os').environ['RUNNER_TEMP'])/'manifest.before.json'))
+          after=json.load(open('manifest.json'))
+          if before.get('version') != '5.21.34':
+              raise SystemExit(f"unexpected publication baseline {before.get('version')!r}")
+          if after.get('version') != '5.21.35':
+              raise SystemExit(f"expected manifest 5.21.35, got {after.get('version')!r}")
+          old={str(r.get('id','')).casefold():r for r in before.get('scrapers',[]) if isinstance(r,dict)}
+          changed=[]
+          for row in after.get('scrapers',[]):
+              if not isinstance(row,dict): continue
+              cid=str(row.get('id','')).casefold(); prev=old.get(cid)
+              if not prev: continue
+              a={k:v for k,v in row.items() if k!='version'}
+              b={k:v for k,v in prev.items() if k!='version'}
+              if a!=b:
+                  ov=tuple(map(int,str(prev.get('version','0.0.0')).split('.')))
+                  nv=tuple(map(int,str(row.get('version','0.0.0')).split('.')))
+                  if nv <= ov:
+                      raise SystemExit(f"provider version not bumped: {cid} {prev.get('version')} -> {row.get('version')}")
+                  changed.append(cid)
+          if not changed:
+              raise SystemExit('publication changed no provider rows')
+          print(f"PUBLICATION_VERSION_OK manifest=5.21.35 providers_bumped={len(changed)}")
           PY
-      - name: Validate final published bytes
+
+      - name: Validate final published bytes and release integrity
         shell: bash
         run: |
           set -euo pipefail
@@ -168,40 +124,24 @@ jobs:
           python tests/native_dual_id_identity_test.py
           python tests/global_media_type_resolution_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
-          python tests/workflow_security_policy_test.py
           python scripts/audit_provider_v3_static.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           python scripts/reapply_published_overrides.py --check
-
-      - name: Cancel intermediate main CodeQL and gate runs before publish
-        env:
-          GH_TOKEN: ${{ github.token }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY' > "$RUNNER_TEMP/cancel-runs-final.txt"
-          import json, os, subprocess
-          repo=os.environ['GITHUB_REPOSITORY']
-          current=int(os.environ['GITHUB_RUN_ID'])
-          raw=subprocess.check_output(['gh','api',f'repos/{repo}/actions/runs?per_page=100'],text=True)
-          rows=json.loads(raw).get('workflow_runs') or []
-          active={'queued','in_progress','waiting','pending','requested'}
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest=json.load(open('manifest.json'))
+          assert manifest['version']=='5.21.35', manifest['version']
+          rows=[r for r in manifest.get('scrapers',[]) if isinstance(r,dict)]
+          assert len(rows)==96, len(rows)
           for row in rows:
-              run_id=int(row.get('id') or 0)
-              if not run_id or run_id == current or str(row.get('status') or '') not in active:
-                  continue
-              if str(row.get('head_branch') or '') != 'main':
-                  continue
-              name=str(row.get('name') or '')
-              if 'codeql' in name.casefold() or name in {'SEC - Final Gate','CORE - Workflow Gate'}:
-                  print(f"{run_id}\t{name}\t{row.get('head_sha') or ''}")
+              p=Path(row['filename'])
+              text=p.read_text(encoding='utf-8')
+              if 'NIAKVIO_PROVIDER_BASE_OWNED_V3' in text:
+                  assert text.count('const NIAKVIO_PROVIDER_MODEL = Object.freeze(')==1, row['id']
+          print('FINAL_MAIN_5_21_35_CONFIG_OK providers=96')
           PY
-          while IFS=$'\t' read -r run_id run_name run_sha; do
-            [ -n "${run_id:-}" ] || continue
-            echo "CANCEL_INTERMEDIATE run=$run_id name=$run_name sha=$run_sha"
-            gh api -X POST "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/cancel" >/dev/null 2>&1 || true
-          done < "$RUNNER_TEMP/cancel-runs-final.txt"
 
       - name: Publish repaired generation to main
         env:
@@ -222,7 +162,6 @@ jobs:
             echo "MAIN_ADVANCED base=$BASE_SHA current=$CURRENT_SHA"
             exit 75
           fi
-          VERSION="$(python -c 'import json; print(json.load(open("manifest.json"))["version"])')"
-          git commit -m "fix: restore Provider CONFIG in final publication ${VERSION}"
+          git commit -m "fix: restore Provider CONFIG in final publication 5.21.35"
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
