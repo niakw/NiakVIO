@@ -1,8 +1,8 @@
 # NiakVIO — Recovery Memory
 
-Last authoritative checkpoint: 2026-09-07 01:06 Europe/Paris.
+Last authoritative checkpoint: 2026-09-07 Europe/Paris.
 
-This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file at every important correction/failure/publication checkpoint before moving to the next risky step.
+This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file automatically at every important correction, failure, publication, native proof, security proof, or architecture decision before moving to the next risky step.
 
 ## Repository topology / execution policy
 
@@ -10,21 +10,21 @@ This file is the durable recovery source of truth for the active NiakVIO work. P
 - **`main` is the only active write/publication target.** Do not recreate a persistent workbench branch.
 - Durable Learning proposal branch: `brain-learning/proposals`; proposal storage only, not publication authority.
 - Cleanup completed after 5.21.35 publication: `workbench` deleted, `hotfix/runtime-tmdb-credentialless-v28` deleted, PR #92 closed and never merged.
-- Current expected branches after cleanup: `main` + `brain-learning/proposals` only.
+- Expected branches: `main` + `brain-learning/proposals` only.
 - Catalogue target remains **all 96 Provider Objects**, including disabled/off rows for census/recoverability. Never shrink the catalogue to manufacture green metrics.
+- A structural/materialization green is not real stream proof. Real route/network/yield/native evidence remains mandatory.
 - Do not patch official NuvioTV/NuvioMobile/NuvioDesktop production behavior to make Labs green. Native Labs are observational.
 
 ## Accepted publication — 5.21.35
 
-- Final accepted/published generation: **5.21.35**.
-- Final publication commit: `9db07b3aa42ce2535ec1d7c19866beb43586badd` — `fix: restore Provider CONFIG in final publication 5.21.35`.
+- Current accepted public generation remains **5.21.35** until a later checkpoint explicitly records a verified public 5.21.36.
+- Final 5.21.35 publication commit: `9db07b3aa42ce2535ec1d7c19866beb43586badd` — `fix: restore Provider CONFIG in final publication 5.21.35`.
 - Publication trigger commit: `96957c79403908028964aaab388bdb4c80a5bbe2`.
 - Workflow `MAIN - Provider CONFIG Publication Hotfix`, run **34061529965**, job **101562800243**, completed success.
 - Root `manifest.json`, `vf/manifest.json`, `no-anime/manifest.json`, and `vf-no-anime/manifest.json` were all verified as `5.21.35`.
-- 96 provider versions/hashes were regenerated. Final Provider CONFIG validation passed 96/96.
-- The temporary publication workflow/script self-removed from final main as intended.
-- Flemmix authoritative domain is `flemmix.kim`; `.men` is stale. Commit `bdf11932ea5b949837c29b71c8a61b903e91c57b` fixed the final DATA audit to rebuild expected CONFIG from current structured sources instead of treating the earlier materialization DATA hash as final authority.
-- A green 96/96 structural/materialization audit is **not** proof that 96 providers return playable streams. Real route/network/yield/native evidence remains mandatory.
+- 96 provider versions/hashes were regenerated and Provider CONFIG validation passed 96/96.
+- Temporary 5.21.35 publication workflow/script self-removed as intended.
+- Flemmix authoritative domain is `flemmix.kim`; `.men` is stale. Commit `bdf11932ea5b949837c29b71c8a61b903e91c57b` fixed final DATA audit authority.
 
 ## Provider v3 architecture — invariant
 
@@ -38,72 +38,123 @@ Generated provider composition:
 
 Hard rules:
 - published/upstream/historical Provider JS is knowledge/reference only, never a reconstruction seed;
-- **published Provider JS must contain only common ProviderBase + structured DATA/CONFIG + managed Provider/Core Lego + envelope/minimizer-preserved structure**;
-- no provider file/adapter may own duplicated identity, media-type, year, sanitizer, presentation or other shared business rules;
-- functions such as `strictIdentityScore`, `routeIdentity`, provider-local year rejection or duplicated season/episode identity logic are architecture violations unless they are merely thin calls into the unique owning Core Lego and should preferably be removed entirely;
-- ProviderBase remains common/DATA-free; it may call shared Core services but must not own a second copy of Core policy;
+- **published Provider JS contains only common ProviderBase + structured DATA/CONFIG + managed Provider/Core Lego + envelope/minimizer-preserved structure**;
+- no provider file/adapter may own duplicated identity, media-type, year, sanitizer, presentation, or other shared business rules;
+- provider-local `strictIdentityScore`, `routeIdentity`, year rejection, or duplicated season/episode identity logic are architecture violations;
+- ProviderBase may transport evidence and call shared Core services but must not own a second copy of Core policy;
 - provider behavior belongs in DATA or owned Provider Lego;
-- Core remains provider-agnostic and each concern has a single owner;
+- Core is provider-agnostic and each concern has one owner;
 - managed Lego uses `STARTFIX` / `CLOSEFIX` (+ `FIXDATA` when needed);
-- Provider Lego precedes Core boundary, Core Lego follows it;
+- Provider Lego precedes Core boundary; Core Lego follows it;
 - reverse reconstruction must be deterministic/byte-verifiable;
-- Terser forbidden; only `scripts/provider_v3_minimizer.py` production minimizer policy;
-- minimizer must preserve comments/markers/structure and never arbitrary-rewrite semantics.
+- Terser forbidden; production minimizer is `scripts/provider_v3_minimizer.py` and must preserve comments/markers/structure.
 
-Current conceptual Core order:
+Core order:
 `Provider -> STREAM_FACTS -> STREAM_IDENTITY -> MEDIA_TYPE -> STREAM_PRESENTATION -> PROVIDER_BRANDING -> SANITIZER`.
 
-Ownership rule clarified 2026-09-07:
+Ownership:
 - `CORE.STREAM_IDENTITY.V1` is the **sole owner** of title/type/ID/year/season/episode identity acceptance semantics.
-- `CORE.RUNTIME_MEDIA_SAFETY.V4` may own only playback/media safety (URL shape, P2P rejection, HLS/direct checks, bounded duration/playability). Any title/year/season/episode collision logic in it must be removed or delegated to `CORE.STREAM_IDENTITY.V1`.
-- `engine_v2` smoke/diagnostic code may mirror the Core policy for tests but must not expose provider-specific scoring APIs. Purstream's old `strictIdentityScore()` export is being removed; adapter calls must use the shared engine mirror directly.
-- Add an architecture test that fails if provider/adapter files define local identity scoring/rejection helpers.
+- `CORE.RUNTIME_MEDIA_SAFETY.V4` owns only playback/media safety: URL shape, P2P rejection, HLS/direct checks, bounded duration/playability. It must not own title/year/S/E collision policy.
+- `engine_v2` may mirror Core policy for smoke/diagnostic tests, but provider-specific scoring APIs are forbidden.
 
-## Identity / type / episodic-year contract
+## Identity / type / episodic-year contract — FINAL
 
-- Provider input accepts **TMDB or IMDb**. Valid IMDb must never be rejected merely because TMDB enrichment is missing/unavailable.
-- Episodic IMDb input such as `tt11198330:3:1` preserves season/episode.
+- Provider input accepts **TMDB or IMDb**. Valid IMDb must not be rejected merely because TMDB enrichment is missing/unavailable.
+- Episodic IMDb such as `tt11198330:3:1` preserves season/episode.
 - Canonical semantic types: `movie`, `tv`, `anime`.
-- Nuvio transport alias `series` maps to canonical `tv`; `series` belongs in transport `supportedTypes`, never canonical semantic capability.
+- Nuvio transport alias `series` maps to canonical `tv`; app-path tests cover movie/tv/series.
+- Anime semantics remain distinct even when a provider uses a tv/movie transport lane.
 - Capability/type gate must happen before provider network work.
-- Anime semantics stay distinct even when transport aliases expose TV/movie launch lanes.
 
-Canonical year behavior — FINAL:
+Year policy:
 - **MOVIE only**: title + type + movie year; year mismatch is strong evidence and may reject in strict mode.
-- **TV / `series` / anime**: release/origin/season year is **not part of identity acceptance at all**. Do not reject or score-match episodic content from year.
-- Episode resolution identity is title/type plus **season + episode**; provider catalogue rows may expose original-series year, season year, episode year, or none without affecting episodic acceptance.
-- A provider result such as `House of the Dragon - Saison 3 (2026)` must be accepted against TMDB series origin 2022 if title/type/S3E1 are correct.
-- 2026-09-07 audit refinement: `CORE.STREAM_IDENTITY.V1::contentLike()` still used the mere presence of a 4-digit year as an indirect signal that a candidate looked content-like. Even though no TV year value was compared, this could indirectly change whether a TV/series/anime row entered contradiction analysis. This violates the final zero-year episodic contract. Before 5.21.36 publication, year-based `contentLike` promotion must be gated to **non-episodic/movie only**, so year is completely inert for tv/series/anime, including heuristics.
+- **TV / `series` / anime**: release/origin/season/episode year has **zero identity influence**, direct or indirect. No rejection, score promotion, `contentLike` promotion, or other heuristic may depend on year for episodic media.
+- Episode resolution identity uses title/type + **season + episode**.
+- Provider rows may expose original-series year, season year, episode year, or no year without affecting episodic acceptance.
+- `House of the Dragon - Saison 3 (2026)` must be accepted against TMDB series origin 2022 when title/type/S3E1 are correct.
 
-Corrections already committed after 5.21.35:
-- `1723472`: introduced ProviderBase runtime v9 migration for episodic-year removal.
-- `5b356ce`: `CORE.STREAM_IDENTITY.V1` gained shared catalogue identity API and final `movie-only` year policy.
-- `3600e8b`: ProviderBase v9 changed from owning `_recipeScore`/HTML year semantics to delegating catalogue/HTML identity to `globalThis.__nuvioIdentityPolicyV1` from `CORE.STREAM_IDENTITY.V1`.
-- `491f1ba`: added executable Core ownership regression: HOTD-like TV/series/anime year mismatch passes, same mismatch in movie fails; ProviderBase must not retain local `Math.abs(year...)` policy.
-- `25e5148`: Workflow Gate runs the Core identity ownership regression.
-- `f62393a` + `fb76b5c` + `c1d8c43`: engine_v2 shared catalogue policy + Purstream HOTD S3E1 synthetic smoke; TV metadata year 2022 vs provider row 2026 must still resolve S3E1.
-- `398024c`: priority regression updated from old “TV-year-soft” wording to **episodic year disabled / movie year only**.
-- `ef4073a`: ProviderBase store provenance now reports reader v9 instead of stale v5 metadata.
-- `a934df3`: added one-shot Core identity ownership cleanup transaction source.
-- `c8bc366`: added active-96 Provider JS Lego ownership test.
-- `1d3a415`: added one-shot identity-only ProviderBase materializer with `route_or_domain_mutation=false`.
-- `d0824a8`: added Kehflix-shaped final-row episodic identity runtime regression.
-- `8e14b54`: triggered first 5.21.36 Core identity publication workflow.
-- `940e1ef`: triggered retry workflow after first safe failure.
+## Core identity 5.21.36 work — implemented source changes
 
-Publication attempt state:
-- First Core identity publication run **34065556338**, job **101573573889**, failed safely at step `Apply single-owner identity architecture cleanup`, before any materialization/version bump/push.
-- Exact first failure: `AssertionError: Purstream rank identity call count=2`. The one-shot migration expected one `strictIdentityScore(item, metadata, targetType)` occurrence but the old adapter has exactly two: one rank call + the local function definition that the migration intends to delete. No published bytes changed.
-- Retry workflow run **34065727473**, job **101574024846**, was still queued at this checkpoint. Retry logic expects exactly two occurrences, replaces only the first call with the shared helper, then deletes the local function definition. The full 96/96 transaction still must pass before any 5.21.36 push.
-- Because the indirect `contentLike()` year heuristic was discovered while the retry remained queued, the final 5.21.36 must also make episodic year completely inert before publication. Do not tell the user to test until this is included and the public manifest is verified.
+Important commits after 5.21.35 include:
+- `1723472`: ProviderBase runtime v9 migration introduced for episodic-year removal.
+- `5b356ce`: `CORE.STREAM_IDENTITY.V1` shared catalogue identity API + movie-only year policy.
+- `3600e8b`: ProviderBase delegates catalogue/HTML identity to `globalThis.__nuvioIdentityPolicyV1`.
+- `491f1ba`: executable Core ownership regression for HOTD-like episodic year mismatch + strict movie year.
+- `25e5148`: Workflow Gate includes identity ownership regression.
+- `f62393a`, `fb76b5c`, `c1d8c43`: shared engine-v2 catalogue policy + Purstream HOTD S3E1 synthetic smoke.
+- `398024c`: priority regression wording/contract changed to episodic-year-disabled/movie-only.
+- `ef4073a`: ProviderBase provenance reports runtime reader v9.
+- `a934df3`: one-shot Core identity ownership cleanup transaction.
+- `c8bc366`: active-96 Provider JS Lego ownership test.
+- `1d3a415`: identity-only ProviderBase materializer with `route_or_domain_mutation=false`.
+- `d0824a8`: Kehflix-shaped final-row runtime regression: HOTD S03E01 survives, S03E02 rejects, movie year mismatch rejects.
+- `9003a84`: MEMORY checkpoint recording the discovery that episodic year still indirectly influenced `contentLike()`.
+- `c9e10ce`: migration strengthened to zero-year episodic identity v10; year cannot promote `contentLike()` for episodic requests.
+- `8176123`: regression proves tv/series/anime produce the same decision with or without year.
+- `a6f1b4bd`: authoritative retry workflow updated for v10.
+- `ec8867c` + `7296e20`: Python test bootstraps fixed for direct Core Lego imports.
+- `af73c025`: ownership test now inspects transformed ProviderBase snippets, not legacy source-anchor strings inside the migration tool.
+- `c50806c`: Purstream contract accepts absent or empty `patch_scripts` as the same clean state; any non-empty legacy patch list remains forbidden.
+- `05cce19c`: Purstream test aligned with real transport DATA: `published_types=[movie,tv]`, anime preserved semantically via `request_type_aliases={anime:tmdb_namespace}`.
+- `e6ea30b`: Purstream recipe contract aligned with current DATA: `movieRoute=/stream/{id}`, `episodeRoute=/stream/{id}/episode?...`, `yearFields=[release_date]`; no `first_air_date` requirement for episodic identity.
 
-Pending before next publication:
-- remove Purstream's now-redundant exported `strictIdentityScore()` wrapper and update its tests/contracts to call shared engine policy directly;
-- remove duplicated identity/collision logic from `CORE.RUNTIME_MEDIA_SAFETY.V4` (`identityBlob`, `explicitYears`, `containsAny`, `routeIdentity`, collision fixtures, season/episode/year rejection) and leave only media/playback safety there;
-- clean `identityInput.requiredFields` so generic catalogue DATA does not encode `year` as universally required for episodic requests;
-- make `contentLike()` year signal movie-only so episodic year has zero direct or indirect identity effect;
-- enforce repository-wide architecture test forbidding provider-local identity scoring/rejection implementations;
-- rematerialize 96 ProviderBase/bundles, reverse/audit/integrity, then bump synchronized manifest (expected 5.21.36 if no intervening release).
+## 5.21.36 publication attempts — exact state
+
+**5.21.36 is NOT published at this checkpoint. Public manifest is still treated as 5.21.35.**
+
+Workflow/run authority:
+- Workflow: `MAIN - Core Identity Publication Retry 2`.
+- Run: **34066073913**.
+
+Earlier safe attempts:
+- Run **34065556338**, job **101573573889**: failed before materialization because the one-shot Purstream migration expected one `strictIdentityScore(item, metadata, targetType)` occurrence but correctly found two (call + local definition). No publish.
+- Retry run **34065727473**, job **101574024846**: cancelled/superseded before publication when zero-year v10 became authoritative.
+
+Run 34066073913 progression:
+- Initial job **101574939364**: migration and DATA scope passed; smoke failed only because `global_identity_policy_ownership_test.py` did not add `scripts/` to `sys.path`. No materialization/publish.
+- Rerun job **101575336306**: bootstrap fixed; next failure was a test false-positive scanning `upgrade_provider_base_runtime_v5.py` source text and seeing the legacy validation literal `const movieIdentity...`. Runtime was not at fault. Fixed by inspecting only transformed ProviderBase snippets.
+- Rerun job **101575867355**: **all smoke contracts passed**. Identity-only ProviderBase rematerialization itself passed **96/96**, then old Purstream contract failed because `patch_scripts` was omitted (`None`) rather than `[]`.
+- Rerun job **101576053245**: all smoke contracts passed; ProviderBase rematerialization again passed **96/96**; old Purstream contract then failed because it expected `published_types=[movie,tv,anime]` instead of real `movie,tv` transport + semantic anime alias.
+- Rerun job **101576310737**: all smoke contracts passed; ProviderBase rematerialization again passed **96/96**; old Purstream contract then failed because it expected historical `movieRoute=/media/{id}/sheet`. Current authoritative DATA says `/stream/{id}` and `yearFields=[release_date]`.
+
+Repeated verified rematerialization line:
+`IDENTITY_ONLY_PROVIDER_BASE_OK providers=96 unique_paths=96 common_digest=520ba9882661582dc4789f65e5d04c3c902fa22f79b1f436dc52823d845dd3fc runtime_reader=v9 route_or_domain_mutation=false`
+
+Repeated smoke proof before the stale-contract blockers:
+- global identity policy ownership: pass;
+- Kehflix-shaped episodic identity runtime: pass;
+- episodic zero-year regression: pass;
+- engine-v2 Purstream adapter: pass;
+- runtime media safety: pass;
+- priority episodic-year-disabled/domain refresh regression: pass;
+- native HLS integrity budget: pass;
+- native provider loading compatibility: pass;
+- global media resolver: pass;
+- native dual IMDb/TMDB identity: pass;
+- Provider v3 source plan v4 contract: pass.
+
+The remaining transaction still must execute, on one successful run:
+1. complete post-materialization Purstream contract;
+2. recompose **all 96 active bundles** from common Base + existing DATA/CONFIG + Provider/Core Lego;
+3. validate active-96 ownership and stream guards;
+4. generate projections and synchronize release to **5.21.36**, bumping all 96 changed providers;
+5. final reverse/static/ownership/integrity/fixed-point proof;
+6. write final publication checkpoint to this file;
+7. CAS-check `origin/main == base_sha` and atomically push publication;
+8. verify public root/vf/no-anime/vf-no-anime manifests actually report 5.21.36 before telling the user to retest.
+
+## Purstream current authoritative DATA relevant to this migration
+
+- `published_types`: `movie`, `tv`.
+- semantic anime request: capability alias `anime -> tmdb_namespace`, identity source `original_nuvio_request`.
+- official site: `https://purstream.ad`.
+- official API: `https://purstream.ad/api`.
+- search route: `/search-bar/search/{query}`.
+- movie stream route: `/stream/{id}`.
+- episode stream route: `/stream/{id}/episode?season={season}&episode={episode}`.
+- recipe `yearFields`: `release_date` only, used as movie catalogue evidence; episodic identity ignores year entirely.
+- `strictIdentity=true`, `directSourcesOnly=true`.
+- No provider-local identity algorithm is allowed; Core owns the semantics.
 
 ## Stream/player integrity
 
@@ -115,14 +166,12 @@ A URL or `#EXTM3U` response is not native playback proof. Keep separate:
 5. media/container integrity;
 6. official native player outcome.
 
-Shared terminal sanitizer:
 - `CORE.STREAM_SANITIZER.V6` is global and fail-closed on `probe_all_urls=true`.
-- Global policy uses direct-media/all-URL probing and `min_vod_duration_seconds=60`.
-- `tests/global_stream_output_guard_test.py` explicitly walks the 96 current manifest providers and requires one V6 managed sanitizer, current fail-closed hook, `probeAllUrls=true`, and terminal ordering.
-- `tests/stream_output_sanitizer_fail_closed_test.py` executes the fail-closed behavior.
-- Historical Allwish ~20 s *Interstellar* result is a generic stream-level regression case, not a reason to disable/re-add a catalogue provider. Allwish is not in the current 5.21.35 manifest.
-- Kehflix malformed MPEG-TS handling probes first media bytes when the runtime exposes them; on bridges without byte access, lack of proof remains unknown rather than a fake provider-wide failure.
-- HLS audio-child integrity (`CORE.HLS_RUNTIME_INTEGRITY.V1`) must remain intact.
+- `tests/global_stream_output_guard_test.py` walks the 96 current manifest providers and requires one V6 managed sanitizer and terminal ordering.
+- `tests/stream_output_sanitizer_fail_closed_test.py` executes fail-closed behavior.
+- Historical Allwish ~20 s Interstellar result is a stream-level regression, not a reason to disable a provider. Allwish is not in current 5.21.35 manifest.
+- Kehflix malformed MPEG-TS handling probes first media bytes when the runtime exposes them; lack of bridge byte access remains unknown rather than a fake provider-wide failure.
+- HLS audio-child integrity `CORE.HLS_RUNTIME_INTEGRITY.V1` remains required.
 
 ## Five first-class Native Labs
 
@@ -133,82 +182,67 @@ Exactly five proofs:
 4. Desktop macOS — NuvioDesktop;
 5. Desktop Windows — NuvioDesktop.
 
-Current workflow mapping: three workflows cover the five platforms: Android matrix = TV + Mobile Android; Desktop matrix = macOS + Windows; iOS separate.
+Workflow mapping: Android matrix = TV + Mobile Android; Desktop matrix = macOS + Windows; iOS separate.
 
-Runtime audit refs before final Labs:
+Runtime refs before final Labs:
 - NuvioMobile audited/current: `68337ffac8578b986d0c3f6e432abf75f4a33521`.
 - NuvioTV audited/current: `23d1fe478e380860dae3eb41c8770533361a0cc5`.
 - NuvioDesktop last audited runtime-contract ref: `323c1037f3c0fbe0ebe255b77d42331c3fdeb2d7`.
-- Desktop upstream advanced to `21aabeeb49fc6de835f9031a65cc5f8489419330`, but compare showed only player-shortcut/UI files (`PlayerEngine.kt`, `PlayerScreenRuntimeUi.kt`, `NativePlayerController.kt`, `controls.js`), not provider/plugin runtime contract files.
-
-Native application-path tests must cover `movie`, `tv`, and `series`. Main has the stronger `series=0` blocking gate; do not restore the older workbench movie/tv-only version.
+- Desktop later advanced to `21aabeeb49fc6de835f9031a65cc5f8489419330`; compare showed player-shortcut/UI changes only, not provider/plugin runtime contract files.
 
 ## Security state
 
-- Exact final publication SHA Default Setup CodeQL run: **34061759678**.
+- Exact 5.21.35 publication SHA Default Setup CodeQL run: **34061759678**.
 - Python analysis: success.
 - GitHub Actions analysis: success.
-- JavaScript/TypeScript analysis was still `in_progress` at the latest poll before this checkpoint; no failure conclusion yet.
-- NiakVIO security completion also requires the repository `SEC - CodeQL` (`security-extended`) + `npm audit --omit=dev --audit-level=high`; Default Setup alone is not the whole proof.
-- Direct code-scanning-alert enumeration is not exposed by the current connector. Never claim historical UI alerts were individually closed without actual evidence.
+- JavaScript/TypeScript was still pending at an older checkpoint; re-check final state rather than assuming.
+- Final security completion also requires repository `SEC - CodeQL` / security-extended plus `npm audit --omit=dev --audit-level=high` on the final publication SHA.
+- Direct code-scanning-alert enumeration is not exposed by current connector; never claim historical UI alerts were individually closed without evidence.
 - Do not weaken CodeQL/security rules for green CI.
 
-## Repository/documentation debts discovered after 5.21.35
+## Repository/documentation debts after runtime stabilization
 
-These are pending unless a later checkpoint says fixed:
-- `CHANGELOG.md` head still stops at 5.21.16 while current release is 5.21.35.
-- `VALIDATION.json` still reports `release: 5.15.0`; field appears to be metadata, not a reconstruction baseline. It should be synchronized to current manifest and covered by a consistency test.
-- README EN/FR, `ARCHITECTURE.md`, `VALIDATION.md`, and the Domain Refresh script docstring still describe Domain Refresh as `official_site`-only, contradicting current structured-domain reconciliation.
-- `ARCHITECTURE.docx` exists on main but should be regenerated/rechecked after the final architecture wording is corrected.
-- `.github/triggers/nuvio-client-lab.json` still carries stale `5.21.32` and frozen route counters (`228/96/92/40`) even though the test contract says route totals must be derived from the current manifest. Remove frozen totals rather than updating another duplicate truth.
-- `automation/provider-v3-architecture.json` and architecture/workflow ownership tests still encode an older branch-based reconstruction publication contract. Desired durable model: reconstruct/materialize/version/integrity in one workspace, CAS-verify `origin/main == base_sha`, then one atomic main publication commit. No persistent workbench branch.
+Pending unless a later checkpoint says fixed:
+- `CHANGELOG.md` was behind current release history.
+- `VALIDATION.json` still carried stale release metadata.
+- README EN/FR, `ARCHITECTURE.md`, `VALIDATION.md`, and Domain Refresh docstring contained old official-site-only wording.
+- `ARCHITECTURE.docx` must be regenerated/rechecked after final architecture wording.
+- `.github/triggers/nuvio-client-lab.json` contained stale release/frozen route counters and should derive current truth instead.
+- `automation/provider-v3-architecture.json` / ownership tests contained older branch-based publication assumptions; durable model is one workspace + CAS + atomic main commit.
 
-## Domain Refresh — diagnosed systemic defects (NOT YET FIXED at this checkpoint)
+## Domain Refresh — diagnosed, intentionally deferred until common runtime is stable
 
-Current source authority `refresh_authoritative_hub_domains.py` already tries to reconcile terminal-domain derivatives in `provider-overrides.json`, including domain substitution/replacement maps, provider-owned manifest logo/icon/favicon URLs, and notes.
+Current `refresh_authoritative_hub_domains.py` tries to reconcile terminal-domain derivatives, but the transaction has known inconsistencies:
+1. scope validator/tests still encode old official-site-only mutation;
+2. `update_provider_v3_domain_config.py` updates only `officialSite` instead of rebuilding full CONFIG from current structured source authority;
+3. updater can emit old filename shape rather than source-qualified current publication shape;
+4. generic old-host -> new-host logo/icon/favicon reconciliation still needs synthetic proof.
 
-But the transaction is internally inconsistent:
-1. `validate_domain_refresh_scope.py` / tests still enforce old `official_site`-only mutation and can reject the derivatives the refresh itself changes.
-2. `update_provider_v3_domain_config.py` currently decodes CONFIG and only does `next_data["officialSite"] = site`; it does **not** deterministically rebuild full current CONFIG via the same `provider_model() -> build_provider_data_model()` source path used by full materialization. Therefore `domainSubstitutions` can remain stale in published runtime CONFIG after a domain rotation.
-3. That updater emits old-style filenames `providers/{id}-{hash}.js`, while final 5.21.35 audit requires source-qualified publication filenames. A future changed-domain transaction can therefore fail final audit even when the bytes are otherwise valid.
-4. Manifest logo/icon/favicon reconciliation currently needs a real synthetic old-host -> new-host transition test; Flemmix already being `.kim` does not prove the generic algorithm.
+Required later fix: source authority + allowed scope gate + full CONFIG projection + source-qualified filename preservation + synthetic A->B tests + docs. ProviderBase/Core bytes must remain unchanged for domain-only updates.
 
-Required fix is atomic: source authority + allowed scope gate + full CONFIG projection + source-qualified filename preservation + synthetic A->B tests + machine policy/docs. ProviderBase/Core bytes must remain unchanged for domain-only updates.
+## User Desktop HOTD S3E1 evidence on published 5.21.35
 
-## 2026-09-07 — User Desktop test: House of the Dragon S3E1 returns zero visible streams
-
-User supplied Desktop log `nuvio-ux-20260907-001220.log` while testing published 5.21.35.
+User supplied `nuvio-ux-20260907-001220.log`.
 
 Observed chain:
-- Metadata resolves correctly: IMDb `tt11198330`, TMDB `94997`, `type=series`, title `House of the Dragon`, 26 videos.
-- Requested stream identity reaches the stream stage exactly as **`type=series id=tt11198330:3:1`**.
-- Log line: `StreamsRepo Found 0 addons for stream type=series id=tt11198330:3:1`. This is the ordinary addon list, **not** proof that zero NiakVIO Provider JS ran: PluginRuntime network calls follow immediately.
-- Therefore the S3E1 failure is after metadata/transport identity; current cleanup focuses first on shared architecture/identity ownership before the separate route census.
+- IMDb `tt11198330`, TMDB `94997`, type `series`, title `House of the Dragon` resolve correctly.
+- Stream request reaches `type=series id=tt11198330:3:1`.
+- `StreamsRepo Found 0 addons...` is ordinary addon-list state, not proof zero NiakVIO Provider JS ran; PluginRuntime network calls follow.
+- Visible provider requests then include DNS failures for YFlix family, Nakios, Peachify and VidLink.
+- Current priority is **not** a full route/domain sweep yet. First stabilize common TV/series/runtime architecture and already-viable providers such as Purstream/Kehflix; route census/repair across all 96 follows later.
 
-Provider/runtime requests visible immediately after the S3E1 request:
-- YFlix family (`1moviesz.to`): `GET https://1moviesz.to/api?#` and root `/?#` -> `UnknownHostException`.
-- Nakios (`api.nakios.live`): tries both `/api/sources/movie/94997?#` and `/api/sources/tv/94997/3/1?#` -> `UnknownHostException`.
-- Peachify (`uwu.eat-peach.sbs`, `usa.eat-peach.sbs`): `net/tv/94997/3/1`, `moviebox/tv/94997/3/1`, `air/tv/94997/3/1`, `multi/tv/94997/3/1`, `holly/tv/94997/3/1` -> all `UnknownHostException`.
-- VidLink (`vidlink.pro`): `/api?#`, `/api/b/movie/?#`, `/api/b/tv/?#`, root `/?#` -> `UnknownHostException`.
+## Active completion sequence
 
-Current priority clarified by user:
-- do **not** start a full remaining-route/domain sweep yet;
-- first finish common architecture/runtime tasks and make already-viable TV-capable providers such as **Purstream, Kehflix and others** work correctly for `series/tv`;
-- route census/repair of remaining dead providers comes later.
-
-## Active completion sequence after this checkpoint
-
-1. Finish Core ownership cleanup: no provider/adapter-local identity policy; remove identity logic from runtime media safety; clean DATA required-fields contract; make episodic year completely inert including `contentLike()` heuristics.
-2. Run synthetic Purstream HOTD S3E1 and representative Kehflix/TV contract tests plus Workflow Gate.
-3. Materialize current ProviderBase v9 + current DATA + Provider Lego + Core Lego across all 96; reverse/audit/minimizer/integrity.
-4. Publish synchronized next manifest (expected 5.21.36) only after the actual bundles contain the fix; then tell user to retest HOTD S3E1.
-5. Re-test real Desktop HOTD S3E1; separate provider-route/network failures from common runtime failures.
-6. Only after common TV/series/runtime architecture is stable, resume full real-route/domain recovery across all 96.
-7. Fix Domain Refresh transaction defects.
-8. Run complete five Native Labs on one exact final candidate SHA.
-9. Finish Workflow Gate/security/dependency/CodeQL proof on final SHA.
-10. Clean docs/machine architecture contracts/trigger metadata and regenerate `ARCHITECTURE.docx`.
-11. Final branch/PR hygiene audit and final `MEMORY.md` checkpoint with exact SHA/run/artifact IDs.
+1. Finish 5.21.36 transaction through active 96-bundle recomposition, versioning, reverse/static/integrity and atomic publication.
+2. Verify public 5.21.36 manifests and final active Provider JS ownership.
+3. Have user re-test real Desktop HOTD S3E1; separate common-runtime results from route/network failures.
+4. Stabilize any remaining common TV/series/player issues without narrowing provider scope.
+5. Resume full real-route/domain recovery across **all 96**, testing routes live as they are discovered.
+6. Fix Domain Refresh transaction defects.
+7. Run complete five Native Labs on one exact final candidate SHA.
+8. Finish Workflow Gate/security/dependency/CodeQL proof on final SHA.
+9. Clean docs/machine architecture contracts/trigger metadata and regenerate `ARCHITECTURE.docx`.
+10. Final branch/PR hygiene audit and final `MEMORY.md` checkpoint with exact SHA/run/artifact IDs.
 
 ## Completion principle
 
