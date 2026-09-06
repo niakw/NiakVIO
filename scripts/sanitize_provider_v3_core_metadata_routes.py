@@ -22,7 +22,7 @@ from urllib.parse import urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
 TMDB_HOSTS = frozenset({"api.themoviedb.org", "www.themoviedb.org", "themoviedb.org"})
-TMDB_ERASED_HOST_RE = re.compile(r"^/+(?:api\.)?themoviedb\.org(?:/|$)", re.I)
+TMDB_ERASED_HOST_RE = re.compile(r"^/+(?:(?:api|www)\.)?themoviedb\.org(?:/|$)", re.I)
 TMDB_API_ROUTE_RE = re.compile(
     r"^/3/(?:\{media\}|\{type\}|movie|tv)/\{tmdb(?:_?id)?\}.*(?:[?&])api_key=",
     re.I,
@@ -78,9 +78,6 @@ def is_explicit_tmdb_transport(value: object) -> bool:
     text = normalized(value)
     if not text:
         return False
-    low = text.casefold()
-    if "api.themoviedb.org" in low or "themoviedb.org" in low:
-        return True
     if TMDB_ERASED_HOST_RE.match(text):
         return True
     if TMDB_API_ROUTE_RE.search(text):
