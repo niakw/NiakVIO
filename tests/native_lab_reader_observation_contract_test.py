@@ -24,7 +24,14 @@ assert "Intent(context, MainActivity::class.java)" not in mobile_codegen
 assert "generateSequence(error) { it.cause }" in mobile_codegen
 assert "getLaunchIntentForPackage(context.packageName)" not in mobile_codegen.split("MOBILE_HELPERS =", 1)[1]
 
-assert "external client playback failures are preserved, never repaired here" in desktop_workflow
+# Desktop reader/player failures are observational evidence: each official-client
+# attempt may fail without repairing Nuvio, while the exhaustive provider matrix
+# remains a separate blocking coverage contract.
+assert "Reader/player outcomes are evidence. External client failures remain visible." in desktop_workflow
+assert 'bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh" || true' in desktop_workflow
+assert "gate_native_player_reached.cjs" in desktop_workflow
+assert "gate_native_declared_provider_matrix.py" in desktop_workflow
+assert 'NIAKVIO_BRAIN_NONBLOCKING: "1"' in desktop_workflow
 
 for forbidden in (
     "run_adaptive_quick_repair.py",
