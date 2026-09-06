@@ -5,7 +5,8 @@ Provider artwork stays in native ``scraper.logo``. Until Nuvio exposes that logo
 on local stream rows, one committed emoji per provider gives the textual stream
 name/title a stable identity. This layer runs *after* Core stream presentation so
 it never destroys provider-returned technical facts before they are normalized.
-V5 preserves the canonical ``PROVIDER - QUALITY`` suffix produced by Core V12.
+V7 preserves meaningful canonical ``PROVIDER - QUALITY/LANGUAGE`` suffixes while
+dropping placeholder suffixes such as ``Inconnu``/``Unknown``.
 """
 from __future__ import annotations
 
@@ -74,7 +75,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": provider_id,
         "providerName": row["name"],
         "providerEmoji": row["emoji"],
-        "implementationRevision": "post-presentation-name-title-quality-v6",
+        "implementationRevision": "post-presentation-name-title-quality-v7",
     }
     serialized = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode('utf-8')).hexdigest()[:12]}"
@@ -84,7 +85,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
 function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
 function label(){return(String(c.providerEmoji||"").trim()+" "+String(c.providerName||c.providerId||"Source").trim()).trim()}
-function title(v,old){old=String(old||"").trim();if(!old)return v;var token=" - ",i=old.lastIndexOf(token);return i>=0?v+old.slice(i):v}
+function placeholder(s){return/^(?:unknown|inconnu(?:e)?|n\/?a|none|null|undefined|unknown\s+(?:quality|language)|qualit(?:e|é)\s+inconnue|langue\s+inconnue)$/i.test(String(s||"").trim())}
+function title(v,old){old=String(old||"").trim();if(!old)return v;var token=" - ",i=old.lastIndexOf(token);if(i<0)return v;var suffix=old.slice(i+token.length).trim();return!suffix||placeholder(suffix)?v:v+token+suffix}
 function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;var display=title(v,o.title);o.title=display;o.name=display;return o}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProviderBrandingV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;return rebuild(v,x,x.list.map(brand))};wrap.__nuvioGlobalProviderBrandingV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
