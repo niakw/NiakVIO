@@ -137,9 +137,11 @@ assert "modified=false" in android_transport
 assert '.set(f"{ANDROID}usesCleartextTraffic"' not in android_transport
 assert "android.permission.INTERNET" not in android_transport
 
-# Mobile has one persisted behavior-neutral exception: the ephemeral device-test APK
-# may select one duplicate libc++ runtime so instrumentation can be packaged. The
-# shared bootstrap owns this now; the retired hardener must not be recreated.
+# Mobile has two persisted behavior-neutral test-only exceptions: the ephemeral
+# device-test APK may select one duplicate libc++ runtime so instrumentation can be
+# packaged, and it may mirror the official application's Sentry auto-init=false
+# metadata because the standalone test APK does not inherit androidApp's manifest.
+# Neither exception may touch production manifests, network/player code or runtime policy.
 assert 'MOBILE_LIBCXX_PICK_FIRST = \'pickFirsts.add("lib/*/libc++_shared.so")\'' in bootstrap
 assert 'pickFirsts.add("lib/*/libc++_shared.so")' in bootstrap
 assert "composeApp/build.gradle.kts" in bootstrap
@@ -169,7 +171,9 @@ for forbidden in (
     assert forbidden not in bootstrap, f"mobile-bootstrap:{forbidden}"
 
 # The only supported Android checkout edits are test plumbing. The shared bootstrap
-# must never manufacture a production network/player/runtime capability.
+# must never manufacture a production network/player/runtime capability. The one
+# manifest path it may write is the exact androidDeviceTest manifest used only by
+# the instrumentation APK; production/main manifest paths remain forbidden.
 for required in (
     "enable_mobile_device_tests",
     "enable_tv_tests",
@@ -178,10 +182,15 @@ for required in (
     "testInstrumentationRunner",
     "androidTestImplementation",
     "runtime_mutation=false",
+    'composeApp/src/androidDeviceTest/AndroidManifest.xml',
+    'android:name="io.sentry.auto-init"',
+    'android:value="false"',
 ):
     assert required in bootstrap, required
 for forbidden in (
-    "AndroidManifest.xml",
+    "composeApp/src/androidMain/AndroidManifest.xml",
+    "androidApp/src/main/AndroidManifest.xml",
+    "app/src/main/AndroidManifest.xml",
     "android.permission.INTERNET",
     "usesCleartextTraffic",
     "networkSecurityConfig",
