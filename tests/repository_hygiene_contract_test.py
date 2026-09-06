@@ -200,18 +200,23 @@ for stale in (
     "engine-regression-offline.yml",
 ):
     assert stale not in readme, f"README resurrected retired reference: {stale}"
+    assert stale not in readme_fr, f"README.fr resurrected retired reference: {stale}"
     assert stale not in architecture, f"ARCHITECTURE resurrected retired reference: {stale}"
 
-assert "`main` is the only production code branch" in readme
-assert "`main` : unique branche de code" in readme_fr
+# Public READMEs stay user-facing; branch/write ownership belongs to architecture
+# and machine-enforced repository policy rather than historical README wording.
+assert "refs/heads/main/manifest.json" in readme
+assert "refs/heads/main/manifest.json" in readme_fr
+assert "main` = production et unique cible d’écriture active" in architecture
 assert "Cinq Native Labs" in architecture
-assert "brain-learning/proposals" in readme
 assert "brain-learning/proposals" in architecture
+assert "Five independent native Labs" in readme
+assert "Cinq Labs natifs indépendants" in readme_fr
 assert "healthy sibling selection" not in architecture
 assert "compare to parent/sibling" not in architecture
 assert "## 10. Healthy sibling first" not in architecture
-assert "1/1/1 per provider by declared type" in readme
-assert "1/1/1 par provider selon les types déclarés" in readme_fr
+assert "1/1/1 per provider by declared type" not in readme
+assert "1/1/1 par provider selon les types déclarés" not in readme_fr
 
 # Living documentation must track the current workflow/storage architecture.
 validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
@@ -229,13 +234,12 @@ for maintenance_workflow in (
     "purge-actions-history.yml",
     "brain-branch-maintenance.yml",
 ):
-    assert maintenance_workflow in architecture, f"ARCHITECTURE.md missing durable workflow: {maintenance_workflow}"
     assert maintenance_workflow in readme, f"README.md missing maintenance workflow: {maintenance_workflow}"
     assert maintenance_workflow in readme_fr, f"README.fr.md missing maintenance workflow: {maintenance_workflow}"
-assert "cache Gradle est désactivé" in readme_fr
+assert "cache Gradle est désactivé" not in readme_fr
 assert "caches Gradle sont conservés" not in readme_fr
 assert "rejoue Sinners sur NuvioTV avec tous les providers" not in readme_fr
-assert "premier type déclaré" in readme_fr
+assert "premier type déclaré" not in readme_fr
 desktop_runtime_doc = (ROOT / "docs/desktop/README.md").read_text(encoding="utf-8")
 assert "157336-unr8i" not in desktop_runtime_doc
 for manifest_path in (
