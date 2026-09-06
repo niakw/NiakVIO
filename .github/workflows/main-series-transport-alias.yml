@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Patch canonical transport projection
+      - name: Patch canonical root transport projection
         shell: bash
         run: |
           set -euo pipefail
@@ -35,16 +35,14 @@ jobs:
           path = Path('scripts/reapply_published_overrides.py')
           text = path.read_text(encoding='utf-8')
 
+          # manifest.json is the sole publication source of truth. Language and
+          # no-anime manifests are deterministic projections generated later.
           old_secondary = 'SECONDARY = (ROOT / "vf" / "manifest.json", ROOT / "vostfr" / "manifest.json")'
-          new_secondary = '''SECONDARY = (
-              ROOT / "vf" / "manifest.json",
-              ROOT / "no-anime" / "manifest.json",
-              ROOT / "vf-no-anime" / "manifest.json",
-          )'''
+          new_secondary = 'SECONDARY = ()'
           if old_secondary in text:
               text = text.replace(old_secondary, new_secondary, 1)
           elif new_secondary not in text:
-              raise SystemExit('published manifest set anchor missing')
+              raise SystemExit('canonical manifest source anchor missing')
 
           transport_fn = '''\n\ndef _normalized_transport_types(values: object) -> list[str]:\n    \"\"\"Normalize client transport aliases without promoting them to semantic types.\"\"\"\n    result: list[str] = []\n    for value in values if isinstance(values, list) else []:\n        item = str(value).strip().casefold()\n        if item in {\"movie\", \"tv\", \"anime\", \"series\"} and item not in result:\n            result.append(item)\n    return result\n'''
           anchor = '\n\ndef projected_transport_types(semantic_types: object) -> list[str]:'
@@ -118,18 +116,20 @@ jobs:
           assert manifest_type_projection_matches(ordinary, ["movie", "tv"])
           assert apply_manifest_type_projection(ordinary, ["movie", "tv"]) is False
 
-          assert semantic_manifest_types({"supportedTypes": ["tv", "series"], "canonicalSupportedTypes": ["tv"]}) == ["tv"]
+          stale_transport = {"supportedTypes": ["tv", "series"], "canonicalSupportedTypes": ["tv"]}
+          assert semantic_manifest_types(stale_transport) == ["tv"]
+          assert manifest_type_projection_matches(stale_transport, ["tv"])
           print("reapply manifest semantic/transport projection tests passed")
           PY
 
-      - name: Validate projection source before publication
+      - name: Validate canonical projection source
         run: |
           set -euo pipefail
           python tests/reapply_manifest_type_projection_test.py
           python tests/global_media_type_resolution_test.py
           python tests/reapply_provider_versioning_test.py
 
-      - name: Rematerialize published manifests and finalize cache versions
+      - name: Materialize canonical root and generated views
         shell: bash
         run: |
           set -euo pipefail
@@ -137,8 +137,9 @@ jobs:
           python scripts/sync_release_versions.py \
             --manifest manifest.json \
             --previous "$RUNNER_TEMP/published-manifest-before-series-alias.json"
+          python scripts/generate_language_manifests.py
 
-      - name: Verify published transport aliases
+      - name: Verify root and generated projections
         shell: bash
         run: |
           set -euo pipefail
@@ -146,28 +147,41 @@ jobs:
           import json
           from pathlib import Path
 
-          manifests = [
-              Path('manifest.json'),
-              Path('vf/manifest.json'),
-              Path('no-anime/manifest.json'),
-              Path('vf-no-anime/manifest.json'),
-          ]
-          checked = 0
-          for path in manifests:
-              assert path.exists(), f"published manifest missing: {path}"
+          root_path = Path('manifest.json')
+          root = json.loads(root_path.read_text(encoding='utf-8'))
+          root_rows = {str(row.get('id', '')).casefold(): row for row in root.get('scrapers', []) if isinstance(row, dict)}
+          root_tv = 0
+          for provider_id, row in root_rows.items():
+              supported = [str(v).casefold() for v in row.get('supportedTypes', [])]
+              canonical = [str(v).casefold() for v in row.get('canonicalSupportedTypes', [])]
+              if 'tv' in supported:
+                  assert 'series' in supported, f'root:{provider_id} missing series transport alias'
+                  root_tv += 1
+              assert 'series' not in canonical, f'root:{provider_id} leaked series into canonical types'
+          assert root_tv > 0
+
+          generated = [Path('vf/manifest.json'), Path('no-anime/manifest.json'), Path('vf-no-anime/manifest.json')]
+          generated_tv = 0
+          for path in generated:
+              assert path.exists(), f'generated manifest missing: {path}'
               payload = json.loads(path.read_text(encoding='utf-8'))
+              assert payload.get('version') == root.get('version'), f'{path}: release version diverged from root'
               for row in payload.get('scrapers', []):
-                  supported = [str(v).lower() for v in row.get('supportedTypes', [])]
-                  canonical = [str(v).lower() for v in row.get('canonicalSupportedTypes', [])]
+                  provider_id = str(row.get('id', '')).casefold()
+                  assert provider_id in root_rows, f'{path}:{provider_id} not derived from root'
+                  supported = [str(v).casefold() for v in row.get('supportedTypes', [])]
+                  canonical = [str(v).casefold() for v in row.get('canonicalSupportedTypes', [])]
                   if 'tv' in supported:
-                      assert 'series' in supported, f"{path}:{row.get('id')} missing series transport alias"
-                      checked += 1
-                  assert 'series' not in canonical, f"{path}:{row.get('id')} leaked series into canonical types"
-          assert checked > 0
-          print(f'verified series transport alias on {checked} published TV-capable rows')
+                      assert 'series' in supported, f'{path}:{provider_id} missing generated series alias'
+                      generated_tv += 1
+                  assert 'series' not in canonical, f'{path}:{provider_id} leaked series into canonical types'
+          assert generated_tv > 0
+          print(f'verified canonical TV aliases={root_tv}; generated TV projections={generated_tv}')
           PY
           python scripts/reapply_published_overrides.py --check
           python tests/reapply_manifest_type_projection_test.py
+          python tests/language_projection_test.py
+          python tests/language_manifest_metadata_consistency_test.py
           python tests/provider_versioning_test.py
           python tests/reapply_provider_versioning_test.py
           python tests/release_auto_bump_test.py
