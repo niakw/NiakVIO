@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "branch_contract": "provider-v3-clean-architecture",
   "provider_source_of_truth": {
     "runtime_artifacts": "providers/*.js",
@@ -17,13 +17,17 @@
     "legacy_provider_js_seed_allowed": false,
     "upstream_provider_js_seed_allowed": false,
     "canonical_provider_base_marker": "NIAKVIO_PROVIDER_BASE_OWNED_V3",
-    "managed_markers": [
-      "STARTFIX",
-      "CLOSEFIX",
-      "FIXDATA"
-    ],
+    "managed_markers": ["STARTFIX", "CLOSEFIX", "FIXDATA"],
     "core_boundary": "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
     "published_provider_js_is_reconstruction_seed": false
+  },
+  "media_types": {
+    "semantic_field": "canonicalSupportedTypes",
+    "transport_field": "supportedTypes",
+    "canonical_values": ["movie", "tv", "anime"],
+    "anime_only_transport_compatibility": ["anime", "tv", "movie"],
+    "transport_aliases_do_not_expand_semantic_capability": true,
+    "capability_gate_before_provider_network": true
   },
   "route_recognition": {
     "provider_object_count": 96,
@@ -37,6 +41,7 @@
     "empty_route_data_is_valid_recognition": true,
     "empty_route_data_implies_quarantine": false,
     "latest_verified_census": {
+      "status": "historical_verified_report",
       "date": "2026-09-05",
       "run_id": 33949700926,
       "source_sha": "2fc4279ff1e6b13d1be3614c3d661d8b49d8ca6f",
@@ -45,12 +50,22 @@
       "route_count": 401,
       "http_proven_route_count": 6,
       "providers_with_route_data": 95,
-      "providers_without_durable_route": [
-        "topcartoons"
-      ]
+      "providers_without_durable_route": ["topcartoons"]
     }
   },
   "routine": {
+    "quick": {
+      "repair_allowed": false,
+      "provider_fix_mutation_allowed": false,
+      "provider_reconstruction_allowed": false,
+      "responsibilities": [
+        "run fast Provider v3/Core structural tests",
+        "audit exact published Provider JS bytes",
+        "validate media-type, minimizer, security and five-lab contracts",
+        "make no provider/DATA/Core mutations"
+      ],
+      "static_published_byte_audit": true
+    },
     "deep": {
       "repair_allowed": false,
       "provider_fix_mutation_allowed": false,
@@ -71,25 +86,14 @@
       "proposal_pr_only": true,
       "responsibilities": [
         "observe failures",
-        "attempt sandbox repairs of owned fix blocks",
+        "attempt sandbox repairs of NiakVIO-owned blocks",
         "validate repaired candidate",
         "persist sanitized learning",
-        "open/refresh repair PR for human merge"
+        "open or refresh reviewable proposals"
       ],
       "exclusive_code_evolution_owner": true,
-      "includes_disabled_providers": true
-    },
-    "quick": {
-      "repair_allowed": false,
-      "provider_fix_mutation_allowed": false,
-      "provider_reconstruction_allowed": false,
-      "responsibilities": [
-        "run fast Provider v3/Core structural tests",
-        "audit exact published Provider JS bytes",
-        "validate five-lab and observational-purity contracts",
-        "make no provider/DATA/Core mutations"
-      ],
-      "static_published_byte_audit": true
+      "includes_disabled_providers": true,
+      "external_client_failures_are_repair_targets": false
     }
   },
   "manual_reconstruction": {
@@ -110,13 +114,24 @@
     "DesktopMACOS",
     "DesktopWindows"
   ],
+  "native_lab_contract": {
+    "provider_count": 96,
+    "route_matrix_source": "manifest.json:scrapers[*].supportedTypes",
+    "semantic_capability_source": "manifest.json:scrapers[*].canonicalSupportedTypes",
+    "declared_route_counts_are_dynamic": true,
+    "coverage_gate": "scripts/gate_native_declared_provider_matrix.py",
+    "coverage_is_blocking": true,
+    "reader_outcomes_are_observational": true,
+    "external_nuvio_repo_repairs_allowed": false,
+    "external_build_dependency_packaging_repairs_allowed": false,
+    "harness_repairs_allowed_only_when_test_plumbing_itself_is_wrong": true,
+    "test_plumbing_must_not_change_official_runtime_behavior": true
+  },
   "minifier": {
     "enabled_in_production": true,
     "phase": "pre-hash-safe-whitespace",
     "tool": "scripts/provider_v3_minimizer.py",
-    "transformations_enabled": [
-      "code-line-leading-indentation"
-    ],
+    "transformations_enabled": ["code-line-leading-indentation"],
     "comment_architecture_must_be_preserved": true,
     "managed_markers_must_be_preserved": true,
     "newline_asi_contract": "preserve every line terminator",
@@ -136,18 +151,17 @@
   "domain_refresh": {
     "schedule": "daily",
     "autonomous_main_write": true,
-    "allowed_provider_data_fields": [
-      "official_site"
-    ],
+    "allowed_provider_data_fields": ["official_site"],
     "history_write_allowed": true,
     "repair_allowed": false,
     "provider_fix_mutation_allowed": false,
     "api_mutation_allowed": false,
     "route_mutation_allowed": false,
-    "deterministic_rematerialization_of_affected_provider": false,
+    "full_provider_reconstruction_allowed": false,
     "provider_config_data_update_only": true,
     "provider_js_structure_must_remain_byte_identical_outside_config": true,
-    "content_addressed_filename_refresh": true
+    "content_addressed_filename_refresh": true,
+    "manifest_and_hash_projection_refresh": true
   },
   "routine_workflow": {
     "path": ".github/workflows/sync.yml",
@@ -206,28 +220,12 @@
     "reconstruction_sha": "bdfb1e9ab2bc5133d1805e520329dfc85d5e7dcb",
     "release_integrity": true,
     "quick_validation_sha": "28d98a54264f7d24379c62b310a81b2e60dd7b4b",
-    "note": "Frozen materialization reference retained for reverse-rebuild compatibility. It is not the current route-recognition/quarantine truth. Current recognition state is route_recognition.latest_verified_census."
-  },
-  "native_lab_contract": {
-    "provider_count": 96,
-    "declared_routes": 214,
-    "declared_routes_by_type": {
-      "movie": 82,
-      "tv": 92,
-      "anime": 40
-    },
-    "coverage_gate": "scripts/gate_native_declared_provider_matrix.py",
-    "coverage_is_blocking": true,
-    "reader_outcomes_are_observational": true,
-    "external_nuvio_repo_repairs_allowed": false,
-    "harness_repairs_allowed_only_when_test_plumbing_is_wrong": true
+    "note": "Frozen materialization reference retained for reverse-rebuild compatibility only. It is not current route, availability, capability or quarantine truth."
   },
   "provider_plan_contract": {
     "catalogue_provider_count": 96,
     "disabled_providers_are_audited": true,
-    "historical_materialization_plan_counts_only": true,
-    "executable_non_quarantined": 91,
-    "quarantined": 5,
+    "historical_plan_counts_live_only_in_reference_reconstruction": true,
     "quarantine_requires_explicit_reason": true,
     "route_recognition_absence_is_not_quarantine_evidence": true,
     "strategy_taxonomy": [

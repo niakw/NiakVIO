@@ -7,7 +7,6 @@ on:
   push:
     branches:
       - main
-      - workbench/provider-v3-performance-playback
     paths:
       - ".github/triggers/full-native-lab-validation.json"
       - ".github/triggers/native-desktop-lab-validation.json"
@@ -93,14 +92,14 @@ jobs:
     env:
       WEBVIEW2_VERSION: 1.0.4078.44
       # libmpv requires the C numeric locale to be exactly C before mpv_create().
-      # Keep the official NuvioDesktop source untouched; provide its documented
-      # native runtime precondition at process level in the Lab.
+      # Keep official NuvioDesktop behavior untouched; this is a process-level
+      # native runtime precondition, not a source/runtime patch.
       LC_NUMERIC: C
       NIAKVIO_TARGET_PROVIDER: declared-type
       NIAKVIO_TARGET_MANIFEST: manifest.json
       NIAKVIO_PRIMARY_STREAM_SCOPE: all
       NIAKVIO_REGRESSION_STREAM_SCOPE: all
-      # Reader/player outcomes are observational evidence. Coverage/infra are blocking; external client playback failures are preserved, never repaired here.
+      # Reader/player outcomes are evidence. External client failures remain visible.
     steps:
       - name: Checkout NiakVIO candidate
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -116,9 +115,7 @@ jobs:
         with: {node-version: "24", package-manager-cache: false}
 
       - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
-
         with:
-
           cache-disabled: true
 
       - name: Checkout latest official NuvioDesktop HEAD and stage initial route
@@ -188,8 +185,6 @@ jobs:
             LOG="$GITHUB_WORKSPACE/desktop-native-corpus-${{ matrix.os_name }}-${fixture}.log"
             [[ -f "$LOG" ]] && LOGS+=("$LOG")
           done
-          # Missing/corrupt Lab logs remain infra-fatal. A valid log with no player
-          # reach is emitted as owner=brain/blocking=false and returns success.
           node "$GITHUB_WORKSPACE/niakvio/scripts/gate_native_player_reached.cjs" "${LOGS[@]}"
 
       - name: Verify exhaustive Desktop provider matrix
@@ -201,6 +196,7 @@ jobs:
             --manifest niakvio/manifest.json \
             --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/desktop-native-corpus-${{ matrix.os_name }}-*.log
+
       - name: Build Desktop Brain diagnoses from captured evidence
         if: always()
         shell: bash

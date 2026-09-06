@@ -1,202 +1,202 @@
-# Santé, preuve et décision — ARCHI 2
+# Santé, preuve et décision — NiakVIO
 
-Ce document décrit les contrôles qui alimentent **Provider Engine V2 / ARCHI 2**. Ils ne forment pas une architecture parallèle : la décision finale reste portée par le catalogue canonique, l'Evidence Matrix, le Repair Brain et l'unique pipeline `sync.yml`.
+La santé d’un provider n’est jamais réduite à un code HTTP, à `no_streams` ou à un score unique.
 
-## Principe
+## Dimensions de preuve
 
-La santé d'un provider n'est jamais réduite à un code HTTP, à un score global ou à `no_streams`.
-
-La chaîne de preuve distingue notamment :
-
-| Famille | Preuves / observations |
+| Dimension | Exemples |
 |---|---|
-| Discovery | manifest lisible, ID canonique, provenance, JS exploitable, SHA-256, exclusion P2P |
-| Domaine | hub, terminal, redirect, peer historique, DNS, cohérence d'identité |
-| Runtime | chargement, contrat `getStreams`, timeout, mémoire, exception |
-| Catalogue | recherche, type movie/tv/anime, titre, saison, épisode |
-| Player | detail, iframe/embed, JS/XHR/JSON, contexte Referer/Origin/cookies |
+| Discovery | manifest, ID canonique, provenance, exclusion P2P |
+| Domaine | hub officiel, domaine terminal, redirect, DNS, identité |
+| Runtime | chargement, `getStreams`, timeout, mémoire, exception |
+| Catalogue | movie/tv/anime, titre, année, saison, épisode |
+| Protocole | search/detail/player/source, méthode, body, headers |
 | Média | HLS, DASH, conteneur, playlist/segment, payload réel |
-| Identité | titre/alias, année, saison/épisode, fichier média, durée |
-| Langue | metadata, catalogue, pistes audio/sous-titres, indices cohérents |
-| Compatibilité | TV Android, Mobile Android, Mobile iOS, Desktop macOS et Desktop Windows prouvés séparément |
-| Stabilité | preuve courante, LKG, failures répétées, récupération |
+| Identité | œuvre, année, saison/épisode, durée, metadata player |
+| Langue | metadata provider/stream, pistes explicites |
+| Compatibilité | TV Android, Mobile Android, Mobile iOS, Desktop macOS, Desktop Windows |
 | Publication | catalogue, manifests, provenance, versions, hashes, intégrité |
 
-Une validation par corpus reste un échantillonnage : elle ne prétend pas prouver chaque titre, épisode, langue ou appareil.
+Une preuve est toujours scoped :
+
+```text
+provider × œuvre × type × langue × device × version client
+```
+
+## `no_streams` est un symptôme
+
+Causes possibles :
+
+- provider non invoqué ;
+- domaine/route cassé ;
+- recherche absente ;
+- identité incorrecte ;
+- détail/épisode/player non résolu ;
+- extraction média manquante ;
+- contexte de lecture absent ;
+- média invalide ;
+- runtime client cassé ;
+- vrai zéro résultat.
+
+Le diagnostic doit chercher la première cause prouvée, pas transformer tous les zéros en providers morts.
+
+## Type canonique et transport
+
+`canonicalSupportedTypes` décrit la capacité réelle du catalogue. `supportedTypes` décrit la compatibilité de lancement Nuvio.
+
+Un anime-only peut donc être :
+
+```text
+canonical = anime
+transport = anime + tv + movie
+```
+
+Les alias de transport ne doivent jamais être réinjectés comme capacités sémantiques.
 
 ## Quick
 
-Quick est un **gate de vérification non-mutant côté providers**.
+Quick est non-mutant côté providers :
 
-Il valide notamment les bytes Provider v3 exacts, les contrats Core critiques, les cinq Labs déclarés et l'intégrité structurelle. Il ne lance ni discovery de réparation, ni repair, ni reconstruction, ni publication de nouveau code provider.
+- structure Provider v3/Core ;
+- bytes publiés exacts ;
+- type/identité ;
+- sécurité ;
+- minimizer ;
+- contrats des cinq Labs.
 
-Une simple migration de domaine n'appartient pas à Quick : elle est gérée par `domain-refresh.yml` dans son périmètre CONFIG-only.
+Quick ne fait ni repair ni reconstruction.
 
 ## Deep
 
-Deep ajoute une observation plus large :
+Deep ajoute :
 
-- contrats structurels complets ;
-- hubs/domaines observés en lecture seule ;
-- health réseau des Provider JS publiés exacts ;
+- observation hubs/domaines read-only ;
+- health réseau des bundles publiés exacts ;
 - diagnostics ;
-- re-projection manifests ;
+- projections de manifests ;
 - hashes et release integrity.
 
-Deep ne répare pas et ne reconstruit pas les providers. Sur `main`, seules les sorties de rapport/projection/hashes explicitement allowlistées peuvent être publiées.
+Deep ne fait ni repair ni reconstruction provider.
 
-Le repair appartient au Learning sandbox et aux propositions reviewables ; un run Deep n'est jamais un repair déguisé.
+## Learning
 
-## Classification
+Le Learning appartient à `brain-learning-lab.yml`.
 
-`no_streams` est un symptôme. Les familles de cause V2 incluent notamment :
+Il peut :
 
-- `not_invoked` ;
-- `dns_unreachable` ;
-- `transport_blocked` ;
-- `search_gap` ;
-- `identity_mismatch` ;
-- `detail_gap` ;
-- `episode_gap` ;
-- `player_gap` ;
-- `media_extraction_gap` ;
-- `playback_context_gap` ;
-- `media_validation_gap` ;
-- `runtime_contract_drift` ;
-- `healthy`.
+- observer les providers actifs et désactivés ;
+- classifier les échecs ;
+- tester des réparations NiakVIO bornées en sandbox ;
+- produire des propositions reviewables.
 
-Le Repair Brain sélectionne ensuite une stratégie ciblée et bornée. Une disparition de 404 sans amélioration réelle du résultat ne suffit pas à accepter une réparation.
+Il ne doit pas :
+
+- publier directement des Provider JS ;
+- convertir un bug Nuvio/OS en réparation provider ;
+- contourner les gates d’identité/sécurité/reconstruction.
+
+## Domain Refresh
+
+`domain-refresh.yml` maintient uniquement l’adresse officielle :
+
+- hub officiel comme source de découverte ;
+- `official_site` uniquement ;
+- CONFIG provider uniquement ;
+- aucun changement de route/API/Core ;
+- structure identique hors CONFIG ;
+- publication content-addressed/hashes cohérents si CONFIG change.
+
+Un hub qui répond ne prouve pas que le protocole business fonctionne.
 
 ## Validation média
 
-Une URL n'est pas un stream prouvé.
+Une URL n’est pas un stream prouvé.
 
-Le système peut confirmer :
+Peuvent être confirmés :
 
 - HLS réel (`#EXTM3U`) ;
 - DASH/MPD ;
-- signature de conteneur ;
-- playlist et/ou premier segment ;
-- redirects cohérents ;
-- contexte de lecture requis.
+- signatures de conteneur ;
+- playlist/variant/segment ;
+- contexte `Referer`/`Origin` requis ;
+- payload média cohérent.
 
-Il rejette notamment :
+Doivent être rejetés lorsque prouvés :
 
 - HTML/JSON déguisé ;
+- asset non média ;
 - player non résolu ;
-- asset, publicité ou démo ;
-- preview anormalement courte ;
-- média illisible ;
-- payload ou redirect incohérent.
+- payload/redirect incohérent ;
+- mauvais contenu ;
+- mauvais épisode ;
+- durée contradictoire.
 
-## Identité
-
-Un média lisible correspondant à la mauvaise œuvre est un **échec bloquant**.
-
-Les contrôles peuvent croiser :
-
-- titre/alias ;
-- année ;
-- movie/tv/anime ;
-- saison/épisode ;
-- metadata catalogue/player ;
-- nom ou chemin du média ;
-- durée attendue/mesurée.
-
-Lorsque l'identité ne peut pas être suffisamment prouvée sans contradiction, le résultat reste inconclusif ; il n'est pas transformé artificiellement en succès.
-
-`Unknown` / `Inconnue` dans un label de qualité Nuvio n'est pas une preuve d'identité inconnue et ne provoque jamais un rejet à lui seul.
+Timeout, blocage réseau ponctuel ou absence d’une API de preuve suffisante restent inconclusifs.
 
 ## Langue
 
-VF/VOSTFR/VO peut être établie à partir de plusieurs signaux cohérents : metadata provider, domaine, catalogue, player, pistes audio et sous-titres.
+VF/VOSTFR/VO doit venir de signaux explicites ou suffisamment cohérents. Un nom de domaine/provider ne suffit pas à inventer une langue.
 
-Une seule heuristique faible ne doit pas inventer une langue.
+## Quarantine
 
-## LKG, réparation et quarantine
+Une quarantine exige une raison forte et explicite :
 
-Les états sont volontairement séparés :
+- identité contradictoire persistante ;
+- provenance suspecte ;
+- détournement de domaine ;
+- sortie dangereuse ;
+- incapacité structurelle prouvée.
 
-- **healthy/proven** : promotion possible ;
-- **repairable/inconclusive** : réparation ou conservation du LKG ;
-- **quarantine** : identité contradictoire, provenance suspecte, domaine détourné, sortie dangereuse ou autre preuve forte.
+Ne suffisent pas seuls :
 
-Un zéro résultat isolé n'est pas une raison suffisante pour quarantiner ou supprimer un provider.
+- `routeData=[]` ;
+- un timeout ;
+- un zéro flux ;
+- une panne CI ;
+- un stream cassé.
 
-La règle est **repair before triage**.
+## Native Labs
 
-## Evidence Matrix
+Les cinq cibles sont des dimensions indépendantes de preuve.
 
-Une preuve est scoped :
+Les Labs :
 
-```text
-provider × œuvre × type × langue × device × version du contrat client
-```
+- testent la surface transport déclarée par le manifest courant ;
+- conservent la sémantique canonique séparément ;
+- n’adaptent pas les repos Nuvio pour faire disparaître leurs bugs ;
+- gardent les erreurs de compilation, packaging, runtime, QuickJS/player upstream comme preuves externes rouges ;
+- ne comptent jamais un probe composant comme preuve human-UX complète s’il ne suit pas le chemin officiel prévu.
 
-Un provider sain sur un film Desktop peut rester non prouvé sur une série TV ou sur Android TV.
+## DNS
 
-Les preuves Mobile, Desktop et TV sont indépendantes.
+Le DNS est une observation, jamais un kill-switch provider.
 
-## Corpus et largeur
+États visibles possibles :
 
-Movie, série et anime sont des dimensions obligatoires. Breaking Bad S01E01 reste une fixture TV de régression.
+- `DNS OK` ;
+- `DNS BLOCK` ;
+- `DNS API LIMIT REACH`.
 
-La cible de largeur est **10 providers jouables par œuvre, dont au moins 3 VF**.
+Une alerte DNS n’empêche pas le reste du diagnostic de s’exécuter lorsque c’est techniquement possible.
 
-Elle est non bloquante lorsqu'un catalogue ne permet objectivement pas de l'atteindre. En revanche, ne comptent jamais :
+## Sécurité
 
-- mauvais contenu ;
-- mauvais épisode ;
-- durée contradictoire ;
-- faux HLS ;
-- média illisible ;
-- preuve runtime attribuée à un autre provider.
+Provider JS reste non fiable. Les contrôles réseau/SSRF, limites de ressources, sanitization, identité et média sont des couches complémentaires.
 
-## Publication atomique
+Le stripping HTML générique par regexp est interdit.
 
-La production n'utilise plus deux publications concurrentes.
+## Publication
 
-`sync.yml` construit une transaction validée qui comprend :
+Il ne doit exister qu’une seule autorité de publication normale : Provider v3/Core + transaction validée.
 
-1. staging + preuves ;
-2. promotion candidate ;
-3. import dans `provider_catalog.json` ;
-4. rendu de `manifest.json` et `vf/manifest.json` ;
-5. audit contenu/média ;
-6. provenance/LKG/versions ;
-7. hashes et intégrité ;
-8. **un commit atomique** de la génération acceptée ;
-9. vérification du `main` exact publié.
-
-Une étape en échec bloque la nouvelle transaction et laisse le dernier état sain dans l'historique/publication.
-
-## P2P
-
-Torrent, magnet, Acestream et autres chemins P2P interdits sont filtrés à plusieurs niveaux : metadata/ID, code source, protocoles retournés et validation finale.
+Les exceptions automatiques doivent être explicitement bornées, comme Domain Refresh `official_site`-only. Une étape rouge bloque la nouvelle génération au lieu de maquiller l’échec.
 
 ## Limites
 
-- Une IP GitHub peut être bloquée alors qu'une IP résidentielle fonctionne.
-- Un échantillon ne représente pas l'intégralité d'un catalogue.
-- Une preuve technique ne détermine pas le statut juridique d'une source tierce.
-- Certaines metadata de qualité/langue peuvent être absentes.
-- Un succès à un instant donné ne garantit pas la disponibilité future.
+- CI ≠ réseau résidentiel ;
+- un corpus ≠ catalogue entier ;
+- un device ≠ un autre device ;
+- un succès ponctuel ≠ disponibilité future ;
+- preuve technique ≠ statut juridique.
 
-Ces limites produisent de l'**inconclusif**, pas des conclusions arbitraires.
-
-### Résultat DNS NiakVIO
-
-Le résultat DNS visible est volontairement limité à trois états :
-
-- `DNS OK` : SFR, Orange et Free ont été testés et aucun blocage n'a été observé.
-- `DNS BLOCK` : au moins un des FAI français testés présente un signal de blocage. C'est l'alerte DNS visible, même si un autre FAI reste accessible.
-- `DNS API LIMIT REACH` : la limite de l'API de mesure a été atteinte ; ce n'est jamais interprété comme une panne du provider.
-
-S'il n'existe aucun domaine à tester ou si aucune mesure exploitable n'a pu être produite pour une raison autre qu'une limite API, aucun faux `DNS OK` n'est inventé : le résultat visible reste non applicable.
-
-Les preuves détaillées (FAI, résolveur, HTTP, migration, état interne) restent conservées dans le rapport pour le moteur et le debug, mais ne remplacent pas ces trois statuts dans l'affichage NiakVIO. Un `DNS BLOCK` est une alerte uniquement. Le préflight DNS ne bloque jamais l'exécution runtime, même si le domaine semble bloqué chez un FAI ou globalement injoignable : Health/Quick/Deep/Labs continuent afin de conserver la chaîne de diagnostic complète (DNS, domaine, HTTP, runtime, erreurs et flux).
-
-
-## Learning quotidien
-
-Le contrôle santé de publication et le Learning sont séparés. Le Learning quotidien observe le catalogue complet, y compris les providers désactivés, puis traite une file adaptative persistante via `scripts/run_brain_learning_queue.py` avec un budget global de 60 minutes (5 minutes réservées à la finalisation). Un provider non terminé ou encore problématique est conservé pour un cycle ultérieur ; un résultat Learning ne contourne jamais les gates d'activation/publication.
+Ces limites produisent de l’inconclusif, jamais une conclusion inventée.
