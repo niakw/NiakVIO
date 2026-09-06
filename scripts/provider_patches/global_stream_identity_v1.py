@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Conservative cross-client identity guard for final provider stream rows.
+"""Conservative cross-client identity guard and shared catalogue identity policy.
 
-The guard is shared by TV, Mobile and Desktop. It keeps generic/opaque rows and
-rejects only explicit contradictory identity evidence: a different TMDB/IMDb id,
-a different requested season/episode, a movie row that is explicitly episodic,
-or a content-like title contradiction confirmed by strong local/TMDB evidence.
+CORE.STREAM_IDENTITY.V1 is the single owner of identity acceptance semantics for
+TV, Mobile and Desktop. ProviderBase catalogue selection delegates to the policy
+exported by this Lego; providers must not reimplement year/type/title rejection.
 
-For episodic requests TMDB series and FR/EN episode titles are accepted identities.
-A same-SxxExx label with a different apparent show is never rejected on guesswork:
-only a targeted TMDB search that strongly resolves that label to another show can
-confirm the mismatch.
+Final stream rows remain conservative: generic/opaque rows survive and only
+explicit contradictory identity evidence is rejected. For episodic requests,
+identity is title/type + season/episode. Release year is deliberately ignored for
+tv/series/anime and is considered only for movies.
 """
 from __future__ import annotations
 
@@ -41,7 +40,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": str(context.get("provider_id") or "").strip().casefold(),
         "tmdbRuntimeKeyRequired": True,
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "cross-client-shared-tv-year-soft-v8",
+        "implementationRevision": "cross-client-shared-catalogue-policy-movie-year-only-v9",
+        "catalogueYearPolicy": "movie-only",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -56,8 +56,45 @@ function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"")
 function uniq(values){var out=[],seen={};(values||[]).forEach(function(v){var x=s(v),k=norm(x);if(x&&k&&!seen[k]){seen[k]=1;out.push(x)}});return out}
 function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
-function req(a){var f=a[0],q=f&&typeof f==="object"&&!Array.isArray(f)?Object.assign({},f):{tmdbId:f,mediaType:a[1],season:a[2],episode:a[3]};var raw=s(q.tmdbId||q.tmdb_id||q.id||f).replace(/^tmdb:/i,"");q.tmdbId=(raw.match(/^\d+/)||[])[0]||"";q.imdbId=s(q.imdbId||q.imdb_id||"").toLowerCase();q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.seriesYear=Number(q.seriesYear||q.series_year||q.year||0)||0;q.seasonYear=Number(q.seasonYear||q.season_year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
+function req(a){var f=a[0],q=f&&typeof f==="object"&&!Array.isArray(f)?Object.assign({},f):{tmdbId:f,mediaType:a[1],season:a[2],episode:a[3]};var raw=s(q.tmdbId||q.tmdb_id||q.id||f).replace(/^tmdb:/i,"");q.tmdbId=(raw.match(/^\d+/)||[])[0]||"";q.imdbId=s(q.imdbId||q.imdb_id||"").toLowerCase();q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
 function episodic(q){return q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime"}
+function providerMedia(v){var x=s(v).toLowerCase();return x==="movie"?"movie":((x==="tv"||x==="series"||x==="show"||x==="anime")?"tv":"")}
+function catalogueScore(e){
+  e=e&&typeof e==="object"?e:{};
+  var title=norm(e.title),expected=uniq(e.expectedTitles||[]).map(norm).filter(Boolean),actualMedia=providerMedia(e.actualMedia),expectedMedia=providerMedia(e.expectedMedia),providerId=s(e.providerId),strict=e.strictIdentity===true;
+  var movie=expectedMedia==="movie",year=s(e.year).slice(0,4),expectedYear=s(e.expectedYear).slice(0,4);
+  if(actualMedia&&expectedMedia&&actualMedia!==expectedMedia)return-1;
+  if(e.requireProviderTypeEvidence===true&&(!actualMedia||!expectedMedia))return-1;
+  if(strict){
+    if(!providerId||!title||!expected.length||expected.indexOf(title)<0)return-1;
+    if(movie&&expectedYear){
+      if(!/^\d{4}$/.test(year))return-1;
+      if(Math.abs(Number(year)-Number(expectedYear))>1)return-1;
+    }
+    return 120+(movie&&year===expectedYear?20:0);
+  }
+  if(movie&&year&&expectedYear&&year!==expectedYear)return-1;
+  var score=0,primary=expected[0]||"";
+  if(title&&expected.indexOf(title)>=0)score+=200;
+  else if(title&&primary&&(title.indexOf(primary)>=0||primary.indexOf(title)>=0))score+=90;
+  if(title&&primary){primary.split(" ").filter(function(v){return v.length>=3}).forEach(function(token){if(title.indexOf(token)>=0)score+=10})}
+  if(movie&&year&&expectedYear&&year===expectedYear)score+=40;
+  if(actualMedia&&expectedMedia&&actualMedia===expectedMedia)score+=60;
+  if(providerId)score+=15;
+  return score;
+}
+function htmlIdentityOk(e){
+  e=e&&typeof e==="object"?e:{};
+  if(e.strictIdentity!==true)return true;
+  var visible=norm(e.visibleText),expected=uniq(e.expectedTitles||[]).map(norm).filter(Boolean),media=providerMedia(e.mediaType);
+  if(!visible||!expected.length||!expected.some(function(title){return visible.indexOf(title)>=0}))return false;
+  if(media==="movie"){
+    var expectedYear=s(e.expectedYear).slice(0,4),html=s(e.html),years=html.match(/\b(?:19|20)\d{2}\b/g)||[];
+    if(expectedYear&&/^\d{4}$/.test(expectedYear)&&years.length&&years.indexOf(expectedYear)<0)return false;
+  }
+  return true;
+}
+try{if(g)g.__nuvioIdentityPolicyV1=Object.freeze({catalogueScore:catalogueScore,htmlIdentityOk:htmlIdentityOk,yearPolicy:"movie-only"})}catch(_e){}
 function kind(q){return episodic(q)?"tv":"movie"}
 function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_e){return false}}
 function runtimeTmdbKey(){try{return s(g&&g.TMDB_API_KEY)}catch(_e){return""}}
