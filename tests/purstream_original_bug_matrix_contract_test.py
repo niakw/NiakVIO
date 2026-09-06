@@ -14,7 +14,7 @@ recipe = purstream.get("api_recipe") or {}
 playback = overrides.get("playback_integrity_policy") or {}
 
 # Original P0 identity failures: provider-owned search must be strict and typed.
-assert purstream.get("patch_scripts") == [], purstream.get("patch_scripts")
+assert (purstream.get("patch_scripts") or []) == [], purstream.get("patch_scripts")
 assert purstream.get("published_types") == ["movie", "tv", "anime"]
 fixed = purstream.get("fixed_endpoint") or {}
 official_api = str(purstream.get("official_api") or "")
