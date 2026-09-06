@@ -1,6 +1,6 @@
 # NiakVIO — Recovery Memory
 
-Last authoritative checkpoint: 2026-09-07 00:58 Europe/Paris.
+Last authoritative checkpoint: 2026-09-07 01:06 Europe/Paris.
 
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file at every important correction/failure/publication checkpoint before moving to the next risky step.
 
@@ -73,6 +73,7 @@ Canonical year behavior — FINAL:
 - **TV / `series` / anime**: release/origin/season year is **not part of identity acceptance at all**. Do not reject or score-match episodic content from year.
 - Episode resolution identity is title/type plus **season + episode**; provider catalogue rows may expose original-series year, season year, episode year, or none without affecting episodic acceptance.
 - A provider result such as `House of the Dragon - Saison 3 (2026)` must be accepted against TMDB series origin 2022 if title/type/S3E1 are correct.
+- 2026-09-07 audit refinement: `CORE.STREAM_IDENTITY.V1::contentLike()` still used the mere presence of a 4-digit year as an indirect signal that a candidate looked content-like. Even though no TV year value was compared, this could indirectly change whether a TV/series/anime row entered contradiction analysis. This violates the final zero-year episodic contract. Before 5.21.36 publication, year-based `contentLike` promotion must be gated to **non-episodic/movie only**, so year is completely inert for tv/series/anime, including heuristics.
 
 Corrections already committed after 5.21.35:
 - `1723472`: introduced ProviderBase runtime v9 migration for episodic-year removal.
@@ -83,12 +84,25 @@ Corrections already committed after 5.21.35:
 - `f62393a` + `fb76b5c` + `c1d8c43`: engine_v2 shared catalogue policy + Purstream HOTD S3E1 synthetic smoke; TV metadata year 2022 vs provider row 2026 must still resolve S3E1.
 - `398024c`: priority regression updated from old “TV-year-soft” wording to **episodic year disabled / movie year only**.
 - `ef4073a`: ProviderBase store provenance now reports reader v9 instead of stale v5 metadata.
+- `a934df3`: added one-shot Core identity ownership cleanup transaction source.
+- `c8bc366`: added active-96 Provider JS Lego ownership test.
+- `1d3a415`: added one-shot identity-only ProviderBase materializer with `route_or_domain_mutation=false`.
+- `d0824a8`: added Kehflix-shaped final-row episodic identity runtime regression.
+- `8e14b54`: triggered first 5.21.36 Core identity publication workflow.
+- `940e1ef`: triggered retry workflow after first safe failure.
+
+Publication attempt state:
+- First Core identity publication run **34065556338**, job **101573573889**, failed safely at step `Apply single-owner identity architecture cleanup`, before any materialization/version bump/push.
+- Exact first failure: `AssertionError: Purstream rank identity call count=2`. The one-shot migration expected one `strictIdentityScore(item, metadata, targetType)` occurrence but the old adapter has exactly two: one rank call + the local function definition that the migration intends to delete. No published bytes changed.
+- Retry workflow run **34065727473**, job **101574024846**, was still queued at this checkpoint. Retry logic expects exactly two occurrences, replaces only the first call with the shared helper, then deletes the local function definition. The full 96/96 transaction still must pass before any 5.21.36 push.
+- Because the indirect `contentLike()` year heuristic was discovered while the retry remained queued, the final 5.21.36 must also make episodic year completely inert before publication. Do not tell the user to test until this is included and the public manifest is verified.
 
 Pending before next publication:
 - remove Purstream's now-redundant exported `strictIdentityScore()` wrapper and update its tests/contracts to call shared engine policy directly;
 - remove duplicated identity/collision logic from `CORE.RUNTIME_MEDIA_SAFETY.V4` (`identityBlob`, `explicitYears`, `containsAny`, `routeIdentity`, collision fixtures, season/episode/year rejection) and leave only media/playback safety there;
-- clean `identityInput.requiredFields` so generic catalogue DATA does not encode `year` as universally required for episodic requests; model movie-only year explicitly if needed without creating a second acceptance policy;
-- add repository-wide architecture test forbidding provider-local identity scoring/rejection implementations;
+- clean `identityInput.requiredFields` so generic catalogue DATA does not encode `year` as universally required for episodic requests;
+- make `contentLike()` year signal movie-only so episodic year has zero direct or indirect identity effect;
+- enforce repository-wide architecture test forbidding provider-local identity scoring/rejection implementations;
 - rematerialize 96 ProviderBase/bundles, reverse/audit/integrity, then bump synchronized manifest (expected 5.21.36 if no intervening release).
 
 ## Stream/player integrity
@@ -184,7 +198,7 @@ Current priority clarified by user:
 
 ## Active completion sequence after this checkpoint
 
-1. Finish Core ownership cleanup: no provider/adapter-local identity policy; remove identity logic from runtime media safety; clean DATA required-fields contract.
+1. Finish Core ownership cleanup: no provider/adapter-local identity policy; remove identity logic from runtime media safety; clean DATA required-fields contract; make episodic year completely inert including `contentLike()` heuristics.
 2. Run synthetic Purstream HOTD S3E1 and representative Kehflix/TV contract tests plus Workflow Gate.
 3. Materialize current ProviderBase v9 + current DATA + Provider Lego + Core Lego across all 96; reverse/audit/minimizer/integrity.
 4. Publish synchronized next manifest (expected 5.21.36) only after the actual bundles contain the fix; then tell user to retest HOTD S3E1.
