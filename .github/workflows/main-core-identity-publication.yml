@@ -1,0 +1,244 @@
+name: MAIN - Core Identity Publication
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-core-identity-publication.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-main-core-identity-publication
+  cancel-in-progress: true
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Freeze baseline and provider route data
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path(os.environ['RUNNER_TEMP'])
+          manifest=json.load(open(root/'manifest.before.json'))
+          if manifest.get('version') != '5.21.35':
+              raise SystemExit(f"expected baseline 5.21.35, got {manifest.get('version')!r}")
+          rows=[r for r in manifest.get('scrapers',[]) if isinstance(r,dict)]
+          if len(rows) != 96:
+              raise SystemExit(f"expected 96 baseline providers, got {len(rows)}")
+          print('IDENTITY_PUBLICATION_BASELINE_OK version=5.21.35 providers=96')
+          PY
+
+      - name: Apply single-owner identity architecture cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/apply_core_identity_ownership_cleanup.py
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('.github/workflows/github-actions-gate.yml')
+          text=p.read_text(encoding='utf-8')
+          anchor='          python3 tests/provider_js_lego_ownership_test.py\n'
+          line='          python3 tests/episodic_identity_runtime_test.py\n'
+          if line not in text:
+              if anchor not in text:
+                  raise SystemExit('Workflow Gate ownership anchor missing')
+              text=text.replace(anchor, anchor+line, 1)
+              p.write_text(text, encoding='utf-8')
+          PY
+          python -m py_compile \
+            scripts/apply_core_identity_ownership_cleanup.py \
+            scripts/materialize_provider_base_identity_only.py \
+            scripts/provider_patches/global_stream_identity_v1.py \
+            scripts/provider_patches/runtime_capability_media_safety_v4.py \
+            tests/global_identity_policy_ownership_test.py \
+            tests/provider_js_lego_ownership_test.py \
+            tests/episodic_identity_runtime_test.py
+
+      - name: Prove cleanup did not touch provider route or domain DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          before=json.load(open(Path(os.environ['RUNNER_TEMP'])/'provider-overrides.before.json'))
+          after=json.load(open('provider-overrides.json'))
+          for key in ('provider_patches','provider_capabilities'):
+              if before.get(key) != after.get(key):
+                  raise SystemExit(f'identity-only transaction illegally changed {key}')
+          print('IDENTITY_ONLY_DATA_SCOPE_OK provider_patches=unchanged provider_capabilities=unchanged')
+          PY
+
+      - name: Execute Core identity and provider smoke contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/global_identity_policy_ownership_test.py
+          python tests/episodic_identity_runtime_test.py
+          node engine_v2/tests/purstream-adapter.test.mjs
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/priority_tv_year_domain_refresh_test.py
+          python tests/native_hls_integrity_budget_test.py
+          python tests/native_provider_loading_compat_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+
+      - name: Materialize common ProviderBase v9 without route discovery
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_base_identity_only.py
+          python tests/global_identity_policy_ownership_test.py
+          python tests/purstream_original_bug_matrix_contract_test.py
+
+      - name: Recompose the published 96 from Base plus DATA plus Lego
+        env:
+          NUVIO_PROVIDER_V3_CONTEXT: main
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/reapply_published_overrides.py
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_stream_output_guard_test.py
+          python tests/episodic_identity_runtime_test.py
+
+      - name: Derive projections and synchronize release versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/sync_release_versions.py --previous "$RUNNER_TEMP/manifest.before.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          before=json.load(open(Path(os.environ['RUNNER_TEMP'])/'manifest.before.json'))
+          after=json.load(open('manifest.json'))
+          if before.get('version') != '5.21.35':
+              raise SystemExit(before.get('version'))
+          if after.get('version') != '5.21.36':
+              raise SystemExit(f"expected manifest 5.21.36, got {after.get('version')!r}")
+          old={str(r.get('id','')).casefold():r for r in before.get('scrapers',[]) if isinstance(r,dict)}
+          changed=[]
+          for row in after.get('scrapers',[]):
+              if not isinstance(row,dict):
+                  continue
+              pid=str(row.get('id','')).casefold(); prev=old.get(pid)
+              if not prev:
+                  continue
+              if {k:v for k,v in row.items() if k!='version'} != {k:v for k,v in prev.items() if k!='version'}:
+                  changed.append(pid)
+                  ov=tuple(int(x) for x in str(prev.get('version','0.0.0')).split('.'))
+                  nv=tuple(int(x) for x in str(row.get('version','0.0.0')).split('.'))
+                  if nv <= ov:
+                      raise SystemExit(f'provider version not bumped: {pid}')
+          if len(changed) != 96:
+              raise SystemExit(f'expected 96 provider byte/config changes, got {len(changed)}')
+          print('IDENTITY_PUBLICATION_VERSION_OK manifest=5.21.36 providers_bumped=96')
+          PY
+
+      - name: Final reverse, ownership, static and integrity proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/final_published_provider_config_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_identity_policy_ownership_test.py
+          python tests/episodic_identity_runtime_test.py
+          node engine_v2/tests/purstream-adapter.test.mjs
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/native_hls_integrity_budget_test.py
+          python tests/native_provider_loading_compat_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python scripts/audit_provider_v3_static.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python scripts/reapply_published_overrides.py --check
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.load(open('manifest.json'))
+          assert m['version']=='5.21.36', m['version']
+          rows=[r for r in m.get('scrapers',[]) if isinstance(r,dict)]
+          assert len(rows)==96, len(rows)
+          for row in rows:
+              text=Path(row['filename']).read_text(encoding='utf-8')
+              pid=row['id']
+              assert text.count('STARTFIX:CORE.STREAM_IDENTITY.V1')==1, pid
+              assert text.count('CLOSEFIX:CORE.STREAM_IDENTITY.V1')==1, pid
+              assert '__nuvioIdentityPolicyV1' in text, pid
+              for forbidden in ('strictIdentityScore','function routeIdentity(','wrong_release_year','season_episode_identity_mismatch','collisionFixtures'):
+                  assert forbidden not in text, (pid,forbidden)
+          print('FINAL_MAIN_5_21_36_IDENTITY_OK providers=96')
+          PY
+
+      - name: Write durable publication checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md')
+          text=p.read_text(encoding='utf-8')
+          block='''\n## 2026-09-07 — Core identity ownership publication 5.21.36\n\n- Identity publication transaction completed its workspace validation from baseline 5.21.35.\n- `CORE.STREAM_IDENTITY.V1` is the sole identity owner in all 96 active Provider JS.\n- ProviderBase v9 delegates catalogue/HTML identity to `__nuvioIdentityPolicyV1`; no local year acceptance remains.\n- Purstream adapter no longer exports/defines `strictIdentityScore`; its synthetic HOTD S3E1 (TMDB origin 2022 vs provider row 2026) passes through the shared engine policy.\n- `CORE.RUNTIME_MEDIA_SAFETY.V4` is media/playability-only v8: no title/year/season/episode collision policy remains there.\n- Generic catalogue DATA no longer declares `year` as a universally required field; year remains movie-only identity evidence in the Core.\n- Kehflix-shaped runtime regression proves HOTD S03E01 2026 survives, S03E02 contradicts, and movie year mismatch still rejects.\n- Provider route/domain DATA (`provider_patches`, `provider_capabilities`) remained byte-equivalent through the identity-only migration; no route census/repair was mixed into this release.\n- 96 ProviderBase/bundles were recomposed from common Base + existing DATA/CONFIG + managed Provider/Core Lego; final ownership/static/reverse/integrity checks passed in the publication workflow before push.\n- The published manifest target is 5.21.36; user real Desktop HOTD S3E1 retest remains the next native proof.\n'''
+          if '## 2026-09-07 — Core identity ownership publication 5.21.36' not in text:
+              p.write_text(text.rstrip()+"\n"+block, encoding='utf-8')
+          PY
+
+      - name: Publish 5.21.36 atomically to main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm -f \
+            scripts/apply_core_identity_ownership_cleanup.py \
+            scripts/materialize_provider_base_identity_only.py \
+            .github/workflows/main-core-identity-publication.yml
+          git add -A
+          git diff --cached --stat
+          git diff --cached --quiet && { echo 'No identity publication changes'; exit 1; }
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+            echo "MAIN_ADVANCED base=$BASE_SHA current=$CURRENT_SHA"
+            exit 75
+          fi
+          git commit -m "fix: centralize episodic identity in Core 5.21.36"
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
