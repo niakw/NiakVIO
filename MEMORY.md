@@ -1,480 +1,176 @@
 # NiakVIO — Recovery Memory
 
-Last authoritative rewrite/checkpoint: 2026-09-06.
+Last authoritative checkpoint: 2026-09-07 00:18 Europe/Paris.
 
-This file is the durable recovery source of truth when conversation context is lost. Prefer the current repository state and exact GitHub Actions evidence over historical chat summaries. Git history remains the source for retry-by-retry detail; this file records architecture, product decisions, current fixes, exact release state, known failure families and the remaining completion sequence.
+This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file at every important correction/failure/publication checkpoint before moving to the next risky step.
 
-## Current repository topology
+## Repository topology / execution policy
 
 - Repository: `niakw/NiakVIO`.
-- **Current and only active write target: `main`.**
-- Durable Learning proposal branch: `brain-learning/proposals` is a passive proposal store, not a direct publication authority.
-- PR #91 was a closed, superseded reverse-sync attempt and must not be merged.
-- Historical `chore/secondary-clean-*` / `workbench/*` refs are not active write targets and must not appear in workflow triggers/current instructions.
-- Before deleting any historical branch/PR, verify that no code, DATA, docs or generated artifacts needed for the final state exist only there.
-- Last observed `main` HEAD before this MEMORY checkpoint was `2fb536f910474a6d98cd478e8c18e251357ff1a3`, a bot-only `chore(audit): refresh external AI audit logs [skip ci]` commit. Always re-read HEAD immediately before the next write because audit/workflow bots can advance it.
+- **`main` is the only active write/publication target.** Do not recreate a persistent workbench branch.
+- Durable Learning proposal branch: `brain-learning/proposals`; proposal storage only, not publication authority.
+- Cleanup completed after 5.21.35 publication: `workbench` deleted, `hotfix/runtime-tmdb-credentialless-v28` deleted, PR #92 closed and never merged.
+- Current expected branches after cleanup: `main` + `brain-learning/proposals` only.
+- Catalogue target remains **all 96 Provider Objects**, including disabled/off rows for census/recoverability. Never shrink the catalogue to manufacture green metrics.
+- Do not patch official NuvioTV/NuvioMobile/NuvioDesktop production behavior to make Labs green. Native Labs are observational.
 
-## Execution method
+## Accepted publication — 5.21.35
 
-- Complete the requested task; do not stop at a plan, diagnosis, first edit, first workflow dispatch or first green test.
-- Do not ask for confirmation when the next implementation/test step is already implied.
-- Group failures by common root cause and batch corrections before expensive rebuilds.
-- Use cheap structural/unit/security gates before expensive 96-provider materialization or Native Labs.
-- If a tool or test fails, diagnose, retry or use an alternate path and continue.
-- Never claim a test/workflow passed if it was not actually executed.
-- Record important progress here as it happens because conversation state can be lost.
-- Before completion, re-check every requested deliverable and exact final SHA.
+- Final accepted/published generation: **5.21.35**.
+- Final publication commit: `9db07b3aa42ce2535ec1d7c19866beb43586badd` — `fix: restore Provider CONFIG in final publication 5.21.35`.
+- Publication trigger commit: `96957c79403908028964aaab388bdb4c80a5bbe2`.
+- Workflow `MAIN - Provider CONFIG Publication Hotfix`, run **34061529965**, job **101562800243**, completed success.
+- Root `manifest.json`, `vf/manifest.json`, `no-anime/manifest.json`, and `vf-no-anime/manifest.json` were all verified as `5.21.35`.
+- 96 provider versions/hashes were regenerated. Final Provider CONFIG validation passed 96/96.
+- The temporary publication workflow/script self-removed from final main as intended.
+- Flemmix authoritative domain is `flemmix.kim`; `.men` is stale. Commit `bdf11932ea5b949837c29b71c8a61b903e91c57b` fixed the final DATA audit to rebuild expected CONFIG from current structured sources instead of treating the earlier materialization DATA hash as final authority.
+- A green 96/96 structural/materialization audit is **not** proof that 96 providers return playable streams. Real route/network/yield/native evidence remains mandatory.
 
-## Current active priority — 2026-09-06
+## Provider v3 architecture — invariant
 
-The active task is no longer secondary-clean-only. The user explicitly requested the **latest five Native Lab artifacts**, so a final five-platform pass is mandatory after the current harness/runtime fixes stabilize.
-
-Current priority order:
-1. fix NiakVIO-owned harness regressions exposed by latest official Nuvio client SHAs without patching official runtime behavior;
-2. fix current stream presentation/title regression (`- Inconnu`) at the shared Core/Lego level;
-3. reject demonstrably false/non-feature media such as the current Allwish ~20 s result for *Interstellar* without globally disabling the provider;
-4. preserve/verify HLS audio-child integrity behavior;
-5. finish exact CodeQL + dependency security proof on final candidate;
-6. run the complete five Native Labs on one post-fix SHA and capture artifacts/outcomes;
-7. finish DOCX sync/render QA, repository hygiene, final MEMORY checkpoint and exact-SHA validation.
-
-Catalogue target remains **all 96 Provider Objects**, including disabled/off entries for census/recoverability. Never shrink the catalogue to improve a metric.
-
-## Accepted release/version state
-
-- Current accepted published release generation is **`5.21.32`**.
-- Manifest version: `5.21.32`.
-- 96/96 provider versions were synchronized to `5.21.32`.
-- Movix was restored to `enabled: true` in the accepted version bump.
-- Version bump commit: `643bcedd443b6eac0c7e61e974ab3a7e855f51a6`.
-- That bump commit changed version/hash/projection metadata only; it did **not** change Provider JS bytes.
-- Do **not** create `5.21.33` merely for docs/workflow/harness-only changes.
-- If a later security/runtime/provider fix changes published Provider JS bytes, the affected published bytes must be revalidated and the accepted release finalization/version synchronization rerun.
-
-### Durable release finalizer
-
-The premature one-shot cache-bump behavior was removed. Accepted finalization is now durable and explicit:
-
-- `.github/workflows/release-finalize.yml`
-- `scripts/release_version_baseline.py`
-- `tests/release_version_baseline_test.py`
-
-Contract:
-- finalizer runs only after the validation pile is accepted;
-- takes an explicit accepted SHA;
-- uses explicit baseline SHA or computes the oldest commit in the current release-version generation on first-parent history;
-- does **not** repair, reconstruct or rematerialize providers;
-- atomically synchronizes affected provider versions + manifest/global cache/release metadata + hashes/projections/integrity when published bytes changed;
-- no provider/cache bump for docs/workflow/harness-only changes when published provider bytes are unchanged versus release baseline.
-
-A historical temporary one-shot full-cache-bump workflow was removed by commit `c89d4e993da2f8c9b6038360b1d452a586a4a460`; never restore that premature model.
-
-## Provider v3 architecture
-
-A generated provider is composed from:
-1. clean ProviderBase v3;
+Generated provider composition:
+1. clean immutable ProviderBase v3;
 2. structured provider DATA/static knowledge;
 3. provider-owned `PROVIDER.*` Lego;
-4. shared `CORE.*` Lego;
-5. conservative NiakVIO minimizer before content hashing.
+4. one global Core boundary;
+5. shared `CORE.*` Lego;
+6. conservative NiakVIO minimizer + content hash.
 
 Hard rules:
 - published/upstream/historical Provider JS is knowledge/reference only, never a reconstruction seed;
-- ProviderBase stays clean; provider-specific behavior belongs in DATA or owned Lego;
-- managed Lego uses `STARTFIX` / `CLOSEFIX` and `FIXDATA` ownership where required;
-- Provider Lego precedes exactly one global Core boundary; Core Lego follows it;
-- reverse reconstruction must be deterministic and byte-verifiable;
-- Terser is forbidden;
-- runtime Provider JS is a specialized reader, not a crawler/Learning engine.
+- ProviderBase remains clean/DATA-free;
+- provider behavior belongs in DATA or owned Provider Lego;
+- Core remains provider-agnostic;
+- managed Lego uses `STARTFIX` / `CLOSEFIX` (+ `FIXDATA` when needed);
+- Provider Lego precedes Core boundary, Core Lego follows it;
+- reverse reconstruction must be deterministic/byte-verifiable;
+- Terser forbidden; only `scripts/provider_v3_minimizer.py` production minimizer policy;
+- minimizer must preserve comments/markers/structure and never arbitrary-rewrite semantics.
 
-Conceptual runtime order:
-```text
-BEGIN PROVIDER
-  gate provider selection/capability before network work
-  if provider protocol requires TMDB metadata before first provider call
-    resolve/cache needed identity first
-  endif
-  execute provider DATA/protocol plan
-  if useful streams > 0
-    run provider/core stream fixes, identity, presentation and sanitization
-  endif
-END PROVIDER
-```
+Current conceptual Core order:
+`Provider -> STREAM_FACTS -> STREAM_IDENTITY -> MEDIA_TYPE -> STREAM_PRESENTATION -> PROVIDER_BRANDING -> SANITIZER`.
 
-## Canonical media type vs Nuvio transport — critical
+## Identity / type / TV-year contract
 
-Never collapse semantic capability and client transport into one field.
+- Provider input accepts **TMDB or IMDb**. Valid IMDb must never be rejected merely because TMDB enrichment is missing/unavailable.
+- Episodic IMDb input such as `tt11198330:3:1` preserves season/episode.
+- Canonical semantic types: `movie`, `tv`, `anime`.
+- Nuvio transport alias `series` maps to canonical `tv`; `series` belongs in transport `supportedTypes`, never canonical semantic capability.
+- Capability/type gate must happen before provider network work.
+- Anime semantics stay distinct even when transport aliases expose TV/movie launch lanes.
 
-`canonicalSupportedTypes` describes what the provider semantically serves: `movie`, `tv`, `anime`.
+Canonical year behavior:
+- MOVIE: title + type + movie year; year mismatch is strong evidence and may reject in strict mode.
+- TV: title + media type primary; `seriesYear` = original series year, `seasonYear` = season/episode year secondary evidence; **neither year may hard-reject TV by itself**.
+- Episode resolution uses season + episode. A provider result such as `House of the Dragon - Saison 3 (2026)` must not be rejected because the series origin year is 2022.
+- Current shared TV soft-year contract is already implemented/tested; the 2026-09-07 Desktop HOTD failure below occurs **after** identity/series transport selection, so do not regress into an artificial year exception.
 
-`supportedTypes` describes how Nuvio may launch the provider.
+## Stream/player integrity
 
-An anime-only provider may intentionally expose:
-```json
-{
-  "canonicalSupportedTypes": ["anime"],
-  "supportedTypes": ["anime", "tv", "movie"]
-}
-```
-
-`tv` is transport compatibility for episodic anime and `movie` is transport compatibility for anime films. These aliases do not make an anime provider a generic movie/TV provider. Authoritative identity logic must still reject ordinary non-anime works. Castle-like generic movie/TV providers must not accept anime merely because anime can use TV-shaped transport elsewhere.
-
-## TMDB / identity contract
-
-Official Nuvio provider input remains conceptually `getStreams(tmdbId, mediaType, season, episode)`.
-
-- capability/type gate before provider network work;
-- non-launch events return `[]` before provider/network work;
-- TMDB enrichment only when declared provider plan needs it;
-- catalogue/title/external-id plans can require preflight identity before first provider call;
-- direct plans should not pay unnecessary metadata work;
-- identity/cache scoped safely by work/type/season/episode;
-- IMDb/external IDs available when protocol requires them;
-- zero streams never manufacture success;
-- one broken stream never disables a provider globally.
-
-## Source repositories: references, not runtime dependencies
-
-Historical/provider repos such as Gowaru, Yoru and All-in-One may be consulted during reverse engineering, but production reconstruction must rely on NiakVIO-owned DATA, observations and contracts.
-
-- do not require those repos during ordinary 96/96 reconstruction;
-- do not embed/execute their Provider JS;
-- persist learned request/route/identity behavior into NiakVIO DATA;
-- source shape is provenance, not runtime taxonomy.
-
-## Route recognition contract
-
-Generalized recognition must statically/safely understand, where observable:
-- literal URLs/routes;
-- template strings/concatenations;
-- variables later passed to fetch;
-- dynamic paths/hosts while retaining meaningful provider path DATA;
-- GET/POST/PUT/PATCH/DELETE;
-- JSON/form bodies and body field names;
-- `Referer` / `Origin` requirements;
-- JSON vs HTML/text response evidence;
-- search/detail/player/source/episode-index roles;
-- TMDB/IMDb/title/season/episode identity dependencies;
-- movie/tv/anime evidence;
-- bounded static decoding of common string tables without executing JS;
-- junk-route rejection for assets/helper/admin/login/oEmbed/HTML-attribute noise.
-
-Fail closed on missing evidence. Do not invent routes merely because a shape looks plausible. Durable route/protocol ownership is `provider.model.routeData`; other projections are derived views.
-
-## Important recovered provider examples
-
-### Frenchstream
-- Maintenance/address hub: `https://fstream.website/`.
-- Hub locates/supplements the active provider; it does not replace the actual DLE-style search/detail/player protocol.
-- Frenchstream is not a permanent quarantine.
-
-### Kehflix
-- Manual recovery proved title -> player -> `/api/streams/...` and became a generalized route-recognition reference case.
-
-### AnimeKai
-- Search route `/browser?keyword={query}`.
-- Result/watch and episode paths dynamically assembled.
-- `data-video` is extraction evidence, not an HTTP route.
-
-### AnimeZey
-- Search uses worker-hosted `/1:search` behavior with POST JSON and provider-specific request fields/Referer evidence.
-- Worker origins are DATA and may rotate; generic recognizer must not hardcode provider.
-
-### Anime-Ultime
-- `/VideoPlayer.html` / `/VideoPlayer` are player route evidence; historic issue was role classification.
-
-## Quarantine and provider health
-
-Historically validated quarantine evidence included DVDPLAY, MOVIEBOX, NETMIRROR, TOPCARTOONS and VIXSRC, but quarantine is evidence-based and can change. Do not use it to hide missing reconstruction logic.
-
-- missing route evidence means unknown, not automatically dead;
-- zero streams from one request do not globally disable a provider;
-- stream-level failures are not provider-level disable evidence;
-- temporary timeout/fetch failure can be inconclusive.
-
-## Runtime/player evidence
-
-A `.m3u8` URL or `#EXTM3U` response is not proof of native playback. Keep distinct:
+A URL or `#EXTM3U` response is not native playback proof. Keep separate:
 1. extraction;
-2. identity;
+2. work/episode identity;
 3. request context/headers;
 4. playlist/variant resolution;
 5. media/container integrity;
 6. official native player outcome.
 
-HTML/JSON disguised as media or positively malformed transport/container data can be rejected. Temporary fetch failure, unsupported diagnostic byte access or encryption is not automatically provider-wide failure.
-
-### HLS audio integrity fix retained
-
-The accepted published providers still contain the shared HLS integrity logic that validates separate HLS audio children rather than accepting a master solely because its video playlist parses.
-
-- source patch: `scripts/provider_patches/hls_runtime_integrity_v1.py`;
-- published providers include `/* STARTFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */`;
-- shared helper includes `audioUris(...)` and validates `TYPE=AUDIO` child playlists;
-- this addresses the class of native playback failures where a master exists but its referenced audio track is broken/missing;
-- do not regress/remove this while fixing presentation or Allwish false media.
+Shared terminal sanitizer:
+- `CORE.STREAM_SANITIZER.V6` is global and fail-closed on `probe_all_urls=true`.
+- Global policy uses direct-media/all-URL probing and `min_vod_duration_seconds=60`.
+- `tests/global_stream_output_guard_test.py` explicitly walks the 96 current manifest providers and requires one V6 managed sanitizer, current fail-closed hook, `probeAllUrls=true`, and terminal ordering.
+- `tests/stream_output_sanitizer_fail_closed_test.py` executes the fail-closed behavior.
+- Historical Allwish ~20 s *Interstellar* result is a generic stream-level regression case, not a reason to disable/re-add a catalogue provider. Allwish is not in the current 5.21.35 manifest.
+- Kehflix malformed MPEG-TS handling probes first media bytes when the runtime exposes them; on bridges without byte access, lack of proof remains unknown rather than a fake provider-wide failure.
+- HLS audio-child integrity (`CORE.HLS_RUNTIME_INTEGRITY.V1`) must remain intact.
 
 ## Five first-class Native Labs
 
-Exactly five platform proofs:
-1. TV Android — official NuvioTV;
-2. Mobile Android — official NuvioMobile;
-3. Mobile iOS — official NuvioMobile;
-4. Desktop macOS — official NuvioDesktop;
-5. Desktop Windows — official NuvioDesktop.
+Exactly five proofs:
+1. TV Android — NuvioTV;
+2. Mobile Android — NuvioMobile;
+3. Mobile iOS — NuvioMobile;
+4. Desktop macOS — NuvioDesktop;
+5. Desktop Windows — NuvioDesktop.
 
-Native Labs are observational:
-- consume official clients as-is;
-- consume exact NiakVIO candidate bytes;
-- test-only plumbing allowed only when behavior-neutral and needed to expose official path;
-- **never patch NuvioTV/NuvioMobile/NuvioDesktop production behavior merely to make a Lab green**;
-- upstream compile/dependency/packaging/runtime/player/QuickJS failures remain visible evidence.
+Current workflow mapping: three workflows cover the five platforms: Android matrix = TV + Mobile Android; Desktop matrix = macOS + Windows; iOS separate.
 
-The old Android helper `scripts/harden_nuvio_mobile_device_test.py` was an upstream-masking workaround and is intentionally removed.
+Runtime audit refs before final Labs:
+- NuvioMobile audited/current: `68337ffac8578b986d0c3f6e432abf75f4a33521`.
+- NuvioTV audited/current: `23d1fe478e380860dae3eb41c8770533361a0cc5`.
+- NuvioDesktop last audited runtime-contract ref: `323c1037f3c0fbe0ebe255b77d42331c3fdeb2d7`.
+- Desktop upstream advanced to `21aabeeb49fc6de835f9031a65cc5f8489419330`, but compare showed only player-shortcut/UI files (`PlayerEngine.kt`, `PlayerScreenRuntimeUi.kt`, `NativePlayerController.kt`, `controls.js`), not provider/plugin runtime contract files.
 
-### First fresh Lab trigger and upstream DSL drift
+Native application-path tests must cover `movie`, `tv`, and `series`. Main has the stronger `series=0` blocking gate; do not restore the older workbench movie/tv-only version.
 
-First fresh five-Lab trigger commit:
-- `1ef46a8288027b2d09955894be1f269ece042f47`
-- reason: post-5.21.32 final native Labs with current security/workflow cleanup.
+## Security state
 
-Runs launched from that trigger included:
-- Android Reader `34004792453` (TV Android + Mobile Android)
-- iOS Reader `34004792486`
-- Desktop Reader `34004792525` (macOS + Windows)
+- Exact final publication SHA Default Setup CodeQL run: **34061759678**.
+- Python analysis: success.
+- GitHub Actions analysis: success.
+- JavaScript/TypeScript analysis was still `in_progress` at the latest poll before this checkpoint; no failure conclusion yet.
+- NiakVIO security completion also requires the repository `SEC - CodeQL` (`security-extended`) + `npm audit --omit=dev --audit-level=high`; Default Setup alone is not the whole proof.
+- Direct code-scanning-alert enumeration is not exposed by the current connector. Never claim historical UI alerts were individually closed without actual evidence.
+- Do not weaken CodeQL/security rules for green CI.
 
-Mobile Android exposed a NiakVIO test-bootstrap compatibility drift before provider execution. Latest official NuvioMobile SHA observed: `eb43a6d6d82d709b29cfad94106f76f3797f38e9`. Its Gradle DSL changed from old `withHostTest {}` to `withHostTest { isIncludeAndroidResources = true }`.
+## Repository/documentation debts discovered after 5.21.35
 
-NiakVIO test-only bootstrap was updated to support both forms without changing official app runtime:
-- commit `60d4d813108b962d4490d62e65e50c69e53ae11d` — `ci: follow current NuvioMobile device-test DSL`;
-- commit `2b4817561b5d21d574d0a7485c7db66e9ec8c63b` — test both DSL forms + idempotence;
-- commit `2d87f268b95a30e4c738d818117d4639575ad0b9` — gate bootstrap compatibility in Workflow Gate.
+These are pending unless a later checkpoint says fixed:
+- `CHANGELOG.md` head still stops at 5.21.16 while current release is 5.21.35.
+- `VALIDATION.json` still reports `release: 5.15.0`; field appears to be metadata, not a reconstruction baseline. It should be synchronized to current manifest and covered by a consistency test.
+- README EN/FR, `ARCHITECTURE.md`, `VALIDATION.md`, and the Domain Refresh script docstring still describe Domain Refresh as `official_site`-only, contradicting current structured-domain reconciliation.
+- `ARCHITECTURE.docx` exists on main but should be regenerated/rechecked after the final architecture wording is corrected.
+- `.github/triggers/nuvio-client-lab.json` still carries stale `5.21.32` and frozen route counters (`228/96/92/40`) even though the test contract says route totals must be derived from the current manifest. Remove frozen totals rather than updating another duplicate truth.
+- `automation/provider-v3-architecture.json` and architecture/workflow ownership tests still encode an older branch-based reconstruction publication contract. Desired durable model: reconstruct/materialize/version/integrity in one workspace, CAS-verify `origin/main == base_sha`, then one atomic main publication commit. No persistent workbench branch.
 
-### Latest Android Lab failures supplied by user
+## Domain Refresh — diagnosed systemic defects (NOT YET FIXED at this checkpoint)
 
-Latest shared Android run explicitly supplied by user:
-- run `34005735542`
-- TV Android red job `101412521722`
-- Mobile Android red job `101412531973`
+Current source authority `refresh_authoritative_hub_domains.py` already tries to reconcile terminal-domain derivatives in `provider-overrides.json`, including domain substitution/replacement maps, provider-owned manifest logo/icon/favicon URLs, and notes.
 
-Current diagnosis from the exact logs:
+But the transaction is internally inconsistent:
+1. `validate_domain_refresh_scope.py` / tests still enforce old `official_site`-only mutation and can reject the derivatives the refresh itself changes.
+2. `update_provider_v3_domain_config.py` currently decodes CONFIG and only does `next_data["officialSite"] = site`; it does **not** deterministically rebuild full current CONFIG via the same `provider_model() -> build_provider_data_model()` source path used by full materialization. Therefore `domainSubstitutions` can remain stale in published runtime CONFIG after a domain rotation.
+3. That updater emits old-style filenames `providers/{id}-{hash}.js`, while final 5.21.35 audit requires source-qualified publication filenames. A future changed-domain transaction can therefore fail final audit even when the bytes are otherwise valid.
+4. Manifest logo/icon/favicon reconciliation currently needs a real synthetic old-host -> new-host transition test; Flemmix already being `.kim` does not prove the generic algorithm.
 
-#### Mobile Android `101412531973`
-- This is a **test/instrumentation infrastructure failure before meaningful provider proof**, not evidence that Provider JS itself failed.
-- NuvioMobile instrumentation process crashes because Sentry auto-initialization runs without a configured DSN in the Lab environment.
-- Required fix belongs in NiakVIO **test-only bootstrap/instrumentation plumbing** so the official app runtime behavior is not altered. Disable/neutralize Sentry initialization only for the Lab test process/configuration, then rerun.
+Required fix is atomic: source authority + allowed scope gate + full CONFIG projection + source-qualified filename preservation + synthetic A->B tests + machine policy/docs. ProviderBase/Core bytes must remain unchanged for domain-only updates.
 
-#### TV Android `101412521722`
-- TV reaches real provider execution.
-- A concrete failing case is **Allwish returning a media object for *Interstellar* whose media duration/content is only about 20 seconds**.
-- The Lab correctly treats that as invalid feature playback evidence; do not loosen the TV gate to manufacture green.
-- Fix should be at stream/media validation level: reject demonstrably non-feature placeholder/trailer/broken outputs while keeping provider health stream-scoped rather than disabling Allwish globally.
+## 2026-09-07 — User Desktop test: House of the Dragon S3E1 returns zero visible streams
 
-These two reds have different ownership and must not be conflated.
+User supplied Desktop log `nuvio-ux-20260907-001220.log` while testing published 5.21.35.
 
-## Current stream-title presentation bug
+Observed chain:
+- Metadata resolves correctly: IMDb `tt11198330`, TMDB `94997`, `type=series`, title `House of the Dragon`, 26 videos.
+- Requested stream identity reaches the stream stage exactly as **`type=series id=tt11198330:3:1`**.
+- Log line: `StreamsRepo Found 0 addons for stream type=series id=tt11198330:3:1`. This is the ordinary addon list, **not** proof that zero NiakVIO Provider JS ran: PluginRuntime network calls follow immediately.
+- Therefore the S3E1 failure is **after** metadata/transport identity and is not evidence for a hard TV year rejection.
 
-User reported provider stream titles showing `- Inconnu`. Current localization points to shared `CORE.GLOBAL_PROVIDER_BRANDING.V1` behavior rather than quality normalization itself: branding reconstructs/preserves a suffix from an earlier title even when that suffix is merely unknown/placeholder language/quality text.
+Provider/runtime requests visible immediately after the S3E1 request:
+- YFlix family (`1moviesz.to`): `GET https://1moviesz.to/api?#` and root `/?#` -> `UnknownHostException`.
+- Nakios (`api.nakios.live`): tries both `/api/sources/movie/94997?#` and `/api/sources/tv/94997/3/1?#` -> `UnknownHostException`.
+- Peachify (`uwu.eat-peach.sbs`, `usa.eat-peach.sbs`): `net/tv/94997/3/1`, `moviebox/tv/94997/3/1`, `air/tv/94997/3/1`, `multi/tv/94997/3/1`, `holly/tv/94997/3/1` -> all `UnknownHostException`.
+- VidLink (`vidlink.pro`): `/api?#`, `/api/b/movie/?#`, `/api/b/tv/?#`, root `/?#` -> `UnknownHostException`.
 
-Required correction:
-- fix the shared branding/presentation Lego once for all providers;
-- never append placeholder suffixes such as `Inconnu`/`Unknown` to provider display title;
-- preserve meaningful title/provider/quality/language metadata;
-- add/extend contract tests so repeated materialization cannot reintroduce placeholder suffixes;
-- if this changes published Provider JS bytes, re-materialize/reverse/minimize/integrity-check and release-finalize a new version after validation; if only source generator changes with identical published bytes, no bump.
+Interpretation / next correction priority:
+- NuvioDesktop is executing NiakVIO providers and season/episode reaches provider URL building.
+- No successful extraction is visible for this fixture because every visible provider host in this path fails DNS.
+- Several generated URLs also contain suspicious placeholder fragments `?#`, and movie-shaped attempts for a series (Nakios movie route, VidLink movie route). These must be audited at Source Plan v4 / provider DATA level, not patched as a HOTD exception.
+- Priority is to map every attempted URL back to its provider DATA/route plan, test current authoritative hub/domain live where possible, repair stale domain/route DATA generically, and ensure TV-capable providers receive canonical TV + S3/E1 without movie fallback unless the provider protocol explicitly requires such fallback.
+- Real-route discovery must test the route live at discovery time; never store an invented/unverified endpoint as “real”.
+- The user still sees **no streams** for HOTD S3E1 on current 5.21.35 Desktop. Do not call TV/series fixed until this exact fixture returns provider evidence/playable streams in a real client test.
 
-## Performance / common-latency concern
+## Active completion sequence after this checkpoint
 
-User also reported a common latency issue across providers. Treat this as systemic until disproved. Check shared runtime path before provider-by-provider tuning:
-- capability gate timing;
-- TMDB preflight/cache work;
-- sequential vs bounded parallel network steps;
-- duplicated provider fetches introduced by shared Core;
-- media validation cost;
-- native bridge/test harness overhead separately from production runtime.
-
-Do not reduce the catalogue or remove correctness checks merely to improve latency.
-
-## Workflow ownership
-
-### `CORE - Verify & Publish`
-`sync.yml` owns routine verification/publication.
-- Quick: deterministic structural/runtime/unit/security/minimizer checks over candidate bytes.
-- Deep: broader read-only network/hub/provider observations, diagnostics, projections/integrity evidence.
-- Quick/Deep do not repair/reconstruct Provider JS and do not routinely bump versions.
-
-### Learning
-`brain-learning-lab.yml` is isolated code-evolution/repair sandbox. Learning can produce reviewable proposals; it is not uncontrolled production mutation.
-
-### Domain Refresh
-`domain-refresh.yml` is narrow:
-- validate official provider hubs/domains;
-- update only validated `official_site` CONFIG data;
-- must not repair APIs/routes/Core/provider code;
-- must not require unrelated `staging/candidates.json` merely to refresh domains.
-
-Historical `missing staged candidate registry` was workflow coupling and must not return.
-
-### Full reconstruction / route recognition
-- full reconstruction/materialization owns ProviderBase + DATA + Lego generation and reverse byte proof;
-- route-only recognition/census updates route/protocol DATA/projections only, not Provider JS by implication.
-
-## Minimizer contract
-
-`scripts/provider_v3_minimizer.py` is the only production minimizer policy.
-
-- production enabled;
-- Terser forbidden;
-- conservative marker/comment-aware transforms only;
-- preserve `BEGIN/END`, `STARTFIX/CLOSEFIX`, `FIXDATA`, Core boundary;
-- no arbitrary replacements, identifier renaming, semantic reordering or risky folding;
-- template-literal providers may remain byte-stable when safe minimization cannot be proven;
-- final proof requires fixed-point/idempotence, Node parse where applicable, exact portfolio coverage and reverse reconstruction/native parity gates.
-
-## Security state and contract
-
-Security completion is measured on exact final candidate bytes, not only source scripts.
-
-Current work already completed:
-- `.github/workflows/codeql.yml` produces local `security-extended` SARIF evidence;
-- local SARIF parser/gate blocks High/Critical findings;
-- `Audit production dependencies` job runs `npm audit --omit=dev --audit-level=high`;
-- on run `34004792452`, dependency audit job completed **success**;
-- initial useful Python CodeQL scan analyzed 517/517 Python files and found exactly 4 current findings, all `py/incomplete-url-substring-sanitization`, with 0 High/Critical;
-- those four NiakVIO-owned URL substring checks were remediated structurally using URL parsing/validation;
-- old `one_shot_*` and `prepare_retry_targets.py` helpers were removed;
-- deterministic published-byte scanner continues to block the historical unsafe HTML-filter regex family across all 96 published provider files.
-
-Still mandatory before final completion:
-- run/inspect exact final Python + JS/TS CodeQL jobs on stabilized candidate;
-- record `CODEQL_RESULT_COUNT`, per-rule counts and `high_or_critical` from logs;
-- inspect GitHub Default Setup result for same candidate when available;
-- direct Code Scanning alert enumeration through the current GitHub connector is unavailable (`INVALID_ARGUMENT` on direct alert endpoint). Do not pretend the historical UI alert list was directly closed; use exact SARIF/Default Setup evidence and state this connector limitation precisely if it remains.
-
-Security rules:
-- do not disable CodeQL/security rules for green CI;
-- keep bounded execution/network/resource/redirect/SSRF guards;
-- keep dependency High/Critical audit;
-- distinguish GitHub infra/model/action failures from NiakVIO findings.
-
-## Documentation and README work completed
-
-README English/French parity was refreshed.
-
-English-image issue fixed:
-- both README variants previously referenced the French-text `assets/branding/how-it-works.png`;
-- new English-only `assets/branding/how-it-works-en.svg` added;
-- commit `85e67f2d869bf9a9f30ef885bb5aa608a58aac4a` — English pipeline artwork;
-- README EN now points to English SVG;
-- README FR intentionally keeps the French PNG.
-
-README/docs commits:
-- `3ea2cd8835f802d47be2e9361a0e07b68b0e702b` — EN README documents release finalizer/security and uses English artwork;
-- `cf052a26ebfdf4d513bb51f773b9178ee3a35f67` — FR README mirrors accepted finalization/security semantics;
-- recommended stack remains NiakVIO providers + Ultra MAX metadata/catalogue + SubSense subtitles + SIMKL tracking.
-
-## Architecture docs state
-
-`ARCHITECTURE.md` was materially updated by commit:
-- `2231472604eca5a1bb538971a208f1fe4d8b6ddb` — `docs: define accepted release finalization contract`.
-
-It now documents:
-- Quick/Deep do not routinely bump release;
-- explicit accepted-release finalizer and baseline semantics;
-- no reconstruction/repair in finalizer;
-- atomic version/projection/hash/integrity synchronization only when published bytes changed;
-- security-extended SARIF + High/Critical dependency audit;
-- docs/workflow/harness-only changes with unchanged provider bytes do not bump release;
-- 18 architecture invariants including finalization contracts.
-
-`ARCHITECTURE.docx` was regenerated locally from the updated Markdown and rendered through the required DOCX render pipeline. Visual QA was done page-by-page on 6 pages:
-- no clipping;
-- no overlap;
-- no broken glyphs/tables;
-- page headers/footers/numbers clean;
-- an orphan `Règles :` on page 2 was fixed using keep-with-next;
-- page 6 sparse but clean.
-
-**At this checkpoint the regenerated `ARCHITECTURE.docx` still needs to be uploaded/committed to GitHub.** Use Git blob/tree/commit/ref for the binary DOCX if text content API is insufficient. After commit, update this MEMORY entry to the exact DOCX commit SHA.
-
-`automation/PLATFORM-RUNTIME-CONTRACTS.md` is generated and should not be hand-edited for the NuvioMobile Gradle test DSL drift; that drift is harness compatibility, not runtime contract semantics.
-
-## PR template / hygiene
-
-Current PR template already covers:
-- summary/root cause/scope;
-- exact candidate SHA/evidence;
-- semantic provider types;
-- reconstruction/repair ownership;
-- five Native Labs and no upstream runtime patching;
-- security;
-- version/cache decision;
-- validation performed;
-- limitations/follow-up.
-
-Final hygiene audit still required:
-- only `main` and `brain-learning/proposals` branches;
-- no `workbench` refs;
-- no stale `one_shot`, `once`, `retry`, `temp`, `tmp-` migration helpers;
-- old hardener remains gone;
-- PR template still current.
-
-## Final publication/completion order
-
-1. settle current shared presentation (`- Inconnu`), Allwish false-media validation and Mobile Android Sentry test-bootstrap fixes;
-2. if published provider bytes changed: materialize exact Provider v3 bytes;
-3. conservative minimizer + fixed-point + parse/reverse proof;
-4. structural/runtime/security gates;
-5. provider/network/yield evidence;
-6. run **all five Native Labs** on one post-fix exact SHA and capture artifact names/outcomes;
-7. accept validation pile;
-8. if published bytes changed after 5.21.32, run release finalizer and synchronized new bump; otherwise retain 5.21.32;
-9. regenerate/validate hashes/projections/integrity metadata when content/version changed;
-10. commit regenerated `ARCHITECTURE.docx` and confirm docs parity;
-11. final CodeQL + dependency + Default Setup evidence;
-12. repository hygiene/branch audit;
-13. update this MEMORY file with final SHA, exact workflow run/job IDs, Native Lab artifact names, CodeQL counts and any remaining external limitation;
-14. final exact-SHA audit before declaring completion.
+1. Diagnose/fix HOTD S3E1 route/domain/source-plan failures generically across all 96, starting with the concrete YFlix/Nakios/Peachify/VidLink evidence above; do not special-case HOTD.
+2. Run real provider/route probes for the affected route families and update DATA only from observed/authoritative evidence.
+3. Fix the Domain Refresh transaction defects so future domain rotations correctly project full CONFIG and preserve final filename contract.
+4. Re-materialize/reverse/minimize only as required by actual provider DATA/Core changes; if published provider bytes change, finalize a new synchronized release after validation.
+5. Re-run exact HOTD S3E1 Desktop test and representative movie/anime fixtures; confirm visible streams and player behavior, not merely structural green.
+6. Run complete five Native Labs on one exact candidate SHA.
+7. Finish `CORE - Workflow Gate`, `SEC - CodeQL`, `SEC - Final Gate`, dependency audit, Default Setup evidence on the final exact SHA.
+8. Clean docs/machine architecture contracts/trigger metadata and regenerate `ARCHITECTURE.docx`.
+9. Final branch/PR hygiene audit and final `MEMORY.md` checkpoint with exact SHA/run/artifact IDs.
 
 ## Completion principle
 
-A green structural workflow is not proof that 96 providers produce streams, and a native client failure is not automatically a provider failure. Keep each layer explicit, preserve evidence, fix common NiakVIO root causes where NiakVIO owns them, and never manufacture success by deleting providers, weakening validation, or patching official Nuvio production clients.
-
-## 2026-09-06 — Canonical dual-ID input contract
-- NiakVIO historically accepts provider work identity as either TMDB or IMDb. This is a permanent Core contract, not a provider exception.
-- Regression identified in 5.21.33: stronger TMDB title/category/year verification left early Core gates TMDB-only, so a valid IMDb request could be converted into an empty provider result before provider execution.
-- Input forms must accept numeric/prefixed TMDB and IMDb (`tt...`), including episodic transport suffixes such as `tt11198330:3:1`; season/episode are preserved separately.
-- TMDB metadata remains the authoritative enrichment/classification source when available, but failure/unavailability of enrichment must not make a syntactically valid IMDb/TMDB identity invalid.
-- `series` is a Nuvio transport alias for canonical `tv`; it belongs in `supportedTypes`, never in `canonicalSupportedTypes`.
-- Native Labs must test production selection for both `tv` and `series`, not only direct provider execution.
-- Domain Refresh owns terminal-domain derivatives (domain substitution/replacement maps and provider-owned manifest icon URLs) as well as `official_site`; historical alias keys are retained while their destination is reconciled to the authoritative terminal.
-
-## 2026-09-06 — Main-only completion checkpoint (5.21.35 publication)
-
-- **Execution policy tightened by user:** all active corrective work must be finished directly on `main`. Do not create another temporary/workbench implementation branch. `workbench` / PR #92 is archive-only: compare its 23 commits selectively, recover only genuinely missing ideas, then delete/close it after main contains everything useful. At this checkpoint it is 23 commits ahead and 55 behind `main`; never merge it wholesale.
-- `MEMORY.md` must be updated at every important checkpoint/failure/correction so the active state remains recoverable even if chat context is lost.
-- Main corrective commit `76e6e05b12fe73bf0fa9f9517f5000e78b2fa3da` fixes the **producer** of the global Core boundary: the finalizer now inserts `NUVIO_GLOBAL_CORE_START_BOUNDARY_V1` before the full `STARTFIX:CORE.*` ownership rectangle instead of inside the first Core implementation body. The static audit was deliberately not weakened.
-- Retry attempt 3 of workflow run `34059449378`, job `101559752846`, proves that correction: step 8 `Finalize published 96 from Base plus structured CONFIG plus Lego` is now **green**, and step 9 generated `5.21.35` with **96 provider versions bumped**. The final Provider CONFIG validator is green 96/96; dual IMDb/TMDB, canonical media resolver and Source Plan v4 tests are also green.
-- **5.21.35 is still not published/accepted.** Step 10 currently fails in `scripts/audit_provider_v3_static.py` on `AssertionError: flemmix` because final `providerDataSha256` no longer matches the stale materialization evidence for Flemmix after final publication. The final commit/push step was skipped. Diagnose and fix evidence/projection ownership; do not rerun the heavy 96-provider Repair unless evidence proves materialization itself is wrong.
-- Flemmix domain state was rechecked live on 2026-09-06: current hub authority points to **`flemmix.kim`**; `.men` is an older blocked domain. Main CONFIG already uses `.kim` for `official_site`, logo and legacy substitutions/replacements, so no domain mutation is required.
-- `- Inconnu` is no longer merely a planned source fix: `scripts/provider_patches/global_provider_branding_v1.py` is V7 (`post-presentation-name-title-quality-v7`) and explicitly strips placeholder suffixes such as `Inconnu` / `Unknown` while preserving meaningful quality/language suffixes. Remaining work is runtime/native validation on final published bytes.
-- Main already contains stronger native application-path selection evidence than workbench: Mobile/Desktop instrumentation calls production `getEnabledScrapersForType()` for `movie`, `tv` and **`series`**, and `tests/native_app_provider_selection_gate_test.py` makes `series=0` blocking. Do not cherry-pick the older workbench version that only covered movie/tv.
-- Current official NuvioTV `dev` source also maps `supportsType("series")` to `series`, `tv`, and `anime`, and `PluginManager` filters enabled scrapers through that method. The final TV Lab must prove this application path against exact current upstream bytes; do not patch NuvioTV production code to manufacture compatibility. NiakVIO's stored NuvioTV runtime-contract ref is older and should only be advanced after source/runtime review.
-- Latest short-publication run also reported upstream contract review required for NuvioMobile, NuvioDesktop and NuvioTV. That drift review is separate from provider publication and must not be confused with a Provider JS failure.
-
-### Flemmix final DATA audit correction
-- Root cause of the step-10 Flemmix failure: `provider-v3-materialization.json` is **earlier-stage evidence**. Its `providerDataSha256` can legitimately become stale when current structured CONFIG/domain DATA changes before final publication. Flemmix exposed this after `.kim` reconciliation.
-- Commit `bdf11932ea5b949837c29b71c8a61b903e91c57b` changes `audit_provider_v3_static.py` to rebuild the expected Provider DATA in-memory from the current authoritative sources (`provider-overrides.json` + `provider_capabilities` + `provider-v3-static-knowledge.json` + current manifest entry) and compare the decoded final CONFIG to that exact deterministic projection.
-- The audit remains read-only and does **not** reconstruct Provider JS. It no longer treats a historical materialization DATA hash as final-publication authority.
-- Next action is another short publication retry from current `main`; heavy Repair remains unnecessary unless this stronger current-source comparison proves a genuine DATA mismatch.
-
-## Final-byte Provider CONFIG invariant — 2026-09-06
-
-- Current corrected manifest generation at this checkpoint: **`5.21.35`**.
-- `NIAKVIO_PROVIDER_MODEL` is NiakVIO-owned structured runtime DATA, materialized as exactly one `PROVIDER.<ID>.CONFIG.V1`; ProviderBase and Source Plan v4 (`_spv4Family`) may reference it but ProviderBase itself must remain DATA-free.
-- Regression found in `5.21.34`: the authoritative materializer correctly composed Base + CONFIG + Lego, but `reapply_published_overrides.py` restarted final publication from the clean ProviderBase and replayed Core without re-running `compose_provider_bundle()`. This produced final bundles that referenced `NIAKVIO_PROVIDER_MODEL` without defining it.
-- Final publication now reuses the same structured `provider_model -> build_provider_data_model -> compose_provider_bundle` path as the 96-provider materializer before replaying Provider/Core Lego.
-- The final Core boundary is outside every managed Core ownership rectangle: `PROVIDER.* -> NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 -> STARTFIX:CORE.*`. The previous finalizer searched for an implementation marker inside the first Core body, which could place the boundary inside that Core Lego; `audit_provider_v3_static.py` correctly rejected this and the producer was fixed rather than weakening the audit.
-- A final-manifest 96/96 gate validates the actual hashed JS referenced by `manifest.json`, not only `provider-v3-materialization.json`: one CONFIG START/CLOSE pair, one `NIAKVIO_PROVIDER_MODEL = Object.freeze(...)`, matching providerId, safe final path and Provider envelope. A missing model is publication-fatal.
-- Identity remains dual-source: valid TMDB **or IMDb** input is accepted; TMDB enrichment verifies/enriches identity but cannot invalidate a valid IMDb input. Episodic IMDb suffixes such as `tt11198330:3:1` retain season/episode.
-- `series` remains a Nuvio transport alias for canonical `tv`; it belongs in `supportedTypes`, never in `canonicalSupportedTypes`.
+A green structural workflow is not proof that the 96 providers work. A native client failure is not automatically a provider failure. Keep identity, route/network, extraction, sanitizer, and player evidence separate; fix common NiakVIO-owned root causes at their owning layer; never delete providers, weaken validation, invent routes, or patch official clients to manufacture success.
