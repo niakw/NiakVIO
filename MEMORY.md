@@ -1,6 +1,6 @@
 # NiakVIO — Recovery Memory
 
-Last authoritative checkpoint: 2026-09-07 00:18 Europe/Paris.
+Last authoritative checkpoint: 2026-09-07 00:58 Europe/Paris.
 
 This file is the durable recovery source of truth for the active NiakVIO work. Prefer current repository state and exact GitHub Actions/native logs over older chat summaries. Update this file at every important correction/failure/publication checkpoint before moving to the next risky step.
 
@@ -29,8 +29,8 @@ This file is the durable recovery source of truth for the active NiakVIO work. P
 ## Provider v3 architecture — invariant
 
 Generated provider composition:
-1. clean immutable ProviderBase v3;
-2. structured provider DATA/static knowledge;
+1. clean immutable/common ProviderBase v3;
+2. structured provider DATA/CONFIG/static knowledge;
 3. provider-owned `PROVIDER.*` Lego;
 4. one global Core boundary;
 5. shared `CORE.*` Lego;
@@ -38,9 +38,12 @@ Generated provider composition:
 
 Hard rules:
 - published/upstream/historical Provider JS is knowledge/reference only, never a reconstruction seed;
-- ProviderBase remains clean/DATA-free;
+- **published Provider JS must contain only common ProviderBase + structured DATA/CONFIG + managed Provider/Core Lego + envelope/minimizer-preserved structure**;
+- no provider file/adapter may own duplicated identity, media-type, year, sanitizer, presentation or other shared business rules;
+- functions such as `strictIdentityScore`, `routeIdentity`, provider-local year rejection or duplicated season/episode identity logic are architecture violations unless they are merely thin calls into the unique owning Core Lego and should preferably be removed entirely;
+- ProviderBase remains common/DATA-free; it may call shared Core services but must not own a second copy of Core policy;
 - provider behavior belongs in DATA or owned Provider Lego;
-- Core remains provider-agnostic;
+- Core remains provider-agnostic and each concern has a single owner;
 - managed Lego uses `STARTFIX` / `CLOSEFIX` (+ `FIXDATA` when needed);
 - Provider Lego precedes Core boundary, Core Lego follows it;
 - reverse reconstruction must be deterministic/byte-verifiable;
@@ -50,7 +53,13 @@ Hard rules:
 Current conceptual Core order:
 `Provider -> STREAM_FACTS -> STREAM_IDENTITY -> MEDIA_TYPE -> STREAM_PRESENTATION -> PROVIDER_BRANDING -> SANITIZER`.
 
-## Identity / type / TV-year contract
+Ownership rule clarified 2026-09-07:
+- `CORE.STREAM_IDENTITY.V1` is the **sole owner** of title/type/ID/year/season/episode identity acceptance semantics.
+- `CORE.RUNTIME_MEDIA_SAFETY.V4` may own only playback/media safety (URL shape, P2P rejection, HLS/direct checks, bounded duration/playability). Any title/year/season/episode collision logic in it must be removed or delegated to `CORE.STREAM_IDENTITY.V1`.
+- `engine_v2` smoke/diagnostic code may mirror the Core policy for tests but must not expose provider-specific scoring APIs. Purstream's old `strictIdentityScore()` export is being removed; adapter calls must use the shared engine mirror directly.
+- Add an architecture test that fails if provider/adapter files define local identity scoring/rejection helpers.
+
+## Identity / type / episodic-year contract
 
 - Provider input accepts **TMDB or IMDb**. Valid IMDb must never be rejected merely because TMDB enrichment is missing/unavailable.
 - Episodic IMDb input such as `tt11198330:3:1` preserves season/episode.
@@ -59,15 +68,28 @@ Current conceptual Core order:
 - Capability/type gate must happen before provider network work.
 - Anime semantics stay distinct even when transport aliases expose TV/movie launch lanes.
 
-Canonical year behavior:
-- MOVIE: title + type + movie year; year mismatch is strong evidence and may reject in strict mode.
-- TV: title + media type primary; `seriesYear` = original series year, `seasonYear` = season/episode year secondary evidence; **neither year may hard-reject TV by itself**.
-- Episode resolution uses season + episode. A provider result such as `House of the Dragon - Saison 3 (2026)` must not be rejected because the series origin year is 2022.
-- Shared Core TV soft-year logic is implemented/tested, but a 2026-09-07 source audit found **two ProviderBase-local hard-year leaks** that escaped the prior Core-level test:
-  1. `scripts/provider_base_store.py::_recipeScore()` rejects `year !== expectedYear` in non-strict mode and rejects `abs(year-expectedYear)>1` in strict mode regardless of media type.
-  2. `_strictHtmlIdentityOk(html, meta)` rejects an HTML detail page when its visible years do not contain the TMDB series origin year, again regardless of media type.
-- These ProviderBase paths must be migrated so year is hard/required only for `movie`; for `tv/series`, year is only a score bonus/signal and title+media type remain primary. Add a real ProviderBase/Node regression using HOTD-like `seriesYear=2022` and provider season/page year `2026`.
-- The 2026-09-07 Desktop HOTD failure below occurs after identity/series transport selection; do not regress into a HOTD-specific exception.
+Canonical year behavior — FINAL:
+- **MOVIE only**: title + type + movie year; year mismatch is strong evidence and may reject in strict mode.
+- **TV / `series` / anime**: release/origin/season year is **not part of identity acceptance at all**. Do not reject or score-match episodic content from year.
+- Episode resolution identity is title/type plus **season + episode**; provider catalogue rows may expose original-series year, season year, episode year, or none without affecting episodic acceptance.
+- A provider result such as `House of the Dragon - Saison 3 (2026)` must be accepted against TMDB series origin 2022 if title/type/S3E1 are correct.
+
+Corrections already committed after 5.21.35:
+- `1723472`: introduced ProviderBase runtime v9 migration for episodic-year removal.
+- `5b356ce`: `CORE.STREAM_IDENTITY.V1` gained shared catalogue identity API and final `movie-only` year policy.
+- `3600e8b`: ProviderBase v9 changed from owning `_recipeScore`/HTML year semantics to delegating catalogue/HTML identity to `globalThis.__nuvioIdentityPolicyV1` from `CORE.STREAM_IDENTITY.V1`.
+- `491f1ba`: added executable Core ownership regression: HOTD-like TV/series/anime year mismatch passes, same mismatch in movie fails; ProviderBase must not retain local `Math.abs(year...)` policy.
+- `25e5148`: Workflow Gate runs the Core identity ownership regression.
+- `f62393a` + `fb76b5c` + `c1d8c43`: engine_v2 shared catalogue policy + Purstream HOTD S3E1 synthetic smoke; TV metadata year 2022 vs provider row 2026 must still resolve S3E1.
+- `398024c`: priority regression updated from old “TV-year-soft” wording to **episodic year disabled / movie year only**.
+- `ef4073a`: ProviderBase store provenance now reports reader v9 instead of stale v5 metadata.
+
+Pending before next publication:
+- remove Purstream's now-redundant exported `strictIdentityScore()` wrapper and update its tests/contracts to call shared engine policy directly;
+- remove duplicated identity/collision logic from `CORE.RUNTIME_MEDIA_SAFETY.V4` (`identityBlob`, `explicitYears`, `containsAny`, `routeIdentity`, collision fixtures, season/episode/year rejection) and leave only media/playback safety there;
+- clean `identityInput.requiredFields` so generic catalogue DATA does not encode `year` as universally required for episodic requests; model movie-only year explicitly if needed without creating a second acceptance policy;
+- add repository-wide architecture test forbidding provider-local identity scoring/rejection implementations;
+- rematerialize 96 ProviderBase/bundles, reverse/audit/integrity, then bump synchronized manifest (expected 5.21.36 if no intervening release).
 
 ## Stream/player integrity
 
@@ -147,7 +169,7 @@ Observed chain:
 - Metadata resolves correctly: IMDb `tt11198330`, TMDB `94997`, `type=series`, title `House of the Dragon`, 26 videos.
 - Requested stream identity reaches the stream stage exactly as **`type=series id=tt11198330:3:1`**.
 - Log line: `StreamsRepo Found 0 addons for stream type=series id=tt11198330:3:1`. This is the ordinary addon list, **not** proof that zero NiakVIO Provider JS ran: PluginRuntime network calls follow immediately.
-- Therefore the S3E1 failure is **after** metadata/transport identity and is not evidence for a hard TV year rejection in the early Core gate; the ProviderBase-local year leaks above can still affect catalogue/API matching later.
+- Therefore the S3E1 failure is after metadata/transport identity; current cleanup focuses first on shared architecture/identity ownership before the separate route census.
 
 Provider/runtime requests visible immediately after the S3E1 request:
 - YFlix family (`1moviesz.to`): `GET https://1moviesz.to/api?#` and root `/?#` -> `UnknownHostException`.
@@ -155,26 +177,24 @@ Provider/runtime requests visible immediately after the S3E1 request:
 - Peachify (`uwu.eat-peach.sbs`, `usa.eat-peach.sbs`): `net/tv/94997/3/1`, `moviebox/tv/94997/3/1`, `air/tv/94997/3/1`, `multi/tv/94997/3/1`, `holly/tv/94997/3/1` -> all `UnknownHostException`.
 - VidLink (`vidlink.pro`): `/api?#`, `/api/b/movie/?#`, `/api/b/tv/?#`, root `/?#` -> `UnknownHostException`.
 
-Interpretation / next correction priority:
-- NuvioDesktop is executing NiakVIO providers and season/episode reaches provider URL building.
-- No successful extraction is visible for this fixture because every visible provider host in this path fails DNS.
-- Several generated URLs also contain suspicious placeholder fragments `?#`, and movie-shaped attempts for a series (Nakios movie route, VidLink movie route). These must be audited at Source Plan v4 / provider DATA level, not patched as a HOTD exception.
-- Priority is to map every attempted URL back to its provider DATA/route plan, test current authoritative hub/domain live where possible, repair stale domain/route DATA generically, and ensure TV-capable providers receive canonical TV + S3/E1 without movie fallback unless the provider protocol explicitly requires such fallback.
-- Real-route discovery must test the route live at discovery time; never store an invented/unverified endpoint as “real”.
-- The user still sees **no streams** for HOTD S3E1 on current 5.21.35 Desktop. Do not call TV/series fixed until this exact fixture returns provider evidence/playable streams in a real client test.
+Current priority clarified by user:
+- do **not** start a full remaining-route/domain sweep yet;
+- first finish common architecture/runtime tasks and make already-viable TV-capable providers such as **Purstream, Kehflix and others** work correctly for `series/tv`;
+- route census/repair of remaining dead providers comes later.
 
 ## Active completion sequence after this checkpoint
 
-1. Fix ProviderBase-local TV hard-year leaks generically and add HOTD-like 2022-vs-2026 runtime regression while retaining strict movie behavior.
-2. Diagnose/fix HOTD S3E1 route/domain/source-plan failures generically across all 96, starting with YFlix/Nakios/Peachify/VidLink; do not special-case HOTD.
-3. Run real provider/route probes for the affected route families and update DATA only from observed/authoritative evidence.
-4. Fix the Domain Refresh transaction defects so future domain rotations correctly project full CONFIG and preserve final filename contract.
-5. Re-materialize/reverse/minimize only as required by actual provider DATA/Core changes; if published provider bytes change, finalize a new synchronized release after validation.
-6. Re-run exact HOTD S3E1 Desktop test and representative movie/anime fixtures; confirm visible streams and player behavior, not merely structural green.
-7. Run complete five Native Labs on one exact candidate SHA.
-8. Finish `CORE - Workflow Gate`, `SEC - CodeQL`, `SEC - Final Gate`, dependency audit, Default Setup evidence on the final exact SHA.
-9. Clean docs/machine architecture contracts/trigger metadata and regenerate `ARCHITECTURE.docx`.
-10. Final branch/PR hygiene audit and final `MEMORY.md` checkpoint with exact SHA/run/artifact IDs.
+1. Finish Core ownership cleanup: no provider/adapter-local identity policy; remove identity logic from runtime media safety; clean DATA required-fields contract.
+2. Run synthetic Purstream HOTD S3E1 and representative Kehflix/TV contract tests plus Workflow Gate.
+3. Materialize current ProviderBase v9 + current DATA + Provider Lego + Core Lego across all 96; reverse/audit/minimizer/integrity.
+4. Publish synchronized next manifest (expected 5.21.36) only after the actual bundles contain the fix; then tell user to retest HOTD S3E1.
+5. Re-test real Desktop HOTD S3E1; separate provider-route/network failures from common runtime failures.
+6. Only after common TV/series/runtime architecture is stable, resume full real-route/domain recovery across all 96.
+7. Fix Domain Refresh transaction defects.
+8. Run complete five Native Labs on one exact final candidate SHA.
+9. Finish Workflow Gate/security/dependency/CodeQL proof on final SHA.
+10. Clean docs/machine architecture contracts/trigger metadata and regenerate `ARCHITECTURE.docx`.
+11. Final branch/PR hygiene audit and final `MEMORY.md` checkpoint with exact SHA/run/artifact IDs.
 
 ## Completion principle
 
