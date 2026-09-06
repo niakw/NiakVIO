@@ -7,6 +7,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PATCHER = ROOT / "scripts" / "apply_main_dual_id_hotfix.py"
+DUAL_ID_TEST = ROOT / "tests" / "native_dual_id_identity_test.py"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
@@ -51,6 +52,19 @@ def main() -> int:
     PATCHER.write_text(text, encoding="utf-8")
     print("MAIN_DUAL_ID_PATCHER_SYNTAX_OK")
     subprocess.run([sys.executable, str(PATCHER)], cwd=ROOT, check=True)
+
+    # The generated regression test deliberately stores JS snippets inside Python
+    # triple-quoted strings. They must be ordinary strings so \n escapes become real
+    # line breaks before Node executes them; raw strings would write literal backslash-n.
+    test = DUAL_ID_TEST.read_text(encoding="utf-8")
+    test = replace_once(test, "BASE=r'''", "BASE='''", "dual-id provider fixture raw prefix")
+    run_count = test.count("run(r'''")
+    if run_count != 2:
+        raise SystemExit(f"dual-id runner fixture raw prefixes: expected 2, got {run_count}")
+    test = test.replace("run(r'''", "run('''")
+    compile(test, str(DUAL_ID_TEST), "exec")
+    DUAL_ID_TEST.write_text(test, encoding="utf-8")
+    print("MAIN_DUAL_ID_NODE_FIXTURE_SYNTAX_OK")
     return 0
 
 
