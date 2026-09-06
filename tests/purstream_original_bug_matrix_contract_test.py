@@ -27,9 +27,11 @@ assert fixed.get("api") == official_api
 assert recipe.get("referer") == official_site
 assert fixed.get("referer") == official_site
 assert recipe.get("searchRoute") == "/search-bar/search/{query}"
-assert recipe.get("movieRoute") == "/media/{id}/sheet"
+assert recipe.get("movieRoute") == "/stream/{id}"
 assert recipe.get("episodeRoute") == "/stream/{id}/episode?season={season}&episode={episode}"
-assert "first_air_date" in (recipe.get("yearFields") or [])
+# Provider recipe carries release_date for movie catalogue evidence only. TV /
+# series / anime identity never requires first_air_date or any other year field.
+assert recipe.get("yearFields") == ["release_date"]
 assert recipe.get("strictIdentity") is True
 assert recipe.get("directSourcesOnly") is True
 assert capability.get("request_type_aliases") == {"anime": "tmdb_namespace"}
