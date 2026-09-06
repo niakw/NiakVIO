@@ -15,8 +15,8 @@ playback = overrides.get("playback_integrity_policy") or {}
 
 # Original P0 identity failures: provider-owned search must be strict and typed.
 assert (purstream.get("patch_scripts") or []) == [], purstream.get("patch_scripts")
-# Purstream publishes movie/tv transport lanes; anime remains a distinct semantic
-# request handled through the capability alias below instead of a duplicate lane.
+# Purstream currently publishes movie/tv only. Do not invent an anime semantic
+# capability or transport alias that is absent from the current capability DATA.
 assert purstream.get("published_types") == ["movie", "tv"]
 fixed = purstream.get("fixed_endpoint") or {}
 official_api = str(purstream.get("official_api") or "")
@@ -30,11 +30,11 @@ assert recipe.get("searchRoute") == "/search-bar/search/{query}"
 assert recipe.get("movieRoute") == "/stream/{id}"
 assert recipe.get("episodeRoute") == "/stream/{id}/episode?season={season}&episode={episode}"
 # Provider recipe carries release_date for movie catalogue evidence only. TV /
-# series / anime identity never requires first_air_date or any other year field.
+# series identity never requires first_air_date or any other year field.
 assert recipe.get("yearFields") == ["release_date"]
 assert recipe.get("strictIdentity") is True
 assert recipe.get("directSourcesOnly") is True
-assert capability.get("request_type_aliases") == {"anime": "tmdb_namespace"}
+assert capability.get("request_type_aliases") == {}
 assert capability.get("identity_request_source") == "original_nuvio_request"
 
 # HLS has one post-media owner. Native no-probe behavior is intrinsic to that
