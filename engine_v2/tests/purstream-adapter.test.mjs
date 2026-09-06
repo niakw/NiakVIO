@@ -36,6 +36,20 @@ const fetchImpl = async (url, options = {}) => {
       { source_name: "1080p VF", stream_url: "https://cdn.example/breaking-bad-s01e01.m3u8", format: "m3u8" },
     ] } } });
   }
+  if (href.includes("/search-bar/search/House%20of%20the%20Dragon")) {
+    // Deliberately expose the season/catalogue year instead of the TMDB series
+    // origin year. TV identity must ignore the year completely.
+    return json({ data: { items: {
+      series: { items: [
+        { id: 88, title: "House of the Dragon", first_air_date: "2026-01-01" },
+      ] },
+    } } });
+  }
+  if (href.includes("/stream/88/episode?season=3&episode=1")) {
+    return json({ data: { items: { sources: [
+      { source_name: "1080p MULTI", stream_url: "https://cdn.example/hotd-s03e01.m3u8", format: "m3u8" },
+    ] } } });
+  }
   throw new Error(`unexpected Purstream test URL: ${href}`);
 };
 
@@ -58,7 +72,7 @@ assert.equal(movie.repair.failureClass, "healthy");
 assert.equal(movie.streams.length, 1);
 assert.equal(movie.streams[0].url, "https://cdn.example/interstellar.m3u8");
 assert.equal(movie.streams[0].language, "VF");
-assert.equal(movie.evidence.stages.identity.selectedId, undefined); // evidence intentionally stores only generic proof fields
+assert.equal(movie.evidence.stages.identity.selectedId, undefined);
 assert.equal(movie.evidence.stages.identity.matched, true);
 assert.equal(movie.evidence.stages.validation.playable, true);
 
@@ -76,6 +90,20 @@ assert.equal(tv.streams[0].url, "https://cdn.example/breaking-bad-s01e01.m3u8");
 assert.equal(tv.evidence.stages.episode.found, true);
 assert.equal(tv.evidence.stages.validation.playable, true);
 
+const hotd = await core.resolve({
+  provider: { id: "purstream" },
+  adapter,
+  request: { tmdbId: "94997", mediaType: "series", title: "House of the Dragon", year: 2022, season: 3, episode: 1, device: "desktop" },
+  fixtureId: "house-of-the-dragon-s03e01",
+  clientRef: "desktop-test",
+});
+assert.equal(hotd.request.mediaType, "tv");
+assert.equal(hotd.repair.failureClass, "healthy");
+assert.equal(hotd.streams.length, 1);
+assert.equal(hotd.streams[0].url, "https://cdn.example/hotd-s03e01.m3u8");
+assert.equal(hotd.evidence.stages.identity.matched, true);
+assert.equal(hotd.evidence.stages.episode.found, true);
+
 const apiCall = calls.find((call) => call.href.includes("/search-bar/search/Breaking%20Bad"));
 assert.equal(apiCall.options.headers.Referer, "https://purstream.art/");
 assert.equal(apiCall.options.headers.Origin, "https://purstream.art");
@@ -88,8 +116,10 @@ assert.deepEqual(derivePurstreamEndpoint("https://purstream.club/"), {
   origin: "https://purstream.club",
 });
 assert.throws(() => createPurstreamAdapter({ terminalUrl: "https://purstream.wiki/" }), /hub is not a terminal/);
-assert.equal(strictIdentityScore({ id: 1, title: "Breaking Bad", type: "movie", year: 2008 }, { title: "Breaking Bad", year: 2008 }, "tv"), 0);
+assert.equal(strictIdentityScore({ id: 1, title: "Breaking Bad", type: "movie", year: 2008 }, { title: "Breaking Bad", year: 2008 }, "tv"), -1);
 assert.ok(strictIdentityScore({ id: 1, title: "Breaking Bad", type: "tv", year: 2008 }, { title: "Breaking Bad", year: 2008 }, "tv") >= 100);
+assert.ok(strictIdentityScore({ id: 88, title: "House of the Dragon", type: "tv", year: 2026 }, { title: "House of the Dragon", year: 2022 }, "tv") >= 100);
+assert.equal(strictIdentityScore({ id: 88, title: "House of the Dragon", type: "movie", year: 2026 }, { title: "House of the Dragon", year: 2022 }, "movie"), -1);
 
 console.log("engine v2 Purstream adapter tests passed");
 
