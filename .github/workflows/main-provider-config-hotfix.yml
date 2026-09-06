@@ -1,0 +1,103 @@
+name: MAIN - Provider CONFIG Publication Hotfix
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-provider-config-hotfix.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-main-provider-config-hotfix
+  cancel-in-progress: true
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply durable publication fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          python scripts/apply_provider_config_publication_hotfix.py
+          python -m py_compile scripts/reapply_published_overrides.py scripts/validate_published_provider_config.py tests/final_published_provider_config_test.py
+      - name: Run source regressions before rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/native_dual_id_identity_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+      - name: Rematerialize authoritative 96 Provider v3 bundles
+        env:
+          NUVIO_PROVIDER_V3_CONTEXT: main
+        run: python scripts/materialize_provider_v3_all.py
+      - name: Finalize from Base plus structured CONFIG plus Lego
+        run: python scripts/reapply_published_overrides.py
+      - name: Derive filtered manifests and prune superseded bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/prune_unreferenced_providers.py
+      - name: Synchronize client-visible versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/sync_release_versions.py --previous "$RUNNER_TEMP/manifest.before.json"
+          python scripts/apply_provider_config_publication_hotfix.py --memory-only
+      - name: Validate final published bytes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/final_published_provider_config_test.py
+          python tests/native_dual_id_identity_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python scripts/audit_provider_v3_static.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python scripts/reapply_published_overrides.py --check
+      - name: Publish repaired generation to main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm -f scripts/apply_provider_config_publication_hotfix.py .github/workflows/main-provider-config-hotfix.yml
+          git add -A
+          git diff --cached --stat
+          git diff --cached --quiet && { echo 'No publication changes'; exit 1; }
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then
+            echo "MAIN_ADVANCED base=$BASE_SHA current=$CURRENT_SHA"
+            exit 75
+          fi
+          VERSION="$(python -c 'import json; print(json.load(open("manifest.json"))["version"])')"
+          git commit -m "fix: restore Provider CONFIG in final publication ${VERSION}"
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
