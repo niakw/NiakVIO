@@ -12,6 +12,7 @@ ANALYZER="${NIAKVIO}/scripts/analyze_native_corpus_collection.cjs"
 READER_GATE="${NIAKVIO}/scripts/gate_native_reader_result.cjs"
 COVERAGE_GATE="${NIAKVIO}/scripts/gate_native_reader_coverage.cjs"
 SMOKE_GATE="${NIAKVIO}/scripts/gate_native_player_reached.cjs"
+APP_SELECTION_GATE="${NIAKVIO}/scripts/gate_native_app_provider_selection.py"
 RESTAGE="${NIAKVIO}/scripts/restage_native_corpus_client.py"
 ACCEPTANCE_PREPARE="${NIAKVIO}/scripts/prepare_native_reader_acceptance.py"
 INSTRUMENTER="${NIAKVIO}/scripts/instrument_native_client_evidence.py"
@@ -94,7 +95,7 @@ echo "FIELD_NATIVE_MOBILE_APP_INSTALLED package=com.nuviodebug.com variant=fullD
 
 mkdir -p "$EVIDENCE_ROOT"
 echo "Resolved NuvioMobile task once for corpus suite: $MOBILE_TASK"
-echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES reader_outcome=observational reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true live_logcat=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
+echo "FIELD_NATIVE_CORPUS_MOBILE_PROFILE fixtures=${#FIXTURES[@]} provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST player_probes=$PLAYER_PROBES reader_outcome=observational reader_acceptance=$READER_ACCEPTANCE primary_stream_scope=$PRIMARY_STREAM_SCOPE regression_stream_scope=$REGRESSION_STREAM_SCOPE reuse_avd=true reuse_gradle_daemon=true live_logcat=true full_backend_evidence=true repository_http_evidence=true frontend_timeline=true official_repository_loading=true app_provider_selection=true local_manifest=$ALLOW_LOCAL_MANIFEST smoke_gate=player_reached pr_provider_limit=${NIAKVIO_PR_PROVIDER_LIMIT:-default}"
 
 for fixture in "${FIXTURES[@]}"; do
   echo "===== MOBILE CORPUS FIXTURE: $fixture ====="
@@ -163,11 +164,13 @@ python3 "$NIAKVIO/scripts/gate_native_declared_provider_matrix.py" \
   --manifest "$NIAKVIO/$TARGET_MANIFEST" \
   --corpus "$NIAKVIO/.github/triggers/nuvio-client-lab.json" \
   "${LOGS[@]}" || MATRIX_STATUS=$?
+APP_SELECTION_STATUS=0
+python3 "$APP_SELECTION_GATE" --client mobile "${LOGS[@]}" || APP_SELECTION_STATUS=$?
 SMOKE_STATUS=0
 node "$SMOKE_GATE" "${LOGS[@]}" || SMOKE_STATUS=$?
 FINAL_STATUS=$SMOKE_STATUS
-if [[ "$MATRIX_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi
+if [[ "$MATRIX_STATUS" -ne 0 || "$APP_SELECTION_STATUS" -ne 0 ]]; then FINAL_STATUS=2; fi
 READER_STATE=healthy
 if [[ "$READER_FAILURES" -gt 0 ]]; then READER_STATE=degraded; fi
-echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$FINAL_STATUS soft_failures=$SOFT_FAILURES reader_state=$READER_STATE reader_failures=$READER_FAILURES matrix_status=$MATRIX_STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST gate=production_player_reached evidence_root=$EVIDENCE_ROOT"
+echo "FIELD_NATIVE_CORPUS_MOBILE_SUITE_STATUS status=$FINAL_STATUS soft_failures=$SOFT_FAILURES reader_state=$READER_STATE reader_failures=$READER_FAILURES matrix_status=$MATRIX_STATUS app_selection_status=$APP_SELECTION_STATUS fixtures=${#FIXTURES[@]} clients=1 provider=${TARGET_PROVIDER:-all} configured_acceptance_provider_scope=$CONFIGURED_ACCEPTANCE_PROVIDER_SCOPE manifest=$TARGET_MANIFEST gate=production_player_reached evidence_root=$EVIDENCE_ROOT"
 exit "$FINAL_STATUS"
