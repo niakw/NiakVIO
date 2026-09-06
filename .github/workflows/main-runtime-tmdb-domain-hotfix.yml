@@ -1,5 +1,5 @@
 name: MAIN - Dual ID Runtime Hotfix
-# retry: canonical-routes-transport-metadata-v5
+# retry: canonical-routes-transport-metadata-v6
 
 on:
   push:
@@ -132,7 +132,7 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git rm .github/workflows/main-runtime-tmdb-domain-hotfix.yml scripts/apply_main_dual_id_hotfix.py scripts/apply_main_dual_id_hotfix_bootstrap.py scripts/patch_native_request_contract_series.py
+          git rm -f .github/workflows/main-runtime-tmdb-domain-hotfix.yml scripts/apply_main_dual_id_hotfix.py scripts/apply_main_dual_id_hotfix_bootstrap.py scripts/patch_native_request_contract_series.py
           git add -A
           git diff --cached --check
           git commit -m 'fix: restore dual IMDb/TMDB provider identity contract'
