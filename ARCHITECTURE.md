@@ -148,13 +148,13 @@ Règles :
 
 ## 7. Reconstruction complète
 
-La reconstruction 96/96 appartient à `.github/workflows/provider-v3-reconstruct-all.yml` et à une branche non-main.
+La reconstruction 96/96 appartient à `.github/workflows/provider-v3-reconstruct-all.yml`. Règle d’exploitation courante : **`main` est l’unique cible d’écriture active**. Le workflow peut utiliser un workspace runner et des artifacts éphémères, mais il ne doit pas créer ou maintenir une branche workbench persistante par défaut.
 
 Interdictions :
 
 - seed depuis `providers/*.js` ;
 - seed depuis un bundle upstream ;
-- reconstruction forcée directement sur `main` ;
+- création automatique d’une branche workbench persistante ;
 - reconstruction cachée dans Quick, Deep ou un Native Lab.
 
 La preuve finale doit inclure la reconstruction reverse byte-identical via `scripts/verify_provider_v3_reverse_rebuild.py`.
@@ -268,11 +268,11 @@ Le stripping HTML générique par regexp est interdit. Les findings CodeQL sur c
 
 ## 14. Branches et publication
 
-- `main` = production protégée ;
-- travail structurel = branche temporaire depuis `main` ;
-- `brain-learning/proposals` = propositions Learning durables, sans publication directe ;
+- **`main` = production et unique cible d’écriture active pour le travail courant** ;
+- ne pas créer de nouvelle branche workbench/clean pour les corrections en cours ;
+- `brain-learning/proposals` reste un store passif de propositions Learning, sans autorité de publication directe et sans servir de branche d’implémentation ;
 - aucune branche workbench historique ne doit être documentée comme active après sa suppression ;
-- avant merge, vérifier qu’aucun artifact/code/doc utile ne reste uniquement sur une branche qui sera supprimée.
+- avant de supprimer un ancien ref, vérifier qu’aucun artifact/code/doc utile n’y reste unique.
 
 ## 15. Invariants non négociables
 
