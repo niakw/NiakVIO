@@ -4,12 +4,14 @@
 Retries are for transient execution/network failures only. Deterministic source or
 runtime defects such as MODULE_NOT_FOUND and source-policy blocks are never retried.
 The best attempt is kept, and a positive attempt stops immediately.
+
+Provider package resolution is intentionally owned by
+`upgrade_provider_worker_module_resolution_v1.py` (invoked by repair V7), not by
+this retry migration. One worker concern, one owner.
 """
 from __future__ import annotations
 
 from pathlib import Path
-
-import upgrade_provider_worker_dependency_resolution_v1 as worker_deps
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "recover_provider_routes_from_upstreams.py"
@@ -211,12 +213,12 @@ def validate(text: str | None = None) -> None:
 
 
 def main() -> int:
-    changed = patch() | worker_deps.patch()
+    changed = patch()
     validate()
-    worker_deps.validate()
     print(
         f"PROVIDER_ROUTE_RETRY_V1_OK changed={str(changed).lower()} "
-        "max_attempts=4 default_attempts=3 deterministic_errors_retried=0 project_dep_resolution=1"
+        "max_attempts=4 default_attempts=3 deterministic_errors_retried=0 "
+        "package_resolution_owner=provider_worker_module_resolution_v1"
     )
     return 0
 
