@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Fail closed when docs/workflows drift from current Provider v3 ownership."""
 from __future__ import annotations
 
 import json
@@ -9,54 +10,113 @@ ROOT = Path(__file__).resolve().parents[1]
 architecture = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 readme_fr = (ROOT / "README.fr.md").read_text(encoding="utf-8")
-security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
-upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
+health = (ROOT / "HEALTH-CHECK.md").read_text(encoding="utf-8")
+contributing = (ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
 install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
+security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+validation = (ROOT / "VALIDATION.md").read_text(encoding="utf-8")
+upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
+engine = (ROOT / "engine_v2/README.md").read_text(encoding="utf-8")
+sync = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
+manual = (ROOT / ".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 machine = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
-assert "ProviderBase v3" in architecture
-assert "structured DATA" in architecture
-assert "Provider Lego" in architecture
-assert "Core Lego" in architecture
-assert "STARTFIX" in architecture and "CLOSEFIX" in architecture
-assert "provider-v3-materialization.json" in architecture
-assert "scripts/provider_v3_minimizer.py" in architecture
-assert "Terser" in architecture
-assert "ProviderBase v3" in readme
-assert "ProviderBase v3" in readme_fr
-assert "exactly five Labs" in readme
-assert "exactement cinq Labs" in readme_fr
-assert "provider-v3-materialization.json" in readme
-assert "provider-v3-materialization.json" in readme_fr
-assert "provider_v3_minimizer.py" in readme
-assert "provider_v3_minimizer.py" in readme_fr
-assert "Terser" in readme and "Terser" in readme_fr
-assert "96" in architecture
-assert "96" in readme
-assert "96" in readme_fr
-assert "ProviderBase v3" in security
-assert "ProviderBase v3" in upstreams
+for required in (
+    "NIAKVIO_PROVIDER_BASE_OWNED_V3",
+    "STARTFIX:<ID>",
+    "CLOSEFIX:<ID>",
+    "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
+    "provider-v3-reconstruct-all.yml",
+    "TVAndroid",
+    "MobileAndroid",
+    "MobileIOS",
+    "DesktopMACOS",
+    "DesktopWindows",
+    "Quick/Deep ne réparent ni ne reconstruisent les providers",
+):
+    assert required in architecture, required
 
-assert machine["schema_version"] >= 4
-assert machine["provider_count"] == 96
-assert machine["provider_base"]["version"] == 3
-assert machine["provider_base"]["immutable"] is True
-assert machine["provider_base"]["common"] is True
-assert machine["provider_base"]["runtime_provider_specific_business_logic_allowed"] is False
-assert machine["provider_data"]["structured"] is True
-assert machine["provider_data"]["provider_specific"] is True
-assert machine["provider_lego"]["owned"] is True
-assert machine["provider_lego"]["before_core_boundary"] is True
-assert machine["core_lego"]["provider_agnostic"] is True
-assert machine["core_lego"]["after_core_boundary"] is True
-assert machine["core_lego"]["identity_owner"] == "CORE.STREAM_IDENTITY.V1"
-assert machine["core_lego"]["media_safety_owner"] == "CORE.RUNTIME_MEDIA_SAFETY.V4"
-assert machine["minimizer"]["tool"] == "scripts/provider_v3_minimizer.py"
-assert machine["minimizer"]["terser_allowed"] is False
-assert machine["reverse_rebuild"]["required"] is True
-assert machine["reverse_rebuild"]["byte_verification_required"] is True
-assert machine["provider_plan_contract"]["all_provider_objects_in_scope"] is True
+for text, label in (
+    (architecture, "ARCHITECTURE"),
+    (readme, "README"),
+    (readme_fr, "README.fr"),
+    (health, "HEALTH-CHECK"),
+    (contributing, "CONTRIBUTING"),
+    (install, "INSTALL"),
+    (security, "SECURITY"),
+    (validation, "VALIDATION"),
+    (upstreams, "UPSTREAMS"),
+    (engine, "engine_v2/README"),
+):
+    for forbidden in (
+        "NIAKVIO_PROVIDER_BASE_OWNED_V2",
+        "core-media-finalize-main.yml",
+        ".github/triggers/deep-provider-repair",
+        "Quick est une maintenance **réparatrice",
+        "Quick handles routine maintenance such as hub/domain refresh, canonical provider validation and bounded repairs",
+        "maintenance courante, repair-first",
+        "10 providers dont 3 VF",
+        "audit/preview-only",
+        "workbench/provider-v3-performance-playback",
+        "workbench/provider-v3-recognition-routes-data",
+    ):
+        assert forbidden not in text, f"{label}: stale architecture contract: {forbidden}"
+
+assert "FIELD_PROVIDER_VERIFY_MODE mode=$MODE repair=false reconstruction=false" in sync
+assert "python scripts/materialize_provider_v3_all.py" not in sync
+assert "run_adaptive_quick_repair.py" not in sync
+assert "run_adaptive_deep_repair.py" not in sync
+
+assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
+assert 'GITHUB_REF_NAME}" != "main"' in manual
+assert "python scripts/materialize_provider_v3_all.py" in manual
+assert "python scripts/verify_provider_v3_reverse_rebuild.py" in manual
+
+assert machine["schema_version"] >= 5
+source = machine["provider_source_of_truth"]
+assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
+assert source["legacy_provider_js_seed_allowed"] is False
+assert source["upstream_provider_js_seed_allowed"] is False
+assert source["published_provider_js_is_reconstruction_seed"] is False
+
+media = machine["media_types"]
+assert media["semantic_field"] == "canonicalSupportedTypes"
+assert media["transport_field"] == "supportedTypes"
+assert media["anime_only_transport_compatibility"] == ["anime", "tv", "series"]
+assert media["transport_aliases_do_not_expand_semantic_capability"] is True
+assert media["capability_gate_before_provider_network"] is True
+
+assert machine["routine"]["quick"]["repair_allowed"] is False
+assert machine["routine"]["quick"]["provider_reconstruction_allowed"] is False
+assert machine["routine"]["deep"]["repair_allowed"] is False
+assert machine["routine"]["deep"]["provider_reconstruction_allowed"] is False
+assert machine["manual_reconstruction"]["main_write_allowed"] is False
+assert machine["native_labs"] == [
+    "TVAndroid",
+    "MobileAndroid",
+    "MobileIOS",
+    "DesktopMACOS",
+    "DesktopWindows",
+]
+
+assert machine["minifier"]["enabled_in_production"] is True
+assert machine["minifier"]["phase"] == "pre-hash-safe-whitespace"
+assert machine["minifier"]["tool"] == "scripts/provider_v3_minimizer.py"
+assert machine["minifier"]["transformations_enabled"] == ["code-line-leading-indentation"]
+assert machine["minifier"]["newline_asi_contract"] == "preserve every line terminator"
+assert machine["minifier"]["terser_allowed"] is False
+
+# Historical reverse reference is intentionally frozen, but it is isolated from
+# current operational truth and current native/type counts.
+reference = machine["reference_reconstruction"]
+assert reference["current_operational_truth"] is False
+assert reference["reverse_byte_identical"] == "96/96"
+assert reference["release_integrity"] is True
+assert machine["provider_plan_contract"]["historical_plan_counts_live_only_in_reference_reconstruction"] is True
+assert "executable_non_quarantined" not in machine["provider_plan_contract"]
+assert "quarantined" not in machine["provider_plan_contract"]
+
 assert machine["provider_plan_contract"]["disabled_providers_are_audited"] is True
 assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is False
 
@@ -89,10 +149,8 @@ for row in rows:
     assert canonical <= canonical_valid, (provider, canonical)
     assert "series" not in canonical, (provider, canonical)
     assert canonical <= transport, (provider, canonical, transport)
-    # Episodic anime/tv must be reachable through Nuvio's tv/series lanes.
     if "anime" in canonical or "tv" in canonical:
         assert {"tv", "series"} <= transport, (provider, canonical, transport)
-    # Movie is never synthesized as an anime/tv transport alias.
     assert ("movie" in transport) == ("movie" in canonical), (provider, canonical, transport)
 
 # No dead workbench should remain part of the permanent documentation contract.
@@ -114,4 +172,4 @@ for path in (ROOT / ".github/workflows").glob("*.yml"):
     assert "run_adaptive_quick_repair.py" not in text, path.name
     assert "run_adaptive_deep_repair.py" not in text, path.name
 
-print("provider v3 documentation/machine contract passed")
+print("Provider v3 documentation and workflow ownership contract passed")
