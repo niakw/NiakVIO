@@ -5,6 +5,12 @@ Route recognition executes upstream Provider JS from a temporary directory. Bare
 package imports therefore cannot see NiakVIO's node_modules even though the exact
 runtime dependencies are installed and locked. This migration adds a fallback
 resolution root only for packages declared in NiakVIO's top-level dependencies.
+
+Cheerio is deliberately redirected to its `slim` parser export. The normal Node
+entry imports Undici and therefore networking built-ins such as `node:net`, which
+would either trip the sandbox or, if broadly allowed, create an unwanted network
+bypass. Providers need Cheerio for parsing, not its Node-side transport helpers.
+
 Blocked Node built-ins remain blocked, relative/absolute imports are never
 redirected, and arbitrary transitive packages are not exposed.
 """
@@ -54,6 +60,13 @@ function installModuleRestrictions() {
     if (!parts.length) return '';
     return value.startsWith('@') && parts.length >= 2 ? `${parts[0]}/${parts[1]}` : parts[0];
   };
+  const safeProviderPackageRequest = (request) => {
+    const value = String(request || '').trim();
+    // Both names resolve to the same pinned Cheerio package in this repository.
+    // Force parser-only code so the sandbox never has to permit Undici/node:net.
+    if (value === 'cheerio' || value === 'cheerio-without-node-native') return 'cheerio/slim';
+    return value;
+  };
   Module._load = function restrictedLoad(request, parent, isMain) {
     if (blockedProviderModule(request)) throw new Error(`provider module blocked: ${request}`);
     try {
@@ -64,7 +77,7 @@ function installModuleRestrictions() {
       // Providers are copied to a temp directory for isolation, so approved bare
       // packages cannot naturally reach the repository's pinned node_modules.
       // Resolve only an explicitly declared dependency from NiakVIO's package root.
-      const resolved = packageRequire.resolve(request);
+      const resolved = packageRequire.resolve(safeProviderPackageRequest(request));
       return originalLoad.call(this, resolved, parent, isMain);
     }
   };
@@ -83,9 +96,12 @@ def validate(text: str | None = None) -> None:
         "allowedProviderPackages",
         "Object.keys(packageJson.dependencies || {})",
         "packageRoot",
+        "safeProviderPackageRequest",
+        "value === 'cheerio' || value === 'cheerio-without-node-native'",
+        "return 'cheerio/slim'",
         "!allowedProviderPackages.has(root)",
         "error?.code !== 'MODULE_NOT_FOUND'",
-        "packageRequire.resolve(request)",
+        "packageRequire.resolve(safeProviderPackageRequest(request))",
         "blockedProviderModule(request)",
     ):
         if needle not in value:
@@ -96,7 +112,8 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_WORKER_PACKAGE_RESOLUTION_V1_OK changed={str(changed).lower()} "
-        "declared_packages_only=1 blocked_builtins_preserved=1 relative_redirect=0 transitive_exposure=0"
+        "declared_packages_only=1 cheerio_slim=1 blocked_builtins_preserved=1 "
+        "relative_redirect=0 transitive_exposure=0"
     )
     return 0
 
