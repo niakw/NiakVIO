@@ -10,7 +10,6 @@ Provider-specific URLs/methods/bodies remain DATA from live route proof.
 """
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -103,12 +102,12 @@ def patch_base() -> bool:
     if marker in text:
         return False
 
-    pattern = re.compile(r'(function _crawlEligible\(url\) \{.*?\n\})\n(function _crawlUrlScore\(url\) \{)', re.S)
-    matches = list(pattern.finditer(text))
-    if len(matches) != 1:
-        raise AssertionError(f"crawl helper insertion anchors={len(matches)}")
-    helper = r'''
-/* NIAKVIO_PROVIDER_BASE_BOUNDED_EXTERNAL_ROOT_V10 */
+    # Runtime v6/v7 deliberately uses `_crawlDirectMedia` as the stable boundary
+    # after the crawl helpers. Insert V10 at that semantic boundary instead of
+    # trying to parse a JavaScript function body with a regex (nested braces in
+    # the current helper made the previous anchor fragile).
+    crawl_anchor = "async function _crawlDirectMedia(seedUrls, referer, maxDepth) {"
+    helper = r'''/* NIAKVIO_PROVIDER_BASE_BOUNDED_EXTERNAL_ROOT_V10 */
 function _crawlFollowable(url, fromUrl) {
   if (!_crawlEligible(url)) return false;
   if (_directMedia(url)) return true;
@@ -124,9 +123,7 @@ function _crawlFollowable(url, fromUrl) {
   } catch (_) { return false; }
 }
 '''
-    match = matches[0]
-    replacement = match.group(1) + "\n" + helper + match.group(2)
-    text = text[:match.start()] + replacement + text[match.end():]
+    text = once(text, crawl_anchor, helper + crawl_anchor, "bounded-root-helper-boundary")
 
     old = '_uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))'
     new = '_uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(next=>_crawlFollowable(next,responseUrl)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))'
