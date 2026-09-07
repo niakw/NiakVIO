@@ -50,11 +50,13 @@ jobs:
           python scripts/upgrade_provider_repair_v8.py
           python scripts/upgrade_provider_text_body_request_v9.py
           python scripts/upgrade_provider_text_body_request_v9_1.py
+          python scripts/upgrade_provider_source_plan_v10.py
           python scripts/upgrade_provider_route_retry_v1.py
           python scripts/upgrade_provider_base_runtime_v11.py
           node --check scripts/provider_worker.cjs
           python tests/provider_repair_v8_partial_typed_resolver_test.py
           python tests/provider_text_body_request_v9_test.py
+          python tests/provider_source_plan_v10_regression_test.py
           python scripts/recover_provider_routes_from_upstreams.py \
             --workers 4 --timeout 55 --attempts 3 \
             --provider animekai \
@@ -91,11 +93,14 @@ jobs:
           report=json.loads(Path('automation/fast-source-plan-yield.json').read_text())
           for row in report['rows']:
             fetches=[f for f in row.get('debug_fetches') or [] if 'themoviedb.org' not in str(f.get('url') or '')]
+            model=row.get('debug_model') or {}
             print('SOURCE_PLAN_BASELINE', row['provider_id'], row['semantic_type'],
                   'status='+row['status'], 'stage='+row['debug_stage'],
                   'raw='+str(row['raw']), 'playable='+str(row['playable']),
-                  'provider_fetches='+str(len(fetches)))
-            for f in fetches[:8]:
+                  'provider_fetches='+str(len(fetches)),
+                  'family='+str(model.get('source_runtime_family')),
+                  'recipe='+str(model.get('has_api_recipe')))
+            for f in fetches[:10]:
               print('SOURCE_PLAN_FETCH', row['provider_id'], row['semantic_type'], f.get('status'), f.get('url'))
           PY
       - name: Upload baseline
