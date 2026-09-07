@@ -14,6 +14,7 @@ captured or exposed.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -29,13 +30,6 @@ def replace_block(text: str, start: str, end: str, replacement: str, label: str)
     if end_at < 0:
         raise AssertionError(f"{label}: end anchor missing")
     return text[:start_at] + replacement + text[end_at:]
-
-
-def replace_once(text: str, old: str, new: str, label: str) -> str:
-    count = text.count(old)
-    if count != 1:
-        raise AssertionError(f"{label}: expected one anchor, got {count}")
-    return text.replace(old, new, 1)
 
 
 def patch() -> bool:
@@ -127,20 +121,35 @@ function _sourceUrls(value, base, out, streamContainer) {
     if resolve_start < 0 or resolve_end < 0:
         raise AssertionError("typed-route-playback-context: resolveRoute anchors missing")
     segment = text[resolve_start:resolve_end]
-    segment = replace_once(
-        segment,
-        'const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";\n      const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, requestKey, values), values);',
-        'const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";\n      const requestSpec = _recipeRequestSpec(recipe, requestKey, values);\n      const payload = await _recipePayload(url, recipe, requestSpec, values);\n      const playback = _recipePlaybackContext(recipe, requestSpec, base);',
-        "typed-route-request-playback-context",
-    )
-    old_stream_context = '''recipe.referer || base,
-          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})'''
-    count = segment.count(old_stream_context)
-    if count != 2:
-        raise AssertionError(f"typed-route-stream-context: expected 2 anchors, got {count}")
-    segment = segment.replace(old_stream_context, "playback.referer,\n          playback.headers")
-    text = text[:resolve_start] + segment + text[resolve_end:]
 
+    request_pattern = re.compile(
+        r'(?m)^(?P<i>\s*)const requestKey = media === "movie" \? "movieRequest" : "episodeRequest";\n'
+        r'(?P=i)const payload = await _recipePayload\(url, recipe, _recipeRequestSpec\(recipe, requestKey, values\), values\);$'
+    )
+    segment, request_count = request_pattern.subn(
+        lambda m: (
+            f'{m.group("i")}const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";\n'
+            f'{m.group("i")}const requestSpec = _recipeRequestSpec(recipe, requestKey, values);\n'
+            f'{m.group("i")}const payload = await _recipePayload(url, recipe, requestSpec, values);\n'
+            f'{m.group("i")}const playback = _recipePlaybackContext(recipe, requestSpec, base);'
+        ),
+        segment,
+    )
+    if request_count != 1:
+        raise AssertionError(f"typed-route-request-playback-context: expected 1 replacement, got {request_count}")
+
+    stream_pattern = re.compile(
+        r'(?m)^(?P<i>\s*)recipe\.referer \|\| base,\n'
+        r'(?P=i)Object\.assign\(\{\}, recipe\.playbackHeaders \|\| \{\}, recipe\.origin \? \{ Origin: recipe\.origin \} : \{\}\)$'
+    )
+    segment, stream_count = stream_pattern.subn(
+        lambda m: f'{m.group("i")}playback.referer,\n{m.group("i")}playback.headers',
+        segment,
+    )
+    if stream_count != 2:
+        raise AssertionError(f"typed-route-stream-context: expected 2 replacements, got {stream_count}")
+
+    text = text[:resolve_start] + segment + text[resolve_end:]
     TARGET.write_text(text, encoding="utf-8")
     validate(text)
     return True
