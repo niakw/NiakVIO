@@ -212,10 +212,16 @@ def validate() -> None:
         '"executionRoutes": execution_routes',
         'generic_execution_route(row)',
         'row.get("requestSpecReusable") is True',
-        'patch["learned_routes"] = execution_routes',
+        'runtime_routes, preserved_baseline_plan = select_runtime_routes(',
+        'patch["learned_routes"] = runtime_routes',
+        'model["routes"] = runtime_routes',
+        '"genericExecutionRouteCount": len(execution_routes)',
+        '"runtimePlanPreserved": preserved_baseline_plan',
     ):
         if needle not in recovery:
             raise AssertionError(f"recovery request-spec wiring missing: {needle}")
+    if 'patch["learned_routes"] = execution_routes' in recovery:
+        raise AssertionError('obsolete direct execution-route overwrite must not bypass conservative runtime-plan selection')
     for needle in ('"requestSpec": copy.deepcopy(request_spec)', '"requestSpecReusable": bool(meta.get("requestSpecReusable"))'):
         if needle not in bootstrap:
             raise AssertionError(f"bootstrap request-spec wiring missing: {needle}")
