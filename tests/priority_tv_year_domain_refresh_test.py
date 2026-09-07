@@ -10,7 +10,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import refresh_authoritative_hub_domains as refresh
 
 identity = (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
-assert "cross-client-shared-catalogue-policy-movie-year-only-v9" in identity
+assert "cross-client-shared-tmdb-owner-movie-year-only-v10" in identity
 assert '"catalogueYearPolicy": "movie-only"' in identity
 assert "q.seriesYear=" not in identity
 assert "q.seasonYear=" not in identity
