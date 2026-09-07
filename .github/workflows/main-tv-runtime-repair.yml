@@ -34,17 +34,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Retry 11: instrument exact TMDB URLs/cache keys before changing ownership again.
+          # Retry 12: STREAM_IDENTITY delegates TMDB ownership to the shared Core capability.
           python scripts/prepatch_stream_facts_quality_v2.py
           python scripts/prepatch_tv_runtime_upgrade_validator_v1.py
           python scripts/prepatch_quality_test_bootstrap_v1.py
           python scripts/upgrade_tv_runtime_regressions_v1.py
           python scripts/upgrade_provider_prune_batch_history_v1.py
+          python scripts/prepatch_identity_shared_tmdb_v1.py
           python scripts/prepatch_presentation_tmdb_context_v1.py
           python scripts/prepatch_presentation_pipeline_diagnostics_v1.py
           python -m py_compile \
             scripts/provider_patches/global_media_type_resolution_v1.py \
             scripts/provider_patches/global_stream_facts_v1.py \
+            scripts/provider_patches/global_stream_identity_v1.py \
             scripts/provider_patches/global_stream_presentation_v1.py \
             scripts/provider_patches/stream_output_sanitizer_v5.py \
             scripts/prune_unreferenced_providers.py \
@@ -58,6 +60,7 @@ jobs:
           python tests/stream_quality_recovery_tv_test.py
           python tests/provider_prune_batch_history_test.py
           python tests/global_media_type_resolution_test.py
+          python tests/global_stream_identity_test.py
           python tests/global_stream_presentation_test.py
           python tests/global_stream_presentation_pipeline_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
@@ -76,13 +79,14 @@ jobs:
           marker='### TV shared-runtime repair — final consolidated checkpoint (2026-09-07)'
           block=f'''
           {marker}
-          - Retry 4: Actions run `34073319355` proved stale-request cancellation but exposed that a provider fact `resolution: 1920x1080` was not converted to `quality: 1080p` because the generic token regex did not parse WxH explicitly.
-          - Retry 5: Actions run `34073668673` proved cancellation, quality recovery (`1080p`, `1080p` for the Purstream/StreamZo fixtures), and batched prune; the next red was a stale presentation-pipeline test that did not inject the now-required runtime-only TMDB credential.
-          - Retry 6: Actions run `34073743529` restored full presentation metadata but exposed two TMDB calls for one movie invocation.
+          - Retry 4: Actions run `34073319355` proved stale-request cancellation but exposed that `resolution: 1920x1080` was not converted to `quality: 1080p`.
+          - Retry 5: Actions run `34073668673` proved cancellation, Purstream/StreamZo quality recovery (`1080p`, `1080p`), and batched prune; it then exposed a stale runtime-only-TMDB test bootstrap.
+          - Retry 6: Actions run `34073743529` restored full presentation metadata but exposed two TMDB requests for one movie invocation.
           - Retry 7: Actions run `34073960958` had zero jobs because checkpoint text escaped the YAML block; no Core/product code executed.
-          - Retry 9: Actions run `34074004747` proved transient `__nuvioMediaContext` is cleared by MEDIA_TYPE before STREAM_PRESENTATION resumes.
-          - Retry 10: Actions run `34074084167` proved cache-first presentation alone still saw two TMDB requests; retry 11 instrumented exact URLs and cache keys before the final ownership correction.
-          - Final repair run: Actions run `{os.environ.get('GITHUB_RUN_ID','unknown')}`. Shared Core acceptance is stale A→B network sequence only `/1/one`, `/2/one`; Purstream/StreamZo quality fixtures both `1080p`; batched prune retention; media-type resolver; presentation metadata without redundant movie TMDB work; sanitizer fail-closed/direct-normalization.
+          - Retries 9/10 (`34074004747`, `34074084167`) proved the duplicate was not solved by presentation reuse alone: MEDIA_TYPE clears transient `__nuvioMediaContext`, while its durable cache is populated only after the inner identity layer has already run.
+          - Retry 11: Actions run `34074160651` instrumented the exact requests. The first was STREAM_IDENTITY's legacy lightweight `append_to_response=external_ids`; the second was MEDIA_TYPE's canonical rich metadata request. Final cache key was `movie:157336`.
+          - Final repair run: Actions run `{os.environ.get('GITHUB_RUN_ID','unknown')}`. STREAM_IDENTITY now delegates TMDB metadata acquisition to `__nuvioCoreGetTmdbDataV1` when installed, so identity, media-type and presentation share one canonical cache/network owner; the legacy lightweight call is compatibility-only when the shared capability is absent.
+          - Shared Core acceptance: stale A→B network sequence only `/1/one`, `/2/one`; Purstream/StreamZo quality fixtures both `1080p`; batched prune retention; media-type + identity contracts; exactly one movie TMDB request through the full presentation pipeline; sanitizer fail-closed/direct-normalization.
           - Public manifest remains `5.21.35` until the separate 96/96 route-proof reconstruction, reverse/static/integrity, quick-yield, real Purstream HOTD S3E1 `series` + `tv` proof, and publication transaction are green.
           '''
           if marker not in text:
@@ -94,6 +98,7 @@ jobs:
             scripts/prepatch_stream_facts_quality_v2.py \
             scripts/prepatch_tv_runtime_upgrade_validator_v1.py \
             scripts/prepatch_quality_test_bootstrap_v1.py \
+            scripts/prepatch_identity_shared_tmdb_v1.py \
             scripts/prepatch_presentation_tmdb_context_v1.py \
             scripts/prepatch_presentation_pipeline_diagnostics_v1.py \
             scripts/upgrade_tv_runtime_regressions_v1.py \
@@ -102,11 +107,12 @@ jobs:
             MEMORY.md \
             scripts/provider_patches/global_media_type_resolution_v1.py \
             scripts/provider_patches/global_stream_facts_v1.py \
+            scripts/provider_patches/global_stream_identity_v1.py \
             scripts/provider_patches/global_stream_presentation_v1.py \
             scripts/provider_patches/stream_output_sanitizer_v5.py \
             scripts/prune_unreferenced_providers.py \
             tests/provider_latest_request_cancellation_test.py \
             tests/stream_quality_recovery_tv_test.py \
             tests/provider_prune_batch_history_test.py
-          git commit -m 'fix(core): cancel stale provider work and recover stream quality'
+          git commit -m 'fix(core): cancel stale work and centralize stream metadata'
           git push origin HEAD:main
