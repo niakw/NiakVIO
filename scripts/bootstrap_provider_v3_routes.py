@@ -168,6 +168,7 @@ def collect(provider_id: str, source: Path, types: list[str], timeout: int) -> d
                 meta = item.get("derivation") if isinstance(item.get("derivation"), dict) else {}
                 if not route or not successful(fetch):
                     continue
+                request_spec = meta.get("requestSpec") if isinstance(meta.get("requestSpec"), dict) else None
                 route_data.append({
                     "route": route,
                     "origin": meta.get("origin"),
@@ -176,10 +177,8 @@ def collect(provider_id: str, source: Path, types: list[str], timeout: int) -> d
                     "semanticType": semantic_type,
                     "fixture": fixture["slug"],
                     "providerValueCorrelation": bool(meta.get("providerValueCorrelation")),
-                    "headers": copy.deepcopy(fetch.get("proof_headers") or {}),
-                    "bodyKind": fetch.get("body_kind") or "none",
-                    "bodyFields": list(fetch.get("body_fields") or []),
-                    "bodyValues": copy.deepcopy(fetch.get("body_values") or {}),
+                    "requestSpec": copy.deepcopy(request_spec),
+                    "requestSpecReusable": bool(meta.get("requestSpecReusable")),
                     "status": int(fetch.get("status") or 0),
                     "contentType": fetch.get("content_type"),
                     "proofModelVersion": PROOF_VERSION,
@@ -213,6 +212,7 @@ def collect(provider_id: str, source: Path, types: list[str], timeout: int) -> d
         "routeProofVersion": PROOF_VERSION,
         "sourceProviderJavaScriptExecuted": True,
         "staticCandidatesExecutable": False,
+        "requestSpecModel": "ROUTE_RECOVERY_REQUEST_SPEC_V1",
         "routes": routes,
         "routeData": deduped,
         "tasks": tasks,

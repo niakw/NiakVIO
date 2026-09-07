@@ -55,8 +55,8 @@ base_store = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf-8")
 assert "function _collectionMediaType" in base_store
 assert "__nuvioCollectionMediaType" in base_store
 assert "recipe.strictIdentity" in base_store
-assert "expectedTitles.includes(title)" in base_store
-assert "Math.abs(Number(year) - Number(expectedYear)) > 1" in base_store
+assert "__nuvioIdentityPolicyV1" in base_store
+assert "Math.abs(Number(year) - Number(expectedYear)) > 1" not in base_store
 assert "recipe.directSourcesOnly" in base_store
 assert "urls.filter(_directMedia)" in base_store
 assert "const searchQueries = _uniq([" in base_store
@@ -113,7 +113,8 @@ assert "movies: { items:" in engine_test
 assert "series: { items:" in engine_test
 assert "first_air_date" in engine_test
 engine = (ROOT / "engine_v2" / "providers" / "purstream.mjs").read_text(encoding="utf-8")
-assert "strictIdentityScore" in engine
+assert "strictIdentityScore" not in engine
+assert "scoreCatalogueItem" in engine
 assert "__collectionType" in engine
 assert "function normalizeSource" in engine
 assert 'if (!url || !/^https?:\\/\\//i.test(url)) return null;' in engine

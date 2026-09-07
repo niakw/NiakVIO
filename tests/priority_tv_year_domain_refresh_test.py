@@ -10,11 +10,15 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import refresh_authoritative_hub_domains as refresh
 
 identity = (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
-assert "cross-client-shared-tmdb-owner-movie-year-only-v10" in identity
+assert "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in identity
 assert '"catalogueYearPolicy": "movie-only"' in identity
 assert "q.seriesYear=" not in identity
 assert "q.seasonYear=" not in identity
 assert "if(!episodic(q)&&m.year&&years.length" in identity
+assert "function contentLike(candidate,q)" in identity
+assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in identity
+assert "function contentLike(candidate){" not in identity
+assert "if(years.length&&w.length>=1)return true;" not in identity
 assert "__nuvioIdentityPolicyV1" in identity
 assert "catalogueScore:catalogueScore" in identity
 assert 'yearPolicy:"movie-only"' in identity

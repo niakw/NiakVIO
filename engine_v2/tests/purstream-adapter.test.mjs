@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { ResolverCore } from "../src/resolver-core.mjs";
-import { createPurstreamAdapter, derivePurstreamEndpoint, strictIdentityScore } from "../providers/purstream.mjs";
+import { createPurstreamAdapter, derivePurstreamEndpoint } from "../providers/purstream.mjs";
 
 const calls = [];
 const fetchImpl = async (url, options = {}) => {
@@ -116,10 +116,6 @@ assert.deepEqual(derivePurstreamEndpoint("https://purstream.club/"), {
   origin: "https://purstream.club",
 });
 assert.throws(() => createPurstreamAdapter({ terminalUrl: "https://purstream.wiki/" }), /hub is not a terminal/);
-assert.equal(strictIdentityScore({ id: 1, title: "Breaking Bad", type: "movie", year: 2008 }, { title: "Breaking Bad", year: 2008 }, "tv"), -1);
-assert.ok(strictIdentityScore({ id: 1, title: "Breaking Bad", type: "tv", year: 2008 }, { title: "Breaking Bad", year: 2008 }, "tv") >= 100);
-assert.ok(strictIdentityScore({ id: 88, title: "House of the Dragon", type: "tv", year: 2026 }, { title: "House of the Dragon", year: 2022 }, "tv") >= 100);
-assert.equal(strictIdentityScore({ id: 88, title: "House of the Dragon", type: "movie", year: 2026 }, { title: "House of the Dragon", year: 2022 }, "movie"), -1);
 
 console.log("engine v2 Purstream adapter tests passed");
 

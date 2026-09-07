@@ -35,7 +35,12 @@ assert compiled.count("STARTFIX:CORE.STREAM_IDENTITY.V1") == 1
 assert compiled.count("CLOSEFIX:CORE.STREAM_IDENTITY.V1") == 1
 assert '__nuvioIdentityPolicyV1' in compiled
 assert 'yearPolicy:"movie-only"' in compiled
-assert 'cross-client-shared-tmdb-owner-movie-year-only-v10' in compiled
+source = CORE.read_text(encoding="utf-8")
+assert "function contentLike(candidate,q)" in source
+assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in source
+assert "function contentLike(candidate){" not in source
+assert "if(years.length&&w.length>=1)return true;" not in source
+assert 'cross-client-shared-tmdb-owner-zero-episodic-year-v11' in compiled
 
 script = compiled + r'''
 ;(async function(){

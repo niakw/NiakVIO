@@ -1,4 +1,4 @@
-import { normalizeTitle, scoreCatalogueIdentity } from "../src/catalogue-identity-policy.mjs";
+import { normalizeTitle, scoreCatalogueItem } from "../src/catalogue-identity-policy.mjs";
 
 const DEFAULT_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
@@ -47,7 +47,7 @@ export function createPurstreamAdapter(options = {}) {
         const found = collectSearchItems(payload);
         attempts.push({ query, status: response.status, count: found.length, url });
         for (const item of found) matches.push({ ...item, __query: query });
-        if (matches.some((item) => strictIdentityScore(item, metadata, providerMediaType(ctx.request.mediaType)) >= 100)) break;
+        if (matches.some((item) => scoreCatalogueItem({ id: providerId(item), title: itemTitle(item), type: itemType(item), year: itemYear(item) }, metadata, providerMediaType(ctx.request.mediaType)) >= 100)) break;
       }
 
       ctx.state.searchAttempts = attempts;
@@ -64,7 +64,7 @@ export function createPurstreamAdapter(options = {}) {
       const metadata = ctx.state.metadata ?? await resolveMetadata(ctx.request, metadataResolver);
       const targetType = providerMediaType(ctx.request.mediaType);
       const ranked = matches
-        .map((item) => ({ item, score: strictIdentityScore(item, metadata, targetType) }))
+        .map((item) => ({ item, score: scoreCatalogueItem({ id: providerId(item), title: itemTitle(item), type: itemType(item), year: itemYear(item) }, metadata, targetType) }))
         .sort((a, b) => b.score - a.score);
       const best = ranked[0] ?? null;
       const matched = Boolean(best && best.score >= 100 && providerId(best.item));
@@ -152,20 +152,6 @@ export function derivePurstreamEndpoint(terminalUrl) {
     referer: `https://purstream.${suffix}/`,
     origin: `https://purstream.${suffix}`,
   };
-}
-
-export function strictIdentityScore(item, metadata, targetType) {
-  return scoreCatalogueIdentity({
-    title: itemTitle(item),
-    expectedTitles: [metadata?.title, ...(metadata?.aliases ?? [])].filter(Boolean),
-    actualMedia: itemType(item),
-    expectedMedia: targetType,
-    year: itemYear(item),
-    expectedYear: metadata?.year,
-    providerId: providerId(item),
-    strictIdentity: true,
-    requireProviderTypeEvidence: false,
-  });
 }
 
 export function collectSearchItems(payload) {

@@ -16,7 +16,7 @@ spec.loader.exec_module(identity)
 
 source = "module.exports={getStreams:async()=>[{name:'Server 1',title:'Shared Show 2020',url:'https://cdn.example/shared-show-2020.m3u8'}]};"
 patched = identity.apply(source, context={'provider_id': 'example'})
-assert 'cross-client-shared-catalogue-policy-zero-episodic-year-v10' in patched
+assert 'cross-client-shared-tmdb-owner-zero-episodic-year-v11' in patched
 assert 'if(!episodic(q)&&m.year&&years.length' in patched
 assert 'function contentLike(candidate,q)' in patched
 assert 'if(!episodic(q)&&years.length&&w.length>=1)return true;' in patched

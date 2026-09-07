@@ -48,6 +48,20 @@ export function scoreCatalogueIdentity({
   return score;
 }
 
+export function scoreCatalogueItem(item = {}, metadata = {}, targetType = "") {
+  return scoreCatalogueIdentity({
+    title: item.title,
+    expectedTitles: [metadata?.title, ...(metadata?.aliases ?? [])].filter(Boolean),
+    actualMedia: item.type,
+    expectedMedia: targetType,
+    year: item.year,
+    expectedYear: metadata?.year,
+    providerId: item.id,
+    strictIdentity: true,
+    requireProviderTypeEvidence: false,
+  });
+}
+
 export function providerMedia(value) {
   const raw = cleanText(value)?.toLowerCase() ?? "";
   if (raw === "movie") return "movie";

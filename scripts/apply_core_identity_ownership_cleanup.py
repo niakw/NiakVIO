@@ -44,8 +44,8 @@ def patch_core_identity_zero_year_episodic() -> None:
     text = read(path)
     text = replace_once(
         text,
-        '"implementationRevision": "cross-client-shared-catalogue-policy-movie-year-only-v9",',
-        '"implementationRevision": "cross-client-shared-catalogue-policy-zero-episodic-year-v10",',
+        '"implementationRevision": "cross-client-shared-tmdb-owner-movie-year-only-v10",',
+        '"implementationRevision": "cross-client-shared-tmdb-owner-zero-episodic-year-v11",',
         "Core identity revision v10",
     )
     text = replace_once(
@@ -83,7 +83,7 @@ def patch_core_identity_zero_year_episodic() -> None:
         test = read(test_path)
         test = test.replace(
             "cross-client-shared-catalogue-policy-movie-year-only-v9",
-            "cross-client-shared-catalogue-policy-zero-episodic-year-v10",
+            "cross-client-shared-tmdb-owner-zero-episodic-year-v11",
         )
         if test_path.endswith("global_identity_policy_ownership_test.py"):
             anchor = 'assert \'yearPolicy:"movie-only"\' in compiled\n'
@@ -317,7 +317,7 @@ def validate_source_state() -> None:
     assert '["title", "year", "mediaType"]' not in materializer
     assert '["title", "mediaType"]' in base
     assert '["title", "mediaType"]' in materializer
-    assert "cross-client-shared-catalogue-policy-zero-episodic-year-v10" in identity
+    assert "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in identity
     assert "function contentLike(candidate,q)" in identity
     assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in identity
     assert "function contentLike(candidate){" not in identity

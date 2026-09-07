@@ -360,6 +360,7 @@ def route_record(derived: dict[str, Any], semantic_type: str, fixture_slug: str,
     derivation = derived.get("derivation") if isinstance(derived.get("derivation"), dict) else {}
     if not route or not success(fetch):
         return None
+    request_spec = derivation.get("requestSpec") if isinstance(derivation.get("requestSpec"), dict) else None
     return {
         "route": route,
         "origin": derivation.get("origin"),
@@ -369,10 +370,8 @@ def route_record(derived: dict[str, Any], semantic_type: str, fixture_slug: str,
         "fixture": fixture_slug,
         "requestIndex": int(derived.get("index") or 0),
         "providerValueCorrelation": bool(derivation.get("providerValueCorrelation")),
-        "headers": copy.deepcopy(fetch.get("proof_headers") or {}),
-        "bodyKind": fetch.get("body_kind") or "none",
-        "bodyFields": list(fetch.get("body_fields") or []),
-        "bodyValues": copy.deepcopy(fetch.get("body_values") or {}),
+        "requestSpec": copy.deepcopy(request_spec),
+        "requestSpecReusable": bool(derivation.get("requestSpecReusable")),
         "status": int(fetch.get("status") or 0),
         "contentType": fetch.get("content_type"),
         "proofModelVersion": PROOF_VERSION,
@@ -381,21 +380,74 @@ def route_record(derived: dict[str, Any], semantic_type: str, fixture_slug: str,
 
 
 def request_spec(record: dict[str, Any]) -> dict[str, Any] | None:
-    method = str(record.get("method") or "GET").upper()
-    headers = record.get("headers") if isinstance(record.get("headers"), dict) else {}
-    body_kind = str(record.get("bodyKind") or "none")
-    body_values = record.get("bodyValues") if isinstance(record.get("bodyValues"), dict) else {}
-    if method == "GET" and not headers and body_kind in {"none", "empty"}:
-        return None
-    spec: dict[str, Any] = {"method": method}
-    if headers:
-        spec["headers"] = copy.deepcopy(headers)
-    if body_values and body_kind in {"json", "form"}:
-        spec["bodyKind"] = body_kind
-        spec["body"] = copy.deepcopy(body_values)
-    elif body_kind not in {"none", "empty"} and method != "GET":
-        return None
-    return spec
+    spec = record.get("requestSpec") if isinstance(record.get("requestSpec"), dict) else None
+    return copy.deepcopy(spec) if record.get("requestSpecReusable") is True and spec else None
+
+
+# ROUTE_PROOF_DATAFLOW_SAFETY_V2
+_BLANK_DYNAMIC_QUERY_KEYS = {
+    "id", "_id", "media_id", "post_id", "content_id", "movie_id", "series_id", "show_id", "slug",
+    "k", "key", "token", "access_token", "auth", "signature", "sig", "hash", "nonce", "session", "session_id",
+    "season", "season_number", "seasonid", "season_id", "episode", "episode_number", "episodeid", "episode_id",
+}
+
+
+def generic_execution_route(record: dict[str, Any]) -> bool:
+    """Whether routes[] may replay this call without losing HTTP/dataflow semantics."""
+    spec = request_spec(record) or {"method": str(record.get("method") or "GET").upper()}
+    if str(spec.get("method") or "GET").upper() != "GET":
+        return False
+    if spec.get("body"):
+        return False
+    headers = spec.get("headers") if isinstance(spec.get("headers"), dict) else {}
+    nontrivial = {
+        str(key).casefold() for key in headers
+        if str(key).casefold() not in {"accept", "accept-language", "user-agent"}
+    }
+    if nontrivial:
+        return False
+    route = str(record.get("route") or "").strip()
+    try:
+        query = urllib.parse.parse_qsl(urllib.parse.urlsplit(route).query, keep_blank_values=True)
+    except ValueError:
+        return False
+    if any(str(key).casefold() in _BLANK_DYNAMIC_QUERY_KEYS and value == "" for key, value in query):
+        return False
+    return True
+
+
+def _identity_bearing_runtime_route(value: object) -> bool:
+    route = str(value or "").strip().casefold()
+    if not route:
+        return False
+    if any(token in route for token in ("{query}", "{title}", "{slug}", "{id}", "{tmdbid}", "{tmdb_id}")):
+        return True
+    path = urllib.parse.urlsplit(route).path
+    return bool(path and (
+        path.rstrip("/").endswith("/player")
+        or "/search" in path
+        or "/recherche" in path
+        or "/title/" in path
+        or "/movie/" in path
+        or "/series/" in path
+        or "/tv/" in path
+    ))
+
+
+def select_runtime_routes(
+    existing_routes: list[str],
+    candidate_routes: list[str],
+    execution_routes: list[str],
+) -> tuple[list[str], bool]:
+    """Do not demote a richer published runtime plan to weak observations."""
+    execution = unique(execution_routes, 192)
+    if any(_identity_bearing_runtime_route(route) for route in execution):
+        return execution, False
+    for baseline in (existing_routes, candidate_routes):
+        current = unique(baseline, 192)
+        if any(_identity_bearing_runtime_route(route) for route in current):
+            return current, True
+    return execution, False
 
 
 def as_recipe_route(record: dict[str, Any], base: str | None) -> str:
@@ -577,7 +629,8 @@ def recover_one(
         seen.add(fp)
         deduped.append(row)
     routes = unique([row.get("route") for row in deduped], 192)
-    recipe = build_simple_api_recipe(deduped)
+    execution_routes = unique([row.get("route") for row in deduped if generic_execution_route(row)], 192)
+    recipe = build_simple_api_recipe([row for row in deduped if row.get("requestSpecReusable") is True])
     return {
         "providerId": provider_id,
         "sourceId": source_id,
@@ -585,6 +638,8 @@ def recover_one(
         "source": source_meta,
         "routeCount": len(routes),
         "routes": routes,
+        "executionRouteCount": len(execution_routes),
+        "executionRoutes": execution_routes,
         "routeData": deduped,
         "apiRecipe": recipe,
         "tasks": tasks_report,
@@ -623,10 +678,16 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
             model["candidateApiRecipe"] = copy.deepcopy(model["apiRecipe"])
 
         proven_routes = unique(recovered.get("routes") or [], 192)
+        execution_routes = unique(recovered.get("executionRoutes") or [], 192)
         route_data = copy.deepcopy(recovered.get("routeData") or [])
         recipe = recovered.get("apiRecipe") if isinstance(recovered.get("apiRecipe"), dict) else None
-        patch["learned_routes"] = proven_routes
-        model["routes"] = proven_routes
+        existing_routes = unique(patch.get("learned_routes") or [], 192)
+        candidate_routes = unique(patch.get("candidate_learned_routes") or [], 192)
+        runtime_routes, preserved_baseline_plan = select_runtime_routes(
+            existing_routes, candidate_routes, execution_routes
+        )
+        patch["learned_routes"] = runtime_routes
+        model["routes"] = runtime_routes
         model["routeData"] = route_data
         model["routeProofVersion"] = PROOF_VERSION
         model["routeProof"] = {
@@ -635,6 +696,9 @@ def apply_recovery(report: dict[str, Any]) -> dict[str, Any]:
             "staticCandidatesExecutable": False,
             "providerSource": copy.deepcopy(recovered.get("source") or {}),
             "provenRouteCount": len(proven_routes),
+            "genericExecutionRouteCount": len(execution_routes),
+            "runtimePlanPreserved": preserved_baseline_plan,
+            "runtimePlanRouteCount": len(runtime_routes),
         }
         patch["route_proof_version"] = PROOF_VERSION
         patch["route_proof"] = copy.deepcopy(model["routeProof"])
@@ -737,6 +801,7 @@ def main() -> int:
         "statusCounts": dict(sorted(counts.items())),
         "durationMs": round((time.monotonic() - started) * 1000),
         "staticCandidatesExecutable": False,
+        "requestSpecModel": "ROUTE_RECOVERY_REQUEST_SPEC_V1",
         "proofRequirements": [
             "provider-js-executed",
             "exact-sanitized-request-observed",
