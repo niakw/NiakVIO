@@ -80,6 +80,7 @@ def main() -> int:
         "scripts/upgrade_provider_repair_v8.py",
         "scripts/upgrade_provider_text_body_request_v9.py",
         "scripts/upgrade_provider_text_body_request_v9_1.py",
+        "scripts/upgrade_provider_source_plan_v10.py",
         "scripts/upgrade_provider_route_retry_v1.py",
         "scripts/upgrade_provider_base_runtime_v11.py",
     ]
@@ -93,6 +94,7 @@ def main() -> int:
         "tests/provider_repair_v7_typed_resolver_test.py",
         "tests/provider_repair_v8_partial_typed_resolver_test.py",
         "tests/provider_text_body_request_v9_test.py",
+        "tests/provider_source_plan_v10_regression_test.py",
         "tests/global_identity_policy_ownership_test.py",
         "tests/provider_latest_request_cancellation_test.py",
         "tests/provider_native_abort_ignorant_cancellation_test.py",
