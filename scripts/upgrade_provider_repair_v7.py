@@ -1,19 +1,20 @@
 #!/usr/bin/env python3
-"""Classify proof-backed terminal TMDB resolver APIs without flattening multi-hop providers.
+"""Classify proof-backed typed resolver APIs and keep the recognition worker compatible.
 
-The classifier is intentionally evidence-driven. A typed resolver API is only
-marked when the selected movie/episode request:
-- uses TMDB identity directly;
-- does not depend on a value learned from a previous provider response;
-- has a reusable request spec;
-- is the terminal observed provider request of a positive task.
+The classifier is evidence-driven. A typed resolver API is only marked when the
+selected movie/episode request uses TMDB identity directly, is reusable, terminal
+in a positive task, and does not depend on a value learned from an earlier provider
+response. Multi-hop/player/search providers are therefore not flattened.
 
-This covers resolver families such as PlayIMDb while leaving VidSrc/player/search
-chains untouched unless their own proof independently satisfies the same contract.
+This migration also applies the safe worker package-resolution fix so temp-copied
+upstream providers can resolve NiakVIO's pinned npm dependencies while sensitive
+Node built-ins remain blocked.
 """
 from __future__ import annotations
 
 from pathlib import Path
+
+import upgrade_provider_worker_module_resolution_v1 as worker_modules
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "recover_provider_routes_from_upstreams.py"
@@ -29,12 +30,10 @@ def once(text: str, old: str, new: str, label: str) -> str:
 
 def patch() -> bool:
     text = TARGET.read_text(encoding="utf-8")
-    if MARKER in text:
-        validate(text)
-        return False
-
-    anchor = '    route_keys = {"searchRoute", "movieRoute", "episodeRoute", "directRoute"}\n'
-    insertion = '''    # ROUTE_RECOVERY_TYPED_RESOLVER_API_V7
+    changed = False
+    if MARKER not in text:
+        anchor = '    route_keys = {"searchRoute", "movieRoute", "episodeRoute", "directRoute"}\n'
+        insertion = '''    # ROUTE_RECOVERY_TYPED_RESOLVER_API_V7
     def _typed_resolver_terminal(row: dict[str, Any]) -> bool:
         route = str(row.get("route") or "")
         return bool(
@@ -57,10 +56,13 @@ def patch() -> bool:
         recipe["recipeKind"] = "typed-resolver-api"
 
 ''' + anchor
-    text = once(text, anchor, insertion, "typed-resolver-classifier")
-    TARGET.write_text(text, encoding="utf-8")
-    validate(text)
-    return True
+        text = once(text, anchor, insertion, "typed-resolver-classifier")
+        TARGET.write_text(text, encoding="utf-8")
+        changed = True
+
+    changed = worker_modules.patch() or changed
+    validate()
+    return changed
 
 
 def validate(text: str | None = None) -> None:
@@ -75,13 +77,15 @@ def validate(text: str | None = None) -> None:
     ):
         if needle not in value:
             raise AssertionError(f"typed resolver classifier missing: {needle}")
+    worker_modules.validate()
 
 
 def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_REPAIR_V7_OK changed={str(changed).lower()} "
-        "typed_resolver_classifier=1 prior_response_dependency_rejected=1 terminal_positive_required=1"
+        "typed_resolver_classifier=1 prior_response_dependency_rejected=1 "
+        "terminal_positive_required=1 pinned_worker_packages=1 blocked_builtins_preserved=1"
     )
     return 0
 
