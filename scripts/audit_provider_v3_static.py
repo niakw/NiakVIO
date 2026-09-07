@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Read-only audit of the exact 96 published Provider v3 bytes; never reconstructs."""
+"""Read-only audit of the exact 96 Provider v3 bytes; never reconstructs."""
 from __future__ import annotations
 import hashlib, json, re
 from pathlib import Path
 from provider_patch_blocks import decode_managed_data, owned_span, validate_managed_fixes
 from provider_base_store import build_provider_data_model
 from materialize_provider_v3_all import provider_model, normalize_anime_transport_compatibility
+from provider_v3_filename_policy import matches_provider_v3_filename
 
 ROOT=Path(__file__).resolve().parents[1]
 def load(p): return json.loads(Path(p).read_text(encoding="utf-8"))
@@ -21,12 +22,12 @@ for row in rows:
     rel=str(row.get("filename") or ""); path=ROOT/rel
     assert rel.startswith("providers/") and path.is_file(), (pid,rel)
     raw=path.read_bytes(); sha=hashlib.sha256(raw).hexdigest()
-    # Final publication filenames are source-qualified and content addressed.
-    # provider-v3-materialization.json describes the earlier materialization
-    # stage, so its file/sha/generation must not be compared to final bytes
-    # after reapply_published_overrides.py has composed publication CONFIG.
-    expected_name=rf"{re.escape(pid)}--[A-Za-z0-9._-]+--{sha[:16]}\.js"
-    assert re.fullmatch(expected_name,path.name), (pid,path.name,sha[:16])
+    # Workspace materialization is provider-hash.js. Final publication is
+    # source-qualified provider--source--hash.js. Both remain exact content
+    # addressing contracts; publication validation is never relaxed.
+    assert matches_provider_v3_filename(pid,path.name,sha,material), (
+        pid,path.name,sha[:16],material.get("context"),material.get("publication")
+    )
     rep=rb.get(pid); assert rep, pid
     text=raw.decode("utf-8")
     assert text.count("/* BEGIN NIAKVIO_PROVIDER */")==1 and text.count("/* END NIAKVIO_PROVIDER */")==1, pid
@@ -69,4 +70,5 @@ for row in rows:
 
 assert set(rb)==seen
 assert material.get("providerCount")==96 and material.get("expectedProviderCount")==96
-print("PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false publication_stage=final structured_data=current")
+stage="workspace" if material.get("publication") is False and str(material.get("context") or "").casefold()=="workspace" else "publication"
+print(f"PROVIDER_V3_STATIC_AUDIT_OK providers=96 reconstruction=false filename_stage={stage} structured_data=current")
