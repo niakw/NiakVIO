@@ -45,9 +45,11 @@ jobs:
           python scripts/upgrade_provider_repair_v7.py
           python scripts/upgrade_provider_repair_v8.py
           python scripts/upgrade_provider_text_body_request_v9.py
+          python scripts/upgrade_provider_text_body_request_v9_1.py
           python scripts/upgrade_provider_route_retry_v1.py
           python scripts/upgrade_provider_base_runtime_v11.py
           node --check scripts/provider_worker.cjs
+          python tests/provider_text_body_request_v9_test.py
       - name: Probe upstream-positive multi-hop families
         run: |
           set -euo pipefail
