@@ -65,6 +65,7 @@ jobs:
           python scripts/upgrade_provider_v3_source_plan_v5.py
           python -m py_compile \
             scripts/provider_route_proof.py \
+            scripts/provider_v3_filename_policy.py \
             scripts/bootstrap_provider_v3_routes.py \
             scripts/recover_provider_routes_from_upstreams.py \
             scripts/apply_provider_route_recovery_report.py \
@@ -75,7 +76,8 @@ jobs:
             scripts/upgrade_provider_route_proof_request_spec_v1.py \
             scripts/upgrade_provider_base_route_requests_v1.py \
             scripts/upgrade_provider_route_authority_v5.py \
-            scripts/upgrade_route_recovery_request_specs_v1.py
+            scripts/upgrade_route_recovery_request_specs_v1.py \
+            tests/provider_v3_filename_policy_test.py
           node --check scripts/provider_worker.cjs
           python scripts/provider_base_store.py validate
 
@@ -85,6 +87,7 @@ jobs:
           set -euo pipefail
           python tests/provider_route_proof_authority_test.py
           python tests/provider_v3_empty_route_bootstrap_test.py
+          python tests/provider_v3_filename_policy_test.py
           python tests/route_proof_manifest_policy_test.py
           python tests/global_identity_policy_ownership_test.py
           python tests/episodic_identity_runtime_test.py
