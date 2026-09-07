@@ -69,12 +69,18 @@ jobs:
           from pathlib import Path
           row=json.loads(Path('automation/papadustream-v11-recovery.json').read_text())['providers'][0]
           routes=row.get('routes') or []
-          print('PAPADUSTREAM_V11_RECOVERY', 'routes='+str(routes))
-          if '/series/{imdbId}' not in routes:
-              raise SystemExit('missing proof-backed /series/{imdbId}')
-          literals=[route for route in routes if '/series/tt' in route]
-          if literals:
-              raise SystemExit('fixture-specific IMDb literal remained: '+','.join(literals))
+          execution=row.get('executionRoutes') or []
+          print('PAPADUSTREAM_V11_RECOVERY', 'routes='+str(routes), 'execution='+str(execution))
+          if '/series/{imdbId}' not in routes or '/series/{imdbId}' not in execution:
+              raise SystemExit('missing proof-backed executable /series/{imdbId}')
+          provider_literals=[route for route in execution if route.startswith('/series/tt')]
+          if provider_literals:
+              raise SystemExit('fixture-specific provider IMDb literal remained executable: '+','.join(provider_literals))
+          helper_execution=[route for route in execution if route.startswith('/meta/series/') or 'themoviedb' in route]
+          if helper_execution:
+              raise SystemExit('metadata helper route leaked into execution plan: '+','.join(helper_execution))
+          if not any(route.startswith('/meta/series/tt') for route in routes):
+              raise SystemExit('expected helper evidence missing from proven route evidence')
           PY
       - name: Apply DATA materialize PapaDuStream only and audit yield
         run: |
