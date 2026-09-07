@@ -1,0 +1,35 @@
+name: TEMP - Identity Cleanup Fixed Point V1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fix_identity_cleanup_fixedpoint_v1.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Apply fixed-point repair
+        run: python3 scripts/fix_identity_cleanup_fixedpoint_v1.py
+      - name: Verify already-current path
+        run: python3 scripts/apply_core_identity_ownership_cleanup.py
+      - name: Commit source repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm scripts/fix_identity_cleanup_fixedpoint_v1.py
+          git add scripts/apply_core_identity_ownership_cleanup.py
+          git commit -m 'fix(core): make identity ownership cleanup idempotent'
+          git pull --rebase origin main
+          git push origin HEAD:main
