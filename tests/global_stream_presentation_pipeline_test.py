@@ -63,7 +63,9 @@ for provider in ("purstream", "movix", "cineby", "animepahe", "goated"):
 
 # Native scalar contract: presentation is output-only and must run after deferred
 # positive-result TMDB verification. This reproduces the official 4-argument
-# getStreams(tmdbId, mediaType, season, episode) clients.
+# getStreams(tmdbId, mediaType, season, episode) clients. TMDB credentials are
+# runtime-only; tests must inject them explicitly and must never rely on an
+# embedded repository credential.
 native_source, _ = apply(
     "generic-core-test",
     "module.exports={getStreams:async()=>[{name:'Source 1080p WEB-DL HEVC E-AC3 5.1',url:'https://media.example/master.m3u8'}]};\n",
@@ -75,6 +77,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-presentation-order-") as raw:
     provider.write_text(native_source, encoding="utf-8")
     runner.write_text(
         """
+global.TMDB_API_KEY='0123456789abcdef0123456789abcdef';
 global.__native_fetch=function(){};
 let tmdbCalls=0;
 let mediaCalls=0;
