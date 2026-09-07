@@ -6,12 +6,16 @@ must first classify a recipe as `typed-resolver-api`: a TMDB-addressable movie/T
 resolver whose selected provider request is terminal and already produced streams.
 Multi-hop/player/search providers (VidSrc-like families included) keep their own
 source plan and are never flattened by this migration.
+
+V11 is also the single owner that chains the later V16 proof-authority ordering,
+so every canonical repair runner gets the same final execution semantics.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
 import upgrade_provider_base_stream_containers_v12 as stream_v12
+import upgrade_provider_execution_authority_v16 as authority_v16
 
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_base_store.py"
@@ -27,22 +31,20 @@ def once(text: str, old: str, new: str, label: str) -> str:
 
 def patch() -> bool:
     text = TARGET.read_text(encoding="utf-8")
-    if MARKER in text:
-        validate(text)
-        return False
+    changed = False
+    if MARKER not in text:
+        text = once(
+            text,
+            "async function _resolveApiRecipe(meta, mediaType, season, episode) {\n",
+            f"/* {MARKER} */\nasync function _resolveApiRecipe(meta, mediaType, season, episode) {{\n",
+            "typed-resolver-marker",
+        )
 
-    text = once(
-        text,
-        "async function _resolveApiRecipe(meta, mediaType, season, episode) {\n",
-        f"/* {MARKER} */\nasync function _resolveApiRecipe(meta, mediaType, season, episode) {{\n",
-        "typed-resolver-marker",
-    )
-
-    old_gate = '''  const media = _mediaNamespace(mediaType);
+        old_gate = '''  const media = _mediaNamespace(mediaType);
   const bases = await _recipeBases(recipe);
   if (!bases.length) return [];
   const values = {'''
-    new_gate = '''  const media = _mediaNamespace(mediaType);
+        new_gate = '''  const media = _mediaNamespace(mediaType);
   const bases = await _recipeBases(recipe);
   const typedResolverRoute = media === "movie" ? recipe.movieRoute : (recipe.episodeRoute || recipe.movieRoute);
   let typedResolverOrigin = "";
@@ -54,28 +56,34 @@ def patch() -> bool:
   }
   if (!bases.length && !typedResolverOrigin) return [];
   const values = {'''
-    text = once(text, old_gate, new_gate, "typed-resolver-base-gate")
+        text = once(text, old_gate, new_gate, "typed-resolver-base-gate")
 
-    text = once(
-        text,
-        '  if (!recipe.searchRoute) return [];\n',
-        '  if (!recipe.searchRoute && !typedResolverOrigin) return [];\n',
-        "typed-resolver-search-gate",
-    )
+        text = once(
+            text,
+            '  if (!recipe.searchRoute) return [];\n',
+            '  if (!recipe.searchRoute && !typedResolverOrigin) return [];\n',
+            "typed-resolver-search-gate",
+        )
 
-    text = once(
-        text,
-        '  let providerMatch = await findProvider(bases);\n',
-        '''  let providerMatch = typedResolverOrigin && !recipe.searchRoute
+        text = once(
+            text,
+            '  let providerMatch = await findProvider(bases);\n',
+            '''  let providerMatch = typedResolverOrigin && !recipe.searchRoute
     ? { id: "", base: typedResolverOrigin }
     : await findProvider(bases);
 ''',
-        "typed-resolver-provider-match",
-    )
+            "typed-resolver-provider-match",
+        )
+        TARGET.write_text(text, encoding="utf-8")
+        changed = True
+    else:
+        validate(text)
 
-    TARGET.write_text(text, encoding="utf-8")
-    validate(text)
-    return True
+    changed = stream_v12.patch() or changed
+    # V16 requires the V11 + stream-container state above and is intentionally
+    # chained here so targeted/full pipelines cannot drift in execution order.
+    changed = authority_v16.patch() or changed
+    return changed
 
 
 def validate(text: str | None = None) -> None:
@@ -97,12 +105,14 @@ def validate(text: str | None = None) -> None:
 
 
 def main() -> int:
-    changed = patch() | stream_v12.patch()
+    changed = patch()
     validate()
     stream_v12.validate()
+    authority_v16.validate()
     print(
         f"PROVIDER_BASE_RUNTIME_V11_OK changed={str(changed).lower()} "
-        "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 stream_containers_v12=1"
+        "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 "
+        "stream_containers_v12=1 execution_authority_v16=1"
     )
     return 0
 
