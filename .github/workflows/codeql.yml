@@ -1,0 +1,122 @@
+name: "SEC - CodeQL"
+
+# CodeQL volontairement absent des événements "push".
+#
+# Objectif :
+# - ne pas lancer CodeQL à chaque commit/push de ChatGPT ;
+# - analyser les PR vers main ;
+# - conserver un audit complet hebdomadaire ;
+# - permettre un lancement manuel ;
+# - ne jamais empiler plusieurs analyses CodeQL.
+#
+# Advanced Setup est l'unique configuration CodeQL attendue.
+# GitHub CodeQL "Default setup" doit être désactivé.
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      # GitHub Actions
+      - ".github/workflows/**"
+      - ".github/actions/**"
+
+      # JavaScript / TypeScript
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.mjs"
+      - "**/*.cjs"
+      - "**/*.ts"
+      - "**/*.tsx"
+
+      # Python
+      - "**/*.py"
+
+      # Dépendances / configuration
+      - "package.json"
+      - "package-lock.json"
+      - "npm-shrinkwrap.json"
+      - "requirements*.txt"
+      - "pyproject.toml"
+      - "poetry.lock"
+      - "Pipfile"
+      - "Pipfile.lock"
+
+      # Configuration CodeQL
+      - ".github/codeql/**"
+
+  # Audit complet une fois par semaine.
+  # Samedi à 18:42 UTC.
+  schedule:
+    - cron: "42 18 * * 6"
+
+  # Lancement manuel disponible dans GitHub Actions.
+  workflow_dispatch:
+
+# Un seul CodeQL peut exister à la fois pour le dépôt.
+#
+# Si ChatGPT pousse plusieurs corrections rapidement dans une PR,
+# le run précédent est annulé et seul le dernier commit est analysé.
+concurrency:
+  group: niakvio-codeql
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+  packages: read
+  security-events: write
+
+jobs:
+  analyze:
+    name: "CodeQL · ${{ matrix.language }}"
+    runs-on: ubuntu-latest
+
+    # Évite qu'un CodeQL problématique monopolise inutilement un runner.
+    timeout-minutes: 45
+
+    strategy:
+      # Une erreur Python ne doit pas interrompre JS/Actions, et inversement.
+      fail-fast: false
+
+      matrix:
+        include:
+          - language: actions
+            build-mode: none
+
+          - language: javascript-typescript
+            build-mode: none
+
+          - language: python
+            build-mode: none
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: ${{ matrix.build-mode }}
+
+          # Plus complet que les requêtes par défaut.
+          # Comme CodeQL ne tourne plus à chaque push, le coût supplémentaire
+          # reste raisonnable.
+          queries: security-extended
+
+      # Conservé pour permettre ultérieurement l'ajout d'un langage compilé
+      # utilisant build-mode: manual.
+      - name: Run manual build
+        if: matrix.build-mode == 'manual'
+        shell: bash
+        run: |
+          echo "No manual CodeQL build is currently configured."
+          exit 1
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:${{ matrix.language }}"
