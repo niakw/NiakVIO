@@ -1,0 +1,115 @@
+name: SEC - One-shot Full Audit
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/security-audit-now.yml"
+
+concurrency:
+  group: niakvio-security-audit-now
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+
+jobs:
+  repo-audit:
+    name: Repository security audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Setup Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: npm audit
+        shell: bash
+        run: |
+          set -o pipefail
+          npm audit --json > npm-audit.json || true
+          node - <<'NODE'
+          const fs=require('fs');
+          const j=JSON.parse(fs.readFileSync('npm-audit.json','utf8'));
+          const v=(j.metadata&&j.metadata.vulnerabilities)||{};
+          console.log('NPM_AUDIT', JSON.stringify(v));
+          const high=(v.high||0)+(v.critical||0);
+          if (high>0) process.exitCode=2;
+          NODE
+      - name: NiakVIO security regression gates
+        run: |
+          python3 tests/provider_html_filter_security_test.py
+          python3 tests/provider_security_hardening_test.py
+          python3 tests/repository_hygiene_contract_test.py
+          node tests/provider_worker_security.test.cjs
+      - name: Export open code-scanning alerts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" > code-scanning-alerts.json
+          python3 - <<'PY'
+          import json, collections
+          data=json.load(open('code-scanning-alerts.json',encoding='utf-8'))
+          # gh --paginate may emit concatenated JSON arrays; recover if needed.
+          if isinstance(data, dict): data=[data]
+          sev=collections.Counter()
+          rules=collections.Counter()
+          files=collections.Counter()
+          for a in data:
+              rule=a.get('rule') or {}
+              sev[str(rule.get('security_severity_level') or 'unknown')]+=1
+              rules[str(rule.get('id') or rule.get('name') or 'unknown')]+=1
+              loc=((a.get('most_recent_instance') or {}).get('location') or {})
+              path=loc.get('path')
+              if path: files[path]+=1
+          print('CODE_SCANNING_OPEN', len(data))
+          print('CODE_SCANNING_SEVERITY', dict(sev))
+          print('CODE_SCANNING_TOP_RULES', rules.most_common(20))
+          print('CODE_SCANNING_TOP_FILES', files.most_common(20))
+          PY
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        with:
+          name: security-audit-evidence-${{ github.run_id }}
+          path: |
+            npm-audit.json
+            code-scanning-alerts.json
+          if-no-files-found: warn
+          retention-days: 14
+
+  codeql:
+    name: CodeQL · ${{ matrix.language }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [actions, javascript-typescript, python]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+          queries: security-extended
+      - name: Analyze
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938
+        with:
+          category: "/language:${{ matrix.language }}/one-shot"
