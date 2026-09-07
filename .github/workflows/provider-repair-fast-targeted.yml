@@ -55,6 +55,16 @@ jobs:
             --provider frenchstream \
             --provider mugiwarastream
 
+      - name: Fingerprint proven upstream stream outputs
+        if: always()
+        run: |
+          python scripts/audit_upstream_stream_fingerprints_v1.py \
+            --timeout 55 \
+            --provider animekai \
+            --provider movies4u \
+            --provider frenchstream \
+            --provider mugiwarastream
+
       - name: Enforce targeted acceptance result
         if: always()
         run: |
@@ -72,4 +82,5 @@ jobs:
             automation/provider-repair-fast-merged.json
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
+            automation/provider-upstream-stream-fingerprints-v1.json
             provider-v3-quick-yield.json
