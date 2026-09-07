@@ -35,8 +35,16 @@ for marker in (
 ):
     assert marker in base, marker
 
-# Existing URL eligibility gates remain upstream of scoring.
-assert base.index(".filter(_spv4SameProviderOrigin)") < base.index("_spv14LabelScoreForUrl(html, base, url, meta, mediaType, season)")
-assert base.index(".filter(_spv7DetailUrlEligible)") < base.index("_spv14LabelScoreForUrl(html, base, url, meta, mediaType, season)")
+# URL-origin and detail eligibility must remain upstream of V14.1 scoring. V15
+# may pass the current search-response base into the same origin gate; the
+# property matters, not the exact callback spelling.
+score_at = base.index("_spv14LabelScoreForUrl(html, base, url, meta, mediaType, season)")
+origin_candidates = [
+    base.find(".filter(_spv4SameProviderOrigin)"),
+    base.find(".filter(url => _spv4SameProviderOrigin(url, base))"),
+]
+origin_candidates = [value for value in origin_candidates if value >= 0]
+assert origin_candidates and min(origin_candidates) < score_at
+assert base.index(".filter(_spv7DetailUrlEligible)") < score_at
 
 print("provider search request plan v14.1 contract passed")
