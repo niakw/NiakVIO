@@ -149,10 +149,14 @@ def patch_sequential() -> bool:
     text = SEQUENTIAL.read_text(encoding="utf-8")
     changed = False
     if "from provider_route_proof import filter_recipe_by_live_routes" not in text:
-        anchor = "from typing import Any\n"
-        if anchor not in text:
-            raise AssertionError("sequential import anchor missing")
-        text = text.replace(anchor, anchor + "\nfrom provider_route_proof import filter_recipe_by_live_routes\n", 1)
+        anchor = "from validate_provider_v3_routes_live import (\n"
+        if text.count(anchor) != 1:
+            raise AssertionError(f"sequential stable import anchor count={text.count(anchor)}")
+        text = text.replace(
+            anchor,
+            "from provider_route_proof import filter_recipe_by_live_routes\n\n" + anchor,
+            1,
+        )
         changed = True
 
     old_model = '''    live_set = set(evaluation["liveRoutes"])
