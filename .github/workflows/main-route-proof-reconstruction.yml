@@ -1,0 +1,216 @@
+name: MAIN - Route Proof Reconstruction 96
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-route-proof-reconstruction.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: niakvio-main-route-proof-reconstruction
+  cancel-in-progress: true
+
+jobs:
+  reconstruct:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      GITHUB_TOKEN: ${{ github.token }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Freeze exact 5.21.35 baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
+          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-knowledge.before.json"
+          python -c "import json; m=json.load(open('manifest.json')); assert m.get('version')=='5.21.35',m.get('version'); assert len(m.get('scrapers') or [])==96; print('ROUTE_PROOF_BASELINE_OK version=5.21.35 providers=96')"
+          git rev-parse HEAD | tee "$RUNNER_TEMP/base.sha"
+
+      - name: Apply durable route-proof and shared-runtime migrations in workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/apply_core_identity_ownership_cleanup.py
+          python scripts/upgrade_provider_worker_route_proof_v1.py
+          python scripts/upgrade_provider_route_proof_request_spec_v1.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_base_route_requests_v1.py
+          python scripts/upgrade_provider_route_authority_v5.py
+          python scripts/upgrade_route_recovery_request_specs_v1.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python -m py_compile \
+            scripts/provider_route_proof.py \
+            scripts/bootstrap_provider_v3_routes.py \
+            scripts/recover_provider_routes_from_upstreams.py \
+            scripts/apply_provider_route_recovery_report.py \
+            scripts/upgrade_provider_worker_route_proof_v1.py \
+            scripts/upgrade_provider_route_proof_request_spec_v1.py \
+            scripts/upgrade_provider_base_route_requests_v1.py \
+            scripts/upgrade_provider_route_authority_v5.py \
+            scripts/upgrade_route_recovery_request_specs_v1.py
+          node --check scripts/provider_worker.cjs
+          python scripts/provider_base_store.py validate
+
+      - name: Prove proof-first authority and zero-route onboarding
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_route_proof_authority_test.py
+          python tests/provider_v3_empty_route_bootstrap_test.py
+          python tests/global_identity_policy_ownership_test.py
+          python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/native_hls_integrity_budget_test.py
+          python tests/native_provider_loading_compat_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+
+      - name: Census all 96 from historical upstream or native source
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/recover_provider_routes_from_upstreams.py \
+            --workers 8 \
+            --timeout 55 \
+            --out automation/provider-route-recovery-v5.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('automation/provider-route-recovery-v5.json').read_text(encoding='utf-8'))
+          assert r.get('schemaVersion')==5, r.get('schemaVersion')
+          assert r.get('providerCount')==96, r.get('providerCount')
+          assert len(r.get('providers') or [])==96, len(r.get('providers') or [])
+          assert r.get('historicalUpstreamMappedCount')==91, r.get('historicalUpstreamMappedCount')
+          assert r.get('niakvioNativeCount')==5, r.get('niakvioNativeCount')
+          status=r.get('statusCounts') or {}
+          missing=[row.get('providerId') for row in r.get('providers',[]) if row.get('status')=='source-unavailable']
+          print(
+              'ROUTE_PROOF_CENSUS_OK '
+              f"providers=96 mapped=91 native=5 providers_proven={r.get('providersWithProvenRoutes',0)} "
+              f"routes={r.get('provenRouteCount',0)} recipes={r.get('simpleApiRecipeCount',0)} "
+              f"source_unavailable={len(missing)} statuses={status}"
+          )
+          if missing:
+              print('ROUTE_PROOF_SOURCE_UNAVAILABLE providers='+','.join(str(x) for x in missing))
+          PY
+
+      - name: Apply the single census as structured DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/apply_provider_route_recovery_report.py automation/provider-route-recovery-v5.json
+          python - <<'PY'
+          import json
+          r=json.load(open('automation/provider-route-recovery-v5.json'))
+          a=r.get('applied') or {}
+          assert a.get('patchedProviders')==96, a
+          o=json.load(open('provider-overrides.json'))
+          k=json.load(open('automation/provider-v3-static-knowledge.json'))
+          patches=o.get('provider_patches') or {}
+          rows=k.get('providers') or {}
+          assert len(patches)>=96 and len(rows)>=96
+          print(
+              'ROUTE_PROOF_DATA_APPLIED '
+              f"providers={a.get('patchedProviders')} routes={a.get('provenRoutes')} recipes={a.get('apiRecipes')}"
+          )
+          PY
+
+      - name: Reconstruct all 96 from proof-v5 DATA plus Lego
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_v3_all.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_identity_policy_ownership_test.py
+          python tests/global_stream_output_guard_test.py
+          python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
+          python tests/native_hls_integrity_budget_test.py
+          python tests/native_provider_loading_compat_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.load(open('manifest.json')); rows=m.get('scrapers') or []
+          mat=json.load(open('provider-v3-materialization.json'))
+          assert len(rows)==96, len(rows)
+          assert mat.get('providerCount')==96, mat.get('providerCount')
+          assert mat.get('context')=='workspace', mat.get('context')
+          assert mat.get('publication') is False
+          assert mat.get('mainTouched') is False
+          files=[Path(row['filename']) for row in rows]
+          assert all(path.is_file() for path in files)
+          print('ROUTE_PROOF_RECONSTRUCTION_96_OK providers=96 publication=false')
+          PY
+
+      - name: Reverse, static, integrity and quick-yield proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/audit_provider_v3_static.py
+          python scripts/audit_provider_quick_yield.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('automation/provider-route-recovery-v5.json').read_text(encoding='utf-8'))
+          q=json.loads(Path('provider-v3-quick-yield.json').read_text(encoding='utf-8')) if Path('provider-v3-quick-yield.json').exists() else {}
+          print(
+              'ROUTE_PROOF_CANDIDATE_FINAL '
+              f"providers={r.get('providerCount')} providers_proven={r.get('providersWithProvenRoutes')} "
+              f"routes={r.get('provenRouteCount')} recipes={r.get('simpleApiRecipeCount')} "
+              f"quick_yield_keys={','.join(sorted(q.keys())) if isinstance(q,dict) else 'none'}"
+          )
+          PY
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: route-proof-reconstruction-96-${{ github.run_id }}
+          path: |
+            automation/provider-route-recovery-v5.json
+            automation/provider-v3-static-knowledge.json
+            provider-overrides.json
+            manifest.json
+            vf/manifest.json
+            no-anime/manifest.json
+            vf-no-anime/manifest.json
+            providers/
+            provider-v3-materialization.json
+            provider-v3-quick-yield.json
+            health-report.json
+            FILE-HASHES.json
+            PATCH-SHA256SUMS.txt
+            SHA256SUMS.json
+          retention-days: 14
+          if-no-files-found: warn
