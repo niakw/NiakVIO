@@ -1,13 +1,60 @@
 version: 2
-updates:
-  - package-ecosystem: github-actions
-    directory: "/"
-    schedule:
-      interval: monthly
-    open-pull-requests-limit: 3
 
-  - package-ecosystem: npm
+updates:
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
     directory: "/"
+
     schedule:
-      interval: monthly
-    open-pull-requests-limit: 3
+      interval: "monthly"
+      time: "05:00"
+      timezone: "Europe/Paris"
+
+    # Une seule PR Dependabot GitHub Actions maximum.
+    open-pull-requests-limit: 1
+
+    # Évite les rebases automatiques à chaque évolution de main,
+    # qui déclencheraient inutilement de nouveaux workflows.
+    rebase-strategy: "disabled"
+
+    # Regroupe toutes les mises à jour Actions dans une seule PR.
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+    labels:
+      - "dependencies"
+      - "github-actions"
+
+    commit-message:
+      prefix: "deps(actions)"
+
+
+  # npm
+  - package-ecosystem: "npm"
+    directory: "/"
+
+    schedule:
+      interval: "monthly"
+      time: "06:00"
+      timezone: "Europe/Paris"
+
+    # Une seule PR npm maximum.
+    open-pull-requests-limit: 1
+
+    # Ne pas recréer/rebaser continuellement la PR lorsque main bouge.
+    rebase-strategy: "disabled"
+
+    # Regroupe toutes les dépendances npm dans une seule PR.
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+
+    labels:
+      - "dependencies"
+      - "npm"
+
+    commit-message:
+      prefix: "deps(npm)"
