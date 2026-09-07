@@ -11,6 +11,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import upgrade_provider_base_stream_containers_v12 as stream_v12
+
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_base_store.py"
 MARKER = "NIAKVIO_PROVIDER_BASE_TYPED_RESOLVER_API_V11"
@@ -95,10 +97,12 @@ def validate(text: str | None = None) -> None:
 
 
 def main() -> int:
-    changed = patch()
+    changed = patch() | stream_v12.patch()
+    validate()
+    stream_v12.validate()
     print(
         f"PROVIDER_BASE_RUNTIME_V11_OK changed={str(changed).lower()} "
-        "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0"
+        "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 stream_containers_v12=1"
     )
     return 0
 
