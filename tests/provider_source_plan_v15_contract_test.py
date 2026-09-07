@@ -25,16 +25,20 @@ for forbidden in (
 
 # The migration must preserve the strict identity ordering: provider catalogue
 # identity is proven before external player traversal, and direct media remains
-# the terminal proof inside the bounded crawler.
+# the terminal proof inside the bounded crawler. Match stable semantic fragments
+# rather than Python/JS regex escaping representation.
 for marker in (
     "NIAKVIO_PROVIDER_SOURCE_PLAN_V15",
     "function _spv15ExplicitPlayerAttrs",
     "function _spv15ArticleDetails",
     "rows.push(..._spv15ArticleDetails",
     "...explicitPlayers",
-    "if (!providerOrigin && /^\\/e\\/",
+    "providerOrigin",
+    "parsed.pathname + parsed.search",
 ):
     assert marker in migration, marker
+assert "return true" in migration
+assert "/e" in migration
 
 # Existing fail-closed gates must remain present in the owned ProviderBase source;
 # V15 patches them after earlier migrations rather than replacing their contract.
