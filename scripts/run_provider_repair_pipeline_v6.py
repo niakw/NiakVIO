@@ -88,6 +88,7 @@ def main() -> int:
 
     run("node", "--check", "scripts/provider_worker.cjs")
     run(sys.executable, "tests/provider_route_proof_authority_test.py")
+    run(sys.executable, "tests/provider_repair_v6_recipe_regression_test.py")
     run(sys.executable, "tests/global_identity_policy_ownership_test.py")
     run(sys.executable, "tests/provider_latest_request_cancellation_test.py")
     run(sys.executable, "tests/provider_native_abort_ignorant_cancellation_test.py")
