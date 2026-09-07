@@ -79,6 +79,7 @@ def main() -> int:
         "scripts/upgrade_provider_repair_v7.py",
         "scripts/upgrade_provider_repair_v8.py",
         "scripts/upgrade_provider_text_body_request_v9.py",
+        "scripts/upgrade_provider_text_body_request_v9_1.py",
         "scripts/upgrade_provider_route_retry_v1.py",
         "scripts/upgrade_provider_base_runtime_v11.py",
     ]
@@ -113,8 +114,6 @@ def main() -> int:
     run(sys.executable, "scripts/apply_provider_route_recovery_report.py", str(MERGED_REPORT.relative_to(ROOT)))
     run(sys.executable, "scripts/enforce_route_proof_manifest_policy_v1.py", "--report", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json", "--overrides", "provider-overrides.json")
 
-    # Common runtime changes rematerialize all 96, but the accepted skip set is
-    # never network re-recognized by this pipeline.
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
     run(sys.executable, "scripts/materialize_provider_v3_all.py")
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
