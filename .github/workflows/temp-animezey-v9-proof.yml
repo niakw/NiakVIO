@@ -32,7 +32,7 @@ jobs:
           package-manager-cache: false
       - name: Install locked tooling
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Apply shared recognition migrations through V9
+      - name: Apply shared recognition migrations through V9.1
         run: |
           set -euo pipefail
           python scripts/upgrade_provider_worker_route_proof_v1.py
@@ -45,6 +45,7 @@ jobs:
           python scripts/upgrade_provider_repair_v7.py
           python scripts/upgrade_provider_repair_v8.py
           python scripts/upgrade_provider_text_body_request_v9.py
+          python scripts/upgrade_provider_text_body_request_v9_1.py
           python scripts/upgrade_provider_route_retry_v1.py
           python scripts/upgrade_provider_base_runtime_v11.py
           node --check scripts/provider_worker.cjs
