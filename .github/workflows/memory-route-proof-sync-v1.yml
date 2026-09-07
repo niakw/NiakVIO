@@ -24,88 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Checkpoint 5.21.37 and modernize route-proof baseline
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          from pathlib import Path
-          import json
-
-          memory = Path('MEMORY.md')
-          text = memory.read_text(encoding='utf-8')
-          marker = '## 2026-09-07 — Accepted 5.21.37 / Terminal Session V29 / live-yield checkpoint'
-          if marker not in text:
-              checkpoint = r'''
-
-## 2026-09-07 — Accepted 5.21.37 / Terminal Session V29 / live-yield checkpoint
-
-- **This checkpoint supersedes all earlier wording that says the public release is still 5.21.35 or that 5.21.36/5.21.37 is pending.** Current public release is **5.21.37**.
-- Publication workflow: `FIX - Publish Terminal Session V29`, run **34120732027**, job **101737919476**, completed success.
-- Final publication commit: **`6f74939efa11b2c886e82002c242b923a4f87f6c`** (`fix(core): publish terminal labels and stale-session isolation V29`). Push to `main` completed successfully.
-- Public manifests verified after push: `manifest.json`, `vf/manifest.json`, `no-anime/manifest.json`, and `vf-no-anime/manifest.json` all report **5.21.37**.
-- 96/96 published Provider JS were rematerialized and physically verified to contain `tmdb-data-contract-launch-gate-v29-native-abort-race`, `requestAbortPromise(controller,requestToken)`, and presentation client-projection V20.
-- V29 closes the stale-session hole where a native QuickJS fetch bridge may ignore `AbortSignal`: provider fetch now races the native call against request cancellation. Functional regression with an intentionally never-resolving old native fetch completed in ~1 ms after supersede and observed only `/1/one` then `/2/one`; superseded fallback `/1/two` never reached network.
-- Terminal stream-label bug was localized outside provider-specific quality calculation: Engine V2 accepted labels such as `Kehflix - Inconnue` as provider names. Engine V2 now strips terminal placeholder suffixes and mirrors final projected `title` into `name`, matching the client-facing Core projection. Placeholder quality (`Unknown`, `Inconnue`, `N/A`, etc.) collapses to provider-only; meaningful qualities remain, including `1080p` and `2160p -> 4K`.
-- `CORE.STREAM_SANITIZER.V6` output guard passed across all 96; release integrity and fixed-point override checks passed.
-- Nuvio client upstream drift seen during release: NuvioDesktop audited contract remained accepted; NuvioMobile had a safe upstream advance; NuvioTV had a separate semantic-sensitive subtitle-cache drift requiring review. Provider publication intentionally continued against pinned audited client contract refs.
-
-### Live yield on exact 5.21.37 candidate
-
-- Interstellar matrix tested **55 enabled movie-capable providers**. Only **6** returned automatic streams: `castle`, `hindmoviez`, `streamflix`, `streamzo`, `videasy`, `wookafr`. VF automatic providers: **2**, `streamzo` + `wookafr`. **49/55** returned no streams. This is materially better than the earlier native observation of only StreamZo/Kehflix/Castle in one client session, but still far below the 96-provider objective and must not be considered provider recovery completion.
-- Notably Kehflix returned zero in the CI Interstellar matrix even though it is a known viable provider in other live/native fixtures; treat this as route/runtime/fixture evidence, not provider-wide disablement.
-- User Desktop anime fixture was correctly identified as **The Unwanted Undead Adventurer S01E02**, IMDb `tt30177477`, not Hell Mode. Candidate matrix tested **62 episodic/anime-capable providers**: **2 positive** (`anime-sama`, `neko-sama`), network reached **49**, successful provider HTTP **37**.
-- Secondary Hell Mode S01E12 (`tt38646634`) matrix produced the same provider-positive set: **2/62**, `anime-sama` + `neko-sama`; network reached 49, successful HTTP 36.
-- These anime results prove the global `series -> tv/anime` transport is not completely broken, but extraction/runtime route yield is still severely underperforming after successful network access for many providers.
-- User Desktop logs separately showed DNS/host failures including `api.nakios.live`, `*.eat-peach.sbs`, and VidLink-related traffic. Current main domains can be alive while historical/API subdomains or route families are stale; domain, route, extraction and player evidence must remain separately classified.
-
-### Current priority after 5.21.37
-
-1. Keep V29 terminal-label/session isolation immutable while provider recovery continues.
-2. Resume **proof-first real route recovery across all 96**, including disabled/off rows for recoverability; test a route live at discovery time and never promote static fragments as executable routes.
-3. Use `MAIN - Route Proof Reconstruction 96` as a non-public candidate workflow. Its baseline must derive from `.github/triggers/route-proof-reconstruction.json`, not be hard-coded to 5.21.35.
-4. For every candidate, compare live yield against the accepted 5.21.37 baselines: Interstellar 6/55 automatic (2 VF), Unwanted Undead 2/62, Hell Mode 2/62. A structurally green reconstruction that does not improve/accurately explain these results is not completion.
-5. Route families already requiring scrutiny include VidLink historical `/api/b/...` versus current documented `/movie/{tmdbId}` and `/tv/{tmdbId}/{season}/{episode}`, and Nakios principal-site versus stale `api.nakios.live`. Do not replace routes solely from documentation; require provider-specific executable HTTP proof before promotion.
-6. Preserve the five Native Labs requirement after route/runtime stabilization: TV Android, Mobile Android, Mobile iOS, Desktop macOS, Desktop Windows.
-7. Continue automatic `MEMORY.md` checkpoints for every important green/red run, root cause, architecture change, publication, native proof, and security proof.
-'''
-              memory.write_text(text.rstrip() + checkpoint + '\n', encoding='utf-8')
-              print('MEMORY_CHECKPOINT_52137_ADDED')
-          else:
-              print('MEMORY_CHECKPOINT_52137_ALREADY_PRESENT')
-
-          wf = Path('.github/workflows/main-route-proof-reconstruction.yml')
-          w = wf.read_text(encoding='utf-8')
-          old = '''      - name: Freeze exact 5.21.35 baseline\n        shell: bash\n        run: |\n          set -euo pipefail\n          cp manifest.json "$RUNNER_TEMP/manifest.before.json"\n          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"\n          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-knowledge.before.json"\n          python -c "import json; m=json.load(open('manifest.json')); assert m.get('version')=='5.21.35',m.get('version'); assert len(m.get('scrapers') or [])==96; print('ROUTE_PROOF_BASELINE_OK version=5.21.35 providers=96')"\n          git rev-parse HEAD | tee "$RUNNER_TEMP/base.sha"\n'''
-          new = '''      - name: Freeze trigger-declared public baseline\n        shell: bash\n        run: |\n          set -euo pipefail\n          cp manifest.json "$RUNNER_TEMP/manifest.before.json"\n          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"\n          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-knowledge.before.json"\n          python - <<'PY'\n          import json\n          manifest=json.load(open('manifest.json'))\n          trigger=json.load(open('.github/triggers/route-proof-reconstruction.json'))\n          expected=str(trigger.get('expectedPublicBaseline') or '').strip()\n          assert expected, trigger\n          assert manifest.get('version')==expected, (manifest.get('version'), expected)\n          assert len(manifest.get('scrapers') or [])==96, len(manifest.get('scrapers') or [])\n          print(f"ROUTE_PROOF_BASELINE_OK version={expected} providers=96")\n          PY\n          git rev-parse HEAD | tee "$RUNNER_TEMP/base.sha"\n'''
-          if old in w:
-              w = w.replace(old, new, 1)
-          elif 'Freeze trigger-declared public baseline' not in w:
-              raise SystemExit('route-proof baseline anchor not found')
-
-          matrix_anchor = '''      - name: Final real HOTD S3E1 proof - Kehflix and Purstream\n        timeout-minutes: 8\n        shell: bash\n        run: |\n          set -euo pipefail\n          python scripts/hotd_s3e1_live_probe.py \\\n            --output automation/hotd-s3e1-live.json \\\n            --timeout 90\n\n'''
-          matrix_insert = '''      - name: Compare candidate live yield with accepted 5.21.37 baseline\n        timeout-minutes: 25\n        shell: bash\n        run: |\n          set -euo pipefail\n          python scripts/interstellar_nuvio_matrix.py --workers 12 --timeout 35 --output automation/interstellar-route-proof-matrix.json\n          python scripts/desktop_series_provider_matrix.py \\\n            --id tt30177477 \\\n            --title "The Unwanted Undead Adventurer" \\\n            --season 1 \\\n            --episode 2 \\\n            --category anime \\\n            --workers 10 \\\n            --timeout 35 \\\n            --output automation/unwanted-undead-route-proof-matrix.json\n          python scripts/desktop_series_provider_matrix.py \\\n            --id tt38646634 \\\n            --title "HELL MODE: The Hardcore Gamer Dominates in Another World with Garbage Balancing" \\\n            --season 1 \\\n            --episode 12 \\\n            --category anime \\\n            --workers 10 \\\n            --timeout 35 \\\n            --output automation/hellmode-route-proof-matrix.json\n          python - <<'PY'\n          import json\n          from pathlib import Path\n          i=json.loads(Path('automation/interstellar-route-proof-matrix.json').read_text())\n          u=json.loads(Path('automation/unwanted-undead-route-proof-matrix.json').read_text())\n          h=json.loads(Path('automation/hellmode-route-proof-matrix.json').read_text())\n          print(\n            'ROUTE_PROOF_LIVE_YIELD '
-            f"interstellar={i.get('automatic_stream_provider_count',0)}/{i.get('enabled_movie_providers_tested',0)} "\n            f"interstellar_vf={i.get('automatic_vf_provider_count',0)} "\n            f"unwanted={u.get('positive_count',0)}/{u.get('providers_tested',0)} "\n            f"hellmode={h.get('positive_count',0)}/{h.get('providers_tested',0)}"\n          )\n          PY\n\n      - name: Final real HOTD S3E1 proof - Kehflix and Purstream\n        timeout-minutes: 8\n        shell: bash\n        run: |\n          set -euo pipefail\n          python scripts/hotd_s3e1_live_probe.py \\\n            --output automation/hotd-s3e1-live.json \\\n            --timeout 90\n\n'''
-          if matrix_anchor in w and 'Compare candidate live yield with accepted 5.21.37 baseline' not in w:
-              w = w.replace(matrix_anchor, matrix_insert, 1)
-          elif 'Compare candidate live yield with accepted 5.21.37 baseline' not in w:
-              raise SystemExit('HOTD anchor not found')
-
-          artifact_anchor = '''            automation/hotd-s3e1-live.json\n'''
-          artifact_new = '''            automation/hotd-s3e1-live.json\n            automation/interstellar-route-proof-matrix.json\n            automation/unwanted-undead-route-proof-matrix.json\n            automation/hellmode-route-proof-matrix.json\n'''
-          if artifact_anchor in w and 'automation/interstellar-route-proof-matrix.json' not in w.split('path: |',1)[-1]:
-              w = w.replace(artifact_anchor, artifact_new, 1)
-          wf.write_text(w, encoding='utf-8')
-
-          trigger_path = Path('.github/triggers/route-proof-reconstruction.json')
-          trigger = json.loads(trigger_path.read_text(encoding='utf-8'))
-          trigger['retry'] = int(trigger.get('retry') or 0) + 1
-          trigger['expectedPublicBaseline'] = '5.21.37'
-          trigger['targetVersion'] = '5.21.38-candidate'
-          trigger['requiredFinalProof'] = 'proof-v5-96+interstellar+unwanted-undead+hellmode+hotd'
-          trigger['triggeredAfter'] = '6f74939efa11b2c886e82002c242b923a4f87f6c'
-          trigger_path.write_text(json.dumps(trigger, ensure_ascii=False, indent=2)+'\n', encoding='utf-8')
-          print('ROUTE_PROOF_BASELINE_SYNCED expected=5.21.37')
-          PY
+        run: python3 scripts/memory_route_proof_sync_v1.py
 
       - name: Commit checkpoint and route-proof retry
         shell: bash
@@ -113,7 +32,7 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git rm .github/workflows/memory-route-proof-sync-v1.yml scripts/trigger-memory-route-proof-sync.txt
+          git rm .github/workflows/memory-route-proof-sync-v1.yml scripts/trigger-memory-route-proof-sync.txt scripts/memory_route_proof_sync_v1.py
           git add MEMORY.md .github/workflows/main-route-proof-reconstruction.yml .github/triggers/route-proof-reconstruction.json
           git commit -m 'chore: checkpoint 5.21.37 and resume proof-first recovery'
           git pull --rebase origin main
