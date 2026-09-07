@@ -1,9 +1,15 @@
 {
-  "schemaVersion": 1,
-  "requestedAt": "2026-09-07T17:08:00+02:00",
-  "retry": 4,
+  "schemaVersion": 2,
+  "requestedAt": "2026-09-07T22:25:00+02:00",
+  "retry": 5,
   "mode": "repair",
-  "scope": "all-unresolved-excluding-persisted-green-skip-set",
-  "goal": "preserve upstream-positive yield with causal route-to-runtime recipe reconstruction",
+  "scope": "targeted-v13.2-with-whole-portfolio-preservation",
+  "targetProviders": [
+    "animekai",
+    "movies4u",
+    "papadustream",
+    "frenchstream"
+  ],
+  "goal": "repair targeted multi-hop providers while preserving every baseline-positive provider and blocking new wrong-content",
   "branch": "workbench/route-recognition-v6"
 }
