@@ -34,7 +34,7 @@ jobs:
           package-manager-cache: false
       - name: Install locked tooling
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Apply canonical migrations through external identity V11
+      - name: Apply canonical migrations through external identity V11.1
         run: |
           set -euo pipefail
           python scripts/prepatch_identity_cleanup_shared_owner_v1.py
@@ -51,7 +51,7 @@ jobs:
           python scripts/upgrade_provider_text_body_request_v9.py
           python scripts/upgrade_provider_text_body_request_v9_1.py
           python scripts/upgrade_provider_source_plan_v10.py
-          python scripts/upgrade_provider_external_identity_route_v11.py
+          python scripts/upgrade_provider_external_identity_route_v11_1.py
           python scripts/upgrade_provider_route_retry_v1.py
           python scripts/upgrade_provider_base_runtime_v11.py
           node --check scripts/provider_worker.cjs
