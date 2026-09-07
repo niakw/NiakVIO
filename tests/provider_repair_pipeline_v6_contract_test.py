@@ -10,6 +10,8 @@ pipeline=(ROOT/'scripts/run_provider_repair_pipeline_v6.py').read_text(encoding=
 upgrade=(ROOT/'scripts/upgrade_provider_repair_v6.py').read_text(encoding='utf-8')
 upgrade_v10=(ROOT/'scripts/upgrade_provider_base_runtime_v10.py').read_text(encoding='utf-8')
 yield_audit=(ROOT/'scripts/audit_provider_repair_yield_v6.py').read_text(encoding='utf-8')
+portfolio_compare=(ROOT/'scripts/compare_quick_yield_preservation.py').read_text(encoding='utf-8')
+targeted_retry=(ROOT/'scripts/audit_provider_quick_yield_targeted.py').read_text(encoding='utf-8')
 skip=json.loads((ROOT/'automation/provider-repair-skip.json').read_text(encoding='utf-8'))
 
 assert workflow.startswith('name: LEARN/FORCE - Provider Recognition Repair V6')
@@ -19,8 +21,11 @@ for mode in ('learn','force','repair'):
 assert 'schedule:' in workflow
 assert 'allow_upstream_positive_loss' in workflow
 assert 'Verify known-green providers were not network re-probed' in workflow
+assert 'provider-repair-portfolio-baseline.json' in workflow
+assert 'provider-repair-portfolio-candidate.json' in workflow
+assert 'provider-repair-portfolio-retry.json' in workflow
 
-known={'allwish','anime-sama','castle','hindmoviez','kehflix','neko-sama','streamzo','videasy','wookafr'}
+known={'allwish','anime-sama','castle','hindmoviez','kehflix','neko-sama','playimdb','streamzo','videasy','wookafr'}
 assert set((skip.get('providers') or {}).keys()) == known
 assert 'provider not in skipped' in pipeline
 assert 'for provider in targets:' in pipeline
@@ -32,8 +37,21 @@ assert 'scripts/materialize_provider_v3_all.py' in pipeline
 assert 'tests/provider_repair_v6_recipe_regression_test.py' in pipeline
 assert 'scripts/audit_provider_repair_yield_v6.py' in pipeline
 assert '--require-upstream-positive-preserved' in pipeline
+assert 'capture_portfolio_yield(PORTFOLIO_BASELINE)' in pipeline
+assert 'capture_portfolio_yield(PORTFOLIO_CANDIDATE)' in pipeline
+assert 'scripts/compare_quick_yield_preservation.py' in pipeline
+assert 'scripts/audit_provider_quick_yield_targeted.py' in pipeline
+assert 'portfolioPreservationGatePassed' in pipeline
+assert 'upstreamPositivePreservationGatePassed' in pipeline
 assert 'publicationAllowed": False' in pipeline
 assert 'mainWritesAllowed": False' in pipeline
+
+assert 'raw_providers' in portfolio_compare
+assert 'lost_raw' in portfolio_compare
+assert 'new wrong-content provider detected' in portfolio_compare
+assert '--candidate-retry' in portfolio_compare
+assert 'TARGETED_YIELD_RETRY_DONE' in targeted_retry
+assert 'attempts = max(1, min(int(args.attempts), 3))' in targeted_retry
 
 for marker in (
     'NIAKVIO_PROVIDER_REPAIR_PORTFOLIO_V6',
