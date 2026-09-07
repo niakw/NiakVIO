@@ -36,6 +36,8 @@ assert 'mainWritesAllowed": False' in pipeline
 for marker in (
     'NIAKVIO_PROVIDER_REPAIR_PORTFOLIO_V6',
     'ROUTE_RECOVERY_TERMINAL_SEARCH_RECIPE_V6',
+    'ROUTE_RECOVERY_BODY_SEARCH_RECIPE_V6',
+    '_record_has_search_query(row)',
     'NIAKVIO_PROVIDER_BASE_BOUNDED_EXTERNAL_ROOT_V10',
     '_crawlFollowable(next,responseUrl)',
 ):
