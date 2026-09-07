@@ -85,6 +85,7 @@ def main() -> int:
         "scripts/upgrade_provider_v3_source_plan_v5.py",
         "scripts/upgrade_provider_repair_v6.py",
         "scripts/upgrade_provider_repair_v7.py",
+        "scripts/upgrade_provider_repair_v8.py",
         "scripts/upgrade_provider_route_retry_v1.py",
         "scripts/upgrade_provider_base_runtime_v11.py",
     ]
@@ -95,6 +96,7 @@ def main() -> int:
     run(sys.executable, "tests/provider_route_proof_authority_test.py")
     run(sys.executable, "tests/provider_repair_v6_recipe_regression_test.py")
     run(sys.executable, "tests/provider_repair_v7_typed_resolver_test.py")
+    run(sys.executable, "tests/provider_repair_v8_partial_typed_resolver_test.py")
     run(sys.executable, "tests/global_identity_policy_ownership_test.py")
     run(sys.executable, "tests/provider_latest_request_cancellation_test.py")
     run(sys.executable, "tests/provider_native_abort_ignorant_cancellation_test.py")
