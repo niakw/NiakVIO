@@ -49,108 +49,6 @@ if marker not in text:
 else:
     print("MEMORY_CHECKPOINT_52137_ALREADY_PRESENT")
 
-wf = ROOT / ".github/workflows/main-route-proof-reconstruction.yml"
-w = wf.read_text(encoding="utf-8")
-old_baseline = '''      - name: Freeze exact 5.21.35 baseline
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
-          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
-          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-knowledge.before.json"
-          python -c "import json; m=json.load(open('manifest.json')); assert m.get('version')=='5.21.35',m.get('version'); assert len(m.get('scrapers') or [])==96; print('ROUTE_PROOF_BASELINE_OK version=5.21.35 providers=96')"
-          git rev-parse HEAD | tee "$RUNNER_TEMP/base.sha"
-'''
-new_baseline = '''      - name: Freeze trigger-declared public baseline
-        shell: bash
-        run: |
-          set -euo pipefail
-          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
-          cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
-          cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-knowledge.before.json"
-          python - <<'PY'
-          import json
-          manifest=json.load(open('manifest.json'))
-          trigger=json.load(open('.github/triggers/route-proof-reconstruction.json'))
-          expected=str(trigger.get('expectedPublicBaseline') or '').strip()
-          assert expected, trigger
-          assert manifest.get('version')==expected, (manifest.get('version'), expected)
-          assert len(manifest.get('scrapers') or [])==96, len(manifest.get('scrapers') or [])
-          print(f"ROUTE_PROOF_BASELINE_OK version={expected} providers=96")
-          PY
-          git rev-parse HEAD | tee "$RUNNER_TEMP/base.sha"
-'''
-if old_baseline in w:
-    w = w.replace(old_baseline, new_baseline, 1)
-elif "Freeze trigger-declared public baseline" not in w:
-    raise SystemExit("route-proof baseline anchor not found")
-
-hotd = '''      - name: Final real HOTD S3E1 proof - Kehflix and Purstream
-        timeout-minutes: 8
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/hotd_s3e1_live_probe.py \\
-            --output automation/hotd-s3e1-live.json \\
-            --timeout 90
-
-'''
-compare = '''      - name: Compare candidate live yield with accepted 5.21.37 baseline
-        timeout-minutes: 25
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/interstellar_nuvio_matrix.py --workers 12 --timeout 35 --output automation/interstellar-route-proof-matrix.json
-          python scripts/desktop_series_provider_matrix.py \\
-            --id tt30177477 \\
-            --title "The Unwanted Undead Adventurer" \\
-            --season 1 \\
-            --episode 2 \\
-            --category anime \\
-            --workers 10 \\
-            --timeout 35 \\
-            --output automation/unwanted-undead-route-proof-matrix.json
-          python scripts/desktop_series_provider_matrix.py \\
-            --id tt38646634 \\
-            --title "HELL MODE: The Hardcore Gamer Dominates in Another World with Garbage Balancing" \\
-            --season 1 \\
-            --episode 12 \\
-            --category anime \\
-            --workers 10 \\
-            --timeout 35 \\
-            --output automation/hellmode-route-proof-matrix.json
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          i=json.loads(Path('automation/interstellar-route-proof-matrix.json').read_text())
-          u=json.loads(Path('automation/unwanted-undead-route-proof-matrix.json').read_text())
-          h=json.loads(Path('automation/hellmode-route-proof-matrix.json').read_text())
-          print(
-              'ROUTE_PROOF_LIVE_YIELD '
-              f"interstellar={i.get('automatic_stream_provider_count',0)}/{i.get('enabled_movie_providers_tested',0)} "
-              f"interstellar_vf={i.get('automatic_vf_provider_count',0)} "
-              f"unwanted={u.get('positive_count',0)}/{u.get('providers_tested',0)} "
-              f"hellmode={h.get('positive_count',0)}/{h.get('providers_tested',0)}"
-          )
-          PY
-
-'''
-if hotd in w and "Compare candidate live yield with accepted 5.21.37 baseline" not in w:
-    w = w.replace(hotd, compare + hotd, 1)
-elif "Compare candidate live yield with accepted 5.21.37 baseline" not in w:
-    raise SystemExit("HOTD anchor not found")
-
-artifact = "            automation/hotd-s3e1-live.json\n"
-artifact_plus = (
-    "            automation/hotd-s3e1-live.json\n"
-    "            automation/interstellar-route-proof-matrix.json\n"
-    "            automation/unwanted-undead-route-proof-matrix.json\n"
-    "            automation/hellmode-route-proof-matrix.json\n"
-)
-if artifact in w and "automation/interstellar-route-proof-matrix.json" not in w.split("path: |", 1)[-1]:
-    w = w.replace(artifact, artifact_plus, 1)
-wf.write_text(w, encoding="utf-8")
-
 trigger_path = ROOT / ".github/triggers/route-proof-reconstruction.json"
 trigger = json.loads(trigger_path.read_text(encoding="utf-8"))
 trigger["retry"] = int(trigger.get("retry") or 0) + 1
@@ -159,4 +57,4 @@ trigger["targetVersion"] = "5.21.38-candidate"
 trigger["requiredFinalProof"] = "proof-v5-96+interstellar+unwanted-undead+hellmode+hotd"
 trigger["triggeredAfter"] = "6f74939efa11b2c886e82002c242b923a4f87f6c"
 trigger_path.write_text(json.dumps(trigger, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-print("ROUTE_PROOF_BASELINE_SYNCED expected=5.21.37")
+print("ROUTE_PROOF_TRIGGER_SYNCED expected=5.21.37")
