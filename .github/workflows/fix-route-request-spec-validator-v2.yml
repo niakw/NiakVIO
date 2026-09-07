@@ -1,0 +1,47 @@
+name: TEMP - Route Request Spec Validator V2
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/fix_route_request_spec_validator_v2.py'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Apply semantic validator repair
+        run: python3 scripts/fix_route_request_spec_validator_v2.py
+      - name: Prove current request-spec and route authority contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_route_recovery_request_specs_v1.py
+          python3 scripts/upgrade_provider_route_authority_v5.py
+          python3 scripts/upgrade_route_recovery_request_specs_v1.py
+          python3 -m py_compile scripts/upgrade_route_recovery_request_specs_v1.py scripts/recover_provider_routes_from_upstreams.py
+          python3 tests/provider_route_proof_authority_test.py
+          python3 tests/route_proof_manifest_policy_test.py
+          python3 tests/provider_v3_empty_route_bootstrap_test.py
+      - name: Commit durable validator repair
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm scripts/fix_route_request_spec_validator_v2.py
+          git add scripts/upgrade_route_recovery_request_specs_v1.py
+          git commit -m 'fix(routes): validate current proof-v5 runtime selection'
+          git pull --rebase origin main
+          git push origin HEAD:main
