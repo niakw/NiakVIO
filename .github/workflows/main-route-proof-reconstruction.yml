@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/main-route-proof-reconstruction.yml'
       - '.github/triggers/route-proof-reconstruction.json'
-      - 'scripts/purstream_hotd_s3e1_live_probe.py'
+      - 'scripts/hotd_s3e1_live_probe.py'
   workflow_dispatch:
 
 permissions:
@@ -68,7 +68,8 @@ jobs:
             scripts/bootstrap_provider_v3_routes.py \
             scripts/recover_provider_routes_from_upstreams.py \
             scripts/apply_provider_route_recovery_report.py \
-            scripts/purstream_hotd_s3e1_live_probe.py \
+            scripts/enforce_route_proof_manifest_policy_v1.py \
+            scripts/hotd_s3e1_live_probe.py \
             scripts/prepatch_identity_cleanup_shared_owner_v1.py \
             scripts/upgrade_provider_worker_route_proof_v1.py \
             scripts/upgrade_provider_route_proof_request_spec_v1.py \
@@ -84,6 +85,7 @@ jobs:
           set -euo pipefail
           python tests/provider_route_proof_authority_test.py
           python tests/provider_v3_empty_route_bootstrap_test.py
+          python tests/route_proof_manifest_policy_test.py
           python tests/global_identity_policy_ownership_test.py
           python tests/episodic_identity_runtime_test.py
           python tests/episodic_year_identity_regression_test.py
@@ -124,11 +126,15 @@ jobs:
               print('ROUTE_PROOF_SOURCE_UNAVAILABLE providers='+','.join(str(x) for x in missing))
           PY
 
-      - name: Apply the single census as structured DATA
+      - name: Apply the single census as structured DATA and activation policy
         shell: bash
         run: |
           set -euo pipefail
           python scripts/apply_provider_route_recovery_report.py automation/provider-route-recovery-v5.json
+          python scripts/enforce_route_proof_manifest_policy_v1.py \
+            --report automation/provider-route-recovery-v5.json \
+            --manifest manifest.json \
+            --overrides provider-overrides.json
           python - <<'PY'
           import json
           r=json.load(open('automation/provider-route-recovery-v5.json'))
@@ -136,12 +142,17 @@ jobs:
           assert a.get('patchedProviders')==96, a
           o=json.load(open('provider-overrides.json'))
           k=json.load(open('automation/provider-v3-static-knowledge.json'))
+          m=json.load(open('manifest.json'))
           patches=o.get('provider_patches') or {}
           rows=k.get('providers') or {}
+          movix=next(row for row in m.get('scrapers',[]) if str(row.get('id','')).casefold()=='movix')
+          assert movix.get('enabled') is False, movix
+          assert (patches.get('movix') or {}).get('manifest_overrides',{}).get('enabled') is False
           assert len(patches)>=96 and len(rows)>=96
           print(
               'ROUTE_PROOF_DATA_APPLIED '
-              f"providers={a.get('patchedProviders')} routes={a.get('provenRoutes')} recipes={a.get('apiRecipes')}"
+              f"providers={a.get('patchedProviders')} routes={a.get('provenRoutes')} recipes={a.get('apiRecipes')} "
+              'movix_enabled=false'
           )
           PY
 
@@ -193,7 +204,9 @@ jobs:
           assert mat.get('mainTouched') is False
           files=[Path(row['filename']) for row in rows]
           assert all(path.is_file() for path in files)
-          print('ROUTE_PROOF_RECONSTRUCTION_96_OK providers=96 publication=false')
+          movix=next(row for row in rows if str(row.get('id','')).casefold()=='movix')
+          assert movix.get('enabled') is False, movix
+          print('ROUTE_PROOF_RECONSTRUCTION_96_OK providers=96 publication=false movix_enabled=false')
           PY
 
       - name: Reverse, static and integrity proof
@@ -230,13 +243,13 @@ jobs:
           )
           PY
 
-      - name: Final real Purstream HOTD S3E1 proof
-        timeout-minutes: 5
+      - name: Final real HOTD S3E1 proof - Kehflix and Purstream
+        timeout-minutes: 8
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/purstream_hotd_s3e1_live_probe.py \
-            --output automation/purstream-hotd-s3e1-live.json \
+          python scripts/hotd_s3e1_live_probe.py \
+            --output automation/hotd-s3e1-live.json \
             --timeout 90
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -246,7 +259,7 @@ jobs:
           path: |
             automation/provider-route-recovery-v5.json
             automation/provider-v3-static-knowledge.json
-            automation/purstream-hotd-s3e1-live.json
+            automation/hotd-s3e1-live.json
             provider-overrides.json
             manifest.json
             vf/manifest.json
