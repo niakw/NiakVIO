@@ -66,7 +66,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v28-dual-id-input",
+        "revision": "tmdb-data-contract-launch-gate-v29-native-abort-race",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -476,6 +476,17 @@ function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name
 function providerStaleError(){var e=new Error("nuvio_provider_superseded");e.name="AbortError";e.code="NUVIO_PROVIDER_SUPERSEDED";e.__nuvioProviderStale=true;return e}
 function tokenOwns(token){try{return !token||!g||g.__nuvioProviderRequestToken===token}catch(_){return false}}
 function abortController(controller){try{if(controller&&typeof controller.abort==="function")controller.abort()}catch(_){}}
+function requestAbortPromise(controller,requestToken){
+  return new Promise(function(_resolve,reject){
+    try{
+      var signal=controller&&controller.signal;
+      if(!signal)return;
+      var fail=function(){reject(tokenOwns(requestToken)?providerTimeoutError():providerStaleError())};
+      if(signal.aborted){fail();return}
+      if(typeof signal.addEventListener==="function")signal.addEventListener("abort",fail,{once:true});
+    }catch(_){}
+  });
+}
 async function settlePrior(promise){if(!promise||typeof promise.then!=="function")return;try{if(typeof setTimeout!=="function"){await Promise.resolve();return}await Promise.race([promise,new Promise(function(resolve){setTimeout(resolve,Number(c.supersedeSettleMs||1200))})])}catch(_){}}
 function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
 function tvRuntime(){try{var ua=s(g&&g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_){return false}}
@@ -499,11 +510,11 @@ function budgetedFetch(original,deadline,requestToken,requestController){
       if(typeof setTimeout!=="function"||remaining<=0)return;
       timer=setTimeout(function(){abortController(requestController);reject(providerTimeoutError())},remaining);
     });
-    var value;
+    var value,abortPromise=requestAbortPromise(requestController,requestToken);
     try{
       value=(typeof setTimeout==="function"&&remaining>0)
-        ? await Promise.race([base.apply(this,args),timeoutPromise])
-        : await base.apply(this,args);
+        ? await Promise.race([base.apply(this,args),timeoutPromise,abortPromise])
+        : await Promise.race([base.apply(this,args),abortPromise]);
     }finally{
       try{if(timer!=null&&typeof clearTimeout==="function")clearTimeout(timer)}catch(_){}
     }
