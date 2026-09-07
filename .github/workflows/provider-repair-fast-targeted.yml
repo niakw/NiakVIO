@@ -1,0 +1,55 @@
+name: Provider Repair Fast Targeted Proof
+
+on:
+  push:
+    branches:
+      - workbench/route-recognition-v14-search-plan
+    paths:
+      - automation/provider-fast-trigger.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NIAKVIO_ROUTE_PROOF_MAX_ATTEMPTS: "3"
+
+jobs:
+  prove:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run fast targeted acceptance
+        run: |
+          python scripts/run_provider_repair_fast_targeted_v1.py \
+            --attempts 3 \
+            --workers 8 \
+            --timeout 55 \
+            --provider animekai \
+            --provider movies4u \
+            --provider frenchstream \
+            --provider mugiwarastream
+
+      - name: Upload fast proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-repair-fast-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            automation/provider-repair-fast-targeted.json
+            automation/provider-repair-fast-merged.json
+            automation/provider-repair-fast-yield.json
+            automation/provider-repair-fast-summary.json
+            provider-v3-quick-yield.json
