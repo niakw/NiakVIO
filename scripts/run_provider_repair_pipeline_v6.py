@@ -48,6 +48,7 @@ def main() -> int:
     parser.add_argument("--provider", action="append", default=[])
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--timeout", type=int, default=55)
+    parser.add_argument("--attempts", type=int, default=3)
     parser.add_argument("--allow-upstream-positive-loss", action="store_true")
     args = parser.parse_args()
 
@@ -63,10 +64,11 @@ def main() -> int:
     if not targets:
         raise SystemExit("no unresolved provider selected for repair")
 
+    attempts = max(1, min(int(args.attempts), 4))
     print(
         "FIELD_PROVIDER_REPAIR_SCOPE "
         f"mode={args.mode} catalogue=96 targeted={len(targets)} skipped_green={len(skipped)} "
-        f"providers={','.join(targets)}",
+        f"attempts={attempts} providers={','.join(targets)}",
         flush=True,
     )
 
@@ -82,6 +84,9 @@ def main() -> int:
         "scripts/upgrade_route_recovery_request_specs_v1.py",
         "scripts/upgrade_provider_v3_source_plan_v5.py",
         "scripts/upgrade_provider_repair_v6.py",
+        "scripts/upgrade_provider_repair_v7.py",
+        "scripts/upgrade_provider_route_retry_v1.py",
+        "scripts/upgrade_provider_base_runtime_v11.py",
     ]
     for migration in migrations:
         run(sys.executable, migration)
@@ -89,6 +94,7 @@ def main() -> int:
     run("node", "--check", "scripts/provider_worker.cjs")
     run(sys.executable, "tests/provider_route_proof_authority_test.py")
     run(sys.executable, "tests/provider_repair_v6_recipe_regression_test.py")
+    run(sys.executable, "tests/provider_repair_v7_typed_resolver_test.py")
     run(sys.executable, "tests/global_identity_policy_ownership_test.py")
     run(sys.executable, "tests/provider_latest_request_cancellation_test.py")
     run(sys.executable, "tests/provider_native_abort_ignorant_cancellation_test.py")
@@ -97,11 +103,12 @@ def main() -> int:
         sys.executable, "scripts/recover_provider_routes_from_upstreams.py",
         "--workers", str(max(1, min(args.workers, 12))),
         "--timeout", str(max(15, min(args.timeout, 120))),
+        "--attempts", str(attempts),
         "--out", str(TARGET_REPORT.relative_to(ROOT)),
     ]
     for provider in targets:
         cmd.extend(["--provider", provider])
-    run(*cmd, timeout=max(1200, len(targets) * max(15, args.timeout)))
+    run(*cmd, timeout=max(1200, len(targets) * max(15, args.timeout) * attempts))
 
     run(
         sys.executable, "scripts/merge_provider_repair_report_v6.py",
@@ -160,6 +167,7 @@ def main() -> int:
         "skippedAlreadyGreenProviders": sorted(skipped),
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,
+        "maxAttemptsPerTask": attempts,
         "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
         "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
         "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
