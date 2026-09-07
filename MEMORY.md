@@ -281,3 +281,12 @@ A green structural workflow is not proof that the 96 providers work. A native cl
 - Generic catalogue preflight must no longer require `year`. Movie-year identity remains Core-owned; TV/series/anime year has zero identity influence.
 - Provider JS architecture remains: common ProviderBase + structured DATA/CONFIG + PROVIDER.* Lego + CORE.* Lego. Reconstruction/discovery tooling is never embedded as provider-specific runtime business logic.
 - Public release remains **5.21.35** until the new route-proof census + 96/96 reconstruction + reverse/audit/integrity + version sync are actually green and a later checkpoint records a verified bump.
+
+## 2026-09-07 — Route-proof reconstruction run 34069211303 failure
+
+- Workflow , run **34069211303**, job **101583333823**, failed safely in workspace before route census, DATA application, reconstruction or publication. Public release remained 5.21.35.
+- Baseline freeze passed: 5.21.35 / 96 providers.
+- , worker route-proof v1, request-spec proof v1 and ProviderBase runtime v9 all applied successfully before the failure.
+- Failure was migration cardinality only:  assumed the legacy  call was unique for directRoute, but ProviderBase has exactly three stable call sites: directRoute, catalogue search, movie/episode resolve. It raised .
+- No census was executed and no route result from this run is authoritative.
+- Commit  fixes the upgrader to require cardinality exactly 3 then replace the three calls deterministically in stable semantic order.
