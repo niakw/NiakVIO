@@ -6,7 +6,8 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 policy=json.loads((ROOT/"automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 routine=(ROOT/".github/workflows/sync.yml").read_text(encoding="utf-8")
-learn=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+brain=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-8")
+repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
 manual=(ROOT/".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 domain=(ROOT/".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
 legacy_core=ROOT/".github/workflows/core-media-finalize-main.yml"
@@ -39,9 +40,38 @@ assert "audit_provider_v3_static.py" in routine
 assert "build_published_provider_stage.py" in routine
 assert "build_observational_health_report.py" in routine
 
+# Brain owns broad evidence/memory/proposal learning. It is no longer the
+# executable authority for provider route recognition/correction.
 for required in ("run_brain_learning_queue.py","build_brain_repair_proposal.py","brain-repair/proposal"):
-    assert required in learn, f"LEARN lost repair/proposal ownership: {required}"
-assert "--include-disabled" in learn or "including disabled providers" in learn
+    assert required in brain, f"Brain lost evidence/proposal ownership: {required}"
+assert "--include-disabled" in brain or "including disabled providers" in brain
+
+# Provider recognition/correction has one implementation for Repair, scheduled
+# Learn and explicit Force. The workflow chooses a mode, but every mode invokes
+# this exact script and therefore the same proof/correction gates.
+assert repair.startswith("name: LEARN/FORCE - Provider Recognition Repair V6")
+assert repair.count('scripts/run_provider_repair_pipeline_v6.py --mode "$MODE"') == 1
+for required in (
+    "MODE=learn",
+    "MODE=repair",
+    "DISPATCH_MODE:-force",
+    "provider-repair-skip.json",
+    "Verify known-green providers were not network re-probed",
+):
+    assert required in repair, f"canonical provider repair workflow missing: {required}"
+pipeline=(ROOT/"scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
+for required in (
+    "recover_provider_routes_from_upstreams.py",
+    "merge_provider_repair_report_v6.py",
+    "apply_provider_route_recovery_report.py",
+    "materialize_provider_base_v3_store.py",
+    "materialize_provider_v3_all.py",
+    "audit_provider_repair_yield_v6.py",
+    "--require-upstream-positive-preserved",
+):
+    assert required in pipeline, f"canonical provider repair pipeline missing: {required}"
+assert '"publicationAllowed": False' in pipeline
+assert '"mainWritesAllowed": False' in pipeline
 
 for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_rebuild.py","96"):
     assert required in manual
@@ -60,4 +90,4 @@ assert "audit_provider_v3_static.py" in domain
 assert "materialize_provider_v3_all.py" not in domain
 assert "verify_provider_v3_reverse_rebuild.py" not in domain
 
-print("provider v3 workflow ownership contract passed: one routine CORE workflow")
+print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one provider repair v6 engine")
