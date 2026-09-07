@@ -12,6 +12,7 @@ upgrade_v10=(ROOT/'scripts/upgrade_provider_base_runtime_v10.py').read_text(enco
 yield_audit=(ROOT/'scripts/audit_provider_repair_yield_v6.py').read_text(encoding='utf-8')
 portfolio_compare=(ROOT/'scripts/compare_quick_yield_preservation.py').read_text(encoding='utf-8')
 targeted_retry=(ROOT/'scripts/audit_provider_quick_yield_targeted.py').read_text(encoding='utf-8')
+merge_repair=(ROOT/'scripts/merge_provider_repair_report_v6.py').read_text(encoding='utf-8')
 skip=json.loads((ROOT/'automation/provider-repair-skip.json').read_text(encoding='utf-8'))
 
 assert workflow.startswith('name: LEARN/FORCE - Provider Recognition Repair V6')
@@ -43,6 +44,7 @@ for required in (
     'tests/provider_external_identity_route_v11_test.py',
     'tests/provider_source_plan_v12_regression_test.py',
     'tests/provider_route_plan_v13_regression_test.py',
+    'tests/provider_repair_merge_typed_recipe_test.py',
 ):
     assert required in pipeline, required
 assert '"routePlanRevision": "v13.2"' in pipeline
@@ -64,6 +66,10 @@ assert 'new wrong-content provider detected' in portfolio_compare
 assert '--candidate-retry' in portfolio_compare
 assert 'TARGETED_YIELD_RETRY_DONE' in targeted_retry
 assert 'attempts = max(1, min(int(args.attempts), 3))' in targeted_retry
+assert 'normalize_typed_api_recipe' in merge_repair
+assert 'typedRecipeDirectRouteSanitizedCount' in merge_repair
+assert 'recipe.pop("directRoute", None)' in merge_repair
+assert 'recipe.pop("directRequest", None)' in merge_repair
 
 for marker in (
     'NIAKVIO_PROVIDER_REPAIR_PORTFOLIO_V6',
