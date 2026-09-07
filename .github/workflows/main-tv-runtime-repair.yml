@@ -35,6 +35,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/prepatch_stream_facts_quality_v2.py
+          python scripts/prepatch_tv_runtime_upgrade_validator_v1.py
           python scripts/upgrade_tv_runtime_regressions_v1.py
           python scripts/upgrade_provider_prune_batch_history_v1.py
           python -m py_compile \
@@ -63,6 +64,7 @@ jobs:
           git rm -f \
             .github/workflows/main-tv-runtime-repair.yml \
             scripts/prepatch_stream_facts_quality_v2.py \
+            scripts/prepatch_tv_runtime_upgrade_validator_v1.py \
             scripts/upgrade_tv_runtime_regressions_v1.py \
             scripts/upgrade_provider_prune_batch_history_v1.py
           git add \
