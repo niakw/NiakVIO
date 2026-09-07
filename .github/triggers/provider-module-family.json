@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 2,
-  "requestedAt": "2026-09-07T19:12:00+02:00",
+  "schemaVersion": 3,
+  "requestedAt": "2026-09-07T19:18:00+02:00",
   "providers": 16,
-  "goal": "prove temp upstream providers resolve only declared pinned npm dependencies and clear MODULE_NOT_FOUND",
-  "security": "top-level dependencies only; blocked built-ins unchanged"
+  "goal": "prove parser-only Cheerio removes node:net runtime failures while keeping sandbox network built-ins blocked",
+  "security": "declared dependencies only; cheerio -> cheerio/slim; blocked built-ins unchanged"
 }
