@@ -49,20 +49,16 @@ def derive_with_hint(key: str, value: str) -> dict:
     return rows[1]
 
 
-# Explicit imdb_id evidence becomes semantic {imdbId}.
 second = derive_with_hint("imdb_id", "tt0903747")
 assert second["route"] == "/series/{imdbId}", second
 assert second["derivation"].get("externalIdentityCorrelation") is True, second
 assert second["derivation"].get("providerValueCorrelation") is False, second
 
-# Cinemeta commonly exposes the same external identity under generic key `id`.
-# IMDb shape must still win over provider-internal generic ID classification.
 generic = derive_with_hint("id", "tt12343534")
 assert generic["route"] == "/series/{imdbId}", generic
 assert generic["derivation"].get("externalIdentityCorrelation") is True, generic
 assert generic["derivation"].get("providerValueCorrelation") is False, generic
 
-# The same literal without prior response proof is rejected fail-closed.
 route, meta = proof.derive_observed_route(
     {
         "url": "https://papadustream.club/series/tt0903747",
@@ -77,8 +73,6 @@ route, meta = proof.derive_observed_route(
 assert route is None, (route, meta)
 assert "tt0903747" in (meta.get("unresolvedOpaqueSegments") or []), meta
 
-# Positive external-ID detail origin is execution authority, but helper metadata
-# origins remain excluded by the same provider-origin boundary used by V10.
 detail_bases = recovery._positive_external_detail_bases(
     [
         {
@@ -104,15 +98,16 @@ detail_bases = recovery._positive_external_detail_bases(
 )
 assert detail_bases == ["https://papadustream.club"], detail_bases
 
-# Existing materializer identity classification knows that an IMDb route requires
-# Core metadata before provider execution.
 assert materializer._identity_mode_from_plan(["/series/{imdbId}"], None) == "external_id"
 
 worker = (ROOT / "scripts" / "provider_worker.cjs").read_text(encoding="utf-8")
 base = (ROOT / "scripts" / "provider_base_store.py").read_text(encoding="utf-8")
+recovery_source = (ROOT / "scripts" / "recover_provider_routes_from_upstreams.py").read_text(encoding="utf-8")
 assert "NUVIO_PROVIDER_WORKER_EXTERNAL_IDENTITY_HINT_V11" in worker
 assert "NIAKVIO_PROVIDER_BASE_EXTERNAL_IDENTITY_ROUTE_V11" in base
 assert "NIAKVIO_PROVIDER_MODEL.proofDetailBases" in base
 assert "const imdbId = _text(meta && meta.imdbId)" in base
+assert "ROUTE_RECOVERY_HELPER_EVIDENCE_ONLY_V11_1" in recovery_source
+assert "if _repair_recipe_origin_allowed(row) and generic_execution_route(row)" in recovery_source
 
 print("provider external identity route v11 tests passed")
