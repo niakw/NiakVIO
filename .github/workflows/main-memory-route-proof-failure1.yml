@@ -1,0 +1,32 @@
+name: MAIN - Route Proof Failure Memory 1
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-memory-route-proof-failure1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Persist reconstruction failure checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -c "from pathlib import Path; p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8'); m='## 2026-09-07 — Route-proof reconstruction run 34069211303 failure'; b='''\n\n## 2026-09-07 — Route-proof reconstruction run 34069211303 failure\n\n- Workflow `MAIN - Route Proof Reconstruction 96`, run **34069211303**, job **101583333823**, failed safely in workspace before route census, DATA application, reconstruction or publication. Public release remained 5.21.35.\n- Baseline freeze passed: 5.21.35 / 96 providers.\n- `apply_core_identity_ownership_cleanup.py`, worker route-proof v1, request-spec proof v1 and ProviderBase runtime v9 all applied successfully before the failure.\n- Failure was migration cardinality only: `upgrade_provider_base_route_requests_v1.py` assumed the legacy `_recipePayload(url, recipe, null)` call was unique for directRoute, but ProviderBase has exactly three stable call sites: directRoute, catalogue search, movie/episode resolve. It raised `direct-request-spec: expected one anchor, got 3`.\n- No census was executed and no route result from this run is authoritative.\n- Commit `2af64665e2e4cf9dd36ad0d5d4a6d6e244c9c215` fixes the upgrader to require cardinality exactly 3 then replace the three calls deterministically in stable semantic order.\n'''; p.write_text(t.rstrip()+(b if m not in t else '\n'),encoding='utf-8')"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add MEMORY.md
+          git commit -m 'docs: checkpoint first route-proof reconstruction failure' || true
+          rm -f .github/workflows/main-memory-route-proof-failure1.yml
+          git add -A
+          git commit -m 'ci: remove route-proof failure checkpoint workflow' || true
+          git push origin HEAD:main
