@@ -54,6 +54,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/prepatch_identity_cleanup_shared_owner_v1.py
           python scripts/apply_core_identity_ownership_cleanup.py
           python scripts/upgrade_provider_worker_route_proof_v1.py
           python scripts/upgrade_provider_route_proof_request_spec_v1.py
@@ -68,6 +69,7 @@ jobs:
             scripts/recover_provider_routes_from_upstreams.py \
             scripts/apply_provider_route_recovery_report.py \
             scripts/purstream_hotd_s3e1_live_probe.py \
+            scripts/prepatch_identity_cleanup_shared_owner_v1.py \
             scripts/upgrade_provider_worker_route_proof_v1.py \
             scripts/upgrade_provider_route_proof_request_spec_v1.py \
             scripts/upgrade_provider_base_route_requests_v1.py \
