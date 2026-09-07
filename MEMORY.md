@@ -296,3 +296,12 @@ A green structural workflow is not proof that the 96 providers work. A native cl
 - User explicitly requires a final **real Purstream → House of the Dragon S3E1** proof after the 96/96 route-proof reconstruction/audit. It must not be satisfied by the synthetic engine smoke alone.
 - The final Purstream test must exercise the real provider/network path for HOTD S3E1, verify `tv`p/`series` transport and season=3/episode=1, and prove that the provider-side 2026 season year is not rejected against TMDB series origin 2022.
 - Do not consider the next release publishable until this Purstream HOTD S3E1 check is green or is precisely classified as the remaining real-world blocker with evidence.
+
+## 2026-09-07 — Route-proof reconstruction run 34069559315 failure
+
+- Workflow , run **34069559315**, job **101584262866**, again failed safely before census/DATA application/reconstruction/publication. Public release remained 5.21.35.
+- The previous ProviderBase request-spec cardinality bug was fixed:  passed.
+- New blocker was another migration-anchor bug in : it searched exactly for  but  currently imports ; failure was .
+- Commit  fixes this by injecting  before the stable  anchor and requiring that stable anchor exactly once.
+- No provider route census result exists yet from runs 34069211303 or 34069559315; both failed before the live census step.
+- Final candidate pipeline now includes a mandatory real Purstream / House of the Dragon S3E1 proof after reverse/static/integrity: both  and canonical  transports must return streams, have successful provider HTTP, and expose an observed episode request.
