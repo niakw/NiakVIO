@@ -1,14 +1,54 @@
 #!/usr/bin/env python3
 """External identity route V11.1.
 
-Runs the V11 proof/recovery/materializer migrations, but owns the ProviderBase
-patch with the redundant Python-only runtime-route anchor removed. `/series/...`
-already classifies as a detail route, so adding `{imdbId}` to that unrelated
-selector was both unnecessary and the source of the V11 pre-network failure.
+Runs the V11 proof/recovery/materializer migrations, but owns two corrected
+portfolio boundaries:
+- ProviderBase patching uses stable runtime anchors only;
+- metadata helper hosts remain route evidence but can never enter executionRoutes.
+
+`/series/...` already classifies as a detail route, so adding `{imdbId}` to an
+unrelated Python selector was unnecessary and caused the original V11 pre-network
+failure.
 """
 from __future__ import annotations
 
 import upgrade_provider_external_identity_route_v11 as v11
+
+EXECUTION_MARKER = "ROUTE_RECOVERY_HELPER_EVIDENCE_ONLY_V11_1"
+
+
+def patch_execution_boundary() -> bool:
+    text = v11.RECOVERY.read_text(encoding="utf-8")
+    if EXECUTION_MARKER in text:
+        validate_execution_boundary(text)
+        return False
+    if "NIAKVIO_PROVIDER_SOURCE_PLAN_V10" not in text:
+        raise AssertionError("V11.1 helper boundary requires Source Plan V10 recovery")
+    old = '''    execution_routes = unique([row.get("route") for row in deduped if generic_execution_route(row)], 192)
+'''
+    new = '''    # ROUTE_RECOVERY_HELPER_EVIDENCE_ONLY_V11_1
+    # TMDB/Cinemeta helper calls may carry critical identity evidence (IMDb, title,
+    # aliases), but they are not provider execution routes. Keep them in routeData
+    # and proven routes for causality while excluding them from the runtime plan.
+    execution_routes = unique([
+        row.get("route") for row in deduped
+        if _repair_recipe_origin_allowed(row) and generic_execution_route(row)
+    ], 192)
+'''
+    text = v11.once(text, old, new, "helper-evidence-execution-boundary")
+    v11.RECOVERY.write_text(text, encoding="utf-8")
+    validate_execution_boundary(text)
+    return True
+
+
+def validate_execution_boundary(text: str | None = None) -> None:
+    value = text if text is not None else v11.RECOVERY.read_text(encoding="utf-8")
+    for needle in (
+        EXECUTION_MARKER,
+        "if _repair_recipe_origin_allowed(row) and generic_execution_route(row)",
+    ):
+        if needle not in value:
+            raise AssertionError(f"V11.1 execution boundary missing: {needle}")
 
 
 def patch_base_fixed() -> bool:
@@ -67,8 +107,6 @@ def patch_base_fixed() -> bool:
 ''',
         "base-learned-imdb-value",
     )
-    # Stable owner: comments around this line have evolved, but the TMDB
-    # placeholder expansion itself is the durable contract.
     text = v11.once(
         text,
         '''  route = route.replace(/\\{tmdb_?id\\}/gi, encodeURIComponent(id));
@@ -112,23 +150,21 @@ def patch_base_fixed() -> bool:
 
 
 def main() -> int:
-    changed = (
-        v11.patch_worker()
-        | v11.patch_proof()
-        | v11.patch_recovery()
-        | v11.patch_materializer()
-        | patch_base_fixed()
-    )
+    changed = v11.patch_worker() | v11.patch_proof() | v11.patch_recovery()
+    changed |= patch_execution_boundary()
+    changed |= v11.patch_materializer() | patch_base_fixed()
     v11.validate_worker()
     v11.validate_proof()
     v11.validate_recovery()
+    validate_execution_boundary()
     v11.validate_materializer()
     v11.validate_base()
     print(
         f"PROVIDER_EXTERNAL_IDENTITY_ROUTE_V11_1_OK changed={str(changed).lower()} "
-        "redundant_anchor_removed=1 imdb_hint=1 generic_imdb_id_reclassified=1 "
-        "provider_id_separation=1 literal_imdb_fail_closed=1 imdb_placeholder=1 "
-        "proof_detail_base=1 source_plan_external_id=1"
+        "redundant_anchor_removed=1 helper_routes_evidence_only=1 imdb_hint=1 "
+        "generic_imdb_id_reclassified=1 provider_id_separation=1 "
+        "literal_imdb_fail_closed=1 imdb_placeholder=1 proof_detail_base=1 "
+        "source_plan_external_id=1"
     )
     return 0
 
