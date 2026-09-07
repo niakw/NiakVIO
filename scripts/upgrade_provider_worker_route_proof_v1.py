@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """Add opt-in proof-grade HTTP tracing to the hardened provider worker.
 
-Normal health/parity output stays unchanged.  When context.routeProofTrace is true,
+Normal health/parity output stays unchanged. When context.routeProofTrace is true,
 network observations additionally contain sanitized exact request structure and
-bounded response identity hints.  These fields are evidence only; promotion into
+bounded response identity hints. These fields are evidence only; promotion into
 runtime DATA is handled by provider_route_proof.py.
+
+V2 additionally preserves bodies carried by fetch(Request) rather than only
+fetch(url, {body}). The Request is cloned before reading so provider execution is
+never consumed or mutated by proof tracing.
 """
 from __future__ import annotations
 
@@ -13,9 +17,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_worker.cjs"
 MARKER = "NUVIO_PROVIDER_WORKER_ROUTE_PROOF_V1"
+V2_MARKER = "NUVIO_PROVIDER_WORKER_ROUTE_PROOF_REQUEST_CLONE_V2"
 
 HELPERS = r'''
 /* NUVIO_PROVIDER_WORKER_ROUTE_PROOF_V1 */
+/* NUVIO_PROVIDER_WORKER_ROUTE_PROOF_REQUEST_CLONE_V2 */
 const ROUTE_PROOF_SENSITIVE_KEY = /api[_-]?key|token|auth|authorization|signature|sig|secret|password|cookie|session|nonce/i;
 const ROUTE_PROOF_SAFE_HEADER = new Set([
   'accept', 'accept-language', 'content-type', 'origin', 'referer', 'referrer',
@@ -101,8 +107,16 @@ function routeProofBody(body) {
   return out;
 }
 
-function routeProofRequestMetadata(input, init, headers) {
-  const body = routeProofBody(init?.body);
+async function routeProofRequestMetadata(input, init, headers) {
+  let rawBody = init?.body;
+  if (rawBody == null) {
+    try {
+      if (typeof Request !== 'undefined' && input instanceof Request) {
+        rawBody = await input.clone().text();
+      }
+    } catch {}
+  }
+  const body = routeProofBody(rawBody);
   return {
     proof_url: routeProofSanitizedUrl(input),
     proof_headers: routeProofHeaders(headers),
@@ -171,11 +185,61 @@ def replace_once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def patch_existing_v1(text: str) -> tuple[str, bool]:
+    if V2_MARKER in text:
+        return text, False
+    text = replace_once(
+        text,
+        "/* NUVIO_PROVIDER_WORKER_ROUTE_PROOF_V1 */\n",
+        "/* NUVIO_PROVIDER_WORKER_ROUTE_PROOF_V1 */\n/* NUVIO_PROVIDER_WORKER_ROUTE_PROOF_REQUEST_CLONE_V2 */\n",
+        "route-proof-v2-marker",
+    )
+    old = '''function routeProofRequestMetadata(input, init, headers) {
+  const body = routeProofBody(init?.body);
+  return {
+    proof_url: routeProofSanitizedUrl(input),
+    proof_headers: routeProofHeaders(headers),
+    proof_body_kind: body.body_kind,
+    proof_body_fields: [...new Set(body.body_fields)].slice(0, 40),
+    proof_body_values: body.body_values,
+  };
+}'''
+    new = '''async function routeProofRequestMetadata(input, init, headers) {
+  let rawBody = init?.body;
+  if (rawBody == null) {
+    try {
+      if (typeof Request !== 'undefined' && input instanceof Request) {
+        rawBody = await input.clone().text();
+      }
+    } catch {}
+  }
+  const body = routeProofBody(rawBody);
+  return {
+    proof_url: routeProofSanitizedUrl(input),
+    proof_headers: routeProofHeaders(headers),
+    proof_body_kind: body.body_kind,
+    proof_body_fields: [...new Set(body.body_fields)].slice(0, 40),
+    proof_body_values: body.body_values,
+  };
+}'''
+    text = replace_once(text, old, new, "route-proof-v2-request-clone")
+    text = replace_once(
+        text,
+        "const routeProofRequest = routeProofEnabled ? routeProofRequestMetadata(input, init, headers) : {};",
+        "const routeProofRequest = routeProofEnabled ? await routeProofRequestMetadata(input, init, headers) : {};",
+        "route-proof-v2-await-request-metadata",
+    )
+    return text, True
+
+
 def patch() -> bool:
     text = TARGET.read_text(encoding="utf-8")
     if MARKER in text:
+        text, changed = patch_existing_v1(text)
+        if changed:
+            TARGET.write_text(text, encoding="utf-8")
         validate(text)
-        return False
+        return changed
 
     text = replace_once(
         text,
@@ -188,7 +252,7 @@ def patch() -> bool:
         "      const requestMeta = safeRequestMetadata(input, init);\n      const rawRequestUrl = (() => {",
         "      const requestMeta = safeRequestMetadata(input, init);\n"
         "      const routeProofEnabled = context.routeProofTrace === true;\n"
-        "      const routeProofRequest = routeProofEnabled ? routeProofRequestMetadata(input, init, headers) : {};\n"
+        "      const routeProofRequest = routeProofEnabled ? await routeProofRequestMetadata(input, init, headers) : {};\n"
         "      const rawRequestUrl = (() => {",
         "route-proof-request-metadata",
     )
@@ -210,6 +274,8 @@ def validate(text: str | None = None) -> None:
     value = text if text is not None else TARGET.read_text(encoding="utf-8")
     if value.count(MARKER) != 1:
         raise AssertionError(f"worker route proof marker count={value.count(MARKER)}")
+    if value.count(V2_MARKER) != 1:
+        raise AssertionError(f"worker route proof v2 marker count={value.count(V2_MARKER)}")
     for needle in (
         "context.routeProofTrace === true",
         "proof_url:",
@@ -217,6 +283,9 @@ def validate(text: str | None = None) -> None:
         "proof_body_values:",
         "response_value_hints: routeProofHints",
         "routeProofResponseHints(response)",
+        "async function routeProofRequestMetadata(input, init, headers)",
+        "rawBody = await input.clone().text()",
+        "await routeProofRequestMetadata(input, init, headers)",
     ):
         if needle not in value:
             raise AssertionError(f"worker route proof missing: {needle}")
@@ -224,7 +293,7 @@ def validate(text: str | None = None) -> None:
 
 def main() -> int:
     changed = patch()
-    print(f"PROVIDER_WORKER_ROUTE_PROOF_V1_OK changed={str(changed).lower()}")
+    print(f"PROVIDER_WORKER_ROUTE_PROOF_V2_OK changed={str(changed).lower()}")
     return 0
 
 
