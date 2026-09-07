@@ -90,8 +90,23 @@ jobs:
             MODE="${DISPATCH_MODE:-force}"
           fi
           args=(python scripts/run_provider_repair_pipeline_v6.py --mode "$MODE")
-          if [ -n "$TARGET_PROVIDER" ]; then args+=(--provider "$TARGET_PROVIDER"); fi
+          if [ -n "$TARGET_PROVIDER" ]; then
+            args+=(--provider "$TARGET_PROVIDER")
+          elif [ "${{ github.event_name }}" = "push" ]; then
+            mapfile -t PUSH_TARGETS < <(python - <<'PY'
+          import json
+          from pathlib import Path
+          path=Path('.github/triggers/provider-recognition-repair-v6.json')
+          data=json.loads(path.read_text(encoding='utf-8'))
+          for value in data.get('targetProviders') or []:
+              value=str(value or '').strip().lower()
+              if value: print(value)
+          PY
+            )
+            for provider in "${PUSH_TARGETS[@]}"; do args+=(--provider "$provider"); done
+          fi
           if [ "$ALLOW_LOSS" = "true" ]; then args+=(--allow-upstream-positive-loss); fi
+          printf 'CANONICAL_REPAIR_ARGS %q ' "${args[@]}"; echo
           "${args[@]}"
 
       - name: Verify known-green providers were not network re-probed
