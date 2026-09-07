@@ -54,14 +54,12 @@ assert '"?m=" + encodeURIComponent(transportType)' in text
 assert '"&id=" + encodeURIComponent(_text(tmdbId))' in text
 assert "function _sourceUrls" in text
 assert "async function _resolveRuntimeApi" in text
-assert "function _crawlEligible(url)" in text
-assert "const discoveredNested = _uniq(urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))).slice(0, 10);" in text
+assert "const discoveredNested = _uniq(urls.filter(_playerLike));" in text
 assert "const crawled = await _crawlDirectMedia(" in text
 assert text.index("const runtime = await _resolveRuntimeApi(") < text.index("const crawled = await _crawlDirectMedia(")
 assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
-assert "requests < 10" in text
-assert "requests < 7" not in text
+assert "requests < 7" in text
 assert "slice(0, 24)" not in text
 assert "function _detailGuesses" not in text
 assert "if (!_runtimePlanAvailable()) return [];" in text

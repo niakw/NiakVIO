@@ -76,7 +76,6 @@ for needle in (
 movie = run_node(
     output,
     """
-global.TMDB_API_KEY='0123456789abcdef0123456789abcdef';
 global.__native_fetch=function(){};
 let tmdbCalls=0;
 let mediaCalls=0;
@@ -143,7 +142,6 @@ tv_output = materialize(
 tv = run_node(
     tv_output,
     """
-global.TMDB_API_KEY='0123456789abcdef0123456789abcdef';
 global.__native_fetch=function(){};
 let tmdbCalls=0;
 let mediaCalls=0;

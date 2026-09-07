@@ -17,11 +17,10 @@ export function presentStreamCandidate(stream = {}, metadata = {}, provider = {}
   const technical = technicalLine(facts);
   if (technical) lines.push(technical);
 
-  const streamTitle = `${providerName}${facts.quality ? ` - ${qualityLabel(facts.quality)}` : ""}`;
   return {
     ...stream,
-    title: streamTitle,
-    name: streamTitle,
+    title: `${providerName}${facts.quality ? ` - ${qualityLabel(facts.quality)}` : ""}`,
+    name: providerName,
     description: lines.join("\n") || null,
     quality: facts.quality,
     language: facts.language,
@@ -292,17 +291,8 @@ function normalizeSubtitles(stream) {
   return uniq(out);
 }
 
-function cleanProviderDisplayName(value) {
-  const raw = clean(value);
-  if (!raw) return null;
-  return clean(raw.replace(
-    /\s*(?:[-|•:])\s*(?:unknown|inconnu(?:e)?|n\/?a|na|none|null|undefined|unknown\s+(?:quality|language)|qualit(?:e|é)\s+inconnue|langue\s+inconnue)\s*$/i,
-    "",
-  ));
-}
-
 function providerDisplayName(stream, provider) {
-  const raw = cleanProviderDisplayName(stream.name ?? stream.title);
+  const raw = clean(stream.name);
   const technical = raw && /(?:\b4K\b|\b(?:2160|1440|1080|720|576|480)P?\b|\b(?:VF|VFF|VFQ|VOSTFR|VO|MULTI)\b|\b(?:HEVC|AVC|AV1|VP9|WEB[ ._-]?DL|BLU[ ._-]?RAY|REMUX|HDR|DOLBY|DTS)\b)/i.test(raw);
   return (!technical && raw) || clean(provider.name) || clean(provider.id) || clean(stream.provider) || "Source";
 }

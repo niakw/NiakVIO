@@ -83,7 +83,7 @@ assert source["published_provider_js_is_reconstruction_seed"] is False
 media = machine["media_types"]
 assert media["semantic_field"] == "canonicalSupportedTypes"
 assert media["transport_field"] == "supportedTypes"
-assert media["anime_only_transport_compatibility"] == ["anime", "tv", "series"]
+assert media["anime_only_transport_compatibility"] == ["anime", "tv", "movie"]
 assert media["transport_aliases_do_not_expand_semantic_capability"] is True
 assert media["capability_gate_before_provider_network"] is True
 
@@ -134,24 +134,20 @@ assert lab["external_build_dependency_packaging_repairs_allowed"] is False
 assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
 
 # Validate the dynamic matrix source against the current manifest instead of
-# freezing yesterday's route totals into docs/machine policy. Canonical media
-# semantics are movie/tv/anime; `series` is a Nuvio transport alias only.
+# freezing yesterday's route totals into docs/machine policy.
 rows = manifest.get("scrapers") or []
 assert len(rows) == 96
-canonical_valid = {"movie", "tv", "anime"}
-transport_valid = canonical_valid | {"series"}
+valid = {"movie", "tv", "anime"}
 for row in rows:
     provider = str(row.get("id") or "<unknown>")
     transport = {str(v).strip().lower() for v in (row.get("supportedTypes") or []) if str(v).strip()}
     canonical = {str(v).strip().lower() for v in (row.get("canonicalSupportedTypes") or transport) if str(v).strip()}
     assert transport and canonical, provider
-    assert transport <= transport_valid, (provider, transport)
-    assert canonical <= canonical_valid, (provider, canonical)
-    assert "series" not in canonical, (provider, canonical)
+    assert transport <= valid, (provider, transport)
+    assert canonical <= valid, (provider, canonical)
     assert canonical <= transport, (provider, canonical, transport)
-    if "anime" in canonical or "tv" in canonical:
-        assert {"tv", "series"} <= transport, (provider, canonical, transport)
-    assert ("movie" in transport) == ("movie" in canonical), (provider, canonical, transport)
+    if canonical == {"anime"}:
+        assert {"anime", "tv", "movie"} <= transport, (provider, transport)
 
 # No dead workbench should remain part of the permanent documentation contract.
 for text, label in ((architecture, "ARCHITECTURE"), (readme, "README"), (readme_fr, "README.fr")):

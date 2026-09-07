@@ -9719,14 +9719,23 @@
     },
     {
       "id": "movix",
-      "action": "published-disabled-no-proven-route",
-      "enabled": false,
+      "action": "preserved-current-enabled-ci-uncertain",
+      "enabled": true,
       "restored_from_activation_lkg": false,
       "preservation_upstream_enabled": true,
       "activation_eligible": false,
       "activation_mode": "preserved_current_ci_uncertain",
       "failed_gates": [
-        "route_proof_no_proven_route"
+        "02_healthy_functional_status",
+        "03_minimum_score",
+        "04_fixture_and_type_coverage",
+        "05_stream_and_fixture_coverage",
+        "06_distinct_host_diversity",
+        "07_verified_payload_playability",
+        "08_quality_and_bitrate",
+        "10_content_identity_integrity",
+        "00_provider_specific_access",
+        "00_current_playable_stream"
       ],
       "activation_blockers": [
         "02_healthy_functional_status",
@@ -9925,17 +9934,10 @@
           }
         }
       },
-      "observed_status": "no-proven-route",
+      "observed_status": "blocked",
       "published_filename": "providers/movix--nuvio--fd1e2179737f6d9a.js",
       "variant_count": 1,
-      "manifest_position": 44,
-      "evidence": {
-        "authority": "provider-route-recovery-v5",
-        "provider_id": "movix",
-        "route_proof_version": 5,
-        "proven_route_count": 0,
-        "status": "no-proven-route"
-      }
+      "manifest_position": 44
     },
     {
       "id": "mugiwarastream",

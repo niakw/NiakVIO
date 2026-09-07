@@ -35,10 +35,10 @@
         ]
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json",
-        "/catalogue/{slug}/saison1/vostfr/episodes.js",
-        "/catalogue/{slug}/saison1/vf/episodes.js"
+        "/template-php/defaut/fetch.php",
+        "/catalogue/{slug}/saison{season}/{lang}/episodes.js",
+        "/catalogue/{slug}/{lang}/episodes.js",
+        "/catalogue/{slug}/film/{lang}/episodes.js"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/anime_sama_runtime_v1.py"
@@ -63,9 +63,7 @@
         "/template-php/defaut/fetch.php",
         "/catalogue/{slug}/saison{season}/{lang}/episodes.js",
         "/catalogue/{slug}/{lang}/episodes.js",
-        "/catalogue/{slug}/film/{lang}/episodes.js",
-        "/episodes.js",
-        "/catalogue/{slug}{season}/episodes.js"
+        "/catalogue/{slug}/film/{lang}/episodes.js"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -78,39 +76,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "141ab6d530f056a751114425aad2bc2d5556e2e9bc8730dbda760bfc674546b5",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/anime-sama.js",
-          "wantedSha256": "141ab6d530f056a751114425aad2bc2d5556e2e9bc8730dbda760bfc674546b5",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "141ab6d530f056a751114425aad2bc2d5556e2e9bc8730dbda760bfc674546b5",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 9,
-        "genericExecutionRouteCount": 4,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 4
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "purstream": {
@@ -136,6 +101,42 @@
         "resolver_function": "detectPurstreamDomain",
         "api": "https://purstream.ad/api",
         "referer": "https://purstream.ad/"
+      },
+      "api_recipe": {
+        "base": "https://purstream.ad/api",
+        "referer": "https://purstream.ad/",
+        "searchRoute": "/search-bar/search/{query}",
+        "movieRoute": "/stream/{id}",
+        "episodeRoute": "/stream/{id}/episode?season={season}&episode={episode}",
+        "idFields": [
+          "id"
+        ],
+        "titleFields": [
+          "title"
+        ],
+        "yearFields": [
+          "release_date"
+        ],
+        "sourceFields": [
+          "url",
+          "stream_url"
+        ],
+        "strictIdentity": true,
+        "directSourcesOnly": true,
+        "statusUrl": "https://purstream.wiki/api/status",
+        "statusDomainField": "domain",
+        "statusApiPrefix": "api.",
+        "statusApiSuffix": "/api/v1",
+        "requestTimeoutMs": 5000,
+        "requestHeaders": {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+          "Accept": "application/json"
+        },
+        "skipStatusOnHttpStatuses": [
+          401,
+          403,
+          429
+        ]
       },
       "domain_substitutions": {
         "purstream.art": "purstream.id",
@@ -212,52 +213,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/search-bar/search/{query}",
-        "/stream/{id}",
-        "/stream/{id}/episode?season={season}&episode={episode}",
-        "https://purstream.wiki/api/status",
-        "/api/status",
-        "/api/v1",
-        "/episode/",
-        "/stream/",
-        "/episode?season={season}",
-        "/api.purstream.",
-        "/search-bar/search/"
-      ],
-      "learned_routes": [
-        "/search-bar/search/{query}",
-        "/stream/{id}",
-        "/stream/{id}/episode?season={season}&episode={episode}",
-        "https://purstream.wiki/api/status",
-        "/api/status",
-        "/api/v1",
-        "/episode/",
-        "/stream/",
-        "/episode?season={season}",
-        "/api.purstream.",
-        "/search-bar/search/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/purstream.js",
-          "wantedSha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "02173d75d873826f33e7bd45bb1c7973e557845548a8634b3ed1a5161c89abb8",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 11
       }
     },
     "flemmix": {
@@ -278,7 +233,13 @@
         "tv"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}"
+        "/index.php?do=search&subaction=search&story={query}",
+        "/?do=search&subaction=search&story={query}",
+        "/?s={query}",
+        "/search?q={query}",
+        "/{slug}",
+        "/film/{slug}",
+        "/films/{slug}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -356,39 +317,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "bc2c52f31bcdae5c69aa2b1d9946ca5606b3b3caa5dbe140d8f4f0c76ab666f6",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/flemmix.js",
-          "wantedSha256": "bc2c52f31bcdae5c69aa2b1d9946ca5606b3b3caa5dbe140d8f4f0c76ab666f6",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "bc2c52f31bcdae5c69aa2b1d9946ca5606b3b3caa5dbe140d8f4f0c76ab666f6",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 1,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 1
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "uhdmovies": {
@@ -422,50 +350,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/?s={query}",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RPdUFEUGVySGtodDNOZGVzUGtnZHBvMTZxV0pvSzFRdFpZNnI3QnBQSTNsK3NzbU1BZTh6N2ZscG1OSFVKdVZybXlZZlF4dXEzR2hOK3NaY3RIWUlvdDFLay9aeEJYRmdxNno1WENyVXY3czBZdG02ekE2bW40VVRFaVQ3WHgrRVhsVmhraitRbVIxb3lZaTQzQ3B2MA%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RUSjdFUGhmQi9SMUQyRWNCV211MzF2N3pBaVlWbk1xaFBEc1RvNWx6TlZ5RzRmcC9IUmpaZHJGQ3kwRXl2Uk5hZ2Niam5aRVR5UVJiNlZPY1M0VlhOVkxPNXgvblBhaTNwUDRuRzNEM0FkTGxNVklxeXNXY3pJUlIwNGxQSWVtemRDQk5JalgwbloxcWp1R2tISXhYRw%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZvQjdSd0hlZWZrUmhTcDBoZ0s5YmlBcDVRUFIwQU15a25sRHFOTnJEZkluaEt1c1AvSHhTSFVqRVp1MC9FRXhCUnNyS1B0UnI0ZExYRm8zcXdGZW9lQ1V3R3R0N0dwUW1aRHd1YmNaZzdKWmxuSC9tZEVKL2ZUbFp6OUJLY2llUjVtMnpWL2I5UVpudTEwQW1wK0IyVA%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Q5WDkvUVRsR29TSGhGNVp6aC8reGZSMHFxbDB4Uy85elQ5a1A1eFBOY1hDMXh4S2RSRmQ0dWxhOXNVQ0ZwL2l4TkpraTdXVU9LR2pJMWdTRHM5d1B6Qk5pV2tPS1Y0S2tPdk4rMng0cHdJNHFZdUhobFlycERRSXNzTVNJLzhRRHcwb01KRzZNQ0xCN2U2STM1VnhQZQ%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RxV3ZHRllCam9MZ1M1cGZHbGFyUjlMVjFWOURvRURFUXYvdjNwQVhieTk5clcwaCtzb1VwT1VqcnlsVElIb1VSZzV2bkZBQyt2RS9HYVZ0TzJVN1pzbUtaa0hpSFpTUC9CeGRLVkdrRkU1SXdLalVxWlBac3hHVHM4bjlmOTZZejN6cTIvUGVBWWd4U29kalE5YjRyTA%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NJdXk3TzJuVW44V1ZLcURoSG1OWllUYk1PTmJ0MjVTK2xKVm15Z1lrWFNaYzNTVnRUVTJxd3daQWZmbElndng5L0FoWmlUR2t0N0xJVFNUSXhrMGhZbG5kZUJQN1JOMU5JRjNSemJaQ3lhTVgvUGg0eUNyZWlycjFDSXk1aHg1dUJFT2QzQ0JSekZ2aXRUbGdrRDNQcw%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2MvN3oyUWxxcDN3K0YyT051OTVEcysyWHpMUm5MbERvTFkrZklPZUZaS21BMTRtWlJvdklCWHdBVFBHY2F6VUhlakVQNlcrQzBvc0ZsWkVlTVhOUU1rbEw1d3pSNFFwajhMcXlaTjh5b3M0czhLUEJMQ3Q0cDlzYnhTcnNqdzFBNnhYaEpqdjdxUUVZUXhBVjUxbmpsWA%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZZZFk0SHhBbnIxTmwwSTFXeFgyNkk2YlNOVFZqUHBIK3VoWUgxRGw5MWZMVXJJblNRR1dzeGtGNFB3MHkrWjJEeFNkbUwvQ2NKNlJkNko1Mk42ZHRhMEM1QmZTOG9tb1l5TFJyUnRtTEZxR3NVZXB4RVBZc3Jxa3FWRFF1dzhEbXpYTjFOc2dRWm5TSkYxZnVySVc0OQ%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NhUzV6MVQrSFJDdXRraXJDTWYvK1EyZURWMTFoM2pjWTRiekFoZ2I2MVJRRXE3M3NHUnk0d2tLU0l5UjZ1WVhBNDRLaVQ2d1lSK0d6dytJRUJMWG1kdk9kSXR6L3d1RUpTME4rRVRVQmVkU3JHRDhkWGZZRGJHaEljcHNWRWNGNEFiM1I0T2pNdUtlUG9tVkQrQ242Wg%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NDZ0JSMFhFTlM1VGlrT1hFWFN3Qml1aEdYL0s0OUR0TDRRT2QyTXNRTk1xU3l5bzNUcm0vckNya1U1YUhoQkJDNUlBMm9YZFJBc1FmT3cvNTZhTkJWY1NjZXRSWTlWY0p2V3BEWWJsR21naVJaTVljUnNjQkc4T2xDL3ArWVVTUzh4SGt4RUtHZ3IvcmUyUWg2NUhCNg%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZlQUdHcnFPTjlZZWV1V0IvOVE0RVcvZDMwZkI3d3dNZUNRVHBEV0xtZHZrcm9YeEVmVXN5MDd6OUZpTE14V0RsVmdtZGg0UkVTR2JHaENOa1RpK3A0ZFhoZDJOU2IreXlzM0t4dmplSm1GRllQcytXTFF1Uyt3UjJNbElPd2NTb09rcWxLakg3M0xUYW0xVDhrRGg4UA%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NXT0xuYjNlOUxFTjRmcFQzMHdqd2JUNzhZYzVkbUFKcExDbmNqM3ZaV1lLcjdqcG5pem02UUJSbGJUWGkvNUdiZGRJd0ZVMGRyclVQZWc2N2lVZjBVYjhYa3kwbmZXNW5sQit3N3VIbmUzWGNuMitkTFU5VVdxUGRQR2ZSMW1UTXRWWHdHSFl4STZWZFlDSFRLQ3JsSQ%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RWTW9vS1dHV0UwTDY3Zjd6UDJZc240Y0FWcUNVbDFPMkVYSXVFTmc1TjZxSUVIWkNweXJiUm9sdkd1TU0wWmx1Z2FRWEJjVnNncWV5MUF4OS9kVGw1YVpOTlUzaG5lOHRMZml3d016QU1jcFhPMHN2V2lqbkM2MjR6QXRxQnhpT0ZCOURGMm80M3VkS1Iya21vd2NLNw%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2RxVXZyOU1GT2FzL3RFdVF2T2dnWGRUbHBIb2s5b3JpOXNLZnVqMTh3NzN5REdUam44ZmlpclU0TG15bUg5L0U2elNFelhwZk9zU1RoamdlNXVMYUgxLzJ5SmdxMmhRa3RpYmpidlgrMVNCOHVMQWh0QWhtdjNkTUlXRXhEQXQ2TzA3cE16UXR6ZnlGckdiZXVKS05xVw%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2U4TmRlaFVYYXhHNnJXamV4dDV1K1JhVjBFeW5JN29KTHpnYS9QTWZKMHc5T2czWWNNMXNsbVVSMTRadER1dHIzOEpobG1mdXozSXdqVDBpYnRVQVlPTlpuaGNRQytzaWF3ajR4Zjlsa3JPQ21nakEyNXU2V0NoTmU0eVNKYSs3TDZtZWsrd1ovTWdhOCtHTDR3YURVNA%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Zwekd0SVd1RzZLbEx5NTdSSEtMMW9OdWhtcWEvZXVGenNxVFAvcndaNUxETnJ0b1hoWXc2RTlNRElMS1VGa1hZMDQrbjVyYmEzOUh3aTRYMTVQR3IzWC9jUXFCa0o1MVVSMS8vTW1BVkJsSWFJTXJvN2pDMkU0ZmU0cU5kYzdDSFBpalJ4OGcwaUFERUhyN0dJMk1VRQ%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2NITHNrd0UyT1g0Vzd3cUo4bmpLczdzTkhwdlJtTnNQdHBGbG9uUHhxYnRRMU9mZFFsUHUzTktBUG14WFFyOHppeDRzYlV1WFFTNzc2ZWJqdjIxYXQvRW96ajAvd1oydG5PU3Zvc1pseGhFSGxWOGh3eVRqZXQrdzUrdUZ5QmNMTWpCUTBhMDZjOEhWQkh2Zzd0ckFDUQ%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VMcnk0MWQ0K3JycGR2VUY0VlVCcUZCWVp5eGhNWUJQRmoxcDNWeU5IVkU1cXhkRm5NRm81TGZCTnVwRHZKWkZNbHJxajRVMG5MTysxVHdtekFvMG5zYXBpZFNnSURQTDRBdmRZdFp3cmgyZWx5ZnZJQjVYUStQeFpnNGV2M1JBRDFtT3hBVFZOTTBucGZ4MlJMdHE3Vg%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2VFWnVKeGJrNXpsZ2dmdS93TjhBb1dRR1YrWXFiQ0dINnFWWDhlOS9OcldSd0gxeU5YLzlhKzVaRlRyUVRqekx2VkIxcWYvYmEzQmFxTlJVbXRVSXJ3dlZMUm1STENTWURsRXZ0V2h2czAxbVhhdDRhMTAyd1FaSmVDT20vazJTVC9vZWJUUkt1OHJJc1FzaUVKeHZhNw%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2ZQeFBCOEZzc3Y3UzB6YlE5Z3BsSG1aYlZaMm5nZTNyZVN4K1FiR3FVWTdCaTNYMHQyK1ZIbS9sNHNDS2RVQy80QlpidUxxbGFyTWI4dlNaS0t4MlJBRjhrRlYzekRUMHpPd09EYUJXNFJZVUYybzRLTEtXTTVDTldSc3oxNFoyWGNvcDQxcGpncEZtQm1nb1dicUhiNw%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2MyQmFJVlNBUHVueG95UzlNbTBpRDBFQmtqZUN0a0o5UGhxUldWd0NmUmZoRFpIZWRHbWl4Zkp3YmtpeUdrZ1BTSG1UdVRGbm5sTTRXNlhHUytaekdUVnUwd0ttTXNrNlMwU3U0c2d2N1RzdDdpUFRWK0hCMGdqKzc0ODdXYlVhbWNvTGV1Qisxa1FUdDQwZStRNG05Mg%3D%3D",
-        "/?sid=a3Y4azk3STZ5RVphb1c0d0pkeDllaWVjc3NTd1dyeHJZSlNRUkszSnJFSGphampKSXNSZWwrcG5LYTJEYkE2UkZIZjJJc3VDQ1hhdW9jVTJmTTFzU29PMlFKZ0MzTmhvSC9NWEh6a0Z2T2Y2SC8ySjNWMWRybFM5VzI4MDlHWFgrTVI2NS9LTHJJUExiV01zTDFUaTBXRU1jbHlUeTQ2Wk04R0ovU0hIOTl3djQxM1dnaTA0UmYvNGZLZm4zRWlORkxCQkVJTktwYVhBQ2t2bUp0OEx1a3ROOXVhQkZyRFYwQzRaYVF4c1BGUzBiVVIvYmhDZ2xkSHV1Z2RRdDk3YQ%3D%3D"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/uhdmovies.js",
-          "wantedSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "fcb661e3daad58a862e0a4d17811604a212f5c3c44c0df3756ddfbcfed272527",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 24,
-        "genericExecutionRouteCount": 23,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 23
-      }
+        "/?s={query}"
+      ]
     },
     "movieshunt": {
       "capability": "direct_media",
@@ -491,26 +377,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movieshunt.js",
-          "wantedSha256": "6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "6796beaa02d57e69cb033eec47a14a3b74782a0d08bcfd260421f10d4041392e",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 7,
-        "genericExecutionRouteCount": 1,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 1
       }
     },
     "zinkmovies": {
@@ -534,30 +400,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/play/"
-      ],
-      "learned_routes": [],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/zinkmovies.js",
-          "wantedSha256": "5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "5989f97be6cce82a382e7dc29b8bc8e4c0441146fb994cf1950607fe5cae8bce",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "vegamovies": {
@@ -577,10 +419,7 @@
         "Historical /search.php and /api routes remain diagnostic candidates until live finalization prunes failed paths; no content-specific /download-* URL is persisted as Provider DATA."
       ],
       "candidate_learned_routes": [
-        "/?s={query}",
-        "/api/index.php?link=",
-        "/api/",
-        "/search.php?q={query}"
+        "/?s={query}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -596,27 +435,7 @@
       },
       "learned_routes": [
         "/?s={query}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/vegamovies.js",
-          "wantedSha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "0641a31d6068d8d2f3e5ca5d734494b24f69b89d6a5d027ae1a7b5eee1953d1a",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 1
-      }
+      ]
     },
     "hindmoviez": {
       "capability": "direct_media",
@@ -656,8 +475,7 @@
         "/films/{slug}",
         "/anime/{slug}",
         "/serie/{slug}",
-        "/series/{slug}",
-        "/wp-json/wp/v2/posts?search={query}"
+        "/series/{slug}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -670,26 +488,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/hindmoviez.js",
-          "wantedSha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "86b8c3a4dff3c98c05db88eb075936b2f4ec00d504b967f1150bdfbd6fa620ac",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 33,
-        "genericExecutionRouteCount": 8,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 9
       }
     },
     "4khdhub": {
@@ -731,26 +529,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/4khdhub.js",
-          "wantedSha256": "e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "e64aea603b3c3786a9f03e2a7b5dbee7e5666918a0ad606aeec87469ffafc4ec",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 1
       }
     },
     "persianstremio": {
@@ -762,7 +540,8 @@
       "official_site": "https://persianstremio.vercel.app",
       "official_api": "https://persianstremio.vercel.app",
       "learned_routes": [
-        "/stream/movie/tt0816692.json"
+        "/stream/movie/{id}.json",
+        "/stream/series/{id}:{season}:{episode}.json"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/persianstremio_runtime_v1.py"
@@ -787,9 +566,7 @@
       ],
       "candidate_learned_routes": [
         "/stream/movie/{id}.json",
-        "/stream/series/{id}:{season}:{episode}.json",
-        "/stream/movie/",
-        "/stream/series/"
+        "/stream/series/{id}:{season}:{episode}.json"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -802,26 +579,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "04c8664fd3977a3279fc262be15e2dde88b409e79eb27cc2ae0d1c0b1056b7f9",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/persianstremio.js",
-          "wantedSha256": "04c8664fd3977a3279fc262be15e2dde88b409e79eb27cc2ae0d1c0b1056b7f9",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "04c8664fd3977a3279fc262be15e2dde88b409e79eb27cc2ae0d1c0b1056b7f9",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 1,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 1
       }
     },
     "desiflix": {
@@ -865,9 +622,7 @@
       ],
       "candidate_learned_routes": [
         "/stream/movie/{id}.json",
-        "/stream/series/{id}:{season}:{episode}.json",
-        "/stream/series/",
-        "/stream/movie/"
+        "/stream/series/{id}:{season}:{episode}.json"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -880,26 +635,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "89d80b0ac5aac7e946680f35f3fa7ba4859e2a9e9ab42ef8a811b51518e63cac",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/desiflix.js",
-          "wantedSha256": "89d80b0ac5aac7e946680f35f3fa7ba4859e2a9e9ab42ef8a811b51518e63cac",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "89d80b0ac5aac7e946680f35f3fa7ba4859e2a9e9ab42ef8a811b51518e63cac",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "kehflix": {
@@ -913,7 +648,7 @@
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
-      "official_site": "https://kehflix.wiki",
+      "official_site": "https://kehflix.lol",
       "published_types": [
         "movie",
         "tv",
@@ -957,8 +692,7 @@
         "/api/ad-link",
         "/api/streams/working",
         "/api/streams/dead",
-        "/api/streams/warm",
-        "/episode/"
+        "/api/streams/warm"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -971,40 +705,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "domain_substitutions": {
-        "kehflix.lol": "kehflix.wiki"
-      },
-      "runtime_domain_replacements": {
-        "kehflix.lol": "kehflix.wiki"
-      },
-      "terminal_domain_proof": {
-        "schemaVersion": 1,
-        "observedAt": "2026-09-07",
-        "authority": "official-hub-live-path-proof",
-        "terminal": "kehflix.wiki",
-        "alternateLiveTerminal": "kehflix.com",
-        "rejectedRedirectOnly": "kehflix.lol",
-        "fixture": "house-of-the-dragon-s03e01",
-        "signedPlayerObserved": true,
-        "episodeApiMediaLikeValues": 5
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "niakvio-native-current",
-          "sourceId": null,
-          "path": "providers/kehflix--nuvio--1a1bee908832f174.js",
-          "sha256": "1a1bee908832f1745b1d1f100a2987b88b435c18421bec8a89b49536de083f5a",
-          "upstreamFallbackReason": "no-upstream-mapping"
-        },
-        "provenRouteCount": 5,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 14
       }
     },
     "4khdhubnew": {
@@ -1020,64 +720,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/player",
-        "/episode/"
-      ],
-      "learned_routes": [
-        "/",
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "niakvio-native-current",
-          "sourceId": null,
-          "path": "providers/4khdhubnew--nuvio--7a215888d9cb3ff0.js",
-          "sha256": "7a215888d9cb3ff0e5431db60c801eb30ed83a189f5c6745e18e706523a22622",
-          "upstreamFallbackReason": "no-upstream-mapping"
-        },
-        "provenRouteCount": 3,
-        "genericExecutionRouteCount": 3,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 3
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://4khdhub.one/?tmdbId={tmdbId}&type=movie",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        },
-        "episodeRoute": "https://4khdhub.one/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "episodeRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        },
-        "base": "https://4khdhub.one",
-        "directRoute": "/?tmdbId={tmdbId}&type=movie",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        }
       }
     },
     "allmovieland": {
@@ -1118,8 +760,7 @@
       "candidate_learned_routes": [
         "/index.php?story={query}&do=search&subaction=search",
         "/play/{id}",
-        "/playlist/{id}.txt",
-        "/play/"
+        "/playlist/{id}.txt"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -1132,26 +773,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "0b4533ed32c82b28813b97fe9deb44d97d1f1884adf1a8208d231967347ae3ce",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/allmovieland.js",
-          "wantedSha256": "0b4533ed32c82b28813b97fe9deb44d97d1f1884adf1a8208d231967347ae3ce",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "0b4533ed32c82b28813b97fe9deb44d97d1f1884adf1a8208d231967347ae3ce",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "anidb": {
@@ -1183,34 +804,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/frontend/anime/",
-        "/api/frontend/episode/",
-        "/episode/",
-        "/episodes",
-        "/sources"
-      ],
-      "learned_routes": [],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/anidb.js",
-          "wantedSha256": "60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "60ec5bba1e6d0052b9fa495ddaeec23841a43dcaee18158db5f222e055c0c209",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "anikototv": {
@@ -1247,13 +840,7 @@
         "/watch/{slug}",
         "/ajax/episode/list/{id}",
         "/ajax/server/list?servers={id}",
-        "/ajax/server?get={id}",
-        "/v4/search?query={query}",
-        "/api/v2/tmdb?id={id}",
-        "/stream/getSources?id={id}",
-        "/stream/",
-        "/episode/",
-        "/episodes/default?season={season}"
+        "/ajax/server?get={id}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -1266,26 +853,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/anikototv.js",
-          "wantedSha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "4b75a13ad9f3a9e7c067e8cbd18a66830cce4ad0d7e75ed28eca66cf1ed32b5d",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 5
       }
     },
     "animekai": {
@@ -1323,28 +890,9 @@
       },
       "learned_routes": [
         "/browser?keyword={query}",
-        "/watch/jujutsu-kaisen-tv/ep-1"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animekai.js",
-          "wantedSha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 8,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      }
+        "/watch/{slug}",
+        "/watch/{slug}/ep-{episode}"
+      ]
     },
     "animepahe": {
       "notes": [
@@ -1368,40 +916,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/resolve?id={id}",
-        "/api?m=release&id={id}",
-        "/api?m=search&l=8&q={query}",
-        "/play/",
-        "/source"
-      ],
-      "learned_routes": [
-        "/api/resolve?id={id}",
-        "/api?m=release&id={id}",
-        "/api?m=search&l=8&q={query}",
-        "/play/",
-        "/source"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "a1f38e1819d61f9efd91648372ead67ce805c1ffd9f46acdff136d83a9e0715e",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animepahe.js",
-          "wantedSha256": "a1f38e1819d61f9efd91648372ead67ce805c1ffd9f46acdff136d83a9e0715e",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "a1f38e1819d61f9efd91648372ead67ce805c1ffd9f46acdff136d83a9e0715e",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 5
       }
     },
     "animesalt": {
@@ -1448,9 +962,7 @@
       },
       "candidate_learned_routes": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/?tmdbId={tmdbId}&type=movie",
-        "/episode/[^\\x22]*",
-        "/player/index.php?data="
+        "/?tmdbId={tmdbId}&type=movie"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -1463,26 +975,6 @@
         "stale_candidate_count_suppressed": 3,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "2e732f8baa25726b09d0716455e930142527c7e7b3dce981be6a2ba115c463e5",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animesalt.js",
-          "wantedSha256": "2e732f8baa25726b09d0716455e930142527c7e7b3dce981be6a2ba115c463e5",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "2e732f8baa25726b09d0716455e930142527c7e7b3dce981be6a2ba115c463e5",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "animesama-co": {
@@ -1507,8 +999,10 @@
         "https://animesama.co/"
       ],
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
+        "/catalogue/?search={query}",
+        "/anime/{id}-{slug}.html",
+        "/anime/{id}-{slug}/saison-{season}.html",
+        "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html"
       ],
       "domain_substitutions": {
         "anime-sama.store": "animesama.co"
@@ -1518,12 +1012,7 @@
         "/anime/{id}-{slug}.html",
         "/anime/{id}-{slug}/saison-{season}.html",
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html",
-        "/catalogue/{slug}",
-        "/episode",
-        "/saison-{season}/episode-{episode}.html",
-        "/film/episode-{episode}.html",
-        "/template-php/defaut/fetch.php",
-        "/anime/{id}-{slug}"
+        "/catalogue/{slug}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -1536,39 +1025,6 @@
         "stale_candidate_count_suppressed": 6,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "5b29194a13ad63967e109262a9e5e10c0346acebed8d7330c071bab14060dd75",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animesama-co.js",
-          "wantedSha256": "5b29194a13ad63967e109262a9e5e10c0346acebed8d7330c071bab14060dd75",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "5b29194a13ad63967e109262a9e5e10c0346acebed8d7330c071bab14060dd75",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 4,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "animesultra": {
@@ -1580,8 +1036,12 @@
         "ww.animesultra.org": "v2.animesultra.org"
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
+        "/anime-vf/533-one-punch-man-saison-1-vf-au/episode-N.html",
+        "/episode-N.html",
+        "/episode-{episode}.html",
+        "/parsefailedfor{id}:",
+        "/index.php?do=search&subaction=search&story={query}",
+        "/engine/ajax/full-story.php?newsId={id}"
       ],
       "live_route_gate": {
         "completion_state": "terminal-blocked",
@@ -1630,39 +1090,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "d7cde633c865815aaf8a859be5af3ea3818e222bcfe0aca165232213779c02f5",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animesultra.js",
-          "wantedSha256": "d7cde633c865815aaf8a859be5af3ea3818e222bcfe0aca165232213779c02f5",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "d7cde633c865815aaf8a859be5af3ea3818e222bcfe0aca165232213779c02f5",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 2,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "animetsu": {
@@ -1718,9 +1145,7 @@
         "/anime/search/?query={query}",
         "/animetsu.live/v2/api",
         "/4/10829438?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/4/10829438",
-        "/proxy",
-        "/episodes/default?season={season}"
+        "/4/10829438"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -1734,27 +1159,7 @@
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
       },
-      "official_site": "https://animetsu.bz/#.cc",
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animetsu.js",
-          "wantedSha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "243edd8c76b0995a72e02ba6ff7ca47add6063b1d471ebe378d3d6842bd8cadb",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 6
-      }
+      "official_site": "https://animetsu.bz/#.cc"
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",
@@ -1763,11 +1168,30 @@
       "manifest_overrides": {},
       "learned_routes": [
         "/?s={query}",
-        "/?s=Interestelar",
-        "/?s=Csillagok+K%C3%B6z%C3%B6tt",
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json",
-        "/animes/{slug}/"
+        "/film/{slug}-0/",
+        "/tag/watch-{slug}-0/",
+        "/tag/watch-movie-{slug}-0-for-free/",
+        "/animes/{slug}-saison-3/",
+        "/tag/watch-{slug}/",
+        "/animes/{slug}/",
+        "/search/Mon+ninja+et+moi+3/",
+        "/film/demon-slayer-kimetsu-no-yaiba-le-film-la-forteresse-infinie/",
+        "/tag/watch-demon-slayer-infinity-castle/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/film/demon-slayer-kimetsu-no-yaiba-le-film-la-forteresse-infinie/",
+        "/films/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/films/",
+        "/film/fate-strange-fake-whispers-of-dawn/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/film/fate-strange-fake-whispers-of-dawn/",
+        "/film/chainsaw-man-le-film-larc-de-reze/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/film/chainsaw-man-le-film-larc-de-reze/",
+        "/film/blue-lock-le-film-episode-nagi/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/film/blue-lock-le-film-episode-nagi/",
+        "/film/le-garcon-et-le-heron/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/film/le-garcon-et-le-heron/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/film/jujutsu-kaisen-0/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/animes/jujutsu-kaisen-saison-3/",
+        "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/animes/jujutsu-kaisen/",
+        "/search/Jujutsu+Kaisen/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -1822,9 +1246,7 @@
         "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/film/jujutsu-kaisen-0/",
         "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/animes/jujutsu-kaisen-saison-3/",
         "/wp-json/oembed/1.0/embed?url=https://v2.animevostfr.org/animes/jujutsu-kaisen/",
-        "/search/Jujutsu+Kaisen/",
-        "/episode/",
-        "/episode"
+        "/search/Jujutsu+Kaisen/"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -1837,26 +1259,6 @@
         "stale_candidate_count_suppressed": 2,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
-          "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 14,
-        "genericExecutionRouteCount": 6,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 6
       }
     },
     "animezey": {
@@ -1898,8 +1300,7 @@
       },
       "candidate_learned_routes": [
         "/0:search?q={query}",
-        "/download.aspx",
-        "/1:search"
+        "/download.aspx"
       ],
       "live_route_gate": {
         "completion_state": "terminal-blocked",
@@ -1940,34 +1341,17 @@
         "stale_candidate_count_suppressed": 1,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animezey.js",
-          "wantedSha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "animoflix": {
       "capability": "mixed_embed_resolver",
       "manifest_overrides": {},
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
+        "/?s={query}",
+        "/anime/{slug}/",
+        "/anime/{slug}/film/",
+        "/anime/{slug}/episode-{episode}/",
+        "/anime/{slug}/saison-{season}/episode-{episode}/"
       ],
       "candidate_learned_routes": [
         "/?s={query}",
@@ -1997,14 +1381,7 @@
         "/hls2/02/02880/29mie11dr16u_,n,l,.urlset/master.m3u8?t=5IHPe6gRDoaheXsE42PkPIm5NjLKd61u6mhhwgMXYGo%3D&s=1788627914&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
         "/hls2/02/02880/29mie11dr16u_n/index-v1-a1.m3u8?t=5IHPe6gRDoaheXsE42PkPIm5NjLKd61u6mhhwgMXYGo%3D&s=1788627914&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
         "/hls2/02/02593/iwty13sq9p7t_,n,l,.urlset/master.m3u8?t=wZ66Rggjgm87BjcOKRPBXY6QkzRWWt0kdPjS4HGzwlU%3D&s=1788627940&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
-        "/hls2/02/02593/iwty13sq9p7t_n/index-v1-a1.m3u8?t=wZ66Rggjgm87BjcOKRPBXY6QkzRWWt0kdPjS4HGzwlU%3D&s=1788627940&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075",
-        "/anime/episode-1/",
-        "/episode-",
-        "/episode-1/",
-        "/anime/{slug}/film/episode-1/",
-        "/anime/{slug}/movie/episode-1/",
-        "/anime/{slug}/episode-1/",
-        "/episode-\""
+        "/hls2/02/02593/iwty13sq9p7t_n/index-v1-a1.m3u8?t=wZ66Rggjgm87BjcOKRPBXY6QkzRWWt0kdPjS4HGzwlU%3D&s=1788627940&e=43200&v=&srv=bck-1493-u&i=0.4&sp=0&asn=8075"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -2017,26 +1394,6 @@
         "stale_candidate_count_suppressed": 26,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "d4c6681f4c679215091802d5f292cd4f1419109237639bb73208005cd49b7f50",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animoflix.js",
-          "wantedSha256": "d4c6681f4c679215091802d5f292cd4f1419109237639bb73208005cd49b7f50",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "d4c6681f4c679215091802d5f292cd4f1419109237639bb73208005cd49b7f50",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 17,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
       }
     },
     "anizone": {
@@ -2093,26 +1450,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/anizone.js",
-          "wantedSha256": "0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "0dbdc78b24804babc29f0674da00a46e7b7915ebb5278d58790439d4ba03690b",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 4
       }
     },
     "castle": {
@@ -2161,8 +1498,7 @@
         "/v0.1/system/getSecurityKey/1?channel=IndiaA&clientType=1&lang=en-US",
         "/film-api/v1.1.0/movie/searchByKeyword?channel=IndiaA&clientType=1&keyword={query}&lang=en-US&mode=1&packageName=com.external.castle&page=1&size=30",
         "/film-api/v1.9.9/movie?channel=IndiaA&clientType=1&lang=en-US&movieId={id}&packageName=com.external.castle",
-        "/film-api/v2.0.1/movie/getVideo2?clientType=1&packageName=com.external.castle&channel=IndiaA&lang=en-US",
-        "/api.hlowb.com"
+        "/film-api/v2.0.1/movie/getVideo2?clientType=1&packageName=com.external.castle&channel=IndiaA&lang=en-US"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -2203,26 +1539,6 @@
         "stale_candidate_count_suppressed": 1,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/castle.js",
-          "wantedSha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "1b23fb0b7740e707fb2e3c5f6f69ca51c4bb4fc6afc8f1ae851af22e3f66bb89",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 4
       }
     },
     "cineby": {
@@ -2350,26 +1666,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/cineby.js",
-          "wantedSha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "06a14293c93a83d3060684e042e7087031463c775717f8b5f1dfeaa0ba30d429",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 20
       }
     },
     "cinemacity": {
@@ -2450,26 +1746,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "faccc37938836b50acc6a8862e14b818a086289b63ba9c6d18d654ca933d8aac",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/cinemacity.js",
-          "wantedSha256": "faccc37938836b50acc6a8862e14b818a086289b63ba9c6d18d654ca933d8aac",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "faccc37938836b50acc6a8862e14b818a086289b63ba9c6d18d654ca933d8aac",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "cinemm": {
@@ -2479,8 +1755,8 @@
       "manifest_overrides": {},
       "learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
-        "/",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -2513,9 +1789,7 @@
       "candidate_learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/",
-        "/player",
-        "/episode/"
+        "/"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -2528,55 +1802,6 @@
         "stale_candidate_count_suppressed": 2,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "niakvio-native-current",
-          "sourceId": null,
-          "path": "providers/cinemm--nuvio--d7797c55f69551df.js",
-          "sha256": "d7797c55f69551df1866096af35656e18abf5e6a4a0d9ad694800ce73b25c48d",
-          "upstreamFallbackReason": "no-upstream-mapping"
-        },
-        "provenRouteCount": 4,
-        "genericExecutionRouteCount": 3,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 3
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://cinemm.com/?tmdbId={tmdbId}&type=tv&season=&episode=",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        },
-        "episodeRoute": "https://cinemm.com/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "episodeRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        },
-        "base": "https://cinemm.com",
-        "directRoute": "/?tmdbId={tmdbId}&type=movie",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        }
       }
     },
     "coflix": {
@@ -2600,12 +1825,35 @@
         "anime"
       ],
       "learned_routes": [
+        "/?s={query}",
         "/film/{slug}/",
-        "/movie/{slug}/",
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/episode/breaking-bad-1x1/",
-        "/episode/breaking-bad-s1e1/",
-        "/meta/series/tt12343534.json"
+        "/episode/{slug}-{season}x{episode}/",
+        "/302eb88d2b1d1389b841de1f1355830f/{slug}_-_2014.mp4",
+        "/serie/{slug}/",
+        "/video.php?link=%24{encryptedDatanew}&sb=%24{sand}",
+        "/anime/{slug}/",
+        "/embed.php?id=18230",
+        "/embed.php?id=91385",
+        "/wp-json/oembed/1.0/embed?url=https://coflix.group/film/ternet-ninja-3/",
+        "/1026016174fa8a0214565afdb4209cc8/Ternet_Ninja_3_(2026).mp4",
+        "/films/",
+        "/series/",
+        "/search/La+Colonie/",
+        "/search/La+Colonie/feed/rss2/",
+        "/wp-json/oembed/1.0/embed?url=https://coflix.group/serie/breaking-bad/",
+        "/search/Breaking+Bad/",
+        "/embed.php?id=10501",
+        "/search/Breaking+Bad/feed/rss2/",
+        "/embed.php?id=11740",
+        "/ilslv4xn3gwv/download",
+        "/d/oft9nf9a4m58",
+        "/wp-json/oembed/1.0/embed?url=https://coflix.group/anime/jujutsu-kaisen/",
+        "/search/Jujutsu+Kaisen/",
+        "/wp-json/oembed/1.0/embed?url=https://coflix.group/films/",
+        "/wp-json/oembed/1.0/embed?url=https://coflix.group/serie/the-grand-tour-2/",
+        "/embed.php?id=20893",
+        "/embed.php?id=20902",
+        "/search/Jujutsu+Kaisen/feed/rss2/"
       ],
       "strict_html_identity": true,
       "core_options": {
@@ -2666,13 +1914,7 @@
         "/wp-json/oembed/1.0/embed?url=https://coflix.group/serie/the-grand-tour-2/",
         "/embed.php?id=20893",
         "/embed.php?id=20902",
-        "/search/Jujutsu+Kaisen/feed/rss2/",
-        "/wp-json/v2/posts?search={query}",
-        "/wp-json/v2/posts?search={query}&per_page=10",
-        "/episode/{slug}-s{season}e{episode}/",
-        "/movie/{slug}/",
-        "/episode/",
-        "/derivative,skipped:\"{query}\""
+        "/search/Jujutsu+Kaisen/feed/rss2/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -2715,39 +1957,6 @@
         "stale_candidate_count_suppressed": 10,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "8a07544ba7287fe3a6db7e8bdf83b8c06cf8a4c98915589aca52263d8be4172d",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/coflix.js",
-          "wantedSha256": "8a07544ba7287fe3a6db7e8bdf83b8c06cf8a4c98915589aca52263d8be4172d",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "8a07544ba7287fe3a6db7e8bdf83b8c06cf8a4c98915589aca52263d8be4172d",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 6,
-        "genericExecutionRouteCount": 6,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 6
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "dooflix": {
@@ -2764,36 +1973,6 @@
         "stale_candidate_count_suppressed": 3,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/3/tv/",
-        "/episode/",
-        "/api/3/movie/"
-      ],
-      "learned_routes": [
-        "/api/3/tv/",
-        "/episode/",
-        "/api/3/movie/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "2691befa44f5d8d8f30c1711021a9fb0fdfe09a90f5640dd97ede5670f3dca5a",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/dooflix.js",
-          "wantedSha256": "2691befa44f5d8d8f30c1711021a9fb0fdfe09a90f5640dd97ede5670f3dca5a",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "2691befa44f5d8d8f30c1711021a9fb0fdfe09a90f5640dd97ede5670f3dca5a",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "dulourd": {
@@ -2809,48 +1988,6 @@
         "stale_candidate_count_suppressed": 8,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/{media}/{slug}.html",
-        "/{season}-saison/{episode}-episode.html",
-        "/?do=search&subaction=search&story={query}",
-        "/episode:S{season}E{episode}",
-        "/voir-series/aventure_s/2882-the-mandalorian.html",
-        "/voir-series/drame_s/1265-the-walking-dead.html",
-        "/voir-series/drame_s/551-the-blacklist.html",
-        "/voir-series/comedie_s/558-jane-the-virgin.html",
-        "/voir-series/drame_s/1103-fear-the-walking-dead.html"
-      ],
-      "learned_routes": [
-        "/{media}/{slug}.html",
-        "/{season}-saison/{episode}-episode.html",
-        "/?do=search&subaction=search&story={query}",
-        "/episode:S{season}E{episode}",
-        "/voir-series/aventure_s/2882-the-mandalorian.html",
-        "/voir-series/drame_s/1265-the-walking-dead.html",
-        "/voir-series/drame_s/551-the-blacklist.html",
-        "/voir-series/comedie_s/558-jane-the-virgin.html",
-        "/voir-series/drame_s/1103-fear-the-walking-dead.html"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "d46f42b0d7cec586859b5f927af85fbc1c28a850308640b3ae87f55582d10bee",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/dulourd.js",
-          "wantedSha256": "d46f42b0d7cec586859b5f927af85fbc1c28a850308640b3ae87f55582d10bee",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "d46f42b0d7cec586859b5f927af85fbc1c28a850308640b3ae87f55582d10bee",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 9
       }
     },
     "french-manga": {
@@ -2896,16 +2033,16 @@
         }
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
+        "/?s={query}",
+        "/{slug}",
+        "/xfsearch/serie-statut/Film/",
+        "/xfsearch/tagz/demon/"
       ],
       "candidate_learned_routes": [
         "/?s={query}",
         "/{slug}",
         "/xfsearch/serie-statut/Film/",
-        "/xfsearch/tagz/demon/",
-        "/engine/ajax/search.php",
-        "/engine/ajax/manga_episodes_api.php?id={id}"
+        "/xfsearch/tagz/demon/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -2946,39 +2083,6 @@
         "stale_candidate_count_suppressed": 2,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "fb23979ac0089b09eb706a4b0649ced3b76595ce04258e513b3599bc0ad60860",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/french-manga.js",
-          "wantedSha256": "fb23979ac0089b09eb706a4b0649ced3b76595ce04258e513b3599bc0ad60860",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "fb23979ac0089b09eb706a4b0649ced3b76595ce04258e513b3599bc0ad60860",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 8,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "goated": {
@@ -3009,34 +2113,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/challenge",
-        "/episode/",
-        "/api/resolve",
-        "/api/subtitles",
-        "/api.reallyfast.xyz"
-      ],
-      "learned_routes": [],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "b4966c7fd78842d59085fe197bc89ddbbc6c23c9a0f9c5ba6b114eedb7673f00",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/goated.js",
-          "wantedSha256": "b4966c7fd78842d59085fe197bc89ddbbc6c23c9a0f9c5ba6b114eedb7673f00",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "b4966c7fd78842d59085fe197bc89ddbbc6c23c9a0f9c5ba6b114eedb7673f00",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "hdghartv": {
@@ -3058,34 +2134,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/",
-        "/api/search?q={query}"
-      ],
-      "learned_routes": [
-        "/api/",
-        "/api/search?q={query}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/hdghartv.js",
-          "wantedSha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "8f6931a418a437f64d697f6eafdc27b8c2408cefd9accc5c7e7d9810871ed81a",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "hdhub4u": {
@@ -3108,40 +2156,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/collections/post/documents/search?q={query}",
-        "/download",
-        "/api/v1/video?id={id}",
-        "/api/file/",
-        "/Episode"
-      ],
-      "learned_routes": [
-        "/collections/post/documents/search?q={query}",
-        "/download",
-        "/api/v1/video?id={id}",
-        "/api/file/",
-        "/Episode"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "35f3a66b3ff1e7d73fca85955920bb134d2e14f74e12a8ceb362782f06ae8c48",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/hdhub4u.js",
-          "wantedSha256": "35f3a66b3ff1e7d73fca85955920bb134d2e14f74e12a8ceb362782f06ae8c48",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "35f3a66b3ff1e7d73fca85955920bb134d2e14f74e12a8ceb362782f06ae8c48",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 5
       }
     },
     "hianime": {
@@ -3190,13 +2204,7 @@
       },
       "candidate_learned_routes": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/",
-        "/api/resolve?id={id}",
-        "/stream/getSources?id={id}",
-        "/episode/",
-        "/stream/s-3/",
-        "/stream/mal/",
-        "/stream/s-2/"
+        "/"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -3209,26 +2217,6 @@
         "stale_candidate_count_suppressed": 6,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/hianime.js",
-          "wantedSha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "11124b38985b9780ad49e040b5d30a7143bc9541e27c7e314e70d9778a227af9",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "kurage": {
@@ -3286,9 +2274,7 @@
       },
       "candidate_learned_routes": [
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/",
-        "/api/v2",
-        "/api/trpc/catalog.anilistInfo,episodes.source,episodes.source?batch=1&input="
+        "/"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -3301,26 +2287,6 @@
         "stale_candidate_count_suppressed": 2,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/kurage.js",
-          "wantedSha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "668797edb270c5fed931b08e0c92ca6693420041838f3b8ef49e28ddb1e7e463",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 2,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "movieblast": {
@@ -3337,36 +2303,6 @@
         "stale_candidate_count_suppressed": 1,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/search/{query}",
-        "/api/",
-        "/api/search/"
-      ],
-      "learned_routes": [
-        "/api/search/{query}",
-        "/api/",
-        "/api/search/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movieblast.js",
-          "wantedSha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "d3b04a5ee1a13fed77192b5226d46001508fe321fa747f0c519d0c23d5b1a974",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "movies4u": {
@@ -3391,8 +2327,7 @@
         "/?s={query}"
       ],
       "candidate_learned_routes": [
-        "/?s={query}",
-        "/episodes"
+        "/?s={query}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -3405,26 +2340,6 @@
         "stale_candidate_count_suppressed": 1,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
-          "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 16,
-        "genericExecutionRouteCount": 3,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 1
       }
     },
     "moviesdrive": {
@@ -3452,32 +2367,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/search.php?q={query}"
-      ],
-      "learned_routes": [
-        "/search.php?q={query}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "27a986268c9948edf86b5d9150493dcb8f6263fcad3c260f93403bc9348cb8fc",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/moviesdrive.js",
-          "wantedSha256": "27a986268c9948edf86b5d9150493dcb8f6263fcad3c260f93403bc9348cb8fc",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "27a986268c9948edf86b5d9150493dcb8f6263fcad3c260f93403bc9348cb8fc",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 4,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 1
       }
     },
     "moviesmod": {
@@ -3674,26 +2563,6 @@
         "stale_candidate_count_suppressed": 43,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/moviesmod.js",
-          "wantedSha256": "98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "98aeea26aa4511affc468b897dc050ca1d481684fcf712693fb8b1928f7135f8",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 70
       }
     },
     "movix": {
@@ -3715,8 +2584,7 @@
       "official_api": "https://api.movix.fun",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
-        "logo": "https://movix.fun/favicon.ico",
-        "enabled": false
+        "logo": "https://movix.fun/favicon.ico"
       },
       "published_types": [
         "movie",
@@ -3844,26 +2712,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "4a0e890af339e9f253db259e95c6786f5a99dc535a1b2706e1a4cec5a5c106d6",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/movix.js",
-          "wantedSha256": "4a0e890af339e9f253db259e95c6786f5a99dc535a1b2706e1a4cec5a5c106d6",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "4a0e890af339e9f253db259e95c6786f5a99dc535a1b2706e1a4cec5a5c106d6",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 17
       }
     },
     "mugiwarastream": {
@@ -3872,13 +2720,19 @@
       "official_site": "https://www.mugiwara-no-streaming.com",
       "manifest_overrides": {},
       "learned_routes": [
-        "/api/search?q=Csillagok+K%C3%B6z%C3%B6tt",
-        "/api/search?q=T%C3%A4htedevaheline",
-        "/api/search?q={query}",
-        "/api/search?q=Interestelar",
-        "/api/search?q=Ulduzlararas%C4%B1",
         "/catalogue/{slug}/films",
-        "/catalogue/{id}/episodes/saison1"
+        "/catalogue/{slug}/episodes/saison1",
+        "/catalogue/{slug}/episodes/saison",
+        "/api/search?q={query}",
+        "/embed/ihd7l819etlv",
+        "/embed/g7dpjyp0f4oz",
+        "/embed/4ytzlvx7yhnb",
+        "/embed/q1hgudqj2llg",
+        "/embed/vm9il56p7uiw",
+        "/embed/g09h16euhd4u",
+        "/embed/vnx7jqkf70ex",
+        "/embed/8hmpc7o07jzu",
+        "/watch/93381808/1?redirnss=1"
       ],
       "live_route_gate": {
         "completion_state": "validated-data-retained-final-bundle-unverified",
@@ -3939,26 +2793,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "86555c3525d2a97495aba98ed9f24186e83ff933e763790955fafac580a747cc",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/mugiwarastream.js",
-          "wantedSha256": "86555c3525d2a97495aba98ed9f24186e83ff933e763790955fafac580a747cc",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "86555c3525d2a97495aba98ed9f24186e83ff933e763790955fafac580a747cc",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 10,
-        "genericExecutionRouteCount": 7,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 7
       }
     },
     "nakios": {
@@ -3997,12 +2831,7 @@
       },
       "candidate_learned_routes": [
         "/api/sources/movie/{id}",
-        "/api/sources/tv/{id}/{season}/{episode}",
-        "/api/search/multi",
-        "/api/sources/movie/550",
-        "/api/search/multi?query={query}",
-        "/api/sources/movie/{tmdbId}",
-        "/api/sources/tv/{tmdbId}/{season}/{episode}"
+        "/api/sources/tv/{id}/{season}/{episode}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -4015,26 +2844,6 @@
         "stale_candidate_count_suppressed": 6,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "15a425be580c06f5ad5d5b2dc7747859ecc86b9dbac832e5c6357c6454c7eaa1",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/nakios.js",
-          "wantedSha256": "15a425be580c06f5ad5d5b2dc7747859ecc86b9dbac832e5c6357c6454c7eaa1",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "15a425be580c06f5ad5d5b2dc7747859ecc86b9dbac832e5c6357c6454c7eaa1",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "neko-sama": {
@@ -4075,8 +2884,7 @@
         "/anime/{slug}-saison-{season}/",
         "/anime/{slug}/",
         "/anime/{slug}-saison-{N}/",
-        "/anime/{slug}-saison-1/",
-        "/?s={query}"
+        "/anime/{slug}-saison-1/"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4115,26 +2923,6 @@
         "stale_candidate_count_suppressed": 1,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "495ca8a7bf58d51cd3dbf2b1257e8cf5e1048c4f975eedc78716f70dbeab0aa6",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/neko-sama.js",
-          "wantedSha256": "495ca8a7bf58d51cd3dbf2b1257e8cf5e1048c4f975eedc78716f70dbeab0aa6",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "495ca8a7bf58d51cd3dbf2b1257e8cf5e1048c4f975eedc78716f70dbeab0aa6",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 2,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 4
       }
     },
     "papadustream": {
@@ -4173,47 +2961,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/search?q={query}",
-        "/series/{imdbId}"
-      ],
-      "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "3daccdbb6f1ab44740be6161ff867d81802d23c69325b47cbfa34a53ddc784ba",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/papadustream.js",
-          "wantedSha256": "3daccdbb6f1ab44740be6161ff867d81802d23c69325b47cbfa34a53ddc784ba",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "3daccdbb6f1ab44740be6161ff867d81802d23c69325b47cbfa34a53ddc784ba",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 7,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "peachify": {
@@ -4295,26 +3042,6 @@
         "stale_candidate_count_suppressed": 5,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "0f9f52a4c69bebe4c843c0b3ae06a410d3688569316446f45877ad964c316499",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/peachify.js",
-          "wantedSha256": "0f9f52a4c69bebe4c843c0b3ae06a410d3688569316446f45877ad964c316499",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "0f9f52a4c69bebe4c843c0b3ae06a410d3688569316446f45877ad964c316499",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 5
       }
     },
     "playimdb": {
@@ -4341,9 +3068,7 @@
       "candidate_learned_routes": [
         "/api.php?tmdb={id}&type={media}",
         "/api.php?tmdb={id}&type={media}&season={season}&episode={episode}",
-        "/api.php",
-        "/episode/",
-        "/streamdata.vaplayer.ru/api.php"
+        "/api.php"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4384,61 +3109,6 @@
         "stale_candidate_count_suppressed": 2,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/playimdb.js",
-          "wantedSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "e00e7b0d65b15622e0b6bcdce3ccc92d6226853197962348ced4af47343f07ab",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 2,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=movie",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "origin": "https://nextgencloudfabric.com",
-            "referer": "https://nextgencloudfabric.com/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-          }
-        },
-        "episodeRoute": "https://streamdata.vaplayer.ru/api.php?tmdb={tmdbId}&type=tv&season={season}&episode={episode}",
-        "episodeRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "origin": "https://nextgencloudfabric.com",
-            "referer": "https://nextgencloudfabric.com/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-          }
-        },
-        "base": "https://streamdata.vaplayer.ru",
-        "directRoute": "/api.php?tmdb={tmdbId}&type=movie",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "origin": "https://nextgencloudfabric.com",
-            "referer": "https://nextgencloudfabric.com/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "sekai": {
@@ -4456,54 +3126,6 @@
         "stale_candidate_count_suppressed": 1,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/episode",
-        "/{slug}/saga-",
-        "/{slug}",
-        "/",
-        "/?v=15",
-        "/embed/ajnE1xa1BnW",
-        "/embed/ajnE1xa1BnW/results"
-      ],
-      "learned_routes": [
-        "/episodesData.js",
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json",
-        "/{slug}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "34e2f2fe9df06c7c1643ab3414d8aafa75a3a3a34018bb2c1bb90e9f4d3163ef",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/sekai.js",
-          "wantedSha256": "34e2f2fe9df06c7c1643ab3414d8aafa75a3a3a34018bb2c1bb90e9f4d3163ef",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "34e2f2fe9df06c7c1643ab3414d8aafa75a3a3a34018bb2c1bb90e9f4d3163ef",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 4,
-        "genericExecutionRouteCount": 4,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 4
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "streamflix": {
@@ -4512,7 +3134,10 @@
       "official_site": "https://streamflix.mom",
       "manifest_overrides": {},
       "official_api": "https://api.streamflix.app",
-      "learned_routes": [],
+      "learned_routes": [
+        "/data.json",
+        "/config/config-streamflixapp.json"
+      ],
       "provider_lego_scripts": [
         "scripts/provider_patches/streamflix_runtime_v1.py"
       ],
@@ -4538,11 +3163,7 @@
       ],
       "candidate_learned_routes": [
         "/data.json",
-        "/config/config-streamflixapp.json",
-        "/api.streamflix.app",
-        "/api.js",
-        "/seasons/{season}/episodes",
-        "/episode{episode}.mkv"
+        "/config/config-streamflixapp.json"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -4555,26 +3176,6 @@
         "stale_candidate_count_suppressed": 8,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/streamflix.js",
-          "wantedSha256": "a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "a9e7deb56fd5b3c93458e01fe7d32a764ee1defe3e88759dcb68f448006ded31",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "streamzo": {
@@ -4655,11 +3256,7 @@
         "/embed/sharecloudy.com/64817",
         "/files/aa/Qu4c691ouyf5Tsnx7PWOj2dNl2an65MZ9cL.m3u8",
         "/player/theme.css@1.15.6",
-        "/player/video.css@1.15.6",
-        "/embed/sharecloudy.com/ID",
-        "/embed/...",
-        "/embed/",
-        "/embed"
+        "/player/video.css@1.15.6"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4702,40 +3299,6 @@
         "stale_candidate_count_suppressed": 6,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "548b5b6ca15e19efa7a6b0be97467b7cc77a388a8df53d94d33ba09125b927ea",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/streamzo.js",
-          "wantedSha256": "548b5b6ca15e19efa7a6b0be97467b7cc77a388a8df53d94d33ba09125b927ea",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "548b5b6ca15e19efa7a6b0be97467b7cc77a388a8df53d94d33ba09125b927ea",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 5,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 7
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://streamzo.fr/embed/player.videasy.to/{id}",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-            "referer": "https://streamzo.fr/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "toflix": {
@@ -4767,11 +3330,10 @@
         "api.toflix.site": "api.tfx05.lol"
       },
       "learned_routes": [
-        "/",
+        "/player",
         "/?tmdbId={tmdbId}&type=movie",
-        "/player?m=movie&id={tmdbId}",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/player?m=tv&id={tmdbId}"
+        "//"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4807,8 +3369,7 @@
         "/player",
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "//",
-        "/episode/"
+        "//"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -4821,55 +3382,6 @@
         "stale_candidate_count_suppressed": 4,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "niakvio-native-current",
-          "sourceId": null,
-          "path": "providers/toflix--nuvio--fb2e947afade6098.js",
-          "sha256": "fb2e947afade6098be7f9db09aa5aca3c301fb9185ea592fecfc6fd0ea73bd3f",
-          "upstreamFallbackReason": "no-upstream-mapping"
-        },
-        "provenRouteCount": 6,
-        "genericExecutionRouteCount": 5,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 5
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://tfx05.lol/?tmdbId={tmdbId}&type=tv&season=&episode=",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        },
-        "episodeRoute": "https://tfx05.lol/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "episodeRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        },
-        "base": "https://api.tfx05.lol",
-        "directRoute": "/?tmdbId={tmdbId}&type=movie",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json,text/html,application/xhtml+xml,text/plain,*/*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 NiakVIO/3"
-          }
-        }
       }
     },
     "videasy": {
@@ -4956,9 +3468,7 @@
         "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s2160p-v1-a1.m3u8",
         "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s1080p-v1-a1.m3u8",
         "/vd/ZVQwNjVpX1NpaU03c19ZRmdlenN0dzpDYmRtcXVwemhTRklWZGNtS1ZuVDhCb2FfbDlWVDdGLVRnaTdYT05STlNB/index-s480p-v1-a1.m3u8",
-        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq1w4cHUWuKab880sETptIBQ5-_lu748gx7O67ccaeDUQqHTO9bp2zglrIT5deqYTYiuSTq9wkUY5QcJ-4kXKyRiEYsKsUJp92hn_ArYIoEihBiQDJ_a2ulLoEF6VSdaULUK-ANgN7Mo09GoAiYFtzsVgWkeg7zU4AfWyn1oOTaFU1AotCkNSRMmDEbvicFNWIXl_MQaEMcc4zVSWEjWnKnPrgymA4eHCTPHRK2T1g_4Iw.m3u8",
-        "/episode/",
-        "/sources-with-title"
+        "/r6/ma9yIsUHLd1oEUKmveBRD6CL9aSh9fi08J7f9fAYJaJBpCdYD0B-GAdVd7Zg6lACo8F67V8n20Xhl51_593TUkhcd9hFZcoR7LlT9DOAAq1w4cHUWuKab880sETptIBQ5-_lu748gx7O67ccaeDUQqHTO9bp2zglrIT5deqYTYiuSTq9wkUY5QcJ-4kXKyRiEYsKsUJp92hn_ArYIoEihBiQDJ_a2ulLoEF6VSdaULUK-ANgN7Mo09GoAiYFtzsVgWkeg7zU4AfWyn1oOTaFU1AotCkNSRMmDEbvicFNWIXl_MQaEMcc4zVSWEjWnKnPrgymA4eHCTPHRK2T1g_4Iw.m3u8"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -4999,26 +3509,6 @@
         "stale_candidate_count_suppressed": 13,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/videasy.js",
-          "wantedSha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "8fb7fbc12e23d28185927a5a7f47fa65874ff0d1b1f3e01f4dbf9813c4fc7862",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 25
       }
     },
     "vidfast": {
@@ -5066,8 +3556,7 @@
       "candidate_learned_routes": [
         "/?tmdbId={tmdbId}&type=movie",
         "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/",
-        "/api"
+        "/"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -5080,26 +3569,6 @@
         "stale_candidate_count_suppressed": 1,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/vidfast.js",
-          "wantedSha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "9750c41a72fe7978d81eabd1b3704529cac0c13a7830a1d608afec5c892271cd",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "vidlink": {
@@ -5116,40 +3585,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api",
-        "/api/b/movie/",
-        "/episode/",
-        "/api/b/tv/",
-        "/"
-      ],
-      "learned_routes": [
-        "/api",
-        "/api/b/movie/",
-        "/episode/",
-        "/api/b/tv/",
-        "/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/vidlink.js",
-          "wantedSha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "bedc41b8caf7e7cb371b5b96bb949970278c8a51b83847eaa64f46ca0317c521",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 5
       }
     },
     "vidrock": {
@@ -5167,32 +3602,6 @@
         "stale_candidate_count_suppressed": 2,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/",
-        "/episode/",
-        "/"
-      ],
-      "learned_routes": [],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "9513cf00755eb1b6bbeb570f9524fde4c6eeffd7ea61d28ff3f7a9882a692f0a",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/vidrock.js",
-          "wantedSha256": "9513cf00755eb1b6bbeb570f9524fde4c6eeffd7ea61d28ff3f7a9882a692f0a",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "9513cf00755eb1b6bbeb570f9524fde4c6eeffd7ea61d28ff3f7a9882a692f0a",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "voiranime": {
@@ -5213,10 +3622,10 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json",
         "/anime/{slug}/",
-        "/anime/jujutsu-kaisen-vf/"
+        "/anime/{slug}-vf/",
+        "/anime/{slug}/{episode}/",
+        "/?s={query}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -5245,47 +3654,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/anime/{slug}/",
-        "/anime/{slug}-vf/",
-        "/anime/{slug}/{episode}/",
-        "/?s={query}",
-        "/episode/",
-        "/embed"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "16ac953f35b9ad1362a581954b6d004f3d168ceecbbfe4d93ee444c670718e6e",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/voiranime.js",
-          "wantedSha256": "16ac953f35b9ad1362a581954b6d004f3d168ceecbbfe4d93ee444c670718e6e",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "16ac953f35b9ad1362a581954b6d004f3d168ceecbbfe4d93ee444c670718e6e",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 8,
-        "genericExecutionRouteCount": 4,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 4
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "voiranime-homes": {
@@ -5301,49 +3669,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/engine/ajax/search.php",
-        "/?s={query}",
-        "/engine/ajax/manga_episodes_api.php?id={id}",
-        "/xfsearch/serie-statut/Film/"
-      ],
-      "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "86c5a93352434325c1770dd8db5b9d0316a526c6836e24eebd61be8f16e4610e",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/voiranime-homes.js",
-          "wantedSha256": "86c5a93352434325c1770dd8db5b9d0316a526c6836e24eebd61be8f16e4610e",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "86c5a93352434325c1770dd8db5b9d0316a526c6836e24eebd61be8f16e4610e",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 8,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "voiranime-rip": {
@@ -5364,8 +3689,11 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
+        "/template-php/defaut/fetch.php",
+        "/{slug}/",
+        "/{slug}/saison-{season}/episode-{episode}/",
+        "/{slug}/%E2%86%92notfound",
+        "/{slug}/saison-/episode-/"
       ],
       "live_route_gate": {
         "completion_state": "validated-data-retained-final-bundle-unverified",
@@ -5399,48 +3727,6 @@
         "provider_qualified": false,
         "publication_authority": false,
         "validated_route_data_retained": true
-      },
-      "candidate_learned_routes": [
-        "/template-php/defaut/fetch.php",
-        "/{slug}/",
-        "/{slug}/saison-{season}/episode-{episode}/",
-        "/{slug}/%E2%86%92notfound",
-        "/{slug}/saison-/episode-/",
-        "/saison-{season}/episode-{episode}/",
-        "/{slug}/→notfound"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "37029aa91c7d356d29bf2161fd55f8d3b4ad0e37ddd913a79a95b8286248d1ab",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/voiranime-rip.js",
-          "wantedSha256": "37029aa91c7d356d29bf2161fd55f8d3b4ad0e37ddd913a79a95b8286248d1ab",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "37029aa91c7d356d29bf2161fd55f8d3b4ad0e37ddd913a79a95b8286248d1ab",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 6,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "vostfree": {
@@ -5457,48 +3743,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/embed-.html",
-        "/{query}searches,stoppingearly",
-        "/embed/"
-      ],
-      "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "03da127df87c2b809008e87d0e3bc2fb8b40cc8b15002b0ce1113a6ac5adb885",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/vostfree.js",
-          "wantedSha256": "03da127df87c2b809008e87d0e3bc2fb8b40cc8b15002b0ce1113a6ac5adb885",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "03da127df87c2b809008e87d0e3bc2fb8b40cc8b15002b0ce1113a6ac5adb885",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 2,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "wookafr": {
@@ -5538,12 +3782,10 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/?s={query}",
-        "/?s=Interestelar",
+        "/wp-json/v2/posts?search={query}",
+        "/wp-json/v2/posts?search={query}&per_page=10",
         "/streaming/{slug}/",
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/streaming/series/{slug}/",
-        "/streaming/series/breaking-bad-2008/"
+        "/?s={query}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -5572,34 +3814,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/wp-json/v2/posts?search={query}",
-        "/wp-json/v2/posts?search={query}&per_page=10",
-        "/streaming/{slug}/",
-        "/?s={query}",
-        "/episodes",
-        "/streaming/series/{slug}/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "a3390e79444177bc46684cd49eee119b3aea72f0615b58aeef3cf71b614d71e0",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/wookafr.js",
-          "wantedSha256": "a3390e79444177bc46684cd49eee119b3aea72f0615b58aeef3cf71b614d71e0",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "a3390e79444177bc46684cd49eee119b3aea72f0615b58aeef3cf71b614d71e0",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 6,
-        "genericExecutionRouteCount": 6,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 6
       }
     },
     "yflix": {
@@ -5616,60 +3830,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api",
-        "/",
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
-      ],
-      "learned_routes": [
-        "/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "/api/enc-movies-flix?text=e4ez9g",
-        "/db/flix/find?tmdb_id={tmdbId}&type=tv",
-        "/api/enc-movies-flix?text=c4q58K8",
-        "/api/enc-movies-flix?text=cYW89aM"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/yflix.js",
-          "wantedSha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "ca1223b5ee78c12b0cbca6f208e977a14ab78d699893f6225aac04f8b60f8a94",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 5,
-        "genericExecutionRouteCount": 5,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 5
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://enc-dec.app/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-          }
-        },
-        "base": "https://enc-dec.app",
-        "directRoute": "/db/flix/find?tmdb_id={tmdbId}&type=movie",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "1shows": {
@@ -5721,61 +3881,7 @@
         "declared_types_are_gate_denominator": true,
         "sequential": true
       },
-      "official_site": "https://${esc(s.domain)}",
-      "candidate_learned_routes": [
-        "/api/file/",
-        "/download/movie/",
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/file/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "9d8e329755b00a42b1c05cd06a764a2993e1874f67b3b4e2a96b25894d62ceba",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/1shows.js",
-          "wantedSha256": "9d8e329755b00a42b1c05cd06a764a2993e1874f67b3b4e2a96b25894d62ceba",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "9d8e329755b00a42b1c05cd06a764a2993e1874f67b3b4e2a96b25894d62ceba",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 6,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 4
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://api.viduki.net/download/movie/{tmdbId}",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "origin": "https://www.1shows.org",
-            "referer": "https://www.1shows.org/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
-          }
-        },
-        "base": "https://api.viduki.net",
-        "directRoute": "/download/movie/{tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "origin": "https://www.1shows.org",
-            "referer": "https://www.1shows.org/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0.0.0 Safari/537.36"
-          }
-        }
-      }
+      "official_site": "https://${esc(s.domain)}"
     },
     "allanime": {
       "capability": "direct_media",
@@ -5837,31 +3943,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/api",
-        "/api/v2/themoviedb?id={id}",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/allanime.js",
-          "wantedSha256": "25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "25fb224e2ac0575055aca1dfce4263bc069780b99d86433692f770289971c3ce",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "allwish": {
@@ -5911,31 +3992,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/stream/getSources?id={id}",
-        "/player",
-        "/ajax/episode/list/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/allwish.js",
-          "wantedSha256": "647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "647edc750491af2165d0d8ab9d49e799c87e5d6e7571728e63582936589562a8",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "anime-ultime": {
@@ -5957,42 +4013,9 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "e9ff13debcc53b73f1f0ad614c82e4577f633842c845d61de1d5790587b3b4b5",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/anime-ultime.js",
-          "wantedSha256": "e9ff13debcc53b73f1f0ad614c82e4577f633842c845d61de1d5790587b3b4b5",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "e9ff13debcc53b73f1f0ad614c82e4577f633842c845d61de1d5790587b3b4b5",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 2,
-        "genericExecutionRouteCount": 2,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 2
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
-      }
+        "/VideoPlayer.html",
+        "/VideoPlayer"
+      ]
     },
     "animevost-fr": {
       "capability": "api_stream_resolver",
@@ -6017,23 +4040,7 @@
       ],
       "learned_routes": [
         "/api/animes/search?q={query}",
-        "/api/animes/search?q=Guerra+de+magia",
-        "/api/animes/search?q=Sorcery+Fight",
-        "/api/animes/search?q=JJK",
-        "/api/animes/search?q=Pern%C3%ADkov%C3%BD+t%C3%A1ta",
-        "/api/animes/search?q=Halvale+teele",
-        "/api/animes/search?q=Na+putu+prema+dolje",
-        "/api/animes/search?q=Tot%C3%A1l+sz%C3%ADv%C3%A1s",
-        "/api/animes/search?q=Br%C4%99stantis+blogis",
-        "/api/animes/search?q=P%C4%81rk%C4%81pt+robe%C5%BEu",
-        "/api/animes/search?q=Kriva+pota",
-        "/api/animes/search?q=BB",
-        "/api/animes/search?q=BrBa",
-        "/api/animes/search?q=Egrilik+sari",
-        "/api/animes/search?q=Maison+du+dragon",
-        "/api/animes/search?q=Casa+do+Drag%C3%A3o",
-        "/api/animes/search?q=HOTD",
-        "/api/animes/search?q=The+House+That+Dragons+Built"
+        "/api/animes/{slug}"
       ],
       "provider_lego_scripts": [
         "scripts/provider_patches/animevost_fr_runtime_v1.py"
@@ -6045,9 +4052,7 @@
       },
       "candidate_learned_routes": [
         "/api/animes/search?q={query}",
-        "/api/animes/{slug}",
-        "/episode",
-        "/api/animes/{query}"
+        "/api/animes/{slug}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -6086,26 +4091,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "8b76bce44a7db15035f41e355862b08f562fd529791c312a326d74f263a9c4ac",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevost-fr.js",
-          "wantedSha256": "8b76bce44a7db15035f41e355862b08f562fd529791c312a326d74f263a9c4ac",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "8b76bce44a7db15035f41e355862b08f562fd529791c312a326d74f263a9c4ac",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 18,
-        "genericExecutionRouteCount": 18,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 18
       }
     },
     "animeworld": {
@@ -6136,7 +4121,12 @@
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
       },
-      "learned_routes": [],
+      "learned_routes": [
+        "/player/index.php?data=",
+        "/play.zephyrix.top",
+        "/episode",
+        "/play"
+      ],
       "live_route_gate": {
         "completion_state": "terminal-blocked",
         "effective_coverage_ratio": 0.0,
@@ -6162,32 +4152,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/player/index.php?data=",
-        "/play.zephyrix.top",
-        "/episode",
-        "/play"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "bb241938cc73484976226c98bf2412cc53ab5205843627e6bb3fa7eaa73e61d4",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animeworld.js",
-          "wantedSha256": "bb241938cc73484976226c98bf2412cc53ab5205843627e6bb3fa7eaa73e61d4",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "bb241938cc73484976226c98bf2412cc53ab5205843627e6bb3fa7eaa73e61d4",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "cinefreak": {
@@ -6203,32 +4167,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/wp-json/wp/v2/search?search={query}"
-      ],
-      "learned_routes": [
-        "/wp-json/wp/v2/search?search={query}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "422d7f2fc6c51ea3d4f77596382cd817b1d482997c46ff7509b6ce11b205404d",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/cinefreak.js",
-          "wantedSha256": "422d7f2fc6c51ea3d4f77596382cd817b1d482997c46ff7509b6ce11b205404d",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "422d7f2fc6c51ea3d4f77596382cd817b1d482997c46ff7509b6ce11b205404d",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 1
       }
     },
     "cinevibe": {
@@ -6301,26 +4239,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/cinevibe.js",
-          "wantedSha256": "e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "e1549e3093c7b378c12ea2227c07090f6a50376e139979446e2a96f27e3e119a",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 1
       }
     },
     "ctgmovies": {
@@ -6337,7 +4255,9 @@
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
       },
-      "learned_routes": [],
+      "learned_routes": [
+        "/api/v1"
+      ],
       "live_route_gate": {
         "completion_state": "terminal-unreachable",
         "effective_coverage_ratio": 0.0,
@@ -6365,29 +4285,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/api/v1"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/ctgmovies.js",
-          "wantedSha256": "29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "29128d8b2dac99a3ae3ff8e771ccbe14598efab021981b02867c7f3f7fc0e6c4",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "dvdplay": {
@@ -6412,16 +4309,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/search.php?q={query}",
-        "/video/natzr1pnbteetra",
-        "/video/{id}",
-        "/video/kszspgzgzb4p4ws",
-        "/video/ovauavh1c_c35z3",
-        "/video/awhpozpzcw7chnp",
-        "/video/vyepzher7fiqvce",
-        "/video/k1pkgddldmdgddd",
-        "/video/b1jvsyz1ye31vhs",
-        "/video/putqr78fuircgvu"
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
+        "/?tmdbId={tmdbId}&type=movie"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -6450,31 +4339,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/?tmdbId={tmdbId}&type=movie",
-        "/api/file/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/dvdplay.js",
-          "wantedSha256": "d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "d67399b8f3d221dea530132cbaafc95777469e1f12fed665b7c2d90f5823e195",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 10,
-        "genericExecutionRouteCount": 10,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 10
       }
     },
     "einthusan": {
@@ -6490,53 +4354,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/stream/movie/",
-        "/stream/series/",
-        "/",
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
-      ],
-      "learned_routes": [
-        "/hindi/stream/movie/tt0816692.json",
-        "/bengali/stream/movie/tt0816692.json",
-        "/telugu/stream/movie/tt0816692.json",
-        "/kannada/stream/movie/tt0816692.json",
-        "/malayalam/stream/movie/tt0816692.json",
-        "/tamil/stream/movie/tt0816692.json",
-        "/kannada/stream/series/tt0903747:01:01.json",
-        "/malayalam/stream/series/tt0903747:01:01.json",
-        "/tamil/stream/series/tt0903747:01:01.json",
-        "/hindi/stream/series/tt0903747:01:01.json",
-        "/bengali/stream/series/tt0903747:01:01.json",
-        "/telugu/stream/series/tt0903747:01:01.json",
-        "/kannada/stream/series/tt11198330:03:01.json",
-        "/hindi/stream/series/tt11198330:03:01.json",
-        "/malayalam/stream/series/tt11198330:03:01.json",
-        "/telugu/stream/series/tt11198330:03:01.json",
-        "/tamil/stream/series/tt11198330:03:01.json",
-        "/bengali/stream/series/tt11198330:03:01.json"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "34adb013fbac73ba3688f9bcc93e6418e28aeda1433dd04eb50cdec9cb6a82c8",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/einthusan.js",
-          "wantedSha256": "34adb013fbac73ba3688f9bcc93e6418e28aeda1433dd04eb50cdec9cb6a82c8",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "34adb013fbac73ba3688f9bcc93e6418e28aeda1433dd04eb50cdec9cb6a82c8",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 18,
-        "genericExecutionRouteCount": 18,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 18
       }
     },
     "fibwatch": {
@@ -6586,30 +4403,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/ajax/episodes.php?video_id=",
-        "/search?keyword={query}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "283284e818443cd3ef98ca58aaf0b2c594ecd61219881cb2561baf6c37e545e9",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/fibwatch.js",
-          "wantedSha256": "283284e818443cd3ef98ca58aaf0b2c594ecd61219881cb2561baf6c37e545e9",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "283284e818443cd3ef98ca58aaf0b2c594ecd61219881cb2561baf6c37e545e9",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "frenchstream": {
@@ -6633,9 +4426,9 @@
         "anime"
       ],
       "learned_routes": [
-        "/embed-i7jlzamu3m0c.html",
-        "/api/v2/themoviedb?id={tmdbId}",
-        "/meta/series/tt12343534.json"
+        "/index.php?do=search&subaction=search&story={query}",
+        "/?do=search&subaction=search&story={query}",
+        "/?s={query}"
       ],
       "core_options": {
         "desktop_runtime_compat": {
@@ -6689,40 +4482,7 @@
       "candidate_learned_routes": [
         "/index.php?do=search&subaction=search&story={query}",
         "/?do=search&subaction=search&story={query}",
-        "/?s={query}",
-        "/engine/ajax/search.php",
-        "/films/actions/",
-        "/engine/ajax/film_api.php?id=15136690",
-        "/embed-x6lx8bog5rd0.html",
-        "/embed-3dy2a45v9v5c.html",
-        "/proxy/",
-        "/films/epouvante-horreurs/",
-        "/engine/ajax/film_api.php?id=15118650",
-        "/embed-dgyorvc9klxf.html",
-        "/embed-d3o5y1m1zztr.html",
-        "/data/eps_9561.txt?v=59621158",
-        "/",
-        "/e/bmYa0d1HMYRU",
-        "/data/eps_15114545.txt?v=59621158",
-        "/e/vlfUDi2DVFLM",
-        "/films/aventures/",
-        "/films/animations/",
-        "/films/biopics/",
-        "/films/comedies/",
-        "/films/drames/",
-        "/films/documentaires/",
-        "/xfsearch/date-de-sortie/2024/",
-        "/xfsearch/lang/Allemand/",
-        "/xfsearch/lang/N%C3%A9erlandais/",
-        "/xfsearch/date-de-sortie/2025/",
-        "/xfsearch/date-de-sortie/2026/",
-        "/data/eps_9561.txt?v=59621159",
-        "/e/kVZaeSE7G2G2",
-        "/bping.php?vgd_l2type=dmola&vgd_oresf=one&cid=8CU7G8B38&ssld={%22QQNN%22:%22Pb%22%2C%22QQN75%22:%22Gm5O7mz%22%2C%22QQ8E%22:%22%22%2C%22QQQN%22:%22/K%22%2C%22QQl8E%22:%22%22}&mspa=1&wshp=0&vgd_cdv=O3435&vgd_setup=c21&prid=8PR11258V&hvsid=00001788634787287022727567362918&sc=VA&requrl=https://multiup.us&vgd_rpth=/ola&gdpr=0&r=1788634787288&vgd_cage=57&crid=342704488&vi=1788634787484219924&lf=6&vgd_tsce=L1343&vgd_oreqf=one&vgd_wlstp=0&ugd=0&cc=US&lper=100&wsip=170762594&vgd_asn=8075&vgd_len=555&vgd_end=1",
-        "/data/eps_15114545.txt?v=59621159",
-        "/film_api.php?id={id}",
-        "/engine/ajax/get_seasons.php?serie_tag=",
-        "/engine/ajax/film_api.php?id={id}"
+        "/?s={query}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -6735,50 +4495,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "2a0287d0a686bed61d6059642f82c399233ad7bd12953566ef6cba5d788520ee",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/frenchstream.js",
-          "wantedSha256": "2a0287d0a686bed61d6059642f82c399233ad7bd12953566ef6cba5d788520ee",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "2a0287d0a686bed61d6059642f82c399233ad7bd12953566ef6cba5d788520ee",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 14,
-        "genericExecutionRouteCount": 3,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 3
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://french-stream.one/engine/ajax/film_api.php?id={id}",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-            "origin": "https://french-stream.one",
-            "referer": "https://french-stream.one/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        },
-        "base": "https://arm.haglund.dev",
-        "directRoute": "/api/v2/themoviedb?id={tmdbId}",
-        "directRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "fullanime": {
@@ -6817,12 +4533,7 @@
       "candidate_learned_routes": [
         "/search?s={query}",
         "/voir-anime/{slug}",
-        "/voir-anime/{slug}/episode/{episode}",
-        "/episode",
-        "/embed",
-        "/search?s={query}&_t=",
-        "/voir-anime/{slug}-vostfr",
-        "/voir-anime/{season}"
+        "/voir-anime/{slug}/episode/{episode}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -6861,26 +4572,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "de303c47d50ceecc2f8f2e7d78483f5af93927fff51d3edcf6e2dad28b11c511",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/fullanime.js",
-          "wantedSha256": "de303c47d50ceecc2f8f2e7d78483f5af93927fff51d3edcf6e2dad28b11c511",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "de303c47d50ceecc2f8f2e7d78483f5af93927fff51d3edcf6e2dad28b11c511",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "goatapi": {
@@ -6896,35 +4587,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/player",
-        "/episode/",
-        "/",
-        "/?tmdbId={tmdbId}&type=movie"
-      ],
-      "learned_routes": [
-        "/player",
-        "/episode/",
-        "/",
-        "/?tmdbId={tmdbId}&type=movie"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "niakvio-native-current",
-          "sourceId": null,
-          "path": "providers/goatapi--nuvio--ede84df4fff5806d.js",
-          "sha256": "ede84df4fff5806d718ffb9468a73f6b71c39c99fd44eed02c674782adbb2c9f",
-          "upstreamFallbackReason": "no-upstream-mapping"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 4
       }
     },
     "gramcinema": {
@@ -6940,34 +4602,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/mix_media_files/search?q={query}",
-        "/genLink?type=mix_media&id={id}"
-      ],
-      "learned_routes": [
-        "/mix_media_files/search?q={query}",
-        "/genLink?type=mix_media&id={id}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "03865cdddc4b4ae9e8155e1ccdf691b725ede65a9d86b3f4ca9b4943eed9d0bb",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/gramcinema.js",
-          "wantedSha256": "03865cdddc4b4ae9e8155e1ccdf691b725ede65a9d86b3f4ca9b4943eed9d0bb",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "03865cdddc4b4ae9e8155e1ccdf691b725ede65a9d86b3f4ca9b4943eed9d0bb",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "kisskh": {
@@ -6984,44 +4618,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/v4/search?query={query}",
-        "/api/DramaList/Episode/",
-        "/api/Sub/",
-        "/api/DramaList/Search?q={query}",
-        "/api/DramaList/Drama/",
-        "/episodes/default?season={season}",
-        "/api4.thetvdb.com/v4/search?query={query}"
-      ],
-      "learned_routes": [
-        "/v4/search?query={query}",
-        "/api/DramaList/Episode/",
-        "/api/Sub/",
-        "/api/DramaList/Search?q={query}",
-        "/api/DramaList/Drama/",
-        "/episodes/default?season={season}",
-        "/api4.thetvdb.com/v4/search?query={query}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/kisskh.js",
-          "wantedSha256": "81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "81b0afffb337390782cace12c5d657c6aa42765d05f5da986022284a99bafb98",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 7
       }
     },
     "mallumv": {
@@ -7049,7 +4645,7 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/search.php?q={query}"
+        "/?tmdbId={tmdbId}&type=movie"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -7076,30 +4672,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/api/file/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/mallumv.js",
-          "wantedSha256": "bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "bd2eb51b581fbc1ff781565964f2b0c6246dec4f80f8033e251b00910ecf6677",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 1,
-        "genericExecutionRouteCount": 1,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 1
       }
     },
     "moonflix": {
@@ -7118,30 +4690,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/player.moonflix.website"
-      ],
-      "learned_routes": [],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/moonflix.js",
-          "wantedSha256": "e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "e4928ad7affd0f9d417fee3c3f90bcaf0f37ed2c577ab52dd391a6cd1635f12f",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "moviebox": {
@@ -7196,30 +4744,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/stream/series/",
-        "/stream/movie/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/moviebox.js",
-          "wantedSha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "f19ec5a037e53220e1457e6db0cb9abee1d2f9f299c594dddefb14df7822c847",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "mycima": {
@@ -7243,42 +4767,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/embed/",
-        "/play/",
-        "/Episodes.php",
-        "/",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/?tmdbId={tmdbId}&type=movie"
-      ],
-      "learned_routes": [
-        "/embed/",
-        "/play/",
-        "/Episodes.php",
-        "/",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/?tmdbId={tmdbId}&type=movie"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/mycima.js",
-          "wantedSha256": "d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "d2b77225d84c2929f5a4f1c90f1de3b43f45628c70543df2451f21d7c87cc6bd",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 6
       }
     },
     "netmirror": {
@@ -7301,68 +4789,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "candidate_learned_routes": [
-        "/api/embed-tmdb/",
-        "/mobile/hs/episodes.php",
-        "/mobile/episodes.php",
-        "/episodes.php",
-        "/search.php?s={query}",
-        "/player.php?id={id}",
-        "/episodes.php?id={id}"
-      ],
-      "learned_routes": [
-        "/api/embed-tmdb/",
-        "/mobile/hs/episodes.php",
-        "/mobile/episodes.php",
-        "/episodes.php",
-        "/search.php?s={query}",
-        "/player.php?id={id}",
-        "/episodes.php?id={id}"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/netmirror.js",
-          "wantedSha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "5cc8283a945c663ea55e049931f22c3f9afdeb3ff38e564899dc5359d40600c1",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 3,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 7
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://net27.cc/api/embed-tmdb/{tmdbId}",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json, text/plain, */*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "referer": "https://net27.cc/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
-          }
-        },
-        "episodeRoute": "https://net27.cc/api/embed-tmdb/{tmdbId}?type=tv&s={season}&e={episode}",
-        "episodeRequest": {
-          "method": "GET",
-          "headers": {
-            "accept": "application/json, text/plain, */*",
-            "accept-language": "fr-FR,fr,en-US,en",
-            "referer": "https://net27.cc/",
-            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
-          }
-        }
       }
     },
     "onlykdrama": {
@@ -7411,31 +4837,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/uc?id={id}",
-        "/api/file/downlaod2/",
-        "/api/file/downlaod/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/onlykdrama.js",
-          "wantedSha256": "f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "f96d16c8b4e067394dd41f41a7fbc1a5bb1c3179c5198d35faaaa627e3cac02e",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "showbox": {
@@ -7483,32 +4884,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/file/file_share_list?share_key=",
-        "/api/media"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/showbox.js",
-          "wantedSha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "b90ce3c9aceca167d9f97d57ba2487029b0dd75e61abc4d7e8ad1dd97864a1d5",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 2
       }
     },
     "topcartoons": {
@@ -7531,32 +4906,35 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "learned_routes": [],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/topcartoons.js",
-          "wantedSha256": "df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "df33f490a73779f40b29ad612863fd4b192768567338a2171289fe5316e40ef6",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
       }
     },
     "vidlove": {
       "capability": "html_scraper",
       "manifest_overrides": {},
+      "api_recipe": {
+        "base": "https://ballerinacappuccinalovestungtungtungsahur.com",
+        "referer": "https://player.vidlove.cc/",
+        "origin": "https://player.vidlove.cc",
+        "directRoute": "/{media}?id={tmdbId}&mode=json&sources={source}&hevc=1&season={season}&episode={episode}",
+        "sources": [
+          "moviebox",
+          "ipcloud",
+          "tcloud",
+          "vidapi",
+          "vixsrc",
+          "1embed",
+          "xpass",
+          "vidrift",
+          "lookmovie",
+          "vidnest"
+        ],
+        "sourceFields": [
+          "url",
+          "qualities",
+          "quality",
+          "source"
+        ]
+      },
       "notes": [
         "Clean ProviderBase reconstruction models VidLove as a bounded multi-source JSON API recipe derived from the upstream provider contract."
       ],
@@ -7626,30 +5004,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/{media}?id={tmdbId}&mode=json&sources={source}&hevc=1&season={season}&episode={episode}",
-        "/player.vidlove.cc"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "a8516b7fcc81ce7013b51f3be9a905de9defe34d654e52c01d0a944dbb624a89",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/vidlove.js",
-          "wantedSha256": "a8516b7fcc81ce7013b51f3be9a905de9defe34d654e52c01d0a944dbb624a89",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "a8516b7fcc81ce7013b51f3be9a905de9defe34d654e52c01d0a944dbb624a89",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 1
       }
     },
     "vidnest": {
@@ -7702,16 +5056,7 @@
         "/ophim/{media}/{id}/{season}/{episode}",
         "/flixhq/{media}/{id}/{season}/{episode}?server=upcloud",
         "/vidlink/{media}/{id}/{season}/{episode}",
-        "/rogflix/{media}/{id}/{season}/{episode}",
-        "/primesrc/movie/{tmdbId}",
-        "/hollymoviehd/movie/{tmdbId}",
-        "/ophim/movie/{tmdbId}",
-        "/rogflix/movie/{tmdbId}",
-        "/flixhq/movie/{tmdbId}?server=upcloud",
-        "/vidlink/movie/{tmdbId}",
-        "/proxy",
-        "/streams",
-        "/source"
+        "/rogflix/{media}/{id}/{season}/{episode}"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -7724,26 +5069,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/vidnest.js",
-          "wantedSha256": "25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "25135c174b05435d6dc8fe5216eb78b836150646ed15a7da65e8e85d70bd1c98",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 6
       }
     },
     "vidnest-anime": {
@@ -7786,9 +5111,7 @@
         "/satoru/{id}/{episode}",
         "/aniwave/{id}/{episode}/{media}/wave",
         "/aniwave/{id}/{episode}/{media}/pahe",
-        "/aniwave/{id}/{episode}/{media}/anya",
-        "/animeworld/{id}/server/my%20server",
-        "/streams"
+        "/aniwave/{id}/{episode}/{media}/anya"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -7827,26 +5150,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "yoru",
-          "sha256": "7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27",
-          "providerUrl": "https://raw.githubusercontent.com/yoruix/nuvio-providers/refs/heads/main/providers/vidnest-anime.js",
-          "wantedSha256": "7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27",
-          "capturedAt": "2026-09-01T19:53:19+00:00",
-          "currentSha256": "7613343c5da60daeafe3be8882b3a7636c0ff4db3e62f22831a715f0d01e7b27",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 5
       }
     },
     "vidsrc": {
@@ -7864,9 +5167,8 @@
         "recognition_seed_is_http_proof": false
       },
       "learned_routes": [
-        "/embed/{tmdbId}",
-        "/embed/{tmdbId}/1-1",
-        "/embed/{tmdbId}/3-1"
+        "/?tmdbId={tmdbId}&type=movie",
+        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}"
       ],
       "live_route_gate": {
         "completion_state": "declared-types-qualified",
@@ -7895,44 +5197,6 @@
         "blocked_plan_preserved": false,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/?tmdbId={tmdbId}&type=movie",
-        "/?tmdbId={tmdbId}&type=tv&season={season}&episode={episode}",
-        "/embed/",
-        "/episode/"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/vidsrc.js",
-          "wantedSha256": "c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "c83b23943f9783f2b57008fac62f5fd2a05fea0c826f4b1ca74d53198152b286",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 3,
-        "genericExecutionRouteCount": 3,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 3
-      },
-      "api_recipe": {
-        "proofModelVersion": 5,
-        "allowGenericFallback": false,
-        "movieRoute": "https://vidsrc.me/embed/{tmdbId}",
-        "movieRequest": {
-          "method": "GET",
-          "headers": {
-            "accept-language": "fr-FR,fr,en-US,en",
-            "user-agent": "Mozilla/5.0 (Linux; Android 14; Nuvio) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"
-          }
-        }
       }
     },
     "vixsrc": {
@@ -8000,42 +5264,6 @@
         "blocked_plan_preserved": true,
         "declared_types_are_gate_denominator": true,
         "sequential": true
-      },
-      "candidate_learned_routes": [
-        "/api/tv/",
-        "/episode/",
-        "/api/movie/",
-        "/proxy-agent.js",
-        "/api/readable.js",
-        "/api/api-request.js",
-        "/api/abort-signal.js",
-        "/api/api-stream.js",
-        "/api/api-pipeline.js",
-        "/api/api-upgrade.js",
-        "/api/api-connect.js",
-        "/api/index.js",
-        "/stream/websocketerror.js",
-        "/stream/websocketstream.js"
-      ],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/vixsrc.js",
-          "wantedSha256": "b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "b38a464f826f7ea87fee2c4e483ccbe9d5925e8a89a678a816b77873245611eb",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 14
       }
     },
     "waveanime": {
@@ -8075,13 +5303,7 @@
       "candidate_learned_routes": [
         "/api/series?query={query}",
         "/api/series/{id}",
-        "/playback/{episode}/manifest.mpd",
-        "/api/series?limit=100",
-        "/api/series?query=X",
-        "/api/series/:id",
-        "/playback/subtitles/{id}--.ass",
-        "/playback/{id}/manifest.mpd",
-        "/api/episodes/{id}"
+        "/playback/{episode}/manifest.mpd"
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -8094,26 +5316,6 @@
         "stale_candidate_count_suppressed": 0,
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
-      },
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "gowaru",
-          "sha256": "9f11d1165f920b3d9951c4dcbcb65f79442e46b2113225d826abf8b739d735c4",
-          "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/waveanime.js",
-          "wantedSha256": "9f11d1165f920b3d9951c4dcbcb65f79442e46b2113225d826abf8b739d735c4",
-          "capturedAt": "2026-09-01T19:52:18+00:00",
-          "currentSha256": "9f11d1165f920b3d9951c4dcbcb65f79442e46b2113225d826abf8b739d735c4",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": true,
-        "runtimePlanRouteCount": 3
       }
     },
     "xpass": {
@@ -8130,31 +5332,7 @@
         "new_routes_require_live_proof": true,
         "recognition_seed_is_http_proof": false
       },
-      "official_site": "https://play.xpass.top",
-      "candidate_learned_routes": [
-        "/play.xpass.top"
-      ],
-      "learned_routes": [],
-      "route_proof_version": 5,
-      "route_proof": {
-        "version": 5,
-        "authority": "observed-provider-http-request",
-        "staticCandidatesExecutable": false,
-        "providerSource": {
-          "kind": "upstream",
-          "sourceId": "aio",
-          "sha256": "ad02f9faf8385c8857123ccb2931aa171f219a43c822daef32822ce1a834dbe5",
-          "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/xpass.js",
-          "wantedSha256": "ad02f9faf8385c8857123ccb2931aa171f219a43c822daef32822ce1a834dbe5",
-          "capturedAt": "2026-09-01T19:53:09+00:00",
-          "currentSha256": "ad02f9faf8385c8857123ccb2931aa171f219a43c822daef32822ce1a834dbe5",
-          "mode": "lkg-current-byte-exact"
-        },
-        "provenRouteCount": 0,
-        "genericExecutionRouteCount": 0,
-        "runtimePlanPreserved": false,
-        "runtimePlanRouteCount": 0
-      }
+      "official_site": "https://play.xpass.top"
     }
   },
   "route_override_defaults": {
@@ -10549,8 +7727,8 @@
     "isolation_applied_before_capability_refresh": true
   },
   "runtime_capability_media_safety": {
-    "version": 8,
-    "scope": "all_published_providers_media_playability_only",
+    "version": 7,
+    "scope": "all_published_providers",
     "final_patch": "scripts/provider_patches/runtime_capability_media_safety_v4.py",
     "platforms": {
       "desktop_native": "native_quickjs_static_validation_without_extra_media_fetch",
@@ -10575,7 +7753,6 @@
       "min_duration_ratio": 0.55,
       "max_duration_ratio": 1.8
     },
-    "hls_capability_provider_count": 76,
-    "identity_owner": "CORE.STREAM_IDENTITY.V1"
+    "hls_capability_provider_count": 76
   }
 }

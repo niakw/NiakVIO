@@ -21,10 +21,8 @@ def main() -> int:
     pur = next((r for r in manifest["scrapers"] if str(r.get("id","")).lower()=="purstream"), None)
     if not movix or movix.get("enabled") is not False:
         raise SystemExit("MOVIX must remain disabled in production")
-    if not pur or pur.get("canonicalSupportedTypes") != ["movie", "tv"]:
-        raise SystemExit("PURSTREAM canonical capability must remain movie/tv only")
-    if pur.get("supportedTypes") != ["movie", "tv", "series"]:
-        raise SystemExit("PURSTREAM transport compatibility must expose movie/tv/series")
+    if not pur or pur.get("supportedTypes") != ["movie", "tv"]:
+        raise SystemExit("PURSTREAM must remain movie/tv only")
     with tempfile.TemporaryDirectory(prefix="niakvio-v3-rebuild-") as tmp_raw:
         tmp = Path(tmp_raw)
         tmp_manifest = tmp / "manifest.json"

@@ -226,18 +226,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     }
     return {text:lines.join("\n"),repaired:!hadHeader};
   }
-  /* NUVIO_STREAM_QUALITY_RECOVERY_V2 */
-  function meaningfulQuality(value){return !/^(?:|unknown|inconnue?|n\/?a|null|undefined|none|-+)$/i.test(String(value==null?"":value).trim())}
-  function qualityFromHeight(height){var h=Number(height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=450)return"480p";if(h>=300)return"360p";return""}
-  function qualityFromHls(text,url){
-    var value=String(text||""),match,re=/RESOLUTION\s*=\s*(\d{2,5})x(\d{2,5})/gi,best=0;
-    while((match=re.exec(value))!==null)best=Math.max(best,Number(match[2]||0));
-    var q=qualityFromHeight(best);if(q)return q;
-    var source=String(url||"").toUpperCase();
-    if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(source))return"2160p";
-    var m=source.match(/\b(1440|1080|720|576|540|480|360)P?\b/);return m?m[1]+"p":"";
-  }
-  function recoverQuality(stream,text,url){if(!stream||typeof stream!=="object"||meaningfulQuality(stream.quality))return;var q=qualityFromHls(text,url);if(q)stream.quality=q;else try{delete stream.quality}catch(_e){}}
   function repairedHlsUrl(text){
     return "data:application/vnd.apple.mpegurl;charset=utf-8,"+encodeURIComponent(String(text||""));
   }
@@ -295,7 +283,6 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
     new_hls = r'''      if(/(?:\.m3u8?)(?:[?#]|$)/i.test(url)||/(?:\.m3u8?)(?:[?#]|$)/i.test(finalUrl)||/(?:mpegurl|vnd\.apple)/.test(contentType)||/^\s*#EXT(?:M3U|-(?:X-[A-Z0-9-]+|INF)\s*:)/i.test(text)){
         var hls=normalizeHlsText(text,finalUrl);
         if(!hls)return false;
-        recoverQuality(stream,hls.text,finalUrl);
         if(hls.repaired){
           stream.url=repairedHlsUrl(hls.text);
           if(!stream.type)stream.type="hls";

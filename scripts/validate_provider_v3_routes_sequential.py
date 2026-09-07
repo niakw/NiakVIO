@@ -30,8 +30,6 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
-from provider_route_proof import filter_recipe_by_live_routes
-
 from validate_provider_v3_routes_live import (
     CORPUS,
     EXPECTED,
@@ -1008,19 +1006,9 @@ def finalize_provider(
 
     live_set = set(evaluation["liveRoutes"])
     execution_plan_set = set(model.get("routes") or [])
-    # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
     candidate_model_recipe = model.get("candidateApiRecipe")
-    filtered_model_recipe = (
-        filter_recipe_by_live_routes(candidate_model_recipe, live_set)
-        if isinstance(candidate_model_recipe, dict)
-        else None
-    )
-    if isinstance(filtered_model_recipe, dict):
-        filtered_model_recipe["proofModelVersion"] = 5
-        model["apiRecipe"] = filtered_model_recipe
-    else:
-        model.pop("apiRecipe", None)
-    model["routeProofVersion"] = 5
+    if isinstance(candidate_model_recipe, dict):
+        model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
 
     model["routeRecognition"] = {
         "version": 4,
@@ -1120,17 +1108,8 @@ def finalize_provider(
         if isinstance(patch.get("api_recipe"), dict) and not isinstance(patch.get("candidate_api_recipe"), dict):
             patch["candidate_api_recipe"] = copy.deepcopy(patch["api_recipe"])
         candidate_recipe = patch.get("candidate_api_recipe") if isinstance(patch.get("candidate_api_recipe"), dict) else patch.get("api_recipe")
-        filtered_patch_recipe = (
-            filter_recipe_by_live_routes(candidate_recipe, live_set)
-            if isinstance(candidate_recipe, dict)
-            else None
-        )
-        if isinstance(filtered_patch_recipe, dict):
-            filtered_patch_recipe["proofModelVersion"] = 5
-            patch["api_recipe"] = filtered_patch_recipe
-        else:
-            patch.pop("api_recipe", None)
-        patch["route_proof_version"] = 5
+        if isinstance(candidate_recipe, dict):
+            patch["api_recipe"] = copy.deepcopy(candidate_recipe)
         patch["live_route_gate"] = {
             "completion_state": completion_state,
             "effective_coverage_ratio": evaluation["effectiveCoverageRatio"],

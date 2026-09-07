@@ -10,18 +10,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import refresh_authoritative_hub_domains as refresh
 
 identity = (ROOT / "scripts/provider_patches/global_stream_identity_v1.py").read_text(encoding="utf-8")
-assert "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in identity
-assert '"catalogueYearPolicy": "movie-only"' in identity
-assert "q.seriesYear=" not in identity
-assert "q.seasonYear=" not in identity
+assert "cross-client-shared-tv-year-soft-v8" in identity
+assert "q.seriesYear=Number(q.seriesYear||q.series_year||q.year||0)||0" in identity
+assert "q.seasonYear=Number(q.seasonYear||q.season_year||0)||0" in identity
 assert "if(!episodic(q)&&m.year&&years.length" in identity
-assert "function contentLike(candidate,q)" in identity
-assert "if(!episodic(q)&&years.length&&w.length>=1)return true;" in identity
-assert "function contentLike(candidate){" not in identity
-assert "if(years.length&&w.length>=1)return true;" not in identity
-assert "__nuvioIdentityPolicyV1" in identity
-assert "catalogueScore:catalogueScore" in identity
-assert 'yearPolicy:"movie-only"' in identity
+assert "if(m.year&&years.length&&!years.some" not in identity
 
 patch = {
     "official_site": "https://flemmix.kim",
@@ -44,4 +37,4 @@ assert flemmix["domain_substitutions"].get("flemmix.men") == "flemmix.kim"
 assert str(flemmix.get("manifest_overrides", {}).get("logo") or "").startswith("https://flemmix.kim/")
 assert all("active domain is flemmix.men" not in str(note) for note in flemmix.get("notes", []))
 
-print("priority episodic-year-disabled/domain-refresh regression tests passed")
+print("priority TV-year/domain-refresh regression tests passed")

@@ -56,16 +56,17 @@ def run_node(source: str, fetch_impl: str, expression: str, prelude: str = "") -
 
 streamzo = patched("streamzo")
 assert streamzo.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"' in streamzo
-assert "routeIdentity(" not in streamzo
-assert "wrong_release_year" not in streamzo
-assert "season_episode_identity_mismatch" not in streamzo
-assert "collisionFixtures" not in streamzo
+assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in streamzo
+policy = module._collision_policy()
+assert policy["259544"]["expectedYear"] == 2025
+assert 1996 in policy["259544"]["ambiguousReleaseYears"]
+assert policy["760873"]["expectedYear"] == 2021
+
 # Any old published wrapper is replaced, never stacked.
-legacy = streamzo.replace('"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"', '"implementationRevision":"field-safety-v2"')
+legacy = streamzo.replace('"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"', '"implementationRevision":"field-safety-v2"')
 upgraded = patched("streamzo", legacy)
 assert upgraded.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"' in upgraded
+assert '"implementationRevision":"field-safety-v7-stream-scoped-p2p-vod-duration"' in upgraded
 assert '"implementationRevision":"field-safety-v2"' not in upgraded
 assert patched("streamzo", upgraded) == upgraded
 
@@ -103,6 +104,59 @@ value = run_node(
     "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
 )
 assert value == {"rows": 1, "url": "https://media.example/ok.m3u8", "calls": 0}, value
+
+# 5.20.70 regression: known same-title remakes/collisions are now fail-closed in
+# native runtimes. Wrong 1996 Nube must not appear for TMDB 259544 (2025 remake),
+# and a row with no positive release discriminator is hidden rather than guessed.
+for name in ("Hell Teacher Nube 1996 S01E01", "Hianime"):
+    src = "module.exports={getStreams:async()=>[{name:" + json.dumps(name) + ",url:'https://media.example/nube.m3u8',type:'hls'}]};\n"
+    value = run_node(
+        patched("hianime", src),
+        "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
+        "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+        "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+    )
+    assert value == {"rows": 0, "calls": 0}, (name, value)
+
+# Positive release evidence remains usable without an extra native fetch.
+correct_nube = patched(
+    "hianime",
+    "module.exports={getStreams:async()=>[{name:'The 99-Legged Bug S01E01',url:'https://media.example/nube-2025.m3u8',type:'hls'}]};\n",
+)
+value = run_node(
+    correct_nube,
+    "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
+    "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+)
+assert value == {"rows": 1, "calls": 0}, value
+
+# Explicit episode contradictions are rejected globally, not only for the three
+# curated collision fixtures.
+wrong_episode = patched(
+    "anikototv",
+    "module.exports={getStreams:async()=>[{name:'Jujutsu Kaisen S01E02',url:'https://media.example/jjk.m3u8',type:'hls'}]};\n",
+)
+value = run_node(
+    wrong_episode,
+    "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
+    "p.getStreams('95479','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+)
+assert value == {"rows": 0, "calls": 0}, value
+
+# Static identity must inspect every row, not just the bounded remote-probe head.
+many_wrong = patched(
+    "hianime",
+    "module.exports={getStreams:async()=>Array.from({length:20},(_,i)=>({name:'Hell Teacher Nube 1996 S01E01 '+i,url:'https://media.example/'+i+'.m3u8',type:'hls'}))};\n",
+)
+value = run_node(
+    many_wrong,
+    "async function(){global.__fetchCalls++;throw new Error('must not probe from native safety layer')}",
+    "p.getStreams('259544','tv',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+)
+assert value == {"rows": 0, "calls": 0}, value
 
 # Non-native/web-like runtime keeps bounded remote validation.
 forbidden = r"""async function(url){global.__fetchCalls++;return {ok:false,status:403,url:String(url),text:async()=>'',headers:{get:()=> 'text/plain'}}}"""

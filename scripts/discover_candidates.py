@@ -652,9 +652,6 @@ def clean_provider_model(
                 if not host_is_trusted(host):
                     recipe.pop(key, None)
 
-    # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
-    # Static strings are candidate knowledge only. Executable route DATA is born
-    # exclusively from the proof-v5 runtime tracer/bootstrap.
     return {
         "knownSite": str(known_site or "").strip() or None,
         "strategy": strategy,
@@ -664,11 +661,8 @@ def clean_provider_model(
         "fixedApi": str(fixed.get("api") or "").strip() or None,
         "origins": origins[:32],
         "observedUrls": learned_urls[:48],
-        "candidateRoutes": learned_routes[:64],
-        "routes": [],
-        "candidateApiRecipe": recipe,
-        "apiRecipe": None,
-        "routeProofVersion": 0,
+        "routes": learned_routes[:64],
+        "apiRecipe": recipe,
         "sourceRuntimeFamily": str(knowledge.get("runtimeFamily") or "unknown"),
         "knowledgeRole": "structured-static-observation-only",
         "legacyCodeEmbedded": False,
