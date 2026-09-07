@@ -325,6 +325,11 @@ def validate_source_state() -> None:
 
 
 def main() -> int:
+    identity = read("scripts/provider_patches/global_stream_identity_v1.py")
+    if "cross-client-shared-tmdb-owner-zero-episodic-year-v11" in identity:
+        validate_source_state()
+        print("CORE_IDENTITY_OWNERSHIP_CLEANUP_OK episodic_year_influence=0 already_current=true")
+        return 0
     patch_core_identity_zero_year_episodic()
     patch_engine_policy()
     patch_purstream_adapter()
