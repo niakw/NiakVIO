@@ -68,30 +68,45 @@ try:
     result = subprocess.run(["node", str(temp)], cwd=ROOT, text=True, capture_output=True, check=False)
 finally:
     temp.unlink(missing_ok=True)
-assert result.returncode == 0, result.stderr
-out = json.loads(result.stdout)
-assert out["tv"] > 0 and out["series"] > 0 and out["anime"] > 0, out
-assert out["movieBad"] == -1 and out["movieGood"] > 0, out
-assert out["htmlTv"] is True and out["htmlMovie"] is False, out
+assert result.returncode == 0, result.stdout + "\n" + result.stderr
+values = json.loads(result.stdout)
+assert values["tv"] >= 100, values
+assert values["series"] >= 100, values
+assert values["anime"] >= 100, values
+assert values["movieBad"] == -1, values
+assert values["movieGood"] >= 100, values
+assert values["htmlTv"] is True, values
+assert values["htmlMovie"] is False, values
 
-# ProviderBase runtime must delegate catalogue and HTML identity to the Core
-# policy. Inspect transformed snippets only; migration-source validation strings
-# are not executable runtime ownership.
-upgrader = load_module(UPGRADER)
-providerbase = '''
-function strictIdentity(x){return x}
-function strictIdentityHtml(x){return x}
-const goodEpisode=(mediaType==='tv'||mediaType==='series'||mediaType==='anime');
-const movieIdentity=goodEpisode;
-function evaluateStrictCandidate(){return true}
-'''
-try:
-    transformed = upgrader.upgrade(providerbase)
-except Exception:
-    transformed = upgrader.upgrade_source(providerbase) if hasattr(upgrader, "upgrade_source") else ""
-if transformed:
-    assert "__nuvioIdentityPolicyV1" in transformed
-    assert "strictIdentityScore" not in transformed
-    assert "function routeIdentity(" not in transformed
+upgrader = UPGRADER.read_text(encoding="utf-8")
+assert "NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9" in upgrader
+assert "globalThis.__nuvioIdentityPolicyV1" in upgrader
+assert "policy.catalogueScore({" in upgrader
+assert "policy.htmlIdentityOk({" in upgrader
+
+# Inspect the replacement snippets that become ProviderBase runtime code, not the
+# migration script as a whole. The script deliberately contains legacy source
+# anchors and validation guard strings so it can recognize and reject old code.
+def triple_quoted_assignment(name: str) -> str:
+    marker = name + " = '''"
+    start = upgrader.find(marker)
+    assert start >= 0, name
+    start += len(marker)
+    end = upgrader.find("'''", start)
+    assert end >= 0, name
+    return upgrader[start:end]
+
+transformed_identity = triple_quoted_assignment("new_score") + "\n" + triple_quoted_assignment("new_html")
+assert "globalThis.__nuvioIdentityPolicyV1" in transformed_identity
+assert "policy.catalogueScore({" in transformed_identity
+assert "policy.htmlIdentityOk({" in transformed_identity
+# ProviderBase may transport year evidence to Core, but transformed ProviderBase
+# must not own year rejection/scoring semantics after v9.
+for forbidden in (
+    'const movieIdentity = expectedMedia === "movie";',
+    'Math.abs(Number(year) - Number(expectedYear))',
+    'if (year && expectedYear && year !== expectedYear) return -1;',
+):
+    assert forbidden not in transformed_identity, forbidden
 
 print("global identity policy ownership tests passed")
