@@ -128,11 +128,10 @@ function _spv4JsonRows(value, out) {'''
     if count != 1:
         raise AssertionError(f"v15-html-details: expected one function, got {count}")
 
-    # Explicit third-party embed endpoints commonly use /e/<opaque>. Only allow
-    # this short form off the provider's own origins; final media is still proven
-    # by _directMedia/content-type inside the bounded crawler.
-    old_player = '''    return /\\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);\n'''
-    new_player = '''    const providerOrigin = _runtimeBases().some(base => _origin(base) === parsed.origin);\n    if (!providerOrigin && /^\\/e\\/[^/?#]+(?:[/?#]|$)/i.test(parsed.pathname + parsed.search)) return true;\n    return /\\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);\n'''
+    # V12 already owns the /file resolver extension. Anchor V15 to that current
+    # shape and preserve it while adding only the short third-party /e/<id> form.
+    old_player = '''    return /\\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download|file|files)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);\n'''
+    new_player = '''    const providerOrigin = _runtimeBases().some(base => _origin(base) === parsed.origin);\n    if (!providerOrigin && /^\\/e\\/[^/?#]+(?:[/?#]|$)/i.test(parsed.pathname + parsed.search)) return true;\n    return /\\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download|file|files)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);\n'''
     text = once(text, old_player, new_player, "v15-third-party-short-embed")
 
     old_urls = '''      let urls = _extractUrls(html, response.url || detailUrl);\n'''
