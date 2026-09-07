@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Let temp-copied providers resolve pinned repository dependencies safely.
+"""Let temp-copied providers resolve explicitly pinned repository dependencies safely.
 
 Route recognition executes upstream Provider JS from a temporary directory. Bare
 package imports therefore cannot see NiakVIO's node_modules even though the exact
 runtime dependencies are installed and locked. This migration adds a fallback
-resolution root for bare packages only. Blocked Node built-ins remain blocked, and
-relative/absolute provider imports are never redirected.
+resolution root only for packages declared in NiakVIO's top-level dependencies.
+Blocked Node built-ins remain blocked, relative/absolute imports are never
+redirected, and arbitrary transitive packages are not exposed.
 """
 from __future__ import annotations
 
@@ -39,20 +40,30 @@ def patch() -> bool:
     new = '''/* NIAKVIO_PROVIDER_WORKER_PACKAGE_RESOLUTION_V1 */
 function installModuleRestrictions() {
   const originalLoad = Module._load;
-  const packageRequire = Module.createRequire(path.join(__dirname, '..', 'package.json'));
-  const isBarePackage = (request) => {
+  const packageJsonPath = path.join(__dirname, '..', 'package.json');
+  const packageRequire = Module.createRequire(packageJsonPath);
+  let allowedProviderPackages = new Set();
+  try {
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+    allowedProviderPackages = new Set(Object.keys(packageJson.dependencies || {}));
+  } catch {}
+  const packageRoot = (request) => {
     const value = String(request || '').trim();
-    return Boolean(value && !value.startsWith('.') && !path.isAbsolute(value) && !value.startsWith('node:'));
+    if (!value || value.startsWith('.') || path.isAbsolute(value) || value.startsWith('node:')) return '';
+    const parts = value.split('/').filter(Boolean);
+    if (!parts.length) return '';
+    return value.startsWith('@') && parts.length >= 2 ? `${parts[0]}/${parts[1]}` : parts[0];
   };
   Module._load = function restrictedLoad(request, parent, isMain) {
     if (blockedProviderModule(request)) throw new Error(`provider module blocked: ${request}`);
     try {
       return originalLoad.call(this, request, parent, isMain);
     } catch (error) {
-      if (!isBarePackage(request) || error?.code !== 'MODULE_NOT_FOUND') throw error;
-      // Providers are copied to a temp directory for isolation, so bare packages
-      // cannot naturally reach the repository's pinned node_modules. Resolve the
-      // exact package from NiakVIO's package root, then load that resolved file.
+      const root = packageRoot(request);
+      if (!root || !allowedProviderPackages.has(root) || error?.code !== 'MODULE_NOT_FOUND') throw error;
+      // Providers are copied to a temp directory for isolation, so approved bare
+      // packages cannot naturally reach the repository's pinned node_modules.
+      // Resolve only an explicitly declared dependency from NiakVIO's package root.
       const resolved = packageRequire.resolve(request);
       return originalLoad.call(this, resolved, parent, isMain);
     }
@@ -68,8 +79,11 @@ def validate(text: str | None = None) -> None:
     value = text if text is not None else TARGET.read_text(encoding="utf-8")
     for needle in (
         MARKER,
-        "Module.createRequire(path.join(__dirname, '..', 'package.json'))",
-        "isBarePackage",
+        "Module.createRequire(packageJsonPath)",
+        "allowedProviderPackages",
+        "Object.keys(packageJson.dependencies || {})",
+        "packageRoot",
+        "!allowedProviderPackages.has(root)",
         "error?.code !== 'MODULE_NOT_FOUND'",
         "packageRequire.resolve(request)",
         "blockedProviderModule(request)",
@@ -82,7 +96,7 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_WORKER_PACKAGE_RESOLUTION_V1_OK changed={str(changed).lower()} "
-        "bare_packages_from_repo=1 blocked_builtins_preserved=1 relative_redirect=0"
+        "declared_packages_only=1 blocked_builtins_preserved=1 relative_redirect=0 transitive_exposure=0"
     )
     return 0
 
