@@ -106,7 +106,7 @@ jobs:
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
-      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           cache-disabled: true
       - name: Restore TV AVD snapshot and matching debug signing key
@@ -225,7 +225,7 @@ jobs:
         with: {distribution: temurin, java-version: "17"}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: "24", package-manager-cache: false}
-      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+      - uses: gradle/actions/setup-gradle@9c971963bec38e04b3d30dcc455b5382be2fdbfb
         with:
           cache-disabled: true
       - name: Restore Mobile Android AVD snapshot and matching debug signing key
