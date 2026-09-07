@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
-"""Provider Value Plan V18.1: accept provider-native slug identities.
+"""Provider Value Plan V18.1: accept provider-native JSON slug identities.
 
 Some structured search APIs identify the matched catalogue row with a slug rather
-than a numeric id. Route recovery already normalizes the later request to {id};
-V18.1 completes the runtime identity bridge by accepting slug-shaped fields only
-after the same strict title score and bounded safe-character validation as ids.
+than a numeric id. Route recovery already normalizes the later correlated request
+to {id}; V18.1 completes the runtime identity bridge by accepting slug-shaped
+JSON fields only after the same strict title score and bounded safe-character
+validation as ids.
 
+HTML data-slug inference is intentionally excluded: the current proof only
+requires JSON row identity, so V18.1 stays on the narrow evidenced capability.
 This is a data-shape capability, not a provider or host exception.
 """
 from pathlib import Path
@@ -34,12 +37,6 @@ def patch() -> bool:
     new_keys = '/* NIAKVIO_PROVIDER_CORRELATED_VALUE_PLAN_V18_1 */\n    for (const key of ["id","ID","_id","media_id","post_id","anime_id","movie_id","series_id","show_id","slug","provider_slug","seo_slug"]) {'
     text = once(text, old_keys, new_keys, "v18.1-json-provider-slug")
 
-    old_attr = r'/\bdata-(?:id|post-id|media-id|anime-id|movie-id|series-id|show-id)\s*=\s*["\']?([A-Za-z0-9._~-]{1,160})/i'
-    new_attr = r'/\bdata-(?:id|post-id|media-id|anime-id|movie-id|series-id|show-id|slug|provider-slug|seo-slug)\s*=\s*["\']?([A-Za-z0-9._~-]{1,160})/i'
-    if text.count(old_attr) != 2:
-        raise AssertionError(f"v18.1-html-provider-slug expected two anchors, got {text.count(old_attr)}")
-    text = text.replace(old_attr, new_attr)
-
     BASE.write_text(text, encoding="utf-8")
     validate(text)
     return True
@@ -51,7 +48,6 @@ def validate(text: str | None = None) -> None:
         raise AssertionError(f"V18.1 marker count={value.count(MARKER)}")
     for needle in (
         '"slug","provider_slug","seo_slug"',
-        "provider-slug|seo-slug",
         ".filter(item => item.score >= 90)",
         "/^[A-Za-z0-9._~-]+$/.test(value)",
     ):
@@ -63,7 +59,7 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed={str(changed).lower()} "
-        "scored_slug_identity=1 bounded_charset=1 provider_specific_rules=0"
+        "scored_json_slug_identity=1 bounded_charset=1 html_slug_inference=0 provider_specific_rules=0"
     )
     return 0
 
