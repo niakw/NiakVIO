@@ -36,13 +36,15 @@ jobs:
           set -euo pipefail
           python scripts/prepatch_stream_facts_quality_v2.py
           python scripts/prepatch_tv_runtime_upgrade_validator_v1.py
+          python scripts/prepatch_quality_test_bootstrap_v1.py
           python scripts/upgrade_tv_runtime_regressions_v1.py
           python scripts/upgrade_provider_prune_batch_history_v1.py
           python -m py_compile \
             scripts/provider_patches/global_media_type_resolution_v1.py \
             scripts/provider_patches/global_stream_facts_v1.py \
             scripts/provider_patches/stream_output_sanitizer_v5.py \
-            scripts/prune_unreferenced_providers.py
+            scripts/prune_unreferenced_providers.py \
+            tests/stream_quality_recovery_tv_test.py
       - name: Focused regression tests
         shell: bash
         run: |
@@ -65,6 +67,7 @@ jobs:
             .github/workflows/main-tv-runtime-repair.yml \
             scripts/prepatch_stream_facts_quality_v2.py \
             scripts/prepatch_tv_runtime_upgrade_validator_v1.py \
+            scripts/prepatch_quality_test_bootstrap_v1.py \
             scripts/upgrade_tv_runtime_regressions_v1.py \
             scripts/upgrade_provider_prune_batch_history_v1.py
           git add \
