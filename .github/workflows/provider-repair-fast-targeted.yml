@@ -30,6 +30,8 @@ jobs:
       - run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Run fast targeted acceptance
+        id: acceptance
+        continue-on-error: true
         run: |
           python scripts/run_provider_repair_fast_targeted_v1.py \
             --attempts 3 \
@@ -39,6 +41,20 @@ jobs:
             --provider movies4u \
             --provider frenchstream \
             --provider mugiwarastream
+
+      - name: Inspect materialized structured plans
+        if: always()
+        run: |
+          python scripts/inspect_provider_fast_bundle_plans.py \
+            --provider animekai \
+            --provider movies4u \
+            --provider frenchstream \
+            --provider mugiwarastream
+
+      - name: Enforce targeted acceptance result
+        if: always()
+        run: |
+          test "${{ steps.acceptance.outcome }}" = "success"
 
       - name: Upload fast proof
         if: always()
