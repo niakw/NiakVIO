@@ -258,7 +258,19 @@ codeql = (ROOT / ".github/workflows/codeql.yml").read_text(encoding="utf-8")
 assert "javascript-typescript" in codeql
 assert "python" in codeql
 assert "security-extended" in codeql
-assert "db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28" in codeql
+assert "group: niakvio-codeql" in codeql
+assert "cancel-in-progress: true" in codeql
+assert "\n  push:" not in codeql, "CodeQL must not run on every push"
+codeql_refs = []
+for action in ("github/codeql-action/init@", "github/codeql-action/analyze@"):
+    lines = [line.strip() for line in codeql.splitlines() if f"uses: {action}" in line]
+    assert len(lines) == 1, f"expected exactly one CodeQL action use for {action}"
+    ref = lines[0].split(action, 1)[1].split()[0]
+    assert len(ref) == 40 and all(char in "0123456789abcdefABCDEF" for char in ref), (
+        f"CodeQL action must be immutable full SHA pinned: {lines[0]}"
+    )
+    codeql_refs.append(ref.lower())
+assert len(set(codeql_refs)) == 1, "CodeQL init/analyze must use the same pinned release commit"
 
 print("repository hygiene contract passed: main-only code workflow, permanent Core/reader hardening, syntax-only provider validation, no retired one-shots or executable workflow references")
 
