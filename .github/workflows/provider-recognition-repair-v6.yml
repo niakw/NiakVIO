@@ -69,6 +69,8 @@ jobs:
             scripts/upgrade_provider_repair_v6.py \
             scripts/merge_provider_repair_report_v6.py \
             scripts/audit_provider_repair_yield_v6.py \
+            scripts/audit_provider_quick_yield_targeted.py \
+            scripts/compare_quick_yield_preservation.py \
             scripts/upgrade_provider_worker_route_proof_v1.py
           python tests/provider_repair_pipeline_v6_contract_test.py
 
@@ -117,6 +119,10 @@ jobs:
             automation/provider-route-recovery-v6.json
             automation/provider-repair-yield-v6.json
             automation/provider-repair-v6-summary.json
+            automation/provider-repair-portfolio-baseline.json
+            automation/provider-repair-portfolio-candidate.json
+            automation/provider-repair-portfolio-retry.json
+            automation/provider-repair-portfolio-losses.json
             automation/provider-v3-static-knowledge.json
             provider-overrides.json
             PROVENANCE.json
