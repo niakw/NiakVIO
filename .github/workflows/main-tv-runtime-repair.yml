@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Retry 7: cancellation + quality + batched prune + reuse verified TMDB context.
+          # Retry 8: retry 7 was YAML-only; Core logic is unchanged.
           python scripts/prepatch_stream_facts_quality_v2.py
           python scripts/prepatch_tv_runtime_upgrade_validator_v1.py
           python scripts/prepatch_quality_test_bootstrap_v1.py
@@ -67,15 +67,16 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           cat >> MEMORY.md <<EOF
-
-### TV shared-runtime repair — final consolidated checkpoint (2026-09-07)
-- Retry 4: Actions run 34073319355 proved stale-request cancellation but exposed that a provider fact `resolution: 1920x1080` was not converted to `quality: 1080p` because the generic token regex did not parse WxH explicitly.
-- Retry 5: Actions run 34073668673 proved cancellation, quality recovery (`1080p`, `1080p` for the Purstream/StreamZo fixtures), and batched prune; the next red was a stale presentation-pipeline test that did not inject the now-required runtime-only TMDB credential.
-- Retry 6: Actions run 34073743529 restored the full TMDB presentation metadata but exposed two TMDB calls for one movie invocation. STREAM_PRESENTATION was still calling the Core TMDB capability after MEDIA_TYPE had already put verified `tmdbMetadata` into `__nuvioMediaContext`.
-- Final repair run: Actions run ${GITHUB_RUN_ID}. Shared Core now binds stale fetch work to the latest invocation, aborts/suppresses superseded follow-up requests, derives quality from explicit quality/title/name/WxH/height/URL facts and from the already-probed HLS master as last-resort evidence, batches provider prune history traversal, and makes STREAM_PRESENTATION consume MEDIA_TYPE's verified TMDB context before any fallback Core metadata call.
-- Functional acceptance in this repair workflow requires: stale A→B network sequence only `/1/one`, `/2/one`; Purstream/StreamZo quality fixtures both `1080p`; batched prune retention contract; media-type resolver; presentation pipeline with exactly one movie TMDB request; sanitizer fail-closed/direct-normalization regressions.
-- This checkpoint is Core repair only. Public manifest remains 5.21.35 until the separate 96/96 route-proof reconstruction, reverse/static/integrity, quick-yield, and real Purstream HOTD S3E1 `series` + `tv` proof are green and the publication transaction is explicitly completed.
-EOF
+          
+          ### TV shared-runtime repair — final consolidated checkpoint (2026-09-07)
+          - Retry 4: Actions run 34073319355 proved stale-request cancellation but exposed that a provider fact `resolution: 1920x1080` was not converted to `quality: 1080p` because the generic token regex did not parse WxH explicitly.
+          - Retry 5: Actions run 34073668673 proved cancellation, quality recovery (`1080p`, `1080p` for the Purstream/StreamZo fixtures), and batched prune; the next red was a stale presentation-pipeline test that did not inject the now-required runtime-only TMDB credential.
+          - Retry 6: Actions run 34073743529 restored the full TMDB presentation metadata but exposed two TMDB calls for one movie invocation. STREAM_PRESENTATION was still calling the Core TMDB capability after MEDIA_TYPE had already put verified `tmdbMetadata` into `__nuvioMediaContext`.
+          - Retry 7: Actions run 34073960958 had zero jobs because the checkpoint heredoc was not indented as YAML block content; no Core/product code executed in that run.
+          - Final repair run: Actions run ${GITHUB_RUN_ID}. Shared Core now binds stale fetch work to the latest invocation, aborts/suppresses superseded follow-up requests, derives quality from explicit quality/title/name/WxH/height/URL facts and from the already-probed HLS master as last-resort evidence, batches provider prune history traversal, and makes STREAM_PRESENTATION consume MEDIA_TYPE's verified TMDB context before any fallback Core metadata call.
+          - Functional acceptance in this repair workflow requires: stale A→B network sequence only `/1/one`, `/2/one`; Purstream/StreamZo quality fixtures both `1080p`; batched prune retention contract; media-type resolver; presentation pipeline with exactly one movie TMDB request; sanitizer fail-closed/direct-normalization regressions.
+          - This checkpoint is Core repair only. Public manifest remains 5.21.35 until the separate 96/96 route-proof reconstruction, reverse/static/integrity, quick-yield, and real Purstream HOTD S3E1 `series` + `tv` proof are green and the publication transaction is explicitly completed.
+          EOF
           git rm -f \
             .github/workflows/main-tv-runtime-repair.yml \
             scripts/prepatch_stream_facts_quality_v2.py \
