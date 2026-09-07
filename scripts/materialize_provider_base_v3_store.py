@@ -2,7 +2,7 @@
 '''Create the canonical 96 ProviderBase v3 store from the owned common skeleton.
 
 Before importing the ProviderBase generator, apply the deterministic execution
-route sanitizer and the cumulative common runtime upgrade. This ordering
+route sanitizer and the cumulative common runtime upgrades. This ordering
 guarantees that all 96 generated bundles use the same repaired DATA/runtime
 contract and Core-owned catalogue identity policy.
 '''
@@ -17,13 +17,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 EXPECTED = 96
-CURRENT_RUNTIME_READER_VERSION = 9
+CURRENT_RUNTIME_READER_VERSION = 10
 
 
 def prepare_runtime() -> None:
     commands = (
         ROOT / "scripts" / "sanitize_provider_v3_execution_routes_v1.py",
         ROOT / "scripts" / "upgrade_provider_base_runtime_v5.py",
+        ROOT / "scripts" / "upgrade_provider_base_runtime_v10.py",
     )
     for script in commands:
         subprocess.run([sys.executable, str(script)], cwd=ROOT, check=True)
