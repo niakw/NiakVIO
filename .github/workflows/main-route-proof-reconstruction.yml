@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/main-route-proof-reconstruction.yml'
+      - '.github/triggers/route-proof-reconstruction.json'
   workflow_dispatch:
 
 permissions:
@@ -65,6 +66,7 @@ jobs:
             scripts/bootstrap_provider_v3_routes.py \
             scripts/recover_provider_routes_from_upstreams.py \
             scripts/apply_provider_route_recovery_report.py \
+            scripts/purstream_hotd_s3e1_live_probe.py \
             scripts/upgrade_provider_worker_route_proof_v1.py \
             scripts/upgrade_provider_route_proof_request_spec_v1.py \
             scripts/upgrade_provider_base_route_requests_v1.py \
@@ -193,6 +195,14 @@ jobs:
           )
           PY
 
+      - name: Final real Purstream HOTD S3E1 proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/purstream_hotd_s3e1_live_probe.py \
+            --output automation/purstream-hotd-s3e1-live.json \
+            --timeout 90
+
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -200,6 +210,7 @@ jobs:
           path: |
             automation/provider-route-recovery-v5.json
             automation/provider-v3-static-knowledge.json
+            automation/purstream-hotd-s3e1-live.json
             provider-overrides.json
             manifest.json
             vf/manifest.json
