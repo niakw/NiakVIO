@@ -22,6 +22,22 @@ def legacy_fallback(record, *, missing: bool):
     return False, "legacy-fallback"
 
 
+def route_proof_record(proven_route_count: object = 0) -> dict[str, object]:
+    return {
+        "id": "movix",
+        "enabled": False,
+        "action": preservation.ROUTE_PROOF_DISABLE_ACTION,
+        "failed_gates": [preservation.ROUTE_PROOF_FAILED_GATE],
+        "evidence": {
+            "authority": preservation.ROUTE_PROOF_AUTHORITY,
+            "provider_id": "movix",
+            "route_proof_version": 5,
+            "proven_route_count": proven_route_count,
+            "status": "no-proven-route",
+        },
+    }
+
+
 with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-") as raw:
     tmp = Path(raw)
     report = tmp / "report.json"
@@ -87,6 +103,27 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-") as raw:
             legacy_fallback, health_movix, missing=False
         )
         assert accepted is True and reason == preservation.ROUTE_PROOF_DISABLE_ACTION, (accepted, reason)
+
+        string_zero = route_proof_record("0")
+        accepted_string_zero = preservation.conclusive_disablement_with_route_proof(
+            legacy_fallback, string_zero, missing=False
+        )
+        assert accepted_string_zero == (True, preservation.ROUTE_PROOF_DISABLE_ACTION), accepted_string_zero
+
+        for bad_value, expected_reason in (
+            (None, "invalid_evidence_routes"),
+            ("", "invalid_evidence_routes"),
+            (False, "invalid_evidence_routes"),
+            ("nope", "invalid_evidence_routes"),
+            (1, "nonzero_evidence_routes"),
+            ("2", "nonzero_evidence_routes"),
+        ):
+            record = route_proof_record(bad_value)
+            rejected = preservation.conclusive_disablement_with_route_proof(
+                legacy_fallback, record, missing=False
+            )
+            assert rejected[0] is False and expected_reason in rejected[1], (bad_value, rejected)
+
         rejected_missing = preservation.conclusive_disablement_with_route_proof(
             legacy_fallback, health_movix, missing=True
         )
@@ -106,21 +143,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-positive-") as raw
     })
     dump(manifest, {"scrapers": [{"id": "MOVIX", "enabled": False}]})
     dump(overrides, {"provider_patches": {"movix": {"route_proof": {"provenRouteCount": 1}}}})
-    dump(health, {
-        "providers": [{
-            "id": "movix",
-            "enabled": False,
-            "action": preservation.ROUTE_PROOF_DISABLE_ACTION,
-            "failed_gates": [preservation.ROUTE_PROOF_FAILED_GATE],
-            "evidence": {
-                "authority": preservation.ROUTE_PROOF_AUTHORITY,
-                "provider_id": "movix",
-                "route_proof_version": 5,
-                "proven_route_count": 0,
-                "status": "no-proven-route",
-            },
-        }]
-    })
+    dump(health, {"providers": [route_proof_record()]})
     done = subprocess.run(
         [
             sys.executable, str(SCRIPT),
@@ -147,19 +170,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-positive-") as raw
     old_report = preservation.ROUTE_REPORT
     preservation.ROUTE_REPORT = report
     try:
-        stale_zero_route_record = {
-            "id": "movix",
-            "enabled": False,
-            "action": preservation.ROUTE_PROOF_DISABLE_ACTION,
-            "failed_gates": [preservation.ROUTE_PROOF_FAILED_GATE],
-            "evidence": {
-                "authority": preservation.ROUTE_PROOF_AUTHORITY,
-                "provider_id": "movix",
-                "route_proof_version": 5,
-                "proven_route_count": 0,
-                "status": "no-proven-route",
-            },
-        }
+        stale_zero_route_record = route_proof_record()
         rejected = preservation.conclusive_disablement_with_route_proof(
             legacy_fallback, stale_zero_route_record, missing=False
         )
