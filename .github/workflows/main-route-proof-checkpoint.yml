@@ -1,0 +1,55 @@
+name: MAIN - Route Proof Durable Checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-route-proof-checkpoint.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-route-proof-memory-checkpoint
+  cancel-in-progress: false
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Persist route-proof reconstruction checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          MARK='## Route-proof 96 checkpoint — 2026-09-07 run 5'
+          if ! grep -Fq "$MARK" MEMORY.md; then
+            cat >> MEMORY.md <<'EOF'
+
+## Route-proof 96 checkpoint — 2026-09-07 run 5
+
+- Accepted public generation remains **5.21.35** until a later checkpoint explicitly records a verified public 5.21.36.
+- Route-proof retry #3: workflow run `34069772096`, job `101584841681`, trigger SHA `43f1f5ae9973333d79f1dc0cd957fd384c0190d4`.
+- Retry #3 proved migrations, proof-first/zero-route tests, the **96-provider live census**, and application of the census as structured DATA. Census step ran from 00:26:05Z to 00:29:34Z.
+- Retry #3 then remained inside the combined reconstruction step from 00:29:34Z until it was intentionally superseded/cancelled. Because that step mixed materialization, projection and multiple tests, it did not identify the blocking command.
+- The reconstruction workflow is now split into bounded materialization, projection/config validation, reconstructed-runtime tests, cardinality, reverse/static/integrity, quick-yield and final HOTD stages. Commit `72c631a642d13f4e5980653a7b7a6a9e41f76f23`.
+- Purstream HOTD probe fixture metadata now explicitly declares canonical TV semantics (`mediaType/type/category = tv`) so synthetic TMDB fallback cannot misclassify TMDB 94997 as movie. Commit `e965791e597a03e8a722cf78e6a2b3fbca0a4365`.
+- Critical race fixed: route-proof workflow checkout is pinned to `${{ github.sha }}` instead of moving `main`. Commit `a55c266e7ef65e76865bc6ed1551ed493336572a`.
+- Current authoritative retry: workflow run **`34070914957`** (run #5), exact candidate SHA **`a55c266e7ef65e76865bc6ed1551ed493336572a`**.
+- Final acceptance still requires, in order: 96/96 census -> DATA apply -> 96 materialization -> projections/config -> runtime/Lego tests -> cardinality -> reverse/static/integrity -> quick-yield -> **real Purstream House of the Dragon TMDB 94997 S3E1 in both Nuvio `series` and canonical `tv` transports**.
+- Do not publish 5.21.36 unless all those gates are green and the publication uses the accepted candidate without a divergent reconstruction path.
+EOF
+          fi
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm -f .github/workflows/main-route-proof-checkpoint.yml
+          git add MEMORY.md
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m 'docs: checkpoint route-proof 96 run 5'
+          git push origin HEAD:main
