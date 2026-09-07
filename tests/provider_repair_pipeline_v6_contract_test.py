@@ -10,6 +10,7 @@ pipeline=(ROOT/'scripts/run_provider_repair_pipeline_v6.py').read_text(encoding=
 upgrade=(ROOT/'scripts/upgrade_provider_repair_v6.py').read_text(encoding='utf-8')
 upgrade_v10=(ROOT/'scripts/upgrade_provider_base_runtime_v10.py').read_text(encoding='utf-8')
 upgrade_v14=(ROOT/'scripts/upgrade_provider_search_request_plan_v14.py').read_text(encoding='utf-8')
+upgrade_v14_1=(ROOT/'scripts/upgrade_provider_search_request_plan_v14_1.py').read_text(encoding='utf-8')
 yield_audit=(ROOT/'scripts/audit_provider_repair_yield_v6.py').read_text(encoding='utf-8')
 portfolio_compare=(ROOT/'scripts/compare_quick_yield_preservation.py').read_text(encoding='utf-8')
 targeted_retry=(ROOT/'scripts/audit_provider_quick_yield_targeted.py').read_text(encoding='utf-8')
@@ -43,14 +44,16 @@ for required in (
     'scripts/upgrade_provider_source_plan_v12.py',
     'scripts/upgrade_provider_route_plan_v13_2.py',
     'scripts/upgrade_provider_search_request_plan_v14.py',
+    'scripts/upgrade_provider_search_request_plan_v14_1.py',
     'tests/provider_external_identity_route_v11_test.py',
     'tests/provider_source_plan_v12_regression_test.py',
     'tests/provider_route_plan_v13_regression_test.py',
     'tests/provider_search_request_plan_v14_contract_test.py',
+    'tests/provider_search_request_plan_v14_1_contract_test.py',
     'tests/provider_repair_merge_typed_recipe_test.py',
 ):
     assert required in pipeline, required
-assert '"routePlanRevision": "v14"' in pipeline
+assert '"routePlanRevision": "v14.1"' in pipeline
 assert 'tests/provider_repair_v6_recipe_regression_test.py' in pipeline
 assert 'scripts/audit_provider_repair_yield_v6.py' in pipeline
 assert '--require-upstream-positive-preserved' in pipeline
@@ -96,6 +99,13 @@ for marker in (
     'provider_specific_rules=0',
 ):
     assert marker in upgrade_v14, marker
+for marker in (
+    'ROUTE_RECOVERY_SEARCH_REQUEST_PLAN_V14_1',
+    'NIAKVIO_PROVIDER_SEARCH_REQUEST_PLAN_V14_1',
+    'role not in {"source", "player"}',
+    'provider_specific_rules=0',
+):
+    assert marker in upgrade_v14_1, marker
 assert 'import upgrade_provider_base_runtime_v10 as runtime_v10' in upgrade
 assert 'runtime_v10.patch()' in upgrade
 assert 'targeted = {' in yield_audit
