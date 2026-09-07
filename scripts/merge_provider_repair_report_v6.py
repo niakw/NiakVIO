@@ -2,13 +2,16 @@
 """Merge a targeted route-proof repair census with the last full 96-provider census.
 
 Already-green providers are deliberately not re-probed. Their last accepted proof
-rows are carried forward byte-for-data, while targeted rows replace only their own
-provider ids. The resulting report is a normal full proof-v5 census consumable by
-the existing deterministic applier/materializer.
+rows are carried forward, while targeted rows replace only their own provider ids.
+Before persistence, every carried/new simple API recipe passes the same typed-route
+normalizer so obsolete generic directRoute DATA cannot outrank movie/tv routes.
+The resulting report is a normal full proof-v5 census consumable by the existing
+deterministic applier/materializer.
 """
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 from collections import Counter
 from pathlib import Path
@@ -26,6 +29,30 @@ def load(path: Path) -> dict[str, Any]:
 
 def pid(row: dict[str, Any]) -> str:
     return str(row.get("providerId") or "").strip().casefold().replace("_", "-")
+
+
+def normalize_typed_api_recipe(row: dict[str, Any]) -> tuple[dict[str, Any], bool]:
+    """Remove obsolete generic direct execution when both semantic lanes exist.
+
+    A legacy directRoute is unsafe once a recipe owns explicit movieRoute and
+    episodeRoute: runtime direct-first execution can force the movie lane for TV.
+    Preserve all proof rows and typed requests; only the redundant generic route
+    and its paired request are removed. This applies equally to preserved and
+    freshly targeted providers, so skip status cannot bypass DATA safety.
+    """
+    out = copy.deepcopy(row)
+    recipe = out.get("apiRecipe")
+    if not isinstance(recipe, dict):
+        return out, False
+    if not recipe.get("movieRoute") or not recipe.get("episodeRoute"):
+        return out, False
+    if "directRoute" not in recipe and "directRequest" not in recipe:
+        return out, False
+    recipe = copy.deepcopy(recipe)
+    recipe.pop("directRoute", None)
+    recipe.pop("directRequest", None)
+    out["apiRecipe"] = recipe
+    return out, True
 
 
 def main() -> int:
@@ -47,7 +74,14 @@ def main() -> int:
     if len(rows) != 96:
         raise SystemExit(f"merged provider rows={len(rows)}, expected=96")
 
-    merged_rows = [rows[key] for key in sorted(rows)]
+    merged_rows = []
+    typed_recipe_sanitized = []
+    for key in sorted(rows):
+        normalized, changed = normalize_typed_api_recipe(rows[key])
+        merged_rows.append(normalized)
+        if changed:
+            typed_recipe_sanitized.append(key)
+
     counts = Counter(str(row.get("status") or "unknown") for row in merged_rows)
     proven = [row for row in merged_rows if row.get("routes")]
     merged = dict(baseline)
@@ -60,13 +94,15 @@ def main() -> int:
         "statusCounts": dict(sorted(counts.items())),
         "providers": merged_rows,
         "portfolioRepair": {
-            "version": 6,
+            "version": 7,
             "targetedProviderCount": len(targeted_ids),
             "targetedProviders": sorted(targeted_ids),
             "preservedProviderCount": 96 - len(targeted_ids),
             "preservedProvidersNotReprobed": sorted(set(rows) - targeted_ids),
             "targetedDurationMs": int(targeted.get("durationMs") or 0),
             "proofMethod": targeted.get("method"),
+            "typedRecipeDirectRouteSanitizedCount": len(typed_recipe_sanitized),
+            "typedRecipeDirectRouteSanitizedProviders": typed_recipe_sanitized,
         },
     })
     out = ROOT / args.output
@@ -75,7 +111,8 @@ def main() -> int:
     print(
         "PROVIDER_REPAIR_REPORT_V6_MERGED "
         f"targeted={len(targeted_ids)} preserved={96-len(targeted_ids)} "
-        f"proven={merged['providersWithProvenRoutes']} routes={merged['provenRouteCount']} recipes={merged['simpleApiRecipeCount']}"
+        f"proven={merged['providersWithProvenRoutes']} routes={merged['provenRouteCount']} "
+        f"recipes={merged['simpleApiRecipeCount']} typed_direct_sanitized={len(typed_recipe_sanitized)}"
     )
     return 0
 
