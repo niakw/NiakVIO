@@ -1,0 +1,121 @@
+name: TEMP - PapaDuStream V11 Proof
+
+on:
+  push:
+    branches: [workbench/route-recognition-v6]
+    paths:
+      - '.github/triggers/papadustream-v11-proof.json'
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+      NIAKVIO_QUICK_YIELD_WORKERS: 2
+      NIAKVIO_QUICK_YIELD_TIMEOUT: 55
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply canonical migrations through external identity V11
+        run: |
+          set -euo pipefail
+          python scripts/prepatch_identity_cleanup_shared_owner_v1.py
+          python scripts/apply_core_identity_ownership_cleanup.py
+          python scripts/upgrade_provider_worker_route_proof_v1.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_base_route_requests_v1.py
+          python scripts/upgrade_provider_route_authority_v5.py
+          python scripts/upgrade_route_recovery_request_specs_v1.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_repair_v6.py
+          python scripts/upgrade_provider_repair_v7.py
+          python scripts/upgrade_provider_repair_v8.py
+          python scripts/upgrade_provider_text_body_request_v9.py
+          python scripts/upgrade_provider_text_body_request_v9_1.py
+          python scripts/upgrade_provider_source_plan_v10.py
+          python scripts/upgrade_provider_external_identity_route_v11.py
+          python scripts/upgrade_provider_route_retry_v1.py
+          python scripts/upgrade_provider_base_runtime_v11.py
+          node --check scripts/provider_worker.cjs
+          python tests/provider_source_plan_v10_regression_test.py
+          python tests/provider_external_identity_route_v11_test.py
+      - name: Recover PapaDuStream original and assert external identity DATA
+        run: |
+          set -euo pipefail
+          python scripts/recover_provider_routes_from_upstreams.py \
+            --workers 1 --timeout 55 --attempts 3 \
+            --provider papadustream \
+            --out automation/papadustream-v11-recovery.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          row=json.loads(Path('automation/papadustream-v11-recovery.json').read_text())['providers'][0]
+          routes=row.get('routes') or []
+          print('PAPADUSTREAM_V11_RECOVERY', 'routes='+str(routes))
+          if '/series/{imdbId}' not in routes:
+              raise SystemExit('missing proof-backed /series/{imdbId}')
+          literals=[route for route in routes if '/series/tt' in route]
+          if literals:
+              raise SystemExit('fixture-specific IMDb literal remained: '+','.join(literals))
+          PY
+      - name: Apply DATA materialize PapaDuStream only and audit yield
+        run: |
+          set -euo pipefail
+          python scripts/merge_provider_repair_report_v6.py \
+            --baseline automation/provider-route-recovery-v5.json \
+            --targeted automation/papadustream-v11-recovery.json \
+            --output automation/papadustream-v11-merged.json
+          python scripts/apply_provider_route_recovery_report.py automation/papadustream-v11-merged.json
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_one.py papadustream
+          python scripts/validate_published_provider_config.py --expected 96
+          python scripts/audit_provider_repair_yield_v6.py \
+            --recovery automation/papadustream-v11-recovery.json \
+            --skip-file automation/provider-repair-skip.json \
+            --output automation/papadustream-v11-yield.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('automation/papadustream-v11-yield.json').read_text())
+          print('PAPADUSTREAM_V11_YIELD',
+                'raw='+str(report.get('rawProviderCount')),
+                'playable='+str(report.get('playableProviderCount')),
+                'verified='+str(report.get('verifiedProviderCount')),
+                'preserved='+str(report.get('preservedUpstreamPositivePairs')),
+                'lost='+str(report.get('lostUpstreamPositivePairs')))
+          for row in report.get('rows') or []:
+              fetches=[f for f in row.get('debug_fetches') or [] if 'themoviedb.org' not in str(f.get('url') or '')]
+              print('PAPADUSTREAM_V11_ROW', row['semantic_type'], row['status'], row['debug_stage'], 'raw='+str(row['raw']), 'playable='+str(row['playable']))
+              for f in fetches[:12]: print('PAPADUSTREAM_V11_FETCH', row['semantic_type'], f.get('status'), f.get('url'))
+          PY
+      - name: Upload proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: papadustream-v11-proof-${{ github.run_id }}
+          path: |
+            automation/papadustream-v11-recovery.json
+            automation/papadustream-v11-yield.json
+            automation/papadustream-v11-merged.json
+            manifest.json
+            provider-overrides.json
+          retention-days: 7
+          if-no-files-found: warn
