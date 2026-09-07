@@ -22,36 +22,30 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: true
-      - name: Persist route-proof reconstruction checkpoint
+      - name: Persist TV runtime regression checkpoint
         shell: bash
         run: |
           set -euo pipefail
-          MARK='## Route-proof 96 checkpoint — 2026-09-07 run 5'
+          MARK='## TV runtime regression checkpoint — 2026-09-07'
           if ! grep -Fq "$MARK" MEMORY.md; then
             cat >> MEMORY.md <<'EOF'
 
-## Route-proof 96 checkpoint — 2026-09-07 run 5
+## TV runtime regression checkpoint — 2026-09-07
 
-- Accepted public generation remains **5.21.35** until a later checkpoint explicitly records a verified public 5.21.36.
-- Route-proof retry #3: workflow run `34069772096`, job `101584841681`, trigger SHA `43f1f5ae9973333d79f1dc0cd957fd384c0190d4`.
-- Retry #3 proved migrations, proof-first/zero-route tests, the **96-provider live census**, and application of the census as structured DATA. Census step ran from 00:26:05Z to 00:29:34Z.
-- Exact successful retry #3 census: providers=96; historical-upstream mapped=91; NiakVIO-native=5; providers with at least one reusable proven HTTP route=46; proven routes=299; simple API recipes=23; no-proven-route providers=50. All 96 remained in the catalogue.
-- Retry #3 then remained inside the combined reconstruction step from 00:29:34Z until it was intentionally superseded/cancelled. Its artifact proves materialization reached providerCount=96, context=workspace, publication=false, mainTouched=false; quick-yield and HOTD had not run yet.
-- The reconstruction workflow is now split into bounded materialization, projection/config validation, reconstructed-runtime tests, cardinality, reverse/static/integrity, quick-yield and final HOTD stages. Commit `72c631a642d13f4e5980653a7b7a6a9e41f76f23`.
-- Purstream HOTD probe fixture metadata now explicitly declares canonical TV semantics (`mediaType/type/category = tv`) so synthetic TMDB fallback cannot misclassify TMDB 94997 as movie. Commit `e965791e597a03e8a722cf78e6a2b3fbca0a4365`.
-- Critical race fixed: route-proof workflow checkout is pinned to `${{ github.sha }}` instead of moving `main`. Commit `a55c266e7ef65e76865bc6ed1551ed493336572a`.
-- Current authoritative retry: workflow run **`34070914957`** (run #5), exact candidate SHA **`a55c266e7ef65e76865bc6ed1551ed493336572a`**.
-- Final acceptance still requires, in order: 96/96 census -> DATA apply -> 96 materialization -> projections/config -> runtime/Lego tests -> cardinality -> reverse/static/integrity -> quick-yield -> **real Purstream House of the Dragon TMDB 94997 S3E1 in both Nuvio `series` and canonical `tv` transports**.
-- Do not publish 5.21.36 unless all those gates are green and the publication uses the accepted candidate without a divergent reconstruction path.
+- User refreshed the current NiakVIO plugin on NuvioTV during route-proof work. Concrete native observation: Interstellar now returns streams from multiple providers; series/anime also return streams for some providers, but results can arrive much later after navigating away and appear to stack across works.
+- This means series/anime are not globally broken. A major remaining systemic problem is stale provider work that keeps consuming the QuickJS/native fetch bridge after the user changes work.
+- `CORE.MEDIA_TYPE_RESOLUTION.V1` currently has `requestSerial/requestToken` latest-result gating, but its `budgetedFetch()` is not bound to the invocation token. Superseded invocations can continue network/crawl work; because `global.fetch` is replaced by a later invocation wrapper, an older invocation may even execute later fetches under the newer request budget. Fix must be global/Core, never provider-specific.
+- Required cancellation invariant: every provider invocation owns a request token; every wrapped fetch checks ownership before network and immediately after network; starting a newer invocation aborts the prior in-flight controller when supported; on runtimes where native bridge cancellation is not actually possible, the old in-flight call may finish but MUST NOT start any subsequent search/detail/player/crawl work or return output.
+- Current platform contract says QuickJS clients expose AbortController/AbortSignal polyfills, but lifecycle teardown across already-entered native fetch remains not universally guaranteed. Therefore token gating remains mandatory even when abort is attempted.
+- Native TV also exposed `Purstream - Inconnue` and `StreamZo - Inconnue`. Correct policy is NOT to discard quality blindly. `CORE.STREAM_FACTS`/`CORE.STREAM_PRESENTATION` must first recover a real quality from provider facts (`quality`, title/name/description, resolution/height, URL/manifest-derived facts). Only when no real quality can be recovered may the placeholder field (`Unknown`, `Inconnu`, `Inconnue`, `N/A`, null, etc.) be removed before terminal branding. Preserve real qualities such as 2160p/1080p/720p.
+- Route-proof run #5 `34070914957`, job `101588047149`, materially progressed: migrations/proof-first tests/census/DATA apply/materialization reached green; candidate materialization was 96/96. The first failing post-materialization stage was prune/projection because `scripts/prune_unreferenced_providers.py` performs repeated per-file `git log --follow` calls while bootstrapping retention order and exceeded the bounded stage timeout. This is CI/tooling performance debt, not a provider runtime failure.
+- Prune must be fixed by a batched Git-history scan/cache (single/bounded Git history traversal), preserving the rolling 10-generation retention semantics and all current/LKG/provenance/security protections; do not merely raise timeout.
+- Final acceptance still requires rerun 96/96 -> reverse/static/integrity -> quick-yield -> real Purstream House of the Dragon TMDB 94997 S3E1 in both `series` and `tv`, plus the native-facing cancellation and quality regressions fixed.
 EOF
           fi
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git rm -f .github/workflows/main-route-proof-checkpoint.yml
           git add MEMORY.md
-          if git diff --cached --quiet; then
-            exit 0
-          fi
-          git commit -m 'docs: checkpoint route-proof 96 run 5'
+          git commit -m 'docs: checkpoint TV cancellation and quality regression'
           git push origin HEAD:main
-# trigger-existing-workflow: 1
