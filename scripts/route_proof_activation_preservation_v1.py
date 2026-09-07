@@ -32,6 +32,19 @@ def _cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
+def _strict_int(value: object) -> int | None:
+    """Parse an explicit integer without treating numeric zero as missing."""
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        text = str(value).strip()
+        if not text:
+            return None
+        return int(text)
+    except (TypeError, ValueError):
+        return None
+
+
 def _load_route_report() -> dict[str, Any] | None:
     if not ROUTE_REPORT.is_file():
         return None
@@ -44,7 +57,7 @@ def _load_route_report() -> dict[str, Any] | None:
 
 def _proof_row(provider_id: str) -> dict[str, Any] | None:
     report = _load_route_report()
-    if not isinstance(report, dict) or int(report.get("schemaVersion") or 0) != 5:
+    if not isinstance(report, dict) or _strict_int(report.get("schemaVersion")) != 5:
         return None
     for row in report.get("providers") or []:
         if isinstance(row, dict) and _cid(row.get("providerId")) == provider_id:
@@ -73,9 +86,12 @@ def conclusive_disablement_with_route_proof(
     provider_id = _cid(record.get("id") or evidence.get("provider_id"))
     if not provider_id:
         return False, "route_proof_disable_missing_provider_id"
-    if int(evidence.get("route_proof_version") or 0) != 5:
+    if _strict_int(evidence.get("route_proof_version")) != 5:
         return False, "route_proof_disable_wrong_proof_version"
-    if int(evidence.get("proven_route_count") or -1) != 0:
+    evidence_routes = _strict_int(evidence.get("proven_route_count"))
+    if evidence_routes is None:
+        return False, "route_proof_disable_invalid_evidence_routes"
+    if evidence_routes != 0:
         return False, "route_proof_disable_nonzero_evidence_routes"
     if str(evidence.get("authority") or "") != ROUTE_PROOF_AUTHORITY:
         return False, "route_proof_disable_wrong_authority"
