@@ -21,7 +21,17 @@ TARGET = ROOT / "scripts" / "provider_base_store.py"
 MARKER = "NIAKVIO_PROVIDER_BASE_STREAM_CONTAINERS_V12"
 
 
-def once(text: str, old: str, new: str, label: str) -> str:
+def replace_block(text: str, start: str, end: str, replacement: str, label: str) -> str:
+    start_at = text.find(start)
+    if start_at < 0:
+        raise AssertionError(f"{label}: start anchor missing")
+    end_at = text.find(end, start_at + len(start))
+    if end_at < 0:
+        raise AssertionError(f"{label}: end anchor missing")
+    return text[:start_at] + replacement + text[end_at:]
+
+
+def replace_once(text: str, old: str, new: str, label: str) -> str:
     count = text.count(old)
     if count != 1:
         raise AssertionError(f"{label}: expected one anchor, got {count}")
@@ -34,26 +44,6 @@ def patch() -> bool:
         validate(text)
         return False
 
-    old_source = '''function _sourceUrls(value, base, out) {
-  out = out || [];
-  if (Array.isArray(value)) {
-    for (const child of value) _sourceUrls(child, base, out);
-    return out;
-  }
-  if (!value || typeof value !== "object") return out;
-  for (const [key, child] of Object.entries(value)) {
-    if (typeof child === "string" && /^(?:src|url|file|stream|stream_url|streamUrl|source|source_url|sourceUrl)$/i.test(key)) {
-      const absolute = _absolute(child, base);
-      if (absolute && /^https?:/i.test(absolute) &&
-          !/\\.(?:jpe?g|png|gif|webp|svg|avif)(?:[?#]|$)/i.test(absolute)) {
-        out.push(absolute);
-      }
-    }
-    if (child && typeof child === "object") _sourceUrls(child, base, out);
-  }
-  return out;
-}
-'''
     new_source = '''/* NIAKVIO_PROVIDER_BASE_STREAM_CONTAINERS_V12 */
 function _sourceUrls(value, base, out, streamContainer) {
   out = out || [];
@@ -87,15 +77,22 @@ function _sourceUrls(value, base, out, streamContainer) {
   return out;
 }
 '''
-    text = once(text, old_source, new_source, "source-url-stream-containers")
+    text = replace_block(
+        text,
+        "function _sourceUrls(value, base, out) {",
+        "function _rewriteOutputUrl(raw) {",
+        new_source,
+        "source-url-stream-containers",
+    )
 
-    playback_anchor = '''function _recipeSourceUrls(value, base, recipe) {
-  const urls = _sourceUrls(value, base);
-  if (!recipe || !recipe.directSourcesOnly) return urls;
-  return urls.filter(_directMedia);
-}
-'''
-    playback_helper = playback_anchor + '''function _recipePlaybackContext(recipe, requestSpec, base) {
+    source_helper_start = "function _recipeSourceUrls(value, base, recipe) {"
+    source_helper_end = "function _recipeUrl(pattern, values, base) {"
+    start_at = text.find(source_helper_start)
+    end_at = text.find(source_helper_end, start_at + len(source_helper_start)) if start_at >= 0 else -1
+    if start_at < 0 or end_at < 0:
+        raise AssertionError("resolver-playback-context-helper: anchors missing")
+    existing_source_helper = text[start_at:end_at]
+    playback_helper = existing_source_helper + '''function _recipePlaybackContext(recipe, requestSpec, base) {
   const raw = requestSpec && requestSpec.headers && typeof requestSpec.headers === "object"
     ? requestSpec.headers
     : {};
@@ -123,47 +120,26 @@ function _sourceUrls(value, base, out, streamContainer) {
   return { referer, headers };
 }
 '''
-    text = once(text, playback_anchor, playback_helper, "resolver-playback-context-helper")
+    text = text[:start_at] + playback_helper + text[end_at:]
 
-    old_resolve = '''        const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";
-        const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, requestKey, values), values);
-        if (typeof payload.value === "string") {
-          const urls = _extractUrls(payload.value, payload.base).filter(_directMedia);
-          if (urls.length) return _streams(
-            urls,
-            recipe.referer || base,
-            Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
-          );
-        } else {
-          const urls = _recipeSourceUrls(payload.value, payload.base, recipe);
-          if (urls.length) return _streams(
-            urls,
-            recipe.referer || base,
-            Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})
-          );
-        }
-'''
-    new_resolve = '''        const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";
-        const requestSpec = _recipeRequestSpec(recipe, requestKey, values);
-        const payload = await _recipePayload(url, recipe, requestSpec, values);
-        const playback = _recipePlaybackContext(recipe, requestSpec, base);
-        if (typeof payload.value === "string") {
-          const urls = _extractUrls(payload.value, payload.base).filter(_directMedia);
-          if (urls.length) return _streams(
-            urls,
-            playback.referer,
-            playback.headers
-          );
-        } else {
-          const urls = _recipeSourceUrls(payload.value, payload.base, recipe);
-          if (urls.length) return _streams(
-            urls,
-            playback.referer,
-            playback.headers
-          );
-        }
-'''
-    text = once(text, old_resolve, new_resolve, "typed-route-playback-context")
+    resolve_start = text.find("async function resolveRoute(baseList) {")
+    resolve_end = text.find("const routeBases = _uniq([providerMatch.base, ...bases]);", resolve_start)
+    if resolve_start < 0 or resolve_end < 0:
+        raise AssertionError("typed-route-playback-context: resolveRoute anchors missing")
+    segment = text[resolve_start:resolve_end]
+    segment = replace_once(
+        segment,
+        'const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";\n      const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, requestKey, values), values);',
+        'const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";\n      const requestSpec = _recipeRequestSpec(recipe, requestKey, values);\n      const payload = await _recipePayload(url, recipe, requestSpec, values);\n      const playback = _recipePlaybackContext(recipe, requestSpec, base);',
+        "typed-route-request-playback-context",
+    )
+    old_stream_context = '''recipe.referer || base,
+          Object.assign({}, recipe.playbackHeaders || {}, recipe.origin ? { Origin: recipe.origin } : {})'''
+    count = segment.count(old_stream_context)
+    if count != 2:
+        raise AssertionError(f"typed-route-stream-context: expected 2 anchors, got {count}")
+    segment = segment.replace(old_stream_context, "playback.referer,\n          playback.headers")
+    text = text[:resolve_start] + segment + text[resolve_end:]
 
     TARGET.write_text(text, encoding="utf-8")
     validate(text)
