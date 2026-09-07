@@ -1,0 +1,139 @@
+name: TEMP - Green preservation V11
+
+on:
+  push:
+    branches: [workbench/route-recognition-v6]
+    paths:
+      - '.github/triggers/green-preservation-v11.json'
+
+permissions:
+  contents: read
+
+env:
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NUVIO_PROVIDER_V3_CONTEXT: workspace
+  NIAKVIO_QUICK_YIELD_TIMEOUT: '55'
+
+jobs:
+  preserve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply canonical common migrations
+        run: |
+          set -euo pipefail
+          python scripts/prepatch_identity_cleanup_shared_owner_v1.py
+          python scripts/apply_core_identity_ownership_cleanup.py
+          python scripts/upgrade_provider_worker_route_proof_v1.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_base_route_requests_v1.py
+          python scripts/upgrade_provider_route_authority_v5.py
+          python scripts/upgrade_route_recovery_request_specs_v1.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_repair_v6.py
+          python scripts/upgrade_provider_repair_v7.py
+          python scripts/upgrade_provider_route_retry_v1.py
+          python scripts/upgrade_provider_base_runtime_v11.py
+          node --check scripts/provider_worker.cjs
+          python tests/provider_repair_v6_recipe_regression_test.py
+          python tests/provider_repair_v7_typed_resolver_test.py
+      - name: Rebuild common runtime without route recognition
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_stream_output_guard_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+      - name: Live preservation smoke for accepted green set
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import concurrent.futures
+          import json
+          import sys
+          from collections import defaultdict
+          from pathlib import Path
+
+          ROOT = Path.cwd()
+          sys.path.insert(0, str(ROOT / 'scripts'))
+          import audit_provider_quick_yield as q
+
+          expected = {
+              'allwish': {'playable': True, 'verified': True},
+              'anime-sama': {'playable': True, 'verified': True},
+              'castle': {'playable': True, 'verified': True},
+              'hindmoviez': {'playable': True, 'verified': True},
+              'kehflix': {'playable': True, 'verified': True},
+              'neko-sama': {'playable': True, 'verified': False},
+              'streamzo': {'playable': True, 'verified': True},
+              'videasy': {'playable': True, 'verified': True},
+              'wookafr': {'playable': True, 'verified': True},
+          }
+          tasks, _ = q.build_tasks()
+          tasks = [t for t in tasks if t['provider_id'] in expected]
+          rows = []
+          with concurrent.futures.ThreadPoolExecutor(max_workers=9) as pool:
+              futures = [pool.submit(q.run, task) for task in tasks]
+              for future in concurrent.futures.as_completed(futures):
+                  rows.append(future.result())
+
+          by = defaultdict(list)
+          for row in rows:
+              by[row['provider_id']].append(row)
+
+          failures = []
+          summary = {}
+          for pid, contract in expected.items():
+              vals = by.get(pid, [])
+              raw = any(int(v.get('raw') or 0) > 0 for v in vals)
+              playable = any(int(v.get('playable') or 0) > 0 for v in vals)
+              verified = any(int(v.get('verified') or 0) > 0 for v in vals)
+              summary[pid] = {
+                  'raw': raw,
+                  'playable': playable,
+                  'verified': verified,
+                  'statuses': sorted({str(v.get('status')) for v in vals}),
+                  'stages': sorted({str(v.get('debug_stage')) for v in vals}),
+              }
+              if not raw or (contract['playable'] and not playable):
+                  failures.append(f'{pid}:playable')
+              if contract['verified'] and not verified:
+                  failures.append(f'{pid}:verified')
+
+          Path('automation/green-preservation-v11.json').write_text(
+              json.dumps({'schemaVersion': 1, 'providers': summary, 'failures': failures}, indent=2) + '\n'
+          )
+          print('GREEN_PRESERVATION_V11 providers=9 failures=%d' % len(failures))
+          for pid, state in sorted(summary.items()):
+              print('GREEN_PRESERVATION_PROVIDER provider=%s raw=%s playable=%s verified=%s statuses=%s' % (
+                  pid, str(state['raw']).lower(), str(state['playable']).lower(),
+                  str(state['verified']).lower(), ','.join(state['statuses'])))
+          if failures:
+              raise SystemExit('green preservation failures: ' + ','.join(failures))
+          PY
+      - name: Upload preservation proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: green-preservation-v11-${{ github.run_id }}
+          path: automation/green-preservation-v11.json
+          retention-days: 7
