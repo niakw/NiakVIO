@@ -124,6 +124,7 @@ def main() -> int:
     for test in (
         "tests/provider_route_proof_authority_test.py",
         "tests/provider_repair_v6_recipe_regression_test.py",
+        "tests/provider_repair_merge_typed_recipe_test.py",
         "tests/provider_repair_v7_typed_resolver_test.py",
         "tests/provider_repair_v8_partial_typed_resolver_test.py",
         "tests/provider_text_body_request_v9_test.py",
