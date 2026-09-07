@@ -1,25 +1,24 @@
 name: "SEC - CodeQL"
 
-# CodeQL volontairement absent des événements "push".
+# Advanced CodeQL configuration for NiakVIO.
 #
-# Objectif :
-# - ne pas lancer CodeQL à chaque commit/push de ChatGPT ;
-# - analyser les PR vers main ;
-# - conserver un audit complet hebdomadaire ;
-# - permettre un lancement manuel ;
-# - ne jamais empiler plusieurs analyses CodeQL.
+# Deliberately no "push" trigger: rapid commits on main must not spawn CodeQL
+# runs that compete with runtime/publication workflows. Pull requests are scanned,
+# a full audit is kept weekly, and maintainers can launch a scan manually.
 #
-# Advanced Setup est l'unique configuration CodeQL attendue.
-# GitHub CodeQL "Default setup" doit être désactivé.
+# IMPORTANT: GitHub CodeQL Default Setup must be disabled in repository settings.
+# Default Setup overrides Advanced Setup and blocks uploads from this workflow.
 
 on:
   pull_request:
     branches:
       - main
     paths:
-      # GitHub Actions
+      # GitHub Actions / security configuration
       - ".github/workflows/**"
       - ".github/actions/**"
+      - ".github/dependabot.yml"
+      - ".github/codeql/**"
 
       # JavaScript / TypeScript
       - "**/*.js"
@@ -32,7 +31,7 @@ on:
       # Python
       - "**/*.py"
 
-      # Dépendances / configuration
+      # Dependency manifests / lockfiles
       - "package.json"
       - "package-lock.json"
       - "npm-shrinkwrap.json"
@@ -42,21 +41,14 @@ on:
       - "Pipfile"
       - "Pipfile.lock"
 
-      # Configuration CodeQL
-      - ".github/codeql/**"
-
-  # Audit complet une fois par semaine.
-  # Samedi à 18:42 UTC.
   schedule:
+    # Weekly security audit, Saturday 18:42 UTC.
     - cron: "42 18 * * 6"
 
-  # Lancement manuel disponible dans GitHub Actions.
   workflow_dispatch:
 
-# Un seul CodeQL peut exister à la fois pour le dépôt.
-#
-# Si ChatGPT pousse plusieurs corrections rapidement dans une PR,
-# le run précédent est annulé et seul le dernier commit est analysé.
+# One CodeQL workflow run at a time for the entire repository. A newer PR/manual/
+# scheduled run supersedes an older one instead of building a queue.
 concurrency:
   group: niakvio-codeql
   cancel-in-progress: true
@@ -71,52 +63,33 @@ jobs:
   analyze:
     name: "CodeQL · ${{ matrix.language }}"
     runs-on: ubuntu-latest
-
-    # Évite qu'un CodeQL problématique monopolise inutilement un runner.
     timeout-minutes: 45
 
     strategy:
-      # Une erreur Python ne doit pas interrompre JS/Actions, et inversement.
       fail-fast: false
-
       matrix:
         include:
           - language: actions
             build-mode: none
-
           - language: javascript-typescript
             build-mode: none
-
           - language: python
             build-mode: none
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v4
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
         with:
           languages: ${{ matrix.language }}
           build-mode: ${{ matrix.build-mode }}
-
-          # Plus complet que les requêtes par défaut.
-          # Comme CodeQL ne tourne plus à chaque push, le coût supplémentaire
-          # reste raisonnable.
           queries: security-extended
 
-      # Conservé pour permettre ultérieurement l'ajout d'un langage compilé
-      # utilisant build-mode: manual.
-      - name: Run manual build
-        if: matrix.build-mode == 'manual'
-        shell: bash
-        run: |
-          echo "No manual CodeQL build is currently configured."
-          exit 1
-
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v4
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
         with:
           category: "/language:${{ matrix.language }}"
