@@ -1,0 +1,32 @@
+name: MAIN - Purstream HOTD Final Memory
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-memory-purstream-hotd-final.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Persist Purstream HOTD final-proof requirement
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -c "import base64; from pathlib import Path; p=Path('MEMORY.md'); t=p.read_text(encoding='utf-8'); marker='## 2026-09-07 — Purstream HOTD S3E1 final proof requirement'; b=base64.b64decode('CiMjIDIwMjYtMDktMDcg4oCUIFB1cnN0cmVhbSBIT1REIFMzRTEgZmluYWwgcHJvb2YgcmVxdWlyZW1lbnQKCi0gVXNlciBleHBsaWNpdGx5IHJlcXVpcmVzIGEgZmluYWwgKipyZWFsIFB1cnN0cmVhbSDihpIgSG91c2Ugb2YgdGhlIERyYWdvbiBTM0UxKiogcHJvb2YgYWZ0ZXIgdGhlIDk2Lzk2IHJvdXRlLXByb29mIHJlY29uc3RydWN0aW9uL2F1ZGl0LiBJdCBtdXN0IG5vdCBiZSBzYXRpc2ZpZWQgYnkgdGhlIHN5bnRoZXRpYyBlbmdpbmUgc21va2UgYWxvbmUuCi0gVGhlIGZpbmFsIFB1cnN0cmVhbSB0ZXN0IG11c3QgZXhlcmNpc2UgdGhlIHJlYWwgcHJvdmlkZXIvbmV0d29yayBwYXRoIGZvciBIT1REIFMzRTEsIHZlcmlmeSBgdHZgcC9gc2VyaWVzYCB0cmFuc3BvcnQgYW5kIHNlYXNvbj0zL2VwaXNvZGU9MSwgYW5kIHByb3ZlIHRoYXQgdGhlIHByb3ZpZGVyLXNpZGUgMjAyNiBzZWFzb24geWVhciBpcyBub3QgcmVqZWN0ZWQgYWdhaW5zdCBUTURCIHNlcmllcyBvcmlnaW4gMjAyMi4KLSBEbyBub3QgY29uc2lkZXIgdGhlIG5leHQgcmVsZWFzZSBwdWJsaXNoYWJsZSB1bnRpbCB0aGlzIFB1cnN0cmVhbSBIT1REIFMzRTEgY2hlY2sgaXMgZ3JlZW4gb3IgaXMgcHJlY2lzZWx5IGNsYXNzaWZpZWQgYXMgdGhlIHJlbWFpbmluZyByZWFsLXdvcmxkIGJsb2NrZXIgd2l0aCBldmlkZW5jZS4K').decode('utf-8'); p.write_text(t.rstrip()+('\\n\\n'+b.strip()+'\\n' if marker not in t else '\\n'),encoding='utf-8')"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add MEMORY.md
+          git commit -m 'docs: checkpoint Purstream HOTD S3E1 final proof' || true
+          rm -f .github/workflows/main-memory-purstream-hotd-final.yml
+          git add -A
+          git commit -m 'ci: remove Purstream HOTD memory workflow' || true
+          git push origin HEAD:main
