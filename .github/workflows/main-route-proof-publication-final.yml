@@ -1,0 +1,251 @@
+name: MAIN - Route Proof Publication Final
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/route-proof-publication-final.json'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: niakvio-main-route-proof-publication-final
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate exact source and successful proof run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, pathlib, subprocess
+          t=json.load(open('.github/triggers/route-proof-publication-final.json'))
+          assert t.get('runId')==34096200193, t
+          assert t.get('sourceSha')=='8173adc4db674189ccc3169fe9ffe90043790d21', t
+          assert t.get('targetVersion')=='5.21.36', t
+          source=t['sourceSha']
+          head=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()
+          subprocess.run(['git','merge-base','--is-ancestor',source,head],check=True)
+          allowed={
+              '.github/workflows/main-route-proof-artifact-publication.yml',
+              '.github/triggers/route-proof-publication.json',
+              '.github/workflows/main-route-proof-publication-final.yml',
+              '.github/triggers/route-proof-publication-final.json',
+              'MEMORY.md',
+          }
+          changed=set(subprocess.check_output(['git','diff','--name-only',source+'..'+head],text=True).splitlines())
+          unexpected=sorted(changed-allowed)
+          if unexpected: raise SystemExit('candidate source drift: '+','.join(unexpected))
+          pathlib.Path('/tmp/route-proof-run-id').write_text(str(t['runId']))
+          pathlib.Path('/tmp/route-proof-source-sha').write_text(source)
+          print(f'FINAL_PUBLICATION_SOURCE_OK source={source} head={head} drift={sorted(changed)}')
+          PY
+          RUN_ID="$(cat /tmp/route-proof-run-id)"
+          SOURCE_SHA="$(cat /tmp/route-proof-source-sha)"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" > "$RUNNER_TEMP/route-proof-run.json"
+          python3 - "$SOURCE_SHA" "$RUNNER_TEMP/route-proof-run.json" <<'PY'
+          import json,sys
+          run=json.load(open(sys.argv[2]))
+          assert run.get('conclusion')=='success', run.get('conclusion')
+          assert run.get('head_sha')==sys.argv[1], (run.get('head_sha'),sys.argv[1])
+          assert run.get('name')=='MAIN - Route Proof Reconstruction 96', run.get('name')
+          print(f"FINAL_PUBLICATION_RUN_OK run={run['id']} sha={run['head_sha']}")
+          PY
+
+      - name: Download exact validated candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          RUN_ID="$(cat /tmp/route-proof-run-id)"
+          mkdir -p "$RUNNER_TEMP/candidate"
+          gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --name "route-proof-reconstruction-96-${RUN_ID}" --dir "$RUNNER_TEMP/candidate"
+          cp manifest.json "$RUNNER_TEMP/manifest.before.json"
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          c=Path(os.environ['RUNNER_TEMP'])/'candidate'
+          m=json.load(open(c/'manifest.json')); mat=json.load(open(c/'provider-v3-materialization.json')); live=json.load(open(c/'automation/hotd-s3e1-live.json'))
+          assert m.get('version')=='5.21.35' and len(m.get('scrapers') or [])==96
+          assert mat.get('providerCount')==96 and mat.get('publication') is False
+          acc=live.get('acceptance') or {}
+          assert acc.get('kehflixOk') is True
+          print('FINAL_PUBLICATION_CANDIDATE_OK providers=96 kehflix=ok purstream='+('ok' if acc.get('purstreamOk') else 'diagnostic_not_ok'))
+          PY
+
+      - name: Apply deterministic source migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/prepatch_identity_cleanup_shared_owner_v1.py
+          python scripts/apply_core_identity_ownership_cleanup.py
+          python scripts/upgrade_provider_worker_route_proof_v1.py
+          python scripts/upgrade_provider_route_proof_request_spec_v1.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_base_route_requests_v1.py
+          python scripts/upgrade_provider_route_authority_v5.py
+          python scripts/upgrade_route_recovery_request_specs_v1.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          node --check scripts/provider_worker.cjs
+          python scripts/provider_base_store.py validate
+
+      - name: Overlay exact candidate bytes and DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          C="$RUNNER_TEMP/candidate"
+          rsync -a --delete "$C/providers/" providers/
+          cp "$C/manifest.json" manifest.json
+          cp "$C/provider-overrides.json" provider-overrides.json
+          cp "$C/automation/provider-v3-static-knowledge.json" automation/provider-v3-static-knowledge.json
+          cp "$C/automation/provider-route-recovery-v5.json" automation/provider-route-recovery-v5.json
+          cp "$C/provider-v3-materialization.json" provider-v3-materialization.json
+          cp "$C/provider-v3-quick-yield.json" provider-v3-quick-yield.json
+          cp "$C/automation/hotd-s3e1-live.json" automation/hotd-s3e1-live.json
+          cp "$C/health-report.json" health-report.json
+
+      - name: Project workspace filenames to exact public source-qualified paths
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, re
+          from pathlib import Path
+          root=Path('.')
+          before=json.load(open(Path(os.environ['RUNNER_TEMP'])/'manifest.before.json'))
+          current=json.load(open('manifest.json'))
+          material=json.load(open('provider-v3-materialization.json'))
+          old={str(r.get('id') or '').casefold():r for r in before.get('scrapers',[]) if isinstance(r,dict)}
+          reports={str(r.get('provider') or '').casefold():r for r in material.get('providers',[]) if isinstance(r,dict)}
+          projected=0
+          for row in current.get('scrapers',[]):
+              pid=str(row.get('id') or '').casefold()
+              prev=old.get(pid); rep=reports.get(pid)
+              if not prev or not rep: raise SystemExit(f'{pid}: missing previous/report row')
+              old_name=Path(str(prev.get('filename') or '')).name
+              match=re.fullmatch(re.escape(pid)+r'--(.+)--[0-9a-f]{16}\.js', old_name)
+              if not match: raise SystemExit(f'{pid}: previous public filename is not source-qualified: {old_name}')
+              source=match.group(1)
+              src=root/str(row.get('filename') or '')
+              if not src.is_file(): raise SystemExit(f'{pid}: workspace artifact missing: {src}')
+              digest=hashlib.sha256(src.read_bytes()).hexdigest()
+              target=root/'providers'/f'{pid}--{source}--{digest[:16]}.js'
+              if target != src:
+                  src.replace(target)
+              rel=target.as_posix()
+              row['filename']=rel
+              rep['file']=rel
+              rep['sha256']=digest
+              projected+=1
+          material['context']='main'
+          material['publication']=True
+          material['mainTouched']=True
+          Path('manifest.json').write_text(json.dumps(current,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          Path('provider-v3-materialization.json').write_text(json.dumps(material,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          print(f'PUBLIC_FILENAME_PROJECTION_OK providers={projected} bytes_unchanged=true')
+          PY
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py --expected 96
+
+      - name: Synchronize 5.21.36 client-visible versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/sync_release_versions.py --previous "$RUNNER_TEMP/manifest.before.json"
+          python3 - <<'PY'
+          import json
+          m=json.load(open('manifest.json'))
+          assert m.get('version')=='5.21.36', m.get('version')
+          assert len(m.get('scrapers') or [])==96
+          print('FINAL_VERSION_SYNC_OK version=5.21.36 providers=96')
+          PY
+
+      - name: Final publication proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/final_published_provider_config_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_identity_policy_ownership_test.py
+          python tests/episodic_identity_runtime_test.py
+          python tests/episodic_year_identity_regression_test.py
+          python tests/global_stream_output_guard_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/native_hls_integrity_budget_test.py
+          python tests/native_provider_loading_compat_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/native_dual_id_identity_test.py
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          python scripts/audit_provider_v3_static.py
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          python3 - <<'PY'
+          import json
+          for path in ('manifest.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json'):
+              m=json.load(open(path)); assert m.get('version')=='5.21.36',(path,m.get('version'))
+          live=json.load(open('automation/hotd-s3e1-live.json'))
+          assert (live.get('acceptance') or {}).get('kehflixOk') is True
+          print('FINAL_ROUTE_PROOF_PUBLICATION_PROOF_OK version=5.21.36 providers=96')
+          PY
+
+      - name: Write publication checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          live=json.load(open('automation/hotd-s3e1-live.json')); acc=live.get('acceptance') or {}
+          p=Path('MEMORY.md'); text=p.read_text(encoding='utf-8')
+          marker='## 2026-09-07 — Route-proof 5.21.36 final publication'
+          block=f'''\n{marker}\n\n- Published from exact artifact of route-proof run `34096200193`, source SHA `8173adc4db674189ccc3169fe9ffe90043790d21`; provider bytes were not reconstructed a second time during promotion.\n- Workspace artifact paths were projected to the existing public source-qualified filename contract without changing bytes; reverse rebuild remained 96/96 byte-identical.\n- Public release: `5.21.36`, 96 providers, Kehflix HOTD S3E1={'OK' if acc.get('kehflixOk') else 'NOT_OK'}, Purstream={'OK' if acc.get('purstreamOk') else 'NOT_OK diagnostic'}.\n- Root/VF/no-anime/VF-no-anime versions and release integrity were revalidated before push.\n'''
+          if marker not in text: p.write_text(text.rstrip()+"\n"+block,encoding='utf-8')
+          PY
+
+      - name: Publish atomically and remove one-shot publishers
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm -f --ignore-unmatch \
+            .github/workflows/main-route-proof-artifact-publication.yml \
+            .github/triggers/route-proof-publication.json \
+            .github/workflows/main-route-proof-publication-final.yml \
+            .github/triggers/route-proof-publication-final.json
+          git add -A
+          git diff --cached --quiet && { echo 'No publication changes'; exit 1; }
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "$BASE_SHA" ]; then echo "MAIN_ADVANCED base=$BASE_SHA current=$CURRENT_SHA"; exit 75; fi
+          git commit -m 'release: publish proof-first Provider v3 5.21.36'
+          AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+          git -c http.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
