@@ -1,3 +1,4 @@
+<!-- NIAKVIO_MEMORY_CHECKPOINT:2026-09-07-v6r7-v14-v29 -->
 ## 2026-09-07 — Route repair V6 #7 / V14 isolation checkpoint
 
 - V6 retry #7: run `34161809385`, job `101865008551`, head `961f09c6dd26eb8bce390b444bf50ed9b3189386`.
