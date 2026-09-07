@@ -90,10 +90,6 @@ def main() -> int:
         flush=True,
     )
 
-    # Capture the whole functional portfolio before any shared migration. The
-    # protected-green set stays excluded from route recognition, but a common
-    # ProviderBase/Core/Source Plan change must still prove it did not break them
-    # or any other provider that was positive before the repair.
     baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE)
 
     migrations = [
@@ -114,6 +110,7 @@ def main() -> int:
         "scripts/upgrade_provider_external_identity_route_v11_1.py",
         "scripts/upgrade_provider_source_plan_v12.py",
         "scripts/upgrade_provider_route_plan_v13_2.py",
+        "scripts/upgrade_provider_search_request_plan_v14.py",
         "scripts/upgrade_provider_route_retry_v1.py",
         "scripts/upgrade_provider_base_runtime_v11.py",
     ]
@@ -132,6 +129,7 @@ def main() -> int:
         "tests/provider_external_identity_route_v11_test.py",
         "tests/provider_source_plan_v12_regression_test.py",
         "tests/provider_route_plan_v13_regression_test.py",
+        "tests/provider_search_request_plan_v14_contract_test.py",
         "tests/global_identity_policy_ownership_test.py",
         "tests/provider_latest_request_cancellation_test.py",
         "tests/provider_native_abort_ignorant_cancellation_test.py",
@@ -213,7 +211,7 @@ def main() -> int:
     yield_report = load(YIELD_REPORT) if YIELD_REPORT.exists() else {}
     retry_report = load(PORTFOLIO_RETRY) if PORTFOLIO_RETRY.exists() else {}
     summary = {
-        "schemaVersion": 8,
+        "schemaVersion": 9,
         "mode": args.mode,
         "publicationAllowed": False,
         "mainWritesAllowed": False,
@@ -222,7 +220,7 @@ def main() -> int:
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
-        "routePlanRevision": "v13.2",
+        "routePlanRevision": "v14",
         "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
         "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
         "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
@@ -244,7 +242,7 @@ def main() -> int:
     SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_REPAIR_V6_FINAL "
-        f"mode={args.mode} revision=v13.2 targeted={len(targets)} targeted_proven={summary['targetedProvidersWithProvenRoutes']} "
+        f"mode={args.mode} revision=v14 targeted={len(targets)} targeted_proven={summary['targetedProvidersWithProvenRoutes']} "
         f"playable={len(summary['postRepairPlayableProviders'])} verified={len(summary['postRepairVerifiedProviders'])} "
         f"lost={len(summary['lostUpstreamPositivePairs'])} "
         f"upstream_gate={str(summary['upstreamPositivePreservationGatePassed']).lower()} "
