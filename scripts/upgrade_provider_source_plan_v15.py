@@ -2,7 +2,11 @@
 """Source Plan V15: bounded player attributes and catalogue-card identity.
 
 Provider-agnostic runtime improvements derived from positive multi-hop proofs:
+- only explicit URL-bearing attributes are treated as URLs; arbitrary data-* UI
+  values must never consume the bounded crawl budget;
 - explicit player-bearing data-* attributes are eligible crawl seeds;
+- the current proven search response origin is a valid catalogue origin for the
+  result page being parsed, without promoting it to durable global authority;
 - short third-party /e/<id> resolver URLs can be crawled after provider identity
   has already been established on the detail page;
 - catalogue <article> cards may contribute title/year identity to a same-origin
@@ -35,12 +39,41 @@ def patch_base() -> bool:
     if "NIAKVIO_PROVIDER_SEARCH_REQUEST_PLAN_V14_1" not in text:
         raise AssertionError("Source Plan V15 requires V14.1 first")
 
+    # A current search response is already proof that its own origin is valid for
+    # links found in that response. Accept that local origin without teaching it
+    # as a durable provider base or weakening the normal runtime-base check.
+    text = once(
+        text,
+        '''function _spv4SameProviderOrigin(url) {\nconst candidate = _origin(_substituteDomain(url));\nreturn !!candidate && _runtimeBases().some(base => _origin(_substituteDomain(base)) === candidate);\n}\n''',
+        '''function _spv4SameProviderOrigin(url, currentBase) {\nconst candidate = _origin(_substituteDomain(url));\nconst current = _origin(_substituteDomain(currentBase));\nif (candidate && current && candidate === current) return true;\nreturn !!candidate && _runtimeBases().some(base => _origin(_substituteDomain(base)) === candidate);\n}\n''',
+        "v15-current-response-origin",
+    )
+
+    # Earlier Source Plan versions accepted every data-* attribute. Values such as
+    # language codes, tooltip directions and booleans then became fake relative
+    # URLs. Keep only fields whose semantics explicitly carry a URL/player.
+    text = once(
+        text,
+        '''  const re = /(?:src|href|file|url|data-[a-z0-9_:-]+)\\s*=\\s*["']([^"']+)["']/gi;\n''',
+        '''  const re = /(?:src|href|file|url|data-(?:src|url|video|embed|player|file|stream|link|href))\\s*=\\s*["']([^"']+)["']/gi;\n''',
+        "v15-narrow-attribute-urls",
+    )
+
+    # The generic HTML/JS extractor must see the same explicit player attributes;
+    # this is used after identity is established and before the bounded crawler.
+    text = once(
+        text,
+        '''    /(?:src|href|file|url|pathname|permalink|embedUrl|embed_url|contentUrl)\\s*["']?\\s*[:=]\\s*["']([^"'<>\\s]+)["']/gi,\n''',
+        '''    /(?:src|href|file|url|pathname|permalink|embedUrl|embed_url|contentUrl|data-(?:src|url|video|embed|player|file|stream|link|href))\\s*["']?\\s*[:=]\\s*["']([^"'<>\\s]+)["']/gi,\n''',
+        "v15-generic-explicit-player-attrs",
+    )
+
     helper_anchor = "function _spv4HtmlDetails(html, base, meta, mediaType, season) {\n"
     helpers = r'''/* NIAKVIO_PROVIDER_SOURCE_PLAN_V15 */
 function _spv15ExplicitPlayerAttrs(html, base) {
   const out = [];
   const source = _embeddedText(html);
-  const re = /\bdata-(?:video|embed|player|src|url|file|stream)\s*=\s*["']([^"']+)["']/gi;
+  const re = /\bdata-(?:video|embed|player|src|url|file|stream|link|href)\s*=\s*["']([^"']+)["']/gi;
   let match;
   while ((match = re.exec(source)) !== null) {
     const absolute = _absolute(match[1], base);
@@ -73,7 +106,7 @@ function _spv15ArticleDetails(html, base, meta, mediaType, season) {
     let link;
     while ((link = hrefRe.exec(block)) !== null) {
       const url = _absolute(link[2], base);
-      if (!url || !_spv4SameProviderOrigin(url) || !_spv7DetailUrlEligible(url)) continue;
+      if (!url || !_spv4SameProviderOrigin(url, base) || !_spv7DetailUrlEligible(url)) continue;
       const attrs = _text(link[1]) + " " + _text(link[3]);
       const bookmark = /\brel\s*=\s*["'][^"']*\bbookmark\b/i.test(attrs);
       const urlScore = _spv4UrlScore(url, meta, mediaType, season);
@@ -91,9 +124,8 @@ function _spv15ArticleDetails(html, base, meta, mediaType, season) {
 '''
     text = once(text, helper_anchor, helpers + helper_anchor, "v15-runtime-helpers")
 
-    # V14.1 has already made the base catalogue matcher label-aware. Replace the
-    # whole function so article-card evidence is merged without weakening the
-    # existing same-origin and URL-eligibility gates.
+    # V14.1 has already made the base catalogue matcher label-aware. Merge
+    # article-card evidence while preserving URL eligibility and identity gates.
     pattern = re.compile(
         r"function _spv4HtmlDetails\(html, base, meta, mediaType, season\) \{\n"
         r"[\s\S]*?\n\}\nfunction _spv4JsonRows\(value, out\) \{",
@@ -101,7 +133,7 @@ function _spv15ArticleDetails(html, base, meta, mediaType, season) {
     )
     replacement = r'''function _spv4HtmlDetails(html, base, meta, mediaType, season) {
   const rows = _spv4AttrUrls(html, base)
-    .filter(_spv4SameProviderOrigin)
+    .filter(url => _spv4SameProviderOrigin(url, base))
     .filter(_spv7DetailUrlEligible)
     .map(url => ({
       url: _substituteDomain(url),
@@ -128,8 +160,8 @@ function _spv4JsonRows(value, out) {'''
     if count != 1:
         raise AssertionError(f"v15-html-details: expected one function, got {count}")
 
-    # V12 already owns the /file resolver extension. Anchor V15 to that current
-    # shape and preserve it while adding only the short third-party /e/<id> form.
+    # V12 already owns the /file resolver extension. Preserve it while adding
+    # only the common short third-party /e/<id> resolver form.
     old_player = '''    return /\\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download|file|files)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);\n'''
     new_player = '''    const providerOrigin = _runtimeBases().some(base => _origin(base) === parsed.origin);\n    if (!providerOrigin && /^\\/e\\/[^/?#]+(?:[/?#]|$)/i.test(parsed.pathname + parsed.search)) return true;\n    return /\\/(?:watch|embed|player|play|video|videos|stream|streams|source|sources|server|servers|resolve|proxy|drive|download|file|files)(?:[/?#.-]|$)/i.test(parsed.pathname + parsed.search);\n'''
     text = once(text, old_player, new_player, "v15-third-party-short-embed")
@@ -149,13 +181,18 @@ def validate(text: str | None = None) -> None:
         MARKER,
         "function _spv15ExplicitPlayerAttrs",
         "function _spv15ArticleDetails",
-        'data-(?:video|embed|player|src|url|file|stream)',
-        'if (!providerOrigin && /^\\/e\\/',
+        "function _spv4SameProviderOrigin(url, currentBase)",
+        "candidate === current",
+        "data-(?:src|url|video|embed|player|file|stream|link|href)",
+        "_spv4SameProviderOrigin(url, base)",
         "rows.push(..._spv15ArticleDetails",
         "...explicitPlayers",
+        "providerOrigin",
     ):
         if needle not in value:
             raise AssertionError(f"V15 ProviderBase missing: {needle}")
+    if "data-[a-z0-9_:-]+" in value:
+        raise AssertionError("V15 ProviderBase still contains generic data-* URL extraction")
 
 
 def main() -> int:
@@ -163,7 +200,8 @@ def main() -> int:
     validate()
     print(
         f"PROVIDER_SOURCE_PLAN_V15_OK changed={str(changed).lower()} "
-        "explicit_player_attrs=1 third_party_short_embed=1 catalogue_article_identity=1 provider_specific_rules=0"
+        "explicit_player_attrs=1 current_search_origin=1 noisy_data_attrs_rejected=1 "
+        "third_party_short_embed=1 catalogue_article_identity=1 provider_specific_rules=0"
     )
     return 0
 
