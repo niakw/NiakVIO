@@ -60,7 +60,8 @@ assert "const crawled = await _crawlDirectMedia(" in text
 assert text.index("const runtime = await _resolveRuntimeApi(") < text.index("const crawled = await _crawlDirectMedia(")
 assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
-assert "requests < 7" in text
+assert "requests < 10" in text
+assert "requests < 7" not in text
 assert "slice(0, 24)" not in text
 assert "function _detailGuesses" not in text
 assert "if (!_runtimePlanAvailable()) return [];" in text
