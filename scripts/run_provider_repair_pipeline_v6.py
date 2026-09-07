@@ -1,11 +1,5 @@
 #!/usr/bin/env python3
-"""Canonical proof-first recognition/correction pipeline for unresolved providers.
-
-The exact same executable pipeline is used by interactive portfolio repair, Learn
-and Force workflows. It never publishes. Already-green providers are not network
-re-probed; their accepted proof rows are carried through the merged 96-provider
-report and they remain covered by deterministic global regression tests.
-"""
+"""Canonical proof-first recognition/correction pipeline for unresolved providers."""
 from __future__ import annotations
 
 import argparse
@@ -72,8 +66,6 @@ def main() -> int:
         flush=True,
     )
 
-    # Shared deterministic migrations. These are intentionally identical for
-    # repair, Learn and Force; only the surrounding workflow permissions differ.
     migrations = [
         "scripts/prepatch_identity_cleanup_shared_owner_v1.py",
         "scripts/apply_core_identity_ownership_cleanup.py",
@@ -86,6 +78,7 @@ def main() -> int:
         "scripts/upgrade_provider_repair_v6.py",
         "scripts/upgrade_provider_repair_v7.py",
         "scripts/upgrade_provider_repair_v8.py",
+        "scripts/upgrade_provider_text_body_request_v9.py",
         "scripts/upgrade_provider_route_retry_v1.py",
         "scripts/upgrade_provider_base_runtime_v11.py",
     ]
@@ -93,13 +86,17 @@ def main() -> int:
         run(sys.executable, migration)
 
     run("node", "--check", "scripts/provider_worker.cjs")
-    run(sys.executable, "tests/provider_route_proof_authority_test.py")
-    run(sys.executable, "tests/provider_repair_v6_recipe_regression_test.py")
-    run(sys.executable, "tests/provider_repair_v7_typed_resolver_test.py")
-    run(sys.executable, "tests/provider_repair_v8_partial_typed_resolver_test.py")
-    run(sys.executable, "tests/global_identity_policy_ownership_test.py")
-    run(sys.executable, "tests/provider_latest_request_cancellation_test.py")
-    run(sys.executable, "tests/provider_native_abort_ignorant_cancellation_test.py")
+    for test in (
+        "tests/provider_route_proof_authority_test.py",
+        "tests/provider_repair_v6_recipe_regression_test.py",
+        "tests/provider_repair_v7_typed_resolver_test.py",
+        "tests/provider_repair_v8_partial_typed_resolver_test.py",
+        "tests/provider_text_body_request_v9_test.py",
+        "tests/global_identity_policy_ownership_test.py",
+        "tests/provider_latest_request_cancellation_test.py",
+        "tests/provider_native_abort_ignorant_cancellation_test.py",
+    ):
+        run(sys.executable, test)
 
     cmd = [
         sys.executable, "scripts/recover_provider_routes_from_upstreams.py",
@@ -112,29 +109,18 @@ def main() -> int:
         cmd.extend(["--provider", provider])
     run(*cmd, timeout=max(1200, len(targets) * max(15, args.timeout) * attempts))
 
-    run(
-        sys.executable, "scripts/merge_provider_repair_report_v6.py",
-        "--baseline", "automation/provider-route-recovery-v5.json",
-        "--targeted", str(TARGET_REPORT.relative_to(ROOT)),
-        "--output", str(MERGED_REPORT.relative_to(ROOT)),
-    )
+    run(sys.executable, "scripts/merge_provider_repair_report_v6.py", "--baseline", "automation/provider-route-recovery-v5.json", "--targeted", str(TARGET_REPORT.relative_to(ROOT)), "--output", str(MERGED_REPORT.relative_to(ROOT)))
     run(sys.executable, "scripts/apply_provider_route_recovery_report.py", str(MERGED_REPORT.relative_to(ROOT)))
-    run(
-        sys.executable, "scripts/enforce_route_proof_manifest_policy_v1.py",
-        "--report", str(MERGED_REPORT.relative_to(ROOT)),
-        "--manifest", "manifest.json",
-        "--overrides", "provider-overrides.json",
-    )
+    run(sys.executable, "scripts/enforce_route_proof_manifest_policy_v1.py", "--report", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json", "--overrides", "provider-overrides.json")
 
-    # Rebuild all bytes deterministically, but do not perform provider network
-    # tests for the skip set. Rebuilding is required because ProviderBase common
-    # runtime changed; it is not a re-recognition of already-green providers.
+    # Common runtime changes rematerialize all 96, but the accepted skip set is
+    # never network re-recognized by this pipeline.
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
     run(sys.executable, "scripts/materialize_provider_v3_all.py")
     run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
     run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", "96")
 
-    deterministic_tests = [
+    for test in (
         "tests/provider_js_lego_ownership_test.py",
         "tests/global_stream_output_guard_test.py",
         "tests/episodic_identity_runtime_test.py",
@@ -143,16 +129,10 @@ def main() -> int:
         "tests/native_dual_id_identity_test.py",
         "tests/global_stream_presentation_test.py",
         "tests/global_stream_presentation_pipeline_test.py",
-    ]
-    for test in deterministic_tests:
+    ):
         run(sys.executable, test)
 
-    yield_cmd = [
-        sys.executable, "scripts/audit_provider_repair_yield_v6.py",
-        "--recovery", str(TARGET_REPORT.relative_to(ROOT)),
-        "--skip-file", str(skip_path.relative_to(ROOT) if skip_path.is_relative_to(ROOT) else skip_path),
-        "--output", str(YIELD_REPORT.relative_to(ROOT)),
-    ]
+    yield_cmd = [sys.executable, "scripts/audit_provider_repair_yield_v6.py", "--recovery", str(TARGET_REPORT.relative_to(ROOT)), "--skip-file", str(skip_path.relative_to(ROOT) if skip_path.is_relative_to(ROOT) else skip_path), "--output", str(YIELD_REPORT.relative_to(ROOT))]
     if not args.allow_upstream_positive_loss:
         yield_cmd.append("--require-upstream-positive-preserved")
     yield_proc = subprocess.run(yield_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
@@ -186,9 +166,7 @@ def main() -> int:
         f"playable={len(summary['postRepairPlayableProviders'])} verified={len(summary['postRepairVerifiedProviders'])} "
         f"lost={len(summary['lostUpstreamPositivePairs'])} preservation_gate={str(summary['preservationGatePassed']).lower()}"
     )
-    if yield_proc.returncode:
-        return yield_proc.returncode
-    return 0
+    return yield_proc.returncode
 
 
 if __name__ == "__main__":
