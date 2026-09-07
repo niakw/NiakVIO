@@ -721,3 +721,18 @@ This correction overrides one statement in the immediately preceding incident ch
 - V8 can still be architecturally problematic for V6 repair/multi-hop providers and may require redesign, but that is a separate issue from the production regression that appeared today.
 - Future diagnosis of the `.37` collapse must compare exact published bytes and live behavior across exact 5.21.35 / 5.21.36 / 5.21.37 trees, especially V29/session/presentation and any DATA/Core rematerialization deltas, rather than inferring causality from source-generator chronology.
 - Permanent rule reinforced: **before assigning a regression to a migration/version marker, verify the marker/behavior in the exact previously-good published bytes, not only in source generators or commit messages.**
+
+<!-- NIAKVIO_MEMORY_CHECKPOINT:2026-09-07-v6r7-v14-v29 -->
+## 2026-09-07 — Route repair V6 #7 / V14 isolation checkpoint
+
+- V6 retry #7: run `34161809385`, job `101865008551`, head `961f09c6dd26eb8bce390b444bf50ed9b3189386`.
+- Scope remained exactly 4 unresolved targets: `animekai`, `movies4u`, `papadustream`, `frenchstream`; protected skip set=10 and recognition overlap=0.
+- Recovery proved all 4 targets live: 43 targeted routes. Merged state: 46/96 providers with proven routes, 317 routes, 22 recipes.
+- Historical typed-recipe sanitizer worked: `typed_direct_sanitized=4`; it removed stale generic direct precedence from preserved typed recipes including PlayIMDb.
+- Whole-portfolio baseline was raw/playable=8, verified=7, wrong=3. Candidate became raw/playable=11, verified=10, wrong=3. No lost raw/playable/verified providers and no new wrong-content; `portfolio_gate=true`.
+- V6 #7 still correctly failed global preservation because exactly three upstream-positive pairs remain lost: `animekai:anime`, `frenchstream:movie`, `movies4u:movie`. PapaDuStream and FrenchStream remain real gains; do not label V6 globally accepted yet.
+- Initial isolated V14 run `34162464280` passed contracts but was rejected: it regressed FrenchStream TV by allowing a transient positive search host to override the explicit runtime domain replacement. Portfolio stayed preserved but target losses became `animekai:anime`, `frenchstream:movie`, `frenchstream:tv`, `movies4u:movie`.
+- V14 diagnosis from artifact: Movies4u structured search plan executed and `GET /?s={query}` returned 200, but generic search->detail selection failed. Original Movies4u selects search results using anchor label/title/year before detail->m4uplay/HubCloud resolver traversal.
+- V14.1 branch work adds two provider-agnostic rules: only positive `source`/`player` hosts may suppress historical domain substitutions; search/detail success stays evidence only. HTML detail URL scoring can also use its anchor label, while same-provider/detail eligibility stays mandatory and explicit movie-year mismatch remains rejected.
+- V14.1 isolated retry is run `34164198835` on `workbench/route-recognition-v14-search-plan`; no publication/main writes are allowed by this repair pipeline.
+- Functional `.37` V29: V29 cancellation tests themselves passed, including native fetch ignoring AbortController. The previous V3 run failed during rematerialization only because `provider_base_store_test.py` asserted obsolete `_playerLike` nested-discovery syntax. Test was updated to current `_crawlEligible` + score/slice contract; retry run is `34163731580` on `hotfix/5.21.37-functional-v2`. No `.37` publication is authorized until final live portfolio + Children of Men guard pass.
