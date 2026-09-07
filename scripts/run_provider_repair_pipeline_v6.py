@@ -90,10 +90,10 @@ def main() -> int:
         flush=True,
     )
 
-    # Functional preservation baseline must be captured before any common runtime,
-    # DATA or route migration mutates the candidate tree. Protected greens remain
-    # excluded from route recognition, but they are intentionally sampled here so
-    # a common ProviderBase/Core change cannot silently break them.
+    # Capture the whole functional portfolio before any shared migration. The
+    # protected-green set stays excluded from route recognition, but a common
+    # ProviderBase/Core/Source Plan change must still prove it did not break them
+    # or any other provider that was positive before the repair.
     baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE)
 
     migrations = [
@@ -111,6 +111,9 @@ def main() -> int:
         "scripts/upgrade_provider_text_body_request_v9.py",
         "scripts/upgrade_provider_text_body_request_v9_1.py",
         "scripts/upgrade_provider_source_plan_v10.py",
+        "scripts/upgrade_provider_external_identity_route_v11_1.py",
+        "scripts/upgrade_provider_source_plan_v12.py",
+        "scripts/upgrade_provider_route_plan_v13_2.py",
         "scripts/upgrade_provider_route_retry_v1.py",
         "scripts/upgrade_provider_base_runtime_v11.py",
     ]
@@ -125,6 +128,9 @@ def main() -> int:
         "tests/provider_repair_v8_partial_typed_resolver_test.py",
         "tests/provider_text_body_request_v9_test.py",
         "tests/provider_source_plan_v10_regression_test.py",
+        "tests/provider_external_identity_route_v11_test.py",
+        "tests/provider_source_plan_v12_regression_test.py",
+        "tests/provider_route_plan_v13_regression_test.py",
         "tests/global_identity_policy_ownership_test.py",
         "tests/provider_latest_request_cancellation_test.py",
         "tests/provider_native_abort_ignorant_cancellation_test.py",
@@ -163,9 +169,6 @@ def main() -> int:
     ):
         run(sys.executable, test)
 
-    # Same-environment post-change portfolio audit. Any baseline-positive provider
-    # lost here is a publication/acceptance failure even if it was not one of the
-    # explicit repair targets. Retry only the lost subset to eliminate transients.
     candidate_portfolio = capture_portfolio_yield(PORTFOLIO_CANDIDATE)
     PORTFOLIO_RETRY.unlink(missing_ok=True)
     PORTFOLIO_LOSSES.unlink(missing_ok=True)
@@ -176,7 +179,7 @@ def main() -> int:
         "--candidate", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
         "--losses-output", str(PORTFOLIO_LOSSES.relative_to(ROOT)),
     ]
-    preliminary_proc = subprocess.run(preliminary_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
+    subprocess.run(preliminary_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
     losses = load(PORTFOLIO_LOSSES).get("providers") if PORTFOLIO_LOSSES.exists() else []
     losses = [cid(value) for value in losses or [] if cid(value)]
     if losses and attempts > 1:
@@ -209,7 +212,7 @@ def main() -> int:
     yield_report = load(YIELD_REPORT) if YIELD_REPORT.exists() else {}
     retry_report = load(PORTFOLIO_RETRY) if PORTFOLIO_RETRY.exists() else {}
     summary = {
-        "schemaVersion": 7,
+        "schemaVersion": 8,
         "mode": args.mode,
         "publicationAllowed": False,
         "mainWritesAllowed": False,
@@ -218,6 +221,7 @@ def main() -> int:
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
+        "routePlanRevision": "v13.2",
         "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
         "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
         "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
@@ -239,7 +243,7 @@ def main() -> int:
     SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_REPAIR_V6_FINAL "
-        f"mode={args.mode} targeted={len(targets)} targeted_proven={summary['targetedProvidersWithProvenRoutes']} "
+        f"mode={args.mode} revision=v13.2 targeted={len(targets)} targeted_proven={summary['targetedProvidersWithProvenRoutes']} "
         f"playable={len(summary['postRepairPlayableProviders'])} verified={len(summary['postRepairVerifiedProviders'])} "
         f"lost={len(summary['lostUpstreamPositivePairs'])} "
         f"upstream_gate={str(summary['upstreamPositivePreservationGatePassed']).lower()} "
