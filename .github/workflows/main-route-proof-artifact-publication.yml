@@ -61,10 +61,13 @@ jobs:
           PY
           RUN_ID="$(cat /tmp/route-proof-run-id)"
           SOURCE_SHA="$(cat /tmp/route-proof-source-sha)"
-          RUN_JSON="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}")"
-          python3 - "$SOURCE_SHA" <<'PY' <<<"$RUN_JSON"
+          RUN_JSON="$RUNNER_TEMP/route-proof-run.json"
+          gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${RUN_ID}" > "$RUN_JSON"
+          python3 - "$SOURCE_SHA" "$RUN_JSON" <<'PY'
           import json,sys
-          source=sys.argv[1]; run=json.load(sys.stdin)
+          source=sys.argv[1]
+          with open(sys.argv[2], encoding='utf-8') as handle:
+              run=json.load(handle)
           if run.get('conclusion')!='success': raise SystemExit(f"route-proof run not successful: {run.get('conclusion')}")
           if run.get('head_sha')!=source: raise SystemExit(f"route-proof SHA mismatch: {run.get('head_sha')} != {source}")
           if run.get('name')!='MAIN - Route Proof Reconstruction 96': raise SystemExit(run.get('name'))
@@ -202,7 +205,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 - <<'PY'
-          import json, os
+          import json
           from pathlib import Path
           run_id=Path('/tmp/route-proof-run-id').read_text().strip()
           source=Path('/tmp/route-proof-source-sha').read_text().strip()
