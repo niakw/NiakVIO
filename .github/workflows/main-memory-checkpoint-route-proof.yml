@@ -1,0 +1,54 @@
+name: MAIN - MEMORY Route Proof Checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/main-memory-checkpoint-route-proof.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-main-memory-checkpoint-route-proof
+  cancel-in-progress: false
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+      - name: Append run 10 reverse/static checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md')
+          text=p.read_text(encoding='utf-8')
+          marker='## 2026-09-07 — Route-proof run 10 reverse green / static-audit naming failure'
+          block=r'''
+          ## 2026-09-07 — Route-proof run 10 reverse green / static-audit naming failure
+
+          - Route-proof run #10 `34076409932`, job `101603292174`, completed failure safely before quick-yield/HOTD/publication. Public release remains `5.21.35`.
+          - Run #10 census: 96 providers, 91 historical-upstream mapped + 5 NiakVIO-native, **47 providers with proven routes, 303 proven routes, 23 simple API recipes, 0 source-unavailable**. This differs slightly from run #9's 46/310 because live route proof is network-dependent; catalogue cardinality and source mapping remained stable.
+          - Purstream remained `no-proven-route`, 0 proven routes. Kehflix remained `proven`, 5 reusable routes. MOVIX remained `no-proven-route`, 0 routes and `enabled=false` through DATA policy, materialization, prune and cardinality.
+          - Full 96 Provider JS materialization, prune/projections/config validation, reconstructed runtime/Core ownership, stream-output guard, episodic-zero-year, HLS, native-loading, media resolver and dual-ID tests all passed.
+          - **Reverse reconstruction passed byte-identical 96/96**: `PROVIDER_V3_REVERSE_REBUILD_OK providers=96 generation=66809df74d148b02 byte_identical=96/96`.
+          - The next command `audit_provider_v3_static.py` failed on `anime-sama-aaa6dc71f60a1d3e.js` even though the computed SHA prefix was exactly `aaa6dc71f60a1d3e`. Root cause: the static audit only accepted final publication filename shape `provider--source--hash.js`, while route-proof workspace materialization intentionally uses `provider-hash.js`.
+          - Correct fix: make the static audit context-aware. `publication=false` / workspace must require the exact simple content-addressed materialization filename; `publication=true` / release/main must retain the stricter source-qualified publication filename. Do not weaken final publication naming validation.
+          - Quick-yield and final HOTD Kehflix/Purstream proof were skipped because static/integrity stage failed first. No HOTD verdict exists from run #10.
+          '''
+          if marker not in text:
+              p.write_text(text.rstrip()+"\n\n"+block.strip()+"\n",encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git rm -f .github/workflows/main-memory-checkpoint-route-proof.yml
+          git add MEMORY.md
+          git commit -m 'docs(memory): checkpoint route-proof run 10 static-audit blocker'
+          git push origin HEAD:main
