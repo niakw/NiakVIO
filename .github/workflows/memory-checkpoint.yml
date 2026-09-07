@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'automation/memory-checkpoint-pending.md'
+      - 'automation/memory-checkpoint-pending-v2.md'
 
 permissions:
   contents: write
@@ -29,8 +29,10 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           memory=Path('MEMORY.md')
-          pending=Path('automation/memory-checkpoint-pending.md')
-          chunk=pending.read_text(encoding='utf-8').strip()
+          pending=Path('automation/memory-checkpoint-pending-v2.md')
+          sentinel='<!-- NIAKVIO_MEMORY_PENDING_EMPTY -->'
+          raw=pending.read_text(encoding='utf-8')
+          chunk=raw.replace(sentinel, '').strip()
           if not chunk:
               print('MEMORY_PENDING_EMPTY')
               raise SystemExit(0)
@@ -41,7 +43,7 @@ jobs:
           else:
               memory.write_text(text.rstrip()+'\n\n'+chunk+'\n', encoding='utf-8')
               print('MEMORY_CHECKPOINT_APPENDED', first)
-          pending.write_text('', encoding='utf-8')
+          pending.write_text(sentinel+'\n', encoding='utf-8')
           PY
       - name: Commit durable memory state
         shell: bash
@@ -49,7 +51,7 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add MEMORY.md automation/memory-checkpoint-pending.md
+          git add MEMORY.md automation/memory-checkpoint-pending-v2.md
           if git diff --cached --quiet; then
             echo 'No memory changes'
             exit 0
