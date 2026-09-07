@@ -91,62 +91,29 @@ jobs:
       - name: Live Interstellar matrix
         run: python3 scripts/interstellar_nuvio_matrix.py --workers 12 --timeout 35 --output automation/interstellar-nuvio-matrix.json
 
-      - name: Live Hell Mode S01E12 desktop matrix
+      - name: Live actual Desktop anime matrix - Unwanted Undead S01E02
         run: |
-          set -euo pipefail
-          python3 - <<'PY'
-          import json, os, subprocess
-          from concurrent.futures import ThreadPoolExecutor, as_completed
-          from datetime import datetime, timezone
-          from pathlib import Path
-          root=Path('.')
-          manifest=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
-          fixture={
-            'tmdbId':'tt38646634','mediaType':'series','season':1,'episode':12,
-            'title':'HELL MODE: The Hardcore Gamer Dominates in Another World with Garbage Balancing',
-            'label':'Hell Mode S01E12','category':'anime'
-          }
-          context={
-            'locale':'fr-FR','language':'fr','languages':['fr-FR','fr','en'],
-            'platform':'desktop','settings':{},'storage':{},'injectAcceptLanguage':True,
-            'networkLimits':{'maxFetches':30,'maxResponseBytes':5242880,'maxTotalResponseBytes':20971520,'maxDistinctHosts':20,'maxRedirects':5},
-            'maxSettingsProfiles':1,
-          }
-          candidates=[]
-          for row in manifest.get('scrapers') or []:
-            if row.get('enabled') is not True: continue
-            semantic={str(x).casefold() for x in (row.get('canonicalSupportedTypes') or row.get('supportedTypes') or [])}
-            transport={str(x).casefold() for x in (row.get('supportedTypes') or [])}
-            if 'anime' in semantic or {'tv','series'} & transport: candidates.append(row)
-          def probe(row):
-            cmd=['node','--max-old-space-size=1024','scripts/provider_worker.cjs',str(row['filename']),json.dumps(fixture,ensure_ascii=False),json.dumps(context,ensure_ascii=False)]
-            try:
-              cp=subprocess.run(cmd,cwd=root,text=True,capture_output=True,timeout=35,check=False,env=os.environ.copy())
-            except subprocess.TimeoutExpired:
-              return {'id':str(row['id']).casefold(),'count':0,'ok':False,'error':'timeout'}
-            payload=None
-            for line in cp.stdout.splitlines():
-              if line.startswith('NUVIO_HEALTH_RESULT='):
-                try: payload=json.loads(line.split('=',1)[1])
-                except Exception: pass
-            if not payload:
-              return {'id':str(row['id']).casefold(),'count':0,'ok':False,'error':'missing_worker_payload','stderr':cp.stderr[-500:]}
-            return {
-              'id':str(row['id']).casefold(),'count':int(payload.get('stream_count') or 0),'ok':bool(payload.get('ok')),
-              'error':payload.get('error') or (payload.get('error_details') or {}).get('message'),
-              'hosts':payload.get('provider_server_hosts') or [],'statuses':payload.get('provider_server_http_statuses') or []
-            }
-          results=[]
-          with ThreadPoolExecutor(max_workers=min(10,max(1,len(candidates)))) as ex:
-            futs={ex.submit(probe,row):row for row in candidates}
-            for i,f in enumerate(as_completed(futs),1):
-              r=f.result();results.append(r);print(f"[{i}/{len(candidates)}] {r['id']} streams={r['count']} error={r.get('error')}",flush=True)
-          results.sort(key=lambda x:x['id'])
-          positive=[r['id'] for r in results if r['count']>0]
-          report={'generated_at':datetime.now(timezone.utc).isoformat(),'manifest_version':manifest.get('version'),'fixture':fixture,'providers_tested':len(results),'positive_count':len(positive),'positive_ids':positive,'providers':results}
-          Path('automation/hellmode-desktop-matrix.json').write_text(json.dumps(report,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          print(json.dumps({'tested':len(results),'positive_count':len(positive),'positive_ids':positive},ensure_ascii=False))
-          PY
+          python3 scripts/desktop_series_provider_matrix.py \
+            --id tt30177477 \
+            --title "The Unwanted Undead Adventurer" \
+            --season 1 \
+            --episode 2 \
+            --category anime \
+            --workers 10 \
+            --timeout 35 \
+            --output automation/unwanted-undead-desktop-matrix.json
+
+      - name: Live secondary Desktop anime matrix - Hell Mode S01E12
+        run: |
+          python3 scripts/desktop_series_provider_matrix.py \
+            --id tt38646634 \
+            --title "HELL MODE: The Hardcore Gamer Dominates in Another World with Garbage Balancing" \
+            --season 1 \
+            --episode 12 \
+            --category anime \
+            --workers 10 \
+            --timeout 35 \
+            --output automation/hellmode-desktop-matrix.json
 
       - name: Refresh hashes after live reports
         run: |
