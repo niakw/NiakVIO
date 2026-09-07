@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -11,22 +12,61 @@ from provider_v3_filename_policy import matches_provider_v3_filename
 
 SHA = "a" * 64
 
-workspace = {"context": "workspace", "publication": False}
-published = {"context": "main", "publication": True}
-release = {"context": "release", "publication": True}
+workspace_report = {"context": "workspace", "publication": False}
+published_report = {"context": "main", "publication": True}
+stale_workspace_report = {"context": "workspace", "publication": False}
 
-assert matches_provider_v3_filename("anime-sama", "anime-sama-aaaaaaaaaaaaaaaa.js", SHA, workspace)
-assert not matches_provider_v3_filename("anime-sama", "anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", SHA, workspace)
+assert matches_provider_v3_filename(
+    "anime-sama", "anime-sama-aaaaaaaaaaaaaaaa.js", SHA, workspace_report,
+    execution_context="workspace",
+)
+assert not matches_provider_v3_filename(
+    "anime-sama", "anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", SHA, workspace_report,
+    execution_context="workspace",
+)
 
-assert matches_provider_v3_filename("anime-sama", "anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", SHA, published)
-assert matches_provider_v3_filename("anime-sama", "anime-sama--published-baseline--aaaaaaaaaaaaaaaa.js", SHA, release)
-assert not matches_provider_v3_filename("anime-sama", "anime-sama-aaaaaaaaaaaaaaaa.js", SHA, published)
+assert matches_provider_v3_filename(
+    "anime-sama", "anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", SHA, published_report,
+    execution_context="publication",
+)
+assert matches_provider_v3_filename(
+    "anime-sama", "anime-sama--published-baseline--aaaaaaaaaaaaaaaa.js", SHA, published_report,
+    execution_context="release",
+)
+assert not matches_provider_v3_filename(
+    "anime-sama", "anime-sama-aaaaaaaaaaaaaaaa.js", SHA, published_report,
+    execution_context="publication",
+)
 
-# Unknown/legacy contexts are fail-closed to the stricter publication shape.
-assert matches_provider_v3_filename("anime-sama", "anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", SHA, {})
-assert not matches_provider_v3_filename("anime-sama", "anime-sama-aaaaaaaaaaaaaaaa.js", SHA, {})
+# A stale workspace provenance report must never downgrade a public audit when the
+# execution context is unspecified. Unspecified remains fail-closed publication.
+os.environ.pop("NUVIO_PROVIDER_V3_CONTEXT", None)
+assert matches_provider_v3_filename(
+    "anime-sama", "anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", SHA, stale_workspace_report
+)
+assert not matches_provider_v3_filename(
+    "anime-sama", "anime-sama-aaaaaaaaaaaaaaaa.js", SHA, stale_workspace_report
+)
 
-assert not matches_provider_v3_filename("anime-sama", "anime-sama--nuvio--bbbbbbbbbbbbbbbb.js", SHA, published)
-assert not matches_provider_v3_filename("anime-sama", "../anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", "bad", published)
+# Environment context is the real workspace authority used by route-proof CI.
+os.environ["NUVIO_PROVIDER_V3_CONTEXT"] = "workspace"
+try:
+    assert matches_provider_v3_filename(
+        "anime-sama", "anime-sama-aaaaaaaaaaaaaaaa.js", SHA, stale_workspace_report
+    )
+    assert not matches_provider_v3_filename(
+        "anime-sama", "anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", SHA, stale_workspace_report
+    )
+finally:
+    os.environ.pop("NUVIO_PROVIDER_V3_CONTEXT", None)
 
-print("provider v3 filename policy tests passed: workspace=simple publication=source-qualified fail_closed=publication")
+assert not matches_provider_v3_filename(
+    "anime-sama", "anime-sama--nuvio--bbbbbbbbbbbbbbbb.js", SHA, published_report,
+    execution_context="publication",
+)
+assert not matches_provider_v3_filename(
+    "anime-sama", "../anime-sama--nuvio--aaaaaaaaaaaaaaaa.js", "bad", published_report,
+    execution_context="publication",
+)
+
+print("provider v3 filename policy tests passed: explicit workspace, public fail-closed, stale report ignored")
