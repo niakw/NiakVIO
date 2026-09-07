@@ -290,3 +290,9 @@ A green structural workflow is not proof that the 96 providers work. A native cl
 - Failure was migration cardinality only:  assumed the legacy  call was unique for directRoute, but ProviderBase has exactly three stable call sites: directRoute, catalogue search, movie/episode resolve. It raised .
 - No census was executed and no route result from this run is authoritative.
 - Commit  fixes the upgrader to require cardinality exactly 3 then replace the three calls deterministically in stable semantic order.
+
+## 2026-09-07 — Purstream HOTD S3E1 final proof requirement
+
+- User explicitly requires a final **real Purstream → House of the Dragon S3E1** proof after the 96/96 route-proof reconstruction/audit. It must not be satisfied by the synthetic engine smoke alone.
+- The final Purstream test must exercise the real provider/network path for HOTD S3E1, verify `tv`p/`series` transport and season=3/episode=1, and prove that the provider-side 2026 season year is not rejected against TMDB series origin 2022.
+- Do not consider the next release publishable until this Purstream HOTD S3E1 check is green or is precisely classified as the remaining real-world blocker with evidence.
