@@ -4,9 +4,11 @@ from __future__ import annotations
 import importlib.util
 import subprocess
 import tempfile
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 PRESENTATION = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
 SANITIZER = ROOT / "scripts/provider_patches/stream_output_sanitizer_v6.py"
 

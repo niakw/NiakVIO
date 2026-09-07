@@ -31,7 +31,8 @@ base = r'''module.exports={getStreams:async function(){return [
 
 patched = identity.apply(base, context={"provider_id": "example"})
 assert "NUVIO_GLOBAL_STREAM_IDENTITY_V1" in patched
-assert "cross-client-shared-tv-year-soft-v8" in patched
+assert "cross-client-shared-tmdb-owner-movie-year-only-v10" in patched
+assert "NUVIO_IDENTITY_SHARED_TMDB_CAPABILITY_V1" in patched
 assert identity.apply(patched, context={"provider_id": "example"}) == patched
 
 # The final Core presentation composes facts + identity before presentation, so
@@ -176,7 +177,7 @@ fail_open_source = r'''module.exports={getStreams:async()=>[
  {name:'Server 2',filename:'Interstellar.Nolan.Cut.2014.1080p.BluRay.mkv',url:'https://cdn.example/interstellar-cut.m3u8'}
 ]};'''
 fail_open_patched = identity.apply(fail_open_source, context={"provider_id": "example"})
-assert "cross-client-shared-tv-year-soft-v8" in fail_open_patched
+assert "cross-client-shared-tmdb-owner-movie-year-only-v10" in fail_open_patched
 fail_open_runner = r'''
 const assert=require('assert');
 global.TMDB_API_KEY=String(1);

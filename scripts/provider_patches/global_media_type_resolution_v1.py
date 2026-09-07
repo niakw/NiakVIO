@@ -59,6 +59,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
         "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 30_000)), 120_000)),
         "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 25_000)), 30_000)),
+        "supersedeSettleMs": max(100, min(int(cfg.get("supersede_settle_ms", 1200)), 3000)),
         "semanticTypes": semantic_types,
         "requestTypeAliases": {
             str(key).strip().lower(): str(value).strip().lower()
@@ -469,36 +470,44 @@ async function resolve(a){
   }
   var out=Array.prototype.slice.call(a);out[0]=resolvedTmdbId||resolvedImdbId||source.id||out[0];out[1]=providerType;out.__nuvioContext=context;return out;
 }
+/* NUVIO_PROVIDER_LATEST_REQUEST_OWNS_FETCH_V2 */
 var requestSerial=0;
 function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
+function providerStaleError(){var e=new Error("nuvio_provider_superseded");e.name="AbortError";e.code="NUVIO_PROVIDER_SUPERSEDED";e.__nuvioProviderStale=true;return e}
+function tokenOwns(token){try{return !token||!g||g.__nuvioProviderRequestToken===token}catch(_){return false}}
+function abortController(controller){try{if(controller&&typeof controller.abort==="function")controller.abort()}catch(_){}}
+async function settlePrior(promise){if(!promise||typeof promise.then!=="function")return;try{if(typeof setTimeout!=="function"){await Promise.resolve();return}await Promise.race([promise,new Promise(function(resolve){setTimeout(resolve,Number(c.supersedeSettleMs||1200))})])}catch(_){}}
 function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
 function tvRuntime(){try{var ua=s(g&&g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_){return false}}
 function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||25000):Number(c.providerTimeoutMs||30000)}
-function budgetedFetch(original,deadline){
+function budgetedFetch(original,deadline,requestToken,requestController){
   if(typeof original!=="function")return original;
   var base=original.__nuvioProviderExecutionBudgetBase||original;
   var wrapped=async function(){
+    if(!tokenOwns(requestToken))throw providerStaleError();
     if(deadlineExpired(deadline))throw providerTimeoutError();
     var args=Array.prototype.slice.call(arguments),remaining=deadline>0?Math.max(1,deadline-Date.now()):0;
     if(remaining>0&&args.length>=1){
       var init=args[1]&&typeof args[1]==="object"?Object.assign({},args[1]):{};
+      if(!init.signal&&requestController&&requestController.signal)init.signal=requestController.signal;
       if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(remaining)}catch(_){}}
       args[1]=init;
     }
-    if(remaining<=0)return await base.apply(this,args);
+    if(!tokenOwns(requestToken))throw providerStaleError();
     var timer=null;
     var timeoutPromise=new Promise(function(_resolve,reject){
-      if(typeof setTimeout!=="function")return;
-      timer=setTimeout(function(){reject(providerTimeoutError())},remaining);
+      if(typeof setTimeout!=="function"||remaining<=0)return;
+      timer=setTimeout(function(){abortController(requestController);reject(providerTimeoutError())},remaining);
     });
     var value;
     try{
-      value=typeof setTimeout==="function"
+      value=(typeof setTimeout==="function"&&remaining>0)
         ? await Promise.race([base.apply(this,args),timeoutPromise])
         : await base.apply(this,args);
     }finally{
       try{if(timer!=null&&typeof clearTimeout==="function")clearTimeout(timer)}catch(_){}
     }
+    if(!tokenOwns(requestToken))throw providerStaleError();
     if(deadlineExpired(deadline))throw providerTimeoutError();
     return value;
   };
@@ -521,10 +530,12 @@ function install(o,k){
     if(providerEvent!=="launch")return [];
 
     var requestToken=0,requestDeadline=0,hadFetch=false,previousFetch,fetchBase,budgetFetchInstalled=false;
+    var requestController=null,priorController=null,priorDone=null,resolveDone=null,invocationDone=null;
     try{
-      // Hard-reset media context at every provider invocation. This prevents
-      // tv/anime/movie (including anime movies transported as movie) from
-      // becoming sticky for the lifetime of a native QuickJS instance.
+      // Capture the prior invocation before claiming the global token/fetch slot.
+      // The previous fetch wrapper stays installed during settlement grace, so a
+      // stale catch/retry still hits its token-bound wrapper and is rejected.
+      if(g){priorController=g.__nuvioProviderAbortController||null;priorDone=g.__nuvioProviderInvocationDone||null}
       if(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
       if(g){
         var priorSerial=Number(g.__nuvioProviderRequestSerial||requestSerial);
@@ -533,15 +544,22 @@ function install(o,k){
         g.__nuvioProviderRequestSerial=requestToken;
         g.__nuvioProviderRequestToken=requestToken;
       }
+      invocationDone=new Promise(function(resolve){resolveDone=resolve});
+      if(g)g.__nuvioProviderInvocationDone=invocationDone;
+      abortController(priorController);
       hadFetch=!!(g&&Object.prototype.hasOwnProperty.call(g,"fetch"));
       previousFetch=g&&g.fetch;
       fetchBase=previousFetch&&previousFetch.__nuvioProviderExecutionBudgetBase||previousFetch;
     }catch(_){}
     try{
+      await settlePrior(priorDone);
+      if(!tokenOwns(requestToken))return [];
       requestDeadline=Date.now()+providerBudgetMs();
+      try{requestController=typeof AbortController!=="undefined"?new AbortController():null}catch(_){requestController=null}
       if(g){
         g.__nuvioProviderDeadlineMs=requestDeadline;
-        if(typeof fetchBase==="function"){g.fetch=budgetedFetch(fetchBase,requestDeadline);budgetFetchInstalled=g.fetch!==fetchBase;}
+        g.__nuvioProviderAbortController=requestController;
+        if(typeof fetchBase==="function"){g.fetch=budgetedFetch(fetchBase,requestDeadline,requestToken,requestController);budgetFetchInstalled=g.fetch!==fetchBase;}
       }
       // Gate 2: build request-local provisional transport without TMDB by default.
       // A provider whose declared DATA contract requires a title-based catalogue
@@ -605,9 +623,10 @@ function install(o,k){
       }
       return value;
     }catch(error){
-      if(error&&error.__nuvioProviderTimeout)return [];
+      if(error&&(error.__nuvioProviderTimeout||error.__nuvioProviderStale))return [];
       throw error;
     }finally{
+      try{if(typeof resolveDone==="function")resolveDone()}catch(_){}
       try{
         if(g){
           // An older request must never clean state owned by a newer request.
@@ -616,6 +635,8 @@ function install(o,k){
             if(Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
             if(budgetFetchInstalled){if(hadFetch&&typeof fetchBase==="function")g.fetch=fetchBase;else if(!hadFetch)delete g.fetch}
             if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"))delete g.__nuvioProviderDeadlineMs;
+            if(g.__nuvioProviderAbortController===requestController)delete g.__nuvioProviderAbortController;
+            if(g.__nuvioProviderInvocationDone===invocationDone)delete g.__nuvioProviderInvocationDone;
             if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderRequestToken"))delete g.__nuvioProviderRequestToken;
           }
         }
