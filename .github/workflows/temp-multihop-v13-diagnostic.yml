@@ -1,0 +1,70 @@
+name: TEMP - Multihop V13 Diagnostic
+
+on:
+  push:
+    branches: [workbench/route-recognition-v6]
+    paths:
+      - '.github/triggers/multihop-v13-diagnostic.json'
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply migrations and recover live traces
+        run: |
+          set -euo pipefail
+          python scripts/prepatch_identity_cleanup_shared_owner_v1.py
+          python scripts/apply_core_identity_ownership_cleanup.py
+          python scripts/upgrade_provider_worker_route_proof_v1.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_base_route_requests_v1.py
+          python scripts/upgrade_provider_route_authority_v5.py
+          python scripts/upgrade_route_recovery_request_specs_v1.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_repair_v6.py
+          python scripts/upgrade_provider_repair_v7.py
+          python scripts/upgrade_provider_repair_v8.py
+          python scripts/upgrade_provider_text_body_request_v9.py
+          python scripts/upgrade_provider_text_body_request_v9_1.py
+          python scripts/upgrade_provider_source_plan_v10.py
+          python scripts/upgrade_provider_external_identity_route_v11_1.py
+          python scripts/upgrade_provider_source_plan_v12.py
+          python scripts/upgrade_provider_route_retry_v1.py
+          python scripts/upgrade_provider_base_runtime_v11.py
+          python scripts/recover_provider_routes_from_upstreams.py \
+            --workers 4 --timeout 55 --attempts 3 --apply \
+            --provider animekai --provider movies4u \
+            --provider papadustream --provider frenchstream \
+            --out automation/v13-multihop-recovery.json
+      - name: Print bounded dataflow diagnostics
+        run: python scripts/diagnose_multihop_v13.py
+      - name: Upload diagnostic
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: multihop-v13-${{ github.run_id }}
+          path: automation/v13-multihop-recovery.json
+          retention-days: 7
+          if-no-files-found: warn
