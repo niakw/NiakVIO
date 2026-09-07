@@ -35,7 +35,8 @@ jobs:
 - Accepted public generation remains **5.21.35** until a later checkpoint explicitly records a verified public 5.21.36.
 - Route-proof retry #3: workflow run `34069772096`, job `101584841681`, trigger SHA `43f1f5ae9973333d79f1dc0cd957fd384c0190d4`.
 - Retry #3 proved migrations, proof-first/zero-route tests, the **96-provider live census**, and application of the census as structured DATA. Census step ran from 00:26:05Z to 00:29:34Z.
-- Retry #3 then remained inside the combined reconstruction step from 00:29:34Z until it was intentionally superseded/cancelled. Because that step mixed materialization, projection and multiple tests, it did not identify the blocking command.
+- Exact successful retry #3 census: providers=96; historical-upstream mapped=91; NiakVIO-native=5; providers with at least one reusable proven HTTP route=46; proven routes=299; simple API recipes=23; no-proven-route providers=50. All 96 remained in the catalogue.
+- Retry #3 then remained inside the combined reconstruction step from 00:29:34Z until it was intentionally superseded/cancelled. Its artifact proves materialization reached providerCount=96, context=workspace, publication=false, mainTouched=false; quick-yield and HOTD had not run yet.
 - The reconstruction workflow is now split into bounded materialization, projection/config validation, reconstructed-runtime tests, cardinality, reverse/static/integrity, quick-yield and final HOTD stages. Commit `72c631a642d13f4e5980653a7b7a6a9e41f76f23`.
 - Purstream HOTD probe fixture metadata now explicitly declares canonical TV semantics (`mediaType/type/category = tv`) so synthetic TMDB fallback cannot misclassify TMDB 94997 as movie. Commit `e965791e597a03e8a722cf78e6a2b3fbca0a4365`.
 - Critical race fixed: route-proof workflow checkout is pinned to `${{ github.sha }}` instead of moving `main`. Commit `a55c266e7ef65e76865bc6ed1551ed493336572a`.
@@ -53,3 +54,4 @@ EOF
           fi
           git commit -m 'docs: checkpoint route-proof 96 run 5'
           git push origin HEAD:main
+# trigger-existing-workflow: 1
