@@ -17,15 +17,15 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
-      - name: Probe signed player chain without logging signed values
+      - name: Discover terminal host and signed player chain
         shell: bash
         run: |
           python - <<'PY'
-          import hashlib, json, re, urllib.error, urllib.parse, urllib.request
+          import json, re, urllib.error, urllib.parse, urllib.request
 
-          BASE = 'https://kehflix.lol'
           UA = 'Mozilla/5.0 NiakVIO/3'
           FIXTURE = {'tmdbId':'94997','slug':'house-of-the-dragon','season':'3','episode':'1'}
+          INITIAL = ['https://kehflix.lol', 'https://kehflix.com', 'https://kehflix.wiki']
 
           class NoRedirect(urllib.request.HTTPRedirectHandler):
               def redirect_request(self, req, fp, code, msg, headers, newurl):
@@ -37,7 +37,7 @@ jobs:
               opener = urllib.request.build_opener() if follow else urllib.request.build_opener(NoRedirect())
               req = urllib.request.Request(url, headers=headers)
               try:
-                  with opener.open(req, timeout=20) as r:
+                  with opener.open(req, timeout=18) as r:
                       return int(r.status), r.geturl(), dict(r.headers.items()), r.read(2_000_000)
               except urllib.error.HTTPError as e:
                   return int(e.code), e.geturl(), dict(e.headers.items()), e.read(2_000_000)
@@ -47,77 +47,85 @@ jobs:
           def safe_url(raw):
               try:
                   p=urllib.parse.urlsplit(raw)
-                  q=[]
+                  query=[]
                   for k,v in urllib.parse.parse_qsl(p.query, keep_blank_values=True):
-                      q.append(f'{k}=<len:{len(v)}>')
-                  return urllib.parse.urlunsplit((p.scheme,p.netloc,p.path,'&'.join(q),''))
+                      query.append(f'{k}=<len:{len(v)}>')
+                  return urllib.parse.urlunsplit((p.scheme,p.netloc,p.path,'&'.join(query),''))
               except Exception:
                   return '<invalid>'
 
-          def same_origin_urls(body, base):
-              text=body.decode('utf-8','ignore').replace('\\/','/')
-              vals=[]
-              for m in re.finditer(r'''(?:href|src|url|pathname|action)\s*[:=]\s*["']([^"']+)["']|["'](/(?:player|api/)[^"']*)["']''', text, re.I):
-                  raw=m.group(1) or m.group(2) or ''
-                  try: u=urllib.parse.urljoin(base, raw)
+          def links(body, base):
+              text=body.decode('utf-8','ignore').replace('\\/','/').replace('&amp;','&')
+              out=[]
+              pats=[
+                  r'''(?:href|src|url|pathname|action|location)\s*[:=]\s*["']([^"'<>]+)["']''',
+                  r'''["'](https?://[^"'<>\s]+)["']''',
+                  r'''["'](/(?:title|player|api/)[^"'<>\s]*)["']''',
+              ]
+              for pat in pats:
+                  for m in re.finditer(pat,text,re.I):
+                      raw=m.group(1) or ''
+                      try: u=urllib.parse.urljoin(base,raw)
+                      except Exception: continue
+                      if u.startswith(('http://','https://')) and u not in out: out.append(u)
+                      if len(out)>=120: return out
+              return out
+
+          hosts=[]
+          discovered=[]
+          for base in INITIAL:
+              s0,f0,h0,b0=request(base+'/',follow=False)
+              loc=h0.get('Location') or h0.get('location') or ''
+              s1,f1,h1,b1=request(base+'/',follow=True)
+              rows=links(b1,f1)
+              link_hosts=[]
+              for u in rows:
+                  try: host=urllib.parse.urlsplit(u).hostname or ''
                   except Exception: continue
-                  if urllib.parse.urlsplit(u).netloc == urllib.parse.urlsplit(BASE).netloc and u not in vals:
-                      vals.append(u)
-              return vals[:40]
+                  if 'kehflix' in host.lower() and host not in link_hosts: link_hosts.append(host)
+                  if 'kehflix' in host.lower() and u not in discovered: discovered.append(u)
+              print('KEHFLIX_DOMAIN_ROOT', 'base='+base, 'nofollow='+str(s0), 'location='+safe_url(urllib.parse.urljoin(base+'/',loc)) if loc else 'location=none', 'follow='+str(s1), 'final='+safe_url(f1), 'kehflix_link_hosts='+','.join(link_hosts[:12]))
+              for host in [urllib.parse.urlsplit(f1).hostname,*link_hosts]:
+                  if host and 'kehflix' in host.lower() and host not in hosts: hosts.append(host)
 
-          details = [
-              f"{BASE}/title/tv/{FIXTURE['tmdbId']}-{FIXTURE['slug']}",
-              f"{BASE}/title/tv/{FIXTURE['tmdbId']}-{FIXTURE['slug']}-2022",
-          ]
-          player_candidates=[]
-          for url in details:
-              status, final, headers, body = request(url)
-              urls=same_origin_urls(body, final)
-              print('KEHFLIX_DIAG_DETAIL', 'status='+str(status), 'final='+safe_url(final), 'same_origin_urls='+str(len(urls)), 'player_urls='+str(sum('/player' in x for x in urls)))
-              player_candidates += [x for x in urls if '/player' in urllib.parse.urlsplit(x).path]
+          for host in hosts:
+              base='https://'+host
+              for path_kind,path in [
+                  ('detail',f"/title/tv/{FIXTURE['tmdbId']}-{FIXTURE['slug']}"),
+                  ('detail_year',f"/title/tv/{FIXTURE['tmdbId']}-{FIXTURE['slug']}-2022"),
+                  ('player',f"/player?m=tv&id={FIXTURE['tmdbId']}"),
+              ]:
+                  s0,f0,h0,b0=request(base+path,follow=False)
+                  loc=h0.get('Location') or h0.get('location') or ''
+                  s1,f1,h1,b1=request(base+path,follow=True)
+                  nested=links(b1,f1)
+                  same=[]
+                  signed=[]
+                  for u in [f1,*nested]:
+                      try:
+                          p=urllib.parse.urlsplit(u)
+                          if p.hostname==host and u not in same: same.append(u)
+                          q=dict(urllib.parse.parse_qsl(p.query,keep_blank_values=True))
+                          if '/player' in p.path and q.get('id') and q.get('k'): signed.append(u)
+                      except Exception: pass
+                  print('KEHFLIX_DOMAIN_PATH', 'host='+host, 'kind='+path_kind, 'nofollow='+str(s0), 'location='+safe_url(urllib.parse.urljoin(base+path,loc)) if loc else 'location=none', 'follow='+str(s1), 'final='+safe_url(f1), 'same_links='+str(len(same)), 'signed_players='+str(len(signed)))
+                  for player in signed[:2]:
+                      p=urllib.parse.urlsplit(player); q=dict(urllib.parse.parse_qsl(p.query,keep_blank_values=True))
+                      endpoint=(f"https://{host}/api/streams/episode?id={urllib.parse.quote(q['id'])}"
+                                f"&season={FIXTURE['season']}&episode={FIXTURE['episode']}"
+                                f"&k={urllib.parse.quote(q['k'])}")
+                      se,fe,he,be=request(endpoint,referer=player)
+                      ctype=(he.get('Content-Type') or he.get('content-type') or '').split(';')[0].lower()
+                      media=0
+                      try:
+                          obj=json.loads(be)
+                          def count(v):
+                              if isinstance(v,dict): return sum(count(x) for x in v.values())
+                              if isinstance(v,list): return sum(count(x) for x in v)
+                              return int(isinstance(v,str) and ('.m3u8' in v or '.mp4' in v or '/stream-gw' in v))
+                          media=count(obj)
+                      except Exception: pass
+                      print('KEHFLIX_DOMAIN_EPISODE_API','host='+host,'status='+str(se),'final='+safe_url(fe),'ctype='+ctype,'media_like='+str(media))
 
-          synthetic=f"{BASE}/player?m=tv&id={FIXTURE['tmdbId']}"
-          player_candidates.append(synthetic)
-          seen=set()
-          signed=[]
-          for player in player_candidates[:12]:
-              if player in seen: continue
-              seen.add(player)
-              s0,f0,h0,b0=request(player, follow=False)
-              location=h0.get('Location') or h0.get('location') or ''
-              print('KEHFLIX_DIAG_PLAYER_NOFOLLOW', 'status='+str(s0), 'request='+safe_url(player), 'location='+safe_url(urllib.parse.urljoin(player, location)) if location else 'location=none')
-              s1,f1,h1,b1=request(player, follow=True)
-              nested=same_origin_urls(b1, f1)
-              print('KEHFLIX_DIAG_PLAYER', 'status='+str(s1), 'final='+safe_url(f1), 'nested='+str(len(nested)))
-              for u in [player,f1,*nested]:
-                  try:
-                      p=urllib.parse.urlsplit(u); params=dict(urllib.parse.parse_qsl(p.query, keep_blank_values=True))
-                  except Exception: continue
-                  if '/player' in p.path and params.get('id') and params.get('k'):
-                      signed.append(u)
-
-          signed=list(dict.fromkeys(signed))
-          print('KEHFLIX_DIAG_SIGNED_PLAYERS', 'count='+str(len(signed)), 'shapes='+','.join(safe_url(x) for x in signed[:4]))
-          for player in signed[:3]:
-              p=urllib.parse.urlsplit(player); params=dict(urllib.parse.parse_qsl(p.query, keep_blank_values=True))
-              media=params.get('m') or params.get('media') or params.get('type') or 'tv'
-              endpoint=(f"{BASE}/api/streams/episode?id={urllib.parse.quote(params['id'])}"
-                        f"&season={FIXTURE['season']}&episode={FIXTURE['episode']}"
-                        f"&k={urllib.parse.quote(params['k'])}")
-              status,final,headers,body=request(endpoint, referer=player)
-              ctype=(headers.get('Content-Type') or headers.get('content-type') or '').lower()
-              summary={'kind':'text','bytes':len(body)}
-              try:
-                  obj=json.loads(body)
-                  summary={'kind':'json','top':sorted(obj.keys()) if isinstance(obj,dict) else type(obj).__name__}
-                  def count_media(v):
-                      if isinstance(v,dict):
-                          return sum(count_media(x) for x in v.values())
-                      if isinstance(v,list): return sum(count_media(x) for x in v)
-                      if isinstance(v,str) and ('.m3u8' in v or '.mp4' in v or '/stream-gw' in v): return 1
-                      return 0
-                  summary['media_like_values']=count_media(obj)
-              except Exception:
-                  pass
-              print('KEHFLIX_DIAG_EPISODE_API', 'status='+str(status), 'final='+safe_url(final), 'ctype='+ctype.split(';')[0], 'summary='+json.dumps(summary,sort_keys=True))
+          print('KEHFLIX_DOMAIN_DISCOVERY','hosts='+','.join(hosts),'discovered_links='+str(len(discovered)))
           PY
