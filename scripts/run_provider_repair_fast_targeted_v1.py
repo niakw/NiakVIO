@@ -206,6 +206,7 @@ def main() -> int:
         "scripts/upgrade_provider_source_plan_v15.py",
         "scripts/upgrade_provider_route_retry_v1.py",
         "scripts/upgrade_provider_base_runtime_v11.py",
+        "scripts/upgrade_provider_search_detail_bridge_v17.py",
     ]
     for migration in migrations:
         run(sys.executable, migration)
