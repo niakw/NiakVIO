@@ -34,6 +34,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Retry 5: explicit WxH/height quality derivation before placeholder cleanup.
           python scripts/prepatch_stream_facts_quality_v2.py
           python scripts/prepatch_tv_runtime_upgrade_validator_v1.py
           python scripts/prepatch_quality_test_bootstrap_v1.py
