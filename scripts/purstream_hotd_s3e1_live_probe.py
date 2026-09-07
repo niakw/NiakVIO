@@ -61,6 +61,9 @@ def purstream_row() -> dict[str, Any]:
 def context_for(media_type: str) -> dict[str, Any]:
     metadata = {
         "id": 94997,
+        "mediaType": "tv",
+        "type": "tv",
+        "category": "tv",
         "name": "House of the Dragon",
         "original_name": "House of the Dragon",
         "first_air_date": "2022-08-21",
