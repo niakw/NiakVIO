@@ -1,0 +1,63 @@
+name: FIX - Native Provider Timeout Isolation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/lab-timeout-isolation-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Patch timeout semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/prepare_native_corpus_validation.py')
+          s=p.read_text(encoding='utf-8')
+          old='''                val rows = try {{\n                    providerFuture.get({f['provider_timeout_ms']}L, java.util.concurrent.TimeUnit.MILLISECONDS)\n                }} catch (timeout: java.util.concurrent.TimeoutException) {{\n                    providerTimedOut = true\n                    providerFuture.cancel(true)\n                    throw RuntimeException("provider_hard_timeout_ms={f['provider_timeout_ms']}", timeout)\n                }} finally {{\n'''
+          new='''                val rows = try {{\n                    providerFuture.get({f['provider_timeout_ms']}L, java.util.concurrent.TimeUnit.MILLISECONDS)\n                }} catch (timeout: java.util.concurrent.TimeoutException) {{\n                    providerTimedOut = true\n                    providerFuture.cancel(true)\n                    emit("FIELD_NATIVE_TIMEOUT client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} timeout_ms={f['provider_timeout_ms']}")\n                    emptyList()\n                }} finally {{\n'''
+          if s.count(old) != 1:
+              raise SystemExit(f'android timeout anchor count={s.count(old)}')
+          s=s.replace(old,new,1)
+          old2='''                val rows = kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {{\n                    PluginRuntime.executePlugin(\n                        code = File(root, provider.asset).readText(),\n                        tmdbId = tmdbId,\n                        mediaType = mediaType,\n                        season = season,\n                        episode = episode,\n                        scraperId = provider.id,\n                    )\n                }}\n                emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")\n'''
+          new2='''                val rows = try {{\n                    kotlinx.coroutines.withTimeout({f['provider_timeout_ms']}L) {{\n                        PluginRuntime.executePlugin(\n                            code = File(root, provider.asset).readText(),\n                            tmdbId = tmdbId,\n                            mediaType = mediaType,\n                            season = season,\n                            episode = episode,\n                            scraperId = provider.id,\n                        )\n                    }}\n                }} catch (timeout: kotlinx.coroutines.TimeoutCancellationException) {{\n                    emit("FIELD_NATIVE_TIMEOUT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} timeout_ms={f['provider_timeout_ms']}")\n                    emptyList()\n                }}\n                emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} duration_ms=${{System.currentTimeMillis()-started}} count=${{rows.size}}")\n'''
+          if s.count(old2) != 1:
+              raise SystemExit(f'desktop timeout anchor count={s.count(old2)}')
+          s=s.replace(old2,new2,1)
+          p.write_text(s,encoding='utf-8')
+          PY
+      - name: Validate timeout contract
+        run: |
+          python3 -m py_compile scripts/prepare_native_corpus_validation.py
+          python3 tests/native_runtime_settlement_contract_test.py
+          python3 tests/native_corpus_device_lab_test.py
+          python3 - <<'PY'
+          from pathlib import Path
+          s=Path('scripts/prepare_native_corpus_validation.py').read_text()
+          assert 'FIELD_NATIVE_TIMEOUT client={client}' in s
+          assert 'FIELD_NATIVE_TIMEOUT client=desktop' in s
+          assert 'throw RuntimeException("provider_hard_timeout_ms=' not in s
+          print('native provider timeout isolation source contract passed')
+          PY
+      - name: Commit fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/prepare_native_corpus_validation.py
+          git commit -m 'fix(labs): isolate provider hard timeouts' || exit 0
+          git pull --rebase origin main
+          git push origin HEAD:main
