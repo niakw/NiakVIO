@@ -36,6 +36,16 @@ assert 'scripts/merge_provider_repair_report_v6.py' in pipeline
 assert 'scripts/apply_provider_route_recovery_report.py' in pipeline
 assert 'scripts/materialize_provider_base_v3_store.py' in pipeline
 assert 'scripts/materialize_provider_v3_all.py' in pipeline
+for required in (
+    'scripts/upgrade_provider_external_identity_route_v11_1.py',
+    'scripts/upgrade_provider_source_plan_v12.py',
+    'scripts/upgrade_provider_route_plan_v13_2.py',
+    'tests/provider_external_identity_route_v11_test.py',
+    'tests/provider_source_plan_v12_regression_test.py',
+    'tests/provider_route_plan_v13_regression_test.py',
+):
+    assert required in pipeline, required
+assert '"routePlanRevision": "v13.2"' in pipeline
 assert 'tests/provider_repair_v6_recipe_regression_test.py' in pipeline
 assert 'scripts/audit_provider_repair_yield_v6.py' in pipeline
 assert '--require-upstream-positive-preserved' in pipeline
