@@ -23,22 +23,26 @@ for forbidden in (
 ):
     assert forbidden not in migration.casefold(), forbidden
 
-# The migration must preserve the strict identity ordering: provider catalogue
-# identity is proven before external player traversal, and direct media remains
-# the terminal proof inside the bounded crawler. Match stable semantic fragments
-# rather than Python/JS regex escaping representation.
+# V15 closes two systemic gaps: arbitrary UI data-* values cannot become URLs,
+# and links from the currently proven search response may use that response's
+# origin without promoting it into permanent provider authority.
 for marker in (
     "NIAKVIO_PROVIDER_SOURCE_PLAN_V15",
     "function _spv15ExplicitPlayerAttrs",
     "function _spv15ArticleDetails",
+    "function _spv4SameProviderOrigin(url, currentBase)",
+    "candidate === current",
+    "data-(?:src|url|video|embed|player|file|stream|link|href)",
+    "_spv4SameProviderOrigin(url, base)",
     "rows.push(..._spv15ArticleDetails",
     "...explicitPlayers",
     "providerOrigin",
-    "parsed.pathname + parsed.search",
 ):
     assert marker in migration, marker
-assert "return true" in migration
-assert "/e" in migration
+
+# The old catch-all data-* extractor was the source of bogus relative URLs such
+# as language/tooltip/boolean values. V15 must explicitly remove that behavior.
+assert "data-[a-z0-9_:-]+" not in base
 
 # Existing fail-closed gates must remain present in the owned ProviderBase source;
 # V15 patches them after earlier migrations rather than replacing their contract.
