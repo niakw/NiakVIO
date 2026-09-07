@@ -126,16 +126,18 @@ async function _recipePayload(url, recipe, requestSpec, values) {
 }'''
     text = once(text, old_payload, new_payload, "route-request-payload")
 
-    text = once(
-        text,
-        'const payload = await _recipePayload(url, recipe, null);',
-        'const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, "directRequest", localValues), localValues);',
-        "direct-request-spec",
-    )
-    # The next two identical legacy calls occur in search and resolveRoute.
+    # ProviderBase owns exactly three recipe payload call sites in stable order:
+    # directRoute, catalogue search, then movie/episode resolution.  They share
+    # the same legacy call text, so cardinality + ordered replacement is the
+    # deterministic migration contract rather than pretending one is unique.
     legacy = 'const payload = await _recipePayload(url, recipe, null);'
-    if text.count(legacy) != 2:
-        raise AssertionError(f"search/resolve payload anchors={text.count(legacy)}")
+    if text.count(legacy) != 3:
+        raise AssertionError(f"recipe payload call anchors={text.count(legacy)}, expected=3")
+    text = text.replace(
+        legacy,
+        'const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, "directRequest", localValues), localValues);',
+        1,
+    )
     text = text.replace(
         legacy,
         'const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, "searchRequest", values), values);',
@@ -146,6 +148,8 @@ async function _recipePayload(url, recipe, requestSpec, values) {
         'const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";\n        const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, requestKey, values), values);',
         1,
     )
+    if legacy in text:
+        raise AssertionError("legacy recipe payload call remains after request-spec migration")
 
     TARGET.write_text(text, encoding="utf-8")
     validate(text)
@@ -165,6 +169,8 @@ def validate(text: str | None = None) -> None:
     ):
         if needle not in value:
             raise AssertionError(f"route request reader missing: {needle}")
+    if 'const payload = await _recipePayload(url, recipe, null);' in value:
+        raise AssertionError("route request reader retained a legacy null request spec call")
 
 
 def main() -> int:
