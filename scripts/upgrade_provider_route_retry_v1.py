@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import upgrade_provider_worker_dependency_resolution_v1 as worker_deps
+
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "recover_provider_routes_from_upstreams.py"
 MARKER = "ROUTE_RECOVERY_ADAPTIVE_RETRY_V1"
@@ -209,10 +211,12 @@ def validate(text: str | None = None) -> None:
 
 
 def main() -> int:
-    changed = patch()
+    changed = patch() | worker_deps.patch()
+    validate()
+    worker_deps.validate()
     print(
         f"PROVIDER_ROUTE_RETRY_V1_OK changed={str(changed).lower()} "
-        "max_attempts=4 default_attempts=3 deterministic_errors_retried=0"
+        "max_attempts=4 default_attempts=3 deterministic_errors_retried=0 project_dep_resolution=1"
     )
     return 0
 
