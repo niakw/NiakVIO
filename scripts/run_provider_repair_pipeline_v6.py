@@ -1,0 +1,184 @@
+#!/usr/bin/env python3
+"""Canonical proof-first recognition/correction pipeline for unresolved providers.
+
+The exact same executable pipeline is used by interactive portfolio repair, Learn
+and Force workflows. It never publishes. Already-green providers are not network
+re-probed; their accepted proof rows are carried through the merged 96-provider
+report and they remain covered by deterministic global regression tests.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+MANIFEST = ROOT / "manifest.json"
+DEFAULT_SKIP = ROOT / "automation" / "provider-repair-skip.json"
+TARGET_REPORT = ROOT / "automation" / "provider-route-recovery-v6-targeted.json"
+MERGED_REPORT = ROOT / "automation" / "provider-route-recovery-v6.json"
+YIELD_REPORT = ROOT / "automation" / "provider-repair-yield-v6.json"
+SUMMARY = ROOT / "automation" / "provider-repair-v6-summary.json"
+
+
+def load(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(path)
+    return value
+
+
+def cid(value: object) -> str:
+    return str(value or "").strip().casefold().replace("_", "-")
+
+
+def run(*args: str, timeout: int | None = None) -> None:
+    print("FIELD_PROVIDER_REPAIR_CMD " + " ".join(args), flush=True)
+    subprocess.run(list(args), cwd=ROOT, env=os.environ.copy(), check=True, timeout=timeout)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--mode", choices=("repair", "learn", "force"), default="repair")
+    parser.add_argument("--skip-file", type=Path, default=DEFAULT_SKIP.relative_to(ROOT))
+    parser.add_argument("--provider", action="append", default=[])
+    parser.add_argument("--workers", type=int, default=8)
+    parser.add_argument("--timeout", type=int, default=55)
+    parser.add_argument("--allow-upstream-positive-loss", action="store_true")
+    args = parser.parse_args()
+
+    manifest = load(MANIFEST)
+    skip_path = args.skip_file if args.skip_file.is_absolute() else ROOT / args.skip_file
+    skip_cfg = load(skip_path)
+    skipped = {cid(value) for value in (skip_cfg.get("providers") or {}).keys() if cid(value)}
+    catalogue = [cid(row.get("id")) for row in manifest.get("scrapers") or [] if isinstance(row, dict) and cid(row.get("id"))]
+    if len(catalogue) != 96 or len(set(catalogue)) != 96:
+        raise SystemExit(f"provider catalogue must be exactly 96, got {len(catalogue)}")
+    requested = {cid(value) for value in args.provider if cid(value)}
+    targets = [provider for provider in catalogue if provider not in skipped and (not requested or provider in requested)]
+    if not targets:
+        raise SystemExit("no unresolved provider selected for repair")
+
+    print(
+        "FIELD_PROVIDER_REPAIR_SCOPE "
+        f"mode={args.mode} catalogue=96 targeted={len(targets)} skipped_green={len(skipped)} "
+        f"providers={','.join(targets)}",
+        flush=True,
+    )
+
+    # Shared deterministic migrations. These are intentionally identical for
+    # repair, Learn and Force; only the surrounding workflow permissions differ.
+    migrations = [
+        "scripts/prepatch_identity_cleanup_shared_owner_v1.py",
+        "scripts/apply_core_identity_ownership_cleanup.py",
+        "scripts/upgrade_provider_worker_route_proof_v1.py",
+        "scripts/upgrade_provider_base_runtime_v5.py",
+        "scripts/upgrade_provider_base_route_requests_v1.py",
+        "scripts/upgrade_provider_route_authority_v5.py",
+        "scripts/upgrade_route_recovery_request_specs_v1.py",
+        "scripts/upgrade_provider_v3_source_plan_v5.py",
+        "scripts/upgrade_provider_repair_v6.py",
+    ]
+    for migration in migrations:
+        run(sys.executable, migration)
+
+    run("node", "--check", "scripts/provider_worker.cjs")
+    run(sys.executable, "tests/provider_route_proof_authority_test.py")
+    run(sys.executable, "tests/global_identity_policy_ownership_test.py")
+    run(sys.executable, "tests/provider_latest_request_cancellation_test.py")
+    run(sys.executable, "tests/provider_native_abort_ignorant_cancellation_test.py")
+
+    cmd = [
+        sys.executable, "scripts/recover_provider_routes_from_upstreams.py",
+        "--workers", str(max(1, min(args.workers, 12))),
+        "--timeout", str(max(15, min(args.timeout, 120))),
+        "--out", str(TARGET_REPORT.relative_to(ROOT)),
+    ]
+    for provider in targets:
+        cmd.extend(["--provider", provider])
+    run(*cmd, timeout=max(1200, len(targets) * max(15, args.timeout)))
+
+    run(
+        sys.executable, "scripts/merge_provider_repair_report_v6.py",
+        "--baseline", "automation/provider-route-recovery-v5.json",
+        "--targeted", str(TARGET_REPORT.relative_to(ROOT)),
+        "--output", str(MERGED_REPORT.relative_to(ROOT)),
+    )
+    run(sys.executable, "scripts/apply_provider_route_recovery_report.py", str(MERGED_REPORT.relative_to(ROOT)))
+    run(
+        sys.executable, "scripts/enforce_route_proof_manifest_policy_v1.py",
+        "--report", str(MERGED_REPORT.relative_to(ROOT)),
+        "--manifest", "manifest.json",
+        "--overrides", "provider-overrides.json",
+    )
+
+    # Rebuild all bytes deterministically, but do not perform provider network
+    # tests for the skip set. Rebuilding is required because ProviderBase common
+    # runtime changed; it is not a re-recognition of already-green providers.
+    run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
+    run(sys.executable, "scripts/materialize_provider_v3_all.py")
+    run(sys.executable, "scripts/generate_language_manifests.py", "--manifest", "manifest.json", "--report", "health-report.json")
+    run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", "96")
+
+    deterministic_tests = [
+        "tests/provider_js_lego_ownership_test.py",
+        "tests/global_stream_output_guard_test.py",
+        "tests/episodic_identity_runtime_test.py",
+        "tests/episodic_year_identity_regression_test.py",
+        "tests/global_media_type_resolution_test.py",
+        "tests/native_dual_id_identity_test.py",
+        "tests/global_stream_presentation_test.py",
+        "tests/global_stream_presentation_pipeline_test.py",
+    ]
+    for test in deterministic_tests:
+        run(sys.executable, test)
+
+    yield_cmd = [
+        sys.executable, "scripts/audit_provider_repair_yield_v6.py",
+        "--recovery", str(TARGET_REPORT.relative_to(ROOT)),
+        "--skip-file", str(skip_path.relative_to(ROOT) if skip_path.is_relative_to(ROOT) else skip_path),
+        "--output", str(YIELD_REPORT.relative_to(ROOT)),
+    ]
+    if not args.allow_upstream_positive_loss:
+        yield_cmd.append("--require-upstream-positive-preserved")
+    yield_proc = subprocess.run(yield_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
+
+    targeted_report = load(TARGET_REPORT)
+    merged_report = load(MERGED_REPORT)
+    yield_report = load(YIELD_REPORT) if YIELD_REPORT.exists() else {}
+    summary = {
+        "schemaVersion": 6,
+        "mode": args.mode,
+        "publicationAllowed": False,
+        "mainWritesAllowed": False,
+        "catalogueProviderCount": 96,
+        "skippedAlreadyGreenProviders": sorted(skipped),
+        "targetedProviderCount": len(targets),
+        "targetedProviders": targets,
+        "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
+        "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
+        "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
+        "mergedProvenRoutes": int(merged_report.get("provenRouteCount") or 0),
+        "postRepairPlayableProviders": yield_report.get("playableProviders") or [],
+        "postRepairVerifiedProviders": yield_report.get("verifiedProviders") or [],
+        "lostUpstreamPositivePairs": yield_report.get("lostUpstreamPositivePairs") or [],
+        "preservationGatePassed": yield_proc.returncode == 0,
+    }
+    SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(
+        "FIELD_PROVIDER_REPAIR_V6_FINAL "
+        f"mode={args.mode} targeted={len(targets)} targeted_proven={summary['targetedProvidersWithProvenRoutes']} "
+        f"playable={len(summary['postRepairPlayableProviders'])} verified={len(summary['postRepairVerifiedProviders'])} "
+        f"lost={len(summary['lostUpstreamPositivePairs'])} preservation_gate={str(summary['preservationGatePassed']).lower()}"
+    )
+    if yield_proc.returncode:
+        return yield_proc.returncode
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
