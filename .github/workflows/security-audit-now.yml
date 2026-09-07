@@ -34,6 +34,8 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
       - name: npm audit
+        id: npm_audit
+        continue-on-error: true
         shell: bash
         run: |
           set -o pipefail
@@ -47,26 +49,30 @@ jobs:
           if (high>0) process.exitCode=2;
           NODE
       - name: NiakVIO security regression gates
+        id: security_gates
+        continue-on-error: true
         run: |
           python3 tests/provider_html_filter_security_test.py
           python3 tests/provider_security_hardening_test.py
           python3 tests/repository_hygiene_contract_test.py
           node tests/provider_worker_security.test.cjs
       - name: Export open code-scanning alerts
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
-          gh api --paginate "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" > code-scanning-alerts.json
+          gh api --paginate --slurp "repos/${GITHUB_REPOSITORY}/code-scanning/alerts?state=open&per_page=100" > code-scanning-pages.json
           python3 - <<'PY'
           import json, collections
-          data=json.load(open('code-scanning-alerts.json',encoding='utf-8'))
-          # gh --paginate may emit concatenated JSON arrays; recover if needed.
-          if isinstance(data, dict): data=[data]
-          sev=collections.Counter()
-          rules=collections.Counter()
-          files=collections.Counter()
+          pages=json.load(open('code-scanning-pages.json',encoding='utf-8'))
+          data=[]
+          for page in pages:
+              if isinstance(page,list): data.extend(page)
+              elif isinstance(page,dict): data.append(page)
+          json.dump(data,open('code-scanning-alerts.json','w',encoding='utf-8'),indent=2)
+          sev=collections.Counter(); rules=collections.Counter(); files=collections.Counter()
           for a in data:
               rule=a.get('rule') or {}
               sev[str(rule.get('security_severity_level') or 'unknown')]+=1
@@ -89,6 +95,12 @@ jobs:
             code-scanning-alerts.json
           if-no-files-found: warn
           retention-days: 14
+      - name: Enforce audit gates
+        if: always()
+        shell: bash
+        run: |
+          test '${{ steps.npm_audit.outcome }}' = success
+          test '${{ steps.security_gates.outcome }}' = success
 
   codeql:
     name: CodeQL · ${{ matrix.language }}
