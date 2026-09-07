@@ -40,14 +40,23 @@ jobs:
       - name: Install locked tooling
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Freeze exact 5.21.35 baseline
+      - name: Freeze trigger-declared public baseline
         shell: bash
         run: |
           set -euo pipefail
           cp manifest.json "$RUNNER_TEMP/manifest.before.json"
           cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
           cp automation/provider-v3-static-knowledge.json "$RUNNER_TEMP/static-knowledge.before.json"
-          python -c "import json; m=json.load(open('manifest.json')); assert m.get('version')=='5.21.35',m.get('version'); assert len(m.get('scrapers') or [])==96; print('ROUTE_PROOF_BASELINE_OK version=5.21.35 providers=96')"
+          python - <<'PY'
+          import json
+          manifest=json.load(open('manifest.json'))
+          trigger=json.load(open('.github/triggers/route-proof-reconstruction.json'))
+          expected=str(trigger.get('expectedPublicBaseline') or '').strip()
+          assert expected, trigger
+          assert manifest.get('version')==expected, (manifest.get('version'), expected)
+          assert len(manifest.get('scrapers') or [])==96, len(manifest.get('scrapers') or [])
+          print(f"ROUTE_PROOF_BASELINE_OK version={expected} providers=96")
+          PY
           git rev-parse HEAD | tee "$RUNNER_TEMP/base.sha"
 
       - name: Apply durable route-proof and shared-runtime migrations in workspace
@@ -98,6 +107,10 @@ jobs:
           python tests/global_media_type_resolution_test.py
           python tests/native_dual_id_identity_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_latest_request_cancellation_test.py
+          python tests/provider_native_abort_ignorant_cancellation_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
 
       - name: Census all 96 from historical upstream or native source
         timeout-minutes: 20
@@ -159,7 +172,7 @@ jobs:
           )
           PY
 
-      - name: Materialize all 96 from proof-v5 DATA plus Lego
+      - name: Materialize all 96 from proof-v5 DATA plus managed blocks
         timeout-minutes: 10
         shell: bash
         run: |
@@ -175,8 +188,8 @@ jobs:
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
           python scripts/validate_published_provider_config.py --expected 96
 
-      - name: Test reconstructed 96 runtime and Lego contracts
-        timeout-minutes: 10
+      - name: Test reconstructed 96 runtime and managed-block contracts
+        timeout-minutes: 12
         shell: bash
         run: |
           set -euo pipefail
@@ -189,6 +202,32 @@ jobs:
           python tests/native_provider_loading_compat_test.py
           python tests/global_media_type_resolution_test.py
           python tests/native_dual_id_identity_test.py
+          python tests/provider_latest_request_cancellation_test.py
+          python tests/provider_native_abort_ignorant_cancellation_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.load(open('manifest.json'))
+          rows=m.get('scrapers') or []
+          assert len(rows)==96, len(rows)
+          bad=[]
+          for row in rows:
+              text=Path(row['filename']).read_text(encoding='utf-8')
+              missing=[]
+              for marker in (
+                  'tmdb-data-contract-launch-gate-v29-native-abort-race',
+                  'function requestAbortPromise(controller,requestToken)',
+                  'all-providers-client-projection-name-mirror-v20',
+              ):
+                  if marker not in text:
+                      missing.append(marker)
+              if missing:
+                  bad.append((row.get('id'),missing))
+          assert not bad, bad[:10]
+          print('ROUTE_PROOF_V29_PRESENT providers=96')
+          PY
 
       - name: Verify reconstructed workspace cardinality
         timeout-minutes: 2
@@ -246,6 +285,45 @@ jobs:
           )
           PY
 
+      - name: Compare candidate live yield with accepted 5.21.37 baseline
+        timeout-minutes: 25
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/interstellar_nuvio_matrix.py --workers 12 --timeout 35 --output automation/interstellar-route-proof-matrix.json
+          python scripts/desktop_series_provider_matrix.py \
+            --id tt30177477 \
+            --title "The Unwanted Undead Adventurer" \
+            --season 1 \
+            --episode 2 \
+            --category anime \
+            --workers 10 \
+            --timeout 35 \
+            --output automation/unwanted-undead-route-proof-matrix.json
+          python scripts/desktop_series_provider_matrix.py \
+            --id tt38646634 \
+            --title "HELL MODE: The Hardcore Gamer Dominates in Another World with Garbage Balancing" \
+            --season 1 \
+            --episode 12 \
+            --category anime \
+            --workers 10 \
+            --timeout 35 \
+            --output automation/hellmode-route-proof-matrix.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          i=json.loads(Path('automation/interstellar-route-proof-matrix.json').read_text())
+          u=json.loads(Path('automation/unwanted-undead-route-proof-matrix.json').read_text())
+          h=json.loads(Path('automation/hellmode-route-proof-matrix.json').read_text())
+          print(
+              'ROUTE_PROOF_LIVE_YIELD '
+              f"interstellar={i.get('automatic_stream_provider_count',0)}/{i.get('enabled_movie_providers_tested',0)} "
+              f"interstellar_vf={i.get('automatic_vf_provider_count',0)} "
+              f"unwanted={u.get('positive_count',0)}/{u.get('providers_tested',0)} "
+              f"hellmode={h.get('positive_count',0)}/{h.get('providers_tested',0)}"
+          )
+          PY
+
       - name: Final real HOTD S3E1 proof - Kehflix and Purstream
         timeout-minutes: 8
         shell: bash
@@ -263,6 +341,9 @@ jobs:
             automation/provider-route-recovery-v5.json
             automation/provider-v3-static-knowledge.json
             automation/hotd-s3e1-live.json
+            automation/interstellar-route-proof-matrix.json
+            automation/unwanted-undead-route-proof-matrix.json
+            automation/hellmode-route-proof-matrix.json
             provider-overrides.json
             manifest.json
             vf/manifest.json
