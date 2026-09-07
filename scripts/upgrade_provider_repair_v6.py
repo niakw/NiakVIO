@@ -5,7 +5,7 @@ This migration contains only shared recognition/runtime behavior:
 - classify colon-suffixed search endpoints (e.g. /1:search) as search;
 - recognize search identity carried in URL or structured request body;
 - build a direct API recipe when a proven reusable search request itself returned streams;
-- avoid spending the provider deadline crawling an unrelated external origin root.
+- apply the shared cumulative ProviderBase v10 crawl-budget fix.
 
 Provider-specific URLs/methods/bodies remain DATA from live route proof.
 """
@@ -13,10 +13,11 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import upgrade_provider_base_runtime_v10 as runtime_v10
+
 ROOT = Path(__file__).resolve().parents[1]
 PROOF = ROOT / "scripts" / "provider_route_proof.py"
 RECOVERY = ROOT / "scripts" / "recover_provider_routes_from_upstreams.py"
-BASE = ROOT / "scripts" / "provider_base_store.py"
 MARKER = "NIAKVIO_PROVIDER_REPAIR_PORTFOLIO_V6"
 
 
@@ -105,8 +106,8 @@ def _record_has_search_query(row: dict[str, Any]) -> bool:
     if not isinstance(spec, dict):
         return False
     # Request specs are already sanitized/abstracted proof DATA. Searching the
-    # serialized structure here does not recover arbitrary provider code/data;
-    # it only detects the canonical placeholder produced by route proof.
+    # serialized structure here only detects the canonical placeholder produced
+    # by proof abstraction; it never recovers arbitrary provider code/data.
     return "{query}" in json.dumps(spec, ensure_ascii=False, sort_keys=True)
 
 
@@ -122,46 +123,9 @@ def _record_has_search_query(row: dict[str, Any]) -> bool:
     return changed
 
 
-def patch_base() -> bool:
-    text = BASE.read_text(encoding="utf-8")
-    marker = "NIAKVIO_PROVIDER_BASE_BOUNDED_EXTERNAL_ROOT_V10"
-    if marker in text:
-        return False
-
-    # Runtime v6/v7 deliberately uses `_crawlDirectMedia` as the stable boundary
-    # after the crawl helpers. Insert V10 at that semantic boundary instead of
-    # trying to parse a JavaScript function body with a regex (nested braces in
-    # the current helper made the previous anchor fragile).
-    crawl_anchor = "async function _crawlDirectMedia(seedUrls, referer, maxDepth) {"
-    helper = r'''/* NIAKVIO_PROVIDER_BASE_BOUNDED_EXTERNAL_ROOT_V10 */
-function _crawlFollowable(url, fromUrl) {
-  if (!_crawlEligible(url)) return false;
-  if (_directMedia(url)) return true;
-  try {
-    const next = new URL(url);
-    const from = new URL(fromUrl);
-    const rootOnly = (next.pathname === "/" || next.pathname === "") && !next.search && !next.hash;
-    // A bare external origin is normally a landing/decorative link, not a
-    // provider resolver. Following it can consume the entire provider deadline
-    // (observed with HubCloud) and discard already-discovered streams.
-    if (rootOnly && next.origin !== from.origin) return false;
-    return true;
-  } catch (_) { return false; }
-}
-'''
-    text = once(text, crawl_anchor, helper + crawl_anchor, "bounded-root-helper-boundary")
-
-    old = '_uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))'
-    new = '_uniq(urls.map(_crawlCanonical)).filter(Boolean).filter(next=>_crawlFollowable(next,responseUrl)).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))'
-    text = once(text, old, new, "bounded-external-root-crawl")
-    BASE.write_text(text, encoding="utf-8")
-    return True
-
-
 def validate() -> None:
     proof = PROOF.read_text(encoding="utf-8")
     recovery = RECOVERY.read_text(encoding="utf-8")
-    base = BASE.read_text(encoding="utf-8")
     for needle in (
         MARKER,
         ':search(?:[/?#]|$)',
@@ -178,20 +142,13 @@ def validate() -> None:
     ):
         if needle not in recovery:
             raise AssertionError(f"recovery v6 missing {needle}")
-    for needle in (
-        "NIAKVIO_PROVIDER_BASE_BOUNDED_EXTERNAL_ROOT_V10",
-        "function _crawlFollowable(url, fromUrl)",
-        "rootOnly && next.origin !== from.origin",
-        "_crawlFollowable(next,responseUrl)",
-    ):
-        if needle not in base:
-            raise AssertionError(f"ProviderBase v10 missing {needle}")
+    runtime_v10.validate()
 
 
 def main() -> int:
-    changed = patch_proof() | patch_recovery() | patch_base()
+    changed = patch_proof() | patch_recovery() | runtime_v10.patch()
     validate()
-    print(f"PROVIDER_REPAIR_PORTFOLIO_V6_OK changed={str(bool(changed)).lower()} colon_search=1 body_search=1 terminal_post=1 external_root_guard=1")
+    print(f"PROVIDER_REPAIR_PORTFOLIO_V6_OK changed={str(bool(changed)).lower()} colon_search=1 body_search=1 terminal_post=1 provider_base_v10=1")
     return 0
 
 
