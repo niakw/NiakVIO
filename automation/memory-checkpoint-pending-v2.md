@@ -1,6 +1,1 @@
-## 2026-09-07 — Provider Recognition Repair V6 retry 3 pre-census contract red
-
-- Workflow run **34136141779**, job **101787451524**, head `8e11ad7348f62f27473f99dc274babfe3aad5255`, failed in the deterministic ownership/contract step before the canonical repair pipeline and before any provider network census. No route/yield result from retry 3 is provider evidence.
-- Exact assertion: `NIAKVIO_PROVIDER_BASE_BOUNDED_EXTERNAL_ROOT_V10` was still expected inside `scripts/upgrade_provider_repair_v6.py`. The current architecture intentionally moved V10 implementation/validation into the cumulative owner `scripts/upgrade_provider_base_runtime_v10.py`, which V6 imports and calls.
-- This was test drift caused by the V10 ownership refactor, not an algorithm/runtime regression. Commit **`fe68b70f811438c422d725f27d62762d42d0e809`** updates `tests/provider_repair_pipeline_v6_contract_test.py` to validate V10 markers in their real owner, require the V6->V10 import/call, and also lock the new causal recipe regression in the canonical pre-census pipeline.
-- The nine known-green providers were not re-probed because the failure occurred before recovery. Retry must continue with the same 87 unresolved-provider scope.
+<!-- NIAKVIO_MEMORY_PENDING_EMPTY -->
