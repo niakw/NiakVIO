@@ -11,8 +11,9 @@ V17 keeps the fresh response origin only for same-origin catalogue links and,
 after positive catalogue identity, resolves each detail through
 _spv4ResolveDetail before falling back to the player crawler.
 
-V18 is chained from this canonical owner so every V17 consumer also receives the
-proof-correlated provider-value plan and complete current-response origin fix.
+V18/V18.1 are chained from this canonical owner so every V17 consumer also
+receives the proof-correlated provider-value plan, complete current-response
+origin fix, and scored provider-native slug identities.
 No provider ids, hosts, fixture titles or provider-specific routes are encoded.
 """
 from __future__ import annotations
@@ -20,6 +21,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import upgrade_provider_correlated_value_plan_v18 as v18
+import upgrade_provider_correlated_value_plan_v18_1 as v18_1
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "scripts" / "provider_base_store.py"
@@ -46,9 +48,6 @@ def patch() -> bool:
         if required not in text:
             raise AssertionError(f"V17 requires {required}")
 
-    # A URL from the current positive HTTP response is allowed to keep that
-    # exact origin when it stays on that origin. Cross-origin links still go
-    # through normal substitution/proof policy.
     helper_anchor = "function _spv15ArticleDetails(html, base, meta, mediaType, season) {\n"
     helper = r'''/* NIAKVIO_PROVIDER_SEARCH_DETAIL_BRIDGE_V17 */
 function _spv17CurrentResponseUrl(value, base) {
@@ -70,9 +69,6 @@ function _spv17CurrentResponseUrl(value, base) {
 '''
     text = once(text, old_article, new_article, "v17-preserve-current-article-origin")
 
-    # Do not rewrite the already-proven current origin when returning an article
-    # detail candidate. Historical substitution knowledge remains available for
-    # cross-origin resolver/player URLs inside the detail page.
     old_push = '''      out.push({
         url: _substituteDomain(url),
         score: Math.max(identityScore, urlScore) + (bookmark ? 24 : 0) + _spv10SeasonUrlScore(url, mediaType, season)
@@ -85,10 +81,6 @@ function _spv17CurrentResponseUrl(value, base) {
 '''
     text = once(text, old_push, new_push, "v17-article-return-live-origin")
 
-    # V14 previously jumped from catalogue detail candidates directly into the
-    # player crawler. Detail candidates are not player URLs; resolve them through
-    # the canonical provider detail semantics first. The fallback crawler stays
-    # fail-open for providers whose detail URL is itself a resolver page.
     old_bridge = '''      if (details.length) {
         const crawled = await _crawlDirectMedia(_uniq(details).slice(0, 8), payload.base || url, 3);
         if (crawled.length) return crawled.slice(0, 40);
@@ -142,6 +134,8 @@ def main() -> int:
     v18.validate_recovery()
     v18.validate_materializer()
     v18.validate_base()
+    v18_1_changed = v18_1.patch()
+    v18_1.validate()
     print(
         f"PROVIDER_SEARCH_DETAIL_BRIDGE_V17_OK changed={str(changed).lower()} "
         "current_origin_preserved=1 canonical_detail_resolver=1 player_crawl_fallback=1 provider_specific_rules=0"
@@ -150,6 +144,10 @@ def main() -> int:
         f"PROVIDER_CORRELATED_VALUE_PLAN_V18_OK changed={str(v18_changed).lower()} "
         "provider_value_dataflow=1 semantic_positive_only=1 exact_proof_base=1 "
         "all_html_current_origin=1 provider_specific_rules=0"
+    )
+    print(
+        f"PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed={str(v18_1_changed).lower()} "
+        "scored_slug_identity=1 bounded_charset=1 provider_specific_rules=0"
     )
     return 0
 
