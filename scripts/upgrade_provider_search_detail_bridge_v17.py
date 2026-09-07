@@ -11,11 +11,15 @@ V17 keeps the fresh response origin only for same-origin catalogue links and,
 after positive catalogue identity, resolves each detail through
 _spv4ResolveDetail before falling back to the player crawler.
 
+V18 is chained from this canonical owner so every V17 consumer also receives the
+proof-correlated provider-value plan and complete current-response origin fix.
 No provider ids, hosts, fixture titles or provider-specific routes are encoded.
 """
 from __future__ import annotations
 
 from pathlib import Path
+
+import upgrade_provider_correlated_value_plan_v18 as v18
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "scripts" / "provider_base_store.py"
@@ -134,9 +138,18 @@ def validate(text: str | None = None) -> None:
 
 def main() -> int:
     changed = patch()
+    v18_changed = v18.patch_recovery() | v18.patch_materializer() | v18.patch_base()
+    v18.validate_recovery()
+    v18.validate_materializer()
+    v18.validate_base()
     print(
         f"PROVIDER_SEARCH_DETAIL_BRIDGE_V17_OK changed={str(changed).lower()} "
         "current_origin_preserved=1 canonical_detail_resolver=1 player_crawl_fallback=1 provider_specific_rules=0"
+    )
+    print(
+        f"PROVIDER_CORRELATED_VALUE_PLAN_V18_OK changed={str(v18_changed).lower()} "
+        "provider_value_dataflow=1 semantic_positive_only=1 exact_proof_base=1 "
+        "all_html_current_origin=1 provider_specific_rules=0"
     )
     return 0
 
