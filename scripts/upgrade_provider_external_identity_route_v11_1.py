@@ -67,14 +67,14 @@ def patch_base_fixed() -> bool:
 ''',
         "base-learned-imdb-value",
     )
+    # Stable owner: comments around this line have evolved, but the TMDB
+    # placeholder expansion itself is the durable contract.
     text = v11.once(
         text,
         '''  route = route.replace(/\\{tmdb_?id\\}/gi, encodeURIComponent(id));
-  // {id} has no universal meaning across providers.
 ''',
         '''  route = route.replace(/\\{tmdb_?id\\}/gi, encodeURIComponent(id));
   route = route.replace(/\\{imdb_?id\\}/gi, encodeURIComponent(imdbId));
-  // {id} has no universal meaning across providers.
 ''',
         "base-expand-imdb-learned-route",
     )
