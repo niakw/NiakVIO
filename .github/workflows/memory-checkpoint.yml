@@ -1,0 +1,59 @@
+name: DOC - Memory Checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'automation/memory-checkpoint-pending.md'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-memory-checkpoint
+  cancel-in-progress: false
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Append pending checkpoint idempotently
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          memory=Path('MEMORY.md')
+          pending=Path('automation/memory-checkpoint-pending.md')
+          chunk=pending.read_text(encoding='utf-8').strip()
+          if not chunk:
+              print('MEMORY_PENDING_EMPTY')
+              raise SystemExit(0)
+          text=memory.read_text(encoding='utf-8')
+          first=next((line.strip() for line in chunk.splitlines() if line.strip()), '')
+          if first and first in text:
+              print('MEMORY_CHECKPOINT_ALREADY_PRESENT', first)
+          else:
+              memory.write_text(text.rstrip()+'\n\n'+chunk+'\n', encoding='utf-8')
+              print('MEMORY_CHECKPOINT_APPENDED', first)
+          pending.write_text('', encoding='utf-8')
+          PY
+      - name: Commit durable memory state
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add MEMORY.md automation/memory-checkpoint-pending.md
+          if git diff --cached --quiet; then
+            echo 'No memory changes'
+            exit 0
+          fi
+          git commit -m 'docs(memory): checkpoint NiakVIO recovery state'
+          git pull --rebase origin main
+          git push origin HEAD:main
