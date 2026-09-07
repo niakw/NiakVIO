@@ -1,6 +1,7 @@
 {
-  "schemaVersion": 1,
-  "requestedAt": "2026-09-07T19:08:00+02:00",
+  "schemaVersion": 2,
+  "requestedAt": "2026-09-07T19:12:00+02:00",
   "providers": 16,
-  "goal": "prove temp upstream providers resolve pinned npm packages and clear MODULE_NOT_FOUND"
+  "goal": "prove temp upstream providers resolve only declared pinned npm dependencies and clear MODULE_NOT_FOUND",
+  "security": "top-level dependencies only; blocked built-ins unchanged"
 }
