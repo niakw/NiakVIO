@@ -1,0 +1,94 @@
+name: TEMP - Multi-hop Plan Probe
+
+on:
+  push:
+    branches: [workbench/route-recognition-v6]
+    paths:
+      - '.github/triggers/multihop-plan-probe.json'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply recognition migrations
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_worker_route_proof_v1.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_base_route_requests_v1.py
+          python scripts/upgrade_provider_route_authority_v5.py
+          python scripts/upgrade_route_recovery_request_specs_v1.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_repair_v6.py
+          python scripts/upgrade_provider_repair_v7.py
+          python scripts/upgrade_provider_repair_v8.py
+          python scripts/upgrade_provider_text_body_request_v9.py
+          python scripts/upgrade_provider_route_retry_v1.py
+          python scripts/upgrade_provider_base_runtime_v11.py
+          node --check scripts/provider_worker.cjs
+      - name: Probe upstream-positive multi-hop families
+        run: |
+          set -euo pipefail
+          python scripts/recover_provider_routes_from_upstreams.py \
+            --workers 8 --timeout 55 --attempts 3 \
+            --provider animekai \
+            --provider animesama-co \
+            --provider french-manga \
+            --provider frenchstream \
+            --provider movies4u \
+            --provider movieshunt \
+            --provider mugiwarastream \
+            --provider papadustream \
+            --provider voiranime \
+            --provider voiranime-homes \
+            --provider voiranime-rip \
+            --provider cineby \
+            --out automation/multihop-plan-probe.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          proof=json.loads(Path('automation/multihop-plan-probe.json').read_text())
+          knowledge=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text())['providers']
+          for row in proof['providers']:
+            pid=row['providerId']
+            positive=[f"{t['semanticType']}:{t['streamCount']}" for t in row.get('tasks',[]) if t.get('streamCount') or t.get('rawStreamCount')]
+            recipe=row.get('apiRecipe') if isinstance(row.get('apiRecipe'),dict) else None
+            model=(knowledge.get(pid) or {}).get('model') or {}
+            print('MULTIHOP_PLAN', pid,
+                  'positive='+(','.join(positive) or '-'),
+                  'routes='+str(len(row.get('routes') or [])),
+                  'recipe='+(str(sorted(recipe.keys())) if recipe else '-'),
+                  'recipeKind='+(str(recipe.get('recipeKind')) if recipe else '-'),
+                  'family='+str(model.get('sourceRuntimeFamily') or 'unknown'),
+                  'strategy='+str(model.get('strategy') or 'unknown'))
+          PY
+      - name: Upload probe
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: multihop-plan-probe-${{ github.run_id }}
+          path: automation/multihop-plan-probe.json
+          retention-days: 7
+          if-no-files-found: warn
