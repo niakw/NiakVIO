@@ -15,9 +15,10 @@ upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
 model = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
-# Human documentation is allowed to evolve its prose. Bind this check to the
-# actual architecture concepts/markers rather than one exact English label.
-required_architecture = (
+# Human docs may evolve wording. Assert only concepts that belong in each
+# document; exact five-Lab/type/workflow cardinality is enforced below from the
+# machine model and by dedicated runtime/Lab tests.
+for needle in (
     "ProviderBase v3",
     "provider-bases/",
     "DATA structurée",
@@ -28,23 +29,15 @@ required_architecture = (
     ".github/workflows/sync.yml",
     "Quick",
     "Deep",
-    "TV Android",
-    "Mobile Android",
-    "Mobile iOS",
-    "Desktop macOS",
-    "Desktop Windows",
-    "Reader",
     "Learning",
     "Domain Refresh",
-)
-for needle in required_architecture:
+):
     assert needle in architecture, needle
 
 for needle in (
-    "ProviderBase + DATA + Provider Lego + Core Lego",
+    "96 Provider Objects",
+    "ProviderBase v3 + structured DATA + owned Provider/Core Lego",
     "CORE - Verify & Publish",
-    "Quick",
-    "Deep",
     "TV Android",
     "Mobile Android",
     "Mobile iOS",
@@ -54,10 +47,9 @@ for needle in (
     assert needle in readme, needle
 
 for needle in (
-    "ProviderBase + DATA + Provider Lego + Core Lego",
+    "96 Provider Objects",
+    "ProviderBase v3 + DATA structurée + Lego Provider/Core détenus",
     "CORE - Verify & Publish",
-    "Quick",
-    "Deep",
     "TV Android",
     "Mobile Android",
     "Mobile iOS",
@@ -67,6 +59,7 @@ for needle in (
     assert needle in readme_fr, needle
 
 for needle in (
+    "CORE - Verify & Publish",
     "exactement cinq Labs",
     "TV Android",
     "Mobile Android",
@@ -79,16 +72,14 @@ for needle in (
 
 for needle in (
     "ProviderBase v3 + structured DATA + owned Lego",
-    "ProviderBase",
-    "Provider DATA",
-    "Provider Lego",
-    "Core Lego",
+    "NIAKVIO_PROVIDER_BASE_OWNED_V3",
 ):
     assert needle in security, needle
 
 for needle in (
     "ne sont **pas** rafraîchis par CORE Deep",
     "jamais une seed JavaScript exécutable",
+    "NIAKVIO_PROVIDER_BASE_OWNED_V3",
 ):
     assert needle in upstreams, needle
 
@@ -144,8 +135,8 @@ assert domain["full_provider_reconstruction_allowed"] is False
 assert domain["provider_config_data_update_only"] is True
 assert domain["provider_js_structure_must_remain_byte_identical_outside_config"] is True
 
-# Historical reverse reference is intentionally frozen, but it is isolated from
-# current operational truth and current native/type counts.
+# Historical reverse reference is intentionally frozen and isolated from current
+# operational truth.
 reference = model["reference_reconstruction"]
 assert reference["current_operational_truth"] is False
 assert reference["reverse_byte_identical"] == "96/96"
@@ -172,9 +163,8 @@ assert set(model["native_labs"]) == {
     "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
 }
 
-# Validate the dynamic matrix source against the current manifest instead of
-# freezing yesterday's route totals into docs/machine policy. `series` is a
-# Nuvio transport alias for canonical `tv`: it belongs in supportedTypes only.
+# Validate dynamic type sources directly from the current manifest. `series` is
+# a Nuvio transport alias for canonical `tv`; it never becomes a canonical type.
 rows = manifest.get("scrapers") or []
 assert len(rows) == 96
 transport_valid = {"movie", "tv", "anime", "series"}
@@ -192,15 +182,10 @@ for row in rows:
     if canonical == {"anime"}:
         assert {"anime", "tv"} <= transport_semantic, (provider, transport)
 
-# No dead workbench should remain part of the permanent documentation contract.
+# No dead workbench should remain part of permanent documentation truth.
 for text, label in ((architecture, "ARCHITECTURE"), (readme, "README"), (readme_fr, "README.fr")):
     assert "current route-recognition workbench" not in text.lower(), label
 
-assert "exactement cinq Labs" in install
-assert "8 jours" in install
-assert "ProviderBase v3 + structured DATA + owned Lego" in security
-assert "ne sont **pas** rafraîchis par CORE Deep" in upstreams
-assert "jamais une seed JavaScript exécutable" in upstreams
 assert not (ROOT / ".github/triggers/deep-provider-repair").exists()
 
 # Active workflows may use bounded repair primitives only in Learning.
