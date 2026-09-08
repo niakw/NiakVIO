@@ -41,10 +41,11 @@ def patch() -> bool:
     helper = r'''/* NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8 */
 function _spv188HtmlAttr(tag, name) {
   const source = _text(tag);
-  const escaped = _text(name).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const quoted = source.match(new RegExp("\\b" + escaped + "\\s*=\\s*([\\\"'])((?:\\\\.|(?!\\1).)*)\\1", "i"));
+  const key = _text(name);
+  if (!/^[A-Za-z][A-Za-z0-9_-]*$/.test(key)) return "";
+  const quoted = source.match(new RegExp("\\b" + key + "\\s*=\\s*([\\\"'])([\\s\\S]*?)\\1", "i"));
   if (quoted) return quoted[2].replace(/&amp;/gi, "&").replace(/&quot;/gi, '"').replace(/&#39;/gi, "'");
-  const bare = source.match(new RegExp("\\b" + escaped + "\\s*=\\s*([^\\s>]+)", "i"));
+  const bare = source.match(new RegExp("\\b" + key + "\\s*=\\s*([^\\s>]+)", "i"));
   return bare ? bare[1] : "";
 }
 function _spv188PlayerForm(html, pageUrl) {
