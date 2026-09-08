@@ -6,6 +6,10 @@ public landing representation of the actual player page. A common structural
 variant uses the same origin and opaque id under /v/. This capability is bounded,
 same-origin and data-independent: it contains no provider ids, hosts or fixture
 names and never treats the variant itself as playable media.
+
+V18.8 is chained here because it operates on the same canonical player response:
+a bounded same-origin hidden-form handoff is attempted only after direct and
+packed-player extraction miss.
 """
 from __future__ import annotations
 
@@ -23,11 +27,19 @@ def once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def _chain_v18_8() -> bool:
+    import upgrade_provider_player_form_handoff_v18_8 as v18_8
+
+    changed = v18_8.patch()
+    v18_8.validate()
+    return changed
+
+
 def patch() -> bool:
     text = BASE.read_text(encoding="utf-8")
     if MARKER in text:
         validate(text)
-        return False
+        return _chain_v18_8()
     if "NIAKVIO_PROVIDER_PACKED_PLAYER_V18_6" not in text:
         raise AssertionError("V18.7 requires V18.6 packed-player decoding")
 
@@ -77,6 +89,7 @@ function _spv187PlayerRouteVariants(raw) {
     text = once(text, old, new, "v18.7-enqueue-player-route-variant")
     BASE.write_text(text, encoding="utf-8")
     validate(text)
+    _chain_v18_8()
     return True
 
 
@@ -111,7 +124,7 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_PLAYER_ROUTE_VARIANT_V18_7_OK changed={str(changed).lower()} "
-        "same_origin=1 opaque_id_preserved=1 crawl_depth_cost=0 provider_specific_rules=0"
+        "same_origin=1 opaque_id_preserved=1 crawl_depth_cost=0 form_handoff_v18_8=1 provider_specific_rules=0"
     )
     return 0
 
