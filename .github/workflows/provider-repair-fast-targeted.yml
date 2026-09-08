@@ -46,10 +46,27 @@ jobs:
             --provider frenchstream \
             --provider mugiwarastream
 
+      - name: Validate V16-V18 contracts
+        if: always()
+        run: |
+          python tests/provider_execution_authority_v16_contract_test.py
+          python tests/provider_route_slug_identity_v16_test.py
+          python tests/provider_correlated_value_plan_v18_contract_test.py
+
       - name: Inspect materialized structured plans
         if: always()
         run: |
           python scripts/inspect_provider_fast_bundle_plans.py \
+            --provider animekai \
+            --provider movies4u \
+            --provider frenchstream \
+            --provider mugiwarastream
+
+      - name: Audit correlated provider-value runtime trace
+        if: always()
+        run: |
+          python scripts/audit_provider_value_runtime_trace_v1.py \
+            --timeout 55 \
             --provider animekai \
             --provider movies4u \
             --provider frenchstream \
@@ -94,4 +111,5 @@ jobs:
             automation/provider-repair-fast-summary.json
             automation/provider-upstream-stream-fingerprints-v1.json
             automation/provider-value-identity-shape-v1.json
+            automation/provider-value-runtime-trace-v1.json
             provider-v3-quick-yield.json
