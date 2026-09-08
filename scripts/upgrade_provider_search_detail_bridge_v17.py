@@ -11,9 +11,10 @@ V17 keeps the fresh response origin only for same-origin catalogue links and,
 after positive catalogue identity, resolves each detail through
 _spv4ResolveDetail before falling back to the player crawler.
 
-V18/V18.1/V18.2/V18.4 are chained from this canonical owner so every V17 consumer
-also receives the proof-correlated provider-value DATA plan, provider-native JSON
-identity scoring, V16 proof authority, and JSON-text identity decoding.
+V18/V18.1/V18.2/V18.4/V18.5 are chained from this canonical owner so every V17
+consumer also receives proof-correlated provider-value DATA, provider-native JSON
+identity scoring, V16 proof authority, JSON-text identity decoding, and canonical
+anime <-> TV transport lane handling without broadening generic TV providers.
 No provider ids, hosts, fixture titles or provider-specific routes are encoded.
 """
 from __future__ import annotations
@@ -24,6 +25,7 @@ import upgrade_provider_correlated_value_plan_v18 as v18
 import upgrade_provider_correlated_value_plan_v18_1 as v18_1
 import upgrade_provider_correlated_value_authority_v18_2 as v18_2
 import upgrade_provider_correlated_value_json_text_v18_4 as v18_4
+import upgrade_provider_correlated_value_semantic_lane_v18_5 as v18_5
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "scripts" / "provider_base_store.py"
@@ -142,6 +144,8 @@ def main() -> int:
     v18_2.validate()
     v18_4_changed = v18_4.patch()
     v18_4.validate()
+    v18_5_changed = v18_5.patch()
+    v18_5.validate()
     print(
         f"PROVIDER_SEARCH_DETAIL_BRIDGE_V17_OK changed={str(changed).lower()} "
         "current_origin_preserved=1 canonical_detail_resolver=1 player_crawl_fallback=1 provider_specific_rules=0"
@@ -153,7 +157,7 @@ def main() -> int:
     )
     print(
         f"PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed={str(v18_1_changed).lower()} "
-        "scored_json_slug_identity=1 all_identity_labels_scored=1 bounded_charset=1 "
+        "scored_json_slug_identity=1 deterministic_best_row=1 bounded_charset=1 "
         "html_slug_inference=0 provider_specific_rules=0"
     )
     print(
@@ -164,7 +168,11 @@ def main() -> int:
     print(
         f"PROVIDER_CORRELATED_VALUE_JSON_TEXT_V18_4_OK changed={str(v18_4_changed).lower()} "
         "json_text_first=1 strict_v18_identity_reused=1 html_fallback=1 bounded_payload=1 "
-        "provider_specific_rules=0"
+        "sanitized_stage_trace=1 provider_specific_rules=0"
+    )
+    print(
+        f"PROVIDER_CORRELATED_VALUE_SEMANTIC_LANE_V18_5_OK changed={str(v18_5_changed).lower()} "
+        "canonical_anime_tv_transport=1 generic_tv_to_anime=0 shared_plan_gate=1 provider_specific_rules=0"
     )
     return 0
 
