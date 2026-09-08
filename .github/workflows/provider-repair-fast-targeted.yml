@@ -47,7 +47,7 @@ jobs:
             --provider xpass \
             --provider yflix
 
-      - name: Validate shared V16-V18 contracts
+      - name: Validate shared V16-V18 and runtime-plan-cap contracts
         if: always()
         run: |
           python tests/provider_execution_authority_v16_contract_test.py
@@ -56,6 +56,7 @@ jobs:
           python tests/provider_packed_player_v18_6_contract_test.py
           python tests/provider_player_route_variant_v18_7_contract_test.py
           python tests/provider_player_form_handoff_v18_8_contract_test.py
+          python tests/runtime_route_plan_cap_v1_test.py
 
       - name: Show batch proof summary
         if: always()
