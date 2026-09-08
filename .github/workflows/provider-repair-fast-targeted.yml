@@ -94,7 +94,7 @@ jobs:
           done
           python scripts/inspect_provider_fast_bundle_plans.py "${args[@]}"
 
-      - name: Validate shared V16-V20.5 and adaptive route-plan contracts
+      - name: Validate shared V16-V20.5.1 and adaptive route-plan contracts
         if: always()
         run: |
           python -m py_compile \
@@ -104,7 +104,8 @@ jobs:
             scripts/upgrade_provider_response_value_correlation_v20_2.py \
             scripts/upgrade_provider_response_value_correlation_v20_3.py \
             scripts/upgrade_provider_response_value_correlation_v20_4.py \
-            scripts/upgrade_provider_response_value_correlation_v20_5.py
+            scripts/upgrade_provider_response_value_correlation_v20_5.py \
+            scripts/upgrade_provider_response_value_correlation_v20_5_1.py
           python tests/provider_execution_authority_v16_contract_test.py
           python tests/provider_route_slug_identity_v16_test.py
           python tests/provider_correlated_value_plan_v18_contract_test.py
@@ -116,6 +117,7 @@ jobs:
           python tests/provider_response_value_correlation_v20_3_test.py
           python tests/provider_response_value_correlation_v20_4_test.py
           python tests/provider_response_value_correlation_v20_5_test.py
+          python tests/provider_response_value_correlation_v20_5_1_test.py
           python tests/runtime_route_plan_cap_v1_test.py
 
       - name: Show batch proof summary
