@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,7 +12,7 @@ readme_fr = (ROOT / "README.fr.md").read_text(encoding="utf-8")
 install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
 security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
 upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
-machine = json.loads((ROOT / "automation/provider-v3-machine-model.json").read_text(encoding="utf-8"))
+model = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
 required_architecture = (
@@ -90,40 +89,71 @@ for needle in (
 ):
     assert needle in upstreams, needle
 
-assert machine["schema_version"] >= 2
-assert machine["provider_model"] == "providerbase-v3-data-lego-core"
-assert machine["catalogue_provider_count"] == 96
-assert machine["workflow_contract"]["single_entrypoint"] == "CORE - Verify & Publish"
-assert set(machine["workflow_contract"]["modes"]) == {"quick", "deep"}
-assert machine["workflow_contract"]["quick"]["repair"] is False
-assert machine["workflow_contract"]["quick"]["reconstruction"] is False
-assert machine["workflow_contract"]["deep"]["repair"] is False
-assert machine["workflow_contract"]["deep"]["reconstruction"] is False
-assert machine["workflow_contract"]["deep"]["external_upstream_calls"] is False
-assert machine["workflow_contract"]["deep"]["hub_calls"] is True
-assert machine["learning_contract"]["automatic_learning_runs"] is True
-assert machine["learning_contract"]["providerbase_mutation_allowed"] is False
-assert machine["learning_contract"]["proposal_branch_only"] is True
-assert machine["learning_contract"]["direct_main_write"] is False
-assert machine["domain_refresh_contract"]["hub_only"] is True
-assert machine["domain_refresh_contract"]["source_code_reconstruction"] is False
-assert machine["domain_refresh_contract"]["manifest_sync"] is False
-assert machine["domain_refresh_contract"]["hub_update_scope"] == "official-site-and-domain-substitution-data"
+# automation/provider-v3-architecture.json is the single machine-readable
+# architecture contract. The retired provider-v3-machine-model.json must not be
+# recreated as a second, drifting source of truth.
+assert not (ROOT / "automation/provider-v3-machine-model.json").exists()
+assert model["schema_version"] >= 5
+assert model["branch_contract"] == "provider-v3-clean-architecture"
+source = model["provider_source_of_truth"]
+assert source["canonical_provider_base_marker"] == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
+assert source["legacy_provider_js_seed_allowed"] is False
+assert source["upstream_provider_js_seed_allowed"] is False
+assert source["published_provider_js_is_reconstruction_seed"] is False
+assert set(source["managed_markers"]) == {"STARTFIX", "CLOSEFIX", "FIXDATA"}
+
+assert model["route_recognition"]["provider_object_count"] == 96
+assert model["provider_plan_contract"]["catalogue_provider_count"] == 96
+workflow = model["routine_workflow"]
+assert workflow["path"] == ".github/workflows/sync.yml"
+assert workflow["display_name"] == "CORE - Verify & Publish"
+assert workflow["workflow_count"] == 1
+assert set(workflow["profiles"]) == {"quick", "deep"}
+assert workflow["profiles"]["quick"]["provider_reconstruction"] is False
+assert workflow["profiles"]["quick"]["network_health"] is False
+assert workflow["profiles"]["deep"]["provider_reconstruction"] is False
+assert workflow["profiles"]["deep"]["network_health"] is True
+assert workflow["provider_mutation_allowed"] is False
+assert workflow["provider_reconstruction_allowed"] is False
+assert model["legacy_duplicate_core_workflow_removed"] is True
+assert not (ROOT / ".github/workflows/core-media-finalize-main.yml").exists()
+
+routine = model["routine"]
+for mode in ("quick", "deep"):
+    assert routine[mode]["repair_allowed"] is False
+    assert routine[mode]["provider_fix_mutation_allowed"] is False
+    assert routine[mode]["provider_reconstruction_allowed"] is False
+assert any("domains/hubs read-only" in value for value in routine["deep"]["responsibilities"])
+learning = routine["learning"]
+assert learning["repair_allowed"] is True
+assert learning["production_write_allowed"] is False
+assert learning["proposal_pr_only"] is True
+assert learning["exclusive_code_evolution_owner"] is True
+assert learning["includes_disabled_providers"] is True
+
+domain = model["domain_refresh"]
+assert domain["autonomous_main_write"] is True
+assert domain["repair_allowed"] is False
+assert domain["provider_fix_mutation_allowed"] is False
+assert domain["api_mutation_allowed"] is False
+assert domain["route_mutation_allowed"] is False
+assert domain["full_provider_reconstruction_allowed"] is False
+assert domain["provider_config_data_update_only"] is True
+assert domain["provider_js_structure_must_remain_byte_identical_outside_config"] is True
 
 # Historical reverse reference is intentionally frozen, but it is isolated from
 # current operational truth and current native/type counts.
-reference = machine["reference_reconstruction"]
+reference = model["reference_reconstruction"]
 assert reference["current_operational_truth"] is False
 assert reference["reverse_byte_identical"] == "96/96"
 assert reference["release_integrity"] is True
-assert machine["provider_plan_contract"]["historical_plan_counts_live_only_in_reference_reconstruction"] is True
-assert "executable_non_quarantined" not in machine["provider_plan_contract"]
-assert "quarantined" not in machine["provider_plan_contract"]
+assert model["provider_plan_contract"]["historical_plan_counts_live_only_in_reference_reconstruction"] is True
+assert "executable_non_quarantined" not in model["provider_plan_contract"]
+assert "quarantined" not in model["provider_plan_contract"]
+assert model["provider_plan_contract"]["disabled_providers_are_audited"] is True
+assert model["security_html_filtering"]["regex_html_stripping_allowed"] is False
 
-assert machine["provider_plan_contract"]["disabled_providers_are_audited"] is True
-assert machine["security_html_filtering"]["regex_html_stripping_allowed"] is False
-
-lab = machine["native_lab_contract"]
+lab = model["native_lab_contract"]
 assert lab["provider_count"] == 96
 assert lab["route_matrix_source"] == "manifest.json:scrapers[*].supportedTypes"
 assert lab["semantic_capability_source"] == "manifest.json:scrapers[*].canonicalSupportedTypes"
@@ -135,6 +165,9 @@ assert lab["reader_outcomes_are_observational"] is True
 assert lab["external_nuvio_repo_repairs_allowed"] is False
 assert lab["external_build_dependency_packaging_repairs_allowed"] is False
 assert lab["test_plumbing_must_not_change_official_runtime_behavior"] is True
+assert set(model["native_labs"]) == {
+    "TVAndroid", "MobileAndroid", "MobileIOS", "DesktopMACOS", "DesktopWindows"
+}
 
 # Validate the dynamic matrix source against the current manifest instead of
 # freezing yesterday's route totals into docs/machine policy. `series` is a
@@ -151,7 +184,6 @@ for row in rows:
     assert transport <= transport_valid, (provider, transport)
     assert canonical <= canonical_valid, (provider, canonical)
     assert "series" not in canonical, (provider, canonical)
-    # Compare semantic support after normalizing the transport-only series alias.
     transport_semantic = {"tv" if value == "series" else value for value in transport}
     assert canonical <= transport_semantic, (provider, canonical, transport)
     if canonical == {"anime"}:
