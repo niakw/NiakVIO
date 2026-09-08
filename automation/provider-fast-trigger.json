@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 20,
-  "requestedAt": "2026-09-09T00:49:00+02:00",
-  "scope": "v20.4-forward-compatible-correlation-live-proof",
-  "mode": "proof-first-response-value-correlation-v20.4",
+  "schemaVersion": 21,
+  "requestedAt": "2026-09-09T00:58:00+02:00",
+  "scope": "v20.5-dependency-aware-provider-value-live-proof",
+  "mode": "proof-first-response-value-correlation-v20.5",
   "explicitProviders": [
     "animesama-co",
     "animevostfr",
@@ -20,15 +20,16 @@
   "v18_4JsonTextAndTracePreserved": true,
   "providerIdSlugPairRequired": false,
   "providerIdOrSlugRequired": true,
+  "strictProviderIdSlugReadinessRequired": true,
+  "providerValueDependencyPassesRequired": true,
+  "providerValueCorrelatedDepth": 8,
+  "nestedJsonHttpValuesRuntimeOnly": true,
   "urlencodedTextBodyMayBecomeFormRequestSpec": true,
   "workerClassifiedFormRequestSpecRequired": true,
   "staticFormConstantsAllowedWhenNonSemantic": true,
   "compositeTitleSeasonQueryAllowed": true,
   "compositeResponsePathRequired": true,
   "statefulProviderResponseIdentityRequired": true,
-  "migrationOrderSafeBodyOwnersRequired": true,
-  "v16CorrelationOwnerCompositionRequired": true,
-  "v20_1ForwardCompatibleCorrelationGuardRequired": true,
-  "v20_4ContractTestRequired": true,
+  "v20_5ContractTestRequired": true,
   "publicationAllowed": false
 }
