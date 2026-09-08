@@ -1,0 +1,115 @@
+name: MANUAL - One-shot Core Derived Recompose
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-derived-recompose-once.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: one-shot-core-derived-recompose-main
+  cancel-in-progress: false
+
+jobs:
+  recompose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout exact main transaction base
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Recompose only deterministic derived publication state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/build_provider_runtime_profiles.py
+          python scripts/reapply_published_overrides.py
+          python scripts/generate_language_manifests.py
+          python scripts/prune_unreferenced_providers.py
+          python scripts/reapply_published_overrides.py --check
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Refuse DATA or ProviderBase mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only | tee "$RUNNER_TEMP/core-derived-files.txt"
+          if grep -Ev '^(providers/|manifest\.json$|vf/manifest\.json$|no-anime/manifest\.json$|vf-no-anime/manifest\.json$|PROVENANCE\.json$|provider-overrides\.json$|provider-version-floors\.json$|provider_catalog\.json$|FILE-HASHES\.json$|PATCH-SHA256SUMS\.txt$|SHA256SUMS\.json$)' "$RUNNER_TEMP/core-derived-files.txt"; then
+            echo 'One-shot Core recomposition changed a forbidden source/DATA path.' >&2
+            exit 1
+          fi
+          test -z "$(git diff --name-only -- provider-bases automation/provider-v3-static-knowledge.json automation/provider-v3-recognition-seeds.json scripts/provider_base_store.py scripts/provider_patches)"
+
+      - name: Validate exact recomposed Quick contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_v3_workflow_ownership_test.py
+          python tests/provider_v3_documentation_contract_test.py
+          python tests/native_five_lab_coverage_test.py
+          python tests/native_lab_observational_purity_test.py
+          python tests/native_ios_watchdog_resume_test.py
+          python tests/native_declared_provider_matrix_test.py
+          python tests/native_lab_reader_observation_contract_test.py
+          python tests/provider_v3_minimizer_contract_test.py
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/provider_html_filter_security_test.py --published
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_wings_runtime_family_test.py
+          python tests/peachify_runtime_crypto_test.py
+          python scripts/audit_provider_v3_static.py
+          python tests/provider_brick_portfolio_audit_test.py --published --require-all
+          python tests/provider_521_capability_regression_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/global_stream_identity_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/stream_output_sanitizer_fail_closed_test.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit derived Core transaction atomically
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git diff --quiet; then
+            echo 'Core-derived publication already matches source.'
+            exit 0
+          fi
+          BASE_SHA="$(git rev-parse HEAD)"
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$BASE_SHA" || {
+            echo 'main advanced during Core-derived transaction' >&2
+            exit 3
+          }
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add providers/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            PROVENANCE.json provider-overrides.json provider-version-floors.json provider_catalog.json \
+            FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
+          git commit -m 'chore: recompose published providers with current Core'
+          git push origin HEAD:main
