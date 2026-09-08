@@ -27,10 +27,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: anime-vf-tail
-            providers: "dulourd french-manga vostfree sekai"
-          - name: mixed-resolvers
-            providers: "1shows allanime kisskh movieblast"
+          - name: movie-api-wave
+            providers: "cineby vixsrc moviesdrive moviesmod"
+          - name: movie-catalogue-wave
+            providers: "dvdplay moviebox hdghartv cinemacity"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
