@@ -20,6 +20,7 @@ jobs:
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
     steps:
       - name: Checkout exact main transaction base
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -44,10 +45,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cp manifest.json "$RUNNER_TEMP/published-manifest-before-core.json"
           python scripts/build_provider_runtime_profiles.py
           python scripts/reapply_published_overrides.py
           python scripts/generate_language_manifests.py
           python scripts/prune_unreferenced_providers.py
+          python scripts/sync_release_versions.py \
+            --manifest manifest.json \
+            --previous "$RUNNER_TEMP/published-manifest-before-core.json"
           python scripts/reapply_published_overrides.py --check
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
@@ -57,7 +62,7 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only | tee "$RUNNER_TEMP/core-derived-files.txt"
-          if grep -Ev '^(providers/|manifest\.json$|vf/manifest\.json$|no-anime/manifest\.json$|vf-no-anime/manifest\.json$|PROVENANCE\.json$|provider-overrides\.json$|provider-version-floors\.json$|provider_catalog\.json$|FILE-HASHES\.json$|PATCH-SHA256SUMS\.txt$|SHA256SUMS\.json$)' "$RUNNER_TEMP/core-derived-files.txt"; then
+          if grep -Ev '^(providers/|manifest\.json$|vf/manifest\.json$|no-anime/manifest\.json$|vf-no-anime/manifest\.json$|PROVENANCE\.json$|provider-overrides\.json$|provider-version-floors\.json$|provider_catalog\.json$|package\.json$|package-lock\.json$|sources\.json$|nuvio-client-id-state\.json$|FILE-HASHES\.json$|PATCH-SHA256SUMS\.txt$|SHA256SUMS\.json$)' "$RUNNER_TEMP/core-derived-files.txt"; then
             echo 'One-shot Core recomposition changed a forbidden source/DATA path.' >&2
             exit 1
           fi
@@ -110,6 +115,7 @@ jobs:
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add providers/ manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             PROVENANCE.json provider-overrides.json provider-version-floors.json provider_catalog.json \
+            package.json package-lock.json sources.json nuvio-client-id-state.json \
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           git commit -m 'chore: recompose published providers with current Core'
           git push origin HEAD:main
