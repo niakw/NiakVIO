@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import recover_provider_routes_from_upstreams as recovery  # noqa: E402
+import provider_live_request_contract_bridge_v19 as live_request_bridge  # noqa: E402
 import runtime_route_plan_cap_v1 as route_policy  # noqa: E402
 import runtime_structured_plan_cap_v1 as structured_policy  # noqa: E402
 import runtime_execution_authority_cap_v1 as authority_policy  # noqa: E402
@@ -33,10 +34,15 @@ def main() -> int:
         raise SystemExit(f"route recovery providers rows={len(providers)}, expected={recovery.EXPECTED}")
 
     summary = recovery.apply_recovery(value)
+    # V19 cannot invent authority: it runs only after the exact HTTP recovery has
+    # been applied and can bridge only a current live-positive request to an exact
+    # observed/reviewed request shape.
+    bridge_summary = live_request_bridge.apply_recovery_bridge(value)
     route_summary = route_policy.enforce_runtime_route_cap(value)
     structured_summary = structured_policy.enforce_structured_plan_cap()
     authority_summary = authority_policy.enforce_execution_authority_cap()
     value["applied"] = summary
+    value["liveRequestContractBridgeV19"] = bridge_summary
     value["runtimeRoutePlanPolicy"] = route_summary
     value["runtimeStructuredPlanPolicy"] = structured_summary
     value["runtimeExecutionAuthorityPolicy"] = authority_summary
@@ -49,6 +55,7 @@ def main() -> int:
     print(
         "FIELD_ROUTE_RECOVERY_REPORT_APPLIED "
         f"providers={summary['patchedProviders']} evidence_routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
+        f"v19_bridged_providers={bridge_summary['bridgedProviders']} v19_bridged_plans={bridge_summary['bridgedPlans']} "
         f"normal_entry_target={route_summary['target']} runtime_route_max={route_summary['maxAfter']} "
         f"runtime_optimized={route_summary['optimizedProviders']} runtime_exceptions={route_summary['exceptionProviders']} "
         f"structured_target={structured_summary['target']} structured_max={structured_summary['maxAfter']} "
