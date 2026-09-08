@@ -6,10 +6,11 @@ than a numeric id. Route recovery already normalizes the later correlated reques
 to {id}; V18.1 completes the runtime identity bridge by accepting slug-shaped
 JSON fields only after a strict title score and bounded safe-character validation.
 
-The title scorer also accepts common provider-native semantic label keys such as
-anime/movie/series/show/matched. They remain evidence-only labels: they can select
-a provider value only when the normalized title score is >= 90. HTML data-slug
-inference remains intentionally excluded.
+Provider search rows can expose several simultaneous identity labels (for example
+one display label plus a more exact matched label). The runtime must score every
+known semantic label and keep the strongest score rather than trusting the first
+non-empty field. A provider value is still selected only when the resulting score
+is >= 90. HTML data-slug inference remains intentionally excluded.
 
 This is a data-shape capability, not a provider or host exception.
 """
@@ -42,14 +43,16 @@ def patch() -> bool:
         meta
       )
 '''
-    new_label = '''      score: _spv4TitleScore(
-        _spv4Scalar(row.title) || _spv4Scalar(row.name) ||
-        _spv4Scalar(row.original_title) || _spv4Scalar(row.post_title) ||
-        _spv4Scalar(row.label) || _spv4Scalar(row.anime) ||
-        _spv4Scalar(row.movie) || _spv4Scalar(row.series) ||
-        _spv4Scalar(row.show) || _spv4Scalar(row.matched) ||
-        _spv4Scalar(row.display_name) || _spv4Scalar(row.displayName) || "",
-        meta
+    new_label = '''      score: Math.max(
+        0,
+        ...[
+          row.title, row.name, row.original_title, row.post_title, row.label,
+          row.anime, row.movie, row.series, row.show, row.matched,
+          row.display_name, row.displayName
+        ]
+          .map(_spv4Scalar)
+          .filter(Boolean)
+          .map(label => _spv4TitleScore(label, meta))
       )
 '''
     text = once(text, old_label, new_label, "v18.1-json-provider-title-labels")
@@ -69,9 +72,9 @@ def validate(text: str | None = None) -> None:
         raise AssertionError(f"V18.1 marker count={value.count(MARKER)}")
     for needle in (
         '"slug","provider_slug","seo_slug"',
-        "_spv4Scalar(row.anime)",
-        "_spv4Scalar(row.matched)",
-        "_spv4Scalar(row.displayName)",
+        "row.anime, row.movie, row.series, row.show, row.matched",
+        ".map(label => _spv4TitleScore(label, meta))",
+        "score: Math.max(",
         ".filter(item => item.score >= 90)",
         "/^[A-Za-z0-9._~-]+$/.test(value)",
     ):
@@ -83,7 +86,7 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed={str(changed).lower()} "
-        "scored_json_slug_identity=1 provider_native_title_labels=1 bounded_charset=1 "
+        "scored_json_slug_identity=1 all_identity_labels_scored=1 bounded_charset=1 "
         "html_slug_inference=0 provider_specific_rules=0"
     )
     return 0
