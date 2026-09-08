@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Cap all structured executable Provider plans to <=3 semantic alternatives.
+"""Merge duplicate structured Provider plans without imposing a universal count cap.
 
-HTTP proof can contain many observations. Runtime alternatives cannot. Identical
-protocol plans proven by multiple semantic fixtures are merged and their
-semanticTypes are unioned. Remaining alternatives are selected by semantic
-coverage, with a hard maximum of movie/tv/anime = 3 top-level plans.
+Three top-level plans is the normal semantic shape, not a hard invariant.  Plans
+with the same executable protocol are merged and their semanticTypes are unioned.
+Distinct evidence-backed plans are preserved even when more than three remain,
+because some providers legitimately need several independent resolvers or
+language/player branches.
 
-Internal steps inside one structured plan are preserved; they are a recipe, not
-independent runtime alternatives.
+Internal steps inside one structured plan are always preserved; they are one
+resolver recipe, not independent route alternatives.
 """
 from __future__ import annotations
 
@@ -20,7 +21,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
-MAX_STRUCTURED_PLANS = 3
+NORMAL_STRUCTURED_PLAN_TARGET = 3
+MAX_STRUCTURED_PLANS = NORMAL_STRUCTURED_PLAN_TARGET  # compatibility alias
 LANES = ("movie", "tv", "anime")
 PLAN_FIELDS = (
     ("search_request_plan", "searchRequestPlan"),
@@ -43,7 +45,6 @@ def lanes_for(plan: dict[str, Any]) -> set[str]:
 def protocol_fingerprint(plan: dict[str, Any]) -> str:
     value = copy.deepcopy(plan)
     value.pop("semanticTypes", None)
-    # Proof bookkeeping does not define a different runtime protocol.
     value.pop("proofFixture", None)
     value.pop("fixture", None)
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -68,76 +69,21 @@ def merge_equivalent(plans: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return out
 
 
-def plan_score(plan: dict[str, Any], index: int) -> int:
-    coverage = len(lanes_for(plan))
-    score = coverage * 10000
-    role = str(plan.get("sourceRole") or "").casefold()
-    if "provider-value" in role:
-        score += 700
-    elif "catalog-search" in role or "search" in role:
-        score += 650
-    elif "external" in role:
-        score += 600
-    try:
-        proof = int(plan.get("proofModelVersion") or 0)
-    except (TypeError, ValueError):
-        proof = 0
-    score += min(proof, 100) * 10
-    # Stable preference for the earlier proof when all else is equal.
-    score += max(0, 100 - min(index, 100))
-    return score
-
-
 def cap_structured_plans(plans: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Compatibility name: merge duplicates, never truncate distinct proven plans."""
     original = [copy.deepcopy(row) for row in plans if isinstance(row, dict)]
     merged = merge_equivalent(original)
-    if len(merged) <= MAX_STRUCTURED_PLANS:
-        covered = set().union(*(lanes_for(row) for row in merged)) if merged else set()
-        return merged, {
-            "before": len(original),
-            "afterMerge": len(merged),
-            "after": len(merged),
-            "coveredLanes": sorted(covered),
-            "capped": len(merged) < len(original),
-        }
-
-    universe = set().union(*(lanes_for(row) for row in merged)) if merged else set()
-    selected: list[dict[str, Any]] = []
-    remaining = set(universe)
-    indexed = list(enumerate(merged))
-
-    while remaining and len(selected) < MAX_STRUCTURED_PLANS:
-        candidates: list[tuple[int, int, int, dict[str, Any]]] = []
-        for index, plan in indexed:
-            if plan in selected:
-                continue
-            fresh = lanes_for(plan) & remaining
-            if not fresh:
-                continue
-            candidates.append((len(fresh), plan_score(plan, index), -index, plan))
-        if not candidates:
-            break
-        _coverage, _score, _stable, best = max(candidates, key=lambda item: item[:3])
-        selected.append(best)
-        remaining -= lanes_for(best)
-
-    if not selected:
-        selected = [row for _index, row in sorted(indexed, key=lambda pair: plan_score(pair[1], pair[0]), reverse=True)[:MAX_STRUCTURED_PLANS]]
-    else:
-        for index, plan in sorted(indexed, key=lambda pair: plan_score(pair[1], pair[0]), reverse=True):
-            if len(selected) >= MAX_STRUCTURED_PLANS:
-                break
-            if plan not in selected:
-                selected.append(plan)
-
-    selected = selected[:MAX_STRUCTURED_PLANS]
-    covered = set().union(*(lanes_for(row) for row in selected)) if selected else set()
-    return selected, {
+    covered = set().union(*(lanes_for(row) for row in merged)) if merged else set()
+    return merged, {
         "before": len(original),
         "afterMerge": len(merged),
-        "after": len(selected),
+        "after": len(merged),
         "coveredLanes": sorted(covered),
-        "capped": len(selected) < len(original),
+        "merged": len(merged) < len(original),
+        "capped": False,
+        "normalTarget": NORMAL_STRUCTURED_PLAN_TARGET,
+        "targetExceeded": len(merged) > NORMAL_STRUCTURED_PLAN_TARGET,
+        "exceptionReason": "distinct-evidence-backed-plans" if len(merged) > NORMAL_STRUCTURED_PLAN_TARGET else "",
     }
 
 
@@ -160,11 +106,10 @@ def enforce_structured_plan_cap(
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     providers = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
     changed_providers: set[str] = set()
-    capped_fields = 0
     merged_fields = 0
+    target_exceeded_fields = 0
     max_before = 0
     max_after = 0
-    violations: list[str] = []
 
     for provider_id, static_row in providers.items():
         if not isinstance(static_row, dict):
@@ -184,13 +129,10 @@ def enforce_structured_plan_cap(
             selected, audit = cap_structured_plans(plans)
             max_before = max(max_before, audit["before"])
             max_after = max(max_after, audit["after"])
-            if audit["after"] > MAX_STRUCTURED_PLANS:
-                violations.append(f"{provider_id}:{model_key}:{audit['after']}")
-                continue
-            if audit["capped"]:
-                capped_fields += 1
-            if audit["afterMerge"] < audit["before"]:
+            if audit["merged"]:
                 merged_fields += 1
+            if audit["targetExceeded"]:
+                target_exceeded_fields += 1
             existing_model = [row for row in model.get(model_key) or [] if isinstance(row, dict)]
             existing_patch = [row for row in patch.get(patch_key) or [] if isinstance(row, dict)]
             if selected != existing_model or selected != existing_patch:
@@ -203,16 +145,15 @@ def enforce_structured_plan_cap(
                 patch.pop(patch_key, None)
             field_audit[model_key] = audit
 
-        proof["structuredRuntimePlanCap"] = MAX_STRUCTURED_PLANS
+        proof.pop("structuredRuntimePlanCap", None)
+        proof["normalStructuredRuntimePlanTarget"] = NORMAL_STRUCTURED_PLAN_TARGET
+        proof["structuredRuntimePlanPolicy"] = "merge-equivalent-preserve-distinct-evidence-backed-plans"
         proof["structuredRuntimePlanAudit"] = field_audit
         model["routeProof"] = proof
         patch["route_proof"] = copy.deepcopy(proof)
         static_row["model"] = model
         providers[provider_id] = static_row
         patches[provider_id] = patch
-
-    if violations:
-        raise RuntimeError("structured runtime plan cap violated: " + ",".join(violations[:20]))
 
     overrides["provider_patches"] = patches
     knowledge["providers"] = providers
@@ -221,11 +162,13 @@ def enforce_structured_plan_cap(
     return {
         "providerCount": len(providers),
         "changedProviders": len(changed_providers),
-        "cappedFields": capped_fields,
+        "cappedFields": 0,
         "mergedFields": merged_fields,
+        "targetExceededFields": target_exceeded_fields,
         "maxBefore": max_before,
         "maxAfter": max_after,
-        "cap": MAX_STRUCTURED_PLANS,
+        "target": NORMAL_STRUCTURED_PLAN_TARGET,
+        "cap": NORMAL_STRUCTURED_PLAN_TARGET,
     }
 
 
@@ -239,10 +182,10 @@ def main() -> int:
         knowledge_path=args.knowledge if args.knowledge.is_absolute() else ROOT / args.knowledge,
     )
     print(
-        "RUNTIME_STRUCTURED_PLAN_CAP_V1_OK "
+        "RUNTIME_STRUCTURED_PLAN_POLICY_V2_OK "
         f"providers={summary['providerCount']} changed={summary['changedProviders']} "
-        f"capped_fields={summary['cappedFields']} merged_fields={summary['mergedFields']} "
-        f"max_before={summary['maxBefore']} max_after={summary['maxAfter']} cap={summary['cap']}"
+        f"merged_fields={summary['mergedFields']} target_exceeded_fields={summary['targetExceededFields']} "
+        f"max_before={summary['maxBefore']} max_after={summary['maxAfter']} target={summary['target']}"
     )
     return 0
 
