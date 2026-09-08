@@ -4,11 +4,13 @@
 Some structured search APIs identify the matched catalogue row with a slug rather
 than a numeric id. Route recovery already normalizes the later correlated request
 to {id}; V18.1 completes the runtime identity bridge by accepting slug-shaped
-JSON fields only after the same strict title score and bounded safe-character
-validation as ids.
+JSON fields only after a strict title score and bounded safe-character validation.
 
-HTML data-slug inference is intentionally excluded: the current proof only
-requires JSON row identity, so V18.1 stays on the narrow evidenced capability.
+The title scorer also accepts common provider-native semantic label keys such as
+anime/movie/series/show/matched. They remain evidence-only labels: they can select
+a provider value only when the normalized title score is >= 90. HTML data-slug
+inference remains intentionally excluded.
+
 This is a data-shape capability, not a provider or host exception.
 """
 from pathlib import Path
@@ -33,6 +35,25 @@ def patch() -> bool:
     if "NIAKVIO_PROVIDER_BASE_CORRELATED_VALUE_PLAN_V18" not in text:
         raise AssertionError("V18.1 requires V18")
 
+    old_label = '''      score: _spv4TitleScore(
+        _spv4Scalar(row.title) || _spv4Scalar(row.name) ||
+        _spv4Scalar(row.original_title) || _spv4Scalar(row.post_title) ||
+        _spv4Scalar(row.label) || "",
+        meta
+      )
+'''
+    new_label = '''      score: _spv4TitleScore(
+        _spv4Scalar(row.title) || _spv4Scalar(row.name) ||
+        _spv4Scalar(row.original_title) || _spv4Scalar(row.post_title) ||
+        _spv4Scalar(row.label) || _spv4Scalar(row.anime) ||
+        _spv4Scalar(row.movie) || _spv4Scalar(row.series) ||
+        _spv4Scalar(row.show) || _spv4Scalar(row.matched) ||
+        _spv4Scalar(row.display_name) || _spv4Scalar(row.displayName) || "",
+        meta
+      )
+'''
+    text = once(text, old_label, new_label, "v18.1-json-provider-title-labels")
+
     old_keys = 'for (const key of ["id","ID","_id","media_id","post_id","anime_id","movie_id","series_id","show_id"]) {'
     new_keys = '/* NIAKVIO_PROVIDER_CORRELATED_VALUE_PLAN_V18_1 */\n    for (const key of ["id","ID","_id","media_id","post_id","anime_id","movie_id","series_id","show_id","slug","provider_slug","seo_slug"]) {'
     text = once(text, old_keys, new_keys, "v18.1-json-provider-slug")
@@ -48,6 +69,9 @@ def validate(text: str | None = None) -> None:
         raise AssertionError(f"V18.1 marker count={value.count(MARKER)}")
     for needle in (
         '"slug","provider_slug","seo_slug"',
+        "_spv4Scalar(row.anime)",
+        "_spv4Scalar(row.matched)",
+        "_spv4Scalar(row.displayName)",
         ".filter(item => item.score >= 90)",
         "/^[A-Za-z0-9._~-]+$/.test(value)",
     ):
@@ -59,7 +83,8 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed={str(changed).lower()} "
-        "scored_json_slug_identity=1 bounded_charset=1 html_slug_inference=0 provider_specific_rules=0"
+        "scored_json_slug_identity=1 provider_native_title_labels=1 bounded_charset=1 "
+        "html_slug_inference=0 provider_specific_rules=0"
     )
     return 0
 
