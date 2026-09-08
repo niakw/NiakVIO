@@ -20,9 +20,17 @@ env:
 
 jobs:
   prove-batch:
-    name: prove-anime-wave2
+    name: prove-${{ matrix.name }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: anime-vf-tail
+            providers: "dulourd french-manga vostfree sekai"
+          - name: mixed-resolvers
+            providers: "1shows allanime kisskh movieblast"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,15 +45,17 @@ jobs:
       - name: Run parallel batch acceptance
         id: acceptance
         continue-on-error: true
+        shell: bash
         run: |
+          args=()
+          for provider in ${{ matrix.providers }}; do
+            args+=(--provider "$provider")
+          done
           python scripts/run_provider_repair_fast_targeted_v1.py \
             --attempts 3 \
             --workers 4 \
             --timeout 55 \
-            --provider animesalt \
-            --provider animevostfr \
-            --provider animoflix \
-            --provider animesultra
+            "${args[@]}"
 
       - name: Validate shared V16-V18 contracts
         if: always()
@@ -71,7 +81,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: provider-repair-anime-wave2-${{ github.run_id }}
+          name: provider-repair-${{ matrix.name }}-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
