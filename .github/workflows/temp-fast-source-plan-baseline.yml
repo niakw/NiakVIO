@@ -1,0 +1,131 @@
+name: TEMP - Fast Source Plan Baseline
+
+on:
+  push:
+    branches: [workbench/route-recognition-v6]
+    paths:
+      - '.github/triggers/fast-source-plan-baseline.json'
+
+permissions:
+  contents: read
+
+jobs:
+  baseline:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+      NIAKVIO_QUICK_YIELD_WORKERS: 4
+      NIAKVIO_QUICK_YIELD_TIMEOUT: 55
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Apply canonical migrations and recover four families
+        run: |
+          set -euo pipefail
+          python scripts/prepatch_identity_cleanup_shared_owner_v1.py
+          python scripts/apply_core_identity_ownership_cleanup.py
+          python scripts/upgrade_provider_worker_route_proof_v1.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_base_route_requests_v1.py
+          python scripts/upgrade_provider_route_authority_v5.py
+          python scripts/upgrade_route_recovery_request_specs_v1.py
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_repair_v6.py
+          python scripts/upgrade_provider_repair_v7.py
+          python scripts/upgrade_provider_repair_v8.py
+          python scripts/upgrade_provider_text_body_request_v9.py
+          python scripts/upgrade_provider_text_body_request_v9_1.py
+          python scripts/upgrade_provider_source_plan_v10.py
+          python scripts/upgrade_provider_external_identity_route_v11_1.py
+          python scripts/upgrade_provider_source_plan_v12.py
+          python scripts/upgrade_provider_route_plan_v13_2.py
+          python scripts/upgrade_provider_route_retry_v1.py
+          python scripts/upgrade_provider_base_runtime_v11.py
+          node --check scripts/provider_worker.cjs
+          python tests/provider_repair_v8_partial_typed_resolver_test.py
+          python tests/provider_text_body_request_v9_test.py
+          python tests/provider_source_plan_v10_regression_test.py
+          python tests/provider_external_identity_route_v11_test.py
+          python tests/provider_source_plan_v12_regression_test.py
+          python tests/provider_route_plan_v13_regression_test.py
+          python scripts/recover_provider_routes_from_upstreams.py \
+            --workers 4 --timeout 55 --attempts 3 \
+            --provider animekai \
+            --provider movies4u \
+            --provider papadustream \
+            --provider frenchstream \
+            --out automation/fast-source-plan-recovery.json
+      - name: Apply fresh DATA and materialize only targets
+        run: |
+          set -euo pipefail
+          python scripts/merge_provider_repair_report_v6.py \
+            --baseline automation/provider-route-recovery-v5.json \
+            --targeted automation/fast-source-plan-recovery.json \
+            --output automation/fast-source-plan-merged.json
+          python scripts/apply_provider_route_recovery_report.py automation/fast-source-plan-merged.json
+          python scripts/enforce_route_proof_manifest_policy_v1.py \
+            --report automation/fast-source-plan-merged.json \
+            --manifest manifest.json --overrides provider-overrides.json
+          python scripts/materialize_provider_base_v3_store.py
+          for provider in animekai movies4u papadustream frenchstream; do
+            python scripts/materialize_provider_v3_one.py "$provider"
+          done
+          python scripts/validate_published_provider_config.py --expected 96
+      - name: Fast reconstructed yield
+        run: |
+          set -euo pipefail
+          python scripts/audit_provider_repair_yield_v6.py \
+            --recovery automation/fast-source-plan-recovery.json \
+            --skip-file automation/provider-repair-skip.json \
+            --output automation/fast-source-plan-yield.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          report=json.loads(Path('automation/fast-source-plan-yield.json').read_text())
+          print('SOURCE_PLAN_V13_TOTAL',
+                'raw='+str(report.get('rawProviderCount')),
+                'playable='+str(report.get('playableProviderCount')),
+                'verified='+str(report.get('verifiedProviderCount')),
+                'upstream_positive='+str(report.get('upstreamPositivePairCount')),
+                'preserved='+str(report.get('preservedUpstreamPositivePairs')),
+                'lost='+str(report.get('lostUpstreamPositivePairs')))
+          for row in report['rows']:
+            fetches=[f for f in row.get('debug_fetches') or [] if 'themoviedb.org' not in str(f.get('url') or '')]
+            model=row.get('debug_model') or {}
+            print('SOURCE_PLAN_V13', row['provider_id'], row['semantic_type'],
+                  'status='+row['status'], 'stage='+row['debug_stage'],
+                  'raw='+str(row['raw']), 'playable='+str(row['playable']),
+                  'provider_fetches='+str(len(fetches)),
+                  'family='+str(model.get('source_runtime_family')),
+                  'recipe='+str(model.get('has_api_recipe')))
+            for f in fetches[:16]:
+              print('SOURCE_PLAN_FETCH', row['provider_id'], row['semantic_type'], f.get('status'), f.get('url'))
+          PY
+      - name: Upload baseline
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: fast-source-plan-baseline-${{ github.run_id }}
+          path: |
+            automation/fast-source-plan-recovery.json
+            automation/fast-source-plan-yield.json
+            automation/fast-source-plan-merged.json
+            manifest.json
+            provider-overrides.json
+          retention-days: 7
+          if-no-files-found: warn

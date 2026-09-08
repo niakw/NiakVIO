@@ -1,0 +1,96 @@
+name: TEST - Provider Search Request Plan V14
+
+on:
+  push:
+    branches:
+      - workbench/route-recognition-v14-search-plan
+    paths:
+      - '.github/triggers/provider-search-plan-v14.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: provider-search-request-plan-v14-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  v14-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Prove V14 contract before network
+        run: |
+          set -euo pipefail
+          python -m py_compile \
+            scripts/run_provider_repair_pipeline_v6.py \
+            scripts/upgrade_provider_search_request_plan_v14.py \
+            scripts/merge_provider_repair_report_v6.py
+          python tests/provider_search_request_plan_v14_contract_test.py
+          python tests/provider_repair_pipeline_v6_contract_test.py
+      - name: Run V14 targeted proof with whole-portfolio preservation
+        run: |
+          python scripts/run_provider_repair_pipeline_v6.py \
+            --mode repair \
+            --provider animekai \
+            --provider movies4u \
+            --provider papadustream \
+            --provider frenchstream \
+            --workers 8 \
+            --timeout 55 \
+            --attempts 3
+      - name: Verify protected-green providers were not recognition targets
+        if: always()
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          target=Path('automation/provider-route-recovery-v6-targeted.json')
+          if not target.exists():
+              print('V14_SKIP_PROOF target_report_missing_before_census=1')
+              raise SystemExit(0)
+          rows=json.load(open(target)).get('providers') or []
+          targeted={str(row.get('providerId') or '').strip().casefold() for row in rows}
+          skip=set((json.load(open('automation/provider-repair-skip.json')).get('providers') or {}).keys())
+          overlap=sorted(targeted & skip)
+          print('V14_SKIP_PROOF targeted='+str(len(targeted))+' overlap='+','.join(overlap))
+          assert not overlap, overlap
+          PY
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: provider-search-plan-v14-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            automation/provider-route-recovery-v6-targeted.json
+            automation/provider-route-recovery-v6.json
+            automation/provider-repair-v6-summary.json
+            automation/provider-repair-yield-v6.json
+            automation/provider-repair-portfolio-baseline.json
+            automation/provider-repair-portfolio-candidate.json
+            automation/provider-repair-portfolio-retry.json
+            automation/provider-repair-portfolio-losses.json
+            automation/provider-v3-static-knowledge.json
+            provider-overrides.json
+            provider-v3-materialization.json
+            providers/

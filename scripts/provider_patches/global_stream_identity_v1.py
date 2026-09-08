@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""Conservative cross-client identity guard for final provider stream rows.
+"""Conservative cross-client identity guard and shared catalogue identity policy.
 
-The guard is shared by TV, Mobile and Desktop. It keeps generic/opaque rows and
-rejects only explicit contradictory identity evidence: a different TMDB/IMDb id,
-a different requested season/episode, a movie row that is explicitly episodic,
-or a content-like title contradiction confirmed by strong local/TMDB evidence.
+CORE.STREAM_IDENTITY.V1 is the single owner of identity acceptance semantics for
+TV, Mobile and Desktop. ProviderBase catalogue selection delegates to the policy
+exported by this Lego; providers must not reimplement year/type/title rejection.
 
-For episodic requests TMDB series and FR/EN episode titles are accepted identities.
-A same-SxxExx label with a different apparent show is never rejected on guesswork:
-only a targeted TMDB search that strongly resolves that label to another show can
-confirm the mismatch.
+Final stream rows remain conservative: generic/opaque rows survive and only
+explicit contradictory identity evidence is rejected. For episodic requests,
+identity is title/type + season/episode. Release year is deliberately ignored for
+tv/series/anime and is considered only for movies.
 """
 from __future__ import annotations
 
@@ -41,7 +40,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> st
         "providerId": str(context.get("provider_id") or "").strip().casefold(),
         "tmdbRuntimeKeyRequired": True,
         "tmdbTimeoutMs": max(350, min(int(cfg.get("tmdb_timeout_ms", 1200)), 2500)),
-        "implementationRevision": "cross-client-shared-core-tmdb-v9",
+        "implementationRevision": "cross-client-shared-tmdb-owner-zero-episodic-year-v11",
+        "catalogueYearPolicy": "movie-only",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -56,18 +56,55 @@ function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"")
 function uniq(values){var out=[],seen={};(values||[]).forEach(function(v){var x=s(v),k=norm(x);if(x&&k&&!seen[k]){seen[k]=1;out.push(x)}});return out}
 function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
-function req(a){var f=a[0],q=f&&typeof f==="object"&&!Array.isArray(f)?Object.assign({},f):{tmdbId:f,mediaType:a[1],season:a[2],episode:a[3]};var raw=s(q.tmdbId||q.tmdb_id||q.id||f).replace(/^tmdb:/i,"");q.tmdbId=(raw.match(/^\d+/)||[])[0]||"";q.imdbId=s(q.imdbId||q.imdb_id||"").toLowerCase();q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.seriesYear=Number(q.seriesYear||q.series_year||q.year||0)||0;q.seasonYear=Number(q.seasonYear||q.season_year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
+function req(a){var f=a[0],q=f&&typeof f==="object"&&!Array.isArray(f)?Object.assign({},f):{tmdbId:f,mediaType:a[1],season:a[2],episode:a[3]};var raw=s(q.tmdbId||q.tmdb_id||q.id||f).replace(/^tmdb:/i,"");q.tmdbId=(raw.match(/^\d+/)||[])[0]||"";q.imdbId=s(q.imdbId||q.imdb_id||"").toLowerCase();q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
 function episodic(q){return q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime"}
+function providerMedia(v){var x=s(v).toLowerCase();return x==="movie"?"movie":((x==="tv"||x==="series"||x==="show"||x==="anime")?"tv":"")}
+function catalogueScore(e){
+  e=e&&typeof e==="object"?e:{};
+  var title=norm(e.title),expected=uniq(e.expectedTitles||[]).map(norm).filter(Boolean),actualMedia=providerMedia(e.actualMedia),expectedMedia=providerMedia(e.expectedMedia),providerId=s(e.providerId),strict=e.strictIdentity===true;
+  var movie=expectedMedia==="movie",year=s(e.year).slice(0,4),expectedYear=s(e.expectedYear).slice(0,4);
+  if(actualMedia&&expectedMedia&&actualMedia!==expectedMedia)return-1;
+  if(e.requireProviderTypeEvidence===true&&(!actualMedia||!expectedMedia))return-1;
+  if(strict){
+    if(!providerId||!title||!expected.length||expected.indexOf(title)<0)return-1;
+    if(movie&&expectedYear){
+      if(!/^\d{4}$/.test(year))return-1;
+      if(Math.abs(Number(year)-Number(expectedYear))>1)return-1;
+    }
+    return 120+(movie&&year===expectedYear?20:0);
+  }
+  if(movie&&year&&expectedYear&&year!==expectedYear)return-1;
+  var score=0,primary=expected[0]||"";
+  if(title&&expected.indexOf(title)>=0)score+=200;
+  else if(title&&primary&&(title.indexOf(primary)>=0||primary.indexOf(title)>=0))score+=90;
+  if(title&&primary){primary.split(" ").filter(function(v){return v.length>=3}).forEach(function(token){if(title.indexOf(token)>=0)score+=10})}
+  if(movie&&year&&expectedYear&&year===expectedYear)score+=40;
+  if(actualMedia&&expectedMedia&&actualMedia===expectedMedia)score+=60;
+  if(providerId)score+=15;
+  return score;
+}
+function htmlIdentityOk(e){
+  e=e&&typeof e==="object"?e:{};
+  if(e.strictIdentity!==true)return true;
+  var visible=norm(e.visibleText),expected=uniq(e.expectedTitles||[]).map(norm).filter(Boolean),media=providerMedia(e.mediaType);
+  if(!visible||!expected.length||!expected.some(function(title){return visible.indexOf(title)>=0}))return false;
+  if(media==="movie"){
+    var expectedYear=s(e.expectedYear).slice(0,4),html=s(e.html),years=html.match(/\b(?:19|20)\d{2}\b/g)||[];
+    if(expectedYear&&/^\d{4}$/.test(expectedYear)&&years.length&&years.indexOf(expectedYear)<0)return false;
+  }
+  return true;
+}
+try{if(g)g.__nuvioIdentityPolicyV1=Object.freeze({catalogueScore:catalogueScore,htmlIdentityOk:htmlIdentityOk,yearPolicy:"movie-only"})}catch(_e){}
 function kind(q){return episodic(q)?"tv":"movie"}
 function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_e){return false}}
 function runtimeTmdbKey(){try{return s(g&&g.TMDB_API_KEY)}catch(_e){return""}}
 function runtimeTmdbAllowed(){return !!runtimeTmdbKey()}
 async function cachedTmdb(q){try{var cache=g&&g.__nuvioTmdbMetadataCacheV1,key=kind(q)+":"+s(q.tmdbId);if(cache&&Object.prototype.hasOwnProperty.call(cache,key)){var value=await cache[key];if(value&&value.state==="ok"&&value.metadata)return value.metadata}}catch(_e){}return null}
-async function coreTmdb(q){try{var getter=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof getter!=="function")return null;var value=await getter({tmdbId:q.tmdbId,mediaType:kind(q),tmdbNamespace:kind(q),season:q.season,episode:q.episode});if(value&&value.state==="ok"&&value.metadata)return value.metadata}catch(_e){}return null}
 function signal(){try{if(typeof AbortSignal!=="undefined"&&typeof AbortSignal.timeout==="function")return AbortSignal.timeout(c.tmdbTimeoutMs)}catch(_e){}return null}
 async function jsonFetch(url){if(!g||typeof g.fetch!=="function"||!runtimeTmdbAllowed())return null;var nb=nativeFetchBridge(),sig=nb?null:signal();if(!nb&&!sig)return null;var init={headers:{Accept:"application/json"}};if(sig)init.signal=sig;try{var r=await g.fetch(url,init);if(!r||!r.ok)return null;return await r.json()}catch(_e){return null}}
-async function tmdb(q){var titles=uniq([q.title]),episodeTitles=[],year=q.year,imdb=q.imdbId,key=runtimeTmdbKey();if(!/^\d+$/.test(q.tmdbId||""))return{titles:titles,episodeTitles:episodeTitles,year:year,imdbId:imdb};var k=kind(q),base="https://api.themoviedb.org/3/"+k+"/"+encodeURIComponent(q.tmdbId),d=await cachedTmdb(q);if(!d)d=await coreTmdb(q);if(!d&&key)d=await jsonFetch(base+"?api_key="+encodeURIComponent(key)+"&language=fr-FR&append_to_response=external_ids");if(d){var date=s(d.release_date||d.first_air_date);titles=uniq(titles.concat([d.title,d.name,d.original_title,d.original_name]));year=year||Number((date.match(/(?:19|20)\d{2}/)||[])[0]||0)||0;imdb=imdb||s(d.external_ids&&d.external_ids.imdb_id).toLowerCase()}return{titles:titles,episodeTitles:episodeTitles,year:year,imdbId:imdb}}
-async function episodeJson(q,language){var key=runtimeTmdbKey();if(!key||!episodic(q)||q.season<=0||q.episode<=0||!/^\d+$/.test(q.tmdbId||""))return null;var cache=null,cacheKey="episode:tv:"+q.tmdbId+":"+q.season+":"+q.episode+":"+language;try{cache=g&&g.__nuvioTmdbMetadataCacheV1;if(cache&&Object.prototype.hasOwnProperty.call(cache,cacheKey)){var cached=await cache[cacheKey];return cached&&cached.metadata?cached.metadata:cached&&cached.value?cached.value:cached||null}}catch(_e){}var url="https://api.themoviedb.org/3/tv/"+encodeURIComponent(q.tmdbId)+"/season/"+encodeURIComponent(q.season)+"/episode/"+encodeURIComponent(q.episode)+"?api_key="+encodeURIComponent(key)+"&language="+encodeURIComponent(language),pending=jsonFetch(url);try{if(cache)cache[cacheKey]=pending}catch(_e){}var value=await pending;try{if(cache){if(value)cache[cacheKey]=value;else delete cache[cacheKey]}}catch(_e){}return value}
+/* NUVIO_IDENTITY_SHARED_TMDB_CAPABILITY_V1 */
+async function tmdb(q){var titles=uniq([q.title]),episodeTitles=[],year=q.year,imdb=q.imdbId,key=runtimeTmdbKey();if(!/^\d+$/.test(q.tmdbId||""))return{titles:titles,episodeTitles:episodeTitles,year:year,imdbId:imdb};var k=kind(q),base="https://api.themoviedb.org/3/"+k+"/"+encodeURIComponent(q.tmdbId),d=await cachedTmdb(q),shared=false;if(!d){try{var getter=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof getter==="function"){shared=true;var result=await getter({tmdbId:q.tmdbId,mediaType:k,tmdbNamespace:k,season:q.season,episode:q.episode});if(result&&result.state==="ok"&&result.metadata)d=result.metadata}}catch(_e){}}if(!d&&!shared&&key)d=await jsonFetch(base+"?api_key="+encodeURIComponent(key)+"&language=fr-FR&append_to_response=external_ids");if(d){var date=s(d.release_date||d.first_air_date);titles=uniq(titles.concat([d.title,d.name,d.original_title,d.original_name]));year=year||Number((date.match(/(?:19|20)\d{2}/)||[])[0]||0)||0;imdb=imdb||s(d.external_ids&&d.external_ids.imdb_id).toLowerCase()}return{titles:titles,episodeTitles:episodeTitles,year:year,imdbId:imdb}}
+async function episodeJson(q,language){var key=runtimeTmdbKey();if(!key||!episodic(q)||q.season<=0||q.episode<=0||!/^\d+$/.test(q.tmdbId||""))return null;var cache=null,cacheKey="episode:tv:"+q.tmdbId+":"+q.season+":"+q.episode+":"+language;try{cache=g&&g.__nuvioTmdbMetadataCacheV1;if(cache&&Object.prototype.hasOwnProperty.call(cache,cacheKey))return await cache[cacheKey]}catch(_e){}var url="https://api.themoviedb.org/3/tv/"+encodeURIComponent(q.tmdbId)+"/season/"+encodeURIComponent(q.season)+"/episode/"+encodeURIComponent(q.episode)+"?api_key="+encodeURIComponent(key)+"&language="+encodeURIComponent(language),pending=jsonFetch(url);try{if(cache)cache[cacheKey]=pending}catch(_e){}var value=await pending;try{if(cache){if(value)cache[cacheKey]=value;else delete cache[cacheKey]}}catch(_e){}return value}
 async function ensureEpisodeTitles(q,m){if(!episodic(q)||q.season<=0||q.episode<=0||m.__episodeTitlesLoaded)return m;m.__episodeTitlesLoaded=true;var eps=await Promise.all([episodeJson(q,"fr-FR"),episodeJson(q,"en-US")]);eps.forEach(function(ep){if(ep)m.episodeTitles=uniq((m.episodeTitles||[]).concat([ep.name,ep.original_name]))});return m}
 function episode(v){return/(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(v)||/(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(v)}
 function explicitIds(row){var out={tmdbId:"",imdbId:""};var tv=s(row&&(row.tmdbId||row.tmdb_id||row.tmdb));if(/^\d+$/.test(tv))out.tmdbId=tv;var iv=s(row&&(row.imdbId||row.imdb_id||row.imdb)).toLowerCase();if(/^tt\d+$/.test(iv))out.imdbId=iv;try{var u=new URL(s(row&&row.url)),qp=u.searchParams,t=s(qp.get("tmdbId")||qp.get("tmdb")||"");if(!out.tmdbId&&/^\d+$/.test(t))out.tmdbId=t;var i=s(qp.get("imdbId")||qp.get("imdb")||"").toLowerCase();if(!out.imdbId&&/^tt\d+$/.test(i))out.imdbId=i}catch(_e){}return out}
@@ -75,11 +112,11 @@ function tokens(v){var noise={the:1,a:1,an:1,le:1,la:1,les:1,un:1,une:1,de:1,des
 function expectedTokens(m){var map={};uniq((m.titles||[]).concat(m.episodeTitles||[])).forEach(function(t){tokens(t).forEach(function(x){map[x]=1})});return map}
 function overlapsExpected(text,expected){var w=tokens(text);for(var i=0;i<w.length;i++)if(expected[w[i]])return true;return false}
 function explicitCandidates(row){var out=[],title=s(row&&row.title);if(title)out.push({text:title,kind:"title"});var filename=s(row&&row.filename);if(filename)out.push({text:filename,kind:"filename"});try{var base=decodeURIComponent(new URL(s(row&&row.url)).pathname.split("/").filter(Boolean).pop()||"").replace(/\.(?:m3u8|mpd|mp4|mkv|webm|m4v|ts)$/i,"");if(base)out.push({text:base,kind:"url"})}catch(_e){}var name=s(row&&row.name);if(name&&norm(name)!==norm(c.providerId))out.push({text:name,kind:"name"});return out}
-function contentLike(candidate){var w=tokens(candidate.text),se=episode(candidate.text),years=norm(candidate.text).match(/\b(?:19|20)\d{2}\b/g)||[];if(se)return true;if(years.length&&w.length>=1)return true;if((candidate.kind==="title"||candidate.kind==="filename")&&w.length>=3)return true;return false}
+function contentLike(candidate,q){var w=tokens(candidate.text),se=episode(candidate.text),years=norm(candidate.text).match(/\b(?:19|20)\d{2}\b/g)||[];if(se)return true;if(!episodic(q)&&years.length&&w.length>=1)return true;if((candidate.kind==="title"||candidate.kind==="filename")&&w.length>=3)return true;return false}
 function queryTitle(text){return tokens(text).join(" ").trim()}
 function strongNameMatch(query,result){var a=tokens(query),names=uniq([result&&result.name,result&&result.original_name,result&&result.title,result&&result.original_title]);if(a.length<2)return false;for(var n=0;n<names.length;n++){var b=tokens(names[n]);if(!b.length)continue;var hit=0;a.forEach(function(x){if(b.indexOf(x)>=0)hit++});var ratio=hit/Math.max(a.length,b.length);if(ratio>=0.67)return true}return false}
 async function confirmOtherTitle(candidate,q){var key=runtimeTmdbKey();if(!key||!/^\d+$/.test(q.tmdbId||""))return false;var query=queryTitle(candidate.text);if(tokens(query).length<2)return false;var endpoint=episodic(q)?"tv":"movie",d=await jsonFetch("https://api.themoviedb.org/3/search/"+endpoint+"?api_key="+encodeURIComponent(key)+"&language=fr-FR&query="+encodeURIComponent(query)+"&include_adult=false");if(!d||!Array.isArray(d.results))return false;for(var i=0;i<Math.min(5,d.results.length);i++){var row=d.results[i];if(!strongNameMatch(query,row))continue;var id=s(row&&row.id);if(id===q.tmdbId)return false;return /^\d+$/.test(id)&&id!==q.tmdbId}return false}
-async function candidateContradicts(candidate,q,m,expected){var text=candidate.text,se=episode(text);if(q.mediaType==="movie"&&se)return true;if(se&&episodic(q)){var ss=Number(se[1])||0,ee=Number(se[2])||0;if((q.season&&ss&&ss!==q.season)||(q.episode&&ee&&ee!==q.episode))return true;if(overlapsExpected(text,expected))return false;m=await ensureEpisodeTitles(q,m);expected=expectedTokens(m);if(overlapsExpected(text,expected))return false;return await confirmOtherTitle(candidate,q)}var years=norm(text).match(/\b(?:19|20)\d{2}\b/g)||[];if(!episodic(q)&&m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;if(!contentLike(candidate)||overlapsExpected(text,expected))return false;var w=tokens(text);if(w.length<2)return false;if(w.length>=3&&(candidate.kind==="title"||candidate.kind==="filename"))return await confirmOtherTitle(candidate,q);return false}
+async function candidateContradicts(candidate,q,m,expected){var text=candidate.text,se=episode(text);if(q.mediaType==="movie"&&se)return true;if(se&&episodic(q)){var ss=Number(se[1])||0,ee=Number(se[2])||0;if((q.season&&ss&&ss!==q.season)||(q.episode&&ee&&ee!==q.episode))return true;if(overlapsExpected(text,expected))return false;m=await ensureEpisodeTitles(q,m);expected=expectedTokens(m);if(overlapsExpected(text,expected))return false;return await confirmOtherTitle(candidate,q)}var years=norm(text).match(/\b(?:19|20)\d{2}\b/g)||[];if(!episodic(q)&&m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;if(!contentLike(candidate,q)||overlapsExpected(text,expected))return false;var w=tokens(text);if(w.length<2)return false;if(w.length>=3&&(candidate.kind==="title"||candidate.kind==="filename"))return await confirmOtherTitle(candidate,q);return false}
 async function mismatch(row,q,m){var ids=explicitIds(row);if(ids.tmdbId&&q.tmdbId&&ids.tmdbId!==q.tmdbId)return true;if(ids.imdbId&&(q.imdbId||m.imdbId)&&ids.imdbId!==(q.imdbId||m.imdbId))return true;var expected=expectedTokens(m),cands=explicitCandidates(row);for(var i=0;i<cands.length;i++)if(await candidateContradicts(cands[i],q,m,expected))return true;return false}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamIdentityV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var m=await tmdb(q),kept=[];for(var i=0;i<x.list.length;i++)if(!(await mismatch(x.list[i],q,m)))kept.push(x.list[i]);return rebuild(v,x,kept)};wrap.__nuvioGlobalStreamIdentityV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}

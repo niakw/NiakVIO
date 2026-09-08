@@ -1,5 +1,5 @@
 {
-  "target_sha": "af98b37832c6283e0eac1dfe39bd7df0232c5b15",
+  "target_sha": "2e552b59b97757655e981153698bbdbdac2f1daa",
   "wait_seconds": 900,
   "services": {
     "sonar": {
@@ -19,20 +19,19 @@
       "notes": [
         "did not reach target SHA within 900s"
       ],
-      "repository_latest_sha_before": "af98b37832c6283e0eac1dfe39bd7df0232c5b15",
+      "repository_latest_sha_before": "2e552b59b97757655e981153698bbdbdac2f1daa",
       "activated": true,
       "target_run_status": null,
       "target_run_finished_at": null
     },
     "codescene": {
-      "requested": false,
+      "requested": true,
       "fresh": false,
       "notes": [
-        "run-analysis returned HTTP 400: {'error': \"There's another analysis already running.\"}",
         "did not reach target SHA within 900s"
       ],
       "project_id": 83939,
-      "request_http_status": 400,
+      "request_http_status": 202,
       "latest_sha": "418632bf61cf5ca8476d316cb9e3ccc7dcdcdf6c",
       "latest_analysis_at": "2026-09-05T20:17:58Z"
     }

@@ -135,25 +135,47 @@ def provider_key(relative: str) -> str | None:
     return match.group("provider").casefold() if match else None
 
 
-def git_first_seen(root: Path, relative: str) -> int | None:
-    """Best-effort bootstrap ordering for generations predating the ledger."""
+# NIAKVIO_PROVIDER_PRUNE_BATCH_HISTORY_V1
+def git_first_seen_batch(root: Path, relatives: set[str]) -> dict[str, int]:
+    """Best-effort first-add timestamps for all missing generations in one Git scan.
+
+    Content-addressed generation files are immutable and are not renamed, so
+    `--follow` is both unnecessary and prohibitively expensive here.
+    """
+    wanted = {Path(value).as_posix() for value in relatives if value}
+    if not wanted:
+        return {}
+    marker = "__NIAKVIO_COMMIT_TS__"
     try:
         result = subprocess.run(
-            ["git", "log", "--diff-filter=A", "--follow", "--format=%ct", "--", relative],
+            ["git", "log", "--diff-filter=A", f"--format={marker}%ct", "--name-only", "--", "providers"],
             cwd=root,
             text=True,
             capture_output=True,
             check=False,
-            timeout=5,
+            timeout=30,
         )
     except (OSError, subprocess.SubprocessError):
-        return None
-    values = [
-        int(line.strip())
-        for line in result.stdout.splitlines()
-        if line.strip().isdigit()
-    ]
-    return min(values) if values else None
+        return {}
+    if result.returncode != 0:
+        return {}
+    current_stamp: int | None = None
+    found: dict[str, int] = {}
+    for raw in result.stdout.splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        if line.startswith(marker):
+            value = line[len(marker):]
+            current_stamp = int(value) if value.isdigit() else None
+            continue
+        relative = Path(line).as_posix()
+        if current_stamp is None or relative not in wanted:
+            continue
+        previous = found.get(relative)
+        if previous is None or current_stamp < previous:
+            found[relative] = current_stamp
+    return found
 
 
 def load_ledger(path: Path) -> dict:
@@ -221,15 +243,23 @@ def bootstrap_missing_order(
     existing_by_provider: dict[str, list[str]],
     order: dict[str, list[str]],
 ) -> None:
+    missing_by_provider: dict[str, list[str]] = {}
+    all_missing: set[str] = set()
     for key, paths in existing_by_provider.items():
         current = [value for value in order.get(key, []) if value in paths]
         known = set(current)
         missing = [value for value in paths if value not in known]
+        missing_by_provider[key] = missing
+        all_missing.update(missing)
+    first_seen = git_first_seen_batch(root, all_missing)
+    for key, paths in existing_by_provider.items():
+        current = [value for value in order.get(key, []) if value in paths]
+        missing = missing_by_provider.get(key, [])
         if missing:
-            ranked = []
-            for relative in missing:
-                stamp = git_first_seen(root, relative)
-                ranked.append((stamp is None, stamp or 0, relative))
+            ranked = [
+                (first_seen.get(relative) is None, first_seen.get(relative) or 0, relative)
+                for relative in missing
+            ]
             ranked.sort()
             current.extend(relative for _missing_git, _stamp, relative in ranked)
         order[key] = current

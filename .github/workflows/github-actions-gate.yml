@@ -155,6 +155,7 @@ jobs:
           python3 tests/provider_hub_registry_test.py
           python3 tests/domain_refresh_workflow_test.py
           python3 tests/priority_tv_year_domain_refresh_test.py
+          python3 tests/global_identity_policy_ownership_test.py
           python3 tests/generic_recovery_hardening_test.py
           python3 tests/native_reader_payload_schema_test.py
           python3 tests/evidence_sanitization_test.py
@@ -174,6 +175,7 @@ jobs:
           python3 tests/native_corpus_suite_summary_test.py
           node tests/nuvio_client_lab.test.cjs
           node engine_v2/tests/contracts.test.mjs
+          node engine_v2/tests/purstream-adapter.test.mjs
 
       - name: Validate native provider-loading compatibility
         run: |

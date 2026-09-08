@@ -1,0 +1,152 @@
+name: Provider Repair Parallel Batch Proof
+
+on:
+  push:
+    branches:
+      - workbench/route-recognition-v14-search-plan
+    paths:
+      - automation/provider-fast-trigger.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NIAKVIO_ROUTE_PROOF_MAX_ATTEMPTS: "3"
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_QUICK_YIELD_WORKERS: "4"
+  NIAKVIO_QUICK_YIELD_TIMEOUT: "55"
+
+jobs:
+  plan:
+    name: plan-next-24
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      selected: ${{ steps.plan.outputs.selected }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build deterministic six-batch matrix
+        id: plan
+        shell: bash
+        run: |
+          matrix="$(python scripts/provider_parallel_sweep_plan_v1.py --limit 24 --batch-size 4 --matrix-only)"
+          selected="$(python scripts/provider_parallel_sweep_plan_v1.py --limit 24 --batch-size 4 | python -c 'import json,sys; print(",".join(json.load(sys.stdin)["selectedProviders"]))')"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "selected=$selected" >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP_SELECTED providers=$selected"
+
+  prove-wave:
+    name: prove-${{ matrix.batch }}
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run guarded provider batch acceptance
+        id: acceptance
+        continue-on-error: true
+        shell: bash
+        env:
+          BATCH_PROVIDERS: ${{ matrix.providers }}
+        run: |
+          args=()
+          for provider in $BATCH_PROVIDERS; do
+            args+=(--provider "$provider")
+          done
+          python scripts/run_provider_repair_fast_targeted_v20.py \
+            --attempts 3 \
+            --workers 4 \
+            --timeout 55 \
+            "${args[@]}"
+
+      - name: Inspect exact materialized bundle plans
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          BATCH_PROVIDERS: ${{ matrix.providers }}
+        run: |
+          if [ ! -f automation/provider-repair-fast-yield.json ]; then
+            echo "FIELD_PROVIDER_FAST_BUNDLE_INSPECT skipped=1 reason=yield-not-reached"
+            exit 0
+          fi
+          args=()
+          for provider in $BATCH_PROVIDERS; do
+            args+=(--provider "$provider")
+          done
+          python scripts/inspect_provider_fast_bundle_plans.py "${args[@]}"
+
+      - name: Validate shared V16-V20.3 and adaptive route-plan contracts
+        if: always()
+        run: |
+          python -m py_compile \
+            scripts/provider_live_request_contract_bridge_v19.py \
+            scripts/upgrade_provider_response_value_correlation_v20.py \
+            scripts/upgrade_provider_response_value_correlation_v20_1.py \
+            scripts/upgrade_provider_response_value_correlation_v20_2.py \
+            scripts/upgrade_provider_response_value_correlation_v20_3.py
+          python tests/provider_execution_authority_v16_contract_test.py
+          python tests/provider_route_slug_identity_v16_test.py
+          python tests/provider_correlated_value_plan_v18_contract_test.py
+          python tests/provider_packed_player_v18_6_contract_test.py
+          python tests/provider_player_route_variant_v18_7_contract_test.py
+          python tests/provider_player_form_handoff_v18_8_contract_test.py
+          python tests/provider_live_request_contract_bridge_v19_test.py
+          python tests/provider_response_value_correlation_v20_test.py
+          python tests/provider_response_value_correlation_v20_3_test.py
+          python tests/runtime_route_plan_cap_v1_test.py
+
+      - name: Show batch proof summary
+        if: always()
+        run: |
+          echo "FIELD_PROVIDER_PARALLEL_BATCH batch=${{ matrix.batch }} providers=${{ matrix.providers }}"
+          test -f automation/provider-repair-fast-summary.json && cat automation/provider-repair-fast-summary.json || true
+
+      - name: Enforce batch acceptance result
+        if: always()
+        run: |
+          test "${{ steps.acceptance.outcome }}" = "success"
+
+      - name: Upload batch proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-repair-${{ matrix.batch }}-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            automation/provider-repair-fast-targeted.json
+            automation/provider-repair-fast-merged.json
+            automation/provider-repair-fast-yield.json
+            automation/provider-repair-fast-summary.json
+            provider-v3-quick-yield.json
+
+  sweep-result:
+    name: sweep-result
+    needs: [plan, prove-wave]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report selected providers and matrix outcome
+        run: |
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP providers=${{ needs.plan.outputs.selected }}"
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP_RESULT result=${{ needs.prove-wave.result }}"
+          test "${{ needs.prove-wave.result }}" = "success"

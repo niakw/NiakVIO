@@ -86,6 +86,19 @@ function routeKind(route) {
   return 'unknown';
 }
 
+function providerValueTrace() {
+  const raw = globalThis.__nuvioProviderValueTraceV18;
+  if (!raw || typeof raw !== 'object') return null;
+  const index = Number(raw.stepIndex);
+  return {
+    stage: String(raw.stage || '').slice(0, 64),
+    lane: String(raw.lane || '').slice(0, 32),
+    provider_id: String(raw.providerId || '').slice(0, 160),
+    step_index: Number.isInteger(index) && index >= -1 && index <= 3 ? index : null,
+    route: String(raw.route || '').slice(0, 240),
+  };
+}
+
 function debugStage(model, fixture, fetchTrace, result) {
   const type = String(fixture.mediaType || fixture.type || 'movie').toLowerCase();
   const supported = Array.isArray(model?.supportedTypes) ? model.supportedTypes.map((x) => String(x).toLowerCase()) : [];
@@ -114,19 +127,30 @@ let fixture = {};
 try { fixture = JSON.parse(process.argv[3] || '{}'); } catch { fixture = {}; }
 
 // Trace every network call before any provider code executes. TMDB query secrets
-// are redacted from evidence while provider URLs/statuses remain visible.
+// are redacted from evidence while provider request/response URLs and methods
+// remain visible. Bodies, cookies and request headers are never persisted.
 const originalFetch = globalThis.fetch;
 const trace = [];
 if (typeof originalFetch === 'function') {
   globalThis.fetch = async function tracedFetch(input, init) {
     const started = Date.now();
     const url = safeUrl(typeof input === 'string' || input instanceof URL ? input : input?.url);
+    const method = String(init?.method || (input && typeof input === 'object' && input.method) || 'GET').toUpperCase().slice(0, 12);
     try {
       const response = await originalFetch.call(this, input, init);
-      trace.push({ url, status: Number(response?.status || 0), duration_ms: Date.now() - started });
+      let contentType = '';
+      try { contentType = String(response?.headers?.get?.('content-type') || '').split(';')[0].slice(0, 96); } catch {}
+      trace.push({
+        url,
+        response_url: safeUrl(response?.url || url),
+        method,
+        status: Number(response?.status || 0),
+        content_type: contentType,
+        duration_ms: Date.now() - started,
+      });
       return response;
     } catch (error) {
-      trace.push({ url, status: 0, duration_ms: Date.now() - started, error: String(error?.name || 'Error') });
+      trace.push({ url, response_url: '', method, status: 0, duration_ms: Date.now() - started, error: String(error?.name || 'Error') });
       throw error;
     }
   };
@@ -183,9 +207,10 @@ process.stdout.write = function debugWrite(chunk, encoding, callback) {
           tmdb_core_capability: typeof globalThis.__nuvioCoreGetTmdbDataV1 === 'function',
           tmdb_credential_visible_after_load: !!(globalThis.TMDB_API_KEY || globalThis.TMDB_ACCESS_TOKEN),
           tmdb_context_prehydrated: false,
+          provider_value_trace_v18: providerValueTrace(),
           fetch_count: trace.length,
           provider_fetch_count: trace.filter((row) => !/api\.themoviedb\.org/i.test(row.url)).length,
-          fetches: trace.slice(0, 30),
+          fetches: trace.slice(0, 40),
         };
         text = JSON.stringify(value) + '\n';
       }

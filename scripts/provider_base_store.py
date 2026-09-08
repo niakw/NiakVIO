@@ -517,7 +517,7 @@ def _normalize_identity_input(value: Any) -> dict[str, Any]:
     ]
     if not fields:
         fields = (
-            ["title", "year", "mediaType"]
+            ["title", "mediaType"]
             if required
             else ["tmdbId", "mediaType"]
         )
@@ -579,6 +579,7 @@ def build_provider_data_model(
             if isinstance(incoming_model.get("apiRecipe"), dict)
             else None
         ),
+        "routeProofVersion": int(incoming_model.get("routeProofVersion") or 0),
         "sourceRuntimeFamily": str(incoming_model.get("sourceRuntimeFamily") or "unknown"),
         "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),
         "strictIdentity": bool(incoming_model.get("strictIdentity", False)),
@@ -1241,41 +1242,27 @@ function _recipeMediaType(row, recipe) {
   const inherited = _text(row && row.__nuvioCollectionMediaType).toLowerCase();
   return inherited === "movie" || inherited === "tv" ? inherited : "";
 }
+/* NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9 */
+function _identityPolicy() {
+  try {
+    const policy = typeof globalThis !== "undefined" ? globalThis.__nuvioIdentityPolicyV1 : null;
+    return policy && typeof policy.catalogueScore === "function" && typeof policy.htmlIdentityOk === "function" ? policy : null;
+  } catch (_) { return null; }
+}
 function _recipeScore(row, meta, recipe, expectedMedia) {
-  const title = _slug(_recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]));
-  const expectedTitles = _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])])
-    .map(_slug).filter(Boolean);
-  const expected = expectedTitles[0] || "";
-  const actualMedia = _recipeMediaType(row, recipe);
-  const year = _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4);
-  const expectedYear = _text(meta && meta.year).slice(0, 4);
-  const providerId = _recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"]);
-
-  if (recipe.strictIdentity) {
-    if (!providerId || !title || !expectedTitles.length || !expectedTitles.includes(title)) return -1;
-    if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
-    if (recipe.requireProviderTypeEvidence === true && (!actualMedia || !expectedMedia)) return -1;
-    if (expectedYear) {
-      if (!year || !/^\d{4}$/.test(year)) return -1;
-      if (Math.abs(Number(year) - Number(expectedYear)) > 1) return -1;
-    }
-    return 100 + (year === expectedYear ? 20 : 10) + 20;
-  }
-
-  if (actualMedia && expectedMedia && actualMedia !== expectedMedia) return -1;
-  if (year && expectedYear && year !== expectedYear) return -1;
-  let score = 0;
-  if (title && expected && title === expected) score += 200;
-  else if (title && expected && (title.includes(expected) || expected.includes(title))) score += 90;
-  if (title && expected) {
-    for (const token of expected.split("-").filter(value => value.length >= 3)) {
-      if (title.includes(token)) score += 10;
-    }
-  }
-  if (year && expectedYear && year === expectedYear) score += 40;
-  if (actualMedia && expectedMedia && actualMedia === expectedMedia) score += 60;
-  if (providerId) score += 15;
-  return score;
+  const policy = _identityPolicy();
+  if (!policy) return -1;
+  return Number(policy.catalogueScore({
+    title: _recipeValue(row, recipe.titleFields || ["title","name","post_title","original_title"]),
+    expectedTitles: _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])]).filter(Boolean),
+    actualMedia: _recipeMediaType(row, recipe),
+    expectedMedia,
+    year: _recipeValue(row, recipe.yearFields || ["year","release_date","first_air_date"]).slice(0, 4),
+    expectedYear: _text(meta && meta.year).slice(0, 4),
+    providerId: _recipeValue(row, recipe.idFields || ["id","_id","media_id","post_id"]),
+    strictIdentity: recipe.strictIdentity === true,
+    requireProviderTypeEvidence: recipe.requireProviderTypeEvidence === true
+  }));
 }
 function _recipeSourceUrls(value, base, recipe) {
   const urls = _sourceUrls(value, base);
@@ -1334,11 +1321,61 @@ function _recipeUrl(pattern, values, base) {
     return url;
   }
 }
-async function _recipePayload(url, recipe, body) {
-  const headers = Object.assign({}, recipe.requestHeaders || {});
-  if (recipe.referer) headers.Referer = recipe.referer;
-  if (recipe.origin) headers.Origin = recipe.origin;
+/* NIAKVIO_PROVIDER_BASE_ROUTE_REQUEST_SPEC_V1 */
+function _recipeExpandScalar(value, values) {
+  if (typeof value !== "string") return value;
+  const replacements = {
+    query: values.query,
+    title: values.query,
+    id: values.providerId,
+    providerId: values.providerId,
+    tmdbId: values.tmdbId,
+    tmdb_id: values.tmdbId,
+    media: values.media,
+    type: values.media,
+    season: values.season,
+    episode: values.episode,
+    source: values.source
+  };
+  return value.replace(/\{([^}]+)\}/g, (match, key) => {
+    const replacement = replacements[key];
+    return replacement == null ? "" : _text(replacement);
+  });
+}
+function _recipeExpandObject(value, values) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const out = {};
+  for (const [key, raw] of Object.entries(value)) {
+    if (raw && typeof raw === "object" && !Array.isArray(raw)) out[key] = _recipeExpandObject(raw, values);
+    else if (Array.isArray(raw)) out[key] = raw.map(item => _recipeExpandScalar(item, values));
+    else out[key] = _recipeExpandScalar(raw, values);
+  }
+  return out;
+}
+function _recipeRequestSpec(recipe, key, values) {
+  const raw = recipe && recipe[key];
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const method = _text(raw.method || "GET").toUpperCase();
+  if (!/^(?:GET|POST|PUT|PATCH|DELETE|HEAD)$/.test(method)) return null;
+  const spec = { method, headers: _recipeExpandObject(raw.headers || {}, values) || {} };
+  const bodyKind = _text(raw.bodyKind || "").toLowerCase();
+  const body = _recipeExpandObject(raw.body || {}, values);
+  if (bodyKind === "json" && body && typeof body === "object") {
+    spec.body = JSON.stringify(body);
+    if (!Object.keys(spec.headers).some(key => key.toLowerCase() === "content-type")) spec.headers["Content-Type"] = "application/json";
+  } else if (bodyKind === "form" && body && typeof body === "object") {
+    spec.body = Object.entries(body).map(([key, value]) => encodeURIComponent(key) + "=" + encodeURIComponent(_text(value))).join("&");
+    if (!Object.keys(spec.headers).some(key => key.toLowerCase() === "content-type")) spec.headers["Content-Type"] = "application/x-www-form-urlencoded; charset=UTF-8";
+  }
+  return spec;
+}
+async function _recipePayload(url, recipe, requestSpec, values) {
+  const headers = Object.assign({}, recipe.requestHeaders || {}, requestSpec && requestSpec.headers || {});
+  if (recipe.referer && !headers.Referer && !headers.referer) headers.Referer = recipe.referer;
+  if (recipe.origin && !headers.Origin && !headers.origin) headers.Origin = recipe.origin;
   const options = { headers };
+  if (requestSpec && requestSpec.method) options.method = requestSpec.method;
+  if (requestSpec && requestSpec.body != null) options.body = requestSpec.body;
   const requestTimeoutMs = Math.max(0, Number(recipe.requestTimeoutMs || 0) || 0);
   if (requestTimeoutMs > 0) {
     try {
@@ -1347,11 +1384,6 @@ async function _recipePayload(url, recipe, body) {
       if (Number.isFinite(deadline) && deadline > 0) timeoutMs = Math.max(1, Math.min(timeoutMs, deadline - Date.now()));
       if (typeof AbortSignal !== "undefined" && AbortSignal.timeout) options.signal = AbortSignal.timeout(timeoutMs);
     } catch (_) {}
-  }
-  if (body != null) {
-    options.method = "POST";
-    headers["Content-Type"] = "application/json";
-    options.body = JSON.stringify(body);
   }
   const response = await _fetch(url, options);
   const type = _text(response.headers.get("content-type")).toLowerCase();
@@ -1432,7 +1464,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
           const url = _recipeUrl(recipe.directRoute, localValues, base);
           if (!url) return [];
           try {
-            const payload = await _recipePayload(url, recipe, null);
+            const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, "directRequest", localValues), localValues);
             if (typeof payload.value === "string") {
               return _streams(
                 _extractUrls(payload.value, payload.base).filter(_directMedia),
@@ -1479,7 +1511,7 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
         const url = _recipeUrl(recipe.searchRoute, values, base);
         if (!url) continue;
         try {
-          const payload = await _recipePayload(url, recipe, null);
+          const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, "searchRequest", values), values);
           if (!payload.value || typeof payload.value === "string") continue;
           const rows = _recipeObjects(payload.value, [])
             .map(row => ({ row, score: _recipeScore(row, meta, recipe, media) }))
@@ -1518,7 +1550,8 @@ async function _resolveApiRecipe(meta, mediaType, season, episode) {
       const url = _recipeUrl(route, values, base);
       if (!url) continue;
       try {
-        const payload = await _recipePayload(url, recipe, null);
+        const requestKey = media === "movie" ? "movieRequest" : "episodeRequest";
+        const payload = await _recipePayload(url, recipe, _recipeRequestSpec(recipe, requestKey, values), values);
         if (typeof payload.value === "string") {
           const urls = _extractUrls(payload.value, payload.base).filter(_directMedia);
           if (urls.length) return _streams(
@@ -1654,21 +1687,18 @@ function _htmlVisibleText(value) {
   }
   return out;
 }
-function _strictHtmlIdentityOk(html, meta) {
+function _strictHtmlIdentityOk(html, meta, mediaType) {
   if (!NIAKVIO_PROVIDER_MODEL.strictHtmlIdentity) return true;
-  if (!meta || !meta.title) return false;
-  const visible = _htmlVisibleText(html);
-  const normalized = _slug(visible);
-  const titles = _uniq([meta.title, ...((Array.isArray(meta.aliases) ? meta.aliases : []))])
-    .map(_slug)
-    .filter(Boolean);
-  if (!titles.length || !titles.some(title => normalized.includes(title))) return false;
-  const year = _text(meta.year).slice(0, 4);
-  if (year && /^\d{4}$/.test(year)) {
-    const years = _text(html).match(/\b(?:19|20)\d{2}\b/g) || [];
-    if (years.length && !years.includes(year)) return false;
-  }
-  return true;
+  const policy = _identityPolicy();
+  if (!policy) return false;
+  return policy.htmlIdentityOk({
+    strictIdentity: true,
+    html,
+    visibleText: _htmlVisibleText(html),
+    expectedTitles: _uniq([meta && meta.title, ...((meta && Array.isArray(meta.aliases)) ? meta.aliases : [])]).filter(Boolean),
+    expectedYear: _text(meta && meta.year).slice(0, 4),
+    mediaType
+  }) === true;
 }
 async function _resolveHtml(meta, mediaType, season, episode) {
   if (!meta || (!meta.title && !meta.tmdbId)) return [];
@@ -1698,7 +1728,7 @@ async function _resolveHtml(meta, mediaType, season, episode) {
     try {
       const response = await _fetch(detailUrl);
       const html = await response.text();
-      if (!_strictHtmlIdentityOk(html, meta)) continue;
+      if (!_strictHtmlIdentityOk(html, meta, mediaType)) continue;
       let urls = _extractUrls(html, response.url || detailUrl);
       if (mediaType !== "movie" && season != null && episode != null) {
         const token = new RegExp("(?:s(?:eason)?\\s*0*" + Number(season) + "[^\\n]{0,80}e(?:pisode)?\\s*0*" + Number(episode) + "|0*" + Number(season) + "x0*" + Number(episode) + ")", "i");
@@ -2063,6 +2093,24 @@ async function _spv4FindDetails(meta, mediaType, season, episode, family) {
     const slug = _slug(title);
     if (!slug) continue;
     for (const route of detailRoutes) {
+      const signedTmdbDetail = family === "signed-player-api" &&
+        /\{slug\}/i.test(route) && /\{id\}/i.test(route) &&
+        /\/title\/(?:movie|tv)\//i.test(route);
+      if (signedTmdbDetail) {
+        const wantsMovie = /\/title\/movie\//i.test(route);
+        if ((mediaType === "movie") !== wantsMovie) continue;
+        const tmdbId = _text(meta && meta.tmdbId).trim();
+        if (!tmdbId) continue;
+        out.push(..._spv4Expand(
+          route,
+          Object.assign({}, meta, { title }),
+          { slug, providerId: tmdbId },
+          mediaType,
+          season,
+          episode
+        ));
+        continue;
+      }
       if (!/\{slug\}/i.test(route) || /\{id\}/i.test(route)) continue;
       out.push(..._spv4Expand(route, Object.assign({}, meta, { title }), { slug }, mediaType, season, episode));
     }
@@ -2286,6 +2334,30 @@ async function _spv4ResolveDetail(detailUrl, meta, mediaType, season, episode, f
     const special = await _spv5DleFilmApi(base, html, meta, mediaType, season, episode);
     if (special.length) return special;
   }
+  /* NIAKVIO_SIGNED_PLAYER_API_RUNTIME_V1 */
+  if (family === "signed-player-api") {
+    const signedPlayers = _spv4AttrUrls(html, base)
+      .filter(_spv4SameProviderOrigin)
+      .filter(url => {
+        try {
+          const parsed = new URL(url);
+          if (!/\/player(?:[/?#.-]|$)/i.test(parsed.pathname)) return false;
+          const id = _text(parsed.searchParams && parsed.searchParams.get("id")).trim();
+          const key = _text(parsed.searchParams && (parsed.searchParams.get("k") || parsed.searchParams.get("key"))).trim();
+          return !!id && !!key;
+        } catch (_) { return false; }
+      });
+    if (signedPlayers.length) {
+      const runtime = await _resolveRuntimeApi(
+        signedPlayers.slice(0, 4),
+        mediaType,
+        meta && meta.tmdbId,
+        season,
+        episode
+      );
+      if (runtime.length) return runtime;
+    }
+  }
 
   let urls = _spv4AttrUrls(html, base);
   if (mediaType !== "movie" && season != null && episode != null) {
@@ -2395,6 +2467,12 @@ async function _spv7DleTv(tmdbId, mediaType, season, episode) {
 async function _spv4GetStreams(tmdbId, mediaType, season, episode) {
 const family = _spv4Family();
 const type = _text(mediaType || "movie").toLowerCase();
+/* NIAKVIO_PROVIDER_BASE_API_RECIPE_FIRST_V8 */
+if (NIAKVIO_PROVIDER_MODEL.apiRecipe) {
+const recipePrimary = await getStreams(tmdbId, type, season, episode);
+if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
+if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+}
 if (family === "stremio-json") {
 const stremio = await _spv5Stremio(tmdbId, type, season, episode);
 if (stremio.length) return stremio;

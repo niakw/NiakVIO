@@ -2,9 +2,10 @@
 """Provider v3 source-plan v5 local migration gate.
 
 Ordinary reconstruction consumes only NiakVIO-owned ProviderBase + durable DATA +
-owned Lego. Before reconstruction, this gate also keeps fixtures semantically
-aligned, prevents generic homepage responses from becoming media-type proof, and
-wires validated clean-v3 route Lego/current route DATA for the active batches.
+owned Core blocks. Before reconstruction, this gate also keeps fixtures semantically
+aligned, prevents generic homepage responses from becoming media-type proof, wires
+validated clean-v3 route data, hardens proof-v5 dataflow, and applies proven
+provider-family/runtime migrations required by the current candidate.
 """
 from __future__ import annotations
 
@@ -15,10 +16,14 @@ import upgrade_provider_v3_fixture_selection_v1 as fixture_selection
 import upgrade_provider_v3_type_route_gate_v1 as type_route_gate
 import upgrade_provider_v3_batch_routes_v1 as batch_routes
 import upgrade_provider_v3_batch_routes_v2 as batch_routes_v2
+import upgrade_route_proof_dataflow_safety_v2 as route_dataflow_safety
+import upgrade_kehflix_terminal_domain_v1 as kehflix_terminal
+import upgrade_signed_player_api_v1 as signed_player_api
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_STORE = ROOT / "scripts" / "provider_base_store.py"
 SOURCES = ROOT / "sources.json"
+PROOF = ROOT / "scripts" / "provider_route_proof.py"
 
 REQUIRED_MARKERS = (
     "NIAKVIO_PROVIDER_BASE_SOURCE_PLAN_V4",
@@ -38,10 +43,37 @@ def main() -> int:
     batch_routes_v2_changed = batch_routes_v2.patch()
     batch_routes_v2.validate()
 
+    # proof-v5 request-spec/recovery migrations are applied immediately before
+    # this gate by the full reconstruction/publication workflows. Apply the
+    # generic dataflow hardening only when that prerequisite is present so this
+    # source-plan gate remains safe in narrower maintenance contexts.
+    proof_text = PROOF.read_text(encoding="utf-8") if PROOF.is_file() else ""
+    route_safety_changed = False
+    if "PROVIDER_ROUTE_PROOF_REQUEST_SPEC_V1" in proof_text:
+        route_safety_changed = route_dataflow_safety.patch_proof()
+        route_safety_changed = route_dataflow_safety.patch_recovery() or route_safety_changed
+        route_dataflow_safety.validate()
+
+    # Current live proof establishes Kehflix's terminal and signed-player family
+    # contract. These are deterministic structured-DATA/common-runtime migrations,
+    # not runtime discovery and not imported upstream JavaScript.
+    overrides = kehflix_terminal.load(kehflix_terminal.OVERRIDES)
+    knowledge = kehflix_terminal.load(kehflix_terminal.KNOWLEDGE)
+    kehflix_overrides_changed = kehflix_terminal.patch_overrides(overrides)
+    kehflix_knowledge_changed = kehflix_terminal.patch_knowledge(knowledge)
+    kehflix_terminal.validate(overrides, knowledge)
+    if kehflix_overrides_changed:
+        kehflix_terminal.write(kehflix_terminal.OVERRIDES, overrides)
+    if kehflix_knowledge_changed:
+        kehflix_terminal.write(kehflix_terminal.KNOWLEDGE, knowledge)
+    signed_player_changed = signed_player_api.patch()
+
     base_text = BASE_STORE.read_text(encoding="utf-8")
     missing = [marker for marker in REQUIRED_MARKERS if marker not in base_text]
     if missing:
         raise AssertionError("ProviderBase runtime/source-plan markers missing: " + ",".join(missing))
+    if signed_player_api.MARKER not in base_text:
+        raise AssertionError("signed-player runtime marker missing after migration")
 
     config = json.loads(SOURCES.read_text(encoding="utf-8"))
     if not isinstance(config, dict):
@@ -69,7 +101,10 @@ def main() -> int:
         f"fixtureSelectionChanged={str(fixture_changed).lower()} "
         f"typeRouteGateChanged={str(type_gate_changed).lower()} "
         f"batchRoutesChanged={str(batch_routes_changed).lower()} "
-        f"batchRoutesV2Changed={str(batch_routes_v2_changed).lower()}"
+        f"batchRoutesV2Changed={str(batch_routes_v2_changed).lower()} "
+        f"routeSafetyChanged={str(route_safety_changed).lower()} "
+        f"kehflixTerminalChanged={str(kehflix_overrides_changed or kehflix_knowledge_changed).lower()} "
+        f"signedPlayerChanged={str(signed_player_changed).lower()}"
     )
     return 0
 

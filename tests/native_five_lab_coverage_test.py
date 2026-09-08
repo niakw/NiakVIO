@@ -41,13 +41,10 @@ manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 rows = manifest.get("scrapers") or []
 assert len(rows) == 96
 
-# `series` is a Nuvio transport alias for canonical `tv`. It is legal only on
-# the transport surface; native route accounting remains movie/tv/anime because
-# the Labs execute the canonical tv lane rather than a duplicate series lane.
 canonical_valid = {"movie", "tv", "anime"}
 transport_valid = canonical_valid | {"series"}
 canonical_route_counts = {kind: 0 for kind in canonical_valid}
-transport_route_counts = {kind: 0 for kind in canonical_valid}
+transport_route_counts = {kind: 0 for kind in transport_valid}
 for row in rows:
     provider = str(row.get("id") or "<unknown>")
     transport = [str(v).strip().lower() for v in (row.get("supportedTypes") or []) if str(v).strip()]
@@ -56,21 +53,23 @@ for row in rows:
     assert set(transport) <= transport_valid, (provider, transport)
     assert set(canonical) <= canonical_valid, (provider, canonical)
     assert "series" not in canonical, (provider, canonical)
-    transport_semantic = {"tv" if value == "series" else value for value in transport}
-    assert set(canonical) <= transport_semantic, (provider, canonical, transport)
+    assert set(canonical) <= set(transport), (provider, canonical, transport)
     for kind in canonical_valid:
         canonical_route_counts[kind] += int(kind in canonical)
-        transport_route_counts[kind] += int(kind in transport_semantic)
-    if set(canonical) == {"anime"}:
-        # Anime-only semantic capability must still expose the anime lane and a
-        # TV-compatible Nuvio transport; movie launch compatibility is optional.
-        assert {"anime", "tv"} <= transport_semantic, (provider, transport)
+    for kind in transport_valid:
+        transport_route_counts[kind] += int(kind in transport)
+
+    # Episodic anime/tv must be reachable through Nuvio's tv/series lanes.
+    if "anime" in canonical or "tv" in canonical:
+        assert {"tv", "series"} <= set(transport), (provider, canonical, transport)
+    # Movie transport exists only for a provider with actual movie capability.
+    assert ("movie" in transport) == ("movie" in canonical), (provider, canonical, transport)
 
 # Never freeze yesterday's route totals: transport aliases legitimately change the
 # matrix. Canonical counts remain semantic; transport counts are what Nuvio can launch.
-assert transport_route_counts["movie"] >= canonical_route_counts["movie"]
-assert transport_route_counts["tv"] >= canonical_route_counts["tv"]
-assert transport_route_counts["anime"] >= canonical_route_counts["anime"]
+for kind in canonical_valid:
+    assert transport_route_counts[kind] >= canonical_route_counts[kind]
+assert transport_route_counts["series"] > 0
 assert sum(transport_route_counts.values()) >= sum(canonical_route_counts.values())
 assert canonical_route_counts["anime"] > 0
 

@@ -132,7 +132,7 @@ def identity_input(
             "mode": mode,
             "requiresTmdbBeforeRun": mode != "tmdb_direct",
             "requiredFields": (
-                ["title", "year", "mediaType"]
+                ["title", "mediaType"]
                 if mode == "catalog_search"
                 else ["tmdbId", "mediaType"]
             ),
@@ -154,7 +154,7 @@ def identity_input(
             )
         ),
         "requiredFields": required or (
-            ["title", "year", "mediaType"]
+            ["title", "mediaType"]
             if mode == "catalog_search"
             else ["tmdbId", "mediaType"]
         ),
@@ -194,17 +194,22 @@ def provider_model(
         if item and item not in observed_urls:
             observed_urls.append(item)
 
+    # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
+    patch_proof = int(patch.get("route_proof_version") or 0)
+    static_proof = int(static_model.get("routeProofVersion") or 0)
+    proof_version = max(patch_proof, static_proof)
     routes: list[str] = []
-    for value in [*(patch.get("learned_routes") or []), *(static_model.get("routes") or [])]:
-        item = str(value).strip()
-        if item and item != "/" and item not in routes:
-            routes.append(item)
+    if proof_version >= 5:
+        for value in [*(patch.get("learned_routes") or []), *(static_model.get("routes") or [])]:
+            item = str(value).strip()
+            if item and item != "/" and item not in routes:
+                routes.append(item)
 
-    api_recipe = (
-        patch.get("api_recipe")
-        if isinstance(patch.get("api_recipe"), dict)
-        else static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
-    )
+    patch_recipe = patch.get("api_recipe") if isinstance(patch.get("api_recipe"), dict) else None
+    static_recipe = static_model.get("apiRecipe") if isinstance(static_model.get("apiRecipe"), dict) else None
+    candidate_recipe = patch_recipe or static_recipe
+    recipe_proof = int(candidate_recipe.get("proofModelVersion") or 0) if isinstance(candidate_recipe, dict) else 0
+    api_recipe = candidate_recipe if proof_version >= 5 and recipe_proof >= 5 else None
 
     return {
         "knownSite": official_site,
@@ -223,6 +228,7 @@ def provider_model(
         "observedUrls": observed_urls,
         "routes": routes,
         "apiRecipe": api_recipe,
+        "routeProofVersion": proof_version,
         "sourceRuntimeFamily": str(static_model.get("sourceRuntimeFamily") or "unknown"),
         "identityInput": identity_input(patch, routes, api_recipe),
         "strictIdentity": bool(patch.get("strict_identity", False)),

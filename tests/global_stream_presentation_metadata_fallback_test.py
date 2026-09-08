@@ -76,11 +76,8 @@ for needle in (
 movie = run_node(
     output,
     """
-global.__native_fetch=function(){};
-// Core TMDB access requires a runtime credential; the native bridge is transport
-// only. This deterministic fake key never leaves the fixture and is intercepted
-// by the mocked fetch below.
 global.TMDB_API_KEY='0123456789abcdef0123456789abcdef';
+global.__native_fetch=function(){};
 let tmdbCalls=0;
 let mediaCalls=0;
 global.fetch=async function(url){
@@ -146,8 +143,8 @@ tv_output = materialize(
 tv = run_node(
     tv_output,
     """
-global.__native_fetch=function(){};
 global.TMDB_API_KEY='0123456789abcdef0123456789abcdef';
+global.__native_fetch=function(){};
 let tmdbCalls=0;
 let mediaCalls=0;
 global.fetch=async function(url){

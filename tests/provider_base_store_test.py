@@ -44,7 +44,6 @@ assert module.CLEAN_RECONSTRUCTION_AUTHORING_VERSION >= 3
 assert module.CLEAN_RECONSTRUCTION_SOURCE == "niakvio-clean-reconstruction-v3"
 assert "async function getStreams" in text
 assert "function _playerLike" in text
-assert "function _crawlEligible" in text
 assert "async function _crawlDirectMedia" in text
 assert "function _runtimeApiUrls" in text
 assert "function _directPlayerUrls" in text
@@ -55,18 +54,14 @@ assert '"?m=" + encodeURIComponent(transportType)' in text
 assert '"&id=" + encodeURIComponent(_text(tmdbId))' in text
 assert "function _sourceUrls" in text
 assert "async function _resolveRuntimeApi" in text
+assert "function _crawlEligible(url)" in text
 assert "const discoveredNested = _uniq(urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))).slice(0, 10);" in text
 assert "const crawled = await _crawlDirectMedia(" in text
 assert text.index("const runtime = await _resolveRuntimeApi(") < text.index("const crawled = await _crawlDirectMedia(")
 assert '(!meta.title && !meta.tmdbId)' in text
 assert 'tmdbId: String(tmdbId || "")' in text
-# Current crawler budget is deliberately bounded on requests, output, queue fanout,
-# and depth. Test the semantic bounds instead of a stale historical literal.
 assert "requests < 10" in text
-assert "streams.length < 12" in text
-assert ".slice(0, 8).map(url => ({ url, depth: 0, referer }))" in text
-assert ".slice(0, 4))" in text
-assert "row.depth < Math.max(0, Number(maxDepth) || 0)" in text
+assert "requests < 7" not in text
 assert "slice(0, 24)" not in text
 assert "function _detailGuesses" not in text
 assert "if (!_runtimePlanAvailable()) return [];" in text

@@ -14,8 +14,10 @@ recipe = purstream.get("api_recipe") or {}
 playback = overrides.get("playback_integrity_policy") or {}
 
 # Original P0 identity failures: provider-owned search must be strict and typed.
-assert purstream.get("patch_scripts") == [], purstream.get("patch_scripts")
-assert purstream.get("published_types") == ["movie", "tv", "anime"]
+assert (purstream.get("patch_scripts") or []) == [], purstream.get("patch_scripts")
+# Purstream currently publishes movie/tv only. Do not invent an anime semantic
+# capability or transport alias that is absent from the current capability DATA.
+assert purstream.get("published_types") == ["movie", "tv"]
 fixed = purstream.get("fixed_endpoint") or {}
 official_api = str(purstream.get("official_api") or "")
 official_site = str(purstream.get("official_site") or "").rstrip("/") + "/"
@@ -25,12 +27,14 @@ assert fixed.get("api") == official_api
 assert recipe.get("referer") == official_site
 assert fixed.get("referer") == official_site
 assert recipe.get("searchRoute") == "/search-bar/search/{query}"
-assert recipe.get("movieRoute") == "/media/{id}/sheet"
+assert recipe.get("movieRoute") == "/stream/{id}"
 assert recipe.get("episodeRoute") == "/stream/{id}/episode?season={season}&episode={episode}"
-assert "first_air_date" in (recipe.get("yearFields") or [])
+# Provider recipe carries release_date for movie catalogue evidence only. TV /
+# series identity never requires first_air_date or any other year field.
+assert recipe.get("yearFields") == ["release_date"]
 assert recipe.get("strictIdentity") is True
 assert recipe.get("directSourcesOnly") is True
-assert capability.get("request_type_aliases") == {"anime": "tmdb_namespace"}
+assert capability.get("request_type_aliases") == {}
 assert capability.get("identity_request_source") == "original_nuvio_request"
 
 # HLS has one post-media owner. Native no-probe behavior is intrinsic to that
@@ -51,8 +55,8 @@ base_store = (SCRIPTS / "provider_base_store.py").read_text(encoding="utf-8")
 assert "function _collectionMediaType" in base_store
 assert "__nuvioCollectionMediaType" in base_store
 assert "recipe.strictIdentity" in base_store
-assert "expectedTitles.includes(title)" in base_store
-assert "Math.abs(Number(year) - Number(expectedYear)) > 1" in base_store
+assert "__nuvioIdentityPolicyV1" in base_store
+assert "Math.abs(Number(year) - Number(expectedYear)) > 1" not in base_store
 assert "recipe.directSourcesOnly" in base_store
 assert "urls.filter(_directMedia)" in base_store
 assert "const searchQueries = _uniq([" in base_store
@@ -109,7 +113,8 @@ assert "movies: { items:" in engine_test
 assert "series: { items:" in engine_test
 assert "first_air_date" in engine_test
 engine = (ROOT / "engine_v2" / "providers" / "purstream.mjs").read_text(encoding="utf-8")
-assert "strictIdentityScore" in engine
+assert "strictIdentityScore" not in engine
+assert "scoreCatalogueItem" in engine
 assert "__collectionType" in engine
 assert "function normalizeSource" in engine
 assert 'if (!url || !/^https?:\\/\\//i.test(url)) return null;' in engine
