@@ -146,7 +146,7 @@ function _spv21DecodedObfuscatedHls(html, pageUrl) {
     end = text.index("\nfunction ", start + len(crawler_anchor))
     crawler = text[start:end]
     old_direct = "      const direct = urls.filter(_directMedia);\n"
-    new_direct = '''      const decodedObfuscatedHls = playerText
+    new_direct = r'''      const decodedObfuscatedHls = playerText
         ? _spv21DecodedObfuscatedHls(playerText, responseUrl) : "";
       if (decodedObfuscatedHls) {
         streams.push(..._streams([decodedObfuscatedHls], responseUrl));
@@ -177,22 +177,27 @@ def validate_base(text: str | None = None) -> None:
         "globalThis.__nuvioProviderValueTraceHistoryV21",
         "while (history.length > 48) history.shift();",
         "const decodedObfuscatedHls = playerText",
-        "! /troll/".replace(" ", ""),
     ):
         if needle not in value:
-            # The decoy assertion below uses the concrete regex rather than this
-            # readability token.
-            if needle == "!/troll/":
-                continue
             raise AssertionError(f"V21 ProviderBase missing {needle}")
     if '/\\/troll\\/master\\.m3u8' not in value:
         raise AssertionError("V21 decoy HLS rejection missing")
-    window = value[value.index(MARKER): value.index("async function _resolveProviderValuePlan", value.index(MARKER))]
-    lowered = window.casefold()
+
+    player_start = value.index(MARKER)
+    player_end = value.index("async function _crawlDirectMedia", player_start)
+    player_window = value[player_start:player_end].casefold()
     for forbidden in ("animesama", "animevostfr", "french-manga", "vidzy", "fsvid", "purstream", "jujutsu"):
-        if forbidden in lowered:
+        if forbidden in player_window:
             raise AssertionError(f"V21 provider/host-specific token leaked: {forbidden}")
-    trace_window = value[value.index(TRACE_MARKER): value.index("async function _resolveProviderValuePlan", value.index(TRACE_MARKER))].casefold()
+
+    # Scope privacy validation to the trace function itself. Helpers inserted by
+    # earlier migrations between the trace and the resolver may legitimately
+    # contain words such as "authorization" in their own security filters; they
+    # are not fields persisted by V21 trace evidence.
+    trace_start = value.index(TRACE_MARKER)
+    trace_function_start = value.index("function _spv184Trace", trace_start)
+    trace_end = value.index("\n}\n", trace_function_start) + 3
+    trace_window = value[trace_start:trace_end].casefold()
     for forbidden in ("authorization", "cookie", "set-cookie", "responsebody", "requestheaders"):
         if forbidden in trace_window:
             raise AssertionError(f"V21 trace leaks forbidden field {forbidden}")
