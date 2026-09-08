@@ -41,7 +41,8 @@ jobs:
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
 
-      # Retry after the isolated presentation metadata fallback contract passed.
+      # Final retry from the current main HEAD after the isolated presentation
+      # metadata fallback contract passed and the temporary debugger was removed.
       - name: Recompose only deterministic derived publication state
         shell: bash
         run: |
