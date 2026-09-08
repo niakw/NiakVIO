@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """V20.1: structural response-value correlation after the canonical proof migrations.
 
-The first V20 migration assumed one historical text layout in provider_route_proof.py.
-The current repair chain already applies external-identity V11 before the live census,
-so that exact block no longer exists. This owner patches function spans instead of an
-obsolete adjacent text block and preserves the existing IMDb/external-identity lane.
+The first V20 migration assumed historical text layouts in both route proof and
+materialization. The current repair chain applies external-identity V11 and the
+V18 provider-value plan before live census, so V20 composes semantically with those
+owners instead of requiring their obsolete source text.
 
 Provider-agnostic invariants:
 - safe response values are hints only; exact later request consumption is required;
 - auth/session/signature/volatile values remain non-reusable;
 - IMDb-shaped external identities remain external identities, never provider ids;
 - href/query-derived slugs remain {slug}; other safe correlated values become {id};
+- V18 materializers that already copy structured steps without an id-only filter
+  need no destructive rewrite; an id-only filter, when present, is widened to slug;
 - no provider hostname, id, title, selector or route is encoded here.
 """
 from __future__ import annotations
@@ -26,8 +28,10 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import upgrade_provider_response_value_correlation_v20 as legacy  # noqa: E402
 
 PROOF = legacy.PROOF
+MATERIALIZER = legacy.MATERIALIZER
 MARKER = legacy.MARKER
 COMPAT_MARKER = "NIAKVIO_PROVIDER_RESPONSE_VALUE_CORRELATION_V20_1"
+MATERIALIZER_MARKER = "PROVIDER_RESPONSE_VALUE_CORRELATION_V20"
 
 
 def _function_span(text: str, name: str) -> tuple[int, int]:
@@ -123,7 +127,6 @@ def patch_proof() -> bool:
     PROOF.write_text(text, encoding="utf-8")
     validate_proof(text)
 
-    # External identity must survive the structural rewrite when V11 is present.
     if has_external_identity:
         current = PROOF.read_text(encoding="utf-8")
         for needle in ("def _external_identity_hint_values", 'placeholder = "{imdbId}"', '"externalIdentityCorrelation"'):
@@ -149,13 +152,53 @@ def validate_proof(text: str | None = None) -> None:
             raise AssertionError(f"V20.1 proof missing {needle}")
 
 
+def patch_materializer() -> bool:
+    text = MATERIALIZER.read_text(encoding="utf-8")
+    if MATERIALIZER_MARKER in text:
+        validate_materializer(text)
+        return False
+
+    id_only = '                    and "{id}" in str(step.get("route") or "")\n'
+    if id_only in text:
+        text = _once(
+            text,
+            id_only,
+            '                    # PROVIDER_RESPONSE_VALUE_CORRELATION_V20\n'
+            '                    and ("{id}" in str(step.get("route") or "") or "{slug}" in str(step.get("route") or ""))\n',
+            "v20.1-materializer-id-or-slug",
+        )
+    else:
+        # Current V18 materialization copies the proof-owned structured step rows
+        # without an id-only filter. That is already slug-safe; mark the semantic
+        # composition rather than introducing a new restriction just for V20.
+        anchor = '        # PROVIDER_CORRELATED_VALUE_PLAN_V18\n        "providerValuePlan": [\n'
+        text = _once(
+            text,
+            anchor,
+            '        # PROVIDER_RESPONSE_VALUE_CORRELATION_V20\n' + anchor,
+            "v20.1-materializer-unfiltered-v18-plan",
+        )
+
+    MATERIALIZER.write_text(text, encoding="utf-8")
+    validate_materializer(text)
+    return True
+
+
+def validate_materializer(text: str | None = None) -> None:
+    value = text if text is not None else MATERIALIZER.read_text(encoding="utf-8")
+    if MATERIALIZER_MARKER not in value:
+        raise AssertionError("V20.1 materializer marker missing")
+    if '"providerValuePlan": [' not in value:
+        raise AssertionError("V20.1 materializer providerValuePlan missing")
+    if 'and "{id}" in str(step.get("route") or "")' in value and 'or "{slug}" in str(step.get("route") or "")' not in value:
+        raise AssertionError("V20.1 materializer retains an id-only provider-value step filter")
+
+
 patch_worker = legacy.patch_worker
 patch_recovery = legacy.patch_recovery
-patch_materializer = legacy.patch_materializer
 patch_base = legacy.patch_base
 validate_worker = legacy.validate_worker
 validate_recovery = legacy.validate_recovery
-validate_materializer = legacy.validate_materializer
 validate_base = legacy.validate_base
 
 
@@ -168,8 +211,8 @@ def main() -> int:
     validate_base()
     print(
         f"PROVIDER_RESPONSE_VALUE_CORRELATION_V20_1_OK changed={str(changed).lower()} "
-        "structural_proof_patch=1 external_identity_preserved=1 safe_query_dataflow=1 "
-        "provider_specific_rules=0"
+        "structural_proof_patch=1 external_identity_preserved=1 materializer_composed=1 "
+        "safe_query_dataflow=1 provider_specific_rules=0"
     )
     return 0
 
