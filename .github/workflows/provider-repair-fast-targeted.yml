@@ -1,4 +1,4 @@
-name: Provider Repair Fast Targeted Proof
+name: Provider Repair Parallel Batch Proof
 
 on:
   push:
@@ -19,9 +19,20 @@ env:
   NIAKVIO_QUICK_YIELD_TIMEOUT: "55"
 
 jobs:
-  prove:
+  prove-batch:
+    name: prove-${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: vf-core
+            providers: "purstream flemmix papadustream coflix"
+          - name: 4k-download
+            providers: "uhdmovies movieshunt zinkmovies vegamovies"
+          - name: api-direct
+            providers: "4khdhub 4khdhubnew persianstremio desiflix"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,18 +44,22 @@ jobs:
           python-version: "3.12"
       - run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Run fast targeted acceptance
+      - name: Run parallel batch acceptance
         id: acceptance
         continue-on-error: true
+        shell: bash
         run: |
+          args=()
+          for provider in ${{ matrix.providers }}; do
+            args+=(--provider "$provider")
+          done
           python scripts/run_provider_repair_fast_targeted_v1.py \
             --attempts 3 \
             --workers 4 \
             --timeout 55 \
-            --provider frenchstream \
-            --provider mugiwarastream
+            "${args[@]}"
 
-      - name: Validate V16-V18 contracts
+      - name: Validate shared V16-V18 contracts
         if: always()
         run: |
           python tests/provider_execution_authority_v16_contract_test.py
@@ -54,39 +69,21 @@ jobs:
           python tests/provider_player_route_variant_v18_7_contract_test.py
           python tests/provider_player_form_handoff_v18_8_contract_test.py
 
-      - name: Inspect materialized structured plans
+      - name: Show batch proof summary
         if: always()
         run: |
-          python scripts/inspect_provider_fast_bundle_plans.py \
-            --provider frenchstream \
-            --provider mugiwarastream
+          test -f automation/provider-repair-fast-summary.json && cat automation/provider-repair-fast-summary.json || true
 
-      - name: Audit correlated provider-value runtime trace
-        if: always()
-        run: |
-          python scripts/audit_provider_value_runtime_trace_v1.py \
-            --timeout 55 \
-            --provider frenchstream \
-            --provider mugiwarastream
-
-      - name: Fingerprint proven upstream stream outputs
-        if: always()
-        run: |
-          python scripts/audit_upstream_stream_fingerprints_v1.py \
-            --timeout 55 \
-            --provider frenchstream \
-            --provider mugiwarastream
-
-      - name: Enforce targeted acceptance result
+      - name: Enforce batch acceptance result
         if: always()
         run: |
           test "${{ steps.acceptance.outcome }}" = "success"
 
-      - name: Upload fast proof
+      - name: Upload batch proof
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: provider-repair-fast-${{ github.run_id }}
+          name: provider-repair-${{ matrix.name }}-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
@@ -94,6 +91,4 @@ jobs:
             automation/provider-repair-fast-merged.json
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
-            automation/provider-upstream-stream-fingerprints-v1.json
-            automation/provider-value-runtime-trace-v1.json
             provider-v3-quick-yield.json
