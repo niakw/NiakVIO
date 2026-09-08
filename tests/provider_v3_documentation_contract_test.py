@@ -10,9 +10,9 @@ ROOT = Path(__file__).resolve().parents[1]
 architecture = (ROOT / "ARCHITECTURE.md").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
 readme_fr = (ROOT / "README.fr.md").read_text(encoding="utf-8")
-install = (ROOT / "docs/INSTALL-NATIVE-LABS.md").read_text(encoding="utf-8")
-security = (ROOT / "docs/SECURITY-THREAT-MODEL.md").read_text(encoding="utf-8")
-upstreams = (ROOT / "docs/UPSTREAMS.md").read_text(encoding="utf-8")
+install = (ROOT / "INSTALL.md").read_text(encoding="utf-8")
+security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
 machine = json.loads((ROOT / "automation/provider-v3-machine-model.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
