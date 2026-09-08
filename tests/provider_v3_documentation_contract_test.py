@@ -17,7 +17,7 @@ manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
 required_architecture = (
     "ProviderBase v3",
-    "ProviderBase (`provider-bases/*.js`)",
+    "provider-bases/",
     "Provider DATA",
     "Provider Lego",
     "Core Lego",
