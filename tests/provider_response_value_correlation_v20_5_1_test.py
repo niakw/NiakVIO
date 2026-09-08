@@ -26,7 +26,8 @@ module.validate_base()
 
 base = module.BASE.read_text(encoding="utf-8")
 assert module.MARKER in base
-assert module.LEGACY_NEEDLE in base
+for needle in module.LEGACY_NEEDLES:
+    assert needle in base, needle
 assert module.STRICT_NEEDLE in base
 assert "const valueSteps = (plan.steps || []).slice(0, 8);" in base
 assert '"step_deferred"' in base
