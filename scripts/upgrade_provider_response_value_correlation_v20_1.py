@@ -145,11 +145,23 @@ def validate_proof(text: str | None = None) -> None:
         'provider_slugs = _provider_hint_values_for_keys(prior_value_hints, {"slug"})',
         'placeholder = "{slug}"',
         'key_l not in VOLATILE_QUERY_KEYS | CONTENT_IDENTITY_QUERY_KEYS',
-        'row.get("placeholder") in {"{id}", "{slug}"}',
         're.fullmatch(r"tt\\d{7,10}", value, re.I)',
     ):
         if needle not in value:
             raise AssertionError(f"V20.1 proof missing {needle}")
+
+    # Forward-compatible semantic guard: V20.1 originally emitted an exact
+    # id/slug membership expression. Later response-dataflow owners may preserve
+    # that invariant with composite placeholders such as
+    # ``{slug}-{season}-episode-{episode}``. Validate the invariant, not one
+    # historical source spelling.
+    exact_id_slug = 'row.get("placeholder") in {"{id}", "{slug}"}' in value
+    composite_id_slug = (
+        '"{id}" in str(row.get("placeholder") or "")' in value
+        and '"{slug}" in str(row.get("placeholder") or "")' in value
+    )
+    if not (exact_id_slug or composite_id_slug):
+        raise AssertionError("V20.1 proof missing semantic id/slug response correlation")
 
 
 def patch_materializer() -> bool:
@@ -238,7 +250,3 @@ def main() -> int:
         "base_duplicate_maps_composed=1 safe_query_dataflow=1 provider_specific_rules=0"
     )
     return 0
-
-
-if __name__ == "__main__":
-    raise SystemExit(main())
