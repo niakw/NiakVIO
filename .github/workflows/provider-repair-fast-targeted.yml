@@ -55,6 +55,16 @@ jobs:
             --provider frenchstream \
             --provider mugiwarastream
 
+      - name: Audit correlated provider-value identity shape
+        if: always()
+        run: |
+          python scripts/audit_provider_value_identity_shape_v1.py \
+            --timeout 12 \
+            --provider animekai \
+            --provider movies4u \
+            --provider frenchstream \
+            --provider mugiwarastream
+
       - name: Fingerprint proven upstream stream outputs
         if: always()
         run: |
@@ -83,4 +93,5 @@ jobs:
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
             automation/provider-upstream-stream-fingerprints-v1.json
+            automation/provider-value-identity-shape-v1.json
             provider-v3-quick-yield.json
