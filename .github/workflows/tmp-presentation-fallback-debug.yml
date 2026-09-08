@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/tmp-presentation-fallback-debug.yml'
+      - 'tests/global_stream_presentation_metadata_fallback_test.py'
 
 permissions:
   contents: read
@@ -26,7 +27,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cp tests/global_stream_presentation_metadata_fallback_test.py "$RUNNER_TEMP/fallback.py"
           python - <<'PY'
           from pathlib import Path
           p = Path('tests/global_stream_presentation_metadata_fallback_test.py')
