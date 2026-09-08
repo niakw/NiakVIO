@@ -3,7 +3,7 @@ name: Provider Repair Parallel Sweep
 on:
   push:
     branches:
-      - workbench/route-recognition-v14-search-plan
+      - main
     paths:
       - automation/provider-parallel-sweep-trigger.json
   workflow_dispatch:
@@ -38,16 +38,12 @@ jobs:
               return str(value or "").strip().casefold().replace("_", "-")
 
           manifest = json.loads(Path("manifest.json").read_text(encoding="utf-8"))
-          skip = json.loads(Path("automation/provider-repair-skip.json").read_text(encoding="utf-8"))
-          excluded = {cid(value) for value in (skip.get("providers") or {}).keys()}
-          excluded.update({"animekai", "movies4u", "frenchstream", "mugiwarastream"})
-
           providers = []
           for row in manifest.get("scrapers") or []:
               if not isinstance(row, dict):
                   continue
               provider_id = cid(row.get("id"))
-              if provider_id and provider_id not in excluded and provider_id not in providers:
+              if provider_id and provider_id not in providers:
                   providers.append(provider_id)
 
           groups = []
@@ -58,8 +54,9 @@ jobs:
           print("groups=" + json.dumps(groups, separators=(",", ":")))
           print(f"provider_count={len(providers)}")
           print(f"group_count={len(groups)}")
-          assert len(providers) == 82, f"parallel sweep expected 82 providers, got {len(providers)}"
-          assert all(1 <= len(group["providers"].split(",")) <= 4 for group in groups)
+          assert len(providers) == 96, f"parallel sweep must cover all 96 Provider Objects, got {len(providers)}"
+          assert len(groups) == 24, f"96 providers at four per group must produce 24 groups, got {len(groups)}"
+          assert all(len(group["providers"].split(",")) == 4 for group in groups)
           PY
 
   prove:
@@ -96,22 +93,37 @@ jobs:
           for provider in "${providers[@]}"; do
             args+=(--provider "$provider")
           done
-          python scripts/run_provider_repair_fast_targeted_v1.py \
+          python scripts/run_provider_repair_fast_targeted_v20.py \
             --attempts 3 \
             --workers 4 \
             --timeout 55 \
             --defer-global-guard \
             "${args[@]}"
 
-      - name: Validate shared contracts and <=3 canonical runtime authorities
+      - name: Validate shared V16-V20.5.1 contracts and <=3 canonical runtime authorities
         if: always()
         run: |
+          python -m py_compile \
+            scripts/provider_live_request_contract_bridge_v19.py \
+            scripts/upgrade_provider_response_value_correlation_v20.py \
+            scripts/upgrade_provider_response_value_correlation_v20_1.py \
+            scripts/upgrade_provider_response_value_correlation_v20_2.py \
+            scripts/upgrade_provider_response_value_correlation_v20_3.py \
+            scripts/upgrade_provider_response_value_correlation_v20_4.py \
+            scripts/upgrade_provider_response_value_correlation_v20_5.py \
+            scripts/upgrade_provider_response_value_correlation_v20_5_1.py
           python tests/provider_execution_authority_v16_contract_test.py
           python tests/provider_route_slug_identity_v16_test.py
           python tests/provider_correlated_value_plan_v18_contract_test.py
           python tests/provider_packed_player_v18_6_contract_test.py
           python tests/provider_player_route_variant_v18_7_contract_test.py
           python tests/provider_player_form_handoff_v18_8_contract_test.py
+          python tests/provider_live_request_contract_bridge_v19_test.py
+          python tests/provider_response_value_correlation_v20_test.py
+          python tests/provider_response_value_correlation_v20_3_test.py
+          python tests/provider_response_value_correlation_v20_4_test.py
+          python tests/provider_response_value_correlation_v20_5_test.py
+          python tests/provider_response_value_correlation_v20_5_1_test.py
           python tests/runtime_route_plan_cap_v1_test.py
 
       - name: Show proof summary
@@ -147,7 +159,7 @@ jobs:
           echo "planned_groups=${{ needs.plan.outputs.group_count }}"
           echo "prove_result=${{ needs.prove.result }}"
           echo "full_96_guard=DEFERRED_TO_CONSOLIDATED_CANDIDATE"
-          # Every group still enforces live upstream-positive preservation and
-          # canonical route/type/identity contracts. The expensive identical
-          # 96-provider non-network guard is intentionally run once after the
-          # recovered DATA is consolidated, before any promotion/publication.
+          # Every group enforces live upstream-positive preservation and current
+          # V16-V20.5.1 route/type/identity contracts. The expensive identical
+          # 96-provider non-network guard is intentionally run once after all
+          # recovered DATA is consolidated, before promotion/publication.
