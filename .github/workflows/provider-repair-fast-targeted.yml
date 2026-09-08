@@ -71,7 +71,7 @@ jobs:
           for provider in $BATCH_PROVIDERS; do
             args+=(--provider "$provider")
           done
-          python scripts/run_provider_repair_fast_targeted_v1.py \
+          python scripts/run_provider_repair_fast_targeted_v20.py \
             --attempts 3 \
             --workers 4 \
             --timeout 55 \
@@ -94,10 +94,10 @@ jobs:
           done
           python scripts/inspect_provider_fast_bundle_plans.py "${args[@]}"
 
-      - name: Validate shared V16-V19 and adaptive route-plan contracts
+      - name: Validate shared V16-V20 and adaptive route-plan contracts
         if: always()
         run: |
-          python -m py_compile scripts/provider_live_request_contract_bridge_v19.py
+          python -m py_compile scripts/provider_live_request_contract_bridge_v19.py scripts/upgrade_provider_response_value_correlation_v20.py
           python tests/provider_execution_authority_v16_contract_test.py
           python tests/provider_route_slug_identity_v16_test.py
           python tests/provider_correlated_value_plan_v18_contract_test.py
@@ -105,6 +105,7 @@ jobs:
           python tests/provider_player_route_variant_v18_7_contract_test.py
           python tests/provider_player_form_handoff_v18_8_contract_test.py
           python tests/provider_live_request_contract_bridge_v19_test.py
+          python tests/provider_response_value_correlation_v20_test.py
           python tests/runtime_route_plan_cap_v1_test.py
 
       - name: Show batch proof summary
