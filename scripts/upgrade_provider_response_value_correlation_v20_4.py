@@ -207,10 +207,6 @@ def _composite_provider_path_segment_template(
 '''
     text = _once(text, old_path, new_path, "v20.4-composite-provider-path")
 
-    old_correlation = '''        "providerValueCorrelation": bool(
-            provider_values and any(row.get("placeholder") in {"{id}", "{slug}"} for row in substitutions)
-        ),
-'''
     new_correlation = '''        "providerValueCorrelation": bool(
             provider_values and any(
                 "{id}" in str(row.get("placeholder") or "")
@@ -219,7 +215,25 @@ def _composite_provider_path_segment_template(
             )
         ),
 '''
-    text = _once(text, old_correlation, new_correlation, "v20.4-composite-correlation")
+    if new_correlation not in text:
+        # V16 owns the single-line semantic id/slug form before the V20 boundary;
+        # older V20 compositions may instead have expanded it to a multiline
+        # equivalent. Accept either legitimate owner shape and normalize once.
+        correlation_candidates = (
+            '''        "providerValueCorrelation": bool(provider_values and any(row.get("placeholder") in {"{id}", "{slug}"} for row in substitutions)),
+''',
+            '''        "providerValueCorrelation": bool(
+            provider_values and any(row.get("placeholder") in {"{id}", "{slug}"} for row in substitutions)
+        ),
+''',
+        )
+        matched = [candidate for candidate in correlation_candidates if candidate in text]
+        if len(matched) != 1:
+            raise AssertionError(
+                "v20.4-composite-correlation: expected exactly one V16/V20 owner shape, "
+                f"got {len(matched)}"
+            )
+        text = text.replace(matched[0], new_correlation, 1)
 
     PROOF.write_text(text, encoding="utf-8")
     validate_proof(text)
