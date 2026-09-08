@@ -77,15 +77,34 @@ jobs:
             --timeout 55 \
             "${args[@]}"
 
-      - name: Validate shared V16-V18 and adaptive route-plan contracts
+      - name: Inspect exact materialized bundle plans
+        if: always()
+        continue-on-error: true
+        shell: bash
+        env:
+          BATCH_PROVIDERS: ${{ matrix.providers }}
+        run: |
+          if [ ! -f automation/provider-repair-fast-yield.json ]; then
+            echo "FIELD_PROVIDER_FAST_BUNDLE_INSPECT skipped=1 reason=yield-not-reached"
+            exit 0
+          fi
+          args=()
+          for provider in $BATCH_PROVIDERS; do
+            args+=(--provider "$provider")
+          done
+          python scripts/inspect_provider_fast_bundle_plans.py "${args[@]}"
+
+      - name: Validate shared V16-V19 and adaptive route-plan contracts
         if: always()
         run: |
+          python -m py_compile scripts/provider_live_request_contract_bridge_v19.py
           python tests/provider_execution_authority_v16_contract_test.py
           python tests/provider_route_slug_identity_v16_test.py
           python tests/provider_correlated_value_plan_v18_contract_test.py
           python tests/provider_packed_player_v18_6_contract_test.py
           python tests/provider_player_route_variant_v18_7_contract_test.py
           python tests/provider_player_form_handoff_v18_8_contract_test.py
+          python tests/provider_live_request_contract_bridge_v19_test.py
           python tests/runtime_route_plan_cap_v1_test.py
 
       - name: Show batch proof summary
