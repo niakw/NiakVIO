@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Select at most one canonical executable authority per semantic lane.
+"""Rank Provider execution authorities without deleting evidence-backed paths.
 
-Priority follows the ProviderBase proof authority:
-provider-value correlation > API recipe > external-id > structured search > flat route.
-A lower-priority plan remains active only when it covers a semantic lane not
-covered by a stronger executable plan. Evidence is retained in routeData and
-route-proof metadata, so suppressed alternatives can be re-derived later.
+Provider-value correlation, API recipes, external-id plans, structured search, and
+flat routes do not always represent mutually exclusive alternatives. A real
+provider may require several of them in sequence or as fallbacks/fan-out within
+the same semantic lane. Therefore this module records preferred authorities for
+ordering/latency only; it never removes another proven authority merely because a
+higher-priority one covers the same movie/tv/anime lane.
 """
 from __future__ import annotations
 
@@ -20,7 +21,8 @@ from runtime_route_plan_cap_v1 import route_metadata, semantic_lane, unique
 ROOT = Path(__file__).resolve().parents[1]
 OVERRIDES = ROOT / "provider-overrides.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
-MAX_AUTHORITIES = 3
+NORMAL_SEMANTIC_LANE_COUNT = 3
+MAX_AUTHORITIES = NORMAL_SEMANTIC_LANE_COUNT  # compatibility alias; no longer a destructive cap
 LANES = {"movie", "tv", "anime"}
 PRIORITY = {
     "providerValuePlan": 500,
@@ -56,6 +58,8 @@ def recipe_lanes(recipe: dict[str, Any], supported: set[str]) -> set[str]:
             lanes.add("anime")
     if recipe.get("directRoute"):
         lanes |= set(supported)
+    if recipe.get("searchRoute") and not lanes:
+        lanes |= set(supported)
     return lanes & supported
 
 
@@ -86,9 +90,6 @@ def candidate_rows(model: dict[str, Any], route_data: list[dict[str, Any]]) -> l
     for index, route in enumerate(unique(model.get("routes") or [], 256)):
         lanes = set(meta.get(route, {}).get("lanes", set())) & supported
         if not lanes:
-            # Historical active route without routeData is a lowest-priority
-            # generic candidate; it may fill a lane only when no proof-owned
-            # structured authority covers it.
             lanes = set(supported)
         out.append({"owner": "route", "index": index, "route": route, "lanes": lanes, "priority": PRIORITY["route"], "order": order})
         order += 1
@@ -96,72 +97,42 @@ def candidate_rows(model: dict[str, Any], route_data: list[dict[str, Any]]) -> l
 
 
 def select_authorities(model: dict[str, Any], route_data: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Return preferred authorities per lane for ordering, not a destructive selection."""
     supported = supported_lanes(model, route_data)
     candidates = candidate_rows(model, route_data)
-    selected: list[dict[str, Any]] = []
-    covered: set[str] = set()
-
-    # Proof authority first, then semantic coverage, then stable source order.
     ranked = sorted(
         candidates,
         key=lambda row: (int(row["priority"]), len(row["lanes"]), -int(row["order"])),
         reverse=True,
     )
+    preferred: list[dict[str, Any]] = []
+    covered: set[str] = set()
     for candidate in ranked:
         fresh = set(candidate["lanes"]) - covered
         if not fresh:
             continue
-        selected.append(candidate)
+        preferred.append(candidate)
         covered |= set(candidate["lanes"])
-        if covered >= supported or len(selected) >= MAX_AUTHORITIES:
+        if covered >= supported:
             break
-
-    # At most three semantic lanes exist, so missing coverage after three means
-    # the DATA is internally inconsistent and must fail closed.
     missing = supported - covered
-    return selected, {
+    return preferred, {
         "candidateCount": len(candidates),
-        "selectedCount": len(selected),
+        "preferredCount": len(preferred),
+        "selectedCount": len(preferred),  # compatibility field
         "supportedLanes": sorted(supported),
         "coveredLanes": sorted(covered),
         "missingLanes": sorted(missing),
-        "owners": [row["owner"] for row in selected],
+        "preferredOwners": [row["owner"] for row in preferred],
+        "owners": [row["owner"] for row in preferred],
+        "destructiveFiltering": False,
+        "allEvidenceBackedAuthoritiesPreserved": True,
     }
 
 
 def apply_selection(model: dict[str, Any], patch: dict[str, Any], selected: list[dict[str, Any]]) -> None:
-    selected_by_owner: dict[str, list[dict[str, Any]]] = {}
-    for row in selected:
-        selected_by_owner.setdefault(str(row["owner"]), []).append(row)
-
-    field_pairs = (
-        ("providerValuePlan", "provider_value_plan"),
-        ("externalIdentityPlan", "external_identity_plan"),
-        ("searchRequestPlan", "search_request_plan"),
-    )
-    for model_key, patch_key in field_pairs:
-        current = [row for row in model.get(model_key) or [] if isinstance(row, dict)]
-        keep_indices = {int(row["index"]) for row in selected_by_owner.get(model_key, [])}
-        kept = [copy.deepcopy(row) for index, row in enumerate(current) if index in keep_indices]
-        if kept:
-            model[model_key] = kept
-            patch[patch_key] = copy.deepcopy(kept)
-        else:
-            model.pop(model_key, None)
-            patch.pop(patch_key, None)
-
-    if selected_by_owner.get("apiRecipe"):
-        if isinstance(model.get("apiRecipe"), dict):
-            patch["api_recipe"] = copy.deepcopy(model["apiRecipe"])
-    else:
-        model.pop("apiRecipe", None)
-        patch.pop("api_recipe", None)
-
-    routes = unique(model.get("routes") or [], 256)
-    keep_route_indices = {int(row["index"]) for row in selected_by_owner.get("route", [])}
-    kept_routes = [route for index, route in enumerate(routes) if index in keep_route_indices]
-    model["routes"] = kept_routes
-    patch["learned_routes"] = kept_routes
+    """Compatibility no-op: authority ranking must not delete valid runtime paths."""
+    del model, patch, selected
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -182,10 +153,10 @@ def enforce_execution_authority_cap(
     knowledge = load(knowledge_path)
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
     providers = knowledge.get("providers") if isinstance(knowledge.get("providers"), dict) else {}
-    changed = 0
     max_candidates = 0
-    max_selected = 0
+    max_preferred = 0
     missing: list[str] = []
+    multi_authority_providers = 0
 
     for provider_id, static_row in providers.items():
         if not isinstance(static_row, dict):
@@ -195,33 +166,27 @@ def enforce_execution_authority_cap(
             continue
         model = static_row.get("model") if isinstance(static_row.get("model"), dict) else {}
         route_data = [row for row in model.get("routeData") or [] if isinstance(row, dict)]
-        before = json.dumps({
-            "routes": model.get("routes"),
-            "providerValuePlan": model.get("providerValuePlan"),
-            "apiRecipe": model.get("apiRecipe"),
-            "externalIdentityPlan": model.get("externalIdentityPlan"),
-            "searchRequestPlan": model.get("searchRequestPlan"),
-        }, sort_keys=True, default=str)
-        selected, audit = select_authorities(model, route_data)
+        preferred, audit = select_authorities(model, route_data)
         max_candidates = max(max_candidates, audit["candidateCount"])
-        max_selected = max(max_selected, audit["selectedCount"])
-        if audit["selectedCount"] > MAX_AUTHORITIES:
-            raise RuntimeError(f"{provider_id}: selected authorities={audit['selectedCount']}")
+        max_preferred = max(max_preferred, audit["preferredCount"])
+        if audit["candidateCount"] > audit["preferredCount"]:
+            multi_authority_providers += 1
         if audit["missingLanes"] and audit["candidateCount"]:
             missing.append(f"{provider_id}:{','.join(audit['missingLanes'])}")
-        apply_selection(model, patch, selected)
-        after = json.dumps({
-            "routes": model.get("routes"),
-            "providerValuePlan": model.get("providerValuePlan"),
-            "apiRecipe": model.get("apiRecipe"),
-            "externalIdentityPlan": model.get("externalIdentityPlan"),
-            "searchRequestPlan": model.get("searchRequestPlan"),
-        }, sort_keys=True, default=str)
-        if before != after:
-            changed += 1
+
         proof = model.get("routeProof") if isinstance(model.get("routeProof"), dict) else {}
-        proof["canonicalExecutionAuthorityCap"] = MAX_AUTHORITIES
+        proof.pop("canonicalExecutionAuthorityCap", None)
+        proof["canonicalExecutionAuthorityPolicy"] = "preferred-order-only-preserve-all-proven-authorities"
         proof["canonicalExecutionAuthority"] = audit
+        proof["canonicalExecutionPreference"] = [
+            {
+                "owner": row["owner"],
+                "index": int(row["index"]),
+                "lanes": sorted(row["lanes"]),
+                **({"route": row["route"]} if row.get("route") else {}),
+            }
+            for row in preferred
+        ]
         model["routeProof"] = proof
         patch["route_proof"] = copy.deepcopy(proof)
         static_row["model"] = model
@@ -234,11 +199,14 @@ def enforce_execution_authority_cap(
     write(knowledge_path, knowledge)
     return {
         "providerCount": len(providers),
-        "changedProviders": changed,
+        "changedProviders": 0,
         "maxCandidates": max_candidates,
-        "maxSelected": max_selected,
+        "maxPreferred": max_preferred,
+        "maxSelected": max_preferred,
+        "multiAuthorityProviders": multi_authority_providers,
         "missingCoverageProviders": missing,
-        "cap": MAX_AUTHORITIES,
+        "target": NORMAL_SEMANTIC_LANE_COUNT,
+        "cap": NORMAL_SEMANTIC_LANE_COUNT,
     }
 
 
@@ -252,10 +220,10 @@ def main() -> int:
         knowledge_path=args.knowledge if args.knowledge.is_absolute() else ROOT / args.knowledge,
     )
     print(
-        "RUNTIME_EXECUTION_AUTHORITY_CAP_V1_OK "
-        f"providers={summary['providerCount']} changed={summary['changedProviders']} "
-        f"max_candidates={summary['maxCandidates']} max_selected={summary['maxSelected']} cap={summary['cap']} "
-        f"missing_coverage={len(summary['missingCoverageProviders'])}"
+        "RUNTIME_EXECUTION_AUTHORITY_POLICY_V2_OK "
+        f"providers={summary['providerCount']} max_candidates={summary['maxCandidates']} "
+        f"max_preferred={summary['maxPreferred']} multi_authority={summary['multiAuthorityProviders']} "
+        f"missing_coverage={len(summary['missingCoverageProviders'])} target={summary['target']}"
     )
     return 0
 
