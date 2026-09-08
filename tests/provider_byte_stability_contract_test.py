@@ -19,14 +19,17 @@ assert not (ROOT / "engine_v2/scripts/terser-clean.mjs").exists()
 
 # Critical publication/runtime paths must contain no Terser implementation or
 # metadata. Provider optimization stays disabled until runtime is stable.
+# CORE - Verify & Publish is the sole routine Core workflow; the retired
+# core-media-finalize-main.yml must not be resurrected just for this contract.
 critical_paths = (
     ROOT / "scripts/provider_byte_stability.py",
     ROOT / "scripts/reapply_published_overrides.py",
     ROOT / "scripts/verify_provider_publication_fixed_point.py",
     ROOT / "scripts/run_adaptive_deep_repair.py",
     ROOT / "scripts/verify_native_reader_repair.py",
-    ROOT / ".github/workflows/core-media-finalize-main.yml",
+    ROOT / ".github/workflows/sync.yml",
 )
+assert not (ROOT / ".github/workflows/core-media-finalize-main.yml").exists()
 for path in critical_paths:
     text = path.read_text(encoding="utf-8")
     assert "terser" not in text.casefold(), path.relative_to(ROOT)
