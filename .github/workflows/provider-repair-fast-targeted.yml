@@ -19,10 +19,36 @@ env:
   NIAKVIO_QUICK_YIELD_TIMEOUT: "55"
 
 jobs:
-  prove-batch:
-    name: prove-mixed-wave3
+  plan:
+    name: plan-next-24
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      selected: ${{ steps.plan.outputs.selected }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build deterministic six-batch matrix
+        id: plan
+        shell: bash
+        run: |
+          matrix="$(python scripts/provider_parallel_sweep_plan_v1.py --limit 24 --batch-size 4 --matrix-only)"
+          selected="$(python scripts/provider_parallel_sweep_plan_v1.py --limit 24 --batch-size 4 | python -c 'import json,sys; print(",".join(json.load(sys.stdin)["selectedProviders"]))')"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+          echo "selected=$selected" >> "$GITHUB_OUTPUT"
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP_SELECTED providers=$selected"
+
+  prove-wave:
+    name: prove-${{ matrix.batch }}
+    needs: plan
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -34,20 +60,24 @@ jobs:
           python-version: "3.12"
       - run: npm ci --ignore-scripts --no-audit --no-fund
 
-      - name: Run parallel batch acceptance
+      - name: Run guarded provider batch acceptance
         id: acceptance
         continue-on-error: true
+        shell: bash
+        env:
+          BATCH_PROVIDERS: ${{ matrix.providers }}
         run: |
+          args=()
+          for provider in $BATCH_PROVIDERS; do
+            args+=(--provider "$provider")
+          done
           python scripts/run_provider_repair_fast_targeted_v1.py \
             --attempts 3 \
             --workers 4 \
             --timeout 55 \
-            --provider anizone \
-            --provider hdhub4u \
-            --provider xpass \
-            --provider yflix
+            "${args[@]}"
 
-      - name: Validate shared V16-V18 and runtime-plan-cap contracts
+      - name: Validate shared V16-V18 and adaptive route-plan contracts
         if: always()
         run: |
           python tests/provider_execution_authority_v16_contract_test.py
@@ -61,6 +91,7 @@ jobs:
       - name: Show batch proof summary
         if: always()
         run: |
+          echo "FIELD_PROVIDER_PARALLEL_BATCH batch=${{ matrix.batch }} providers=${{ matrix.providers }}"
           test -f automation/provider-repair-fast-summary.json && cat automation/provider-repair-fast-summary.json || true
 
       - name: Enforce batch acceptance result
@@ -72,7 +103,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: provider-repair-mixed-wave3-${{ github.run_id }}
+          name: provider-repair-${{ matrix.batch }}-${{ github.run_id }}
           retention-days: 14
           if-no-files-found: warn
           path: |
@@ -81,3 +112,15 @@ jobs:
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
             provider-v3-quick-yield.json
+
+  sweep-result:
+    name: sweep-result
+    needs: [plan, prove-wave]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report selected providers and matrix outcome
+        run: |
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP providers=${{ needs.plan.outputs.selected }}"
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP_RESULT result=${{ needs.prove-wave.result }}"
+          test "${{ needs.prove-wave.result }}" = "success"
