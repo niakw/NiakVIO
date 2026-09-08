@@ -18,11 +18,14 @@ CORE_PUBLISH_FREEZE = ROOT / "automation" / "CORE-PUBLISH-FREEZE"
 
 REPLACEMENTS = {
     "| `engine-regression-offline.yml` | non-régressions moteur hors réseau |":
-        "| `core-media-finalize-main.yml` | fixed-point Core, non-régressions Engine v2 et intégrité de publication |",
+        "| `sync.yml` (`CORE - Verify & Publish`) | validation Quick/Deep, intégrité Core et publication dérivée |",
+    "| `core-media-finalize-main.yml` | fixed-point Core, non-régressions Engine v2 et intégrité de publication |":
+        "| `sync.yml` (`CORE - Verify & Publish`) | validation Quick/Deep, intégrité Core et publication dérivée |",
 }
 FORBIDDEN = (
     "engine-regression-offline.yml",
     "provider-rebuild-offline.yml",
+    "core-media-finalize-main.yml",
 )
 
 
@@ -36,10 +39,10 @@ def normalized(text: str) -> str:
 def enforce_core_publish_freeze() -> None:
     if os.environ.get("GITHUB_ACTIONS") != "true":
         return
-    if os.environ.get("GITHUB_WORKFLOW") != "NiakVIO Core media finalizer":
+    if os.environ.get("GITHUB_WORKFLOW") != "CORE - Verify & Publish":
         return
     if CORE_PUBLISH_FREEZE.is_file():
-        raise SystemExit("Core publication freeze is active; refusing stale/future Core finalizer")
+        raise SystemExit("Core publication freeze is active; refusing CORE publication")
 
 
 def main() -> int:
