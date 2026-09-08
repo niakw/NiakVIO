@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import recover_provider_routes_from_upstreams as recovery  # noqa: E402
 import runtime_route_plan_cap_v1 as route_cap  # noqa: E402
 import runtime_structured_plan_cap_v1 as structured_cap  # noqa: E402
+import runtime_execution_authority_cap_v1 as authority_cap  # noqa: E402
 
 
 def main() -> int:
@@ -34,9 +35,11 @@ def main() -> int:
     summary = recovery.apply_recovery(value)
     route_summary = route_cap.enforce_runtime_route_cap(value)
     structured_summary = structured_cap.enforce_structured_plan_cap()
+    authority_summary = authority_cap.enforce_execution_authority_cap()
     value["applied"] = summary
     value["runtimeRoutePlanCap"] = route_summary
     value["runtimeStructuredPlanCap"] = structured_summary
+    value["runtimeExecutionAuthorityCap"] = authority_summary
     recovery.write(path, value)
 
     print(
@@ -45,7 +48,9 @@ def main() -> int:
         f"runtime_route_cap={route_summary['cap']} runtime_route_max={route_summary['maxAfter']} "
         f"runtime_route_capped_providers={route_summary['cappedProviders']} "
         f"structured_cap={structured_summary['cap']} structured_max={structured_summary['maxAfter']} "
-        f"structured_capped_fields={structured_summary['cappedFields']} structured_merged_fields={structured_summary['mergedFields']}"
+        f"structured_capped_fields={structured_summary['cappedFields']} structured_merged_fields={structured_summary['mergedFields']} "
+        f"authority_cap={authority_summary['cap']} authority_max={authority_summary['maxSelected']} "
+        f"authority_changed={authority_summary['changedProviders']}"
     )
     if int(route_summary.get("maxAfter") or 0) > route_cap.MAX_RUNTIME_ROUTE_PLANS:
         raise SystemExit(
@@ -54,6 +59,10 @@ def main() -> int:
     if int(structured_summary.get("maxAfter") or 0) > structured_cap.MAX_STRUCTURED_PLANS:
         raise SystemExit(
             f"structured runtime plan cap exceeded: max={structured_summary['maxAfter']} cap={structured_cap.MAX_STRUCTURED_PLANS}"
+        )
+    if int(authority_summary.get("maxSelected") or 0) > authority_cap.MAX_AUTHORITIES:
+        raise SystemExit(
+            f"runtime execution authority cap exceeded: max={authority_summary['maxSelected']} cap={authority_cap.MAX_AUTHORITIES}"
         )
     return 0
 
