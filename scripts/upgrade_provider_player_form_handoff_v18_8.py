@@ -87,12 +87,12 @@ function _spv188PlayerForm(html, pageUrl) {
 '''
     text = once(text, anchor, helper + anchor, "v18.8-form-helper")
 
-    # V18.7 already edits the lower part of this crawl block, so keep these
-    # V18.6 anchors deliberately narrow and independent of downstream changes.
+    # V18.6 changes the text branch before V18.7 adds its route variant. Anchor
+    # only to the stable current ProviderBase shape: contentType includes("json").
     text = once(
         text,
-        "      let urls = [];\n      if (contentType.includes(\"application/json\")) {\n",
-        "      let urls = [];\n      let playerText = \"\";\n      if (contentType.includes(\"application/json\")) {\n",
+        "      let urls = [];\n      if (contentType.includes(\"json\")) {\n",
+        "      let urls = [];\n      let playerText = \"\";\n      if (contentType.includes(\"json\")) {\n",
         "v18.8-declare-player-html",
     )
     text = once(
