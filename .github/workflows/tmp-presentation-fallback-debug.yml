@@ -1,0 +1,41 @@
+name: TEMP - Presentation Fallback Debug
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-presentation-fallback-debug.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  debug:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Run isolated fallback with bounded diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp tests/global_stream_presentation_metadata_fallback_test.py "$RUNNER_TEMP/fallback.py"
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('tests/global_stream_presentation_metadata_fallback_test.py')
+          t = p.read_text(encoding='utf-8')
+          t = t.replace(
+              'row = movie["row"]\n',
+              'row = movie["row"]\nprint("FIELD_PRESENTATION_FALLBACK_MOVIE", json.dumps({"tmdbCalls": movie.get("tmdbCalls"), "mediaCalls": movie.get("mediaCalls"), "row": row}, ensure_ascii=False))\n',
+              1,
+          )
+          p.write_text(t, encoding='utf-8')
+          PY
+          python tests/global_stream_presentation_metadata_fallback_test.py
