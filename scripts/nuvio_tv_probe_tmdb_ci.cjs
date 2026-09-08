@@ -86,6 +86,19 @@ function routeKind(route) {
   return 'unknown';
 }
 
+function providerValueTrace() {
+  const raw = globalThis.__nuvioProviderValueTraceV18;
+  if (!raw || typeof raw !== 'object') return null;
+  const index = Number(raw.stepIndex);
+  return {
+    stage: String(raw.stage || '').slice(0, 64),
+    lane: String(raw.lane || '').slice(0, 32),
+    provider_id: String(raw.providerId || '').slice(0, 160),
+    step_index: Number.isInteger(index) && index >= -1 && index <= 3 ? index : null,
+    route: String(raw.route || '').slice(0, 240),
+  };
+}
+
 function debugStage(model, fixture, fetchTrace, result) {
   const type = String(fixture.mediaType || fixture.type || 'movie').toLowerCase();
   const supported = Array.isArray(model?.supportedTypes) ? model.supportedTypes.map((x) => String(x).toLowerCase()) : [];
@@ -183,6 +196,7 @@ process.stdout.write = function debugWrite(chunk, encoding, callback) {
           tmdb_core_capability: typeof globalThis.__nuvioCoreGetTmdbDataV1 === 'function',
           tmdb_credential_visible_after_load: !!(globalThis.TMDB_API_KEY || globalThis.TMDB_ACCESS_TOKEN),
           tmdb_context_prehydrated: false,
+          provider_value_trace_v18: providerValueTrace(),
           fetch_count: trace.length,
           provider_fetch_count: trace.filter((row) => !/api\.themoviedb\.org/i.test(row.url)).length,
           fetches: trace.slice(0, 30),
