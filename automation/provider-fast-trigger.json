@@ -1,9 +1,13 @@
 {
   "schemaVersion": 1,
-  "requestedAt": "2026-09-08T16:56:00+02:00",
-  "scope": "frenchstream,mugiwarastream",
-  "mode": "fast-targeted-v18.7-canonical-first-v18.8-chain-fixed",
+  "requestedAt": "2026-09-08T17:15:00+02:00",
+  "scope": "parallel-batch-12",
+  "mode": "3x4-proof-first-quality-preserving",
+  "batches": {
+    "vf-core": ["purstream", "flemmix", "papadustream", "coflix"],
+    "4k-download": ["uhdmovies", "movieshunt", "zinkmovies", "vegamovies"],
+    "api-direct": ["4khdhub", "4khdhubnew", "persianstremio", "desiflix"]
+  },
   "attempts": 3,
-  "retry": 33,
   "publicationAllowed": false
 }
