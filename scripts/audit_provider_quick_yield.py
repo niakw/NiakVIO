@@ -112,11 +112,30 @@ def _provider_fetches(debug: dict[str, Any]) -> list[dict[str, Any]]:
     return output
 
 
+def _provider_value_trace_history(debug: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = debug.get("provider_value_trace_history_v21")
+    if not isinstance(rows, list):
+        return []
+    output: list[dict[str, Any]] = []
+    for row in rows[-48:]:
+        if not isinstance(row, dict):
+            continue
+        output.append({
+            "stage": str(row.get("stage") or "")[:64],
+            "lane": str(row.get("lane") or "")[:32],
+            "provider_id": str(row.get("provider_id") or "")[:160],
+            "step_index": row.get("step_index") if isinstance(row.get("step_index"), int) else None,
+            "route": str(row.get("route") or "")[:240],
+        })
+    return output
+
+
 def classify_debug_stage(task: dict[str, Any], probe: dict[str, Any], debug: dict[str, Any]) -> str:
     model = debug.get("model") if isinstance(debug.get("model"), dict) else {}
     raw = int(probe.get("raw_stream_count") or 0)
+    contradictions = int(probe.get("identity_contradiction_count") or 0)
     if raw > 0:
-        return "provider_returned_streams"
+        return "provider_returned_wrong_content" if contradictions else "provider_returned_streams"
 
     supported = [str(v or "").casefold() for v in model.get("supported_types") or []]
     requested = str(task.get("semantic_type") or "").casefold()
@@ -169,14 +188,14 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
     try:
         proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=TIMEOUT, check=False, env=os.environ.copy())
     except subprocess.TimeoutExpired:
-        return {**base, "status": "timeout", "debug_stage": "timeout", "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000)}
+        return {**base, "status": "timeout", "debug_stage": "timeout", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "duration_ms": round((time.monotonic() - started) * 1000)}
     except Exception as exc:
-        return {**base, "status": "audit_error", "debug_stage": "audit_error", "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000), "error": type(exc).__name__}
+        return {**base, "status": "audit_error", "debug_stage": "audit_error", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "duration_ms": round((time.monotonic() - started) * 1000), "error": type(exc).__name__}
 
     probe = parse_probe(proc.stdout)
     if probe is None:
         marker = "missing_tmdb_credential" if "missing_tmdb_credential" in proc.stderr else "invalid_probe_output"
-        return {**base, "status": marker, "debug_stage": marker, "raw": 0, "playable": 0, "verified": 0, "duration_ms": round((time.monotonic() - started) * 1000), "stderr_tail": proc.stderr[-1000:]}
+        return {**base, "status": marker, "debug_stage": marker, "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "duration_ms": round((time.monotonic() - started) * 1000), "stderr_tail": proc.stderr[-1000:]}
 
     raw = int(probe.get("raw_stream_count") or 0)
     playable = int(probe.get("playable_stream_count") or 0)
@@ -205,10 +224,13 @@ def run(task: dict[str, Any]) -> dict[str, Any]:
         "debug_fetch_count": int(debug.get("fetch_count") or 0),
         "debug_provider_fetch_count": len(_provider_fetches(debug)),
         "debug_fetches": debug.get("fetches") or [],
+        "debug_provider_value_trace_v18": debug.get("provider_value_trace_v18"),
+        "debug_provider_value_trace_history_v21": _provider_value_trace_history(debug),
         "raw": raw,
         "playable": playable,
         "verified": verified,
         "contradictions": contradictions,
+        "identity_safe": contradictions == 0,
         "duration_ms": int(probe.get("duration_ms") or round((time.monotonic() - started) * 1000)),
     }
 
@@ -230,6 +252,10 @@ def main() -> int:
 
     raw_providers = sorted(provider for provider, values in by_provider.items() if any(int(row.get("raw") or 0) > 0 for row in values))
     playable_providers = sorted(provider for provider, values in by_provider.items() if any(int(row.get("playable") or 0) > 0 for row in values))
+    accepted_playable_providers = sorted(
+        provider for provider, values in by_provider.items()
+        if any(int(row.get("playable") or 0) > 0 and int(row.get("contradictions") or 0) == 0 for row in values)
+    )
     verified_providers = sorted(provider for provider, values in by_provider.items() if any(int(row.get("verified") or 0) > 0 for row in values))
     wrong_content = sorted(provider for provider, values in by_provider.items() if any(row.get("status") == "wrong_content" for row in values))
     statuses = Counter(str(row.get("status") or "unknown") for row in rows)
@@ -242,7 +268,9 @@ def main() -> int:
             "tasks": len(subset),
             "raw": sum(1 for row in subset if int(row.get("raw") or 0) > 0),
             "playable": sum(1 for row in subset if int(row.get("playable") or 0) > 0),
+            "accepted_playable": sum(1 for row in subset if int(row.get("playable") or 0) > 0 and int(row.get("contradictions") or 0) == 0),
             "verified": sum(1 for row in subset if int(row.get("verified") or 0) > 0),
+            "wrong_content": sum(1 for row in subset if int(row.get("contradictions") or 0) > 0),
         }
 
     stage_providers: dict[str, list[str]] = defaultdict(list)
@@ -253,16 +281,18 @@ def main() -> int:
             stage_providers[stage].append(provider)
 
     report = {
-        "schema_version": 3,
-        "environment": "node-fast-real-stream-census-with-tmdb-runtime-context-and-fetch-derived-gate-trace",
+        "schema_version": 4,
+        "environment": "node-fast-real-stream-census-with-tmdb-runtime-context-fetch-trace-and-v21-plan-history",
         "provider_count": provider_count,
         "task_count": len(tasks),
         "raw_provider_count": len(raw_providers),
         "playable_provider_count": len(playable_providers),
+        "accepted_playable_provider_count": len(accepted_playable_providers),
         "verified_provider_count": len(verified_providers),
         "wrong_content_provider_count": len(wrong_content),
         "raw_providers": raw_providers,
         "playable_providers": playable_providers,
+        "accepted_playable_providers": accepted_playable_providers,
         "verified_providers": verified_providers,
         "wrong_content_providers": wrong_content,
         "type_summary": type_summary,
@@ -275,9 +305,11 @@ def main() -> int:
     print(
         "FIELD_PROVIDER_QUICK_YIELD "
         f"providers={provider_count} tasks={len(tasks)} raw={len(raw_providers)} "
-        f"playable={len(playable_providers)} verified={len(verified_providers)} wrong_content={len(wrong_content)}"
+        f"playable={len(playable_providers)} accepted_playable={len(accepted_playable_providers)} "
+        f"verified={len(verified_providers)} wrong_content={len(wrong_content)}"
     )
     print("FIELD_PROVIDER_QUICK_YIELD_PLAYABLE providers=" + ",".join(playable_providers))
+    print("FIELD_PROVIDER_QUICK_YIELD_ACCEPTED_PLAYABLE providers=" + ",".join(accepted_playable_providers))
     print("FIELD_PROVIDER_QUICK_YIELD_VERIFIED providers=" + ",".join(verified_providers))
     for stage, count in sorted(debug_stages.items(), key=lambda item: (-item[1], item[0])):
         print(f"FIELD_PROVIDER_QUICK_YIELD_STAGE stage={stage} tasks={count} providers={len(stage_providers.get(stage) or [])}")
@@ -285,7 +317,8 @@ def main() -> int:
         print(
             "FIELD_PROVIDER_QUICK_YIELD_TYPE "
             f"type={media_type} tasks={summary['tasks']} raw={summary['raw']} "
-            f"playable={summary['playable']} verified={summary['verified']}"
+            f"playable={summary['playable']} accepted_playable={summary['accepted_playable']} "
+            f"verified={summary['verified']} wrong_content={summary['wrong_content']}"
         )
     return 0
 
