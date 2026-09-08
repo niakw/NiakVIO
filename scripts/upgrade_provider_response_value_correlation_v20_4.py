@@ -151,18 +151,39 @@ def _composite_provider_path_segment_template(
         raise AssertionError(f"v20.4-static-token-scope: expected two anchors, got {count}")
     text = text.replace(old_tokens, new_tokens)
 
-    old_placeholder = '''        placeholder = _request_scalar_placeholder(key, value, fixture, provider_values)
+    # The two body owners intentionally use different local scalar variables:
+    # derive_request_spec uses `raw`, while V20.3's URL-encoded helper uses
+    # `value`. Patch them independently so migration ordering cannot make this
+    # boundary depend on a global occurrence count.
+    old_form_placeholder = '''        placeholder = _request_scalar_placeholder(key, raw, fixture, provider_values)
         if placeholder:
 '''
-    new_placeholder = '''        placeholder = _request_scalar_placeholder(key, value, fixture, provider_values)
+    new_form_placeholder = '''        placeholder = _request_scalar_placeholder(key, raw, fixture, provider_values)
+        if not placeholder:
+            placeholder = _urlencoded_search_query_template(key, raw, fixture)
+        if placeholder:
+'''
+    text = _once(
+        text,
+        old_form_placeholder,
+        new_form_placeholder,
+        "v20.4-form-search-query-template",
+    )
+
+    old_text_placeholder = '''        placeholder = _request_scalar_placeholder(key, value, fixture, provider_values)
+        if placeholder:
+'''
+    new_text_placeholder = '''        placeholder = _request_scalar_placeholder(key, value, fixture, provider_values)
         if not placeholder:
             placeholder = _urlencoded_search_query_template(key, value, fixture)
         if placeholder:
 '''
-    count = text.count(old_placeholder)
-    if count != 2:
-        raise AssertionError(f"v20.4-search-query-template: expected two anchors, got {count}")
-    text = text.replace(old_placeholder, new_placeholder)
+    text = _once(
+        text,
+        old_text_placeholder,
+        new_text_placeholder,
+        "v20.4-urlencoded-search-query-template",
+    )
 
     old_path = '''        elif decoded in provider_values:
             placeholder = "{id}"
@@ -347,14 +368,13 @@ def validate_proof(text: str | None = None) -> None:
         "def _composite_provider_path_segment_template",
         'return "{query} " + keyword + " {season}"',
         'if len(str(token or "").strip()) >= 4',
+        "placeholder = _urlencoded_search_query_template(key, raw, fixture)",
         "placeholder = _urlencoded_search_query_template(key, value, fixture)",
         "placeholder = _composite_provider_path_segment_template(",
         '"{slug}" in str(row.get("placeholder") or "")',
     ):
         if needle not in value:
             raise AssertionError(f"V20.4 proof missing {needle}")
-    if value.count("placeholder = _urlencoded_search_query_template(key, value, fixture)") != 2:
-        raise AssertionError("V20.4 must cover both form and urlencoded-text body paths")
 
 
 def validate_recovery(text: str | None = None) -> None:
