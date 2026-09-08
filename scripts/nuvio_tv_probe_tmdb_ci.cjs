@@ -86,17 +86,26 @@ function routeKind(route) {
   return 'unknown';
 }
 
-function providerValueTrace() {
-  const raw = globalThis.__nuvioProviderValueTraceV18;
+function sanitizeProviderValueTraceRow(raw) {
   if (!raw || typeof raw !== 'object') return null;
   const index = Number(raw.stepIndex);
   return {
     stage: String(raw.stage || '').slice(0, 64),
     lane: String(raw.lane || '').slice(0, 32),
     provider_id: String(raw.providerId || '').slice(0, 160),
-    step_index: Number.isInteger(index) && index >= -1 && index <= 3 ? index : null,
+    step_index: Number.isInteger(index) && index >= -1 && index <= 7 ? index : null,
     route: String(raw.route || '').slice(0, 240),
   };
+}
+
+function providerValueTrace() {
+  return sanitizeProviderValueTraceRow(globalThis.__nuvioProviderValueTraceV18);
+}
+
+function providerValueTraceHistory() {
+  const rows = Array.isArray(globalThis.__nuvioProviderValueTraceHistoryV21)
+    ? globalThis.__nuvioProviderValueTraceHistoryV21 : [];
+  return rows.slice(-48).map(sanitizeProviderValueTraceRow).filter(Boolean);
 }
 
 function debugStage(model, fixture, fetchTrace, result) {
@@ -208,6 +217,7 @@ process.stdout.write = function debugWrite(chunk, encoding, callback) {
           tmdb_credential_visible_after_load: !!(globalThis.TMDB_API_KEY || globalThis.TMDB_ACCESS_TOKEN),
           tmdb_context_prehydrated: false,
           provider_value_trace_v18: providerValueTrace(),
+          provider_value_trace_history_v21: providerValueTraceHistory(),
           fetch_count: trace.length,
           provider_fetch_count: trace.filter((row) => !/api\.themoviedb\.org/i.test(row.url)).length,
           fetches: trace.slice(0, 40),
