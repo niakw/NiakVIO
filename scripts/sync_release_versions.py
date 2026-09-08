@@ -6,8 +6,10 @@ The finalizer is intentionally idempotent against the currently published manife
 - an existing provider whose client-visible row changes bumps its provider patch once;
 - a disabled -> enabled transition still receives the case-only client-id change used
   to escape Nuvio's persisted local activation state;
-- package.json, package-lock.json, sources.json, manifest.json and vf/manifest.json
-  are synchronized to the same global release version.
+- package.json, package-lock.json, sources.json and all manifest projections are
+  synchronized to the same global release version;
+- NiakVIO manifest names expose that same version for clients that hide the
+  dedicated version field, without accumulating repeated ``vX.Y.Z`` suffixes.
 
 A no-op publication does not bump anything.
 """
@@ -24,6 +26,7 @@ from typing import Any
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SEMVER = re.compile(r"^(\d+)\.(\d+)\.(\d+)$")
+VISIBLE_NIAKVIO_VERSION = re.compile(r"^NiakVIO(?:\s+v\d+\.\d+\.\d+)?(?=\s*(?:—|$))")
 
 
 def load(path: pathlib.Path) -> dict[str, Any]:
@@ -55,9 +58,29 @@ def canonical_id(value: object) -> str:
     return str(value or "").strip().casefold()
 
 
+def normalize_visible_manifest_name(value: object) -> str:
+    """Remove only NiakVIO's generated visible version, preserving projection suffixes."""
+    text = str(value or "").strip()
+    if not text:
+        return text
+    return VISIBLE_NIAKVIO_VERSION.sub("NiakVIO", text, count=1)
+
+
+def versioned_manifest_name(value: object, version: str) -> str:
+    """Expose the release version once in NiakVIO names, idempotently."""
+    text = normalize_visible_manifest_name(value)
+    if not text.startswith("NiakVIO"):
+        return text
+    return f"NiakVIO v{version}{text[len('NiakVIO'):]}"
+
+
 def comparable_manifest(manifest: dict[str, Any]) -> dict[str, Any]:
     clone = json.loads(json.dumps(manifest))
     clone.pop("version", None)
+    # The visible name mirrors the authoritative version. Ignore that generated
+    # projection when deciding whether content itself requires another bump.
+    if "name" in clone:
+        clone["name"] = normalize_visible_manifest_name(clone.get("name"))
     return clone
 
 
@@ -290,6 +313,7 @@ def synchronize_global_version(version: str, manifest_path: pathlib.Path) -> Non
             continue
         payload = load(path)
         payload["version"] = version
+        payload["name"] = versioned_manifest_name(payload.get("name"), version)
         dump(path, payload)
 
 
