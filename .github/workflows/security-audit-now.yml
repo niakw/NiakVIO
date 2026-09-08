@@ -27,7 +27,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Setup Node 24
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           cache: npm
@@ -87,7 +87,7 @@ jobs:
           PY
       - name: Upload audit evidence
         if: always()
-        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: security-audit-evidence-${{ github.run_id }}
           path: |
