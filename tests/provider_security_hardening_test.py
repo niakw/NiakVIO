@@ -12,7 +12,11 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from provider_security_hardening import MARKER, harden_text, known_unsafe_findings
 from harden_staged_provider_security import harden_stage
 from provider_patches.global_provider_security_hardening_v1 import harden_bundle
-from provider_patch_blocks import PROVIDER_BEGIN_MARKER, PROVIDER_END_MARKER
+from provider_patch_blocks import (
+    PROVIDER_BEGIN_MARKER,
+    PROVIDER_END_MARKER,
+    render_managed_fix,
+)
 
 
 def js_ok(text: str) -> None:
@@ -181,12 +185,17 @@ js_ok(rehardened)
 # Provider byte hardening and preventive Core security are separate owners.
 # Provider bytes are hardened before composition; the Core Lego then operates
 # only inside the single v3 Provider envelope and leaves existing Core bytes
-# untouched.
-core_tail = '''/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */
- /* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
-function coreHlsLog(v){console.warn("trusted-core-hls",v)}
- /* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
-'''
+# untouched. Existing Core in the fixture is rendered by the same transactional
+# helper as production, including FIXDATA, rather than by hand-written markers.
+core_tail = (
+    "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */\n"
+    + render_managed_fix(
+        "CORE.HLS_RUNTIME_INTEGRITY.V1",
+        'function coreHlsLog(v){console.warn("trusted-core-hls",v)}',
+        data={"fixture": "provider-security-hardening-test"},
+    )
+    + "\n"
+)
 provider_source = 'function p(u){console.warn(u)};globalThis.getStreams=async function(){return []};\n'
 hardened_provider, provider_report = harden_text(provider_source)
 assert provider_report["consoleSinkChanges"] == 1, provider_report
@@ -200,11 +209,11 @@ secured_bundle, bundle_report = harden_bundle(bundle_input)
 boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
 assert "__nuvioProviderSilentLog" in secured_bundle.split(boundary, 1)[0]
 assert 'function coreHlsLog(v){console.warn("trusted-core-hls",v)}' in secured_bundle
-assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
-assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
-assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
-assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
-assert secured_bundle.index("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") < secured_bundle.index("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */")
+assert secured_bundle.count("/* STARTFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert secured_bundle.count("/* CLOSEFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
+assert secured_bundle.count("/* STARTFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+assert secured_bundle.count("/* CLOSEFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+assert secured_bundle.index("/* CLOSEFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") < secured_bundle.index("/* STARTFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */")
 assert bundle_report["changed"] is True, bundle_report
 assert bundle_report["providerMutation"] is False, bundle_report
 assert bundle_report["postBuildMutation"] is False, bundle_report
