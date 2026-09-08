@@ -7,9 +7,8 @@ materializes only explicitly requested providers and skips the full 96-provider
 portfolio baseline/rematerialization.
 
 Failed experiments stop before the expensive 96-provider output guard. A target
-candidate must first prove an actual targeted yield gain. Only then do the global
-non-network guards run. The canonical full portfolio gate remains mandatory before
-promotion/publication.
+candidate must first prove an actual targeted yield gain. The canonical full
+portfolio gate remains mandatory before promotion/publication.
 """
 from __future__ import annotations
 
@@ -69,12 +68,6 @@ def _query_bearing(row: dict[str, Any]) -> bool:
 
 
 def verify_structured_plan_wiring(targets: list[str]) -> None:
-    """Fail before materialization when fresh structured proof was dropped.
-
-    V14+ intentionally stores request semantics outside flat routes. A positive,
-    reusable query-bearing request must therefore survive into provider overrides.
-    This catches proof->DATA wiring regressions before a bundle/network yield run.
-    """
     targeted = _row_map(load(TARGET_REPORT))
     overrides = load(OVERRIDES)
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
@@ -94,19 +87,41 @@ def verify_structured_plan_wiring(targets: list[str]) -> None:
                 break
         patch = patches.get(provider) if isinstance(patches.get(provider), dict) else {}
         krow = kproviders.get(provider) if isinstance(kproviders.get(provider), dict) else {}
-        search_plan = patch.get("search_request_plan") or krow.get("searchRequestPlan") or krow.get("search_request_plan") or []
-        external_plan = patch.get("external_identity_plan") or krow.get("externalIdentityPlan") or krow.get("external_identity_plan") or []
+        model = krow.get("model") if isinstance(krow.get("model"), dict) else krow
+        search_plan = patch.get("search_request_plan") or model.get("searchRequestPlan") or model.get("search_request_plan") or []
+        external_plan = patch.get("external_identity_plan") or model.get("externalIdentityPlan") or model.get("external_identity_plan") or []
+        provider_value_plan = patch.get("provider_value_plan") or model.get("providerValuePlan") or []
+        api_recipe = patch.get("api_recipe") or model.get("apiRecipe")
+        learned_routes = patch.get("learned_routes") or model.get("routes") or []
+        authority_count = (
+            len(provider_value_plan) if isinstance(provider_value_plan, list) else int(bool(provider_value_plan))
+        ) + int(bool(api_recipe)) + (
+            len(external_plan) if isinstance(external_plan, list) else int(bool(external_plan))
+        ) + (
+            len(search_plan) if isinstance(search_plan, list) else int(bool(search_plan))
+        ) + (
+            len(learned_routes) if isinstance(learned_routes, list) else int(bool(learned_routes))
+        )
         print(
             "FIELD_PROVIDER_FAST_PLAN "
             f"provider={provider} positive_search={str(positive_search).lower()} "
+            f"provider_value={len(provider_value_plan) if isinstance(provider_value_plan, list) else int(bool(provider_value_plan))} "
+            f"recipe={int(bool(api_recipe))} "
             f"search_plan={len(search_plan) if isinstance(search_plan, list) else int(bool(search_plan))} "
-            f"external_plan={len(external_plan) if isinstance(external_plan, list) else int(bool(external_plan))}",
+            f"external_plan={len(external_plan) if isinstance(external_plan, list) else int(bool(external_plan))} "
+            f"routes={len(learned_routes) if isinstance(learned_routes, list) else int(bool(learned_routes))} "
+            f"top_level_authorities={authority_count}",
             flush=True,
         )
-        if positive_search and not search_plan:
+        if authority_count > 3:
+            raise SystemExit(f"provider runtime authority overflow: {provider}={authority_count} > 3")
+        # A positive structured search may legitimately be absorbed by a stronger
+        # provider-value/API authority. Require an executable authority, not the
+        # redundant SearchRequestPlan field specifically.
+        if positive_search and authority_count == 0:
             missing.append(provider)
     if missing:
-        raise SystemExit("structured search proof lost before materialization: " + ",".join(missing))
+        raise SystemExit("positive proof lost before materialization: " + ",".join(missing))
 
 
 def write_summary(
@@ -117,9 +132,10 @@ def write_summary(
     yield_report: dict[str, Any],
     target_gate: bool,
     global_guard: bool,
+    global_guard_deferred: bool = False,
 ) -> None:
     summary = {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "publicationAllowed": False,
         "fullPortfolioGateRequired": True,
         "catalogueProviderCount": 96,
@@ -133,6 +149,7 @@ def write_summary(
         "lostUpstreamPositivePairs": yield_report.get("lostUpstreamPositivePairs") or [],
         "targetGatePassed": bool(target_gate),
         "globalNonNetworkGuardPassed": bool(global_guard),
+        "globalNonNetworkGuardDeferred": bool(global_guard_deferred),
     }
     SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
@@ -141,6 +158,7 @@ def write_summary(
         f"playable={len(summary['playableProviders'])} verified={len(summary['verifiedProviders'])} "
         f"lost={len(summary['lostUpstreamPositivePairs'])} "
         f"target_gate={str(target_gate).lower()} global_guard={str(global_guard).lower()} "
+        f"global_guard_deferred={str(global_guard_deferred).lower()} "
         "full_portfolio_gate_required=true",
         flush=True,
     )
@@ -153,6 +171,11 @@ def main() -> int:
     parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--timeout", type=int, default=55)
     parser.add_argument("--attempts", type=int, default=3)
+    parser.add_argument(
+        "--defer-global-guard",
+        action="store_true",
+        help="Defer the repeated 96-provider non-network guard to the consolidated candidate gate.",
+    )
     args = parser.parse_args()
 
     manifest = load(MANIFEST)
@@ -179,7 +202,8 @@ def main() -> int:
     print(
         "FIELD_PROVIDER_FAST_SCOPE "
         f"catalogue=96 targeted={len(targets)} skipped_green={len(skipped)} "
-        f"attempts={attempts} providers={','.join(targets)}",
+        f"attempts={attempts} defer_global_guard={str(args.defer_global_guard).lower()} "
+        f"providers={','.join(targets)}",
         flush=True,
     )
 
@@ -225,6 +249,7 @@ def main() -> int:
         "tests/provider_search_request_plan_v14_1_contract_test.py",
         "tests/provider_source_plan_v15_contract_test.py",
         "tests/global_identity_policy_ownership_test.py",
+        "tests/runtime_route_plan_cap_v1_test.py",
     ):
         run(sys.executable, test)
 
@@ -257,16 +282,10 @@ def main() -> int:
     )
     verify_structured_plan_wiring(targets)
 
-    # Rebuild only providers under investigation. Common ProviderBase source is
-    # identical to the full materializer source; publication is still forbidden.
     for provider in targets:
         run(sys.executable, "scripts/materialize_provider_v3_one.py", provider)
 
     run(sys.executable, "scripts/validate_published_provider_config.py", "--expected", "96")
-
-    # Cheap identity/media contracts run before network yield. The expensive
-    # 96-provider output guard is intentionally deferred until the target itself
-    # has demonstrated a gain.
     for test in (
         "tests/episodic_identity_runtime_test.py",
         "tests/episodic_year_identity_regression_test.py",
@@ -294,12 +313,28 @@ def main() -> int:
             yield_report=yield_report,
             target_gate=False,
             global_guard=False,
+            global_guard_deferred=False,
         )
         print("FIELD_PROVIDER_FAST_EARLY_STOP reason=target_gate_failed expensive_global_guard_skipped=1", flush=True)
         return 1
 
-    # Only a target-positive candidate earns the expensive global non-network
-    # regression guard. Full live portfolio preservation still belongs to V6.
+    if args.defer_global_guard:
+        write_summary(
+            targets=targets,
+            attempts=attempts,
+            target_report=target_report,
+            yield_report=yield_report,
+            target_gate=True,
+            global_guard=False,
+            global_guard_deferred=True,
+        )
+        print(
+            "FIELD_PROVIDER_FAST_DEFERRED_GLOBAL_GUARD "
+            "reason=parallel_sweep consolidated_candidate_guard_required=1",
+            flush=True,
+        )
+        return 0
+
     run(sys.executable, "tests/global_stream_output_guard_test.py")
     write_summary(
         targets=targets,
@@ -308,6 +343,7 @@ def main() -> int:
         yield_report=yield_report,
         target_gate=True,
         global_guard=True,
+        global_guard_deferred=False,
     )
     return 0
 
