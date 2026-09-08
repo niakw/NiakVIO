@@ -35,6 +35,9 @@ _QUERY_FIELDS = {
     "q", "query", "search", "search_query", "searchquery", "story", "title", "keyword", "keywords"
 }
 _SAFE_STATIC_HEADERS = {"accept", "content-type", "origin", "referer", "x-requested-with"}
+# Only neutral pagination sentinels are generic enough to synthesize from a
+# reviewed body-field contract.  Authentication/session/file ids remain forbidden.
+_NEUTRAL_CONTRACT_DEFAULTS: dict[str, Any] = {"page_token": None, "page_index": 0}
 
 
 def cid(value: object) -> str:
@@ -134,6 +137,8 @@ def _static_contract_spec(contract: dict[str, Any], origin: str) -> dict[str, An
             body[field] = copy.deepcopy(defaults[field])
         elif key in defaults:
             body[field] = copy.deepcopy(defaults[key])
+        elif key in _NEUTRAL_CONTRACT_DEFAULTS:
+            body[field] = copy.deepcopy(_NEUTRAL_CONTRACT_DEFAULTS[key])
         else:
             # Unknown dynamic fields are exactly where the original sanitizer
             # refused reuse.  Do not guess them here.
