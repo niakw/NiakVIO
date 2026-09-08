@@ -9,7 +9,9 @@ The finalizer is intentionally idempotent against the currently published manife
 - package.json, package-lock.json, sources.json and all manifest projections are
   synchronized to the same global release version;
 - NiakVIO manifest names expose that same version for clients that hide the
-  dedicated version field, without accumulating repeated ``vX.Y.Z`` suffixes.
+  dedicated version field, without accumulating repeated ``vX.Y.Z`` suffixes;
+- merge/recovery work can never lower the release below the highest version that
+  already existed on main first-parent history.
 
 A no-op publication does not bump anything.
 """
@@ -56,6 +58,47 @@ def bump_patch(value: object, *, fallback: tuple[int, int, int] = (1, 0, 0)) -> 
 
 def canonical_id(value: object) -> str:
     return str(value or "").strip().casefold()
+
+
+def highest_historical_release(manifest_path: pathlib.Path) -> tuple[int, int, int] | None:
+    """Return the highest release ever present on main first-parent history.
+
+    This is deliberately history-backed rather than a hard-coded floor. A merge
+    may reintroduce older manifest/package bytes, but it must never make clients
+    observe a release lower than one that was already published from main.
+    """
+    git_dir = ROOT / ".git"
+    if not git_dir.exists():
+        return None
+    try:
+        relative = manifest_path.resolve().relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return None
+    try:
+        commits = subprocess.check_output(
+            ["git", "rev-list", "--first-parent", "HEAD", "--", relative],
+            cwd=ROOT,
+            text=True,
+            stderr=subprocess.DEVNULL,
+        ).splitlines()
+    except (OSError, subprocess.CalledProcessError):
+        return None
+
+    highest: tuple[int, int, int] | None = None
+    for commit in commits[:2000]:
+        try:
+            raw = subprocess.check_output(
+                ["git", "show", f"{commit}:{relative}"],
+                cwd=ROOT,
+                text=True,
+                stderr=subprocess.DEVNULL,
+            )
+            version = parse_semver(json.loads(raw).get("version"))
+        except (OSError, subprocess.CalledProcessError, json.JSONDecodeError, AttributeError):
+            continue
+        if version is not None and (highest is None or version > highest):
+            highest = version
+    return highest
 
 
 def normalize_visible_manifest_name(value: object) -> str:
@@ -234,17 +277,25 @@ def resolve_release_version(
     explicit_version: str | None,
 ) -> tuple[str, bool]:
     current = load(manifest_path)
+    historical_floor = highest_historical_release(manifest_path)
 
     if explicit_version is not None:
         parsed = parse_semver(explicit_version)
         if parsed is None:
             raise SystemExit(f"invalid authoritative release version: {explicit_version!r}")
+        if historical_floor is not None and parsed < historical_floor:
+            raise SystemExit(
+                "release downgrade rejected: "
+                f"requested={format_semver(parsed)} historical_floor={format_semver(historical_floor)}"
+            )
         return format_semver(parsed), False
 
     current_version = parse_semver(current.get("version"))
     if previous_path is None:
         if current_version is None:
             raise SystemExit(f"invalid authoritative release version: {current.get('version')!r}")
+        if historical_floor is not None and current_version < historical_floor:
+            return format_semver(historical_floor), False
         return format_semver(current_version), False
 
     previous = load(previous_path)
@@ -252,15 +303,19 @@ def resolve_release_version(
     if previous_version is None:
         raise SystemExit(f"invalid previous release version: {previous.get('version')!r}")
 
+    floor = previous_version
+    if historical_floor is not None and historical_floor > floor:
+        floor = historical_floor
+
     changed = comparable_manifest(previous) != comparable_manifest(current)
     if changed:
-        minimum = (previous_version[0], previous_version[1], previous_version[2] + 1)
+        minimum = (floor[0], floor[1], floor[2] + 1)
         if current_version is None or current_version < minimum:
             return format_semver(minimum), True
-        return format_semver(current_version), current_version > previous_version
+        return format_semver(current_version), current_version > floor
 
-    if current_version is None or current_version < previous_version:
-        return format_semver(previous_version), False
+    if current_version is None or current_version < floor:
+        return format_semver(floor), False
     return format_semver(current_version), False
 
 
@@ -356,6 +411,10 @@ def main() -> int:
             {
                 "release_version": version,
                 "release_changed": release_changed,
+                "historical_release_floor": (
+                    format_semver(highest_historical_release(manifest_path))
+                    if highest_historical_release(manifest_path) is not None else None
+                ),
                 "provider_versions_bumped": bumped_providers,
                 "provider_version_bump_count": len(bumped_providers),
                 "client_id_changes": activation.get("changed_ids", []),
