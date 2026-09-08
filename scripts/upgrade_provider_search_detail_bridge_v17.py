@@ -11,9 +11,10 @@ V17 keeps the fresh response origin only for same-origin catalogue links and,
 after positive catalogue identity, resolves each detail through
 _spv4ResolveDetail before falling back to the player crawler.
 
-V18/V18.1 are chained from this canonical owner so every V17 consumer also
-receives the proof-correlated provider-value plan, complete current-response
-origin fix, and scored provider-native slug identities.
+V18/V18.1/V18.2 are chained from this canonical owner so every V17 consumer also
+receives the proof-correlated provider-value DATA plan, provider-native JSON
+identity scoring, complete current-response origin fix, and V16 proof authority
+for correlated plans.
 No provider ids, hosts, fixture titles or provider-specific routes are encoded.
 """
 from __future__ import annotations
@@ -22,6 +23,7 @@ from pathlib import Path
 
 import upgrade_provider_correlated_value_plan_v18 as v18
 import upgrade_provider_correlated_value_plan_v18_1 as v18_1
+import upgrade_provider_correlated_value_authority_v18_2 as v18_2
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "scripts" / "provider_base_store.py"
@@ -136,6 +138,8 @@ def main() -> int:
     v18.validate_base()
     v18_1_changed = v18_1.patch()
     v18_1.validate()
+    v18_2_changed = v18_2.patch()
+    v18_2.validate()
     print(
         f"PROVIDER_SEARCH_DETAIL_BRIDGE_V17_OK changed={str(changed).lower()} "
         "current_origin_preserved=1 canonical_detail_resolver=1 player_crawl_fallback=1 provider_specific_rules=0"
@@ -147,7 +151,13 @@ def main() -> int:
     )
     print(
         f"PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed={str(v18_1_changed).lower()} "
-        "scored_slug_identity=1 bounded_charset=1 provider_specific_rules=0"
+        "scored_json_slug_identity=1 provider_native_title_labels=1 bounded_charset=1 "
+        "html_slug_inference=0 provider_specific_rules=0"
+    )
+    print(
+        f"PROVIDER_CORRELATED_VALUE_AUTHORITY_V18_2_OK changed={str(v18_2_changed).lower()} "
+        "provider_value_first=1 recipe_second=1 search_third=1 family_after=1 "
+        "provider_specific_rules=0"
     )
     return 0
 
