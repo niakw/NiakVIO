@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import recover_provider_routes_from_upstreams as recovery  # noqa: E402
 import runtime_route_plan_cap_v1 as route_cap  # noqa: E402
+import runtime_structured_plan_cap_v1 as structured_cap  # noqa: E402
 
 
 def main() -> int:
@@ -29,20 +30,30 @@ def main() -> int:
     providers = value.get("providers") if isinstance(value.get("providers"), list) else []
     if len(providers) != recovery.EXPECTED:
         raise SystemExit(f"route recovery providers rows={len(providers)}, expected={recovery.EXPECTED}")
+
     summary = recovery.apply_recovery(value)
-    cap_summary = route_cap.enforce_runtime_route_cap(value)
+    route_summary = route_cap.enforce_runtime_route_cap(value)
+    structured_summary = structured_cap.enforce_structured_plan_cap()
     value["applied"] = summary
-    value["runtimeRoutePlanCap"] = cap_summary
+    value["runtimeRoutePlanCap"] = route_summary
+    value["runtimeStructuredPlanCap"] = structured_summary
     recovery.write(path, value)
+
     print(
         "FIELD_ROUTE_RECOVERY_REPORT_APPLIED "
-        f"providers={summary['patchedProviders']} routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
-        f"runtime_cap={cap_summary['cap']} runtime_max={cap_summary['maxAfter']} "
-        f"runtime_capped_providers={cap_summary['cappedProviders']}"
+        f"providers={summary['patchedProviders']} evidence_routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
+        f"runtime_route_cap={route_summary['cap']} runtime_route_max={route_summary['maxAfter']} "
+        f"runtime_route_capped_providers={route_summary['cappedProviders']} "
+        f"structured_cap={structured_summary['cap']} structured_max={structured_summary['maxAfter']} "
+        f"structured_capped_fields={structured_summary['cappedFields']} structured_merged_fields={structured_summary['mergedFields']}"
     )
-    if int(cap_summary.get("maxAfter") or 0) > route_cap.MAX_RUNTIME_ROUTE_PLANS:
+    if int(route_summary.get("maxAfter") or 0) > route_cap.MAX_RUNTIME_ROUTE_PLANS:
         raise SystemExit(
-            f"runtime route plan cap exceeded: max={cap_summary['maxAfter']} cap={route_cap.MAX_RUNTIME_ROUTE_PLANS}"
+            f"runtime route plan cap exceeded: max={route_summary['maxAfter']} cap={route_cap.MAX_RUNTIME_ROUTE_PLANS}"
+        )
+    if int(structured_summary.get("maxAfter") or 0) > structured_cap.MAX_STRUCTURED_PLANS:
+        raise SystemExit(
+            f"structured runtime plan cap exceeded: max={structured_summary['maxAfter']} cap={structured_cap.MAX_STRUCTURED_PLANS}"
         )
     return 0
 
