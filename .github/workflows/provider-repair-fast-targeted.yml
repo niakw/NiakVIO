@@ -27,12 +27,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: vf-core
-            providers: "purstream flemmix papadustream coflix"
-          - name: 4k-download
-            providers: "uhdmovies movieshunt zinkmovies vegamovies"
-          - name: api-direct
-            providers: "4khdhub 4khdhubnew persianstremio desiflix"
+          - name: anime-core
+            providers: "anidb anikototv hianime animesama-co"
+          - name: vf-catalogue
+            providers: "toflix nakios voiranime voiranime-rip"
+          - name: api-resolver
+            providers: "movix vidsrc goated vidlove"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
