@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
-"""Plan a deterministic parallel Provider sweep without conflating tested and green.
+"""Plan deterministic parallel Provider sweeps without conflating tested and green.
 
 Selection authority:
 - manifest.json defines the complete 96-provider catalogue;
 - provider-repair-skip.json contains only already accepted green providers;
-- provider-sweep-recent-v1.json prevents immediate duplicate work but does not
-  declare anything healthy.
+- provider-sweep-recent-v1.json prevents immediate duplicate automatic work but
+  does not declare anything healthy;
+- provider-fast-trigger.json may provide `explicitProviders` for a one-off
+  revalidation. Explicit requests override the recent anti-duplication set, but
+  never the accepted-green skip set.
 
-The planner selects the next N providers in manifest order and partitions them
-into bounded batches. It performs no network work and never changes provider
-state.
+The planner partitions selected providers into bounded batches. It performs no
+network work and never changes provider state.
 """
 from __future__ import annotations
 
@@ -22,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 SKIP = ROOT / "automation" / "provider-repair-skip.json"
 RECENT = ROOT / "automation" / "provider-sweep-recent-v1.json"
+TRIGGER = ROOT / "automation" / "provider-fast-trigger.json"
 EXPECTED = 96
 
 
@@ -48,10 +51,27 @@ def plan(limit: int, batch_size: int) -> dict[str, Any]:
     ids = catalogue()
     skip_cfg = load(SKIP)
     recent_cfg = load(RECENT)
+    trigger_cfg = load(TRIGGER) if TRIGGER.exists() else {}
     green = {cid(value) for value in (skip_cfg.get("providers") or {}).keys() if cid(value)}
     recent = {cid(value) for value in recent_cfg.get("recentlySwept") or [] if cid(value)}
-    eligible = [provider for provider in ids if provider not in green and provider not in recent]
-    selected = eligible[:limit]
+    explicit = []
+    for raw in trigger_cfg.get("explicitProviders") or []:
+        provider = cid(raw)
+        if provider and provider not in explicit:
+            explicit.append(provider)
+    unknown = [provider for provider in explicit if provider not in ids]
+    if unknown:
+        raise SystemExit("unknown explicit providers: " + ",".join(unknown))
+
+    if explicit:
+        selected = [provider for provider in explicit if provider not in green]
+        selection_mode = "explicit-revalidation"
+        eligible = [provider for provider in ids if provider not in green]
+    else:
+        eligible = [provider for provider in ids if provider not in green and provider not in recent]
+        selected = eligible[:limit]
+        selection_mode = "automatic-next-wave"
+
     batches = [selected[index:index + batch_size] for index in range(0, len(selected), batch_size)]
     matrix = {
         "include": [
@@ -65,7 +85,8 @@ def plan(limit: int, batch_size: int) -> dict[str, Any]:
         ]
     }
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
+        "selectionMode": selection_mode,
         "catalogueCount": len(ids),
         "greenSkippedCount": len(green),
         "recentSkippedCount": len(recent),
