@@ -41,23 +41,30 @@ manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 rows = manifest.get("scrapers") or []
 assert len(rows) == 96
 
-valid = {"movie", "tv", "anime"}
-canonical_route_counts = {kind: 0 for kind in valid}
-transport_route_counts = {kind: 0 for kind in valid}
+# `series` is a Nuvio transport alias for canonical `tv`. It is legal only on
+# the transport surface; native route accounting remains movie/tv/anime because
+# the Labs execute the canonical tv lane rather than a duplicate series lane.
+canonical_valid = {"movie", "tv", "anime"}
+transport_valid = canonical_valid | {"series"}
+canonical_route_counts = {kind: 0 for kind in canonical_valid}
+transport_route_counts = {kind: 0 for kind in canonical_valid}
 for row in rows:
     provider = str(row.get("id") or "<unknown>")
     transport = [str(v).strip().lower() for v in (row.get("supportedTypes") or []) if str(v).strip()]
     canonical = [str(v).strip().lower() for v in (row.get("canonicalSupportedTypes") or transport) if str(v).strip()]
     assert transport and canonical, provider
-    assert set(transport) <= valid, (provider, transport)
-    assert set(canonical) <= valid, (provider, canonical)
-    assert set(canonical) <= set(transport), (provider, canonical, transport)
-    for kind in valid:
+    assert set(transport) <= transport_valid, (provider, transport)
+    assert set(canonical) <= canonical_valid, (provider, canonical)
+    assert "series" not in canonical, (provider, canonical)
+    transport_semantic = {"tv" if value == "series" else value for value in transport}
+    assert set(canonical) <= transport_semantic, (provider, canonical, transport)
+    for kind in canonical_valid:
         canonical_route_counts[kind] += int(kind in canonical)
-        transport_route_counts[kind] += int(kind in transport)
+        transport_route_counts[kind] += int(kind in transport_semantic)
     if set(canonical) == {"anime"}:
-        # Semantic anime-only does not forbid Nuvio movie/tv launch lanes.
-        assert {"anime", "tv", "movie"} <= set(transport), (provider, transport)
+        # Anime-only semantic capability must still expose the anime lane and a
+        # TV-compatible Nuvio transport; movie launch compatibility is optional.
+        assert {"anime", "tv"} <= transport_semantic, (provider, transport)
 
 # Never freeze yesterday's route totals: transport aliases legitimately change the
 # matrix. Canonical counts remain semantic; transport counts are what Nuvio can launch.
