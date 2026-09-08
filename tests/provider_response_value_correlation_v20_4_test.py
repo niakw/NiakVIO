@@ -26,32 +26,12 @@ module.validate_recovery()
 module.validate_materializer()
 module.validate_base()
 
-proof = module.PROOF.read_text(encoding="utf-8")
-base = module.BASE.read_text(encoding="utf-8")
+proof_spec = importlib.util.spec_from_file_location("provider_route_proof_v204_test", module.PROOF)
+if proof_spec is None or proof_spec.loader is None:
+    raise SystemExit("unable to load patched provider_route_proof")
+proof = importlib.util.module_from_spec(proof_spec)
+proof_spec.loader.exec_module(proof)
 
-namespace: dict[str, object] = {}
-exec(
-    "import re\n"
-    "import urllib.parse\n"
-    "def canonical(value): return str(value or '').strip().casefold()\n"
-    "def unique(values, limit=256):\n"
-    " out=[]\n"
-    " for raw in values:\n"
-    "  value=str(raw or '').strip()\n"
-    "  if value and value not in out: out.append(value)\n"
-    "  if len(out)>=limit: break\n"
-    " return out\n"
-    "PROVIDER_VALUE_KEYS={'id','slug'}\n"
-    "BODY_TITLE_KEYS={'q','query','search','title','keyword','story','name'}\n"
-    "BODY_SEASON_KEYS={'s','season','season_number','seasonid','season_id'}\n"
-    "BODY_EPISODE_KEYS={'e','ep','episode','episode_number','episodeid','episode_id'}\n"
-    "BODY_MEDIA_KEYS={'type','mediatype','media_type','media','category','kind'}\n"
-    "BODY_TMDB_KEYS={'id','tmdb','tmdbid','tmdb_id','movie','tv'}\n"
-    "BODY_YEAR_KEYS={'year','releaseyear','release_year'}\n"
-    "SEMANTIC_TYPES={'movie','tv','anime'}\n"
-    + proof[proof.index("def _request_scalar_placeholder("):proof.index("def derive_request_spec(")],
-    namespace,
-)
 fixture = {
     "title": "Neutral Series",
     "aliases": ["Neutral-Series"],
@@ -59,21 +39,58 @@ fixture = {
     "mediaType": "anime",
     "season": 1,
     "episode": 1,
+    "year": 2020,
 }
-helper = namespace["_urlencoded_text_body_spec"]
-body, substitutions, residue = helper("query=Neutral%20Series&page=1", fixture, set())
-assert residue == [], residue
-assert body == {"query": "{query}", "page": "1"}, body
+task = {"fixture": fixture}
 
-body, substitutions, residue = helper("query=Neutral%20Series%20Saison%201&page=1", fixture, set())
+form_fetch = {
+    "method": "POST",
+    "body_kind": "form",
+    "body_values": {"query": "Neutral Series", "page": "1"},
+    "proof_headers": {"content-type": "application/x-www-form-urlencoded"},
+}
+form_spec, form_meta = proof.derive_request_spec(form_fetch, task, [])
+assert form_meta["requestSpecReusable"] is True, form_meta
+assert form_spec["bodyKind"] == "form", form_spec
+assert form_spec["body"] == {"query": "{query}", "page": "1"}, form_spec
+
+season_form = dict(form_fetch)
+season_form["body_values"] = {"query": "Neutral Series Saison 1", "page": "1"}
+season_spec, season_meta = proof.derive_request_spec(season_form, task, [])
+assert season_meta["requestSpecReusable"] is True, season_meta
+assert season_spec["body"] == {"query": "{query} Saison {season}", "page": "1"}, season_spec
+
+body, substitutions, residue = proof._urlencoded_text_body_spec(
+    "query=Neutral%20Series%20Saison%201&page=1", fixture, set()
+)
 assert residue == [], residue
 assert body == {"query": "{query} Saison {season}", "page": "1"}, body
 assert any(row.get("placeholder") == "{query} Saison {season}" for row in substitutions), substitutions
 
-body, substitutions, residue = helper("query=Neutral%20Series&opaque=Neutral%20Series", fixture, set())
-assert body is None
-assert any(row.get("location") == "body:opaque" for row in residue), residue
+unsafe_fetch = dict(form_fetch)
+unsafe_fetch["body_values"] = {"query": "Neutral Series", "opaque": "Neutral Series"}
+unsafe_spec, unsafe_meta = proof.derive_request_spec(unsafe_fetch, task, [])
+assert unsafe_spec is None
+assert any(row.get("location") == "body:opaque" for row in unsafe_meta["requestSpecResidue"]), unsafe_meta
 
+episode_fetch = {
+    "url": "https://example.invalid/episode/neutral-series-1-episode-1/",
+    "final_url": "https://example.invalid/episode/neutral-series-1-episode-1/",
+    "method": "GET",
+    "body_kind": "none",
+    "body_values": {},
+    "proof_headers": {},
+}
+route, route_meta = proof.derive_observed_route(
+    episode_fetch,
+    task,
+    [{"key": "slug", "value": "neutral-series"}],
+)
+assert route == "/episode/{slug}-{season}-episode-{episode}/", (route, route_meta)
+assert route_meta["providerValueCorrelation"] is True, route_meta
+assert route_meta["reusable"] is True, route_meta
+
+base = module.BASE.read_text(encoding="utf-8")
 start = base.index("function _spv204ResponseProviderValues")
 end = base.index("async function _resolveProviderValuePlan", start)
 helper_js = base[start:end]
@@ -82,7 +99,8 @@ function _text(v) {{ return v == null ? "" : String(v); }}
 function _spv20ProviderValuesFromJson() {{ return {{id:"", slug:""}}; }}
 function _spv20ProviderValuesFromHtml() {{ return {{id:"catalog-slug", slug:"catalog-slug"}}; }}
 {helper_js}
-const html = '<a href="/?mode=0&trid=4711">A</a><a href="/?mode=1&trid=4711">B</a>';
+const html = '<iframe src="/?trembed=0&trid=4711&trtype=2"></iframe>' +
+             '<iframe src="/?trembed=1&trid=4711&trtype=2"></iframe>';
 const pair = _spv204ResponseProviderValues(html, 'https://example.invalid/', {{title:'Neutral Series'}});
 process.stdout.write(JSON.stringify(pair));
 '''
@@ -90,6 +108,11 @@ proc = subprocess.run(["node", "-e", node], check=True, capture_output=True, tex
 pair = json.loads(proc.stdout)
 assert pair["id"] == "4711", pair
 assert pair["slug"] == "catalog-slug", pair
+
+recovery = module.RECOVERY.read_text(encoding="utf-8")
+assert module.RECOVERY_MARKER in recovery
+assert '"requestSpecResidue": copy.deepcopy' in recovery
+assert '"proofBodyValues": copy.deepcopy(fetch.get("body_values") or {})' in recovery
 
 assert "let values = Object.assign({}, baseValues" in base
 assert "providerId: nextProviderValues.id || values.providerId" in base
