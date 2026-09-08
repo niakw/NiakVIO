@@ -28,9 +28,12 @@ fetch = {
     "body_values": {},
 }
 route, meta = proof.derive_observed_route(fetch, {"fixture": fixture}, hints)
-assert route == "/catalogue/{slug}/episodes/saison1", (route, meta)
+# V18 treats slug/id/post-id/etc. as one provider-native correlated identity
+# contract. The executable route therefore uses the generic {id} placeholder;
+# the source field remains provenance, not a runtime placeholder type.
+assert route == "/catalogue/{id}/episodes/saison1", (route, meta)
 assert meta.get("providerValueCorrelation") is True, meta
-assert any(row.get("placeholder") == "{slug}" for row in meta.get("substitutions") or []), meta
+assert any(row.get("placeholder") == "{id}" for row in meta.get("substitutions") or []), meta
 
 id_hints = [{"key": "id", "value": "abc123"}]
 id_fetch = dict(fetch)
@@ -39,4 +42,4 @@ id_route, id_meta = proof.derive_observed_route(id_fetch, {"fixture": fixture}, 
 assert id_route == "/title/{id}", (id_route, id_meta)
 assert any(row.get("placeholder") == "{id}" for row in id_meta.get("substitutions") or []), id_meta
 
-print("provider route slug identity v16 tests passed")
+print("provider route correlated identity placeholder tests passed")
