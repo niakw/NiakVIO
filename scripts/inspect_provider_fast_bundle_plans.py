@@ -32,8 +32,6 @@ def compact(value: str, limit: int = 900) -> str:
 
 
 def function_excerpt(text: str, name: str, limit: int = 1400) -> str:
-    # Bounded brace walk from the exact named function. It need not be a JS
-    # parser; this is diagnostics only and intentionally never mutates code.
     match = re.search(rf"(?:async\s+)?function\s+{re.escape(name)}\s*\([^)]*\)\s*\{{", text)
     if not match:
         return "<missing>"
@@ -82,8 +80,6 @@ def terminal_excerpt(text: str) -> str:
             candidates.append((match.start(), match.group(0)))
     if not candidates:
         return "<no-terminal-pattern>"
-    # The last ownership assignment/call is normally closest to the exported
-    # terminal wrapper. Print up to the last three for context.
     candidates.sort()
     return " || ".join(compact(value, 350) for _, value in candidates[-3:])
 
@@ -113,6 +109,7 @@ def main() -> int:
             failed.append(provider + ":bundle-missing")
             continue
         text = path.read_text(encoding="utf-8")
+
         plans = patch.get("search_request_plan") if isinstance(patch.get("search_request_plan"), list) else []
         expected_bases = [str(plan.get("base") or "").strip() for plan in plans if isinstance(plan, dict) and str(plan.get("base") or "").strip()]
         marker = '"searchRequestPlan"' in text
@@ -124,8 +121,43 @@ def main() -> int:
             f"bases={','.join(expected_bases)}",
             flush=True,
         )
+
+        value_plans = patch.get("provider_value_plan") if isinstance(patch.get("provider_value_plan"), list) else []
+        value_bases: list[str] = []
+        value_routes: list[str] = []
+        for plan in value_plans:
+            if not isinstance(plan, dict):
+                continue
+            base = str(plan.get("searchBase") or "").strip()
+            route = str(plan.get("searchRoute") or "").strip()
+            if base:
+                value_bases.append(base)
+            if route:
+                value_routes.append(route)
+            for step in plan.get("steps") or []:
+                if not isinstance(step, dict):
+                    continue
+                step_base = str(step.get("base") or "").strip()
+                step_route = str(step.get("route") or "").strip()
+                if step_base:
+                    value_bases.append(step_base)
+                if step_route:
+                    value_routes.append(step_route)
+        value_marker = '"providerValuePlan"' in text
+        projected_value_bases = [base for base in value_bases if base in text]
+        projected_value_routes = [route for route in value_routes if route in text]
+        print(
+            "FIELD_PROVIDER_FAST_VALUE_PLAN "
+            f"provider={provider} expected_value_plan={len(value_plans)} marker={str(value_marker).lower()} "
+            f"projected_bases={len(projected_value_bases)}/{len(value_bases)} "
+            f"projected_routes={len(projected_value_routes)}/{len(value_routes)} "
+            f"bases={','.join(value_bases)} routes={','.join(value_routes)}",
+            flush=True,
+        )
+
         positions = {
             "v16": marker_pos(text, "NIAKVIO_PROVIDER_EXECUTION_AUTHORITY_V16"),
+            "value": marker_pos(text, "_resolveProviderValuePlan(providerValueMeta"),
             "recipe": marker_pos(text, "_resolveApiRecipe(proofMeta"),
             "search": marker_pos(text, "_resolveSearchRequestPlan(proofMeta"),
             "family": marker_pos(text, 'if (family === "stremio-json")'),
@@ -137,16 +169,26 @@ def main() -> int:
             flush=True,
         )
         print(f"FIELD_PROVIDER_FAST_TERMINAL provider={provider} code={terminal_excerpt(text)}", flush=True)
-        for name in ("getStreams", "_spv4GetStreams", "_resolveSearchRequestPlan", "_resolveApiRecipe", "_substituteDomain"):
+        for name in (
+            "getStreams", "_spv4GetStreams", "_resolveProviderValuePlan",
+            "_resolveSearchRequestPlan", "_resolveApiRecipe", "_substituteDomain",
+        ):
             print(
                 f"FIELD_PROVIDER_FAST_FUNCTION provider={provider} name={name} code={function_excerpt(text, name)}",
                 flush=True,
             )
+
         if plans and (not marker or len(projected_bases) != len(expected_bases)):
             failed.append(provider + ":search-plan-not-projected")
+        if value_plans and (
+            not value_marker
+            or len(projected_value_bases) != len(value_bases)
+            or len(projected_value_routes) != len(value_routes)
+        ):
+            failed.append(provider + ":provider-value-plan-not-projected")
         if positions["v16"] >= 0:
-            ordered = [positions["recipe"], positions["search"], positions["family"]]
-            if all(value >= 0 for value in ordered) and ordered != sorted(ordered):
+            ordered = [value for value in (positions["value"], positions["recipe"], positions["search"], positions["family"]) if value >= 0]
+            if ordered != sorted(ordered):
                 failed.append(provider + ":v16-authority-order-invalid")
 
     if failed:
