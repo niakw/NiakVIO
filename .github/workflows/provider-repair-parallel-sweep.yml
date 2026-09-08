@@ -40,8 +40,6 @@ jobs:
           manifest = json.loads(Path("manifest.json").read_text(encoding="utf-8"))
           skip = json.loads(Path("automation/provider-repair-skip.json").read_text(encoding="utf-8"))
           excluded = {cid(value) for value in (skip.get("providers") or {}).keys()}
-          # Four deep pilots stay on their own diagnostic lane. Broad sweep must
-          # not hide their known residual failures inside aggregate concurrency.
           excluded.update({"animekai", "movies4u", "frenchstream", "mugiwarastream"})
 
           providers = []
@@ -55,10 +53,7 @@ jobs:
           groups = []
           for index in range(0, len(providers), 4):
               chunk = providers[index:index + 4]
-              groups.append({
-                  "id": f"g{index // 4 + 1:02d}",
-                  "providers": ",".join(chunk),
-              })
+              groups.append({"id": f"g{index // 4 + 1:02d}", "providers": ",".join(chunk)})
 
           print("groups=" + json.dumps(groups, separators=(",", ":")))
           print(f"provider_count={len(providers)}")
@@ -105,9 +100,10 @@ jobs:
             --attempts 3 \
             --workers 4 \
             --timeout 55 \
+            --defer-global-guard \
             "${args[@]}"
 
-      - name: Validate shared contracts and <=3 runtime plans
+      - name: Validate shared contracts and <=3 canonical runtime authorities
         if: always()
         run: |
           python tests/provider_execution_authority_v16_contract_test.py
@@ -150,5 +146,8 @@ jobs:
           echo "planned_providers=${{ needs.plan.outputs.provider_count }}"
           echo "planned_groups=${{ needs.plan.outputs.group_count }}"
           echo "prove_result=${{ needs.prove.result }}"
-          # Individual group artifacts/logs remain the proof authority. A red
-          # group does not cancel the rest of the 82-provider sweep.
+          echo "full_96_guard=DEFERRED_TO_CONSOLIDATED_CANDIDATE"
+          # Every group still enforces live upstream-positive preservation and
+          # canonical route/type/identity contracts. The expensive identical
+          # 96-provider non-network guard is intentionally run once after the
+          # recovered DATA is consolidated, before any promotion/publication.
