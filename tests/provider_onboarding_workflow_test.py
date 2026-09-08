@@ -6,7 +6,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 ADD = (ROOT / ".github/workflows/add-provider.yml").read_text(encoding="utf-8")
 BRANDING = (ROOT / ".github/workflows/provider-branding-assets.yml").read_text(encoding="utf-8")
-CORE = (ROOT / ".github/workflows/core-media-finalize-main.yml").read_text(encoding="utf-8")
+CORE = (ROOT / ".github/workflows/sync.yml").read_text(encoding="utf-8")
 ONBOARD = (ROOT / "scripts/add_provider.py").read_text(encoding="utf-8")
 ASSETS = (ROOT / "scripts/provider_branding_assets.py").read_text(encoding="utf-8")
 LEARNING = (ROOT / "scripts/run_brain_learning_queue.py").read_text(encoding="utf-8")
@@ -21,7 +21,9 @@ assert '".github/provider-onboarding/request.json"' in ADD
 for field in ("hub:", "direct:", "telegram:", "api:", "search_queries:", "types:", "languages:", "formats:"):
     assert field in ADD, field
 assert "group: niakvio-add-provider-publication-main" in ADD
-assert "group: nuvio-provider-publish-main" in CORE
+assert CORE.startswith("name: CORE - Verify & Publish")
+assert "group: provider-v3-core-" in CORE
+assert not (ROOT / ".github/workflows/core-media-finalize-main.yml").exists()
 assert "cancel-in-progress: true" in ADD
 assert "cancel-in-progress: true" in CORE
 assert "group: nuvio-provider-onboarding-stage-main" in ADD
