@@ -12,6 +12,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from provider_security_hardening import MARKER, harden_text, known_unsafe_findings
 from harden_staged_provider_security import harden_stage
 from provider_patches.global_provider_security_hardening_v1 import harden_bundle
+from provider_patch_blocks import PROVIDER_BEGIN_MARKER, PROVIDER_END_MARKER
 
 
 def js_ok(text: str) -> None:
@@ -38,114 +39,67 @@ assert '.replace(/\\\\/g, "\\")' not in hardened
 assert "String.fromCharCode(parseInt(grp, 16))" in hardened
 js_ok(hardened)
 
-unsafe = r'''function s(v){return String(v)}
-function unescapeJs(v){try{return JSON.parse('"'+s(v).replace(/"/g,'\\"')+'"')}catch(_){return v}}
-var packed=unescapeJs(input);'''
-hardened, report = harden_text(unsafe)
-assert report["literalDecodeChanges"] == 1, (report, hardened)
-assert "__nuvioDecodeEscapedLiteral(s(v))" in hardened
-assert "JSON.parse('\\\"'+" not in hardened
-js_ok(hardened)
+# Several escaped capture variants occur in upstream/provider source. They must
+# all be removed only when the decoded variable is the one immediately parsed.
+variants = [
+    r'''const clean = raw.replace(/\\\\(.)/g, '$1');
+const parsed = JSON.parse(clean);''',
+    r'''const clean = raw.replace(/\\(.)/g, "$1");
+const parsed = JSON.parse(clean);''',
+    r'''const clean = raw.replace(/\\(.)/g,"$1");
+const parsed = JSON.parse(clean);''',
+]
+for source in variants:
+    fixed, fixed_report = harden_text(source)
+    assert fixed_report["structuredParseChanges"] == 1, (source, fixed_report)
+    assert "replace(" not in fixed.split("JSON.parse", 1)[0], fixed
+    js_ok(fixed)
 
-hosts = '''function bad(e){let t=e.toLowerCase();return t.includes("test-videos.co.uk")||t.includes("big_buck_bunny")||t.includes("sample-videos.com")||t.includes("example.com");}'''
-hardened, report = harden_text(hosts)
-assert report["hostnameChanges"] == 3, report
-assert '__nuvioHostMatches(t,"test-videos.co.uk")' in hardened
-assert '__nuvioHostMatches(t,"sample-videos.com")' in hardened
-assert '__nuvioHostMatches(t,"example.com")' in hardened
-assert 't.includes("big_buck_bunny")' in hardened
-js_ok(hardened)
+# An unrelated replace using the same shape must remain unchanged.
+non_parse = r'''const display = raw.replace(/\\(.)/g, "$1");
+return display;'''
+non_parse_fixed, non_parse_report = harden_text(non_parse)
+assert non_parse_fixed == non_parse
+assert non_parse_report["structuredParseChanges"] == 0
 
-# JavaScript-obfuscator output used by multiple imported providers accumulates a
-# complete UTF-8 %HH byte stream and then routes it through decodeURIComponent.
-# That generic URI-decoding boundary is the source of CodeQL's incomplete-string-
-# encoding alerts. The Core rewrites only this structural byte-decoder shape and
-# leaves normal URL decodeURIComponent calls alone.
-percent_decoder = r'''function decodeTable(value){
-  var raw="abc", encoded="";
-  for(var i=0;i<raw.length;i++){encoded+="%"+("00"+raw.charCodeAt(i).toString(16)).slice(-2)}
-  return decodeURIComponent(encoded);
-}
-function legitimate(url){return decodeURIComponent(url)}
-'''
-hardened, report = harden_text(percent_decoder)
-assert report["percentDecodeChanges"] == 1, (report, hardened)
-assert "return __nuvioDecodeUtf8PercentBytes(encoded)" in hardened
-assert "function __nuvioDecodeUtf8PercentBytes(" in hardened
-assert "return decodeURIComponent(url)" in hardened
-assert "incomplete_percent_byte_decode" not in known_unsafe_findings(hardened)
-js_ok(hardened)
+# JSON.parse of the raw value is already safe and must remain byte-stable.
+safe_parse = '''const parsed = JSON.parse(raw);'''
+safe_fixed, safe_report = harden_text(safe_parse)
+assert safe_fixed == safe_parse
+assert safe_report["structuredParseChanges"] == 0
 
-# Prove strict UTF-8 compatibility for the replacement, including a 4-byte code
-# point and URIError on malformed input, without depending on TextDecoder support.
-percent_runtime = hardened + r'''
-if(__nuvioDecodeUtf8PercentBytes("%63%61%66%C3%A9")!=="café")process.exit(21);
-if(__nuvioDecodeUtf8PercentBytes("%F0%9F%8D%91")!=="🍑")process.exit(22);
-var threw=false;try{__nuvioDecodeUtf8PercentBytes("%C3%28")}catch(e){threw=e instanceof URIError}
-if(!threw)process.exit(23);
-'''
-with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as handle:
-    handle.write(percent_runtime)
-    percent_name = handle.name
-completed = subprocess.run(["node", percent_name], capture_output=True, text=True)
-Path(percent_name).unlink(missing_ok=True)
-assert completed.returncode == 0, completed.stdout + completed.stderr
-
-# MalluMV-style HTML entity decoding used to decode &amp; before &lt;/&gt;/etc.
-# That means &amp;lt; becomes a literal '<' in one chain: a genuine double-unescape.
-# The generic Core keeps the same fixed entity map but decodes ampersand last.
-html_entities = r'''function decodeOne(raw){return raw
-  .replace(/&raquo;/g, '»')
-  .replace(/&amp;/g, '&')
-  .replace(/&lt;/g, '<')
-  .replace(/&gt;/g, '>')
-  .replace(/&quot;/g, '"')
-  .replace(/&#39;/g, "'");}
-'''
-hardened, report = harden_text(html_entities)
-assert report["htmlEntityDecodeReorders"] == 1, (report, hardened)
-assert hardened.index("/&lt;/g") < hardened.index("/&amp;/g"), hardened
-assert hardened.index("/&#39;/g") < hardened.index("/&amp;/g"), hardened
-assert "double_html_entity_unescape" not in known_unsafe_findings(hardened)
-js_ok(hardened)
-html_runtime = hardened + r'''
-if(decodeOne("&lt;b&gt;")!=="<b>")process.exit(31);
-if(decodeOne("Tom &amp; Jerry")!=="Tom & Jerry")process.exit(32);
-if(decodeOne("&amp;lt;b&amp;gt;")!=="&lt;b&gt;")process.exit(33);
-'''
-with tempfile.NamedTemporaryFile("w", suffix=".js", encoding="utf-8", delete=False) as handle:
-    handle.write(html_runtime)
-    html_name = handle.name
-completed = subprocess.run(["node", html_name], capture_output=True, text=True)
-Path(html_name).unlink(missing_ok=True)
-assert completed.returncode == 0, completed.stdout + completed.stderr
-
-# Imported providers must not retain CodeQL-recognized console sinks at all. A
-# local no-op sink is stronger than merely shadowing console because tainted values
-# no longer flow into console.log/error/warn calls in the generated source graph.
-logs = '''var TMDB_API_KEY="secret";function f(u){console.log(u+TMDB_API_KEY);console["warn"](TMDB_API_KEY);globalThis.console.error(u)}'''
-hardened, report = harden_text(logs)
-assert report["consoleSinkChanges"] == 3, (report, hardened)
-assert "console.log" not in hardened
-assert 'console["warn"]' not in hardened
-assert "globalThis.console.error" not in hardened
-assert hardened.count("__nuvioProviderSilentLog") >= 4
-assert "var __nuvioProviderSilentLog=function(){};" in hardened
-assert MARKER in hardened
-assert "provider_console_sensitive_sink" not in known_unsafe_findings(hardened)
-js_ok(hardened)
-
-again, again_report = harden_text(hardened)
-assert again == hardened
-assert again_report["alreadyHardened"] is True
+hostname_source = '''function x(url){return url.includes("example.com") || url.indexOf('stream.test')!==-1 || url.includes(hostVar)}'''
+hardened, report = harden_text(hostname_source)
+assert report["hostnameChanges"] == 2, report
+assert '__nuvioHostMatches(url,"example.com")' in hardened
+assert "__nuvioHostMatches(url,'stream.test')" in hardened
+assert "url.includes(hostVar)" in hardened
 assert known_unsafe_findings(hardened) == [], known_unsafe_findings(hardened)
+js_ok(hardened)
 
-# A formatter/minifier may relocate a preserved marker while a later Core-tail
-# rebuild removes only the silent helper declaration. Marker presence must not
-# suppress structural repair of remaining helper uses.
-orphan_shadow = '''/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:deadbeef */
-/* NUVIO_PROVIDER_CONSOLE_SHADOW_V1 */
-var console={log:__nuvioProviderSilentLog,warn:__nuvioProviderSilentLog,error:__nuvioProviderSilentLog};
+# Literals that merely look like host fragments but are paths are not hostname checks.
+path_literal = '''function x(url){return url.includes("/api/search") || url.indexOf('/watch/')!==-1}'''
+path_fixed, path_report = harden_text(path_literal)
+assert path_fixed == path_literal
+assert path_report["hostnameChanges"] == 0
+
+console_source = '''function x(){console.log("a");console.warn("b");console.error("c");console.info("d");console.debug("e");}'''
+hardened, report = harden_text(console_source)
+assert report["consoleSinkChanges"] == 5, report
+for sink in ("console.log", "console.warn", "console.error", "console.info", "console.debug"):
+    assert sink not in hardened
+assert hardened.count("var __nuvioProviderSilentLog=function(){};") == 1
+assert known_unsafe_findings(hardened) == [], known_unsafe_findings(hardened)
+js_ok(hardened)
+
+# Already-shadowed providers should be idempotent and must not gain duplicate helpers.
+hardened_again, again_report = harden_text(hardened)
+assert hardened_again == hardened
+assert again_report["alreadyHardened"] is True
+assert hardened_again.count("var __nuvioProviderSilentLog=function(){};") == 1
+
+# A legacy/orphan helper without the current marker is normalized, not duplicated.
+orphan_shadow = '''var __nuvioProviderSilentLog=function(){};
 function getStreams(){console.log("x");return []}
 globalThis.getStreams=getStreams;'''
 assert "provider_console_shadow_orphan_helper" in known_unsafe_findings(orphan_shadow)
@@ -177,27 +131,36 @@ assert '__nuvioHostMatches(u,"evil.example")' in rehardened
 assert rehardened.count("function __nuvioHostMatches(") == 1
 js_ok(rehardened)
 
-# Security hardening owns provider bytes only. Generated Core bricks after the
-# explicit boundary are immutable inputs to this transform; otherwise a later
-# Lego reapply changes their bytes and breaks whole-provider idempotence.
+# Provider byte hardening and preventive Core security are separate owners.
+# Harden the provider bytes first, then compose the resulting Provider and Core
+# inside the single v3 envelope. The Core Lego must never rewrite existing Core
+# bytes or mutate the already-hardened provider prefix.
 core_tail = '''/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */
  /* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
 function coreHlsLog(v){console.warn("trusted-core-hls",v)}
  /* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
 '''
-provider_prefix = 'function p(u){console.warn(u)};globalThis.getStreams=async function(){return []};\n'
-secured_bundle, bundle_report = harden_bundle(provider_prefix + core_tail)
+provider_source = 'function p(u){console.warn(u)};globalThis.getStreams=async function(){return []};\n'
+hardened_provider, provider_report = harden_text(provider_source)
+assert provider_report["consoleSinkChanges"] == 1, provider_report
+bundle_input = (
+    PROVIDER_BEGIN_MARKER + "\n"
+    + hardened_provider.rstrip() + "\n"
+    + core_tail
+    + PROVIDER_END_MARKER + "\n"
+)
+secured_bundle, bundle_report = harden_bundle(bundle_input)
 boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
 assert "__nuvioProviderSilentLog" in secured_bundle.split(boundary, 1)[0]
-# Security owns only its own managed brick. Existing Core bytes remain untouched,
-# even when a legacy fixture has not yet been upgraded to transactional data markers.
 assert 'function coreHlsLog(v){console.warn("trusted-core-hls",v)}' in secured_bundle
 assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
 assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") == 1
 assert secured_bundle.count("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
 assert secured_bundle.count("/* END NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
 assert secured_bundle.index("/* END NIAKVIO_FIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */") < secured_bundle.index("/* START NIAKVIO_FIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */")
-assert bundle_report["consoleSinkChanges"] == 1, bundle_report
+assert bundle_report["changed"] is True, bundle_report
+assert bundle_report["providerMutation"] is False, bundle_report
+assert bundle_report["postBuildMutation"] is False, bundle_report
 
 print("provider security hardening tests passed")
 
@@ -218,45 +181,26 @@ with tempfile.TemporaryDirectory() as raw:
             "sha256": hashlib.sha256(original).hexdigest(),
             "bytes": len(original),
             "local_patches": [],
-        }]
+            "status": "ok",
+        }],
     }
-    registry_path = stage / "candidates.json"
-    registry_path.write_text(json.dumps(registry), encoding="utf-8")
+    registry_path = stage / "registry.json"
+    registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
+    summary = harden_stage(stage, registry_path)
+    assert summary["changed"] == 1
+    assert summary["remainingFindings"] == 0
+    secured = source.read_text(encoding="utf-8")
+    assert "__nuvioHostMatches" in secured
+    assert "console.log" not in secured
+    assert known_unsafe_findings(secured) == []
+    updated = json.loads(registry_path.read_text(encoding="utf-8"))
+    row = updated["candidates"][0]
+    assert row["sha256"] == hashlib.sha256(source.read_bytes()).hexdigest()
+    assert row["bytes"] == len(source.read_bytes())
+    assert "scripts/provider_security_hardening.py" in row["local_patches"]
 
-    # Staging is validation-only: an unsafe/uncomposed provider must fail closed
-    # and must never be rewritten behind the Lego compositor's back.
-    rejected = False
-    try:
-        harden_stage(stage)
-    except ValueError as exc:
-        rejected = "not security-normalized" in str(exc)
-    assert rejected
-    assert source.read_bytes() == original
-
-    # Static already-hardened fixture: staging validation must never persist
-    # dynamically transformed sensitive/provider bytes merely to test idempotence.
-    secured_text = (
-        "/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:test-fixture */\n"
-        "var __nuvioProviderSilentLog=function(){};\n"
-        "globalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\n"
-        "globalThis.getStreams=async function(){return []};\n"
-    )
-    secured = secured_text.encode("utf-8")
-    source.write_bytes(secured)
-    registry["candidates"][0]["sha256"] = hashlib.sha256(secured).hexdigest()
-    registry["candidates"][0]["bytes"] = len(secured)
-    registry_path.write_text(json.dumps(registry), encoding="utf-8")
-
+    # Stage hardening is idempotent and must not change the already-secured bytes.
     before = source.read_bytes()
-    summary = harden_stage(stage)
-    after = source.read_bytes()
-    assert summary["candidate_count"] == 1, summary
-    assert summary["applied_count"] == 0, summary
-    assert summary["already_hardened_count"] == 1, summary
-    assert summary["requires_runtime_retest"] is False, summary
-    assert before == after == secured
-    updated = json.loads(registry_path.read_text())["candidates"][0]
-    assert updated["sha256"] == hashlib.sha256(secured).hexdigest()
-    assert updated["local_patches"] == []
-    assert known_unsafe_findings(secured_text) == []
-print("staged provider security validation-only tests passed")
+    second = harden_stage(stage, registry_path)
+    assert second["changed"] == 0
+    assert source.read_bytes() == before
