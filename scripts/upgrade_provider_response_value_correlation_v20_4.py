@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
-"""V20.4: keep proof-backed POST constants and propagate response identities step-by-step.
+"""V20.4: preserve proof-backed form DATA and propagate response identity state.
 
-V20.3 proved that provider-value plans are now projected end-to-end, but live
-replay exposed two remaining generic dataflow gaps:
+This migration owns the remaining generic response-dataflow gaps exposed by live
+replay after V20.3:
 
-1. Small static form constants such as pagination values were falsely classified
-   as fixture residue when their text happened to equal season/episode numbers.
-   Known semantic keys already own season/episode abstraction; unrelated fields
-   must remain literal unless they contain a meaningful title/id/provider token.
-2. Provider-value execution froze the identity extracted from the initial search.
-   Multi-hop catalogues can return a slug from search and a different internal id
-   from the detail response. Later proof-correlated steps must consume the latest
-   safe response identity, not the initial value forever.
+- small static form constants must not become fixture residue just because their
+  value equals a season/episode number;
+- bounded title+season search expressions must remain reusable;
+- response-owned id/slug values must evolve after every proven step;
+- response-correlated composite path segments such as
+  ``slug-1-episode-1`` must remain executable instead of being discarded merely
+  because the whole path segment is not equal to one scalar placeholder.
 
-This migration is provider-agnostic and keeps all volatile/auth/session values
-fail-closed.
+All rules remain provider-agnostic. Volatile/auth/session values stay fail-closed.
 """
 from __future__ import annotations
 
@@ -28,14 +26,14 @@ import upgrade_provider_response_value_correlation_v20_3 as v203  # noqa: E402
 
 PROOF = v203.PROOF
 BASE = v203.BASE
+RECOVERY = v203.v202.legacy.RECOVERY
 MARKER = "PROVIDER_RESPONSE_VALUE_CORRELATION_V20_4"
 BASE_MARKER = "NIAKVIO_PROVIDER_RESPONSE_VALUE_STATEFUL_V20_4"
+RECOVERY_MARKER = "ROUTE_RECOVERY_RESPONSE_VALUE_DIAGNOSTICS_V20_4"
 
 patch_worker = v203.patch_worker
-patch_recovery = v203.patch_recovery
 patch_materializer = v203.patch_materializer
 validate_worker = v203.validate_worker
-validate_recovery = v203.validate_recovery
 validate_materializer = v203.validate_materializer
 
 
@@ -84,12 +82,52 @@ def _urlencoded_search_query_template(
     return None
 
 
-'''
-    text = _once(text, helper_anchor, helper + helper_anchor, "v20.4-query-template-helper")
+def _composite_provider_path_segment_template(
+    decoded: object,
+    fixture: dict[str, Any],
+    provider_values: set[str],
+    provider_slugs: set[str],
+) -> str | None:
+    """Abstract only bounded episode-shaped path segments backed by current DATA.
 
-    start = text.index("def _urlencoded_text_body_spec(")
-    end = text.index("\ndef derive_request_spec(", start)
-    section = text[start:end]
+    The runtime already owns ``{slug}``, ``{season}``, and ``{episode}``.
+    This helper deliberately does not generalize arbitrary mixed path strings.
+    """
+    value = str(decoded or "").strip()
+    season = str(fixture.get("season") or "").strip()
+    episode = str(fixture.get("episode") or "").strip()
+    if not value or not season or not episode or not season.isdigit() or not episode.isdigit():
+        return None
+
+    lower = value.casefold()
+    trusted_slugs = []
+    for slug in [*sorted(provider_slugs, key=len, reverse=True), *_slug_candidates(fixture)]:
+        slug_text = str(slug or "").strip().casefold()
+        if slug_text and slug_text not in trusted_slugs:
+            trusted_slugs.append(slug_text)
+
+    templates = (
+        ("-{season}-episode-{episode}", "-{season}-episode-{episode}"),
+        ("-saison-{season}-episode-{episode}", "-saison-{season}-episode-{episode}"),
+        ("-season-{season}-episode-{episode}", "-season-{season}-episode-{episode}"),
+    )
+    for slug in trusted_slugs:
+        for observed_suffix, template_suffix in templates:
+            observed = slug + observed_suffix.format(season=season, episode=episode)
+            if lower == observed:
+                return "{slug}" + template_suffix
+
+    for provider_id in sorted((str(v) for v in provider_values if v), key=len, reverse=True):
+        pid = provider_id.casefold()
+        for observed_suffix, template_suffix in templates:
+            observed = pid + observed_suffix.format(season=season, episode=episode)
+            if lower == observed:
+                return "{id}" + template_suffix
+    return None
+
+
+'''
+    text = _once(text, helper_anchor, helper + helper_anchor, "v20.4-proof-helpers")
 
     old_tokens = '''    fixture_tokens = unique([
         fixture.get("tmdbId"), fixture.get("title"), fixture.get("year"),
@@ -108,9 +146,10 @@ def _urlencoded_search_query_template(
         if len(str(token or "").strip()) >= 4
     ]
 '''
-    if section.count(old_tokens) != 1:
-        raise AssertionError(f"v20.4-form-static-token-scope: expected one anchor, got {section.count(old_tokens)}")
-    section = section.replace(old_tokens, new_tokens, 1)
+    count = text.count(old_tokens)
+    if count != 2:
+        raise AssertionError(f"v20.4-static-token-scope: expected two anchors, got {count}")
+    text = text.replace(old_tokens, new_tokens)
 
     old_placeholder = '''        placeholder = _request_scalar_placeholder(key, value, fixture, provider_values)
         if placeholder:
@@ -120,14 +159,75 @@ def _urlencoded_search_query_template(
             placeholder = _urlencoded_search_query_template(key, value, fixture)
         if placeholder:
 '''
-    if section.count(old_placeholder) != 1:
-        raise AssertionError(
-            f"v20.4-composite-query-template: expected one anchor, got {section.count(old_placeholder)}"
-        )
-    section = section.replace(old_placeholder, new_placeholder, 1)
-    text = text[:start] + section + text[end:]
+    count = text.count(old_placeholder)
+    if count != 2:
+        raise AssertionError(f"v20.4-search-query-template: expected two anchors, got {count}")
+    text = text.replace(old_placeholder, new_placeholder)
+
+    old_path = '''        elif decoded in provider_values:
+            placeholder = "{id}"
+        else:
+            for slug in _slug_candidates(fixture):
+                if canonical(decoded) == canonical(slug):
+                    placeholder = "{slug}"
+                    break
+'''
+    new_path = '''        elif decoded in provider_values:
+            placeholder = "{id}"
+        else:
+            for slug in _slug_candidates(fixture):
+                if canonical(decoded) == canonical(slug):
+                    placeholder = "{slug}"
+                    break
+            if not placeholder:
+                placeholder = _composite_provider_path_segment_template(
+                    decoded, fixture, provider_values, provider_slugs
+                )
+'''
+    text = _once(text, old_path, new_path, "v20.4-composite-provider-path")
+
+    old_correlation = '''        "providerValueCorrelation": bool(
+            provider_values and any(row.get("placeholder") in {"{id}", "{slug}"} for row in substitutions)
+        ),
+'''
+    new_correlation = '''        "providerValueCorrelation": bool(
+            provider_values and any(
+                "{id}" in str(row.get("placeholder") or "")
+                or "{slug}" in str(row.get("placeholder") or "")
+                for row in substitutions
+            )
+        ),
+'''
+    text = _once(text, old_correlation, new_correlation, "v20.4-composite-correlation")
+
     PROOF.write_text(text, encoding="utf-8")
     validate_proof(text)
+    return True
+
+
+def patch_recovery() -> bool:
+    v203.patch_recovery()
+    text = RECOVERY.read_text(encoding="utf-8")
+    if RECOVERY_MARKER in text:
+        validate_recovery(text)
+        return False
+    old = '''        "requestSpec": copy.deepcopy(request_spec),
+        "requestSpecReusable": bool(derivation.get("requestSpecReusable")),
+        "status": int(fetch.get("status") or 0),
+'''
+    new = '''        "requestSpec": copy.deepcopy(request_spec),
+        "requestSpecReusable": bool(derivation.get("requestSpecReusable")),
+        # ROUTE_RECOVERY_RESPONSE_VALUE_DIAGNOSTICS_V20_4
+        # proof_body_values is already redacted by the worker for sensitive keys.
+        "requestSpecSubstitutions": copy.deepcopy(derivation.get("requestSpecSubstitutions") or []),
+        "requestSpecResidue": copy.deepcopy(derivation.get("requestSpecResidue") or []),
+        "proofBodyKind": fetch.get("body_kind"),
+        "proofBodyValues": copy.deepcopy(fetch.get("body_values") or {}),
+        "status": int(fetch.get("status") or 0),
+'''
+    text = _once(text, old, new, "v20.4-recovery-diagnostics")
+    RECOVERY.write_text(text, encoding="utf-8")
+    validate_recovery(text)
     return True
 
 
@@ -244,12 +344,29 @@ def validate_proof(text: str | None = None) -> None:
     for needle in (
         MARKER,
         "def _urlencoded_search_query_template",
+        "def _composite_provider_path_segment_template",
         'return "{query} " + keyword + " {season}"',
         'if len(str(token or "").strip()) >= 4',
         "placeholder = _urlencoded_search_query_template(key, value, fixture)",
+        "placeholder = _composite_provider_path_segment_template(",
+        '"{slug}" in str(row.get("placeholder") or "")',
     ):
         if needle not in value:
             raise AssertionError(f"V20.4 proof missing {needle}")
+    if value.count("placeholder = _urlencoded_search_query_template(key, value, fixture)") != 2:
+        raise AssertionError("V20.4 must cover both form and urlencoded-text body paths")
+
+
+def validate_recovery(text: str | None = None) -> None:
+    v203.validate_recovery(text)
+    value = text if text is not None else RECOVERY.read_text(encoding="utf-8")
+    for needle in (
+        RECOVERY_MARKER,
+        '"requestSpecResidue": copy.deepcopy',
+        '"proofBodyValues": copy.deepcopy(fetch.get("body_values") or {})',
+    ):
+        if needle not in value:
+            raise AssertionError(f"V20.4 recovery diagnostics missing {needle}")
 
 
 def validate_base(text: str | None = None) -> None:
@@ -291,8 +408,8 @@ def main() -> int:
     validate_base()
     print(
         f"PROVIDER_RESPONSE_VALUE_CORRELATION_V20_4_OK changed={str(changed).lower()} "
-        "static_form_constants=1 composite_title_season_query=1 "
-        "stateful_response_identity=1 provider_specific_rules=0"
+        "static_form_constants=1 form_and_text_paths=1 composite_title_season_query=1 "
+        "composite_response_path=1 stateful_response_identity=1 provider_specific_rules=0"
     )
     return 0
 
