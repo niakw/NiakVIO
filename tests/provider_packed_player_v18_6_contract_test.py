@@ -21,10 +21,7 @@ for forbidden in ("mugiwara", "smoothpre", "ansembed", "jujutsu"):
 # A minimal Dean-Edwards-shaped fixture proves the decoder is structural. The
 # function body is deliberately inert: V18.6 parses only the argument payload and
 # dictionary and never executes eval or any upstream JavaScript.
-packed = (
-    "eval(function(p,a,c,k,e,d){return p}"
-    "('0:\\"1\\"',2,2,'file|https://cdn.example/video.m3u8'.split('|'),0,{}))"
-)
+packed = """eval(function(p,a,c,k,e,d){return p}('0:\"1\"',2,2,'file|https://cdn.example/video.m3u8'.split('|'),0,{}))"""
 program = """
 function _text(value){return String(value==null?'':value);}
 %s
