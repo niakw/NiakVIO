@@ -124,6 +124,22 @@ assert.equal(noInventedBluray.sourceType, null);
 assert.equal(normalizeSourceType("1080p"), null);
 assert.equal(normalizeSourceType("some provider label"), null);
 
+const v29Provider = { id: "kehflix", name: "Kehflix", languages: ["fr"] };
+for (const placeholder of ["Inconnue", "Unknown", "N/A"]) {
+  const row = presentStreamCandidate({
+    name: `Kehflix - ${placeholder}`,
+    title: `Kehflix - ${placeholder}`,
+    url: "https://media.example/master.m3u8",
+    quality: placeholder,
+  }, { title: "Interstellar", year: 2014, mediaType: "movie" }, v29Provider);
+  assert.equal(row.title, "Kehflix", row.title);
+  assert.equal(row.name, "Kehflix", row.name);
+  assert.equal(row.quality, null, JSON.stringify(row));
+}
+const v29FullHd = presentStreamCandidate({ name: "Kehflix", url: "https://media.example/a.mp4", quality: "1080p" }, { mediaType: "movie" }, v29Provider);
+assert.equal(v29FullHd.title, "Kehflix - 1080p");
+assert.equal(v29FullHd.name, "Kehflix - 1080p");
+
 assert.equal(normalizeLanguage({ language: "fr" }, vfProvider), "VF");
 assert.equal(normalizeLanguage({ language: "VFQ" }, vfProvider), "VFQ");
 assert.equal(normalizeLanguage({ language: "MULTI" }, voProvider), "MULTI");
