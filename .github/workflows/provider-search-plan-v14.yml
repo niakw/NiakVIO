@@ -1,11 +1,6 @@
-name: TEST - Provider Search Request Plan V14
+name: TEST - Provider Search Request Plan V14 (legacy diagnostic)
 
 on:
-  push:
-    branches:
-      - workbench/route-recognition-v14-search-plan
-    paths:
-      - '.github/triggers/provider-search-plan-v14.json'
   workflow_dispatch:
 
 permissions:
@@ -28,7 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.sha }}
+          ref: main
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
@@ -39,7 +34,7 @@ jobs:
           package-manager-cache: false
       - name: Install locked tooling
         run: npm ci --ignore-scripts --no-audit --no-fund
-      - name: Prove V14 contract before network
+      - name: Prove historical V14 contract before network
         run: |
           set -euo pipefail
           python -m py_compile \
@@ -48,7 +43,7 @@ jobs:
             scripts/merge_provider_repair_report_v6.py
           python tests/provider_search_request_plan_v14_contract_test.py
           python tests/provider_repair_pipeline_v6_contract_test.py
-      - name: Run V14 targeted proof with whole-portfolio preservation
+      - name: Run V14 targeted diagnostic only
         run: |
           python scripts/run_provider_repair_pipeline_v6.py \
             --mode repair \
