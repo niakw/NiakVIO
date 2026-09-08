@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import provider_route_proof as proof  # noqa: E402
-import upgrade_provider_response_value_correlation_v20_1 as v20  # noqa: E402
+import upgrade_provider_response_value_correlation_v20_2 as v20  # noqa: E402
 
 
 # The migration must be idempotent and all owners must retain the V20 contract.
@@ -32,8 +32,6 @@ fixture = {
 }
 task = {"fixture": fixture}
 
-# Numeric provider id observed in a prior response may feed an arbitrary safe
-# provider query parameter. The request, not the parameter name, proves dataflow.
 route, meta = proof.derive_observed_route(
     {
         "url": "https://example.invalid/engine/ajax/manga_episodes_api.php?id=1497198",
@@ -49,8 +47,6 @@ route, meta = proof.derive_observed_route(
 assert route == "/engine/ajax/manga_episodes_api.php?id={id}", (route, meta)
 assert meta["providerValueCorrelation"] is True, meta
 
-# A composite catalogue slug obtained from an HTML href remains distinct from
-# the numeric provider id and can carry season/episode identity downstream.
 route, meta = proof.derive_observed_route(
     {
         "url": "https://example.invalid/anime/93-jujutsu-kaisen-1/saison-1/episode-1.html",
@@ -70,8 +66,6 @@ assert route == "/anime/{slug}/saison-1/episode-1.html" or route == "/anime/{slu
 assert meta["providerValueCorrelation"] is True, meta
 assert "{slug}" in route, route
 
-# Query values embedded in a prior HTML iframe may be correlated even when the
-# site's field is not literally named id; fixed control values remain literal.
 route, meta = proof.derive_observed_route(
     {
         "url": "https://example.invalid/?trembed=0&trid=48062&trtype=2",
@@ -87,7 +81,6 @@ route, meta = proof.derive_observed_route(
 assert route == "/?trembed=0&trid={id}&trtype=2", (route, meta)
 assert meta["providerValueCorrelation"] is True, meta
 
-# Authentication/expiry/session values are never promoted from response hints.
 assert proof.response_value_hints({
     "response_value_hints": [
         {"key": "token", "value": "abcdef123456"},
@@ -96,8 +89,6 @@ assert proof.response_value_hints({
     ]
 }) == [{"key": "slug", "value": "safe-catalogue-value"}]
 
-# V11 external identity ownership must survive V20: an IMDb-shaped value remains
-# {imdbId} and must never collapse into a provider-native {id}.
 imdb_fixture = dict(fixture)
 imdb_fixture["imdbId"] = "tt12345678"
 imdb_route, imdb_meta = proof.derive_observed_route(
@@ -121,15 +112,21 @@ recovery_text = (ROOT / "scripts" / "recover_provider_routes_from_upstreams.py")
 materializer_text = (ROOT / "scripts" / "materialize_provider_v3_all.py").read_text(encoding="utf-8")
 
 assert "function _spv20ProviderValuesFromHtml" in base_text
-assert "providerSlug: providerValues.slug || providerValues.id" in base_text
+assert "NIAKVIO_PROVIDER_RESPONSE_VALUE_CORRELATION_V20_2" in base_text
+assert "providerSlug: providerValues.slug || providerValues.id || providerId" in base_text
+assert "/\\{(?:id|slug)\\}/i.test(stepRoute)" in base_text
 assert "/episode/[^?#/]*-(?:saison-)?0*" in base_text
 assert "NUVIO_PROVIDER_RESPONSE_VALUE_CORRELATION_V20" in worker_text
 assert "ROUTE_RECOVERY_RESPONSE_VALUE_CORRELATION_V20" in recovery_text
 assert "PROVIDER_RESPONSE_VALUE_CORRELATION_V20" in materializer_text
 
-# The common migration must remain provider-agnostic.
-migration_text = (ROOT / "scripts" / "upgrade_provider_response_value_correlation_v20_1.py").read_text(encoding="utf-8").casefold()
+# V18.4 JSON-text decoding and its sanitized trace must survive V20.2.
+assert "NIAKVIO_PROVIDER_CORRELATED_VALUE_JSON_TEXT_V18_4" in base_text
+assert "function _spv184Trace" in base_text
+assert "_spv20ProviderValuesFromJson(JSON.parse(rawSearchValue), meta)" in base_text
+
+migration_text = (ROOT / "scripts" / "upgrade_provider_response_value_correlation_v20_2.py").read_text(encoding="utf-8").casefold()
 for forbidden in ("animesama", "animevostfr", "french-manga", "movieblast", "animezey", "cineby"):
     assert forbidden not in migration_text, forbidden
 
-print("provider response-value correlation V20.1 tests passed")
+print("provider response-value correlation V20.2 tests passed")
