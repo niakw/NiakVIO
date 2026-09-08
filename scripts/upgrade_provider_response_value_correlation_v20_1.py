@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""V20.1: structural response-value correlation after the canonical proof migrations.
+"""V20.1: structural response-value correlation after canonical proof migrations.
 
-The first V20 migration assumed historical text layouts in both route proof and
-materialization. The current repair chain applies external-identity V11 and the
-V18 provider-value plan before live census, so V20 composes semantically with those
-owners instead of requiring their obsolete source text.
+V20 originally assumed historical text layouts in proof/materialization and used a
+single-anchor helper for two intentionally identical ProviderBase value maps. The
+current repair chain applies V11/V18 before live census, so this owner composes with
+those owners while keeping V20 provider-agnostic.
 
-Provider-agnostic invariants:
+Invariants:
 - safe response values are hints only; exact later request consumption is required;
 - auth/session/signature/volatile values remain non-reusable;
 - IMDb-shaped external identities remain external identities, never provider ids;
 - href/query-derived slugs remain {slug}; other safe correlated values become {id};
-- V18 materializers that already copy structured steps without an id-only filter
-  need no destructive rewrite; an id-only filter, when present, is widened to slug;
+- V18 materializers already copying structured steps are left non-destructively open;
+- ProviderBase's two intentional recipe value maps are patched deterministically;
 - no provider hostname, id, title, selector or route is encoded here.
 """
 from __future__ import annotations
@@ -168,9 +168,8 @@ def patch_materializer() -> bool:
             "v20.1-materializer-id-or-slug",
         )
     else:
-        # Current V18 materialization copies the proof-owned structured step rows
-        # without an id-only filter. That is already slug-safe; mark the semantic
-        # composition rather than introducing a new restriction just for V20.
+        # Current V18 materialization already copies the proof-owned structured
+        # step rows without an id-only filter. Keep that open semantic projection.
         anchor = '        # PROVIDER_CORRELATED_VALUE_PLAN_V18\n        "providerValuePlan": [\n'
         text = _once(
             text,
@@ -194,9 +193,33 @@ def validate_materializer(text: str | None = None) -> None:
         raise AssertionError("V20.1 materializer retains an id-only provider-value step filter")
 
 
+def patch_base() -> bool:
+    """Run canonical V20 Base patch with its intentional two-map precondition.
+
+    Legacy V20 calls `once()` twice on the same ProviderBase mapping. Before the
+    first call there are exactly two copies by design, so strict count==1 aborts.
+    Permit count==2 only for that first labelled operation; after one replacement,
+    the second canonical call sees exactly one remaining copy and stays strict.
+    """
+    original_once = legacy.once
+
+    def compatible_once(text: str, old: str, new: str, label: str) -> str:
+        if label == "v20-base-recipe-url-slug":
+            count = text.count(old)
+            if count != 2:
+                raise AssertionError(f"{label}: expected two intentional anchors, got {count}")
+            return text.replace(old, new, 1)
+        return original_once(text, old, new, label)
+
+    legacy.once = compatible_once
+    try:
+        return legacy.patch_base()
+    finally:
+        legacy.once = original_once
+
+
 patch_worker = legacy.patch_worker
 patch_recovery = legacy.patch_recovery
-patch_base = legacy.patch_base
 validate_worker = legacy.validate_worker
 validate_recovery = legacy.validate_recovery
 validate_base = legacy.validate_base
@@ -212,7 +235,7 @@ def main() -> int:
     print(
         f"PROVIDER_RESPONSE_VALUE_CORRELATION_V20_1_OK changed={str(changed).lower()} "
         "structural_proof_patch=1 external_identity_preserved=1 materializer_composed=1 "
-        "safe_query_dataflow=1 provider_specific_rules=0"
+        "base_duplicate_maps_composed=1 safe_query_dataflow=1 provider_specific_rules=0"
     )
     return 0
 
