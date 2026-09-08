@@ -15,6 +15,7 @@ sys.path.insert(0, str(SCRIPTS))
 from apply_provider_overrides import apply_overrides
 from provider_base_store import CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS, canonical_id, requires_clean_reconstruction, resolve_runtime_base
 from provider_patch_blocks import begin_marker, end_marker, owned_span, validate_managed_fixes
+from provider_security_hardening import assert_hardened, harden_bytes
 
 MANIFEST = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 PROVENANCE = json.loads((ROOT / "PROVENANCE.json").read_text(encoding="utf-8"))
@@ -153,6 +154,26 @@ def audit_composed(provider_id: str, first_text: str, second_text: str, records:
     return errors, paths
 
 
+def published_fixed_point(provider_id: str, first_text: str) -> tuple[str, list[dict]]:
+    """Replay the exact deterministic transform that owns published JS bytes.
+
+    Published bundles are Core-composed first and then provider-security hardened.
+    The portfolio fixed point must therefore compare F(x)=security(Core(x)) with x,
+    not the intermediate Core(x) state. Otherwise every legitimate Core console
+    sink appears to regress from the final silent security sink on reapplication.
+    """
+    composed, records = apply_overrides(
+        provider_id,
+        first_text.encode("utf-8"),
+        phase="discovery",
+    )
+    composed_bytes = composed if isinstance(composed, bytes) else str(composed).encode("utf-8")
+    hardened, _security_report = harden_bytes(composed_bytes)
+    hardened_text = hardened.decode("utf-8", errors="strict")
+    assert_hardened(hardened_text)
+    return hardened_text, records
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -205,12 +226,7 @@ def main() -> int:
                 continue
             first_text = target.read_text(encoding="utf-8", errors="strict")
             try:
-                second, records = apply_overrides(
-                    provider_id,
-                    first_text.encode("utf-8"),
-                    phase="discovery",
-                )
-                second_text = second.decode("utf-8", errors="strict") if isinstance(second, bytes) else str(second)
+                second_text, records = published_fixed_point(provider_id, first_text)
                 errors, record_paths = audit_composed(provider_id, first_text, second_text, records)
                 portfolio_errors.extend(errors)
                 fix_ids = validate_managed_fixes(first_text)
