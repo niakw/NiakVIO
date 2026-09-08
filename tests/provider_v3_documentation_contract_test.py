@@ -15,14 +15,17 @@ upstreams = (ROOT / "UPSTREAMS.md").read_text(encoding="utf-8")
 model = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text(encoding="utf-8"))
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
+# Human documentation is allowed to evolve its prose. Bind this check to the
+# actual architecture concepts/markers rather than one exact English label.
 required_architecture = (
     "ProviderBase v3",
     "provider-bases/",
-    "Provider DATA",
-    "Provider Lego",
-    "Core Lego",
-    "ProviderBase immuable",
+    "DATA structurée",
+    "Lego `PROVIDER.*`",
+    "Lego `CORE.*`",
+    "NIAKVIO_PROVIDER_BASE_OWNED_V3",
     "CORE - Verify & Publish",
+    ".github/workflows/sync.yml",
     "Quick",
     "Deep",
     "TV Android",
