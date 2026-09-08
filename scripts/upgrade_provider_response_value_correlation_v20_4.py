@@ -205,10 +205,20 @@ function _spv204ResponseProviderValues(value, base, meta) {
 '''
     text = _once(text, old_values, new_values, "v20.4-mutable-provider-values")
 
+    for stage in ("step_shape_rejected", "step_url_empty", "step_fetch", "step_response"):
+        text = _once(
+            text,
+            f'_spv184Trace("{stage}", mediaType, providerId, stepIndex, stepRoute);',
+            f'_spv184Trace("{stage}", mediaType, values.providerId, stepIndex, stepRoute);',
+            f"v20.4-trace-current-id-{stage}",
+        )
+
     old_payload = '''        const payload = await _recipePayload(stepUrl, {}, stepSpec, values);
+        _spv184Trace("step_response", mediaType, values.providerId, stepIndex, stepRoute);
         let urls = [];
 '''
     new_payload = '''        const payload = await _recipePayload(stepUrl, {}, stepSpec, values);
+        _spv184Trace("step_response", mediaType, values.providerId, stepIndex, stepRoute);
         const nextProviderValues = _spv204ResponseProviderValues(
           payload.value,
           payload.base || stepUrl,
@@ -253,6 +263,7 @@ def validate_base(text: str | None = None) -> None:
         "providerId: nextProviderValues.id || values.providerId",
         "providerSlug: nextProviderValues.slug || values.providerSlug",
         "const idCounts = new Map();",
+        '_spv184Trace("step_fetch", mediaType, values.providerId, stepIndex, stepRoute);',
     ):
         if needle not in value:
             raise AssertionError(f"V20.4 ProviderBase missing {needle}")
