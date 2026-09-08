@@ -87,30 +87,20 @@ function _spv188PlayerForm(html, pageUrl) {
 '''
     text = once(text, anchor, helper + anchor, "v18.8-form-helper")
 
-    old_text = '''      let urls = [];
-      if (contentType.includes("application/json")) {
-        const json = await response.json();
-        urls = _sourceUrls(json, responseUrl);
-      } else {
-        const playerText = await response.text();
-        const decodedPlayerText = _spv186UnpackPackedPlayer(playerText);
-        urls = _extractUrls(decodedPlayerText, responseUrl);
-      }
-      const direct = urls.filter(_directMedia);
-'''
-    new_text = '''      let urls = [];
-      let playerText = "";
-      if (contentType.includes("application/json")) {
-        const json = await response.json();
-        urls = _sourceUrls(json, responseUrl);
-      } else {
-        playerText = await response.text();
-        const decodedPlayerText = _spv186UnpackPackedPlayer(playerText);
-        urls = _extractUrls(decodedPlayerText, responseUrl);
-      }
-      const direct = urls.filter(_directMedia);
-'''
-    text = once(text, old_text, new_text, "v18.8-retain-player-html")
+    # V18.7 already edits the lower part of this crawl block, so keep these
+    # V18.6 anchors deliberately narrow and independent of downstream changes.
+    text = once(
+        text,
+        "      let urls = [];\n      if (contentType.includes(\"application/json\")) {\n",
+        "      let urls = [];\n      let playerText = \"\";\n      if (contentType.includes(\"application/json\")) {\n",
+        "v18.8-declare-player-html",
+    )
+    text = once(
+        text,
+        "        const playerText = await response.text();\n",
+        "        playerText = await response.text();\n",
+        "v18.8-retain-player-html",
+    )
 
     old_handoff = '''      if (direct.length) {
         streams.push(..._streams(direct, responseUrl));
@@ -173,6 +163,7 @@ def validate(text: str | None = None) -> None:
         '!== "F1"',
         "target.origin !== page.origin",
         'params.has("file_code")',
+        'let playerText = "";',
         "const formRequest = playerText ? _spv188PlayerForm(playerText, responseUrl) : null;",
         'method: "POST"',
         '"Content-Type": "application/x-www-form-urlencoded"',
