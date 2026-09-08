@@ -1,18 +1,13 @@
 #!/usr/bin/env python3
-"""Provider Value Plan V18.1: accept provider-native JSON slug identities.
+"""Provider Value Plan V18.1: select provider-native JSON identities deterministically.
 
-Some structured search APIs identify the matched catalogue row with a slug rather
-than a numeric id. Route recovery already normalizes the later correlated request
-to {id}; V18.1 completes the runtime identity bridge by accepting slug-shaped
-JSON fields only after a strict title score and bounded safe-character validation.
+A positive structured search response can expose several labels plus one provider
+id/slug. Selection must score every known label, require a strong identity match,
+and then keep the highest-scoring row that also carries a bounded safe identity.
 
-Provider search rows can expose several simultaneous identity labels (for example
-one display label plus a more exact matched label). The runtime must score every
-known semantic label and keep the strongest score rather than trusting the first
-non-empty field. A provider value is still selected only when the resulting score
-is >= 90. HTML data-slug inference remains intentionally excluded.
-
-This is a data-shape capability, not a provider or host exception.
+The implementation intentionally avoids spread-call/first-label shortcuts so the
+same deterministic loop works across the supported JavaScript runtimes. No
+provider ids, hosts, routes or fixture titles are encoded.
 """
 from pathlib import Path
 
@@ -36,31 +31,70 @@ def patch() -> bool:
     if "NIAKVIO_PROVIDER_BASE_CORRELATED_VALUE_PLAN_V18" not in text:
         raise AssertionError("V18.1 requires V18")
 
-    old_label = '''      score: _spv4TitleScore(
+    old = r'''function _spv18ProviderIdFromJson(value, meta) {
+  const rows = _spv4JsonRows(value, [])
+    .map(row => ({
+      row,
+      score: _spv4TitleScore(
         _spv4Scalar(row.title) || _spv4Scalar(row.name) ||
         _spv4Scalar(row.original_title) || _spv4Scalar(row.post_title) ||
         _spv4Scalar(row.label) || "",
         meta
       )
+    }))
+    .filter(item => item.score >= 90)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 12);
+  for (const item of rows) {
+    const row = item.row || {};
+    for (const key of ["id","ID","_id","media_id","post_id","anime_id","movie_id","series_id","show_id"]) {
+      const value = _spv4Scalar(row[key]);
+      if (value && value.length <= 160 && /^[A-Za-z0-9._~-]+$/.test(value)) return value;
+    }
+  }
+  return "";
+}
 '''
-    new_label = '''      score: Math.max(
-        0,
-        ...[
-          row.title, row.name, row.original_title, row.post_title, row.label,
-          row.anime, row.movie, row.series, row.show, row.matched,
-          row.display_name, row.displayName
-        ]
-          .map(_spv4Scalar)
-          .filter(Boolean)
-          .map(label => _spv4TitleScore(label, meta))
-      )
+    new = r'''function _spv18ProviderIdFromJson(value, meta) {
+  /* NIAKVIO_PROVIDER_CORRELATED_VALUE_PLAN_V18_1 */
+  const labelKeys = [
+    "title","name","original_title","post_title","label","anime",
+    "movie","series","show","matched","display_name","displayName"
+  ];
+  const identityKeys = [
+    "id","ID","_id","media_id","post_id","anime_id","movie_id",
+    "series_id","show_id","slug","provider_slug","seo_slug"
+  ];
+  let bestScore = -1;
+  let bestIdentity = "";
+  const rows = _spv4JsonRows(value, []).slice(0, 300);
+  for (const row of rows) {
+    if (!row || typeof row !== "object") continue;
+    let rowScore = 0;
+    for (const key of labelKeys) {
+      const label = _spv4Scalar(row[key]);
+      if (!label) continue;
+      rowScore = Math.max(rowScore, _spv4TitleScore(label, meta));
+    }
+    if (rowScore < 90) continue;
+    let identity = "";
+    for (const key of identityKeys) {
+      const candidate = _spv4Scalar(row[key]);
+      if (candidate && candidate.length <= 160 && /^[A-Za-z0-9._~-]+$/.test(candidate)) {
+        identity = candidate;
+        break;
+      }
+    }
+    if (!identity) continue;
+    if (rowScore > bestScore) {
+      bestScore = rowScore;
+      bestIdentity = identity;
+    }
+  }
+  return bestIdentity;
+}
 '''
-    text = once(text, old_label, new_label, "v18.1-json-provider-title-labels")
-
-    old_keys = 'for (const key of ["id","ID","_id","media_id","post_id","anime_id","movie_id","series_id","show_id"]) {'
-    new_keys = '/* NIAKVIO_PROVIDER_CORRELATED_VALUE_PLAN_V18_1 */\n    for (const key of ["id","ID","_id","media_id","post_id","anime_id","movie_id","series_id","show_id","slug","provider_slug","seo_slug"]) {'
-    text = once(text, old_keys, new_keys, "v18.1-json-provider-slug")
-
+    text = once(text, old, new, "v18.1-json-provider-identity-selector")
     BASE.write_text(text, encoding="utf-8")
     validate(text)
     return True
@@ -71,23 +105,30 @@ def validate(text: str | None = None) -> None:
     if value.count(MARKER) != 1:
         raise AssertionError(f"V18.1 marker count={value.count(MARKER)}")
     for needle in (
+        '"anime",',
+        '"matched",',
         '"slug","provider_slug","seo_slug"',
-        "row.anime, row.movie, row.series, row.show, row.matched",
-        ".map(label => _spv4TitleScore(label, meta))",
-        "score: Math.max(",
-        ".filter(item => item.score >= 90)",
-        "/^[A-Za-z0-9._~-]+$/.test(value)",
+        "const rows = _spv4JsonRows(value, []).slice(0, 300);",
+        "rowScore = Math.max(rowScore, _spv4TitleScore(label, meta));",
+        "if (rowScore < 90) continue;",
+        "/^[A-Za-z0-9._~-]+$/.test(candidate)",
+        "return bestIdentity;",
     ):
         if needle not in value:
             raise AssertionError(f"V18.1 missing {needle}")
+    function_start = value.index("function _spv18ProviderIdFromJson")
+    function_end = value.index("function _spv18ProviderIdFromHtml", function_start)
+    function = value[function_start:function_end]
+    if "..." in function:
+        raise AssertionError("V18.1 identity selector must not use spread syntax")
 
 
 def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed={str(changed).lower()} "
-        "scored_json_slug_identity=1 all_identity_labels_scored=1 bounded_charset=1 "
-        "html_slug_inference=0 provider_specific_rules=0"
+        "scored_json_slug_identity=1 deterministic_best_row=1 bounded_charset=1 "
+        "spread_calls=0 html_slug_inference=0 provider_specific_rules=0"
     )
     return 0
 
