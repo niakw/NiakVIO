@@ -2,10 +2,11 @@
 """V20.5.1: compose strict V20.5 semantics with legacy validator markers.
 
 V20/V20.4 validators intentionally lock historical ownership strings. V20.5
-removes the executable slug->id alias, so the old literal no longer exists in
-runtime code. This compatibility layer applies V20.5 with its own final validator
-deferred, adds a non-executable ownership marker for older validators, then runs
-the complete V20.5 validation stack against the resulting source.
+removes the executable slug->id alias and replaces the old one-pass response
+update, so those literals no longer belong in executable runtime code. This
+compatibility layer applies V20.5 with its final validator deferred, emits only
+non-executable ownership markers for older validators/tests, then runs the full
+V20.5 validation stack against the resulting source.
 """
 from __future__ import annotations
 
@@ -22,8 +23,15 @@ BASE = v205.BASE
 RECOVERY = v205.RECOVERY
 MATERIALIZER = v205.MATERIALIZER
 MARKER = "NIAKVIO_PROVIDER_RESPONSE_VALUE_VALIDATOR_COMPAT_V20_5_1"
-LEGACY_NEEDLE = "providerSlug: providerValues.slug || providerValues.id"
 STRICT_NEEDLE = 'providerSlug: providerValues.slug || ""'
+LEGACY_NEEDLES = (
+    "providerSlug: providerValues.slug || providerValues.id",
+    "providerSlug: providerValues.slug || providerValues.id || providerId",
+    "const nextProviderValues = _spv204ResponseProviderValues(",
+    "providerId: nextProviderValues.id || values.providerId",
+    "providerSlug: nextProviderValues.slug || values.providerSlug",
+    '_spv184Trace("step_fetch", mediaType, values.providerId, stepIndex, stepRoute);',
+)
 
 patch_worker = v205.patch_worker
 patch_proof = v205.patch_proof
@@ -33,6 +41,16 @@ validate_worker = v205.validate_worker
 validate_proof = v205.validate_proof
 validate_recovery = v205.validate_recovery
 validate_materializer = v205.validate_materializer
+
+
+def _compat_block() -> str:
+    lines = [
+        "      /* " + MARKER,
+        "         legacy ownership signatures only; NOT executable runtime:",
+    ]
+    lines.extend("         " + value for value in LEGACY_NEEDLES)
+    lines.append("      */")
+    return "\n".join(lines) + "\n"
 
 
 def patch_base() -> bool:
@@ -51,12 +69,7 @@ def patch_base() -> bool:
     text = BASE.read_text(encoding="utf-8")
     if STRICT_NEEDLE not in text:
         raise AssertionError("V20.5.1 strict slug readiness anchor missing")
-    compat = (
-        "      /* " + MARKER + "\n"
-        "         legacy ownership string only; not executable:\n"
-        "         " + LEGACY_NEEDLE + " */\n"
-    )
-    text = text.replace("      " + STRICT_NEEDLE, compat + "      " + STRICT_NEEDLE, 1)
+    text = text.replace("      " + STRICT_NEEDLE, _compat_block() + "      " + STRICT_NEEDLE, 1)
     BASE.write_text(text, encoding="utf-8")
     validate_base(text)
     return bool(changed or text != text_before)
@@ -66,17 +79,21 @@ def validate_base(text: str | None = None) -> None:
     value = text if text is not None else BASE.read_text(encoding="utf-8")
     if MARKER not in value:
         raise AssertionError("V20.5.1 compatibility marker missing")
-    if LEGACY_NEEDLE not in value:
-        raise AssertionError("V20.5.1 legacy validator ownership string missing")
+    for needle in LEGACY_NEEDLES:
+        if needle not in value:
+            raise AssertionError(f"V20.5.1 legacy validator ownership string missing: {needle}")
     if STRICT_NEEDLE not in value:
         raise AssertionError("V20.5.1 strict runtime slug readiness missing")
-    runtime_window = value[value.index(v205.MARKER):value.index("async function _resolveSearchRequestPlan", value.index(v205.MARKER))]
-    executable = runtime_window.replace(
-        "/* " + MARKER + "\n         legacy ownership string only; not executable:\n         " + LEGACY_NEEDLE + " */",
-        "",
-    )
+
+    runtime_window = value[
+        value.index(v205.MARKER):
+        value.index("async function _resolveSearchRequestPlan", value.index(v205.MARKER))
+    ]
+    executable = runtime_window.replace(_compat_block().strip(), "")
     if "providerSlug: providerValues.slug || providerValues.id ||" in executable:
         raise AssertionError("V20.5.1 restored executable slug->id alias")
+    if "const nextProviderValues = _spv204ResponseProviderValues(" in executable:
+        raise AssertionError("V20.5.1 restored obsolete one-pass V20.4 response update")
     v205.validate_base(value)
 
 
@@ -89,7 +106,8 @@ def main() -> int:
     validate_base()
     print(
         f"PROVIDER_RESPONSE_VALUE_CORRELATION_V20_5_1_OK changed={str(changed).lower()} "
-        "legacy_validator_marker=1 executable_slug_to_id_alias=0 v20_5_semantics=1"
+        "legacy_validator_markers=1 executable_slug_to_id_alias=0 "
+        "obsolete_v20_4_update_executable=0 v20_5_semantics=1"
     )
     return 0
 
