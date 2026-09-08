@@ -7,9 +7,8 @@ variant uses the same origin and opaque id under /v/. This capability is bounded
 same-origin and data-independent: it contains no provider ids, hosts or fixture
 names and never treats the variant itself as playable media.
 
-The canonical /v/<opaque-id> representation is now scheduled before the landing
-representation, matching the generic resolver behavior proved by upstream
-positive fixtures while preserving the original URL as bounded fallback.
+The canonical /v/<opaque-id> representation is scheduled before the landing
+representation while the original URL remains a bounded fallback.
 
 V18.8 is chained here because it operates on the same canonical player response:
 a bounded same-origin hidden-form handoff is attempted only after direct and
@@ -113,8 +112,9 @@ function _spv187QueueScore(url) {
         streams.push(..._streams(direct, responseUrl));
         continue;
       }
-      // Preserve the landing URL as fallback, but always prioritize the same
-      // opaque id under the canonical /v/ representation when structurally safe.
+      // The same opaque player id is often exposed under a landing/embed path
+      // and a canonical /v/ player path. Try only this bounded same-origin
+      // representation change; it does not consume recursive crawl depth.
       for (const variant of _spv187PlayerRouteVariants(responseUrl)) {
         if (!seen.has(variant)) queue.push({ url: variant, depth: row.depth, referer: responseUrl });
       }
