@@ -30,6 +30,10 @@ def cid(value: object) -> str:
     return str(value or "").strip().casefold().replace("_", "-")
 
 
+def identity_safe(row: dict[str, Any]) -> bool:
+    return int(row.get("contradictions") or 0) == 0 and str(row.get("status") or "") != "wrong_content"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--recovery", type=Path, required=True)
@@ -58,9 +62,14 @@ def main() -> int:
     by_provider: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in rows:
         by_provider[cid(row.get("provider_id"))].append(row)
-    playable = sorted(pid for pid, vals in by_provider.items() if any(int(v.get("playable") or 0) > 0 for v in vals))
-    verified = sorted(pid for pid, vals in by_provider.items() if any(int(v.get("verified") or 0) > 0 for v in vals))
     raw = sorted(pid for pid, vals in by_provider.items() if any(int(v.get("raw") or 0) > 0 for v in vals))
+    playable = sorted(pid for pid, vals in by_provider.items() if any(int(v.get("playable") or 0) > 0 for v in vals))
+    accepted_playable = sorted(
+        pid for pid, vals in by_provider.items()
+        if any(int(v.get("playable") or 0) > 0 and identity_safe(v) for v in vals)
+    )
+    verified = sorted(pid for pid, vals in by_provider.items() if any(int(v.get("verified") or 0) > 0 and identity_safe(v) for v in vals))
+    wrong_content = sorted(pid for pid, vals in by_provider.items() if any(not identity_safe(v) for v in vals))
 
     upstream_positive: set[tuple[str, str]] = set()
     for provider in recovery.get("providers") or []:
@@ -74,7 +83,6 @@ def main() -> int:
                 continue
             media = cid(task.get("semanticType"))
             fixture = cid((task.get("fixture") or {}).get("slug") if isinstance(task.get("fixture"), dict) else task.get("fixture"))
-            # Current recovery report stores fixture as slug text in task rows.
             if not fixture:
                 fixture = cid(task.get("fixture"))
             if fixture != REPRESENTATIVE_SLUG.get(media):
@@ -82,29 +90,44 @@ def main() -> int:
             if int(task.get("streamCount") or 0) > 0 or int(task.get("rawStreamCount") or 0) > 0:
                 upstream_positive.add((provider_id, media))
 
+    # A reconstructed stream is not a preserved upstream positive if the identity
+    # verifier says it contradicts the requested work/episode. Raw HTTP/player
+    # success remains visible in diagnostics, but can never satisfy acceptance.
     reconstructed_positive = {
         (cid(row.get("provider_id")), cid(row.get("semantic_type")))
-        for row in rows if int(row.get("raw") or 0) > 0
+        for row in rows
+        if int(row.get("raw") or 0) > 0 and identity_safe(row)
+    }
+    contradicted_positive = {
+        (cid(row.get("provider_id")), cid(row.get("semantic_type")))
+        for row in rows
+        if int(row.get("raw") or 0) > 0 and not identity_safe(row)
     }
     lost = sorted(upstream_positive - reconstructed_positive)
     recovered = sorted(upstream_positive & reconstructed_positive)
+    contradicted = sorted(upstream_positive & contradicted_positive)
 
     statuses = Counter(str(row.get("status") or "unknown") for row in rows)
     stages = Counter(str(row.get("debug_stage") or "unknown") for row in rows)
     report = {
-        "schemaVersion": 6,
+        "schemaVersion": 7,
         "targetedProviderCount": len(targeted),
         "targetedProviders": sorted(targeted),
         "skippedAlreadyGreenProviders": sorted(skipped),
         "taskCount": len(tasks),
         "rawProviderCount": len(raw),
         "playableProviderCount": len(playable),
+        "acceptedPlayableProviderCount": len(accepted_playable),
         "verifiedProviderCount": len(verified),
+        "wrongContentProviderCount": len(wrong_content),
         "rawProviders": raw,
         "playableProviders": playable,
+        "acceptedPlayableProviders": accepted_playable,
         "verifiedProviders": verified,
+        "wrongContentProviders": wrong_content,
         "upstreamPositiveRepresentativePairs": [list(v) for v in sorted(upstream_positive)],
         "preservedUpstreamPositivePairs": [list(v) for v in recovered],
+        "contradictedUpstreamPositivePairs": [list(v) for v in contradicted],
         "lostUpstreamPositivePairs": [list(v) for v in lost],
         "statusCounts": dict(sorted(statuses.items())),
         "debugStageCounts": dict(sorted(stages.items())),
@@ -114,14 +137,20 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
-        "PROVIDER_REPAIR_YIELD_V6 "
-        f"targeted={len(targeted)} tasks={len(tasks)} raw={len(raw)} playable={len(playable)} verified={len(verified)} "
-        f"upstream_positive={len(upstream_positive)} preserved={len(recovered)} lost={len(lost)}"
+        "PROVIDER_REPAIR_YIELD_V7 "
+        f"targeted={len(targeted)} tasks={len(tasks)} raw={len(raw)} playable={len(playable)} "
+        f"accepted_playable={len(accepted_playable)} verified={len(verified)} wrong_content={len(wrong_content)} "
+        f"upstream_positive={len(upstream_positive)} preserved={len(recovered)} "
+        f"contradicted={len(contradicted)} lost={len(lost)}"
     )
     if playable:
-        print("PROVIDER_REPAIR_YIELD_V6_PLAYABLE providers=" + ",".join(playable))
+        print("PROVIDER_REPAIR_YIELD_V7_PLAYABLE providers=" + ",".join(playable))
+    if accepted_playable:
+        print("PROVIDER_REPAIR_YIELD_V7_ACCEPTED_PLAYABLE providers=" + ",".join(accepted_playable))
+    if contradicted:
+        print("PROVIDER_REPAIR_YIELD_V7_CONTRADICTED pairs=" + ",".join(f"{p}:{m}" for p, m in contradicted))
     if lost:
-        print("PROVIDER_REPAIR_YIELD_V6_LOST pairs=" + ",".join(f"{p}:{m}" for p, m in lost))
+        print("PROVIDER_REPAIR_YIELD_V7_LOST pairs=" + ",".join(f"{p}:{m}" for p, m in lost))
     if args.require_upstream_positive_preserved and lost:
         raise SystemExit(3)
     return 0
