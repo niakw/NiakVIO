@@ -36,28 +36,35 @@ assert 'os.environ.get("GITHUB_ACTIONS") != "true"' in script_source
 assert '"--apply-safe-advance"' in script_source
 assert "finalize_provider_versions" in script_source
 assert "resolve_release_version" in script_source
+assert "highest_historical_release" in script_source
+assert "release downgrade rejected" in script_source
 
-with tempfile.TemporaryDirectory() as tmp:
-    root = pathlib.Path(tmp)
-    (root / "vf").mkdir()
-    (root / "package.json").write_text(json.dumps({"version": "1.0.0"}))
+
+def write_release_fixture(root: pathlib.Path, version: str) -> None:
+    (root / "vf").mkdir(exist_ok=True)
+    (root / "no-anime").mkdir(exist_ok=True)
+    (root / "vf-no-anime").mkdir(exist_ok=True)
+    (root / "package.json").write_text(json.dumps({"version": version}))
     (root / "package-lock.json").write_text(
         json.dumps(
             {
                 "name": "nuvio-provider-health-check",
-                "version": "1.0.0",
+                "version": version,
                 "lockfileVersion": 3,
-                "packages": {"": {"name": "nuvio-provider-health-check", "version": "1.0.0"}},
+                "packages": {"": {"name": "nuvio-provider-health-check", "version": version}},
             }
         )
     )
-    (root / "manifest.json").write_text(json.dumps({"version": "1.0.0", "scrapers": []}))
-    (root / "vf/manifest.json").write_text(json.dumps({"version": "1.0.0", "scrapers": []}))
+    manifest = {"name": "NiakVIO", "version": version, "scrapers": []}
+    (root / "manifest.json").write_text(json.dumps(manifest))
+    (root / "vf/manifest.json").write_text(json.dumps({"name": "NiakVIO — VF uniquement", "version": version, "scrapers": []}))
+    (root / "no-anime/manifest.json").write_text(json.dumps({"name": "NiakVIO — Without anime providers", "version": version, "scrapers": []}))
+    (root / "vf-no-anime/manifest.json").write_text(json.dumps({"name": "NiakVIO — VF uniquement — Without anime providers", "version": version, "scrapers": []}))
     (root / "sources.json").write_text(
         json.dumps(
             {
-                "manifest_version": "1.0.0",
-                "repository": {"manifest_version": "1.0.0", "version": "1.0.0"},
+                "manifest_version": version,
+                "repository": {"manifest_version": version, "version": version},
             }
         )
     )
@@ -65,12 +72,17 @@ with tempfile.TemporaryDirectory() as tmp:
         json.dumps(
             {
                 "manifestMeta": {
-                    "general": {"name": "General", "version": "1.0.0"},
-                    "vf": {"name": "VF", "version": "1.0.0"},
+                    "general": {"name": "General", "version": version},
+                    "vf": {"name": "VF", "version": version},
                 }
             }
         )
     )
+
+
+with tempfile.TemporaryDirectory() as tmp:
+    root = pathlib.Path(tmp)
+    write_release_fixture(root, "1.0.0")
     script = script_source.replace(
         "ROOT = pathlib.Path(__file__).resolve().parents[1]",
         f"ROOT = pathlib.Path({str(root)!r})",
@@ -85,6 +97,8 @@ with tempfile.TemporaryDirectory() as tmp:
     assert lock["packages"][""]["version"] == "9.8.7"
     assert json.loads((root / "manifest.json").read_text())["version"] == "9.8.7"
     assert json.loads((root / "vf/manifest.json").read_text())["version"] == "9.8.7"
+    assert json.loads((root / "manifest.json").read_text())["name"] == "NiakVIO v9.8.7"
+    assert json.loads((root / "vf/manifest.json").read_text())["name"] == "NiakVIO v9.8.7 — VF uniquement"
     sources = json.loads((root / "sources.json").read_text())
     assert sources["manifest_version"] == "9.8.7"
     assert sources["repository"]["manifest_version"] == "9.8.7"
@@ -93,5 +107,50 @@ with tempfile.TemporaryDirectory() as tmp:
     assert catalog["manifestMeta"]["general"]["version"] == "9.8.7"
     assert catalog["manifestMeta"]["vf"]["version"] == "9.8.7"
     assert "nuvio_client_compatibility" not in sources
+
+# Regression lock for the real failure mode that occurred during the main
+# consolidation: a previously published 5.21.39 must never become 5.21.37.
+with tempfile.TemporaryDirectory() as tmp:
+    root = pathlib.Path(tmp)
+    write_release_fixture(root, "5.21.39")
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+    subprocess.run(["git", "config", "user.name", "NiakVIO Test"], cwd=root, check=True)
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "published 5.21.39"], cwd=root, check=True)
+
+    write_release_fixture(root, "5.21.37")
+    subprocess.run(["git", "add", "."], cwd=root, check=True)
+    subprocess.run(["git", "commit", "-qm", "regressed merge bytes"], cwd=root, check=True)
+
+    script = script_source.replace(
+        "ROOT = pathlib.Path(__file__).resolve().parents[1]",
+        f"ROOT = pathlib.Path({str(root)!r})",
+    )
+    test_script = root / "sync.py"
+    test_script.write_text(script, encoding="utf-8")
+
+    rejected = subprocess.run(
+        [sys.executable, str(test_script), "--version", "5.21.38"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert rejected.returncode != 0
+    assert "historical_floor=5.21.39" in (rejected.stdout + rejected.stderr)
+
+    previous = root / "previous.json"
+    previous.write_text(json.dumps({"name": "NiakVIO", "version": "5.21.37", "scrapers": []}))
+    current = json.loads((root / "manifest.json").read_text())
+    current["description"] = "new provider generation"
+    (root / "manifest.json").write_text(json.dumps(current))
+    subprocess.run(
+        [sys.executable, str(test_script), "--manifest", "manifest.json", "--previous", str(previous)],
+        check=True,
+    )
+    assert json.loads((root / "manifest.json").read_text())["version"] == "5.21.40"
+    assert json.loads((root / "package.json").read_text())["version"] == "5.21.40"
+    assert json.loads((root / "vf/manifest.json").read_text())["version"] == "5.21.40"
+    assert json.loads((root / "manifest.json").read_text())["name"] == "NiakVIO v5.21.40"
 
 print("release version synchronization test passed")
