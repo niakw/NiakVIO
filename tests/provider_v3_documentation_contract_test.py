@@ -16,8 +16,8 @@ model = json.loads((ROOT / "automation/provider-v3-architecture.json").read_text
 manifest = json.loads((ROOT / "manifest.json").read_text(encoding="utf-8"))
 
 # Human docs may evolve wording. Assert only concepts that belong in each
-# document; exact five-Lab/type/workflow cardinality is enforced below from the
-# machine model and by dedicated runtime/Lab tests.
+# document; exact machine markers, five-Lab/type/workflow cardinality and source
+# ownership are enforced below from the machine model and dedicated tests.
 for needle in (
     "ProviderBase v3",
     "provider-bases/",
@@ -70,11 +70,10 @@ for needle in (
 ):
     assert needle in install, needle
 
-for needle in (
-    "ProviderBase v3 + structured DATA + owned Lego",
-    "NIAKVIO_PROVIDER_BASE_OWNED_V3",
-):
-    assert needle in security, needle
+# SECURITY.md documents the trust boundary and generated-code model. The exact
+# ProviderBase ownership marker is machine policy, not prose policy, and is
+# asserted below from automation/provider-v3-architecture.json.
+assert "ProviderBase v3 + structured DATA + owned Lego" in security
 
 for needle in (
     "ne sont **pas** rafraîchis par CORE Deep",
