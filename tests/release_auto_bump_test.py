@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory() as tmp:
     write(
         old,
         {
-            "name": "x",
+            "name": "NiakVIO v5.19.3",
             "version": "5.19.3",
             "scrapers": [
                 {
@@ -49,7 +49,8 @@ with tempfile.TemporaryDirectory() as tmp:
     write(
         root / "manifest.json",
         {
-            "name": "x",
+            # Simulate a generator that recreates the canonical unversioned name.
+            "name": "NiakVIO",
             "version": "5.19.3",
             "scrapers": [
                 {
@@ -74,7 +75,7 @@ with tempfile.TemporaryDirectory() as tmp:
     write(
         root / "vf/manifest.json",
         {
-            "name": "x-vf",
+            "name": "NiakVIO — VF uniquement",
             "version": "5.19.3",
             "scrapers": [
                 {
@@ -123,11 +124,13 @@ with tempfile.TemporaryDirectory() as tmp:
     current = json.loads((root / "manifest.json").read_text())
     rows = {row["id"].casefold(): row for row in current["scrapers"]}
     assert current["version"] == "5.19.4", "client-visible generation must bump global release"
+    assert current["name"] == "NiakVIO v5.19.4"
     assert rows["demo"]["version"] == "1.0.1", "changed provider must bump its own cache version"
     assert rows["stable"]["version"] == "2.4.7", "unchanged provider must remain stable"
 
     vf = json.loads((root / "vf/manifest.json").read_text())
     assert vf["version"] == "5.19.4"
+    assert vf["name"] == "NiakVIO v5.19.4 — VF uniquement"
     assert vf["scrapers"][0]["version"] == "1.0.1"
     assert vf["scrapers"][0]["id"] == rows["demo"]["id"]
 
@@ -141,9 +144,17 @@ with tempfile.TemporaryDirectory() as tmp:
     assert sources["repository"]["version"] == "5.19.4"
 
     # A second publication against the already-published generation must be a
-    # complete no-op: no global bump and no provider bump loop.
+    # complete no-op even when the generator strips the visible version before
+    # finalization. The finalizer must restore it without creating a bump loop.
     previous_final = root / "previous-final.json"
     previous_final.write_text((root / "manifest.json").read_text(), encoding="utf-8")
+    current_before_second = json.loads((root / "manifest.json").read_text())
+    current_before_second["name"] = "NiakVIO"
+    write(root / "manifest.json", current_before_second)
+    vf_before_second = json.loads((root / "vf/manifest.json").read_text())
+    vf_before_second["name"] = "NiakVIO — VF uniquement"
+    write(root / "vf/manifest.json", vf_before_second)
+
     result = subprocess.run(
         [sys.executable, str(test_script), "--manifest", "manifest.json", "--previous", str(previous_final)],
         text=True,
@@ -153,7 +164,10 @@ with tempfile.TemporaryDirectory() as tmp:
     again = json.loads((root / "manifest.json").read_text())
     again_rows = {row["id"].casefold(): row for row in again["scrapers"]}
     assert again["version"] == "5.19.4"
+    assert again["name"] == "NiakVIO v5.19.4"
     assert again_rows["demo"]["version"] == "1.0.1"
     assert again_rows["stable"]["version"] == "2.4.7"
+    again_vf = json.loads((root / "vf/manifest.json").read_text())
+    assert again_vf["name"] == "NiakVIO v5.19.4 — VF uniquement"
 
 print("atomic release/provider cache bump tests passed")
