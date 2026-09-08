@@ -40,7 +40,7 @@ def function_excerpt(text: str, name: str, limit: int = 1400) -> str:
     depth = 0
     quote = ""
     escaped = False
-    end = min(len(text), start + 12000)
+    end = min(len(text), start + 18000)
     for index in range(brace, end):
         ch = text[index]
         if quote:
@@ -163,18 +163,31 @@ def main() -> int:
             "family": marker_pos(text, 'if (family === "stremio-json")'),
             "generic": marker_pos(text, "await getStreams(tmdbId"),
         }
+        player_markers = {
+            "v18_6": text.count("NIAKVIO_PROVIDER_PACKED_PLAYER_V18_6"),
+            "v18_7": text.count("NIAKVIO_PROVIDER_PLAYER_ROUTE_VARIANT_V18_7"),
+            "v18_8": text.count("NIAKVIO_PROVIDER_PLAYER_FORM_HANDOFF_V18_8"),
+            "variant_call": text.count("_spv187PlayerRouteVariants(responseUrl)"),
+            "form_call": text.count("_spv188PlayerForm(playerText, responseUrl)"),
+        }
         print(
             "FIELD_PROVIDER_FAST_CONTROL_ORDER "
             f"provider={provider} " + " ".join(f"{key}={value}" for key, value in positions.items()),
+            flush=True,
+        )
+        print(
+            "FIELD_PROVIDER_FAST_PLAYER_WIRING "
+            f"provider={provider} " + " ".join(f"{key}={value}" for key, value in player_markers.items()),
             flush=True,
         )
         print(f"FIELD_PROVIDER_FAST_TERMINAL provider={provider} code={terminal_excerpt(text)}", flush=True)
         for name in (
             "getStreams", "_spv4GetStreams", "_resolveProviderValuePlan",
             "_resolveSearchRequestPlan", "_resolveApiRecipe", "_substituteDomain",
+            "_spv187PlayerRouteVariants", "_spv188PlayerForm", "_crawlDirectMedia",
         ):
             print(
-                f"FIELD_PROVIDER_FAST_FUNCTION provider={provider} name={name} code={function_excerpt(text, name)}",
+                f"FIELD_PROVIDER_FAST_FUNCTION provider={provider} name={name} code={function_excerpt(text, name, 2600 if name == '_crawlDirectMedia' else 1600)}",
                 flush=True,
             )
 
@@ -190,6 +203,12 @@ def main() -> int:
             ordered = [value for value in (positions["value"], positions["recipe"], positions["search"], positions["family"]) if value >= 0]
             if ordered != sorted(ordered):
                 failed.append(provider + ":v16-authority-order-invalid")
+        # V18.6+ player capabilities are expected in every freshly materialized
+        # workbench bundle once the V17 chain has run. Fail closed on projection drift.
+        if any(player_markers[key] != 1 for key in ("v18_6", "v18_7", "v18_8")):
+            failed.append(provider + ":player-capability-marker-projection-invalid")
+        if player_markers["variant_call"] != 1 or player_markers["form_call"] != 1:
+            failed.append(provider + ":player-capability-call-projection-invalid")
 
     if failed:
         raise SystemExit("materialized structured-plan/control-flow projection failed: " + ",".join(failed))
