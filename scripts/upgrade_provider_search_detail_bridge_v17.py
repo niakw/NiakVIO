@@ -11,11 +11,12 @@ V17 keeps the fresh response origin only for same-origin catalogue links and,
 after positive catalogue identity, resolves each detail through
 _spv4ResolveDetail before falling back to the player crawler.
 
-V18/V18.1/V18.2/V18.4/V18.5/V18.6 are chained from this canonical owner so every
-V17 consumer also receives proof-correlated provider-value DATA, provider-native
-JSON identity scoring, V16 proof authority, JSON-text identity decoding, canonical
-anime <-> TV transport lane handling, and safe generic packed-player decoding.
-No provider ids, hosts, fixture titles or provider-specific routes are encoded.
+V18/V18.1/V18.2/V18.4/V18.5/V18.6/V18.7 are chained from this canonical owner so
+every V17 consumer also receives proof-correlated provider-value DATA,
+provider-native JSON identity scoring, V16 proof authority, JSON-text identity
+decoding, canonical anime <-> TV transport lane handling, safe generic packed-
+player decoding, and bounded same-player route normalization. No provider ids,
+hosts, fixture titles or provider-specific routes are encoded.
 """
 from __future__ import annotations
 
@@ -27,6 +28,7 @@ import upgrade_provider_correlated_value_authority_v18_2 as v18_2
 import upgrade_provider_correlated_value_json_text_v18_4 as v18_4
 import upgrade_provider_correlated_value_semantic_lane_v18_5 as v18_5
 import upgrade_provider_packed_player_v18_6 as v18_6
+import upgrade_provider_player_route_variant_v18_7 as v18_7
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE = ROOT / "scripts" / "provider_base_store.py"
@@ -149,6 +151,8 @@ def main() -> int:
     v18_5.validate()
     v18_6_changed = v18_6.patch()
     v18_6.validate()
+    v18_7_changed = v18_7.patch()
+    v18_7.validate()
     print(
         f"PROVIDER_SEARCH_DETAIL_BRIDGE_V17_OK changed={str(changed).lower()} "
         "current_origin_preserved=1 canonical_detail_resolver=1 player_crawl_fallback=1 provider_specific_rules=0"
@@ -180,6 +184,10 @@ def main() -> int:
     print(
         f"PROVIDER_PACKED_PLAYER_V18_6_OK changed={str(v18_6_changed).lower()} "
         "packer_decode=1 eval_execution=0 bounded_blocks=8 bounded_dictionary=10000 provider_specific_rules=0"
+    )
+    print(
+        f"PROVIDER_PLAYER_ROUTE_VARIANT_V18_7_OK changed={str(v18_7_changed).lower()} "
+        "same_origin=1 opaque_id_preserved=1 crawl_depth_cost=0 provider_specific_rules=0"
     )
     return 0
 
