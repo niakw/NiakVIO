@@ -1,48 +1,62 @@
-## 2026-09-08 — Main consolidation + V20.4 provider/runtime checkpoint
+## 2026-09-09 — Main-only recovery, V21 runtime/player checkpoint
 
 Repository authority / topology:
-- User explicitly requires all active NiakVIO work on `main`; no persistent workbench branch after cleanup.
-- `brain-learning/proposals` is the sole exception: immutable Learning branch, never delete or mutate it during cleanup.
-- Consolidation merge on `main`: `b1ee11f25cc21a7f32d6ce48d1cebd8d49f6d4b2`, retaining history from prior main, `workbench/route-recognition-v14-search-plan`, immutable Brain and the three then-current Dependabot heads. Final cleanup target is `main` + `brain-learning/proposals` only.
-- Provider repair workflow `.github/workflows/provider-repair-fast-targeted.yml` now executes from `main` rather than the old workbench branch.
+- Active work authority is **main only**.
+- `brain-learning/proposals` is the sole retained secondary branch and is immutable; never mutate/delete it during cleanup.
+- All workbench and Dependabot branches have been removed after useful history/content was consolidated. Current repository branch set is exactly `main` + `brain-learning/proposals`.
+- Do not recreate persistent repair branches unless the user explicitly changes this policy.
+
+Release/versioning:
+- A real regression was detected after consolidation: historical published release reached **5.21.39**, while current main bytes regressed to **5.21.37**.
+- `scripts/sync_release_versions.py` now has a history-backed anti-downgrade floor: explicit or automatic finalization cannot go below the highest release version found on main first-parent history.
+- `tests/release_version_sync_test.py` reproduces the exact 5.21.39 -> 5.21.37 failure and requires the next changed generation to resolve to **5.21.40**.
+- Final release candidate must synchronize package.json, package-lock.json, all four manifests, sources.json, provider_catalog.json, visible manifest names (`NiakVIO vX.Y.Z ...`), release hashes and integrity artifacts. Current main manifest bytes may still show 5.21.37 until finalization; do not expose that as a finished candidate.
+
+Workflow/security cleanup:
+- `.github/workflows/provider-repair-fast-targeted.yml` and the full parallel sweep now run from main.
+- Legacy V14 workflow is manual diagnostic only; deleted workbench branch triggers were removed.
+- Full sweep is fixed at 96 Provider Objects (24 groups x 4) and uses the current targeted runner rather than stale v1-only logic.
+- `workflow_security_policy_test.py` requires every external GitHub Action to use a full 40-character commit SHA.
+- A recurring regression reintroduced `actions/checkout@v4`, setup actions by tags and `upload-artifact@v4` in the targeted workflow. Fixed on main: checkout/setup-node/setup-python/upload-artifact are all full-SHA pinned.
+- Targeted and full-sweep plan jobs now execute `python3 tests/workflow_security_policy_test.py` **before network proof**, so this cannot waste another long provider run before detection.
+- Run 72 (`34291236317`) proved the new targeted security preflight green.
 
 Provider objective / acceptance:
-- Catalogue target remains all **96 Provider Objects**, including disabled/off rows for recoverability. Never call the task finished after a few targeted providers.
-- Required proof chain before completion: targeted family repair -> non-regression -> global 96/96 structural/config/identity/stream guards -> five independent native Labs (TV Android, Mobile Android, Mobile iOS, Desktop macOS, Desktop Windows) -> UX checks for latency/session isolation/stream metadata/yield.
-- Device behavior must not be inferred from another repo/runtime. Desktop macOS logs and raw TV Android results must be cross-compared, but transport/DNS/cancellation/player conclusions remain per Nuvio repo/device unless independently reproduced.
+- Target remains **all 96 Provider Objects**, including disabled/off rows for recoverability.
+- Never treat a few repaired providers or a green structural test as completion.
+- Required chain: targeted live-positive preservation -> neighbor/family non-regression -> 96/96 global proof -> five independent native Labs (TV Android, Mobile Android, Mobile iOS, Desktop macOS, Desktop Windows) -> UX/player/metadata/latency/session checks -> final version/hashes/integrity -> publication.
+- Device behavior must be cross-compared but never inferred blindly across Nuvio repos/runtimes.
 
-Latest targeted live evidence before V20.4:
-- Run 59 (`34270605486`) first crossed the migration boundary and proved live upstream routes for AnimeSama (`animesama-co`), AnimeVOSTFR and French-Manga, but reconstructed preservation was 0/3.
-- V20.3 subsequently fixed generic `{slug}` projection and raw `application/x-www-form-urlencoded` capture. It is provider-agnostic.
-- Run 61 / main-preconsolidation wave proved that materialized bundles now actually reach provider routes: AnimeSama reaches search/detail/player, French-Manga reaches its POST search, AnimeVOSTFR reaches `trembed`; remaining failure is response identity/dataflow, not absence of provider traffic.
-- French-Manga positive upstream search uses a form body equivalent to `query=<title or title+season>&page=1`. V20.3 still falsely treated static `page=1` as fixture residue when S/E=1.
-- AnimeVOSTFR exposed the multi-hop state bug: search/detail can yield a slug first, then the detail response yields a different internal id (`trid`) consumed by later `trembed` requests. V18/V20.3 froze the initial identity instead of updating state between steps.
+Targeted recovery history / current root causes:
+- Earlier upstream proof established live positives for AnimeSama (`animesama-co`), AnimeVOSTFR and French-Manga.
+- V20.3 fixed `{slug}` projection and urlencoded-form capture; V20.4 fixed static form constants + state updates; V20.5/V20.5.1 added strict id/slug readiness, dependency passes, deeper correlated steps and nested JSON HTTP value extraction.
+- Run 70 showed V20.5.1 contracts green but live preservation still 0/3.
+- Exact run-70 divergence:
+  - AnimeSama materialized plan exists but reconstructed path did not reach useful provider network before falling through metadata/fallback authority.
+  - AnimeVOSTFR still incurred broad generic WordPress/fallback traversal instead of a short causal chain, contributing to latency and wrong identity order.
+  - French-Manga reached search -> episode API -> player embed; remaining failure is shared player extraction. One observed embed family exposes a fake `/troll/master.m3u8` and encodes the real HLS through base64 + reverse + hostname-derived XOR.
 
-V20.4 (current main work):
-- `scripts/upgrade_provider_response_value_correlation_v20_4.py` added on main.
-- Generic fixes: unrelated small static form constants remain literal; bounded title+season search expressions can replay as `{query} <observed season keyword> {season}`; provider-value executor becomes stateful and updates providerId/providerSlug from safe response-owned values between steps; volatile/auth/session/external content identity fields remain excluded.
-- `tests/provider_response_value_correlation_v20_4_test.py` is mandatory and executes the exact generated JS response-state helper with neutral data; no provider-specific tokens are allowed in the migration.
-- `scripts/run_provider_repair_fast_targeted_v20.py` now applies V20.4 immediately before live recovery.
-- Trigger schema 15 targets `animesama-co`, `animevostfr`, `french-manga`, publicationAllowed=false.
-- Current V20.4 main run: GitHub Actions run **34285007146**. Do not claim success until acceptance and V20.4 contracts are both green and artifacts show preserved upstream-positive yield.
+V21 current work on main:
+- `scripts/upgrade_provider_shared_player_trace_v21.py` adds a provider-agnostic shared player decoder for the **content shape** above, rejecting the decoy HLS. No provider ids/hosts/titles are hard-coded into executable runtime logic.
+- V21 also extends provider-value runtime evidence from one last-state row to a sanitized bounded history of max 48 lifecycle rows (`plan_selected`, identity, step/deferred/fetch/response, etc.). No response body, credentials, cookies or request headers are stored.
+- `scripts/nuvio_tv_probe_tmdb_ci.cjs` now exports `provider_value_trace_history_v21` for CI diagnosis with step indices up to 7.
+- `tests/provider_shared_player_trace_v21_test.py` executes the actual generated shared decoder against synthetic neutral encoded HLS content and validates trace/privacy constraints.
+- First V21 run 72 did not reach live recovery because the V21 trace privacy validator scoped its scan too broadly and falsely found `authorization` in neighboring security helpers. The validator is now scoped only to `_spv184Trace`; the regex SyntaxWarning was also cleaned.
+- Current retry trigger schema 26 targets `animesama-co`, `animevostfr`, `french-manga`, publicationAllowed=false.
 
-Native/client evidence and UX debts still blocking completion:
-- User reports slow provider loading, reduced number of available streams, and a historical regression where loading jobs from the previously selected work can continue after navigation and appear to load indefinitely. The exact stale-request mechanism is not proven common across all devices; test per repo/runtime.
-- Desktop macOS user log for Interstellar showed 0 displayed streams on that run while many provider/network attempts still occurred. Dead/failing domains observed included `api.nakios.live`, `eat-peach.sbs` family, `vidlink.pro`/other failing routes. Desktop successful/non-throwing fetches are poorly observable because current client logs mainly expose exceptions.
-- Cross-device comparison matters: TV Android had previously produced Interstellar results from providers including Purstream/Castle/Cineby after cache clear, while the user macOS run displayed none. Therefore macOS 0-stream is not proof of a common DATA failure for those providers.
-- The user clarified the UI label issue: **`Purstream - Inconnue` is the stream title**, not provider/plugin branding. Root manifest currently declares Purstream correctly; the problem is stream presentation metadata/quality. For *Les Fils de l'homme*, user saw only `Purstream - Inconnue`, VF and age criterion, with quality absent and fewer streams than expected. Treat metadata loss + yield reduction as blocking regressions.
-- Earlier `CORE.STREAM_PRESENTATION` work removed invented unknown-quality projection; final behavior must preserve real quality/language/metadata when present and must not manufacture a quality. Client fallback `Inconnue` is acceptable only when source evidence truly has no recoverable quality; verify reader/provider facts before publication.
-- User requests the release/version to be visible in the plugin name because some devices do not expose the plugin version field. Final manifest generation must keep the canonical `version` field and include a stable visible version suffix in `name` without repeated suffixes across rebuilds.
-- Mac Lab script supplied to user creates full stdout, provider-focused, macOS unified log, summary and environment files. Use it as Desktop-macOS evidence only, then correlate with TV Android/raw and the other Labs rather than treating one device as oracle.
+Native/client evidence / UX blockers:
+- User macOS log: Interstellar displayed 0 streams in that Desktop run while provider/network work occurred; several dead/failing DNS routes were visible. Absence of literal provider name in Desktop logs is not proof the provider was not selected/executed.
+- TV Android previously produced Interstellar streams including Purstream/Castle/Cineby after cache clear. Therefore macOS 0-stream must not be generalized into common DATA failure.
+- User wants Desktop macOS logged test + raw TV Android test on the **same candidate SHA/version**. Do not ask for that test until the candidate provider generation is stable and versioned.
+- Historical stale-loading complaint means old title provider jobs may continue after navigation. This is not yet proven identically across runtimes; cancellation/native HTTP/stale-completion must be tested per client repo/device.
+- `Purstream - Inconnue` on *Les Fils de l'homme* is a **stream title/technical metadata** regression, not manifest provider branding. Preserve real quality/language/source/host/size when available; never invent a quality merely to hide `Inconnue`.
+- Reduced stream count is also blocking; latency must not be "fixed" by dropping providers/streams.
 
-Client session/cancellation investigation:
-- Desktop `StreamsRepository` cancels its active coroutine/job on a new work, but downstream `PluginRepository.executeScraper()`/runtime boundaries and native HTTP behavior must be proven independently. Do not claim the old-work job leak is fixed merely because JS AbortController or a coroutine cancel exists.
-- Previous investigation found Kotlin `runCatching` wrappers around plugin execution and blocking/native HTTP patterns as possible cancellation boundaries; this is a client-runtime debt candidate, not yet a universal NiakVIO provider defect. Labs must distinguish coroutine cancellation, native HTTP cancellation and stale completion rejection.
-
-Next required execution order:
-1. Finish run 34285007146; fix the first real failing contract/yield rather than accepting partial green.
-2. Once AnimeSama/AnimeVOSTFR/French-Manga preserve upstream-positive output, retest AnimeZey, Cineby and MovieBlast from live proof.
-3. Broaden to all remaining Provider Objects and produce global 96/96 report; no provider is exempt merely because currently disabled or historically green.
-4. Run five native Labs independently and cross-runtime divergence gates; inspect reader/player bugs and metadata/yield, not only scraper return counts.
-5. Add visible manifest version to name, verify Purstream/stream presentation metadata and reduced-yield regression.
-6. Security/docs/clean/fixed-point checks, then cleanup branches while preserving immutable `brain-learning/proposals`.
+Next execution order:
+1. Finish V21 targeted retry; fix real live failure until all known upstream-positive representative pairs are preserved.
+2. Retest AnimeZey, Cineby, MovieBlast and other immediate neighbors/families.
+3. Run all 96 with current V21 contracts and no stale skip exemption.
+4. Materialize exact candidate and finalize as **5.21.40** with visible version names, hashes and integrity validation.
+5. Run Desktop macOS logged + TV Android raw on identical SHA/version, then Mobile Android, Mobile iOS, Desktop Windows independently; compare runtime divergences.
+6. Fix remaining player, metadata, cancellation/session and latency defects; rerun 96 + five Labs.
+7. Security/docs/minimizer/fixed-point final clean; publish only after the entire chain is green.
