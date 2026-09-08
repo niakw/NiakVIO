@@ -242,24 +242,36 @@ with tempfile.TemporaryDirectory() as raw:
     registry_path = stage / "candidates.json"
     registry_path.write_text(json.dumps(registry), encoding="utf-8")
 
-    # Staging is validation-only: an unsafe/uncomposed provider must fail closed
-    # and must never be rewritten behind the Lego compositor's back.
+    # Staging is validation-only and fail-closed. Raw provider bytes are not a
+    # valid staged candidate anymore: the single Provider envelope must already
+    # have been composed before this validator runs, and validation must not
+    # rewrite the bytes to make them acceptable.
     rejected = False
     try:
         harden_stage(stage)
     except ValueError as exc:
-        rejected = "not security-normalized" in str(exc)
+        rejected = "security Lego requires exactly one Provider envelope" in str(exc)
     assert rejected
     assert source.read_bytes() == original
 
-    # Static already-hardened fixture: staging validation must never persist
-    # dynamically transformed sensitive/provider bytes merely to test idempotence.
-    secured_text = (
-        "/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:test-fixture */\n"
-        "var __nuvioProviderSilentLog=function(){};\n"
-        "globalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;\n"
-        "globalThis.getStreams=async function(){return []};\n"
+    # Build an actually production-shaped already-normalized candidate:
+    # provider-byte hardening first, then the single envelope and preventive
+    # Core security Lego. Staging must validate those exact bytes idempotently.
+    staged_provider_source = 'function f(u){return u.includes("example.com"),console.log(u)};globalThis.getStreams=async function(){return []};\n'
+    staged_provider_hardened, staged_provider_report = harden_text(staged_provider_source)
+    assert staged_provider_report["hostnameChanges"] == 1, staged_provider_report
+    assert staged_provider_report["consoleSinkChanges"] == 1, staged_provider_report
+    staged_bundle_input = (
+        PROVIDER_BEGIN_MARKER + "\n"
+        + staged_provider_hardened.rstrip() + "\n"
+        + PROVIDER_END_MARKER + "\n"
     )
+    secured_text, staged_bundle_report = harden_bundle(staged_bundle_input)
+    assert staged_bundle_report["changed"] is True, staged_bundle_report
+    assert secured_text.count("/* STARTFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+    assert secured_text.count("/* CLOSEFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */") == 1
+    assert known_unsafe_findings(secured_text) == []
+
     secured = secured_text.encode("utf-8")
     source.write_bytes(secured)
     registry["candidates"][0]["sha256"] = hashlib.sha256(secured).hexdigest()
@@ -277,5 +289,4 @@ with tempfile.TemporaryDirectory() as raw:
     updated = json.loads(registry_path.read_text())["candidates"][0]
     assert updated["sha256"] == hashlib.sha256(secured).hexdigest()
     assert updated["local_patches"] == []
-    assert known_unsafe_findings(secured_text) == []
 print("staged provider security validation-only tests passed")
