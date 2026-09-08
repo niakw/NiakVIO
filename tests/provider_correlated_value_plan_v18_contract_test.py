@@ -12,6 +12,11 @@ for needle in (
     "function _spv18ProviderIdFromHtml",
     "url: _spv17CurrentResponseUrl(url, base)",
     "providerValueStreams = await _resolveProviderValuePlan",
+    "NIAKVIO_PROVIDER_CORRELATED_VALUE_SEMANTIC_LANE_V18_5",
+    "function _spv185PlanLaneAllowed",
+    'if (!semantic.includes("anime")) return false;',
+    '(type === "tv" && lanes.includes("anime"))',
+    '(type === "anime" && lanes.includes("tv"))',
 ):
     assert needle in base, needle
 
@@ -50,4 +55,14 @@ for token in (
     assert token not in base_v18, token
     assert token not in recovery_v18, token
 
-print("provider correlated value plan V18 contract tests passed")
+# The semantic alias is deliberately provider-capability bounded. A generic TV
+# provider cannot acquire anime behavior merely because a proof row says anime.
+lane_v18 = base.split("/* NIAKVIO_PROVIDER_CORRELATED_VALUE_SEMANTIC_LANE_V18_5 */", 1)[1].split(
+    "function _spv184Trace", 1
+)[0]
+assert 'semantic.includes("anime")' in lane_v18
+assert 'type === "tv" && lanes.includes("anime")' in lane_v18
+assert 'type === "anime" && lanes.includes("tv")' in lane_v18
+assert 'if (!semantic.includes("anime")) return false;' in lane_v18
+
+print("provider correlated value plan V18/V18.5 contract tests passed")
