@@ -1,0 +1,154 @@
+name: Provider Repair Parallel Sweep
+
+on:
+  push:
+    branches:
+      - workbench/route-recognition-v14-search-plan
+    paths:
+      - automation/provider-parallel-sweep-trigger.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  NIAKVIO_ROUTE_PROOF_MAX_ATTEMPTS: "3"
+  TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+  TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+  NIAKVIO_QUICK_YIELD_WORKERS: "4"
+  NIAKVIO_QUICK_YIELD_TIMEOUT: "55"
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      groups: ${{ steps.plan.outputs.groups }}
+      provider_count: ${{ steps.plan.outputs.provider_count }}
+      group_count: ${{ steps.plan.outputs.group_count }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - id: plan
+        shell: bash
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json
+          from pathlib import Path
+
+          def cid(value):
+              return str(value or "").strip().casefold().replace("_", "-")
+
+          manifest = json.loads(Path("manifest.json").read_text(encoding="utf-8"))
+          skip = json.loads(Path("automation/provider-repair-skip.json").read_text(encoding="utf-8"))
+          excluded = {cid(value) for value in (skip.get("providers") or {}).keys()}
+          # Four deep pilots stay on their own diagnostic lane. Broad sweep must
+          # not hide their known residual failures inside aggregate concurrency.
+          excluded.update({"animekai", "movies4u", "frenchstream", "mugiwarastream"})
+
+          providers = []
+          for row in manifest.get("scrapers") or []:
+              if not isinstance(row, dict):
+                  continue
+              provider_id = cid(row.get("id"))
+              if provider_id and provider_id not in excluded and provider_id not in providers:
+                  providers.append(provider_id)
+
+          groups = []
+          for index in range(0, len(providers), 4):
+              chunk = providers[index:index + 4]
+              groups.append({
+                  "id": f"g{index // 4 + 1:02d}",
+                  "providers": ",".join(chunk),
+              })
+
+          print("groups=" + json.dumps(groups, separators=(",", ":")))
+          print(f"provider_count={len(providers)}")
+          print(f"group_count={len(groups)}")
+          assert len(providers) == 82, f"parallel sweep expected 82 providers, got {len(providers)}"
+          assert all(1 <= len(group["providers"].split(",")) <= 4 for group in groups)
+          PY
+
+  prove:
+    needs: plan
+    if: ${{ needs.plan.outputs.group_count != '0' }}
+    strategy:
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        group: ${{ fromJSON(needs.plan.outputs.groups) }}
+    name: prove-${{ matrix.group.id }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Run four-provider proof-first acceptance
+        id: acceptance
+        continue-on-error: true
+        env:
+          PROVIDERS_CSV: ${{ matrix.group.providers }}
+        shell: bash
+        run: |
+          args=()
+          IFS=',' read -ra providers <<< "$PROVIDERS_CSV"
+          for provider in "${providers[@]}"; do
+            args+=(--provider "$provider")
+          done
+          python scripts/run_provider_repair_fast_targeted_v1.py \
+            --attempts 3 \
+            --workers 4 \
+            --timeout 55 \
+            "${args[@]}"
+
+      - name: Validate shared contracts and <=3 runtime plans
+        if: always()
+        run: |
+          python tests/provider_execution_authority_v16_contract_test.py
+          python tests/provider_route_slug_identity_v16_test.py
+          python tests/provider_correlated_value_plan_v18_contract_test.py
+          python tests/provider_packed_player_v18_6_contract_test.py
+          python tests/provider_player_route_variant_v18_7_contract_test.py
+          python tests/provider_player_form_handoff_v18_8_contract_test.py
+          python tests/runtime_route_plan_cap_v1_test.py
+
+      - name: Show proof summary
+        if: always()
+        run: |
+          test -f automation/provider-repair-fast-summary.json && cat automation/provider-repair-fast-summary.json || true
+
+      - name: Upload group proof
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: provider-parallel-${{ matrix.group.id }}-${{ github.run_id }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            automation/provider-repair-fast-targeted.json
+            automation/provider-repair-fast-merged.json
+            automation/provider-repair-fast-yield.json
+            automation/provider-repair-fast-summary.json
+            provider-v3-quick-yield.json
+
+      - name: Enforce group acceptance
+        if: always()
+        run: test "${{ steps.acceptance.outcome }}" = "success"
+
+  summarize:
+    needs: [plan, prove]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "planned_providers=${{ needs.plan.outputs.provider_count }}"
+          echo "planned_groups=${{ needs.plan.outputs.group_count }}"
+          echo "prove_result=${{ needs.prove.result }}"
+          # Individual group artifacts/logs remain the proof authority. A red
+          # group does not cancel the rest of the 82-provider sweep.
