@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import recover_provider_routes_from_upstreams as recovery  # noqa: E402
+import runtime_route_plan_cap_v1 as route_cap  # noqa: E402
 
 
 def main() -> int:
@@ -29,12 +30,20 @@ def main() -> int:
     if len(providers) != recovery.EXPECTED:
         raise SystemExit(f"route recovery providers rows={len(providers)}, expected={recovery.EXPECTED}")
     summary = recovery.apply_recovery(value)
+    cap_summary = route_cap.enforce_runtime_route_cap(value)
     value["applied"] = summary
+    value["runtimeRoutePlanCap"] = cap_summary
     recovery.write(path, value)
     print(
         "FIELD_ROUTE_RECOVERY_REPORT_APPLIED "
-        f"providers={summary['patchedProviders']} routes={summary['provenRoutes']} recipes={summary['apiRecipes']}"
+        f"providers={summary['patchedProviders']} routes={summary['provenRoutes']} recipes={summary['apiRecipes']} "
+        f"runtime_cap={cap_summary['cap']} runtime_max={cap_summary['maxAfter']} "
+        f"runtime_capped_providers={cap_summary['cappedProviders']}"
     )
+    if int(cap_summary.get("maxAfter") or 0) > route_cap.MAX_RUNTIME_ROUTE_PLANS:
+        raise SystemExit(
+            f"runtime route plan cap exceeded: max={cap_summary['maxAfter']} cap={route_cap.MAX_RUNTIME_ROUTE_PLANS}"
+        )
     return 0
 
 
