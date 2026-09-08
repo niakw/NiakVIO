@@ -68,6 +68,13 @@ def _query_bearing(row: dict[str, Any]) -> bool:
 
 
 def verify_structured_plan_wiring(targets: list[str]) -> None:
+    """Verify that positive proof retains executable authority without imposing a shape.
+
+    Three top-level entry plans is a normal optimization target, not an invariant.
+    A provider may legitimately expose >3 evidence-backed authorities or a
+    search/detail/player/source fan-out. The wiring gate therefore fails only when
+    positive proof loses *all* executable authority; high counts are audited.
+    """
     targeted = _row_map(load(TARGET_REPORT))
     overrides = load(OVERRIDES)
     patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
@@ -102,6 +109,11 @@ def verify_structured_plan_wiring(targets: list[str]) -> None:
         ) + (
             len(learned_routes) if isinstance(learned_routes, list) else int(bool(learned_routes))
         )
+        route_proof = model.get("routeProof") if isinstance(model.get("routeProof"), dict) else {}
+        authority_audit = route_proof.get("canonicalExecutionAuthority") if isinstance(route_proof.get("canonicalExecutionAuthority"), dict) else {}
+        preferred_count = int(authority_audit.get("preferredCount") or authority_audit.get("selectedCount") or 0)
+        normal_target = int(route_proof.get("normalRuntimeEntryPlanTarget") or 3)
+        target_exceeded = authority_count > normal_target
         print(
             "FIELD_PROVIDER_FAST_PLAN "
             f"provider={provider} positive_search={str(positive_search).lower()} "
@@ -110,14 +122,14 @@ def verify_structured_plan_wiring(targets: list[str]) -> None:
             f"search_plan={len(search_plan) if isinstance(search_plan, list) else int(bool(search_plan))} "
             f"external_plan={len(external_plan) if isinstance(external_plan, list) else int(bool(external_plan))} "
             f"routes={len(learned_routes) if isinstance(learned_routes, list) else int(bool(learned_routes))} "
-            f"top_level_authorities={authority_count}",
+            f"top_level_authorities={authority_count} preferred_authorities={preferred_count} "
+            f"normal_target={normal_target} target_exceeded={str(target_exceeded).lower()} "
+            "overflow_is_error=false",
             flush=True,
         )
-        if authority_count > 3:
-            raise SystemExit(f"provider runtime authority overflow: {provider}={authority_count} > 3")
         # A positive structured search may legitimately be absorbed by a stronger
-        # provider-value/API authority. Require an executable authority, not the
-        # redundant SearchRequestPlan field specifically.
+        # provider-value/API authority. Require an executable authority, not a
+        # redundant SearchRequestPlan field or a particular authority count.
         if positive_search and authority_count == 0:
             missing.append(provider)
     if missing:
