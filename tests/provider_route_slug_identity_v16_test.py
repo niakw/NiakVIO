@@ -28,12 +28,17 @@ fetch = {
     "body_values": {},
 }
 route, meta = proof.derive_observed_route(fetch, {"fixture": fixture}, hints)
-# V18 treats slug/id/post-id/etc. as one provider-native correlated identity
-# contract. The executable route therefore uses the generic {id} placeholder;
-# the source field remains provenance, not a runtime placeholder type.
-assert route == "/catalogue/{id}/episodes/saison1", (route, meta)
+
+# V18 represented all provider-native values as {id}. V20 keeps exact response
+# provenance and therefore preserves slug separately. The test remains valid on
+# both pre-V20 and post-V20 owners because other workflows can execute it before
+# the V20 migration is applied.
+proof_text = proof_path.read_text(encoding="utf-8")
+slug_typed = "NIAKVIO_PROVIDER_RESPONSE_VALUE_CORRELATION_V20" in proof_text
+expected_placeholder = "{slug}" if slug_typed else "{id}"
+assert route == f"/catalogue/{expected_placeholder}/episodes/saison1", (route, meta)
 assert meta.get("providerValueCorrelation") is True, meta
-assert any(row.get("placeholder") == "{id}" for row in meta.get("substitutions") or []), meta
+assert any(row.get("placeholder") == expected_placeholder for row in meta.get("substitutions") or []), meta
 
 id_hints = [{"key": "id", "value": "abc123"}]
 id_fetch = dict(fetch)
