@@ -1,15 +1,12 @@
 {
-  "schemaVersion": 3,
-  "requestedAt": "2026-09-08T19:52:00+02:00",
-  "scope": "v19-six-upstream-losses",
-  "mode": "proof-first-live-request-contract-bridge-v19",
+  "schemaVersion": 4,
+  "requestedAt": "2026-09-08T20:30:00+02:00",
+  "scope": "v20-html-response-correlation",
+  "mode": "proof-first-response-value-correlation-v20",
   "explicitProviders": [
     "animesama-co",
     "animevostfr",
-    "animezey",
-    "cineby",
-    "french-manga",
-    "movieblast"
+    "french-manga"
   ],
   "attempts": 3,
   "normalEntryPlanTarget": 3,
@@ -17,7 +14,7 @@
   "preserveComplexFanout": true,
   "preserveDistinctEvidenceBackedPlans": true,
   "executionAuthorityRankingDestructive": false,
-  "livePositiveRequiredForRequestBridge": true,
-  "staticContractsCannotCreateAuthority": true,
+  "responseValueMustBeConsumedByLaterProviderRequest": true,
+  "volatileResponseValuesExecutable": false,
   "publicationAllowed": false
 }
