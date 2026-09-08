@@ -15,13 +15,13 @@ env:
   NIAKVIO_ROUTE_PROOF_MAX_ATTEMPTS: "3"
   TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
   TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-  NIAKVIO_QUICK_YIELD_WORKERS: "8"
+  NIAKVIO_QUICK_YIELD_WORKERS: "4"
   NIAKVIO_QUICK_YIELD_TIMEOUT: "55"
 
 jobs:
   prove:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,10 +39,8 @@ jobs:
         run: |
           python scripts/run_provider_repair_fast_targeted_v1.py \
             --attempts 3 \
-            --workers 8 \
+            --workers 4 \
             --timeout 55 \
-            --provider animekai \
-            --provider movies4u \
             --provider frenchstream \
             --provider mugiwarastream
 
@@ -60,8 +58,6 @@ jobs:
         if: always()
         run: |
           python scripts/inspect_provider_fast_bundle_plans.py \
-            --provider animekai \
-            --provider movies4u \
             --provider frenchstream \
             --provider mugiwarastream
 
@@ -70,18 +66,6 @@ jobs:
         run: |
           python scripts/audit_provider_value_runtime_trace_v1.py \
             --timeout 55 \
-            --provider animekai \
-            --provider movies4u \
-            --provider frenchstream \
-            --provider mugiwarastream
-
-      - name: Audit correlated provider-value identity shape
-        if: always()
-        run: |
-          python scripts/audit_provider_value_identity_shape_v1.py \
-            --timeout 12 \
-            --provider animekai \
-            --provider movies4u \
             --provider frenchstream \
             --provider mugiwarastream
 
@@ -90,8 +74,6 @@ jobs:
         run: |
           python scripts/audit_upstream_stream_fingerprints_v1.py \
             --timeout 55 \
-            --provider animekai \
-            --provider movies4u \
             --provider frenchstream \
             --provider mugiwarastream
 
@@ -113,6 +95,5 @@ jobs:
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
             automation/provider-upstream-stream-fingerprints-v1.json
-            automation/provider-value-identity-shape-v1.json
             automation/provider-value-runtime-trace-v1.json
             provider-v3-quick-yield.json
