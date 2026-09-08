@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import importlib.util
 import sys
 from pathlib import Path
 
@@ -9,13 +8,19 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import provider_route_proof as proof  # noqa: E402
-import upgrade_provider_response_value_correlation_v20 as v20  # noqa: E402
+import upgrade_provider_response_value_correlation_v20_1 as v20  # noqa: E402
 
 
 # The migration must be idempotent and all owners must retain the V20 contract.
 v20.main()
 v20.main()
 
+# Reload the proof module after the migration rewrites provider_route_proof.py.
+import importlib.util  # noqa: E402
+spec = importlib.util.spec_from_file_location("provider_route_proof_v20_test", ROOT / "scripts" / "provider_route_proof.py")
+assert spec and spec.loader
+proof = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(proof)
 
 fixture = {
     "tmdbId": "95479",
@@ -91,6 +96,25 @@ assert proof.response_value_hints({
     ]
 }) == [{"key": "slug", "value": "safe-catalogue-value"}]
 
+# V11 external identity ownership must survive V20: an IMDb-shaped value remains
+# {imdbId} and must never collapse into a provider-native {id}.
+imdb_fixture = dict(fixture)
+imdb_fixture["imdbId"] = "tt12345678"
+imdb_route, imdb_meta = proof.derive_observed_route(
+    {
+        "url": "https://example.invalid/series/tt12345678",
+        "final_url": "https://example.invalid/series/tt12345678",
+        "method": "GET",
+        "body_kind": "none",
+        "body_values": {},
+        "proof_headers": {},
+    },
+    {"fixture": imdb_fixture},
+    [{"key": "id", "value": "tt12345678"}],
+)
+assert imdb_route == "/series/{imdbId}", (imdb_route, imdb_meta)
+assert imdb_meta.get("externalIdentityCorrelation") is True, imdb_meta
+
 base_text = (ROOT / "scripts" / "provider_base_store.py").read_text(encoding="utf-8")
 worker_text = (ROOT / "scripts" / "provider_worker.cjs").read_text(encoding="utf-8")
 recovery_text = (ROOT / "scripts" / "recover_provider_routes_from_upstreams.py").read_text(encoding="utf-8")
@@ -104,8 +128,8 @@ assert "ROUTE_RECOVERY_RESPONSE_VALUE_CORRELATION_V20" in recovery_text
 assert "PROVIDER_RESPONSE_VALUE_CORRELATION_V20" in materializer_text
 
 # The common migration must remain provider-agnostic.
-migration_text = (ROOT / "scripts" / "upgrade_provider_response_value_correlation_v20.py").read_text(encoding="utf-8").casefold()
+migration_text = (ROOT / "scripts" / "upgrade_provider_response_value_correlation_v20_1.py").read_text(encoding="utf-8").casefold()
 for forbidden in ("animesama", "animevostfr", "french-manga", "movieblast", "animezey", "cineby"):
     assert forbidden not in migration_text, forbidden
 
-print("provider response-value correlation V20 tests passed")
+print("provider response-value correlation V20.1 tests passed")
