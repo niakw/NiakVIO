@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
-"""V18.7: try common same-player route representations before giving up.
+"""V18.7: prioritize common canonical same-player route representations.
 
 Some file-host players expose an embed/download/e/f/d/file URL that is only a
 public landing representation of the actual player page. A common structural
 variant uses the same origin and opaque id under /v/. This capability is bounded,
 same-origin and data-independent: it contains no provider ids, hosts or fixture
 names and never treats the variant itself as playable media.
+
+The canonical /v/<opaque-id> representation is now scheduled before the landing
+representation, matching the generic resolver behavior proved by upstream
+positive fixtures while preserving the original URL as bounded fallback.
 
 V18.8 is chained here because it operates on the same canonical player response:
 a bounded same-origin hidden-form handoff is attempted only after direct and
@@ -63,8 +67,39 @@ function _spv187PlayerRouteVariants(raw) {
     return [];
   }
 }
+function _spv187PrioritizedPlayerRoutes(values) {
+  const out = [];
+  for (const raw of values || []) {
+    const canonical = _crawlCanonical(raw);
+    if (!canonical) continue;
+    for (const variant of _spv187PlayerRouteVariants(canonical)) out.push(variant);
+    out.push(canonical);
+  }
+  return _uniq(out);
+}
+function _spv187QueueScore(url) {
+  let bonus = 0;
+  try {
+    const path = _text(new URL(url).pathname);
+    if (/^\/v\/[A-Za-z0-9_-]{3,160}\/?$/i.test(path)) bonus = 1000;
+  } catch (_) {}
+  return _crawlUrlScore(url) + bonus;
+}
 '''
     text = once(text, anchor, helper + anchor, "v18.7-player-route-helper")
+
+    text = once(
+        text,
+        "  const queue = _uniq(seedUrls.map(_crawlCanonical)).filter(Boolean).filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));\n",
+        "  const queue = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));\n",
+        "v18.7-prioritize-initial-player-route",
+    )
+    text = once(
+        text,
+        "    queue.sort((a,b)=>_crawlUrlScore(b.url)-_crawlUrlScore(a.url));\n",
+        "    queue.sort((a,b)=>_spv187QueueScore(b.url)-_spv187QueueScore(a.url));\n",
+        "v18.7-prioritize-canonical-queue",
+    )
 
     old = '''      const direct = urls.filter(_directMedia);
       if (direct.length) {
@@ -78,9 +113,8 @@ function _spv187PlayerRouteVariants(raw) {
         streams.push(..._streams(direct, responseUrl));
         continue;
       }
-      // The same opaque player id is often exposed under a landing/embed path
-      // and a canonical /v/ player path. Try only this bounded same-origin
-      // representation change; it does not consume recursive crawl depth.
+      // Preserve the landing URL as fallback, but always prioritize the same
+      // opaque id under the canonical /v/ representation when structurally safe.
       for (const variant of _spv187PlayerRouteVariants(responseUrl)) {
         if (!seen.has(variant)) queue.push({ url: variant, depth: row.depth, referer: responseUrl });
       }
@@ -99,8 +133,12 @@ def validate(text: str | None = None) -> None:
         raise AssertionError(f"V18.7 marker count={value.count(MARKER)}")
     for needle in (
         "function _spv187PlayerRouteVariants(raw)",
+        "function _spv187PrioritizedPlayerRoutes(values)",
+        "function _spv187QueueScore(url)",
         '^\\/(?:embed|e|f|d|file|download)\\/([^/?#]+)\\/?$',
         '"/v/$1"',
+        "_spv187PrioritizedPlayerRoutes(seedUrls)",
+        "_spv187QueueScore(b.url)-_spv187QueueScore(a.url)",
         "for (const variant of _spv187PlayerRouteVariants(responseUrl))",
         "depth: row.depth, referer: responseUrl",
     ):
@@ -124,7 +162,8 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_PLAYER_ROUTE_VARIANT_V18_7_OK changed={str(changed).lower()} "
-        "same_origin=1 opaque_id_preserved=1 crawl_depth_cost=0 form_handoff_v18_8=1 provider_specific_rules=0"
+        "same_origin=1 opaque_id_preserved=1 canonical_first=1 landing_fallback=1 "
+        "crawl_depth_cost=0 form_handoff_v18_8=1 provider_specific_rules=0"
     )
     return 0
 
