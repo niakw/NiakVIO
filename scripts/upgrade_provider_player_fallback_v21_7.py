@@ -4,11 +4,12 @@
 V21.6 deliberately preserves a failed player/embed URL as a native-player fallback
 only after a live proof-correlated provider-value plan reaches that exact step.
 The terminal all-URL sanitizer must be able to distinguish this narrow fallback
-from an arbitrary unverified URL. V21.7 adds a private, exact-URL marker to those
-rows; the terminal sanitizer consumes and strips it before publication.
+from an arbitrary unverified URL. V21.7 adds a private, exact-URL marker only to
+non-direct player fallbacks; the terminal sanitizer consumes and strips it before
+publication.
 
 No provider id, host, fixture, token, credential or media URL is embedded here.
-Direct media is never marked by this contract.
+Direct media remains under the normal fail-closed probing path and is never marked.
 """
 from __future__ import annotations
 
@@ -43,7 +44,7 @@ def patch_base() -> bool:
 '''
     new = '''    const emitted = _streams([url], _text(row && row.referer));
     for (const stream of emitted) {
-      if (stream && typeof stream === "object") {
+      if (!_directMedia(url) && stream && typeof stream === "object") {
         stream.__nuvioCorrelatedPlayerFallbackV1 = { url };
       }
       out.push(stream);
@@ -70,8 +71,9 @@ def validate_base(text: str | None = None) -> None:
     for needle in (
         "function _spv216FallbackStreams(rows)",
         "const emitted = _streams([url], _text(row && row.referer));",
+        "if (!_directMedia(url) && stream && typeof stream === \"object\")",
         "stream.__nuvioCorrelatedPlayerFallbackV1 = { url };",
-        "if (!_spv216PlayerFallbackEligible(url)) continue;",
+        "!_spv216PlayerFallbackEligible(url)",
     ):
         if needle not in value:
             raise AssertionError(f"V21.7 missing {needle}")
