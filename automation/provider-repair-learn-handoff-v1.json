@@ -1,8 +1,18 @@
 {
-  "policy": "Residual targeted repair failures are LEARN-owned; automatic route/data repair skips them until LEARN or a deliberate explicit regression/priority run resolves them.",
-  "providerCount": 9,
+  "policy": "Residual targeted repair failures are LEARN-owned per semantic lane; automatic route/data repair skips them until LEARN or a deliberate explicit regression/priority run resolves them.",
+  "providerCount": 11,
   "providers": {
     "4khdhub": {
+      "lastRepairAttemptsPerTask": 3,
+      "lastRepairRunId": "34323567439",
+      "mediaTypes": [],
+      "owner": "LEARN",
+      "publicationAllowed": false,
+      "reason": "target-not-verified",
+      "repairObservations": 1,
+      "status": "pending"
+    },
+    "4khdhubnew": {
       "lastRepairAttemptsPerTask": 3,
       "lastRepairRunId": "34323567439",
       "mediaTypes": [],
@@ -15,9 +25,7 @@
     "animesama-co": {
       "lastRepairAttemptsPerTask": 3,
       "lastRepairRunId": "34323567439",
-      "mediaTypes": [
-        "anime"
-      ],
+      "mediaTypes": ["anime"],
       "owner": "LEARN",
       "publicationAllowed": false,
       "reason": "lost-upstream-positive",
@@ -27,10 +35,7 @@
     "animezey": {
       "lastRepairAttemptsPerTask": 3,
       "lastRepairRunId": "34319494641",
-      "mediaTypes": [
-        "movie",
-        "tv"
-      ],
+      "mediaTypes": ["movie", "tv"],
       "owner": "LEARN",
       "publicationAllowed": false,
       "reason": "lost-upstream-positive",
@@ -67,6 +72,16 @@
       "repairObservations": 1,
       "status": "pending"
     },
+    "streamzo": {
+      "lastRepairAttemptsPerTask": 3,
+      "lastRepairRunId": "34323855155",
+      "mediaTypes": ["tv"],
+      "owner": "LEARN",
+      "publicationAllowed": false,
+      "reason": "lost-upstream-positive",
+      "repairObservations": 1,
+      "status": "pending"
+    },
     "uhdmovies": {
       "lastRepairAttemptsPerTask": 3,
       "lastRepairRunId": "34323567439",
@@ -80,10 +95,7 @@
     "vegamovies": {
       "lastRepairAttemptsPerTask": 3,
       "lastRepairRunId": "34323567439",
-      "mediaTypes": [
-        "movie",
-        "tv"
-      ],
+      "mediaTypes": ["movie", "tv"],
       "owner": "LEARN",
       "publicationAllowed": false,
       "reason": "lost-upstream-positive",
