@@ -23,7 +23,7 @@ permissions:
 
 concurrency:
   group: niakvio-hub-source-discovery-${{ github.ref_name }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   discover:
@@ -53,6 +53,7 @@ jobs:
           python scripts/discover_provider_hub_sources.py \
             --apply \
             --max-providers "$MAX_PROVIDERS" \
+            --workers 8 \
             --timeout 7 \
             --output health-output/provider-hub-source-discovery.json
 
