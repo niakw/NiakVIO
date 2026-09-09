@@ -92,6 +92,12 @@ def main() -> int:
     )
 
     baseline_portfolio = capture_portfolio_yield(PORTFOLIO_BASELINE)
+    run(
+        sys.executable,
+        "scripts/provider_runtime_plan_lkg_v1.py",
+        "capture",
+        "--baseline", str(PORTFOLIO_BASELINE.relative_to(ROOT)),
+    )
 
     # This order is canonical. V16 (chained by base runtime V11) requires Source
     # Plan V15. V17 then builds on V16, while V21.8 cumulatively chains V18-V21.7
@@ -148,6 +154,7 @@ def main() -> int:
         "tests/provider_latest_request_cancellation_test.py",
         "tests/provider_native_abort_ignorant_cancellation_test.py",
         "tests/provider_quick_yield_fixture_selection_test.py",
+        "tests/provider_runtime_plan_lkg_v1_test.py",
     ):
         run(sys.executable, test)
 
@@ -164,6 +171,11 @@ def main() -> int:
 
     run(sys.executable, "scripts/merge_provider_repair_report_v6.py", "--baseline", "automation/provider-route-recovery-v5.json", "--targeted", str(TARGET_REPORT.relative_to(ROOT)), "--output", str(MERGED_REPORT.relative_to(ROOT)))
     run(sys.executable, "scripts/apply_provider_route_recovery_report.py", str(MERGED_REPORT.relative_to(ROOT)))
+    run(
+        sys.executable,
+        "scripts/provider_runtime_plan_lkg_v1.py",
+        "apply",
+    )
     run(sys.executable, "scripts/enforce_route_proof_manifest_policy_v1.py", "--report", str(MERGED_REPORT.relative_to(ROOT)), "--manifest", "manifest.json", "--overrides", "provider-overrides.json")
 
     run(sys.executable, "scripts/materialize_provider_base_v3_store.py")
