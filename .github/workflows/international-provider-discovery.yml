@@ -18,19 +18,10 @@ on:
         required: true
         default: '4'
         type: string
-  # Bootstrap only: removed after the final regenerated XLSX is committed.
-  push:
-    branches:
-      - automation/international-provider-discovery
-    paths:
-      - '.github/workflows/international-provider-discovery.yml'
-      - 'scripts/discover_international_provider_candidates.py'
-      - 'automation/international-provider-manual-candidates.json'
-      - 'automation/international-provider-manual-supplement.json'
-      - 'automation/international-provider-discovery-sources.json'
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
   group: manual-international-provider-discovery
@@ -43,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: automation/international-provider-discovery
+          ref: main
           fetch-depth: 0
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -85,9 +76,9 @@ jobs:
 
       - name: Compile curated discovery catalogue
         env:
-          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '100' }}
-          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market || '2' }}
-          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap || '4' }}
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
+          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap }}
         run: |
           set -euo pipefail
           python -m py_compile scripts/discover_international_provider_candidates.py
@@ -104,8 +95,8 @@ jobs:
 
       - name: Validate catalogue quality
         env:
-          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '100' }}
-          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market || '2' }}
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
         run: |
           python - <<'PY'
           import json, re, unicodedata, urllib.parse, zipfile
@@ -166,21 +157,40 @@ jobs:
           print(f"catalogue validation ok: {len(rows)} candidates / {out.get('market_count')} markets / min={min(counts.values())} per market / {out.get('hub_gap_count')} NiakVIO hub gaps")
           PY
 
-      - name: Commit refreshed research catalogue
+      - name: Publish refreshed files through review PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+          BRANCH='automation/international-provider-candidates-refresh'
+          git switch -C "$BRANCH"
           git add \
             research/international-provider-candidates.json \
             research/international-provider-candidates.csv \
             research/international-provider-candidates.xlsx
+
           if git diff --cached --quiet; then
-            echo 'No catalogue changes.'
+            echo 'No candidate catalogue changes.'
             exit 0
           fi
-          git commit -m 'chore(research): refresh curated international discovery catalogue'
-          git push origin HEAD:automation/international-provider-discovery
+
+          git commit -m 'chore(research): refresh international provider candidates'
+          git push --force-with-lease origin "$BRANCH"
+
+          EXISTING="$(gh pr list --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -z "$EXISTING" ]; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title 'chore(research): refresh international provider candidates' \
+              --body $'Manual international provider discovery refresh.\n\nThe catalogue is curated from actual provider routes and stable hub/Telegram/status sources, de-duplicated against NiakVIO, and selected coverage-first. Code-repository URLs are never accepted as provider routes.\n\nThe XLSX also reports current NiakVIO providers that still lack a stable hub. This workflow never publishes providers or mutates provider JS/manifests/provider-hubs.json.'
+          else
+            gh pr comment "$EXISTING" --body 'Manual discovery reran and refreshed the country-balanced candidate catalogue.'
+          fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
