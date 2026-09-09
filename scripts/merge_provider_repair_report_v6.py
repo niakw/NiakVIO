@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
-"""Merge a targeted route-proof repair census with the last full 96-provider census.
+"""Merge targeted route proof with the 96-provider baseline and exact-source LKG.
 
-Already-green providers are deliberately not re-probed. Their last accepted proof
-rows are carried forward, while targeted rows replace only their own provider ids.
+Already-green providers are deliberately not re-probed. Their baseline rows are
+carried forward. Targeted providers use current proof first, augmented only by
+live-positive route rows retained in the exact-source route-proof LKG. This keeps
+variable successful upstream traces from erasing previously proven correlated
+steps while source changes still reset historical evidence.
+
 Before persistence, every carried/new simple API recipe passes the same typed-route
 normalizer so obsolete generic directRoute DATA cannot outrank movie/tv routes.
 The resulting report is a normal full proof-v5 census consumable by the existing
@@ -16,6 +20,8 @@ import json
 from collections import Counter
 from pathlib import Path
 from typing import Any
+
+import provider_route_proof_lkg as route_lkg
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -59,6 +65,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline", type=Path, default=Path("automation/provider-route-recovery-v5.json"))
     parser.add_argument("--targeted", type=Path, required=True)
+    parser.add_argument("--lkg", type=Path, default=Path("automation/provider-route-proof-lkg.json"))
     parser.add_argument("--output", type=Path, default=Path("automation/provider-route-recovery-v6.json"))
     args = parser.parse_args()
     baseline = load(ROOT / args.baseline)
@@ -66,11 +73,24 @@ def main() -> int:
     if int(baseline.get("providerCount") or 0) != 96 or len(baseline.get("providers") or []) != 96:
         raise SystemExit("baseline route proof must contain 96 providers")
 
+    lkg_path = ROOT / args.lkg
+    lkg = route_lkg.load(lkg_path, missing_ok=True)
+    lkg, lkg_stats = route_lkg.merge_report_into_registry(lkg, targeted)
+    route_lkg.write(lkg_path, lkg)
+    lkg_providers = lkg.get("providers") if isinstance(lkg.get("providers"), dict) else {}
+
     rows = {pid(row): row for row in baseline.get("providers") or [] if isinstance(row, dict) and pid(row)}
     targeted_rows = [row for row in targeted.get("providers") or [] if isinstance(row, dict) and pid(row)]
     targeted_ids = {pid(row) for row in targeted_rows}
+    lkg_retained_rows = 0
+    lkg_augmented_providers: list[str] = []
     for row in targeted_rows:
-        rows[pid(row)] = row
+        key = pid(row)
+        enriched, retained = route_lkg.augment_provider_row(row, lkg_providers.get(key))
+        rows[key] = enriched
+        if retained > 0:
+            lkg_retained_rows += retained
+            lkg_augmented_providers.append(key)
     if len(rows) != 96:
         raise SystemExit(f"merged provider rows={len(rows)}, expected=96")
 
@@ -94,7 +114,7 @@ def main() -> int:
         "statusCounts": dict(sorted(counts.items())),
         "providers": merged_rows,
         "portfolioRepair": {
-            "version": 7,
+            "version": 8,
             "targetedProviderCount": len(targeted_ids),
             "targetedProviders": sorted(targeted_ids),
             "preservedProviderCount": 96 - len(targeted_ids),
@@ -103,6 +123,10 @@ def main() -> int:
             "proofMethod": targeted.get("method"),
             "typedRecipeDirectRouteSanitizedCount": len(typed_recipe_sanitized),
             "typedRecipeDirectRouteSanitizedProviders": typed_recipe_sanitized,
+            "routeProofLkgUpdatedProviders": int(lkg_stats.get("updatedProviders") or 0),
+            "routeProofLkgSourceResets": int(lkg_stats.get("sourceResets") or 0),
+            "routeProofLkgRetainedRows": lkg_retained_rows,
+            "routeProofLkgAugmentedProviders": sorted(set(lkg_augmented_providers)),
         },
     })
     out = ROOT / args.output
@@ -112,7 +136,9 @@ def main() -> int:
         "PROVIDER_REPAIR_REPORT_V6_MERGED "
         f"targeted={len(targeted_ids)} preserved={96-len(targeted_ids)} "
         f"proven={merged['providersWithProvenRoutes']} routes={merged['provenRouteCount']} "
-        f"recipes={merged['simpleApiRecipeCount']} typed_direct_sanitized={len(typed_recipe_sanitized)}"
+        f"recipes={merged['simpleApiRecipeCount']} typed_direct_sanitized={len(typed_recipe_sanitized)} "
+        f"route_lkg_updated={lkg_stats.get('updatedProviders', 0)} "
+        f"route_lkg_retained={lkg_retained_rows} route_lkg_augmented={len(set(lkg_augmented_providers))}"
     )
     return 0
 
