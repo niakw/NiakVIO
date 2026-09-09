@@ -44,6 +44,12 @@ def _once(text: str, old: str, new: str, label: str) -> str:
     return text.replace(old, new, 1)
 
 
+def _function_section(text: str, start_marker: str, next_marker: str) -> tuple[int, int, str]:
+    start = text.index(start_marker)
+    end = text.index(next_marker, start)
+    return start, end, text[start:end]
+
+
 def patch_proof() -> bool:
     v217.patch_proof()
     text = PROOF.read_text(encoding="utf-8")
@@ -108,26 +114,56 @@ def _request_composite_related_to_fixture(
 '''
     text = _once(text, anchor, helper + anchor, "v21.8-proof-helper")
 
-    old = '''        placeholder = _request_scalar_placeholder(key, raw, fixture, provider_values)
-        if placeholder:
-            body[str(key)] = placeholder
-            substitutions.append({"location": f"body:{key}", "value": value, "placeholder": placeholder})
-            continue
-        if any(token and str(token) in value for token in fixture_tokens):
-'''
-    new = '''        placeholder = _request_scalar_placeholder(key, raw, fixture, provider_values)
-        if placeholder is None:
-            placeholder = _request_composite_placeholder(key, raw, fixture)
-        if placeholder:
-            body[str(key)] = placeholder
-            substitutions.append({"location": f"body:{key}", "value": value, "placeholder": placeholder})
-            continue
-        if _request_composite_related_to_fixture(key, raw, fixture):
-            residue.append({"location": f"body:{key}", "value": value[:160]})
-            continue
-        if any(token and str(token) in value for token in fixture_tokens):
-'''
-    text = _once(text, old, new, "v21.8-proof-composite-use")
+    # Patch only the canonical structured-body owner. Earlier V16/V20 migrations
+    # can legitimately add lines around this assignment, so do not couple V21.8
+    # to their exact surrounding block.
+    start, end, section = _function_section(text, "def derive_request_spec(\n", "def derive_observed_route(\n")
+    scalar = "        placeholder = _request_scalar_placeholder(key, raw, fixture, provider_values)\n"
+    if section.count(scalar) != 1:
+        raise AssertionError(f"v21.8-structured-scalar-anchor count={section.count(scalar)}")
+    section = section.replace(
+        scalar,
+        scalar
+        + "        if not placeholder:\n"
+        + "            placeholder = _request_composite_placeholder(key, raw, fixture)\n",
+        1,
+    )
+    residue_anchor = "        if any(token and str(token) in value for token in fixture_tokens):\n"
+    if section.count(residue_anchor) != 1:
+        raise AssertionError(f"v21.8-structured-residue-anchor count={section.count(residue_anchor)}")
+    section = section.replace(
+        residue_anchor,
+        "        if _request_composite_related_to_fixture(key, raw, fixture):\n"
+        "            residue.append({\"location\": f\"body:{key}\", \"value\": value[:160]})\n"
+        "            continue\n"
+        + residue_anchor,
+        1,
+    )
+    text = text[:start] + section + text[end:]
+
+    # V20.3 owns a second URL-encoded text-body path. Extend it too when present,
+    # while preserving all of V20.4's existing title+season logic.
+    if "def _urlencoded_text_body_spec(\n" in text:
+        start, end, section = _function_section(text, "def _urlencoded_text_body_spec(\n", "def derive_request_spec(\n")
+        scalar_text = "        placeholder = _request_scalar_placeholder(key, value, fixture, provider_values)\n"
+        if section.count(scalar_text) == 1:
+            insert_after = scalar_text
+            if "            placeholder = _urlencoded_search_query_template(key, value, fixture)\n" in section:
+                insert_after += (
+                    "        if not placeholder:\n"
+                    "            placeholder = _urlencoded_search_query_template(key, value, fixture)\n"
+                )
+            if section.count(insert_after) != 1:
+                raise AssertionError("v21.8-urlencoded-composite predecessor ambiguous")
+            section = section.replace(
+                insert_after,
+                insert_after
+                + "        if not placeholder:\n"
+                + "            placeholder = _request_composite_placeholder(key, value, fixture)\n",
+                1,
+            )
+            text = text[:start] + section + text[end:]
+
     PROOF.write_text(text, encoding="utf-8")
     validate_proof(text)
     return True
@@ -140,31 +176,25 @@ def patch_recovery() -> bool:
         validate_recovery(text)
         return False
 
-    old = '''def _record_has_search_query(row: dict[str, Any]) -> bool:
-    if "{query}" in str(row.get("route") or ""):
+    start = text.index("def _record_has_search_query(row: dict[str, Any]) -> bool:\n")
+    next_def = text.index("\ndef ", start + 5)
+    section = text[start:next_def]
+    old_route = '''    if "{query}" in str(row.get("route") or ""):
         return True
-    spec = request_spec(row)
-    if not isinstance(spec, dict):
-        return False
-    # Request specs are already sanitized/abstracted proof DATA. Searching the
-    # serialized structure here only detects the canonical placeholder produced
-    # by proof abstraction; it never recovers arbitrary provider code/data.
-    return "{query}" in json.dumps(spec, ensure_ascii=False, sort_keys=True)
 '''
-    new = '''# ROUTE_RECOVERY_COMPOSITE_SEARCH_TEMPLATE_V21_8
-def _record_has_search_query(row: dict[str, Any]) -> bool:
-    route = str(row.get("route") or "")
+    new_route = '''    route = str(row.get("route") or "")
     if any(marker in route for marker in ("{query}", "{queryDots}", "{query_dots}")):
         return True
-    spec = request_spec(row)
-    if not isinstance(spec, dict):
-        return False
-    # Request specs are already sanitized/abstracted proof DATA. Recognize only
-    # canonical fixture-owned placeholders; never recover arbitrary provider code.
-    serialized = json.dumps(spec, ensure_ascii=False, sort_keys=True)
+'''
+    section = _once(section, old_route, new_route, "v21.8-recovery-route-query")
+    old_return = '''    return "{query}" in json.dumps(spec, ensure_ascii=False, sort_keys=True)
+'''
+    new_return = '''    serialized = json.dumps(spec, ensure_ascii=False, sort_keys=True)
     return any(marker in serialized for marker in ("{query}", "{queryDots}", "{query_dots}"))
 '''
-    text = _once(text, old, new, "v21.8-recovery-search-query-marker")
+    section = _once(section, old_return, new_return, "v21.8-recovery-spec-query")
+    section = "# ROUTE_RECOVERY_COMPOSITE_SEARCH_TEMPLATE_V21_8\n" + section
+    text = text[:start] + section + text[next_def:]
     RECOVERY.write_text(text, encoding="utf-8")
     validate_recovery(text)
     return True
@@ -228,6 +258,7 @@ def validate_proof(text: str | None = None) -> None:
         'return "{queryDots}.{year}"',
         'return "{queryDots}.S{season2}E{episode2}"',
         "_request_composite_related_to_fixture(key, raw, fixture)",
+        "_request_composite_placeholder(key, raw, fixture)",
     ):
         if needle not in value:
             raise AssertionError(f"V21.8 proof missing {needle}")
