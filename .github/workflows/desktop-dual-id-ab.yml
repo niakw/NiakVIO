@@ -111,16 +111,6 @@ jobs:
           print("FIELD_DESKTOP_DUAL_ID_HOST_RESOLUTION resolved=true credential_exposed_to_js=false")
           PY
 
-      - name: Inject host dual-ID context into official runtime
-        if: matrix.mode == 'dual'
-        shell: bash
-        run: |
-          set -euo pipefail
-          python3 niakvio/scripts/augment_native_desktop_dual_id_context.py \
-            --source nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt
-          grep -q 'NIAKVIO_LAB_DUAL_ID_CONTEXT_V1' \
-            nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt
-
       - name: Assert protected NiakVIO provider bytes are untouched
         shell: bash
         run: |
@@ -133,19 +123,32 @@ jobs:
             vf-no-anime/manifest.json
           echo "FIELD_DESKTOP_DUAL_ID_PROTECTED_BYTES mode=${NIAKVIO_AB_MODE} mutated=false"
 
-      - name: Select response-shape diagnostic for this Lab only
+      - name: Configure response-shape diagnostic and post-audit dual-ID injection
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
+          import os
           from pathlib import Path
+
           path = Path("niakvio/scripts/run_native_corpus_desktop_suite.sh")
           text = path.read_text(encoding="utf-8")
           old = 'RUNTIME_DIAGNOSTICS="${NIAKVIO}/scripts/augment_native_desktop_runtime_diagnostics.py"'
           new = 'RUNTIME_DIAGNOSTICS="${NIAKVIO}/scripts/augment_native_desktop_runtime_shape_diagnostics.py"'
           if text.count(old) != 1:
               raise SystemExit(f"runtime diagnostic selector anchor count={text.count(old)}")
-          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          text = text.replace(old, new, 1)
+
+          if os.environ.get("NIAKVIO_AB_MODE") == "dual":
+              anchor = 'python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?\n'
+              injection = anchor + '''python3 "${NIAKVIO}/scripts/augment_native_desktop_dual_id_context.py" \\
+  --source "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?\ngrep -q 'NIAKVIO_LAB_DUAL_ID_CONTEXT_V1' \\
+  "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?\necho "FIELD_NATIVE_DESKTOP_DUAL_ID_POST_AUDIT injected=true provider_bytes_mutated=false"\n'''
+              if text.count(anchor) != 1:
+                  raise SystemExit(f"post-audit dual-ID anchor count={text.count(anchor)}")
+              text = text.replace(anchor, injection, 1)
+          path.write_text(text, encoding="utf-8")
+          print("FIELD_DESKTOP_DUAL_ID_RUNNER mode=" + os.environ.get("NIAKVIO_AB_MODE", "") + " post_audit_injection=" + str(os.environ.get("NIAKVIO_AB_MODE") == "dual").lower())
           PY
 
       - name: Build official macOS native player bridge
@@ -189,8 +192,11 @@ jobs:
           joined = "\n".join(details)
           imdb_route = bool(re.search(r'/stream/movie/tt\d+\.json', joined, re.I))
           numeric_route = '/stream/movie/157336.json' in joined
-          print(f"FIELD_DESKTOP_DUAL_ID_AB_VERDICT mode={mode} count={count} imdb_route={str(imdb_route).lower()} numeric_route={str(numeric_route).lower()}")
+          post_audit = 'FIELD_NATIVE_DESKTOP_DUAL_ID_POST_AUDIT injected=true' in text
+          print(f"FIELD_DESKTOP_DUAL_ID_AB_VERDICT mode={mode} count={count} imdb_route={str(imdb_route).lower()} numeric_route={str(numeric_route).lower()} post_audit={str(post_audit).lower()}")
           if mode == "dual":
+              if not post_audit:
+                  raise SystemExit("dual-ID injection did not occur after purity audits")
               if count <= 0:
                   raise SystemExit("dual-ID host context did not recover any PersianStremio stream")
               if not imdb_route:
