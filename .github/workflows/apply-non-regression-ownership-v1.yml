@@ -1,0 +1,66 @@
+name: Apply Non-Regression Ownership V1
+
+on:
+  push:
+    branches:
+      - workbench/systemic-recovery-20260909
+    paths:
+      - '.github/workflows/apply-non-regression-ownership-v1.yml'
+      - 'scripts/migrate_non_regression_ownership_v1.py'
+
+permissions:
+  contents: write
+
+jobs:
+  migrate-test-commit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: workbench/systemic-recovery-20260909
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+      - name: Apply ownership migration
+        run: |
+          set -euo pipefail
+          python scripts/migrate_non_regression_ownership_v1.py
+          python -m py_compile scripts/build_provider_history_matrix.py scripts/run_provider_repair_pipeline_v6.py tests/global_media_type_pre_network_gate_test.py
+      - name: Validate permanent regression ownership
+        run: |
+          set -euo pipefail
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/provider_non_regression_contract_test.py
+          python tests/provider_v3_workflow_ownership_test.py
+          python - <<'PY'
+          from pathlib import Path
+          root=Path('.')
+          v1=(root/'scripts/build_provider_history_matrix.py').read_text(encoding='utf-8')
+          repair=(root/'scripts/run_provider_repair_pipeline_v6.py').read_text(encoding='utf-8')
+          sync=(root/'.github/workflows/sync.yml').read_text(encoding='utf-8')
+          assert 'baseline = lanes_from_rows(by36.get(pid) or qrows)' not in v1
+          assert 'baseline = lanes_from_rows(by36.get(pid) or [])' in v1
+          assert '"tests/global_media_type_pre_network_gate_test.py",' in repair
+          assert 'python tests/global_media_type_pre_network_gate_test.py' in sync
+          print('NON_REGRESSION_OWNERSHIP_OK v1_cross_snapshot_fallback=false repair_v6=true core_quick=true')
+          PY
+      - name: Commit hardened owners on workbench only
+        run: |
+          set -euo pipefail
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/build_provider_history_matrix.py scripts/run_provider_repair_pipeline_v6.py .github/workflows/sync.yml
+          if git diff --cached --quiet; then
+            echo 'NON_REGRESSION_OWNERSHIP_COMMIT changed=false'
+            exit 0
+          fi
+          git commit -m 'fix(core): make semantic and history regression guards permanent'
+          git push origin HEAD:workbench/systemic-recovery-20260909
