@@ -70,6 +70,21 @@ jobs:
               '            automation/provider-repair-v6-summary.json\n',
               '            automation/provider-repair-v6-summary.json\n            automation/provider-repair-disposition.json\n',
           )
+          replace_once(
+              '.github/workflows/provider-history-matrix.yml',
+              '      - workbench/systemic-recovery-20260909\n',
+              '',
+          )
+          replace_once(
+              '.github/workflows/core-stream-metadata-contract.yml',
+              "      - 'workbench/**'\n",
+              '',
+          )
+          replace_once(
+              '.github/workflows/hub-source-discovery.yml',
+              "  push:\n    branches: [workbench/systemic-recovery-20260909]\n    paths:\n      - '.github/workflows/hub-source-discovery.yml'\n      - 'scripts/discover_provider_hub_sources.py'\n      - 'tests/provider_hub_source_discovery_guard_test.py'\n",
+              '',
+          )
 
           # Static contracts follow the durable main-only ownership.
           replace_once(
