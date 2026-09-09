@@ -32,8 +32,6 @@ for provider_id, row in rows.items():
     assert emoji, provider_id
     assert emoji != "🔤", f"generic alphabet fallback is forbidden: {provider_id}"
 
-# Providers for which no stronger semantic symbol was selected use their own
-# first initial as a regional-indicator emoji rather than a generic ABC marker.
 for provider_id, expected in {
     "animepahe": "🇦",
     "yflix": "🇾",
@@ -47,9 +45,6 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-# Emoji selection is a one-shot committed migration. Discovery may see a
-# provider before the registry is refreshed, but Core must not synthesize
-# recurring branding for it.
 assert module._load_provider("future-provider-never-seen-before") is None
 future_source = 'globalThis.getStreams=async function(){return [{url:"https://example.com/future.m3u8",name:"future"}]};\n'
 assert module.apply(
@@ -59,7 +54,7 @@ assert module.apply(
 
 # V8 lossless visible-label contract: STREAM_FACTS already preserved the
 # provider/player-owned values before presentation. Branding must expose the
-# richest source label again instead of collapsing the stream to provider+quality.
+# richest source label again while keeping the established ` - quality` suffix.
 source = (
     'globalThis.getStreams=async function(){return [{'
     'url:"https://example.com/video.m3u8",'
@@ -73,7 +68,7 @@ assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in output
 assert "post-presentation-lossless-source-label-v8" in output
 assert "🍑" in output and "Peachify" in output
 assert module.apply(output, context={"provider_id": "peachify"}) == output
-expected = "🍑 Peachify • StreamWish Server 2 VFF WEB-DL HEVC • 1080p"
+expected = "🍑 Peachify • StreamWish Server 2 VFF WEB-DL HEVC - 1080p"
 
 with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False, encoding="utf-8") as handle:
     handle.write(output)
