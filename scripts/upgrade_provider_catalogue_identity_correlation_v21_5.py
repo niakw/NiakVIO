@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""V21.5: scope catalogue identity to the matched search-result record.
+"""V21.5: correlate initial catalogue identity within the matched HTML record.
 
-Run 82 proved that response-wide id suppression cannot apply to every response:
-later provider/player steps legitimately learn opaque ids that replace the
-catalogue identity. The stricter authority therefore belongs only to the initial
-catalogue search response.
+The historical V20.5/V21.1 strict provider-value selector is intentionally left
+byte-compatible: later response steps rely on its response-wide id learning and
+older migrations validate its exact media-aware signature.
 
-The same run also proved that path-wide inference is insufficient for HTML search
-results whose title and navigation URL are correlated by a result container
-(e.g. a generic search/result/card element with an onclick URL). V21.5 therefore
-adds bounded same-record HTML correlation for the initial catalogue response,
-keeps that correlated id authoritative against unrelated response-wide ids, and
-preserves historical response-wide id learning for all later step responses.
+V21.5 adds a separate initial-catalogue wrapper. It first evaluates the existing
+strict selector as a fallback, then prefers stronger same-record HTML evidence
+when a bounded search/result/card container correlates a visible title with its
+own onclick/href navigation target. Only the initial search response uses this
+wrapper. Later correlated steps keep calling the unchanged strict selector.
 
 No provider names, hosts, fixtures, or provider-specific ids are encoded in the
 runtime logic.
@@ -39,12 +37,6 @@ validate_recovery = v214.validate_recovery
 validate_materializer = v214.validate_materializer
 
 
-def _strict_span(text: str) -> tuple[int, int]:
-    start = text.index("function _spv205StrictProviderValues(")
-    end = text.index("function _spv205HttpValues", start)
-    return start, end
-
-
 def _once(text: str, old: str, new: str, label: str) -> str:
     count = text.count(old)
     if count != 1:
@@ -55,21 +47,19 @@ def _once(text: str, old: str, new: str, label: str) -> str:
 def patch_base() -> bool:
     v214.patch_base()
     text = BASE.read_text(encoding="utf-8")
-    start, end = _strict_span(text)
-    strict = text[start:end]
-    if MARKER in strict:
+    if MARKER in text:
         validate_base(text)
         return False
 
-    old_signature = "function _spv205StrictProviderValues(value, base, meta, season, mediaType) {\n"
+    strict_signature = "function _spv205StrictProviderValues(value, base, meta, season, mediaType) {\n"
     helper = r'''/* NIAKVIO_PROVIDER_CATALOGUE_IDENTITY_CORRELATION_V21_5 */
 function _spv215CatalogueCardValues(value, base, meta, season, mediaType) {
   const source = _text(value).slice(0, 786432);
   if (!source) return { id: "", slug: "", score: -1e9 };
 
-  // Search/result/card containers are stronger identity evidence than an
-  // unrelated path or data-id elsewhere in the same response. Split by the
-  // next record start rather than trying to parse nested HTML with one regex.
+  // A title and navigation target from the same search/result/card record are
+  // stronger identity evidence than an unrelated path or data-id elsewhere in
+  // the response. Bound both the number of records and bytes inspected.
   const startRe = /<(?:div|article|li)\b[^>]*\bclass\s*=\s*(["'])[^"']*(?:search[-_ ]?item|search[-_ ]?result|result[-_ ]?item|catalog(?:ue)?[-_ ]?item|media[-_ ]?item|result[-_ ]?card)[^"']*\1[^>]*>/gi;
   const starts = [];
   let match, scanned = 0;
@@ -129,41 +119,18 @@ function _spv215CatalogueCardValues(value, base, meta, season, mediaType) {
   }
   return best;
 }
-'''
-    strict = _once(
-        strict,
-        old_signature,
-        helper + "function _spv205StrictProviderValues(value, base, meta, season, mediaType, catalogueIdentity) {\n",
-        "v21.5-helper-and-signature",
-    )
-
-    old_best = '''  const source = _text(value).slice(0, 786432);
-  let bestScore = -1e9;
-  let best = { id: "", slug: "" };
-'''
-    new_best = '''  const source = _text(value).slice(0, 786432);
-  let bestScore = -1e9;
-  let best = { id: "", slug: "" };
-  if (catalogueIdentity === true) {
-    const cardBest = _spv215CatalogueCardValues(source, base, meta, season, mediaType);
-    if (cardBest && (cardBest.id || cardBest.slug) && cardBest.score >= 90) {
-      // Same-record title + navigation correlation outranks path-only inference.
-      bestScore = cardBest.score + 100;
-      best = { id: cardBest.id || "", slug: cardBest.slug || "" };
-    }
-  }
-'''
-    strict = _once(strict, old_best, new_best, "v21.5-catalogue-card-seed")
-
-    old_tail = "  if (bestId) best.id = bestId;\n  return best;\n}\n"
-    new_tail = '''  // Later step responses must retain historical response-wide id learning.
-  // Only the initial catalogue response protects an already correlated row id.
-  if ((catalogueIdentity !== true || !best.id) && bestId) best.id = bestId;
-  return best;
+function _spv215CatalogueProviderValues(value, base, meta, season, mediaType) {
+  const fallback = _spv205StrictProviderValues(value, base, meta, season, mediaType) || { id: "", slug: "" };
+  if (typeof value !== "string") return fallback;
+  const card = _spv215CatalogueCardValues(value, base, meta, season, mediaType);
+  if (!card || (!card.id && !card.slug) || card.score < 90) return fallback;
+  return {
+    id: card.id || fallback.id || "",
+    slug: card.slug || fallback.slug || ""
+  };
 }
 '''
-    strict = _once(strict, old_tail, new_tail, "v21.5-scoped-global-id-fallback")
-    text = text[:start] + strict + text[end:]
+    text = _once(text, strict_signature, helper + strict_signature, "v21.5-catalogue-wrapper")
 
     resolver_start = text.index("async function _resolveProviderValuePlan")
     resolver_end = text.index("async function _resolveSearchRequestPlan", resolver_start)
@@ -176,16 +143,15 @@ function _spv215CatalogueCardValues(value, base, meta, season, mediaType) {
         mediaType
       ) || { id: "", slug: "" };
 '''
-    new_initial = '''      providerValues = _spv205StrictProviderValues(
+    new_initial = '''      providerValues = _spv215CatalogueProviderValues(
         searchPayload.value,
         searchPayload.base || searchUrl,
         meta,
         season,
-        mediaType,
-        true
+        mediaType
       ) || { id: "", slug: "" };
 '''
-    resolver = _once(resolver, old_initial, new_initial, "v21.5-initial-catalogue-authority")
+    resolver = _once(resolver, old_initial, new_initial, "v21.5-initial-catalogue-wrapper-call")
     text = text[:resolver_start] + resolver + text[resolver_end:]
 
     BASE.write_text(text, encoding="utf-8")
@@ -196,29 +162,29 @@ function _spv215CatalogueCardValues(value, base, meta, season, mediaType) {
 def validate_base(text: str | None = None) -> None:
     value = text if text is not None else BASE.read_text(encoding="utf-8")
     v214.validate_base(value)
-    start, end = _strict_span(value)
-    strict = value[start:end]
     for needle in (
         MARKER,
+        "function _spv205StrictProviderValues(value, base, meta, season, mediaType)",
         "function _spv215CatalogueCardValues(value, base, meta, season, mediaType)",
-        "function _spv205StrictProviderValues(value, base, meta, season, mediaType, catalogueIdentity)",
-        "bestScore = cardBest.score + 100;",
-        "if ((catalogueIdentity !== true || !best.id) && bestId) best.id = bestId;",
-        "const score = _spv211CandidateIdentityScore(label, segment, meta, mediaType, season);",
-        "const dataIdRe =",
+        "function _spv215CatalogueProviderValues(value, base, meta, season, mediaType)",
+        "const fallback = _spv205StrictProviderValues(value, base, meta, season, mediaType)",
+        "providerValues = _spv215CatalogueProviderValues(",
     ):
-        if needle not in strict:
-            raise AssertionError(f"V21.5 strict catalogue selector missing {needle}")
+        if needle not in value:
+            raise AssertionError(f"V21.5 ProviderBase missing {needle}")
 
     resolver_start = value.index("async function _resolveProviderValuePlan")
     resolver_end = value.index("async function _resolveSearchRequestPlan", resolver_start)
     resolver = value[resolver_start:resolver_end]
-    if "searchPayload.base || searchUrl,\n        meta,\n        season,\n        mediaType,\n        true" not in resolver:
-        raise AssertionError("V21.5 initial catalogue call is not explicitly scoped")
-    if "payload.base || stepUrl,\n            meta,\n            season,\n            mediaType,\n            true" in resolver:
-        raise AssertionError("V21.5 incorrectly scopes later step responses as catalogue identity")
+    if resolver.count("providerValues = _spv215CatalogueProviderValues(") != 1:
+        raise AssertionError("V21.5 catalogue wrapper must own exactly one initial identity call")
+    if "const nextProviderValues = _spv215CatalogueProviderValues(" in resolver:
+        raise AssertionError("V21.5 catalogue wrapper leaked into later response steps")
+    if "const nextProviderValues = _spv205StrictProviderValues(" not in resolver:
+        raise AssertionError("V21.5 no longer preserves historical later response id learning")
 
-    lowered = strict.casefold()
+    runtime = value[value.index(MARKER):resolver_end]
+    lowered = runtime.casefold()
     for forbidden in (
         "french-manga",
         "jujutsu",
@@ -242,9 +208,9 @@ def main() -> int:
     validate_base()
     print(
         f"PROVIDER_CATALOGUE_IDENTITY_CORRELATION_V21_5_OK changed={str(changed).lower()} "
-        "initial_catalogue_only=1 matched_record_id_authoritative=1 "
-        "later_response_id_learning_preserved=1 onclick_card_correlation=1 "
-        "global_id_fallback_preserved=1 provider_specific_rules=0"
+        "strict_v21_1_signature_preserved=1 initial_catalogue_wrapper_only=1 "
+        "matched_record_id_authoritative=1 onclick_card_correlation=1 "
+        "later_response_id_learning_preserved=1 provider_specific_rules=0"
     )
     return 0
 
