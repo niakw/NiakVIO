@@ -49,8 +49,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ./desktop/gradlew -p desktop :composeApp:compileKotlinDesktop --no-build-cache --no-configuration-cache --console=plain
-          echo 'FIELD_CLIENT_IDENTITY_COMPILE client=desktop success=true provider_abi_changed=false'
+          # compileKotlinDesktop pulls compose-media-player's native Linux build as a resource dependency.
+          # Its upstream frame_copy_test requires an initialized media player/display and fails on a headless
+          # Actions runner even though the Kotlin sources compile. Exclude that unrelated native test/build here:
+          # this harness validates the patched PluginRepository/PluginRuntime compile contract only.
+          ./desktop/gradlew -p desktop \
+            :composeApp:compileKotlinDesktop \
+            -x :composeMediaPlayer:buildNativeLinux \
+            --no-build-cache --no-configuration-cache --console=plain
+          echo 'FIELD_CLIENT_IDENTITY_COMPILE client=desktop success=true provider_abi_changed=false native_player_test_scope=excluded'
 
   mobile-android:
     runs-on: ubuntu-latest
