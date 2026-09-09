@@ -1,8 +1,8 @@
 {
-  "schemaVersion": 31,
-  "requestedAt": "2026-09-09T02:37:00+02:00",
-  "scope": "v21.3-series-slug-role-and-identity-diagnostics",
-  "mode": "proof-first-response-value-correlation-v21.3",
+  "schemaVersion": 32,
+  "requestedAt": "2026-09-09T02:50:00+02:00",
+  "scope": "v21.4-episode-scoped-json-player-extraction",
+  "mode": "proof-first-response-value-correlation-v21.4",
   "explicitProviders": [
     "animesama-co",
     "animevostfr",
@@ -37,11 +37,15 @@
   "legacyV20_5CompatibilityRequired": true,
   "seriesSlugRolePreservedAcrossEpisodeResponses": true,
   "episodeSlugHandoffAllowedWhenRouteRequiresIt": true,
+  "episodeIndexedJsonScopedBeforePlayerExtraction": true,
+  "episodeTaggedArraysScopedBeforePlayerExtraction": true,
+  "missingEpisodeFailsClosed": true,
+  "numericQualityMapsUnaffected": true,
   "wrongContentReasonDiagnosticsRequired": true,
   "wrongContentDiagnosticsMustBeSecretFree": true,
   "workflowSecurityPreflightRequired": true,
   "externalActionsPinnedByFullSha": true,
   "providerSpecificRules": false,
-  "v21_3ContractTestRequired": true,
+  "v21_4ContractTestRequired": true,
   "publicationAllowed": false
 }
