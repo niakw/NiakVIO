@@ -1,0 +1,216 @@
+name: LAB - Desktop Dual-ID A-B
+
+on:
+  push:
+    branches:
+      - workbench/systemic-recovery-20260909
+    paths:
+      - ".github/workflows/desktop-dual-id-ab.yml"
+      - "scripts/augment_native_desktop_dual_id_context.py"
+      - "tests/native_desktop_dual_id_context_test.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-dual-id-ab-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  persianstremio-macos:
+    name: PersianStremio Desktop identity A-B (${{ matrix.mode }})
+    runs-on: macos-15
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [baseline, dual]
+    env:
+      LC_NUMERIC: C
+      NIAKVIO_TARGET_PROVIDER: persianstremio
+      NIAKVIO_TARGET_MANIFEST: manifest.json
+      NIAKVIO_TARGET_FIXTURE: interstellar
+      NIAKVIO_PRIMARY_FIXTURE: interstellar
+      NIAKVIO_PRIMARY_STREAM_SCOPE: "1"
+      NIAKVIO_REGRESSION_STREAM_SCOPE: "1"
+      NIAKVIO_AB_MODE: ${{ matrix.mode }}
+    steps:
+      - name: Checkout NiakVIO workbench
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          path: niakvio
+          persist-credentials: false
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165
+        with: {distribution: temurin, java-version: "17"}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: "24", package-manager-cache: false}
+
+      - uses: gradle/actions/setup-gradle@0723195856401067f7a2779048b490ace7a47d7c
+        with:
+          cache-disabled: true
+
+      - name: Validate dual-ID transform and diagnostics contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/tests/native_desktop_dual_id_context_test.py
+          python3 niakvio/tests/native_desktop_runtime_diagnostics_order_test.py
+          python3 niakvio/tests/native_desktop_runtime_shape_diagnostics_test.py
+
+      - name: Checkout latest official NuvioDesktop and stage protected provider
+        shell: bash
+        run: |
+          set -euxo pipefail
+          git clone --filter=blob:none --no-checkout https://github.com/NuvioMedia/NuvioDesktop.git nuvio-desktop
+          DESKTOP_SHA="$(git -C nuvio-desktop ls-remote origin HEAD | awk '{print $1}')"
+          test -n "$DESKTOP_SHA"
+          git -C nuvio-desktop checkout "$DESKTOP_SHA"
+          git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**" --exclude=""
+          touch nuvio-desktop/local.properties
+          python3 niakvio/scripts/native_desktop_upstream_test_compat.py nuvio-desktop
+          python3 niakvio/scripts/prepare_native_corpus_client.py desktop \
+            --fixture interstellar \
+            --workspace "$GITHUB_WORKSPACE" \
+            --manifest manifest.json \
+            --provider persianstremio
+          echo "FIELD_DESKTOP_DUAL_ID_AB_HEAD mode=${NIAKVIO_AB_MODE} desktop_sha=$DESKTOP_SHA niakvio_sha=${{ github.sha }}"
+
+      - name: Resolve IMDb identity on host only
+        if: matrix.mode == 'dual'
+        shell: bash
+        env:
+          TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+          TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, re, urllib.parse, urllib.request
+          tmdb_id = "157336"
+          key = os.environ.get("TMDB_API_KEY", "").strip()
+          token = os.environ.get("TMDB_ACCESS_TOKEN", "").strip()
+          url = f"https://api.themoviedb.org/3/movie/{tmdb_id}/external_ids"
+          headers = {"Accept": "application/json"}
+          if key:
+              url += "?" + urllib.parse.urlencode({"api_key": key})
+          elif token:
+              headers["Authorization"] = f"Bearer {token}"
+          else:
+              raise SystemExit("missing host TMDB credential for dual-ID Lab")
+          req = urllib.request.Request(url, headers=headers)
+          with urllib.request.urlopen(req, timeout=20) as response:
+              payload = json.load(response)
+          imdb = str(payload.get("imdb_id") or "").strip()
+          if not re.fullmatch(r"tt\d+", imdb):
+              raise SystemExit("host TMDB external_ids did not return a valid IMDb id")
+          with open(os.environ["GITHUB_ENV"], "a", encoding="utf-8") as fh:
+              fh.write(f"NIAKVIO_LAB_IMDB_ID={imdb}\n")
+          print("FIELD_DESKTOP_DUAL_ID_HOST_RESOLUTION resolved=true credential_exposed_to_js=false")
+          PY
+
+      - name: Inject host dual-ID context into official runtime
+        if: matrix.mode == 'dual'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 niakvio/scripts/augment_native_desktop_dual_id_context.py \
+            --source nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt
+          grep -q 'NIAKVIO_LAB_DUAL_ID_CONTEXT_V1' \
+            nuvio-desktop/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt
+
+      - name: Assert protected NiakVIO provider bytes are untouched
+        shell: bash
+        run: |
+          set -euo pipefail
+          git -C niakvio diff --exit-code -- \
+            providers \
+            manifest.json \
+            vf/manifest.json \
+            no-anime/manifest.json \
+            vf-no-anime/manifest.json
+          echo "FIELD_DESKTOP_DUAL_ID_PROTECTED_BYTES mode=${NIAKVIO_AB_MODE} mutated=false"
+
+      - name: Select response-shape diagnostic for this Lab only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path("niakvio/scripts/run_native_corpus_desktop_suite.sh")
+          text = path.read_text(encoding="utf-8")
+          old = 'RUNTIME_DIAGNOSTICS="${NIAKVIO}/scripts/augment_native_desktop_runtime_diagnostics.py"'
+          new = 'RUNTIME_DIAGNOSTICS="${NIAKVIO}/scripts/augment_native_desktop_runtime_shape_diagnostics.py"'
+          if text.count(old) != 1:
+              raise SystemExit(f"runtime diagnostic selector anchor count={text.count(old)}")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Build official macOS native player bridge
+        shell: bash
+        run: |
+          set -euxo pipefail
+          ./nuvio-desktop/gradlew -p nuvio-desktop \
+            :composeApp:buildMacosPlayerBridge \
+            :composeApp:prepareMacosPlayerRuntime \
+            --no-configuration-cache --console=plain
+
+      - name: Execute protected PersianStremio through official Desktop runtime
+        id: execute
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -u
+          bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_desktop_suite.sh"
+
+      - name: Evaluate identity A-B result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          LOG="$GITHUB_WORKSPACE/desktop-native-corpus-macos-interstellar.log"
+          test -s "$LOG"
+          python3 - "$LOG" "$NIAKVIO_AB_MODE" <<'PY'
+          import base64, re, sys
+          path, mode = sys.argv[1], sys.argv[2]
+          text = open(path, encoding="utf-8", errors="replace").read()
+          counts = [int(x) for x in re.findall(r'FIELD_NATIVE_RESULT[^\n]*provider64=cGVyc2lhbnN0cmVtaW8[^\n]*count=(\d+)', text)]
+          if not counts:
+              raise SystemExit("missing PersianStremio FIELD_NATIVE_RESULT")
+          count = counts[-1]
+          details = []
+          for raw in re.findall(r'FIELD_NATIVE_RUNTIME_DIAGNOSTIC[^\n]*detail64=([^\s]+)', text):
+              try:
+                  details.append(base64.b64decode(raw + '=' * (-len(raw) % 4)).decode('utf-8', 'replace'))
+              except Exception:
+                  pass
+          joined = "\n".join(details)
+          imdb_route = bool(re.search(r'/stream/movie/tt\d+\.json', joined, re.I))
+          numeric_route = '/stream/movie/157336.json' in joined
+          print(f"FIELD_DESKTOP_DUAL_ID_AB_VERDICT mode={mode} count={count} imdb_route={str(imdb_route).lower()} numeric_route={str(numeric_route).lower()}")
+          if mode == "dual":
+              if count <= 0:
+                  raise SystemExit("dual-ID host context did not recover any PersianStremio stream")
+              if not imdb_route:
+                  raise SystemExit("dual-ID run did not execute an IMDb PersianStremio route")
+          PY
+
+      - name: Upload A-B evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: desktop-dual-id-${{ matrix.mode }}-${{ github.run_id }}
+          path: |
+            desktop-native-corpus-macos-interstellar.log
+            desktop-native-gradle-macos-interstellar.log
+            native-evidence/desktop/**
+          retention-days: 8
+          if-no-files-found: warn
+
+      - name: Report observational execution status
+        if: always()
+        shell: bash
+        run: |
+          echo "FIELD_DESKTOP_DUAL_ID_EXECUTION mode=${NIAKVIO_AB_MODE} outcome=${{ steps.execute.outcome }} provider_bytes_mutated=false"
