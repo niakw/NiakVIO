@@ -864,3 +864,11 @@ Next execution order:
 - Materializer, semantic enforcer, health/Repair inference, tests and current user-facing docs are reconciled to this invariant before merge.
 - Repair run `34409463163` remains useful route/yield evidence but is no longer final acceptance for the transport matrix. A fresh authoritative Repair + four-version gate is mandatory after this correction.
 - Do not delete `workbench/systemic-recovery-20260909` until corrected Repair, clean PR, merge and five Native Labs are green. Final branch target remains only `main` + `brain-learning/proposals`.
+
+## 2026-09-10 — Repair migration forward-compatibility gate
+
+- Corrected semantic/transport Repair uses the authoritative 188-task matrix; anime-only no longer gains an artificial movie lane and TV/anime episodic transport keeps `tv + series`.
+- Fresh Repair runs then exposed stale *migration validators*, not provider/runtime failures: Source Plan V10 expected its pre-V14 materializer call shape; V18.4 expected its pre-V20 response-value scalar/depth/trace surroundings.
+- V10 validation is now forward-compatible with V14 while still requiring `runtime_domain_replacements` as the only executable domain-replacement authority.
+- V18.4 validation must preserve its bounded JSON-text bridge and sanitized trace but accept the current V20.x id/slug owner and depth-8 dependency replay. Its secret-leak audit is scoped to the actual `_spv184Trace` helper; later security-filter code containing words such as `authorization` is not trace output.
+- These fixes change validators only. They do not alter provider DATA, routes, runtime algorithms or accepted stream evidence. A fresh full authoritative Repair + four-version gate remains mandatory before cleanup/merge.
