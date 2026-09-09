@@ -49,6 +49,7 @@ jobs:
           python3 tests/native_stream_extraction_gate_test.py
           python3 tests/native_desktop_runtime_diagnostics_order_test.py
           python3 tests/nuvio_client_upstream_drift_guard_test.py
+          python3 tests/native_desktop_upstream_test_compat_test.py
       - name: Inspect current official Nuvio client drift
         shell: bash
         run: |
@@ -128,6 +129,7 @@ jobs:
           git -C nuvio-desktop checkout "$NUVIO_DESKTOP_SHA"
           git -C nuvio-desktop lfs pull --include="composeApp/src/desktopMain/native/macos/runtime/**,composeApp/src/desktopMain/native/windows/runtime/**" --exclude=""
           touch nuvio-desktop/local.properties
+          python3 niakvio/scripts/native_desktop_upstream_test_compat.py nuvio-desktop
           python3 niakvio/scripts/prepare_native_corpus_client.py desktop --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type
 
       - name: Install official Windows WebView2 build dependency
