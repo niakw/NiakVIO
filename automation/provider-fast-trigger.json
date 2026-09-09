@@ -1,9 +1,9 @@
 {
-  "schemaVersion": 41,
-  "requestedAt": "2026-09-09T16:20:00+02:00",
-  "scope": "v21.6-full-portfolio-live-sweep-wave-a",
-  "mode": "proof-first-response-value-correlation-v21.6",
-  "explicitProviders": [],
+  "schemaVersion": 42,
+  "requestedAt": "2026-09-09T16:40:00+02:00",
+  "scope": "v21.7-correlated-player-sanitizer-recovery",
+  "mode": "proof-first-response-value-correlation-v21.7",
+  "explicitProviders": ["animesama-co", "animevostfr", "animezey", "cineby", "movieblast"],
   "attempts": 3,
   "normalEntryPlanTarget": 3,
   "hardEntryPlanCap": false,
@@ -48,6 +48,9 @@
   "historicalProofBootstrapExactSourceOnly": true,
   "failedPlayerEmbedPreserved": true,
   "laterPlayerBranchesStillExecuted": true,
+  "correlatedPlayerFallbackPrivateMarker": true,
+  "terminalSanitizerCorrelatedPlayerFallbackV7": true,
+  "directMediaStillFailClosed": true,
   "catalogueDetailNeverPromotedToFallback": true,
   "writeTokenIsolatedFromProviderRuntime": true,
   "wrongContentReasonDiagnosticsRequired": true,
@@ -55,6 +58,6 @@
   "workflowSecurityPreflightRequired": true,
   "externalActionsPinnedByFullSha": true,
   "providerSpecificRules": false,
-  "v21_6ContractTestRequired": true,
+  "v21_7ContractTestRequired": true,
   "publicationAllowed": false
 }
