@@ -1,0 +1,219 @@
+name: WORKBENCH - Final Cleanup Once
+
+on:
+  push:
+    branches:
+      - workbench/systemic-recovery-20260909
+    paths:
+      - '.github/workflows/workbench-final-cleanup-once.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-workbench-final-cleanup-once
+  cancel-in-progress: false
+
+jobs:
+  clean-validate-arm:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact cleanup request
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Retire workbench/session scaffolding
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          root = Path('.')
+
+          def replace_once(rel: str, old: str, new: str) -> None:
+              path = root / rel
+              text = path.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{rel}: expected one cleanup anchor, got {count}: {old!r}')
+              path.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          # Durable workflows become main-only; the exact same global four-version
+          # gate that protected workbench now runs after relevant main pushes too.
+          replace_once(
+              '.github/workflows/provider-non-regression.yml',
+              '      - workbench/systemic-recovery-20260909\n',
+              '      - main\n',
+          )
+          replace_once(
+              '.github/workflows/provider-non-regression.yml',
+              'refs/heads/workbench/systemic-recovery-20260909',
+              'refs/heads/main',
+          )
+          replace_once(
+              '.github/workflows/memory-checkpoint.yml',
+              "      - 'workbench/**'\n",
+              '',
+          )
+          replace_once(
+              '.github/workflows/provider-recognition-repair-v6.yml',
+              '      - workbench/route-recognition-v6\n',
+              '',
+          )
+          replace_once(
+              '.github/workflows/provider-recognition-repair-v6.yml',
+              '            automation/provider-repair-v6-summary.json\n',
+              '            automation/provider-repair-v6-summary.json\n            automation/provider-repair-disposition.json\n',
+          )
+
+          # Static contracts follow the durable main-only ownership.
+          replace_once(
+              'tests/provider_non_regression_contract_test_impl.py',
+              'assert "workbench/systemic-recovery-20260909" in nonreg\n',
+              'assert "workbench/" not in nonreg\n',
+          )
+          replace_once(
+              'tests/provider_v3_workflow_ownership_test.py',
+              '    "workbench/systemic-recovery-20260909",\n',
+              '    "refs/heads/main",\n',
+          )
+          replace_once(
+              'tests/provider_v3_workflow_ownership_test.py',
+              'assert "--all" in nonreg, "workbench/global verification must exercise the complete 96-provider portfolio"\n',
+              'assert "--all" in nonreg, "main/global verification must exercise the complete 96-provider portfolio"\nassert "workbench/" not in nonreg\n',
+          )
+
+          trigger = root / '.github/triggers/provider-recognition-repair-v6.json'
+          text = trigger.read_text(encoding='utf-8')
+          if '"branch": "workbench/systemic-recovery-20260909"' not in text:
+              raise SystemExit('provider recognition trigger no longer points at expected workbench')
+          trigger.write_text(
+              text.replace(
+                  '"branch": "workbench/systemic-recovery-20260909"',
+                  '"branch": "main"',
+                  1,
+              ),
+              encoding='utf-8',
+          )
+
+          retired = [
+              '.github/workflows/apply-core-budget-fix.yml',
+              '.github/workflows/desktop-dual-id-ab.yml',
+              '.github/workflows/desktop-runtime-bisect.yml',
+              '.github/workflows/provider-live-baseline-workbench.yml',
+              '.github/workflows/tmp-client-media-identity-bridge-contract.yml',
+              '.github/workflows/tmp-client-media-identity-compile.yml',
+              '.github/workflows/workbench-authoritative-repair-v1.yml',
+              '.github/workflows/workbench-systemic-repair-v1.yml',
+              '.github/workflows/zz-premerge-provider-yield.yml',
+              '.github/workflows/vf-generation-ab-live.yml',
+              '.github/workflows/terminal-session-publish-v29.yml',
+              '.github/workflows/provider-search-plan-v14.yml',
+              '.github/workflows/workbench-final-cleanup-once.yml',
+              'scripts/trigger-terminal-session-v29.txt',
+              'scripts/append_route_repair_memory_checkpoint.py',
+              'tests/provider_v3_batch_diagnostic_contract_test.py',
+              'automation/provider-non-regression-gate.json',
+              'automation/provider-repair-disposition.json',
+              'automation/provider-repair-portfolio-baseline.json',
+              'automation/provider-repair-portfolio-candidate.json',
+              'automation/provider-repair-portfolio-losses.json',
+              'automation/provider-repair-v6-summary.json',
+              'automation/provider-repair-yield-v6.json',
+              'automation/provider-route-recovery-v6-targeted.json',
+              'automation/provider-route-recovery-v6.json',
+              'automation/workbench-authoritative-repair-v1.log',
+          ]
+          missing = [rel for rel in retired if not (root / rel).exists()]
+          if missing:
+              raise SystemExit('cleanup expected files missing before retirement: ' + ','.join(missing))
+          for rel in retired:
+              (root / rel).unlink()
+
+          memory = root / 'MEMORY.md'
+          checkpoint = '''\n\n## 2026-09-10 — Authoritative systemic Repair V6 acceptance\n\n- Authoritative workbench run: `34409463163`; every step green, including canonical full Repair, exact four-version/rolling non-regression floor, control-plane mutation refusal, candidate commit and evidence upload.\n- Accepted Repair output commit: `20d99bc077385d6469638776fb7081ea1d8ba95c`; catalogue remains exactly 96 Provider Objects.\n- Candidate quick yield improved from 10 playable / 9 verified to 18 playable / 17 verified before final disposition; accepted post-Repair audit reports 16 playable / 15 verified with no accepted portfolio loss.\n- Final disposition: `on=6`, `repair=74`, `off=16`, `disabled=90`, `active_broken=0`. Upstream-positive debt is fully accounted (`repair_debt=16`, `off_debt=2`, `active_loss=0`, `unaccounted=0`).\n- Repair preservation gates: portfolio=true, upstream=true, combined=true. Four-version non-regression ledger and candidate gate both pass with zero failures.\n- Generic application fallback media such as Telegram `nojs.mp4` no longer counts as content proof and is rejected by the Core stream sanitizer.\n- External IMDb identity is preserved causally from prior metadata evidence and may become `{imdbId}` without provider-specific guessing.\n- Workbench/session-only workflows and run snapshots are retired before merge; durable CI is main-only except passive `brain-learning/proposals`.\n- Native acceptance remains five independent Labs: TV Android, Mobile Android, Mobile iOS, Desktop macOS and Desktop Windows. The final trigger is armed only after this clean commit.\n'''
+          current = memory.read_text(encoding='utf-8')
+          heading = '## 2026-09-10 — Authoritative systemic Repair V6 acceptance'
+          if heading not in current:
+              memory.write_text(current.rstrip() + checkpoint, encoding='utf-8')
+
+          print(f'FINAL_CLEANUP_FILES retired={len(retired)}')
+          PY
+
+      - name: Validate clean production tree before commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --check
+          if grep -R -n -F 'workbench/' .github/workflows; then
+            echo 'Executable workflow still references a workbench branch.' >&2
+            exit 1
+          fi
+          python3 tests/workflow_security_policy_test.py
+          python3 tests/repository_hygiene_contract_test.py
+          python3 tests/provider_non_regression_contract_test.py
+          python3 tests/provider_v3_workflow_ownership_test.py
+          python3 tests/provider_repair_pipeline_v6_contract_test.py
+          python3 tests/provider_v3_documentation_contract_test.py
+          python3 tests/native_five_lab_coverage_test.py
+          python3 tests/provider_quick_yield_fixture_selection_test.py
+          python3 tests/global_media_type_pre_network_gate_test.py
+          python3 - <<'PY'
+          import json
+          rows=json.load(open('manifest.json',encoding='utf-8')).get('scrapers') or []
+          assert len(rows)==96, len(rows)
+          assert len({str(row.get('id') or '').strip().casefold() for row in rows})==96
+          print('FINAL_CLEANUP_CATALOGUE providers=96 unique=96')
+          PY
+
+      - name: Commit clean production candidate
+        id: clean
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(repo): retire workbench scaffolding before main merge'
+          CLEAN_SHA="$(git rev-parse HEAD)"
+          echo "sha=$CLEAN_SHA" >> "$GITHUB_OUTPUT"
+          echo "FINAL_CLEANUP_COMMIT sha=$CLEAN_SHA"
+
+      - name: Arm exact five-Lab acceptance trigger
+        shell: bash
+        env:
+          CLEAN_SHA: ${{ steps.clean.outputs.sha }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os
+          from pathlib import Path
+          path=Path('.github/triggers/full-native-lab-validation.json')
+          data=json.loads(path.read_text(encoding='utf-8'))
+          assert data.get('platforms') == ['TVAndroid','MobileAndroid','MobileIOS','DesktopMACOS','DesktopWindows'], data.get('platforms')
+          assert int(data.get('expected_provider_count') or 0) == 96
+          data['schema_version']=2
+          data['reason']='Systemic Repair V6 clean candidate native five-lab acceptance'
+          data['release_sha']=os.environ['CLEAN_SHA']
+          data['route_proof_run_id']=34409463163
+          data['route_proof_source_sha']='20d99bc077385d6469638776fb7081ea1d8ba95c'
+          data['provider_bytes_unchanged_after_publication']=True
+          path.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+          python3 tests/native_five_lab_coverage_test.py
+          git add .github/triggers/full-native-lab-validation.json
+          git commit -m 'ci(lab): arm five native labs for systemic Repair V6'
+
+      - name: Push validated clean candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin workbench/systemic-recovery-20260909
+          test "$(git rev-parse ${{ github.sha }})" = "$(git rev-parse origin/workbench/systemic-recovery-20260909)"
+          git push origin HEAD:workbench/systemic-recovery-20260909
+          echo "FINAL_CLEANUP_PUSH head=$(git rev-parse HEAD) source=${{ github.sha }}"
