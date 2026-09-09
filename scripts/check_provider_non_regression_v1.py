@@ -46,16 +46,25 @@ def git_json(ref: str, path: str) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def verified_lanes_from_quick(data: dict[str, Any]) -> dict[str, set[str]]:
-    out: dict[str, set[str]] = {}
+def lane_statuses_from_quick(data: dict[str, Any]) -> dict[str, dict[str, set[str]]]:
+    out: dict[str, dict[str, set[str]]] = {}
     for row in data.get("rows") or []:
-        if not isinstance(row, dict) or canon(row.get("status")) != "playable_verified":
+        if not isinstance(row, dict):
             continue
         pid = canon(row.get("provider_id") or row.get("provider"))
         lane = canon(row.get("semantic_type") or row.get("media_type") or row.get("type"))
-        if pid and lane:
-            out.setdefault(pid, set()).add(lane)
+        status = canon(row.get("status"))
+        if pid and lane and status:
+            out.setdefault(pid, {}).setdefault(lane, set()).add(status)
     return out
+
+
+def verified_lanes_from_quick(data: dict[str, Any]) -> dict[str, set[str]]:
+    statuses = lane_statuses_from_quick(data)
+    return {
+        pid: {lane for lane, lane_states in lanes.items() if "playable_verified" in lane_states}
+        for pid, lanes in statuses.items()
+    }
 
 
 def provider_ids(matrix: dict[str, Any]) -> list[str]:
@@ -147,6 +156,8 @@ def ledger_failures(matrix: dict[str, Any]) -> list[str]:
         failures.append("cross-version evidence fallback must be forbidden")
     if policy.get("historicalGreenMayBecomeUnknownSilently") is not False:
         failures.append("historical green -> unknown may not pass silently")
+    if policy.get("historicalTransportTypesMayCreateSemanticFloor") is not False:
+        failures.append("historical transport aliases may not create a semantic capability floor")
 
     rows = matrix_rows(matrix)
     if len(rows) != EXPECTED:
@@ -171,6 +182,7 @@ def candidate_gate(
 ) -> dict[str, Any]:
     rows = matrix_rows(matrix)
     scope, changed, global_scope = changed_scope(matrix, base_ref, force_all)
+    candidate_statuses = lane_statuses_from_quick(candidate)
     candidate_lanes = verified_lanes_from_quick(candidate)
     baseline_lanes = verified_lanes_from_quick(git_json(base_ref, "provider-v3-quick-yield.json"))
 
@@ -191,8 +203,21 @@ def candidate_gate(
         missing = sorted(required_lanes - got)
 
         contract = row.get("contractDrift") or {}
+        current_semantic = {canon(x) for x in contract.get("currentSemanticTypes") or [] if canon(x)}
         lost_types = sorted({canon(x) for x in contract.get("lostSemanticTypes") or [] if canon(x)})
         hls_lost = bool(contract.get("hlsM3u8Lost"))
+
+        # A partial historical regression is not satisfied merely because one
+        # surviving lane still works. Every explicitly failed lane that remains
+        # part of the provider's canonical current semantic contract must recover.
+        # This closes the Streamzo-style hole: movie green cannot hide tv
+        # wrong-content or anime no-streams.
+        partial_failed = set()
+        if str(row.get("nonRegressionStatus") or "") == "PARTIAL_REGRESSION":
+            partial_failed = {
+                canon(x) for x in row.get("explicitCurrentFailedLanes") or [] if canon(x)
+            } & current_semantic
+        unrecovered_partial = sorted(partial_failed - got)
 
         require_any = historical_positive and not required_lanes
         any_missing = require_any and not got
@@ -201,19 +226,28 @@ def candidate_gate(
             provider_failures.append("missing_verified_lanes")
         if any_missing:
             provider_failures.append("historical_positive_without_candidate_verified_lane")
+        if unrecovered_partial:
+            provider_failures.append("partial_regression_not_recovered")
         if lost_types:
             provider_failures.append("semantic_capability_regression")
         if hls_lost:
             provider_failures.append("historical_hls_m3u8_regression")
 
+        observed_statuses = {
+            lane: sorted(values)
+            for lane, values in sorted((candidate_statuses.get(pid) or {}).items())
+        }
         obligations[pid] = {
             "historicalPositiveVersions": historical_positive_versions,
             "historicalVerifiedLanes": sorted(historical_specific),
             "rollingAcceptedLanes": sorted(rolling),
             "requiredVerifiedLanes": sorted(required_lanes),
             "candidateVerifiedLanes": sorted(got),
+            "candidateLaneStatuses": observed_statuses,
             "missingVerifiedLanes": missing,
             "requireAnyVerifiedLane": require_any,
+            "partialRegressionFailedLanes": sorted(partial_failed),
+            "unrecoveredPartialRegressionLanes": unrecovered_partial,
             "lostSemanticTypes": lost_types,
             "hlsM3u8Lost": hls_lost,
             "externalDriftRecorded": bool(row.get("externalDriftAccepted")),
