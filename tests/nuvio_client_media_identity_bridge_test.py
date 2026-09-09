@@ -70,13 +70,13 @@ runtime_source = '''internal object PluginRuntime {
         scraperId: String,
         scraperSettings: Map<String, JsonElement>,
     ): List<PluginRuntimeResult> {
-        evaluate<Any?>(wrappedCode)
+                evaluate<Any?>(wrappedCode)
 
-        val tmdbIdArg = JsonPrimitive(tmdbId).toString()
-        val mediaTypeArg = JsonPrimitive(mediaType).toString()
-        val callCode = """
-            var result = await getStreams($tmdbIdArg, $mediaTypeArg, $seasonArg, $episodeArg);
-        """.trimIndent()
+                val tmdbIdArg = JsonPrimitive(tmdbId).toString()
+                val mediaTypeArg = JsonPrimitive(mediaType).toString()
+                val callCode = """
+                    var result = await getStreams($tmdbIdArg, $mediaTypeArg, $seasonArg, $episodeArg);
+                """.trimIndent()
     }
 }
 '''
