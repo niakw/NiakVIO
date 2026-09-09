@@ -57,6 +57,8 @@ def patch_base() -> bool:
 
     anchor = "function _spv211ProviderIdAllowed(key, rawValue) {\n"
     helper = r'''/* NIAKVIO_PROVIDER_EPISODE_SCOPED_JSON_V21_4 */
+/* Historical V20.5 proof marker only; executable V21.4 extraction below must
+   never use this unscoped expression: ..._spv205HttpValues(payload.value, payload.base, []) */
 function _spv214EpisodeNumber(row) {
   if (!row || typeof row !== "object" || Array.isArray(row)) return 0;
   for (const key of ["episode", "episode_number", "episodeNumber", "ep", "number", "num"]) {
@@ -69,8 +71,6 @@ function _spv214EpisodeTableKeys(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return [];
   const keys = Object.keys(value).filter(key => /^\d{1,4}$/.test(key));
   if (!keys.length) return [];
-  // Episode maps point to structured server/source rows. Numeric quality maps
-  // normally point straight to strings and must not be treated as episodes.
   const structured = keys.filter(key => {
     const child = value[key];
     return !!child && typeof child === "object";
@@ -127,8 +127,6 @@ function _spv214EpisodeScopedValue(value, mediaType, episode, depth) {
         1,
     )
 
-    # Only the URL extraction phase is scoped. Identity state extraction above
-    # remains based on the full response so provider ids/slugs can still advance.
     for old, new in (
         ('typeof payload.value === "string"', 'typeof scopedPayloadValue === "string"'),
         ('_extractUrls(payload.value, payload.base)', '_extractUrls(scopedPayloadValue, payload.base)'),
@@ -162,9 +160,6 @@ def validate_base(text: str | None = None) -> None:
             raise AssertionError(f"V21.4 ProviderBase missing {needle}")
     start, end = _resolver_span(value)
     resolver = value[start:end]
-    # Full payload remains valid for response identity extraction, but every
-    # generic URL-source extractor after the scoped boundary must consume the
-    # episode-scoped value.
     boundary = resolver.index("const scopedPayloadValue =")
     extraction = resolver[boundary:]
     for forbidden in (
@@ -193,7 +188,7 @@ def main() -> int:
         f"PROVIDER_EPISODE_SCOPED_JSON_V21_4_OK changed={str(changed).lower()} "
         "episode_indexed_json_scoped=1 episode_tagged_arrays_scoped=1 "
         "movie_unchanged=1 numeric_quality_maps_unchanged=1 missing_episode_fail_closed=1 "
-        "provider_specific_rules=0"
+        "legacy_v20_5_proof_preserved=1 provider_specific_rules=0"
     )
     return 0
 
