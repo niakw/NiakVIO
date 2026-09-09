@@ -279,10 +279,16 @@ def validate_materializer(text: str | None = None) -> None:
         MARKER,
         "def _runtime_domain_substitutions",
         '"proofSearchBases"',
-        '"domainSubstitutions": _runtime_domain_substitutions(patch)',
     ):
         if needle not in value:
             raise AssertionError(f"V10 materializer missing: {needle}")
+    # V10 itself introduced the one-argument projector. Later V14 adds
+    # static_model only as proof-protected-host input; both are valid V10+
+    # shapes, while runtime-domain authority is still enforced separately.
+    domain_projection_v10 = '"domainSubstitutions": _runtime_domain_substitutions(patch)'
+    domain_projection_v14 = '"domainSubstitutions": _runtime_domain_substitutions(patch, static_model)'
+    if domain_projection_v10 not in value and domain_projection_v14 not in value:
+        raise AssertionError("V10 materializer missing runtime domainSubstitutions projection")
 
 
 def validate_base(text: str | None = None) -> None:
