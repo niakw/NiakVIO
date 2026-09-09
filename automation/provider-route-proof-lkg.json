@@ -2,6 +2,62 @@
   "schemaVersion": 1,
   "policy": "exact-source live-positive route proof LKG; same-source targeted proof augments prior evidence, source changes reset provider evidence",
   "providers": {
+    "animekai": {
+      "source": {
+        "kind": "upstream",
+        "sourceId": "aio",
+        "sha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
+        "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animekai.js",
+        "wantedSha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
+        "capturedAt": "2026-09-01T19:53:09+00:00",
+        "currentSha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
+        "mode": "lkg-current-byte-exact"
+      },
+      "routeData": [
+        {
+          "route": "/browser?keyword={query}",
+          "origin": "https://www3.anikai.cc",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 0,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animekai.js",
+            "wantedSha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "15ea49f3f86be417b8f03e6395b8d0a6a0a1c5eedc2d133520cb627e2840be3d",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 12,
+          "taskRawStreamCount": 12,
+          "taskLastRequestIndex": 17
+        }
+      ],
+      "routes": [
+        "/browser?keyword={query}"
+      ]
+    },
     "animesama-co": {
       "source": {
         "kind": "upstream",
@@ -51,7 +107,7 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 6
+          "taskLastRequestIndex": 5
         },
         {
           "route": "/meta/series/tt12343534.json",
@@ -90,7 +146,7 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 6
+          "taskLastRequestIndex": 5
         },
         {
           "route": "/template-php/defaut/fetch.php",
@@ -145,7 +201,7 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 6
+          "taskLastRequestIndex": 5
         },
         {
           "route": "/anime/{slug}/saison-1/episode-1.html",
@@ -186,7 +242,7 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 6
+          "taskLastRequestIndex": 5
         },
         {
           "route": "/shell.php?videoid={id}",
@@ -284,9 +340,9 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 2,
-          "taskRawStreamCount": 2,
-          "taskLastRequestIndex": 25
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 24
         },
         {
           "route": "/meta/series/tt12343534.json",
@@ -323,9 +379,9 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 2,
-          "taskRawStreamCount": 2,
-          "taskLastRequestIndex": 25
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 24
         },
         {
           "route": "/?s={query}",
@@ -363,9 +419,89 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 2,
-          "taskRawStreamCount": 2,
-          "taskLastRequestIndex": 25
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 24
+        },
+        {
+          "route": "/animes/{slug}/",
+          "origin": "https://animevostfr.org",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 14,
+          "providerValueCorrelation": true,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+              "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "gowaru",
+            "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
+            "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "capturedAt": "2026-09-01T19:52:18+00:00",
+            "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 24
+        },
+        {
+          "route": "/episode/{slug}-{season}-episode-{episode}/",
+          "origin": "https://animevostfr.org",
+          "role": "episode-index",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 15,
+          "providerValueCorrelation": true,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+              "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "gowaru",
+            "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
+            "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "capturedAt": "2026-09-01T19:52:18+00:00",
+            "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 3,
+          "taskRawStreamCount": 3,
+          "taskLastRequestIndex": 24
         },
         {
           "route": "/?trembed=0&trid={id}&trtype=2",
@@ -488,97 +624,17 @@
           "taskStreamCount": 2,
           "taskRawStreamCount": 2,
           "taskLastRequestIndex": 25
-        },
-        {
-          "route": "/animes/{slug}/",
-          "origin": "https://animevostfr.org",
-          "role": "detail",
-          "method": "GET",
-          "semanticType": "anime",
-          "fixture": "jujutsu-kaisen-s01e01",
-          "requestIndex": 14,
-          "providerValueCorrelation": true,
-          "externalIdentityCorrelation": false,
-          "requestSpec": {
-            "method": "GET",
-            "headers": {
-              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-              "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-            }
-          },
-          "requestSpecReusable": true,
-          "requestSpecSubstitutions": [],
-          "requestSpecResidue": [],
-          "proofBodyKind": "none",
-          "proofBodyValues": {},
-          "status": 200,
-          "contentType": "text/html; charset=UTF-8",
-          "proofModelVersion": 5,
-          "source": {
-            "kind": "upstream",
-            "sourceId": "gowaru",
-            "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-            "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
-            "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-            "capturedAt": "2026-09-01T19:52:18+00:00",
-            "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-            "mode": "lkg-current-byte-exact"
-          },
-          "taskStreamCount": 2,
-          "taskRawStreamCount": 2,
-          "taskLastRequestIndex": 25
-        },
-        {
-          "route": "/episode/{slug}-{season}-episode-{episode}/",
-          "origin": "https://animevostfr.org",
-          "role": "episode-index",
-          "method": "GET",
-          "semanticType": "anime",
-          "fixture": "jujutsu-kaisen-s01e01",
-          "requestIndex": 15,
-          "providerValueCorrelation": true,
-          "externalIdentityCorrelation": false,
-          "requestSpec": {
-            "method": "GET",
-            "headers": {
-              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-              "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
-              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
-            }
-          },
-          "requestSpecReusable": true,
-          "requestSpecSubstitutions": [],
-          "requestSpecResidue": [],
-          "proofBodyKind": "none",
-          "proofBodyValues": {},
-          "status": 200,
-          "contentType": "text/html; charset=UTF-8",
-          "proofModelVersion": 5,
-          "source": {
-            "kind": "upstream",
-            "sourceId": "gowaru",
-            "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-            "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
-            "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-            "capturedAt": "2026-09-01T19:52:18+00:00",
-            "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
-            "mode": "lkg-current-byte-exact"
-          },
-          "taskStreamCount": 2,
-          "taskRawStreamCount": 2,
-          "taskLastRequestIndex": 25
         }
       ],
       "routes": [
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json",
         "/?s={query}",
+        "/animes/{slug}/",
+        "/episode/{slug}-{season}-episode-{episode}/",
         "/?trembed=0&trid={id}&trtype=2",
         "/?trembed=1&trid={id}&trtype=2",
-        "/shell.php?videoid={id}",
-        "/animes/{slug}/",
-        "/episode/{slug}-{season}-episode-{episode}/"
+        "/shell.php?videoid={id}"
       ]
     },
     "french-manga": {
@@ -859,6 +915,391 @@
         "/engine/ajax/manga_episodes_api.php?id={id}",
         "/embed-wojoffwz42ri.html",
         "/embed-dprci7emo3bh.html"
+      ]
+    },
+    "movies4u": {
+      "source": {
+        "kind": "upstream",
+        "sourceId": "aio",
+        "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+        "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+        "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+        "capturedAt": "2026-09-01T19:53:09+00:00",
+        "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+        "mode": "lkg-current-byte-exact"
+      },
+      "routeData": [
+        {
+          "route": "/?s={query}",
+          "origin": "https://new5.movies4u.clinic",
+          "role": "search",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 0,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://new2.movies4u.clinic",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/file/rwaq016kx4ig",
+          "origin": "https://m4uplay.store",
+          "role": "source",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 2,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4uplay.store/",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/drive/m02mj3x2iu55hta",
+          "origin": "https://hubcloud.cx",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 6,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4ulinks.site/number/5789",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/drive/5vnsjjgtbhgk1hs",
+          "origin": "https://hubcloud.cx",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 9,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4ulinks.site/number/5789",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/drive/blhhxg4o1gl7xlx",
+          "origin": "https://hubcloud.cx",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 12,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4ulinks.site/number/5789",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/drive/df1sk1xpo1iotaf",
+          "origin": "https://hubcloud.cx",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 15,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4ulinks.site/number/5789",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/drive/lsvwd2b1qxxddvs",
+          "origin": "https://hubcloud.cx",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 18,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4ulinks.site/number/5789",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/drive/qvvur66r86ersv6",
+          "origin": "https://hubcloud.cx",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 21,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4ulinks.site/number/5789",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        },
+        {
+          "route": "/drive/daep1vkwdwfhvim",
+          "origin": "https://hubcloud.cx",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 24,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://m4ulinks.site/number/5789",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/movies4u.js",
+            "wantedSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "bc4308578b53310c050c71b8e1835e0e0068300bd19a7826eba0e394d62bfbdd",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 8,
+          "taskRawStreamCount": 8,
+          "taskLastRequestIndex": 37
+        }
+      ],
+      "routes": [
+        "/?s={query}",
+        "/file/rwaq016kx4ig",
+        "/drive/m02mj3x2iu55hta",
+        "/drive/5vnsjjgtbhgk1hs",
+        "/drive/blhhxg4o1gl7xlx",
+        "/drive/df1sk1xpo1iotaf",
+        "/drive/lsvwd2b1qxxddvs",
+        "/drive/qvvur66r86ersv6",
+        "/drive/daep1vkwdwfhvim"
       ]
     }
   }
