@@ -70,30 +70,47 @@ const fallbackHtml = `
   <div data-id="fallback-77"></div>
   <span data-id="fallback-77"></span>
 `;
-const wrongSeasonHtml = `
-  <div onclick="location.href='/33333-alpha-show-saison-2.html'">Alpha Show</div>
-  <div onclick="location.href='/44444-alpha-show-saison-1.html'">Alpha Show</div>
+const seasonHtml = `
+  <div class="search-item" onclick="location.href='/33333-alpha-show-saison-2.html'">
+    <div class="search-title">Alpha Show</div>
+  </div>
+  <div class="search-item" onclick="location.href='/44444-alpha-show-saison-1.html'">
+    <div class="search-title">Alpha Show</div>
+  </div>
 `;
 const out = {{
-  correlated: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
-  fallback: _spv205StrictProviderValues(fallbackHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
-  season: _spv205StrictProviderValues(wrongSeasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv")
+  catalogue: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", true),
+  laterStep: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", false),
+  fallback: _spv205StrictProviderValues(fallbackHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", true),
+  season: _spv205StrictProviderValues(seasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", true)
 }};
 process.stdout.write(JSON.stringify(out));
 '''
 proc = subprocess.run(["node", "-e", node], cwd=ROOT, check=True, capture_output=True, text=True)
 out = json.loads(proc.stdout)
 
-assert out["correlated"]["id"] == "11111", out
-assert out["correlated"]["slug"] == "11111-alpha-show-saison-1", out
+# Initial catalogue response: same-record title+onclick identity is authoritative.
+assert out["catalogue"]["id"] == "11111", out
+assert out["catalogue"]["slug"] == "11111-alpha-show-saison-1", out
+# Later response: historical response-wide id learning remains intact.
+assert out["laterStep"]["id"] == "22222", out
+# Initial response without a correlated row still gets the global fallback.
 assert out["fallback"]["id"] == "fallback-77", out
+# Same-record season evidence selects the requested season.
 assert out["season"]["id"] == "44444", out
 assert out["season"]["slug"] == "44444-alpha-show-saison-1", out
 
 strict_start = base.index("function _spv205StrictProviderValues")
 strict_end = base.index("function _spv205HttpValues", strict_start)
 strict = base[strict_start:strict_end]
-assert "if (!best.id && bestId) best.id = bestId;" in strict
-assert "if (bestId) best.id = bestId;" not in strict
+assert "function _spv215CatalogueCardValues" in strict
+assert "catalogueIdentity" in strict
+assert "if ((catalogueIdentity !== true || !best.id) && bestId) best.id = bestId;" in strict
+
+resolver_start = base.index("async function _resolveProviderValuePlan")
+resolver_end = base.index("async function _resolveSearchRequestPlan", resolver_start)
+resolver = base[resolver_start:resolver_end]
+assert "mediaType,\n        true" in resolver
+assert "payload.base || stepUrl,\n            meta,\n            season,\n            mediaType,\n            true" not in resolver
 
 print("provider catalogue identity correlation V21.5 tests passed")
