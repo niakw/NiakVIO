@@ -58,6 +58,9 @@ for required in (
     "DISPATCH_MODE:-force",
     "provider-repair-skip.json",
     "Verify known-green providers were not network re-probed",
+    "Enforce four-version floor on repair candidate",
+    "python scripts/build_provider_history_matrix_v3.py",
+    "python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref HEAD",
 ):
     assert required in repair, f"canonical provider repair workflow missing: {required}"
 pipeline=(ROOT/"scripts/run_provider_repair_pipeline_v6.py").read_text(encoding="utf-8")
@@ -92,8 +95,8 @@ assert "materialize_provider_v3_all.py" not in domain
 assert "verify_provider_v3_reverse_rebuild.py" not in domain
 
 # Non-regression owns the exact four-version ledger plus the rolling accepted
-# quick-yield publication floor. It is deliberately separate from Repair:
-# Repair may propose/correct; this workflow decides whether proof regressed.
+# quick-yield publication floor. Repair is allowed to propose/correct only if its
+# non-Learn candidate subsequently satisfies the exact same 96-provider floor.
 assert nonreg.startswith("name: Provider Non-Regression Gate")
 for required in (
     "build_provider_history_matrix_v3.py",
