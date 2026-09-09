@@ -12,6 +12,8 @@ on:
       - 'tests/global_stream_metadata_preservation_contract_test.py'
       - 'tests/global_stream_presentation_pipeline_test.py'
       - 'tests/stream_quality_recovery_tv_test.py'
+      - 'tests/stream_output_sanitizer_direct_normalization_test.py'
+      - 'tests/stream_output_sanitizer_fail_closed_test.py'
   workflow_dispatch:
 
 permissions:
@@ -49,5 +51,9 @@ jobs:
         run: python3 tests/global_stream_presentation_pipeline_test.py
       - name: Validate quality recovery contract
         run: python3 tests/stream_quality_recovery_tv_test.py
+      - name: Validate sanitizer transport and header preservation
+        run: |
+          python3 tests/stream_output_sanitizer_direct_normalization_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
       - name: Validate presentation fixed point
         run: python3 scripts/normalize_stream_presentation_v12.py --check
