@@ -1,0 +1,231 @@
+{
+  "schemaVersion": 1,
+  "generatedFromConversationDate": "2026-09-09",
+  "policy": "Historical/current evidence ledger for provider preservation. A later repair must not replace a known-good published provider or lane without an A/B live non-regression proof. Field evidence and published-byte guards outrank reconstruction-only green states.",
+  "snapshots": {
+    "tag_5_21_0": {
+      "ref": "5.21.0",
+      "commit": "deae2a631727547fc1be62d446dd09bc9902cd4f"
+    },
+    "tag_5_21_16": {
+      "ref": "5.21.16",
+      "commit": "4a15753dee1c18240c1fb434ae675429bac52561"
+    },
+    "release_5_21_36": {
+      "ref": "b4d5bff4c2e3b8e9944c1eaaf8ae9690cb00d5cf",
+      "version": "5.21.36"
+    },
+    "current": {
+      "ref": "main",
+      "version": "5.21.37"
+    }
+  },
+  "fieldEvidence": [
+    {
+      "date": "2026-09-09",
+      "environment": "TV published manifest",
+      "manifestVersion": "5.21.37",
+      "fixture": "Interstellar",
+      "semanticType": "movie",
+      "positiveProviders": [
+        "castle",
+        "persianstremio",
+        "streamzo"
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "environment": "TV published manifest",
+      "manifestVersion": "5.21.37",
+      "fixture": "The Unwanted Undead Adventurer",
+      "semanticType": "anime",
+      "positiveProviders": [
+        "anime-sama"
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "environment": "TV published manifest",
+      "manifestVersion": "5.21.37",
+      "fixture": "House of the Dragon S1E1",
+      "semanticType": "tv",
+      "positiveProviders": [
+        "persianstremio",
+        "desiflix",
+        "castle"
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "environment": "Desktop macOS published manifest",
+      "manifestVersion": "5.21.37",
+      "fixture": "same representative user checks",
+      "semanticType": "mixed",
+      "positiveProviders": [],
+      "observation": "No provider returned a visible result on Desktop macOS in the user's current field test."
+    }
+  ],
+  "ciEvidence": {
+    "run87_reconstruction": {
+      "runId": "34309729426",
+      "scope": "reconstruction-candidate",
+      "verifiedProviders": [
+        "animesama-co",
+        "animevostfr",
+        "french-manga"
+      ],
+      "lostUpstreamPositivePairs": [],
+      "note": "3/3 raw, playable and verified; global non-network guard 96/96 passed."
+    },
+    "published_priority_guard": {
+      "runId": "34325624325",
+      "scope": "published-current-bytes",
+      "providers": {
+        "4khdhub": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"}
+          ]
+        },
+        "4khdhubnew": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"}
+          ]
+        },
+        "anime-sama": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "anime", "status": "playable_verified", "raw": 2, "playable": 2, "verified": 2, "contradictions": 0, "debugStage": "provider_returned_streams"},
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"}
+          ]
+        },
+        "animesama-co": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "anime", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"},
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"}
+          ]
+        },
+        "desiflix": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "wrong_content", "raw": 3, "playable": 2, "verified": 1, "contradictions": 1, "debugStage": "provider_returned_wrong_content"},
+            {"mediaType": "tv", "status": "playable_verified", "raw": 4, "playable": 4, "verified": 4, "contradictions": 0, "debugStage": "provider_returned_streams"}
+          ]
+        },
+        "flemmix": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"}
+          ]
+        },
+        "hindmoviez": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "playable_verified", "raw": 1, "playable": 1, "verified": 1, "contradictions": 0, "debugStage": "provider_returned_streams"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"}
+          ]
+        },
+        "movieshunt": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_exception"}
+          ]
+        },
+        "persianstremio": {
+          "status": "verified",
+          "lanes": [
+            {"mediaType": "movie", "status": "playable_verified", "raw": 8, "playable": 8, "verified": 8, "contradictions": 0, "debugStage": "provider_returned_streams"},
+            {"mediaType": "tv", "status": "playable_verified", "raw": 7, "playable": 7, "verified": 7, "contradictions": 0, "debugStage": "provider_returned_streams"}
+          ]
+        },
+        "purstream": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_zero_result"}
+          ]
+        },
+        "uhdmovies": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"}
+          ]
+        },
+        "vegamovies": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"}
+          ]
+        },
+        "zinkmovies": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "gate_runtime_plan_missing"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "gate_runtime_plan_missing"}
+          ]
+        }
+      }
+    },
+    "published_vf_guard": {
+      "runId": "34325624325",
+      "scope": "published-current-bytes",
+      "providers": {
+        "kehflix": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "anime", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"},
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"}
+          ]
+        },
+        "streamzo": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "anime", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"},
+            {"mediaType": "movie", "status": "playable_verified", "raw": 1, "playable": 1, "verified": 1, "contradictions": 0, "debugStage": "provider_returned_streams"},
+            {"mediaType": "tv", "status": "wrong_content", "raw": 2, "playable": 2, "verified": 0, "contradictions": 2, "debugStage": "provider_returned_wrong_content"}
+          ]
+        }
+      }
+    },
+    "historical_5_21_36_replay": {
+      "runId": "34326191535",
+      "scope": "historical-published-bytes-replayed-current-backend",
+      "sourceCommit": "b4d5bff4c2e3b8e9944c1eaaf8ae9690cb00d5cf",
+      "providers": {
+        "kehflix": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "anime", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"},
+            {"mediaType": "movie", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_exception"},
+            {"mediaType": "tv", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_exception"}
+          ]
+        },
+        "streamzo": {
+          "status": "regression",
+          "lanes": [
+            {"mediaType": "anime", "status": "no_streams", "raw": 0, "playable": 0, "verified": 0, "contradictions": 0, "debugStage": "provider_network_http_error"},
+            {"mediaType": "movie", "status": "playable_verified", "raw": 1, "playable": 1, "verified": 1, "contradictions": 0, "debugStage": "provider_returned_streams"},
+            {"mediaType": "tv", "status": "wrong_content", "raw": 2, "playable": 2, "verified": 0, "contradictions": 2, "debugStage": "provider_returned_wrong_content"}
+          ]
+        }
+      },
+      "interpretation": "If 5.21.36 bytes and current bytes fail identically today, classify as upstream/backend drift or pre-existing lane issue rather than a 5.21.37 regression."
+    },
+    "repair_run95": {
+      "runId": "34323567439",
+      "scope": "reconstruction-candidate",
+      "verifiedProviders": ["movieshunt", "desiflix", "persianstremio"],
+      "wrongContentProviders": ["desiflix"],
+      "lostPairs": [["animesama-co", "anime"], ["vegamovies", "movie"], ["vegamovies", "tv"]],
+      "notVerifiedProviders": ["flemmix", "purstream", "uhdmovies", "zinkmovies", "4khdhub", "4khdhubnew"]
+    }
+  }
+}
