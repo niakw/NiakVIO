@@ -35,7 +35,9 @@ validate_materializer = v214.validate_materializer
 
 
 def _strict_span(text: str) -> tuple[int, int]:
-    start = text.index("function _spv205StrictProviderValues(value, base, meta, season) {")
+    # V21.1 extends the V20.5 signature with mediaType. Keep the owner lookup
+    # stable across either historical/current signature without weakening it.
+    start = text.index("function _spv205StrictProviderValues(")
     end = text.index("function _spv205HttpValues", start)
     return start, end
 
@@ -74,9 +76,10 @@ def validate_base(text: str | None = None) -> None:
     strict = value[start:end]
     for needle in (
         MARKER,
+        "function _spv205StrictProviderValues(value, base, meta, season, mediaType)",
         "if (!best.id && bestId) best.id = bestId;",
         "const pathRe =",
-        "const score = _spv4TitleScore(label, meta) + _spv205SeasonSignal(segment, season);",
+        "const score = _spv211CandidateIdentityScore(label, segment, meta, mediaType, season);",
         "const dataIdRe =",
     ):
         if needle not in strict:
