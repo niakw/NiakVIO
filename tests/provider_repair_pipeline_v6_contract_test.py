@@ -14,6 +14,7 @@ upgrade_v10 = (ROOT / 'scripts/upgrade_provider_base_runtime_v10.py').read_text(
 upgrade_v14 = (ROOT / 'scripts/upgrade_provider_search_request_plan_v14.py').read_text(encoding='utf-8')
 upgrade_v14_1 = (ROOT / 'scripts/upgrade_provider_search_request_plan_v14_1.py').read_text(encoding='utf-8')
 yield_audit = (ROOT / 'scripts/audit_provider_repair_yield_v6.py').read_text(encoding='utf-8')
+quick_yield = (ROOT / 'scripts/audit_provider_quick_yield.py').read_text(encoding='utf-8')
 portfolio_compare = (ROOT / 'scripts/compare_quick_yield_preservation.py').read_text(encoding='utf-8')
 targeted_retry = (ROOT / 'scripts/audit_provider_quick_yield_targeted.py').read_text(encoding='utf-8')
 merge_repair = (ROOT / 'scripts/merge_provider_repair_report_v6.py').read_text(encoding='utf-8')
@@ -90,7 +91,15 @@ for required in (
 
 assert '"routePlanRevision": "v21.8"' in pipeline
 assert 'tests/provider_repair_v6_recipe_regression_test.py' in pipeline
+assert 'tests/provider_quick_yield_fixture_selection_test.py' in pipeline
 assert 'scripts/audit_provider_repair_yield_v6.py' in pipeline
+for marker in (
+    'animeMovie',
+    'anime_movie_providers',
+    'anime_movie_fixture',
+    'media_type == "movie" and provider_id in anime_movie_providers',
+):
+    assert marker in quick_yield, marker
 assert '--require-upstream-positive-preserved' in pipeline
 assert 'capture_portfolio_yield(PORTFOLIO_BASELINE)' in pipeline
 assert 'capture_portfolio_yield(PORTFOLIO_CANDIDATE)' in pipeline

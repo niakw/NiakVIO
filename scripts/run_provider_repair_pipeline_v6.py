@@ -147,6 +147,7 @@ def main() -> int:
         "tests/global_identity_policy_ownership_test.py",
         "tests/provider_latest_request_cancellation_test.py",
         "tests/provider_native_abort_ignorant_cancellation_test.py",
+        "tests/provider_quick_yield_fixture_selection_test.py",
     ):
         run(sys.executable, test)
 
