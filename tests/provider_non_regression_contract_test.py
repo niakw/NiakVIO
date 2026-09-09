@@ -30,12 +30,20 @@ assert '"crossVersionFallbackAllowed": False' in v3
 assert '"historicalGreenMayBecomeUnknownSilently": False' in v3
 assert "historical_lanes = verified_lanes(row.get(\"historical52136\") or {})" in v3
 
-# 5.21.16 predates the canonical semantic/transport split for some providers.
-# Keep its raw transport evidence, but never turn ambiguous supportedTypes into a
-# blocking movie/tv/anime semantic capability floor.
-assert 'allow_supported = version != "5.21.16"' in v3
-assert '"historicalAmbiguousTransportTypes"' in v3
-assert '"legacy52116SupportedTypesAreBlockingSemanticProof": False' in v3
+# Historical supportedTypes mixed transport aliases and semantics. Keep them as
+# diagnostics, but only explicit canonical declarations (plus normalized 5.21.0
+# fixture evidence) may create a blocking semantic capability floor.
+for token in (
+    "def canonical_semantic_types(",
+    "def transport_types(",
+    'source = "canonicalSupportedTypes" if values else "unproven-transport-only"',
+    '"historicalSemanticTypeSources"',
+    '"historicalTransportTypes"',
+    '"historicalTransportTypesMayCreateSemanticFloor": False',
+):
+    assert token in v3, f"historical semantic/transport separation lost: {token}"
+assert "values = canonical_semantic_types(manifest_row)" in v3
+assert "type_floor = set().union(*(set(values) for values in historical_types.values()))" in v3
 
 # Publication gate extends the floor release after release: exact 5.21.36 proof
 # plus the accepted baseline quick-yield from the PR/base commit.
@@ -101,4 +109,4 @@ assert "pull_request:" in nonreg
 assert "provider-non-regression.yml" in ownership
 assert "check_provider_non_regression_v1.py" in ownership
 
-print("provider non-regression contract passed: exact 4-state ledger + semantic fast gate + rolling candidate floor + 96 shared-core scope")
+print("provider non-regression contract passed: exact 4-state ledger + canonical semantic floor + semantic fast gate + rolling candidate floor + 96 shared-core scope")
