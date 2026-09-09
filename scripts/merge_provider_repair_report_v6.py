@@ -7,6 +7,11 @@ live-positive route rows retained in the exact-source route-proof LKG. This keep
 variable successful upstream traces from erasing previously proven correlated
 steps while source changes still reset historical evidence.
 
+A small historical bootstrap may recover proof emitted before the durable LKG
+existed. Bootstrap evidence is eligible only for a provider targeted now and only
+when its exact source identity equals the current targeted source. It cannot
+revive evidence after an upstream SHA change.
+
 Before persistence, every carried/new simple API recipe passes the same typed-route
 normalizer so obsolete generic directRoute DATA cannot outrank movie/tv routes.
 The resulting report is a normal full proof-v5 census consumable by the existing
@@ -61,11 +66,30 @@ def normalize_typed_api_recipe(row: dict[str, Any]) -> tuple[dict[str, Any], boo
     return out, True
 
 
+def eligible_bootstrap(seed: dict[str, Any], targeted: dict[str, Any]) -> dict[str, Any]:
+    """Return only seed rows whose provider + exact source are targeted now."""
+    targeted_sources = {
+        pid(row): route_lkg.source_identity(row.get("source"))
+        for row in targeted.get("providers") or []
+        if isinstance(row, dict) and pid(row)
+    }
+    providers: list[dict[str, Any]] = []
+    for row in seed.get("providers") or []:
+        if not isinstance(row, dict):
+            continue
+        key = pid(row)
+        identity = route_lkg.source_identity(row.get("source"))
+        if key and identity is not None and targeted_sources.get(key) == identity:
+            providers.append(copy.deepcopy(row))
+    return {"schemaVersion": 1, "providers": providers}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline", type=Path, default=Path("automation/provider-route-recovery-v5.json"))
     parser.add_argument("--targeted", type=Path, required=True)
     parser.add_argument("--lkg", type=Path, default=Path("automation/provider-route-proof-lkg.json"))
+    parser.add_argument("--seed", type=Path, default=Path("automation/provider-route-proof-seed-v1.json"))
     parser.add_argument("--output", type=Path, default=Path("automation/provider-route-recovery-v6.json"))
     args = parser.parse_args()
     baseline = load(ROOT / args.baseline)
@@ -75,6 +99,12 @@ def main() -> int:
 
     lkg_path = ROOT / args.lkg
     lkg = route_lkg.load(lkg_path, missing_ok=True)
+    seed_path = ROOT / args.seed
+    seed_stats = {"updatedProviders": 0, "sourceResets": 0, "retainedRows": 0}
+    if seed_path.exists():
+        seed = eligible_bootstrap(load(seed_path), targeted)
+        if seed.get("providers"):
+            lkg, seed_stats = route_lkg.merge_report_into_registry(lkg, seed)
     lkg, lkg_stats = route_lkg.merge_report_into_registry(lkg, targeted)
     route_lkg.write(lkg_path, lkg)
     lkg_providers = lkg.get("providers") if isinstance(lkg.get("providers"), dict) else {}
@@ -114,7 +144,7 @@ def main() -> int:
         "statusCounts": dict(sorted(counts.items())),
         "providers": merged_rows,
         "portfolioRepair": {
-            "version": 8,
+            "version": 9,
             "targetedProviderCount": len(targeted_ids),
             "targetedProviders": sorted(targeted_ids),
             "preservedProviderCount": 96 - len(targeted_ids),
@@ -123,6 +153,7 @@ def main() -> int:
             "proofMethod": targeted.get("method"),
             "typedRecipeDirectRouteSanitizedCount": len(typed_recipe_sanitized),
             "typedRecipeDirectRouteSanitizedProviders": typed_recipe_sanitized,
+            "routeProofBootstrapMatchedProviders": int(seed_stats.get("updatedProviders") or 0),
             "routeProofLkgUpdatedProviders": int(lkg_stats.get("updatedProviders") or 0),
             "routeProofLkgSourceResets": int(lkg_stats.get("sourceResets") or 0),
             "routeProofLkgRetainedRows": lkg_retained_rows,
@@ -137,6 +168,7 @@ def main() -> int:
         f"targeted={len(targeted_ids)} preserved={96-len(targeted_ids)} "
         f"proven={merged['providersWithProvenRoutes']} routes={merged['provenRouteCount']} "
         f"recipes={merged['simpleApiRecipeCount']} typed_direct_sanitized={len(typed_recipe_sanitized)} "
+        f"route_bootstrap={seed_stats.get('updatedProviders', 0)} "
         f"route_lkg_updated={lkg_stats.get('updatedProviders', 0)} "
         f"route_lkg_retained={lkg_retained_rows} route_lkg_augmented={len(set(lkg_augmented_providers))}"
     )
