@@ -2,6 +2,7 @@
 """Run canonical targeted repair with V21.7 immediately before live recovery."""
 from __future__ import annotations
 
+import subprocess
 import sys
 from pathlib import Path
 
@@ -19,6 +20,20 @@ _v217_applied = False
 def _run_with_v217_boundary(*args: str, timeout: int | None = None) -> None:
     global _v217_applied
     if not _v217_applied and any(str(value).endswith("recover_provider_routes_from_upstreams.py") for value in args):
+        # Execute the two new contracts against the same checkout before the live
+        # census. The first test materializes/validates V21.7; the second actually
+        # runs a mocked 403 player through terminal sanitizer V7 and proves that
+        # only the exact non-direct correlated fallback survives.
+        subprocess.run(
+            [sys.executable, str(ROOT / "tests" / "provider_player_fallback_v21_7_test.py")],
+            cwd=ROOT,
+            check=True,
+        )
+        subprocess.run(
+            [sys.executable, str(ROOT / "tests" / "stream_output_correlated_player_fallback_v7_test.py")],
+            cwd=ROOT,
+            check=True,
+        )
         v217.patch_worker()
         v217.patch_proof()
         v217.patch_recovery()
