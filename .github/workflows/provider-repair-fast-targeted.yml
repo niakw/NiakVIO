@@ -96,7 +96,7 @@ jobs:
           done
           python scripts/inspect_provider_fast_bundle_plans.py "${args[@]}"
 
-      - name: Validate shared V16-V21.4 and adaptive route-plan contracts
+      - name: Validate shared V16-V21.5 and adaptive route-plan contracts
         if: always()
         run: |
           python -m py_compile \
@@ -113,6 +113,7 @@ jobs:
             scripts/upgrade_provider_media_identity_guard_v21_2.py \
             scripts/upgrade_provider_series_slug_role_v21_3.py \
             scripts/upgrade_provider_episode_scoped_json_v21_4.py \
+            scripts/upgrade_provider_catalogue_identity_correlation_v21_5.py \
             scripts/audit_provider_repair_yield_v6.py
           node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
           python tests/provider_execution_authority_v16_contract_test.py
@@ -132,6 +133,7 @@ jobs:
           python tests/provider_media_identity_guard_v21_2_test.py
           python tests/provider_series_slug_role_v21_3_test.py
           python tests/provider_episode_scoped_json_v21_4_test.py
+          python tests/provider_catalogue_identity_correlation_v21_5_test.py
           python tests/provider_yield_identity_diagnostics_v21_test.py
           python tests/runtime_route_plan_cap_v1_test.py
 
