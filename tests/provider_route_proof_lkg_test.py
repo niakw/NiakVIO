@@ -3,16 +3,25 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
 SCRIPT = ROOT / "scripts" / "provider_route_proof_lkg.py"
+MERGE_SCRIPT = ROOT / "scripts" / "merge_provider_repair_report_v6.py"
 
 spec = importlib.util.spec_from_file_location("route_lkg", SCRIPT)
 if spec is None or spec.loader is None:
     raise SystemExit("unable to load provider route proof LKG")
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+
+merge_spec = importlib.util.spec_from_file_location("route_merge", MERGE_SCRIPT)
+if merge_spec is None or merge_spec.loader is None:
+    raise SystemExit("unable to load provider route proof merge")
+merge_module = importlib.util.module_from_spec(merge_spec)
+merge_spec.loader.exec_module(merge_module)
 
 
 def source(sha: str) -> dict:
@@ -105,9 +114,25 @@ uncorrelated["providers"][0]["routeData"] = [proof("/detail/{id}", 1, sha=sha_a,
 empty_registry, _ = module.merge_report_into_registry({"schemaVersion": 1, "providers": {}}, uncorrelated)
 assert "neutral-provider" not in empty_registry["providers"], empty_registry
 
-merge_text = (ROOT / "scripts" / "merge_provider_repair_report_v6.py").read_text(encoding="utf-8")
+# Historical bootstrap is not general authority: it is visible only while the
+# provider is targeted now with the exact same source identity.
+seed = {
+    "providers": [
+        {"providerId": "neutral-provider", "source": source(sha_a), "routeData": [proof("/historical/{id}", 4, sha=sha_a, correlated=True)]},
+        {"providerId": "other-provider", "source": source(sha_a), "routeData": [proof("/other/{id}", 4, sha=sha_a, correlated=True)]},
+    ]
+}
+eligible = merge_module.eligible_bootstrap(seed, current_report)
+assert [row["providerId"] for row in eligible["providers"]] == ["neutral-provider"], eligible
+changed_target = copy.deepcopy(current_report)
+changed_target["providers"][0]["source"] = source(sha_b)
+assert merge_module.eligible_bootstrap(seed, changed_target)["providers"] == [], seed
+
+merge_text = MERGE_SCRIPT.read_text(encoding="utf-8")
 assert "route_lkg.merge_report_into_registry" in merge_text
 assert "route_lkg.augment_provider_row" in merge_text
+assert "def eligible_bootstrap" in merge_text
+assert "routeProofBootstrapMatchedProviders" in merge_text
 assert "routeProofLkgRetainedRows" in merge_text
 
 print("provider route proof LKG tests passed")
