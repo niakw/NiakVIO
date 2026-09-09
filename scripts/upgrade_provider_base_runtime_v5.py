@@ -231,12 +231,24 @@ def validate() -> None:
     family_first = text.index('if (family === "stremio-json")', recipe_first)
     if recipe_first >= family_first:
         raise AssertionError('runtime v8 API recipe must execute before source-family traversal')
-    for needle in (
-        'const recipePrimary = await getStreams(tmdbId, type, season, episode);',
-        'NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true',
-    ):
-        if needle not in text[recipe_first:family_first]:
-            raise AssertionError(f'runtime v8 API-recipe precedence missing: {needle}')
+    authority_prefix = text[recipe_first:family_first]
+    v16_marker = '/* NIAKVIO_PROVIDER_EXECUTION_AUTHORITY_V16 */'
+    if v16_marker in authority_prefix:
+        for needle in (
+            'const recipePrimary = await _resolveApiRecipe(proofMeta, type, season, episode);',
+            'NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true',
+        ):
+            if needle not in authority_prefix:
+                raise AssertionError(f'runtime V16 API-recipe authority missing: {needle}')
+        if 'recipePrimary = await getStreams(' in authority_prefix:
+            raise AssertionError('runtime V16 retained obsolete recursive getStreams recipe authority')
+    else:
+        for needle in (
+            'const recipePrimary = await getStreams(tmdbId, type, season, episode);',
+            'NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true',
+        ):
+            if needle not in authority_prefix:
+                raise AssertionError(f'runtime v8 API-recipe precedence missing: {needle}')
 
     v9 = '/* NIAKVIO_PROVIDER_BASE_SHARED_IDENTITY_POLICY_V9 */'
     if text.count(v9) != 1:
