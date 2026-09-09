@@ -1,0 +1,82 @@
+name: WORKBENCH - Apply Core Budget Fix
+
+on:
+  push:
+    branches:
+      - workbench/systemic-recovery-20260909
+    paths:
+      - ".github/workflows/apply-core-budget-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 1
+          persist-credentials: true
+          ref: workbench/systemic-recovery-20260909
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Replace split 25/30s Core authority with canonical 60s budget
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('scripts/provider_patches/global_media_type_resolution_v1.py')
+          text = path.read_text(encoding='utf-8')
+          replacements = {
+              '"providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 30_000)), 120_000)),':
+                  '"providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 60_000)), 120_000)),',
+              '"tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 25_000)), 30_000)),':
+                  '"tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 60_000)), 120_000)),',
+              '"revision": "tmdb-data-contract-launch-gate-v29-native-abort-race",':
+                  '"revision": "tmdb-data-contract-launch-gate-v30-unified-60s-budget",',
+              'function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||25000):Number(c.providerTimeoutMs||30000)}':
+                  'function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||60000):Number(c.providerTimeoutMs||60000)}',
+          }
+          for old, new in replacements.items():
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'Core budget replacement anchor count={count}: {old[:80]}')
+              text = text.replace(old, new, 1)
+          path.write_text(text, encoding='utf-8')
+          PY
+          git diff -- scripts/provider_patches/global_media_type_resolution_v1.py
+          test "$(git diff --name-only | wc -l | tr -d ' ')" = "1"
+          test "$(git diff --name-only)" = "scripts/provider_patches/global_media_type_resolution_v1.py"
+
+      - name: Validate Core budget and cancellation contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/provider_patches/global_media_type_resolution_v1.py
+          python3 tests/core_provider_execution_budget_contract_test.py
+          python3 tests/global_media_type_resolution_test.py
+          python3 tests/provider_latest_request_cancellation_test.py
+          python3 tests/provider_native_abort_ignorant_cancellation_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+
+      - name: Commit validated source-only fix to workbench
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "niakvio-workbench"
+          git config user.email "actions@users.noreply.github.com"
+          git add scripts/provider_patches/global_media_type_resolution_v1.py
+          git diff --cached --check
+          git commit -m "fix(core): unify provider execution budget at 60s"
+          git push origin HEAD:workbench/systemic-recovery-20260909
