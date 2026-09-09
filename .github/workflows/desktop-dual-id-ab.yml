@@ -123,7 +123,7 @@ jobs:
             vf-no-anime/manifest.json
           echo "FIELD_DESKTOP_DUAL_ID_PROTECTED_BYTES mode=${NIAKVIO_AB_MODE} mutated=false"
 
-      - name: Configure response-shape diagnostic and post-audit dual-ID injection
+      - name: Configure response-shape diagnostic and post-audit V3 identity cache injection
         shell: bash
         run: |
           set -euo pipefail
@@ -144,9 +144,9 @@ jobs:
               lines = [
                   'python3 "${NIAKVIO}/scripts/augment_native_desktop_dual_id_context.py" \\',
                   '  --source "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?',
-                  "grep -q 'NIAKVIO_LAB_DUAL_ID_CONTEXT_V2' \\",
+                  "grep -q 'NIAKVIO_LAB_DUAL_ID_CONTEXT_V3' \\",
                   '  "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?',
-                  'echo "FIELD_NATIVE_DESKTOP_DUAL_ID_POST_AUDIT injected=true version=2 canonical_tmdb_metadata=true provider_bytes_mutated=false"',
+                  'echo "FIELD_NATIVE_DESKTOP_DUAL_ID_POST_AUDIT injected=true version=3 canonical_tmdb_cache=true post_core_init=true provider_bytes_mutated=false"',
                   '',
               ]
               injection = anchor + "\n".join(lines)
@@ -198,12 +198,12 @@ jobs:
           joined = "\n".join(details)
           imdb_route = bool(re.search(r'/stream/movie/tt\d+\.json', joined, re.I))
           numeric_route = '/stream/movie/157336.json' in joined
-          print(f"FIELD_DESKTOP_DUAL_ID_AB_VERDICT mode={mode} count={count} imdb_route={str(imdb_route).lower()} numeric_route={str(numeric_route).lower()} canonical_tmdb_metadata=true")
+          print(f"FIELD_DESKTOP_DUAL_ID_AB_VERDICT mode={mode} count={count} imdb_route={str(imdb_route).lower()} numeric_route={str(numeric_route).lower()} canonical_tmdb_cache=true post_core_init=true")
           if mode == "dual":
               if count <= 0:
-                  raise SystemExit("canonical host media identity context did not recover any PersianStremio stream")
+                  raise SystemExit("canonical post-Core host media identity cache did not recover any PersianStremio stream")
               if not imdb_route:
-                  raise SystemExit("canonical host media identity context did not execute an IMDb PersianStremio route")
+                  raise SystemExit("canonical post-Core host media identity cache did not execute an IMDb PersianStremio route")
           PY
 
       - name: Upload A-B evidence
