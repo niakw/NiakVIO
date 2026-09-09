@@ -15,13 +15,18 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[1]
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
 import resolve_provider_hubs as hub
 
-ROOT = Path(__file__).resolve().parents[1]
 REGISTRY_PATH = ROOT / "provider-hubs.json"
 PROTECTED_TYPES = {"hub", "telegram_public", "redirect"}
 ADDRESS_MARKERS = tuple(
