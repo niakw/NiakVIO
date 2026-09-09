@@ -1,1 +1,33 @@
-<!-- NIAKVIO_MEMORY_PENDING_EMPTY -->
+# NiakVIO checkpoint — 2026-09-09 — Desktop HTTP-200 zero + Core budget + dual-ID A/B
+
+## Desktop root-cause narrowing
+- Official NuvioDesktop protected-byte bisect run **34338322836** (macOS, PersianStremio, Interstellar) proved the runtime loads the protected PersianStremio bundle and performs `GET https://persianstremio.vercel.app/stream/movie/157336.json` successfully (`HTTP 200`, `application/json`). Sanitized response-shape instrumentation then proved the JSON itself contains no stream rows: `kind=object rows=0 objectRows=0 httpUrlRows=0 externalUrlRows=0`; final plugin result is `count=0` in ~0.8 s.
+- Therefore the current PersianStremio Desktop zero is **not** a QuickJS JSON/result-parser loss and is not caused by the former 25/30 s Core budget. The numeric TMDB backend route itself is empty for this fixture.
+- Source audit of official NuvioDesktop HEAD **21aabeeb49fc6de835f9031a65cc5f8489419330** shows a single-ID host/plugin contract: `StreamsRepository` passes `pluginContentId(...)`; `PluginRepository.executeScraper()` resolves/collapses that into `resolvedTmdbId`; `PluginRuntime.executePlugin()` receives only `tmdbId, mediaType, season, episode` and calls `getStreams(tmdbId, mediaType, season, episode)`. Production NuvioDesktop exposes no `globalThis.__nuvioMediaContext`.
+- NuvioDesktop does implement `TmdbService.tmdbToImdb(...)`, but it requires the user-configured `TmdbSettingsRepository` API key, whose default is empty. Do not solve this by requiring users to supply a TMDB key.
+- NuvioMobile HEAD observed at **83c409c401ad98b22eeb8a979859adddfa3eb8f4** has the same structural single-ID flow in shared `fullCommonMain`: `PluginRepository` passes `resolvedTmdbId` only, and `PluginRuntime` invokes the same four-argument `getStreams` signature. Its `TmdbSettingsRepository` also defaults to an empty API key. Treat the identity-contract gap as potentially common Desktop + Android/iOS Mobile, not Desktop-only.
+- NuvioTV differs materially: official TV `PluginRuntime` still calls the same four-argument `getStreams`, but it injects `BuildConfig.TMDB_API_KEY` into QuickJS through `__get_tmdb_api_key`. That lets NiakVIO Core/provider logic hydrate TMDB -> IMDb on TV even though the public function signature is single-ID. Desktop/Mobile do not have this runtime capability.
+
+## Core timeout authority fixed in source
+- `CORE.MEDIA_TYPE_RESOLUTION` previously owned its own shorter execution deadline while native Labs also owned outer deadlines. This created competing timeout authorities and could drop valid late results after network return.
+- Source fix commit **a2ccd335ea3be285e3a37807488605abdc195865** (`fix(core): unify provider execution budget at 60s`) sets canonical Core `providerTimeoutMs=60000` and `tvProviderTimeoutMs=60000`, revision `tmdb-data-contract-launch-gate-v30-unified-60s-budget`.
+- Validation run **34339079601** completed fully green, including media-resolution contracts, latest-request cancellation, abort-ignoring native-fetch cancellation and Core budget non-regression.
+- Do **not** rematerialize this Core into already protected green provider lanes until the required live A/B demonstrates no regression. Green lane bytes remain immutable authority.
+
+## Protected-byte dual-ID experiment
+- Added Lab-only host-context transform `scripts/augment_native_desktop_dual_id_context.py` in commit **d57f8f39ce27b1899485d4231157915a85212cae**. It modifies only the checked-out official NuvioDesktop `PluginRuntime.kt` during the experiment and exposes `globalThis.__nuvioMediaContext={tmdbId,imdbId,canonicalMediaType,tmdbNamespace}`. It never injects TMDB credentials into JavaScript and never modifies NiakVIO provider bytes.
+- Added `tests/native_desktop_dual_id_context_test.py` in commit **4a66d6d26c39b8b2579a21bedd8e27666a395320**; it verifies both IDs, no `TMDB_API_KEY`/`TMDB_ACCESS_TOKEN` exposure, and transform idempotence.
+- Added `.github/workflows/desktop-dual-id-ab.yml` to compare the same protected PersianStremio bytes under official macOS NuvioDesktop with `baseline` vs `dual` context. Dual host resolution maps TMDB `157336` to IMDb **tt0816692** before QuickJS; only the IMDb value crosses into the test JVM/JS context.
+- Run **34341065713** produced a valid baseline proof: `FIELD_DESKTOP_DUAL_ID_AB_VERDICT mode=baseline count=0 imdb_route=false numeric_route=true`; protected NiakVIO provider/manifest bytes were unchanged. Artifact ID **10099978659**, SHA-256 `ed926f45f0e2dd424c5a131929be44fe6939f6c3cd405e371914b71659b79efd`.
+- The dual job in run 34341065713 is **harness-invalid**, not evidence against dual-ID: the human-UX purity guard correctly rejected the Lab because `PluginRuntime.kt` had been mutated before its checkout audits. Never weaken/bypass that policy.
+- A first post-audit workflow rewrite commit **685351d138ab04cd48ea5ccd1de6567ea498731d** had invalid YAML; run **34341571249** created zero jobs. This is workflow syntax noise only.
+- Workflow syntax/order was corrected in commit **fab64812b0a58af74f517722464c972c7728907b**. Run **34341684632** is the authoritative A/B retry: both baseline and dual pass initial contract checks, official NuvioDesktop checkout, protected-byte immutability, and native bridge build. The dual branch resolves IMDb host-side successfully and schedules its `PluginRuntime.kt` injection only **after** the two human-UX checkout purity audits. At this checkpoint, both jobs are still inside real official-runtime execution; no dual stream result has yet been claimed.
+
+## Immediate continuation authority
+1. Do not push a path that retriggers/cancels run **34341684632** until its dual runtime evidence is collected.
+2. Inspect dual job **102433711970** for `FIELD_NATIVE_DESKTOP_DUAL_ID_POST_AUDIT`, the actual PersianStremio route, sanitized response shape and `FIELD_NATIVE_RESULT count`.
+3. Baseline authority is already independently proven: numeric TMDB route + HTTP 200 + zero rows/count.
+4. If dual hits `/stream/movie/tt0816692.json` and returns `count>0`, classify root cause as host-to-plugin media-identity collapse/single-ID runtime contract; QuickJS parsing is exonerated. Then design a backward-compatible native dual-ID context contract shared by Desktop/Mobile without exposing TMDB secrets or provider-specific logic.
+5. If dual reaches IMDb but remains zero, inspect backend response shape and continue bisect; do not force the conclusion.
+6. If the workflow evaluator alone fails because its post-audit marker is not copied into the corpus log, preserve the actual runtime route/count evidence and fix that auxiliary assertion separately.
+7. After the A/B verdict, persist its exact run/job/result here, then continue the all-96 lane Repair program and five mandatory Native Labs. Publication remains blocked.
