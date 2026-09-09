@@ -637,6 +637,77 @@
         "/shell.php?videoid={id}"
       ]
     },
+    "animezey": {
+      "source": {
+        "kind": "upstream",
+        "sourceId": "aio",
+        "sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
+        "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animezey.js",
+        "wantedSha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
+        "capturedAt": "2026-09-01T19:53:09+00:00",
+        "currentSha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
+        "mode": "lkg-current-byte-exact"
+      },
+      "routeData": [
+        {
+          "route": "/1:search",
+          "origin": "https://1.animezey23112022.workers.dev",
+          "role": "search",
+          "method": "POST",
+          "semanticType": "movie",
+          "fixture": "interstellar",
+          "requestIndex": 0,
+          "providerValueCorrelation": false,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "POST",
+            "headers": {
+              "accept": "*/*",
+              "accept-language": "en-US,en;q=0.9",
+              "content-type": "application/json",
+              "referer": "https://1.animezey23112022.workers.dev/1:search",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            },
+            "bodyKind": "json",
+            "body": {
+              "q": "{queryDots}.{year}"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [
+            {
+              "location": "body:q",
+              "value": "Interstellar.2014",
+              "placeholder": "{queryDots}.{year}"
+            }
+          ],
+          "requestSpecResidue": [],
+          "proofBodyKind": "json",
+          "proofBodyValues": {
+            "q": "Interstellar.2014"
+          },
+          "status": 200,
+          "contentType": "text/plain;charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "aio",
+            "sha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
+            "providerUrl": "https://raw.githubusercontent.com/NuvioPlugin/All-in-One-Nuvio/refs/heads/main/providers/animezey.js",
+            "wantedSha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
+            "capturedAt": "2026-09-01T19:53:09+00:00",
+            "currentSha256": "46e83c8d710830679b7f17eacb03e014fc4195237cd423fe63254862549f24ff",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 1,
+          "taskRawStreamCount": 1,
+          "taskLastRequestIndex": 2
+        }
+      ],
+      "routes": [
+        "/1:search"
+      ]
+    },
     "french-manga": {
       "source": {
         "kind": "upstream",
