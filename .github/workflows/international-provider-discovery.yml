@@ -18,7 +18,7 @@ on:
         required: true
         default: '4'
         type: string
-  # Bootstrap only: removed after the first regenerated XLSX is committed.
+  # Bootstrap only: removed after the final regenerated XLSX is committed.
   push:
     branches:
       - automation/international-provider-discovery
@@ -26,6 +26,7 @@ on:
       - '.github/workflows/international-provider-discovery.yml'
       - 'scripts/discover_international_provider_candidates.py'
       - 'automation/international-provider-manual-candidates.json'
+      - 'automation/international-provider-manual-supplement.json'
       - 'automation/international-provider-discovery-sources.json'
 
 permissions:
@@ -49,6 +50,39 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Merge manual curated base and supplement
+        run: |
+          python - <<'PY'
+          import json, re, unicodedata
+          from pathlib import Path
+
+          base_path = Path('automation/international-provider-manual-candidates.json')
+          supplement_path = Path('automation/international-provider-manual-supplement.json')
+          out_path = Path('/tmp/international-provider-manual-merged.json')
+
+          def norm(value):
+              value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
+              return re.sub(r'[^a-z0-9]+', '', value)
+
+          base = json.loads(base_path.read_text(encoding='utf-8'))
+          supplement = json.loads(supplement_path.read_text(encoding='utf-8'))
+          merged = {}
+          order = []
+          for row in list(base.get('candidates') or []) + list(supplement.get('candidates') or []):
+              key = norm(row.get('name'))
+              if not key:
+                  continue
+              if key not in merged:
+                  order.append(key)
+              merged[key] = row
+          payload = dict(base)
+          payload['schema_version'] = max(int(base.get('schema_version') or 1), 2)
+          payload['candidates'] = [merged[key] for key in order]
+          payload['supplement_applied'] = str(supplement_path)
+          out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(f"manual merge complete: base={len(base.get('candidates') or [])} supplement={len(supplement.get('candidates') or [])} merged={len(payload['candidates'])}")
+          PY
+
       - name: Compile curated discovery catalogue
         env:
           MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '100' }}
@@ -63,7 +97,7 @@ jobs:
             --per-market-cap "$PER_MARKET_CAP" \
             --catalog provider_catalog.json \
             --hubs provider-hubs.json \
-            --manual automation/international-provider-manual-candidates.json \
+            --manual /tmp/international-provider-manual-merged.json \
             --out-json research/international-provider-candidates.json \
             --out-csv research/international-provider-candidates.csv \
             --out-xlsx research/international-provider-candidates.xlsx
@@ -71,9 +105,11 @@ jobs:
       - name: Validate catalogue quality
         env:
           MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '100' }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market || '2' }}
         run: |
           python - <<'PY'
           import json, re, unicodedata, urllib.parse, zipfile
+          from collections import Counter
           from pathlib import Path
 
           def norm(value):
@@ -99,12 +135,14 @@ jobs:
 
           seen = set()
           last_market = ''
+          counts = Counter()
           for row in rows:
               key = norm(row.get('name'))
               assert key and key not in seen, f"duplicate candidate: {row.get('name')}"
               assert key not in known, f"already in NiakVIO: {row.get('name')}"
               seen.add(key)
               market = str(row.get('market') or '')
+              counts[market] += 1
               assert not last_market or market.casefold() >= last_market.casefold(), 'Candidates must be sorted by market'
               last_market = market
               for field in ('route', 'hub'):
@@ -116,12 +154,16 @@ jobs:
                   host = parsed.hostname.casefold()
                   assert not any(host == suffix or host.endswith('.' + suffix) for suffix in rejected_hosts), f"repository URL leaked into {field}: {value}"
 
+          floor = int(__import__('os').environ['MIN_PER_MARKET'])
+          under = {market: count for market, count in counts.items() if count < floor}
+          assert not under, f"markets below requested coverage floor: {under}"
+
           xlsx = Path('research/international-provider-candidates.xlsx')
           assert xlsx.stat().st_size > 5000
           with zipfile.ZipFile(xlsx) as archive:
               assert archive.testzip() is None
               assert 'xl/worksheets/sheet3.xml' in archive.namelist(), 'NiakVIO hub gaps sheet missing'
-          print(f"catalogue validation ok: {len(rows)} candidates / {out.get('market_count')} markets / {out.get('hub_gap_count')} NiakVIO hub gaps")
+          print(f"catalogue validation ok: {len(rows)} candidates / {out.get('market_count')} markets / min={min(counts.values())} per market / {out.get('hub_gap_count')} NiakVIO hub gaps")
           PY
 
       - name: Commit refreshed research catalogue
