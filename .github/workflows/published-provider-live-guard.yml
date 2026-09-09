@@ -1,0 +1,108 @@
+name: Published Provider Live Guard
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/published-provider-live-guard.yml'
+      - '.github/triggers/published-provider-live-guard.json'
+      - 'scripts/audit_published_provider_guard.py'
+      - 'tests/published_provider_guard_test.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  vf-regression:
+    name: VF regression - Kehflix StreamZo
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_TIMEOUT: 70
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Security preflight and sanitizer contract
+        run: |
+          python tests/workflow_security_policy_test.py
+          python tests/published_provider_guard_test.py
+          python -m py_compile scripts/audit_published_provider_guard.py
+      - name: Execute exact published VF provider bytes
+        id: guard
+        continue-on-error: true
+        run: |
+          python scripts/audit_published_provider_guard.py \
+            --provider kehflix \
+            --provider streamzo \
+            --output automation/published-vf-provider-live-guard.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: published-vf-provider-live-guard-${{ github.run_id }}
+          path: automation/published-vf-provider-live-guard.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Enforce VF regression result
+        if: always()
+        run: test '${{ steps.guard.outcome }}' = 'success'
+
+  priority-published:
+    name: Priority providers published live audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+      NIAKVIO_QUICK_YIELD_TIMEOUT: 70
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Execute exact published priority provider bytes
+        id: guard
+        continue-on-error: true
+        run: |
+          python scripts/audit_published_provider_guard.py \
+            --provider anime-sama \
+            --provider animesama-co \
+            --provider purstream \
+            --provider flemmix \
+            --provider uhdmovies \
+            --provider movieshunt \
+            --provider zinkmovies \
+            --provider vegamovies \
+            --provider hindmoviez \
+            --provider 4khdhub \
+            --provider 4khdhubnew \
+            --provider persianstremio \
+            --provider desiflix \
+            --output automation/published-priority-provider-live-guard.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: published-priority-provider-live-guard-${{ github.run_id }}
+          path: automation/published-priority-provider-live-guard.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Report priority guard result
+        if: always()
+        run: |
+          echo "priority_guard_outcome=${{ steps.guard.outcome }}"
