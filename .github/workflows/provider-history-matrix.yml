@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/provider-history-matrix.yml'
       - 'scripts/build_provider_history_matrix.py'
+      - 'scripts/build_provider_history_matrix_v2.py'
       - 'automation/provider-history-evidence-v1.json'
       - 'automation/provider-repair-learn-handoff-v1.json'
       - 'provider-v3-quick-yield.json'
@@ -34,8 +35,8 @@ jobs:
       - name: Build historical provider matrix
         run: |
           git fetch --force --tags origin
-          python -m py_compile scripts/build_provider_history_matrix.py
-          python scripts/build_provider_history_matrix.py
+          python -m py_compile scripts/build_provider_history_matrix.py scripts/build_provider_history_matrix_v2.py
+          python scripts/build_provider_history_matrix_v2.py
           git diff --check -- automation/PROVIDER-HISTORY-MATRIX.md automation/provider-history-matrix.json
       - name: Persist generated matrix only
         run: |
@@ -46,5 +47,5 @@ jobs:
             echo 'PROVIDER_HISTORY_MATRIX_PERSIST unchanged=true'
             exit 0
           fi
-          git commit -m 'docs(provider): refresh 96-provider historical live matrix'
+          git commit -m 'docs(provider): refresh colored 96-provider historical live matrix'
           git push origin HEAD:main
