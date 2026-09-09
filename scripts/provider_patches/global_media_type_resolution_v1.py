@@ -57,8 +57,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             semantic_types.append(item)
     payload = {
         "timeoutMs": max(900, min(int(cfg.get("timeout_ms", 1800)), 5000)),
-        "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 30_000)), 120_000)),
-        "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 25_000)), 30_000)),
+        "providerTimeoutMs": max(5_000, min(int(cfg.get("provider_timeout_ms", 60_000)), 120_000)),
+        "tvProviderTimeoutMs": max(5_000, min(int(cfg.get("tv_provider_timeout_ms", 60_000)), 120_000)),
         "supersedeSettleMs": max(100, min(int(cfg.get("supersede_settle_ms", 1200)), 3000)),
         "semanticTypes": semantic_types,
         "requestTypeAliases": {
@@ -66,7 +66,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v29-native-abort-race",
+        "revision": "tmdb-data-contract-launch-gate-v30-unified-60s-budget",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -490,7 +490,7 @@ function requestAbortPromise(controller,requestToken){
 async function settlePrior(promise){if(!promise||typeof promise.then!=="function")return;try{if(typeof setTimeout!=="function"){await Promise.resolve();return}await Promise.race([promise,new Promise(function(resolve){setTimeout(resolve,Number(c.supersedeSettleMs||1200))})])}catch(_){}}
 function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
 function tvRuntime(){try{var ua=s(g&&g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_){return false}}
-function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||25000):Number(c.providerTimeoutMs||30000)}
+function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||60000):Number(c.providerTimeoutMs||60000)}
 function budgetedFetch(original,deadline,requestToken,requestController){
   if(typeof original!=="function")return original;
   var base=original.__nuvioProviderExecutionBudgetBase||original;
