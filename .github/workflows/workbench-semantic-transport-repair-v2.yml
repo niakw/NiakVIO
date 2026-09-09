@@ -1,0 +1,81 @@
+name: WORKBENCH - Semantic Transport Repair V2
+
+on:
+  push:
+    branches:
+      - workbench/systemic-recovery-20260909
+    paths:
+      - '.github/workflows/workbench-semantic-transport-repair-v2.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: niakvio-workbench-semantic-transport-repair-v2
+  cancel-in-progress: false
+
+jobs:
+  repair-validate-commit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact request
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+
+      - name: Apply deterministic semantic transport migration
+        run: |
+          set -euo pipefail
+          python scripts/workbench_semantic_transport_repair_once.py
+          git diff --check
+
+      - name: Validate final semantic transport contract
+        run: |
+          set -euo pipefail
+          node scripts/validate_provider_semantics.cjs
+          node tests/provider_semantics.test.cjs
+          python tests/reapply_manifest_type_projection_test.py
+          python tests/provider_anime_semantic_transport_contract_test.py
+          python tests/provider_v3_documentation_contract_test.py
+          python tests/provider_521_capability_regression_test.py
+          python tests/provider_quick_yield_fixture_selection_test.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/provider_stream_scope_architecture_test.py
+          python tests/native_five_lab_coverage_test.py
+          python - <<'PY'
+          import json
+          rows=json.load(open('manifest.json',encoding='utf-8')).get('scrapers') or []
+          assert len(rows)==96, len(rows)
+          assert len({str(row.get('id') or '').strip().casefold() for row in rows})==96
+          for row in rows:
+              transport={str(x).strip().casefold() for x in row.get('supportedTypes') or []}
+              canonical={str(x).strip().casefold() for x in (row.get('canonicalSupportedTypes') or row.get('supportedTypes') or []) if str(x).strip().casefold() != 'series'}
+              assert ('movie' in transport) == ('movie' in canonical), (row.get('id'), canonical, transport)
+              if 'anime' in canonical or 'tv' in canonical:
+                  assert {'tv','series'} <= transport, (row.get('id'), canonical, transport)
+          print('SEMANTIC_TRANSPORT_MANIFEST_OK providers=96')
+          PY
+
+      - name: Commit corrected contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'fix(types): restore canonical anime and tv-series transport contract'
+          git fetch origin workbench/systemic-recovery-20260909
+          test "$(git rev-parse ${{ github.sha }})" = "$(git rev-parse origin/workbench/systemic-recovery-20260909)"
+          git push origin HEAD:workbench/systemic-recovery-20260909
+          echo "SEMANTIC_TRANSPORT_COMMIT sha=$(git rev-parse HEAD)"
