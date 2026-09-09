@@ -78,11 +78,20 @@ const seasonHtml = `
     <div class="search-title">Alpha Show</div>
   </div>
 `;
+const anchorResultsHtml = `
+  <a class="vendor-search-result" href="/55555-alpha-show-1.html">
+    <span class="vendor-search-result-title">Alpha Show</span>
+  </a>
+  <a class="vendor-search-result" href="/66666-alpha-show-0.html">
+    <span class="vendor-search-result-title">Alpha Show 0</span>
+  </a>
+`;
 const out = {{
   catalogue: _spv215CatalogueProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
   laterStep: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
   fallback: _spv215CatalogueProviderValues(fallbackHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
-  season: _spv215CatalogueProviderValues(seasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv")
+  season: _spv215CatalogueProviderValues(seasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
+  anchorResults: _spv215CatalogueProviderValues(anchorResultsHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv")
 }};
 process.stdout.write(JSON.stringify(out));
 '''
@@ -99,9 +108,14 @@ assert out["fallback"]["id"] == "fallback-77", out
 # Same-record season evidence selects the requested season.
 assert out["season"]["id"] == "44444", out
 assert out["season"]["slug"] == "44444-alpha-show-saison-1", out
+# Search results can themselves be anchors. The exact series title wins over a
+# sibling bare numeric installment rejected by the existing V21.1 identity guard.
+assert out["anchorResults"]["id"] == "55555", out
+assert out["anchorResults"]["slug"] == "55555-alpha-show-1", out
 
 assert "function _spv205StrictProviderValues(value, base, meta, season, mediaType)" in base
 assert "function _spv215CatalogueProviderValues(value, base, meta, season, mediaType)" in base
+assert "const startRe = /<(?:a|div|article|li)" in base
 
 resolver_start = base.index("async function _resolveProviderValuePlan")
 resolver_end = base.index("async function _resolveSearchRequestPlan", resolver_start)
