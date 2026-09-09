@@ -101,6 +101,8 @@ jobs:
         run: |
           python -m py_compile \
             scripts/provider_live_request_contract_bridge_v19.py \
+            scripts/provider_route_proof_lkg.py \
+            scripts/merge_provider_repair_report_v6.py \
             scripts/upgrade_provider_response_value_correlation_v20.py \
             scripts/upgrade_provider_response_value_correlation_v20_1.py \
             scripts/upgrade_provider_response_value_correlation_v20_2.py \
@@ -116,6 +118,7 @@ jobs:
             scripts/upgrade_provider_catalogue_identity_correlation_v21_5.py \
             scripts/audit_provider_repair_yield_v6.py
           node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
+          python tests/provider_route_proof_lkg_test.py
           python tests/provider_execution_authority_v16_contract_test.py
           python tests/provider_route_slug_identity_v16_test.py
           python tests/provider_correlated_value_plan_v18_contract_test.py
@@ -160,16 +163,70 @@ jobs:
             automation/provider-repair-fast-merged.json
             automation/provider-repair-fast-yield.json
             automation/provider-repair-fast-summary.json
+            automation/provider-route-proof-lkg.json
             provider-v3-quick-yield.json
+
+  persist-route-proof-lkg:
+    name: persist-route-proof-lkg
+    needs: prove-wave
+    if: always()
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Download read-only proof artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: provider-repair-*-${{ github.run_id }}
+          path: route-proof-artifacts
+      - name: Merge exact-source live-positive evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          reports=(route-proof-artifacts/**/automation/provider-repair-fast-targeted.json)
+          if [ ${#reports[@]} -eq 0 ]; then
+            echo "FIELD_PROVIDER_ROUTE_PROOF_LKG_PERSIST skipped=1 reason=no-targeted-report"
+            exit 0
+          fi
+          for report in "${reports[@]}"; do
+            python scripts/provider_route_proof_lkg.py \
+              --report "$report" \
+              --registry automation/provider-route-proof-lkg.json
+          done
+          python tests/provider_route_proof_lkg_test.py
+      - name: Commit route-proof LKG only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add automation/provider-route-proof-lkg.json
+          if git diff --cached --quiet; then
+            echo "FIELD_PROVIDER_ROUTE_PROOF_LKG_PERSIST changed=false"
+            exit 0
+          fi
+          git commit -m 'data(repair): persist exact-source route proof LKG'
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "FIELD_PROVIDER_ROUTE_PROOF_LKG_PERSIST changed=true"
 
   sweep-result:
     name: sweep-result
-    needs: [plan, prove-wave]
+    needs: [plan, prove-wave, persist-route-proof-lkg]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: Report selected providers and matrix outcome
         run: |
           echo "FIELD_PROVIDER_PARALLEL_SWEEP providers=${{ needs.plan.outputs.selected }}"
-          echo "FIELD_PROVIDER_PARALLEL_SWEEP_RESULT result=${{ needs.prove-wave.result }}"
+          echo "FIELD_PROVIDER_PARALLEL_SWEEP_RESULT result=${{ needs.prove-wave.result }} lkg=${{ needs.persist-route-proof-lkg.result }}"
           test "${{ needs.prove-wave.result }}" = "success"
+          test "${{ needs.persist-route-proof-lkg.result }}" = "success"
