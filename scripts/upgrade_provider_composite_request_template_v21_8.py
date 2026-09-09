@@ -116,7 +116,8 @@ def _request_composite_related_to_fixture(
 
     # Patch only the canonical structured-body owner. Earlier V16/V20 migrations
     # can legitimately add lines around this assignment, so do not couple V21.8
-    # to their exact surrounding block.
+    # to their exact surrounding block. The legacy URL-encoded helper remains
+    # self-contained because older tests execute it in isolation.
     start, end, section = _function_section(text, "def derive_request_spec(\n", "def derive_observed_route(\n")
     scalar = "        placeholder = _request_scalar_placeholder(key, raw, fixture, provider_values)\n"
     if section.count(scalar) != 1:
@@ -140,29 +141,6 @@ def _request_composite_related_to_fixture(
         1,
     )
     text = text[:start] + section + text[end:]
-
-    # V20.3 owns a second URL-encoded text-body path. Extend it too when present,
-    # while preserving all of V20.4's existing title+season logic.
-    if "def _urlencoded_text_body_spec(\n" in text:
-        start, end, section = _function_section(text, "def _urlencoded_text_body_spec(\n", "def derive_request_spec(\n")
-        scalar_text = "        placeholder = _request_scalar_placeholder(key, value, fixture, provider_values)\n"
-        if section.count(scalar_text) == 1:
-            insert_after = scalar_text
-            if "            placeholder = _urlencoded_search_query_template(key, value, fixture)\n" in section:
-                insert_after += (
-                    "        if not placeholder:\n"
-                    "            placeholder = _urlencoded_search_query_template(key, value, fixture)\n"
-                )
-            if section.count(insert_after) != 1:
-                raise AssertionError("v21.8-urlencoded-composite predecessor ambiguous")
-            section = section.replace(
-                insert_after,
-                insert_after
-                + "        if not placeholder:\n"
-                + "            placeholder = _request_composite_placeholder(key, value, fixture)\n",
-                1,
-            )
-            text = text[:start] + section + text[end:]
 
     PROOF.write_text(text, encoding="utf-8")
     validate_proof(text)
@@ -207,6 +185,13 @@ def patch_base() -> bool:
         validate_base(text)
         return False
 
+    # The query/title replacement shape occurs in more than one runtime helper.
+    # Restrict V21.8 to the canonical request-spec scalar expander only.
+    start, end, section = _function_section(
+        text,
+        "function _recipeExpandScalar(value, values) {\n",
+        "function _recipeExpandObject",
+    )
     old_replacements = '''    query: values.query,
     title: values.query,
     id: values.providerId,
@@ -220,7 +205,13 @@ def patch_base() -> bool:
     episode2: String(values.episode == null ? "" : values.episode).padStart(2, "0"),
     id: values.providerId,
 '''
-    text = _once(text, old_replacements, new_replacements, "v21.8-base-placeholder-expansion")
+    section = _once(section, old_replacements, new_replacements, "v21.8-base-placeholder-expansion")
+    section = section.replace(
+        "function _recipeExpandScalar(value, values) {\n",
+        f"/* {BASE_MARKER} */\nfunction _recipeExpandScalar(value, values) {{\n",
+        1,
+    )
+    text = text[:start] + section + text[end:]
 
     # Structured search plans are the primary consumer. Keep year local to the
     # TMDB metadata already fetched for this exact request.
@@ -242,8 +233,6 @@ def patch_base() -> bool:
     )
     text = text[:start] + section + text[end:]
 
-    marker_anchor = "function _recipeExpandScalar(value, values) {\n"
-    text = _once(text, marker_anchor, f"/* {BASE_MARKER} */\n" + marker_anchor, "v21.8-base-marker")
     BASE.write_text(text, encoding="utf-8")
     validate_base(text)
     return True
