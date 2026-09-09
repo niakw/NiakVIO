@@ -13,6 +13,7 @@ Safety contract:
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import re
 import sys
@@ -32,24 +33,15 @@ PROTECTED_TYPES = {"hub", "telegram_public", "redirect"}
 ADDRESS_MARKERS = tuple(
     hub.compact(value)
     for value in (
-        # FR
         "adresse officielle", "nouvelle adresse", "nouveau domaine", "site officiel",
         "accès au site", "acces au site", "adresse active", "lien officiel",
-        # EN
         "official site", "official domain", "new domain", "new address", "current domain",
-        "official link", "access the site",
-        # ES
-        "sitio oficial", "dominio oficial", "nuevo dominio", "nueva direccion", "enlace oficial",
-        # IT
-        "sito ufficiale", "dominio ufficiale", "nuovo dominio", "nuovo indirizzo",
-        # PT
-        "site oficial", "dominio oficial", "novo dominio", "novo endereco",
-        # DE
-        "offizielle seite", "offizielle domain", "neue domain", "neue adresse",
-        # TR
-        "resmi site", "resmi adres", "yeni alan adi", "yeni adres",
-        # ID
-        "situs resmi", "domain resmi", "domain baru", "alamat baru",
+        "official link", "access the site", "sitio oficial", "dominio oficial",
+        "nuevo dominio", "nueva direccion", "enlace oficial", "sito ufficiale",
+        "dominio ufficiale", "nuovo dominio", "nuovo indirizzo", "site oficial",
+        "novo dominio", "novo endereco", "offizielle seite", "offizielle domain",
+        "neue domain", "neue adresse", "resmi site", "resmi adres", "yeni alan adi",
+        "yeni adres", "situs resmi", "domain resmi", "domain baru", "alamat baru",
     )
 )
 
@@ -85,10 +77,7 @@ def direct_hosts(row: dict[str, Any]) -> set[str]:
     values.extend(str(v) for v in row.get("allowed_terminal_hosts") or [] if v)
     output: set[str] = set()
     for value in values:
-        if "://" in value:
-            hostname = hub.host(value)
-        else:
-            hostname = value.casefold().strip(".")
+        hostname = hub.host(value) if "://" in value else value.casefold().strip(".")
         if hostname:
             output.add(hostname)
     return output
@@ -153,8 +142,6 @@ def webpage_address_source(provider_id: str, row: dict[str, Any], url: str, labe
     final = final.rstrip("/")
     final_host = hub.host(final)
     if final_host in direct_hosts(row):
-        # A result that simply redirects to the current terminal is a redirector
-        # source only when the searched URL itself was on another public host.
         source_host = hub.host(url)
         if source_host and source_host != final_host and result_brand_hint(provider_id, row, url, label):
             return {
@@ -176,7 +163,7 @@ def webpage_address_source(provider_id: str, row: dict[str, Any], url: str, labe
     probe_cfg = dict(row)
     probe_cfg["aliases"] = provider_aliases(provider_id, row)
     outbound: list[str] = []
-    for candidate_url, candidate_label, _index in hub.links(document, final)[:160]:
+    for candidate_url, _candidate_label, _index in hub.links(document, final)[:160]:
         candidate_host = hub.host(candidate_url)
         if not candidate_host or candidate_host == final_host:
             continue
@@ -212,7 +199,7 @@ def telegram_address_source(provider_id: str, row: dict[str, Any], url: str, lab
     cfg["aliases"] = provider_aliases(provider_id, row)
     cfg["resolver"] = "latest_telegram_domain"
     rows, _preferred = hub.choose_official(provider_id, cfg, final, document)
-    rows = [candidate for candidate in rows if hub.host(str(candidate.get("url") or "")) not in {hub.host(final)}]
+    rows = [candidate for candidate in rows if hub.host(str(candidate.get("url") or "")) != hub.host(final)]
     if not rows:
         return None
     return {
@@ -279,8 +266,6 @@ def discover_provider(provider_id: str, row: dict[str, Any], timeout: float) -> 
 
 
 def apply_candidate(row: dict[str, Any], candidate: dict[str, Any]) -> bool:
-    # Final mutation-time guard: discovery and mutation are deliberately separate.
-    # Never weaken this into a replacement/update path.
     if provider_is_protected(row):
         return False
     url = str(candidate.get("url") or "").strip().rstrip("/")
@@ -310,6 +295,7 @@ def main() -> int:
     parser.add_argument("--output", type=Path, default=ROOT / "health-output/provider-hub-source-discovery.json")
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--timeout", type=float, default=7.0)
+    parser.add_argument("--workers", type=int, default=8)
     parser.add_argument("--max-providers", type=int, default=0, help="0 = all missing-hub providers")
     parser.add_argument("--provider", action="append", default=[])
     args = parser.parse_args()
@@ -344,9 +330,32 @@ def main() -> int:
         "applied": 0,
         "providers": {},
     }
+
+    workers = max(1, min(int(args.workers), 16))
+    results: dict[str, dict[str, Any]] = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+        future_map = {
+            pool.submit(discover_provider, hub.canonical_provider_id(raw_id), dict(row), args.timeout): raw_id
+            for raw_id, row in eligible
+        }
+        for future in concurrent.futures.as_completed(future_map):
+            raw_id = future_map[future]
+            provider_id = hub.canonical_provider_id(raw_id)
+            try:
+                results[raw_id] = future.result()
+            except Exception as exc:
+                results[raw_id] = {
+                    "provider_id": provider_id,
+                    "status": "error",
+                    "selected": None,
+                    "candidates": [],
+                    "observations": [],
+                    "error": f"{type(exc).__name__}: {exc}",
+                }
+
     for raw_id, row in eligible:
         provider_id = hub.canonical_provider_id(raw_id)
-        result = discover_provider(provider_id, row, args.timeout)
+        result = results[raw_id]
         selected = result.get("selected")
         if selected:
             report["confirmed"] += 1
@@ -361,7 +370,7 @@ def main() -> int:
         atomic_write(registry_path, payload)
     print(
         "hub source discovery complete: "
-        f"protected={protected} eligible={len(eligible)} confirmed={report['confirmed']} applied={report['applied']}"
+        f"protected={protected} eligible={len(eligible)} confirmed={report['confirmed']} applied={report['applied']} workers={workers}"
     )
     return 0
 
