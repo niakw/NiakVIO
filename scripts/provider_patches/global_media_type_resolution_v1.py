@@ -66,7 +66,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             for key, value in (cfg.get("request_type_aliases") or {}).items()
             if str(key).strip() and str(value).strip()
         },
-        "revision": "tmdb-data-contract-launch-gate-v30-unified-60s-budget",
+        "revision": "tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate",
     }
     serialized = json.dumps(payload, separators=(",", ":"))
     marker = f"{MARKER}:{hashlib.sha256(serialized.encode()).hexdigest()[:12]}"
@@ -318,9 +318,16 @@ function provisional(a){
   // the client transports the work as tv/movie; authoritative TMDB verification
   // still happens before any positive output can escape.
   if(semantic.length&&semantic.indexOf(type)<0){
+    var hasMovie=semantic.indexOf("movie")>=0,hasTv=semantic.indexOf("tv")>=0,hasAnime=semantic.indexOf("anime")>=0;
+    // Explicit anime is a semantic request, not a generic TV alias. A provider
+    // without anime capability must be rejected before provider/TMDB network.
+    if(raw==="anime"&&!hasAnime)return null;
+    // movie <-> tv transport mismatch is already conclusive from provider DATA.
+    // Do not rewrite a single declared type just to make the provisional call run.
+    if(type==="movie"&&!hasMovie&&!hasAnime)return null;
+    if(type==="tv"&&!hasTv&&!hasAnime)return null;
     if(semantic.indexOf(namespace)>=0)type=namespace;
-    else if(semantic.indexOf("anime")>=0&&(namespace==="tv"||namespace==="movie"))type="anime";
-    else if(semantic.length===1)type=semantic[0];
+    else if(hasAnime&&(namespace==="tv"||namespace==="movie"))type="anime";
     else return null;
   }
   var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first),source=sourceIdentity(id);
