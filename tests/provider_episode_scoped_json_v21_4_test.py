@@ -66,6 +66,29 @@ process.stdout.write(JSON.stringify(out));
 proc = subprocess.run(["node", "-e", node], cwd=ROOT, check=True, capture_output=True, text=True)
 out = json.loads(proc.stdout)
 
+expected_payload = {
+    "vf": {
+        "1": {"ServerA": "https://player.invalid/ep1-vf", "ServerB": "https://player.invalid/ep1b-vf"},
+        "2": {"ServerA": "https://player.invalid/ep2-vf"},
+    },
+    "vostfr": {
+        "1": {"ServerA": "https://player.invalid/ep1-vo"},
+        "2": {"ServerA": "https://player.invalid/ep2-vo"},
+    },
+    "info": {
+        "1": {"title": "Episode One"},
+        "2": {"title": "Episode Two"},
+    },
+}
+expected_tagged = [
+    {"episode_number": 1, "url": "https://player.invalid/tag-1"},
+    {"episode_number": 2, "url": "https://player.invalid/tag-2"},
+]
+expected_qualities = {
+    "1080": "https://cdn.invalid/1080.m3u8",
+    "720": "https://cdn.invalid/720.m3u8",
+}
+
 serialized_ep1 = json.dumps(out["ep1"], sort_keys=True)
 assert "ep1-vf" in serialized_ep1 and "ep1-vo" in serialized_ep1, out
 assert "ep2-vf" not in serialized_ep1 and "ep2-vo" not in serialized_ep1, out
@@ -75,9 +98,9 @@ assert "ep1-vf" not in serialized_ep2 and "ep1-vo" not in serialized_ep2, out
 # Every real episode table fails closed for an absent requested episode; the
 # remaining object can contain only unrelated/non-episode metadata branches.
 assert "player.invalid" not in json.dumps(out["missing"], sort_keys=True), out
-assert out["movie"] == payload, out
-assert out["tagged2"] == [tagged[1]], out
-assert out["qualities"] == qualities, out
+assert out["movie"] == expected_payload, out
+assert out["tagged2"] == [expected_tagged[1]], out
+assert out["qualities"] == expected_qualities, out
 
 resolver_start = base.index("async function _resolveProviderValuePlan")
 resolver_end = base.index("async function _resolveSearchRequestPlan", resolver_start)
