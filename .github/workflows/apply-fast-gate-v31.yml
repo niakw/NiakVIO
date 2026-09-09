@@ -7,10 +7,10 @@ on:
     paths:
       - '.github/workflows/apply-fast-gate-v31.yml'
       - 'scripts/migrate_fast_gate_provisional_v31.py'
-      - 'scripts/migrate_history_v3_semantic_floor_v31.py'
       - 'scripts/provider_patches/global_media_type_resolution_v1.py'
       - 'scripts/build_provider_history_matrix_v3.py'
       - 'tests/global_media_type_pre_network_gate_test.py'
+      - 'tests/provider_non_regression_contract_test.py'
 
 permissions:
   contents: write
@@ -37,24 +37,23 @@ jobs:
           node-version: '24'
       - name: Security policy preflight
         run: python tests/workflow_security_policy_test.py
-      - name: Apply deterministic migrations
+      - name: Apply deterministic provisional fast gate
         run: |
           set -euo pipefail
           python scripts/migrate_fast_gate_provisional_v31.py
-          python scripts/migrate_history_v3_semantic_floor_v31.py
           python -m py_compile \
             scripts/provider_patches/global_media_type_resolution_v1.py \
             scripts/build_provider_history_matrix_v3.py \
             scripts/migrate_fast_gate_provisional_v31.py \
-            scripts/migrate_history_v3_semantic_floor_v31.py \
-            tests/global_media_type_pre_network_gate_test.py
+            tests/global_media_type_pre_network_gate_test.py \
+            tests/provider_non_regression_contract_test.py
       - name: Validate media-type fast gate
         run: |
           set -euo pipefail
           python tests/global_media_type_pre_network_gate_test.py
           python tests/global_media_type_resolution_test.py
           python tests/episodic_year_identity_regression_test.py
-      - name: Validate four-version semantic floor
+      - name: Validate four-version canonical semantic floor
         run: |
           set -euo pipefail
           git fetch --force --tags origin
@@ -67,20 +66,20 @@ jobs:
           data=json.loads(Path('automation/provider-history-matrix.json').read_text(encoding='utf-8'))
           false_legacy={'animekai','animeworld'} & set(data.get('contractRegressionProviders') or [])
           if false_legacy:
-              raise SystemExit('5.21.16 transport aliases still block semantic floor: '+','.join(sorted(false_legacy)))
-          print('HISTORY_V3_SEMANTIC_FLOOR legacy_52116_transport_aliases=nonblocking')
+              raise SystemExit('historical transport aliases still block semantic floor: '+','.join(sorted(false_legacy)))
+          print('HISTORY_V3_SEMANTIC_FLOOR historical_transport_aliases=nonblocking')
           PY
-      - name: Commit migrated sources on workbench only
+      - name: Commit migrated fast-gate source on workbench only
         shell: bash
         run: |
           set -euo pipefail
           git diff --check
-          if git diff --quiet -- scripts/provider_patches/global_media_type_resolution_v1.py scripts/build_provider_history_matrix_v3.py; then
-            echo 'MIGRATED_SOURCE_COMMIT changed=false'
+          if git diff --quiet -- scripts/provider_patches/global_media_type_resolution_v1.py; then
+            echo 'FAST_GATE_SOURCE_COMMIT changed=false'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/provider_patches/global_media_type_resolution_v1.py scripts/build_provider_history_matrix_v3.py
-          git commit -m 'fix(core): harden pre-network gate and historical semantic floor'
+          git add scripts/provider_patches/global_media_type_resolution_v1.py
+          git commit -m 'fix(core): reject semantic mismatch before provider network'
           git push origin HEAD:workbench/systemic-recovery-20260909
