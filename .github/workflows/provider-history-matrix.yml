@@ -1,0 +1,50 @@
+name: Provider History Matrix
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-history-matrix.yml'
+      - 'scripts/build_provider_history_matrix.py'
+      - 'automation/provider-history-evidence-v1.json'
+      - 'automation/provider-repair-learn-handoff-v1.json'
+      - 'provider-v3-quick-yield.json'
+      - 'manifest.json'
+      - 'providers/.generation-retention.json'
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-persist:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Security policy preflight
+        run: python tests/workflow_security_policy_test.py
+      - name: Build historical provider matrix
+        run: |
+          git fetch --force --tags origin
+          python -m py_compile scripts/build_provider_history_matrix.py
+          python scripts/build_provider_history_matrix.py
+          git diff --check -- automation/PROVIDER-HISTORY-MATRIX.md automation/provider-history-matrix.json
+      - name: Persist generated matrix only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add automation/PROVIDER-HISTORY-MATRIX.md automation/provider-history-matrix.json
+          if git diff --cached --quiet; then
+            echo 'PROVIDER_HISTORY_MATRIX_PERSIST unchanged=true'
+            exit 0
+          fi
+          git commit -m 'docs(provider): refresh 96-provider historical live matrix'
+          git push origin HEAD:main
