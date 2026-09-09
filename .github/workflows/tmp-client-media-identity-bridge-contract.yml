@@ -1,0 +1,55 @@
+name: TMP - Client Media Identity Bridge Contract
+
+on:
+  push:
+    branches:
+      - workbench/systemic-recovery-20260909
+    paths:
+      - '.github/workflows/tmp-client-media-identity-bridge-contract.yml'
+      - 'scripts/augment_nuvio_client_media_identity_bridge.py'
+      - 'tests/nuvio_client_media_identity_bridge_test.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: niakvio
+          persist-credentials: false
+
+      - name: Run transform unit contract
+        run: python3 niakvio/tests/nuvio_client_media_identity_bridge_test.py
+
+      - name: Clone official Desktop and Mobile
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --depth 1 --branch Dev https://github.com/NuvioMedia/NuvioDesktop.git desktop
+          git clone --depth 1 --branch cmp-rewrite https://github.com/NuvioMedia/NuvioMobile.git mobile
+          echo "FIELD_CLIENT_IDENTITY_UPSTREAM desktop_sha=$(git -C desktop rev-parse HEAD) mobile_sha=$(git -C mobile rev-parse HEAD)"
+
+      - name: Apply bridge to both official clients
+        shell: bash
+        run: |
+          set -euo pipefail
+          for root in desktop mobile; do
+            python3 niakvio/scripts/augment_nuvio_client_media_identity_bridge.py \
+              --repository-source "$root/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt" \
+              --runtime-source "$root/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt"
+            git -C "$root" diff --check
+            changed="$(git -C "$root" diff --name-only | sort)"
+            expected=$'composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt\ncomposeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt'
+            test "$changed" = "$expected"
+            grep -q 'NIAKVIO_CANONICAL_MEDIA_IDENTITY_REPOSITORY_V1' "$root/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/PluginRepository.kt"
+            grep -q 'NIAKVIO_CANONICAL_MEDIA_IDENTITY_RUNTIME_V1' "$root/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt"
+            grep -Fq 'getStreams($tmdbIdArg, $mediaTypeArg, $seasonArg, $episodeArg)' "$root/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt"
+            ! grep -q 'TMDB_API_KEY' "$root/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt"
+            echo "FIELD_CLIENT_IDENTITY_SOURCE_CONTRACT client=$root exact_files=2 provider_abi_changed=false canonical_cache=true"
+          done
