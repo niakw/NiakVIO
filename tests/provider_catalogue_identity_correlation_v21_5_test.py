@@ -39,6 +39,8 @@ function _htmlVisibleText(v) {{
 function _norm(v) {{
   return _text(v).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }}
+function _slug(v) {{ return _norm(v).replace(/\\s+/g, "-"); }}
+function _spv4Titles(meta) {{ return meta && meta.title ? [meta.title] : []; }}
 function _spv4TitleScore(title, meta) {{
   const actual = _norm(title);
   const expected = _norm(meta && meta.title);
@@ -73,9 +75,9 @@ const wrongSeasonHtml = `
   <div onclick="location.href='/44444-alpha-show-saison-1.html'">Alpha Show</div>
 `;
 const out = {{
-  correlated: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1),
-  fallback: _spv205StrictProviderValues(fallbackHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1),
-  season: _spv205StrictProviderValues(wrongSeasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1)
+  correlated: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
+  fallback: _spv205StrictProviderValues(fallbackHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
+  season: _spv205StrictProviderValues(wrongSeasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv")
 }};
 process.stdout.write(JSON.stringify(out));
 '''
