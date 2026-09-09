@@ -1,21 +1,31 @@
 {
-  "schemaVersion": 1,
   "policy": "Residual targeted repair failures are LEARN-owned; automatic route/data repair skips them until LEARN or a deliberate explicit regression/priority run resolves them.",
-  "providerCount": 1,
+  "providerCount": 2,
   "providers": {
     "animezey": {
-      "owner": "LEARN",
-      "status": "pending",
-      "reason": "lost-upstream-positive",
+      "lastRepairAttemptsPerTask": 3,
+      "lastRepairRunId": "34319494641",
       "mediaTypes": [
         "movie",
         "tv"
       ],
-      "lastRepairRunId": "34319494641",
-      "lastRepairAttemptsPerTask": 3,
+      "owner": "LEARN",
+      "publicationAllowed": false,
+      "reason": "lost-upstream-positive",
       "repairObservations": 1,
-      "publicationAllowed": false
+      "status": "pending"
+    },
+    "kehflix": {
+      "lastRepairAttemptsPerTask": 3,
+      "lastRepairRunId": "34323855155",
+      "mediaTypes": [],
+      "owner": "LEARN",
+      "publicationAllowed": false,
+      "reason": "target-not-verified",
+      "repairObservations": 1,
+      "status": "pending"
     }
   },
-  "publicationAllowed": false
+  "publicationAllowed": false,
+  "schemaVersion": 1
 }
