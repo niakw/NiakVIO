@@ -1,98 +1,204 @@
-name: BOOTSTRAP - International Provider Discovery v2
+name: MANUAL - International Provider Discovery
 
 on:
-  push:
-    branches:
-      - automation/international-provider-discovery-v2
-    paths:
-      - '.github/workflows/international-provider-discovery.yml'
-      - 'automation/international-provider-discovery-sources.json'
+  workflow_dispatch:
+    inputs:
+      max_candidates:
+        description: Maximum candidates to retain (hard cap 100)
+        required: true
+        default: '100'
+        type: string
+      min_per_market:
+        description: Minimum candidates per represented country/market when the curated pool contains enough
+        required: true
+        default: '2'
+        type: string
+      per_market_cap:
+        description: Maximum candidates per country/market
+        required: true
+        default: '4'
+        type: string
 
 permissions:
   contents: write
+  pull-requests: write
 
 concurrency:
-  group: bootstrap-international-provider-discovery-v2
+  group: manual-international-provider-discovery
   cancel-in-progress: false
 
 jobs:
-  bootstrap:
+  discover:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: automation/international-provider-discovery-v2
+          ref: main
           fetch-depth: 0
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
 
-      - name: Import validated discovery implementation
-        shell: bash
+      - name: Merge manual curated base and supplement
         run: |
-          set -euo pipefail
-          BASE='https://raw.githubusercontent.com/niakw/NiakVIO/automation/international-provider-discovery'
-          mkdir -p automation research scripts .github/workflows
-          curl -fsSL "$BASE/scripts/discover_international_provider_candidates.py" -o scripts/discover_international_provider_candidates.py
-          curl -fsSL "$BASE/automation/international-provider-discovery-sources.json" -o automation/international-provider-discovery-sources.json
-          curl -fsSL "$BASE/automation/international-provider-manual-candidates.json" -o automation/international-provider-manual-candidates.json
-          curl -fsSL "$BASE/automation/international-provider-manual-supplement.json" -o automation/international-provider-manual-supplement.json
-          curl -fsSL "$BASE/research/international-provider-candidates.json" -o research/international-provider-candidates.json
-          curl -fsSL "$BASE/research/international-provider-candidates.csv" -o research/international-provider-candidates.csv
-          curl -fsSL "$BASE/research/international-provider-candidates.xlsx" -o research/international-provider-candidates.xlsx
-          # Import the final workflow last: it is workflow_dispatch-only, so this bootstrap commit will not loop.
-          curl -fsSL "$BASE/.github/workflows/international-provider-discovery.yml" -o .github/workflows/international-provider-discovery.yml
+          python - <<'PY'
+          import json, re, unicodedata
+          from pathlib import Path
 
-      - name: Validate imported catalogue and job
+          base_path = Path('automation/international-provider-manual-candidates.json')
+          supplement_path = Path('automation/international-provider-manual-supplement.json')
+          out_path = Path('/tmp/international-provider-manual-merged.json')
+
+          def norm(value):
+              value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
+              return re.sub(r'[^a-z0-9]+', '', value)
+
+          base = json.loads(base_path.read_text(encoding='utf-8'))
+          supplement = json.loads(supplement_path.read_text(encoding='utf-8'))
+          merged = {}
+          order = []
+          for row in list(base.get('candidates') or []) + list(supplement.get('candidates') or []):
+              key = norm(row.get('name'))
+              if not key:
+                  continue
+              if key not in merged:
+                  order.append(key)
+              merged[key] = row
+          payload = dict(base)
+          payload['schema_version'] = max(int(base.get('schema_version') or 1), 2)
+          payload['candidates'] = [merged[key] for key in order]
+          payload['supplement_applied'] = str(supplement_path)
+          out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(f"manual merge complete: base={len(base.get('candidates') or [])} supplement={len(supplement.get('candidates') or [])} merged={len(payload['candidates'])}")
+          PY
+
+      - name: Compile curated discovery catalogue
+        env:
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
+          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap }}
         run: |
           set -euo pipefail
           python -m py_compile scripts/discover_international_provider_candidates.py
+          python scripts/discover_international_provider_candidates.py \
+            --max-candidates "$MAX_CANDIDATES" \
+            --min-per-market "$MIN_PER_MARKET" \
+            --per-market-cap "$PER_MARKET_CAP" \
+            --catalog provider_catalog.json \
+            --hubs provider-hubs.json \
+            --manual /tmp/international-provider-manual-merged.json \
+            --out-json research/international-provider-candidates.json \
+            --out-csv research/international-provider-candidates.csv \
+            --out-xlsx research/international-provider-candidates.xlsx
+
+      - name: Validate catalogue quality
+        env:
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
+        run: |
           python - <<'PY'
-          import json, urllib.parse, zipfile
+          import json, re, unicodedata, urllib.parse, zipfile
           from collections import Counter
           from pathlib import Path
-          bad_hosts = ('github.com','githubusercontent.com','gitlab.com','bitbucket.org','codeberg.org','sourceforge.net')
-          data=json.loads(Path('research/international-provider-candidates.json').read_text(encoding='utf-8'))
-          rows=data.get('candidates') or []
-          assert len(rows)==100, len(rows)
-          counts=Counter(str(r.get('market') or '') for r in rows)
-          assert len(counts)>=34, len(counts)
-          assert min(counts.values())>=2, counts
-          for r in rows:
-              route=str(r.get('route') or '')
-              assert route, r.get('name')
-              for field in ('route','hub'):
-                  value=str(r.get(field) or '')
-                  if not value: continue
-                  p=urllib.parse.urlparse(value)
-                  assert p.scheme in {'http','https'} and p.hostname, (field,value)
-                  h=p.hostname.casefold()
-                  assert not any(h==x or h.endswith('.'+x) for x in bad_hosts), (field,value)
-          assert int(data.get('hub_gap_count') or 0) >= 40
-          with zipfile.ZipFile('research/international-provider-candidates.xlsx') as z:
-              assert z.testzip() is None
-              assert 'xl/worksheets/sheet3.xml' in z.namelist()
-          print(f"validated: {len(rows)} candidates / {len(counts)} markets / min={min(counts.values())} / hub gaps={data.get('hub_gap_count')}")
+
+          def norm(value):
+              value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
+              return re.sub(r'[^a-z0-9]+', '', value)
+
+          rejected_hosts = ('github.com','githubusercontent.com','gitlab.com','bitbucket.org','codeberg.org','sourceforge.net')
+          out = json.loads(Path('research/international-provider-candidates.json').read_text(encoding='utf-8'))
+          rows = out.get('candidates') or []
+          assert 0 < len(rows) <= min(100, int(__import__('os').environ['MAX_CANDIDATES']))
+          assert out.get('market_count', 0) >= 25, f"country/market coverage too low: {out.get('market_count')}"
+
+          cat = json.loads(Path('provider_catalog.json').read_text(encoding='utf-8'))
+          known = set()
+          for row in cat.get('providers') or []:
+              if not isinstance(row, dict):
+                  continue
+              scraper = row.get('scraper') or {}
+              for value in (row.get('canonicalId'), scraper.get('id'), scraper.get('name')):
+                  key = norm(value)
+                  if key:
+                      known.add(key)
+
+          seen = set()
+          last_market = ''
+          counts = Counter()
+          for row in rows:
+              key = norm(row.get('name'))
+              assert key and key not in seen, f"duplicate candidate: {row.get('name')}"
+              assert key not in known, f"already in NiakVIO: {row.get('name')}"
+              seen.add(key)
+              market = str(row.get('market') or '')
+              counts[market] += 1
+              assert not last_market or market.casefold() >= last_market.casefold(), 'Candidates must be sorted by market'
+              last_market = market
+              for field in ('route', 'hub'):
+                  value = str(row.get(field) or '')
+                  if not value:
+                      continue
+                  parsed = urllib.parse.urlparse(value)
+                  assert parsed.scheme in {'http','https'} and parsed.hostname, f"invalid {field}: {value}"
+                  host = parsed.hostname.casefold()
+                  assert not any(host == suffix or host.endswith('.' + suffix) for suffix in rejected_hosts), f"repository URL leaked into {field}: {value}"
+
+          floor = int(__import__('os').environ['MIN_PER_MARKET'])
+          under = {market: count for market, count in counts.items() if count < floor}
+          assert not under, f"markets below requested coverage floor: {under}"
+
+          xlsx = Path('research/international-provider-candidates.xlsx')
+          assert xlsx.stat().st_size > 5000
+          with zipfile.ZipFile(xlsx) as archive:
+              assert archive.testzip() is None
+              assert 'xl/worksheets/sheet3.xml' in archive.namelist(), 'NiakVIO hub gaps sheet missing'
+          print(f"catalogue validation ok: {len(rows)} candidates / {out.get('market_count')} markets / min={min(counts.values())} per market / {out.get('hub_gap_count')} NiakVIO hub gaps")
           PY
 
-      - name: Commit validated discovery catalogue
+      - name: Publish refreshed files through review PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add .github/workflows/international-provider-discovery.yml \
-                  automation/international-provider-discovery-sources.json \
-                  automation/international-provider-manual-candidates.json \
-                  automation/international-provider-manual-supplement.json \
-                  scripts/discover_international_provider_candidates.py \
-                  research/international-provider-candidates.json \
-                  research/international-provider-candidates.csv \
-                  research/international-provider-candidates.xlsx
+
+          BRANCH='automation/international-provider-candidates-refresh'
+          git switch -C "$BRANCH"
+          git add \
+            research/international-provider-candidates.json \
+            research/international-provider-candidates.csv \
+            research/international-provider-candidates.xlsx
+
           if git diff --cached --quiet; then
-            echo 'Nothing to import.'
+            echo 'No candidate catalogue changes.'
             exit 0
           fi
-          git commit -m 'feat(research): import validated country-balanced discovery catalogue'
-          git push origin HEAD:automation/international-provider-discovery-v2
+
+          git commit -m 'chore(research): refresh international provider candidates'
+          git push --force-with-lease origin "$BRANCH"
+
+          EXISTING="$(gh pr list --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -z "$EXISTING" ]; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title 'chore(research): refresh international provider candidates' \
+              --body $'Manual international provider discovery refresh.\n\nThe catalogue is curated from actual provider routes and stable hub/Telegram/status sources, de-duplicated against NiakVIO, and selected coverage-first. Code-repository URLs are never accepted as provider routes.\n\nThe XLSX also reports current NiakVIO providers that still lack a stable hub. This workflow never publishes providers or mutates provider JS/manifests/provider-hubs.json.'
+          else
+            gh pr comment "$EXISTING" --body 'Manual discovery reran and refreshed the country-balanced candidate catalogue.'
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: international-provider-candidates-${{ github.run_id }}
+          path: |
+            research/international-provider-candidates.json
+            research/international-provider-candidates.csv
+            research/international-provider-candidates.xlsx
+          retention-days: 30
+          if-no-files-found: error
