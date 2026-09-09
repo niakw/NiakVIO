@@ -163,6 +163,7 @@ def main() -> int:
         "tests/global_stream_output_guard_test.py",
         "tests/episodic_identity_runtime_test.py",
         "tests/episodic_year_identity_regression_test.py",
+        "tests/global_media_type_pre_network_gate_test.py",
         "tests/global_media_type_resolution_test.py",
         "tests/native_dual_id_identity_test.py",
         "tests/global_stream_presentation_test.py",
