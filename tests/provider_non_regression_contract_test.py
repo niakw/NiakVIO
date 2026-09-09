@@ -55,6 +55,20 @@ assert "historical_hls_m3u8_regression" in gate
 assert "--candidate-gate" in gate
 assert "--all" in gate
 
+# A surviving green lane may never hide a partial regression on other canonical
+# lanes. Candidate evidence must explicitly recover every failed lane that remains
+# in the provider's current semantic contract.
+for token in (
+    'str(row.get("nonRegressionStatus") or "") == "PARTIAL_REGRESSION"',
+    'row.get("explicitCurrentFailedLanes")',
+    'unrecovered_partial = sorted(partial_failed - got)',
+    '"partial_regression_not_recovered"',
+    '"partialRegressionFailedLanes"',
+    '"unrecoveredPartialRegressionLanes"',
+    '"candidateLaneStatuses"',
+):
+    assert token in gate, f"partial-lane non-regression gate lost: {token}"
+
 # Shared Core/runtime/workflow changes are portfolio changes and must prove all 96.
 for token in (
     '"core/"',
@@ -109,4 +123,4 @@ assert "pull_request:" in nonreg
 assert "provider-non-regression.yml" in ownership
 assert "check_provider_non_regression_v1.py" in ownership
 
-print("provider non-regression contract passed: exact 4-state ledger + canonical semantic floor + semantic fast gate + rolling candidate floor + 96 shared-core scope")
+print("provider non-regression contract passed: exact 4-state ledger + canonical semantic floor + semantic fast gate + partial-lane recovery + rolling candidate floor + 96 shared-core scope")
