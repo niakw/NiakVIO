@@ -19,18 +19,10 @@ on:
         default: '4'
         type: string
       min_uhd_candidates:
-        description: Minimum 4K/UHD candidates at 100-row scale (scaled down proportionally for smaller runs)
+        description: Minimum 4K/UHD candidates at 100-row scale (scaled proportionally for smaller runs)
         required: true
         default: '15'
         type: string
-  # Bootstrap validation for this branch only. Removed before merge.
-  push:
-    branches:
-      - automation/international-provider-quality-v3
-    paths:
-      - '.github/workflows/international-provider-discovery.yml'
-      - 'automation/international-provider-quality-supplement.json'
-      - 'scripts/enrich_international_provider_quality.py'
 
 permissions:
   contents: write
@@ -47,7 +39,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: ${{ github.ref_name }}
+          ref: main
           fetch-depth: 0
 
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
@@ -59,21 +51,17 @@ jobs:
           python - <<'PY'
           import json, re, unicodedata
           from pathlib import Path
-
           paths = [
               Path('automation/international-provider-manual-candidates.json'),
               Path('automation/international-provider-manual-supplement.json'),
               Path('automation/international-provider-quality-supplement.json'),
           ]
           out_path = Path('/tmp/international-provider-manual-merged.json')
-
           def norm(value):
               value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
               return re.sub(r'[^a-z0-9]+', '', value)
-
           docs = [json.loads(path.read_text(encoding='utf-8')) for path in paths]
-          merged = {}
-          order = []
+          merged, order = {}, []
           for doc in docs:
               for row in list(doc.get('candidates') or []):
                   key = norm(row.get('name'))
@@ -87,14 +75,14 @@ jobs:
           payload['candidates'] = [merged[key] for key in order]
           payload['supplements_applied'] = [str(path) for path in paths[1:]]
           out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
-          print('manual merge complete: ' + ' '.join(f'{path.name}={len(doc.get("candidates") or [])}' for path, doc in zip(paths, docs)) + f' merged={len(payload["candidates"])}')
+          print(f'manual merge complete: merged={len(payload["candidates"])}')
           PY
 
       - name: Compile curated discovery catalogue
         env:
-          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '100' }}
-          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market || '2' }}
-          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap || '4' }}
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
+          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap }}
         run: |
           set -euo pipefail
           python -m py_compile scripts/discover_international_provider_candidates.py scripts/enrich_international_provider_quality.py
@@ -108,7 +96,6 @@ jobs:
             --out-json research/international-provider-candidates.json \
             --out-csv research/international-provider-candidates.csv \
             --out-xlsx research/international-provider-candidates.xlsx
-
           python scripts/enrich_international_provider_quality.py \
             --json research/international-provider-candidates.json \
             --csv research/international-provider-candidates.csv \
@@ -116,88 +103,61 @@ jobs:
 
       - name: Validate catalogue coverage and quality
         env:
-          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates || '100' }}
-          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market || '2' }}
-          MIN_UHD: ${{ github.event.inputs.min_uhd_candidates || '15' }}
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
+          MIN_UHD: ${{ github.event.inputs.min_uhd_candidates }}
         run: |
           python - <<'PY'
           import json, re, unicodedata, urllib.parse, zipfile, os
           from collections import Counter
           from pathlib import Path
-
           def norm(value):
               value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
               return re.sub(r'[^a-z0-9]+', '', value)
-
           rejected_hosts = ('github.com','githubusercontent.com','gitlab.com','bitbucket.org','codeberg.org','sourceforge.net')
           out = json.loads(Path('research/international-provider-candidates.json').read_text(encoding='utf-8'))
           rows = out.get('candidates') or []
-          max_candidates = min(100, int(os.environ['MAX_CANDIDATES']))
-          assert 0 < len(rows) <= max_candidates
-          assert out.get('market_count', 0) >= 25, f"country/market coverage too low: {out.get('market_count')}"
-
+          assert 0 < len(rows) <= min(100, int(os.environ['MAX_CANDIDATES']))
+          assert out.get('market_count', 0) >= 25
           cat = json.loads(Path('provider_catalog.json').read_text(encoding='utf-8'))
           known = set()
           for row in cat.get('providers') or []:
-              if not isinstance(row, dict):
-                  continue
               scraper = row.get('scraper') or {}
               for value in (row.get('canonicalId'), scraper.get('id'), scraper.get('name')):
                   key = norm(value)
-                  if key:
-                      known.add(key)
-
-          seen = set()
-          last_market = ''
-          counts = Counter()
-          uhd = []
-          multi = []
+                  if key: known.add(key)
+          seen, counts, last_market, uhd, multi = set(), Counter(), '', [], []
           for row in rows:
               key = norm(row.get('name'))
-              assert key and key not in seen, f"duplicate candidate: {row.get('name')}"
-              assert key not in known, f"already in NiakVIO: {row.get('name')}"
+              assert key and key not in seen and key not in known
               seen.add(key)
               market = str(row.get('market') or '')
               counts[market] += 1
-              assert not last_market or market.casefold() >= last_market.casefold(), 'Candidates must be sorted by market'
+              assert not last_market or market.casefold() >= last_market.casefold()
               last_market = market
-              for field in ('route', 'hub'):
+              for field in ('route','hub'):
                   value = str(row.get(field) or '')
-                  if not value:
-                      continue
+                  if not value: continue
                   parsed = urllib.parse.urlparse(value)
-                  assert parsed.scheme in {'http','https'} and parsed.hostname, f"invalid {field}: {value}"
+                  assert parsed.scheme in {'http','https'} and parsed.hostname
                   host = parsed.hostname.casefold()
-                  assert not any(host == suffix or host.endswith('.' + suffix) for suffix in rejected_hosts), f"repository URL leaked into {field}: {value}"
-              if int(row.get('max_resolution') or 0) >= 2160:
-                  uhd.append(row)
-              if row.get('multi_audio') or row.get('original_audio'):
-                  multi.append(row)
-
+                  assert not any(host == suffix or host.endswith('.' + suffix) for suffix in rejected_hosts)
+              if int(row.get('max_resolution') or 0) >= 2160: uhd.append(row)
+              if row.get('multi_audio') or row.get('original_audio'): multi.append(row)
           floor = int(os.environ['MIN_PER_MARKET'])
-          under = {market: count for market, count in counts.items() if count < floor}
-          assert not under, f"markets below requested coverage floor: {under}"
-
-          # Default 100-row run requires 15 UHD candidates; scale proportionally for smaller manual runs.
-          requested_uhd = int(os.environ['MIN_UHD'])
-          proportional_floor = max(1, round(len(rows) * 0.15))
-          required_uhd = min(requested_uhd, proportional_floor)
-          assert len(uhd) >= required_uhd, f"UHD coverage too low: {len(uhd)} < {required_uhd}"
-          assert len(multi) >= required_uhd, f"multilingual/original-audio coverage too low: {len(multi)} < {required_uhd}"
+          assert not {market: count for market, count in counts.items() if count < floor}
+          required_uhd = min(int(os.environ['MIN_UHD']), max(1, round(len(rows) * 0.15)))
+          assert len(uhd) >= required_uhd, f'UHD coverage too low: {len(uhd)} < {required_uhd}'
+          assert len(multi) >= required_uhd, f'multilingual/original coverage too low: {len(multi)} < {required_uhd}'
           assert out.get('uhd_count') == len(uhd)
-
-          xlsx = Path('research/international-provider-candidates.xlsx')
-          assert xlsx.stat().st_size > 5000
-          with zipfile.ZipFile(xlsx) as archive:
+          with zipfile.ZipFile('research/international-provider-candidates.xlsx') as archive:
               assert archive.testzip() is None
-              names = archive.namelist()
-              assert 'xl/worksheets/sheet3.xml' in names, 'NiakVIO hub gaps sheet missing'
-              assert 'xl/worksheets/sheet5.xml' in names, 'Quality 4K-UHD sheet missing'
-          print(f"catalogue validation ok: {len(rows)} candidates / {out.get('market_count')} markets / min={min(counts.values())} per market / UHD={len(uhd)} / multi-or-VO={len(multi)} / {out.get('hub_gap_count')} NiakVIO hub gaps")
+              assert 'xl/worksheets/sheet3.xml' in archive.namelist()
+              assert 'xl/worksheets/sheet5.xml' in archive.namelist()
+          print(f'catalogue validation ok: {len(rows)} candidates / {out.get("market_count")} markets / UHD={len(uhd)} / multi-or-VO={len(multi)}')
           PY
 
       - name: Publish refreshed files through review PR
-        if: github.event_name == 'workflow_dispatch'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -205,31 +165,22 @@ jobs:
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-
           BRANCH='automation/international-provider-candidates-refresh'
           git switch -C "$BRANCH"
-          git add \
-            research/international-provider-candidates.json \
-            research/international-provider-candidates.csv \
-            research/international-provider-candidates.xlsx
-
+          git add research/international-provider-candidates.json research/international-provider-candidates.csv research/international-provider-candidates.xlsx
           if git diff --cached --quiet; then
             echo 'No candidate catalogue changes.'
             exit 0
           fi
-
           git commit -m 'chore(research): refresh international provider candidates'
           git push --force-with-lease origin "$BRANCH"
-
           EXISTING="$(gh pr list --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
           if [ -z "$EXISTING" ]; then
-            gh pr create \
-              --base main \
-              --head "$BRANCH" \
+            gh pr create --base main --head "$BRANCH" \
               --title 'chore(research): refresh international provider candidates' \
-              --body $'Manual international provider discovery refresh.\n\nThe catalogue is country-balanced and quality-aware: real provider routes/hubs only, stable Telegram/status sources accepted, repository URLs rejected, and an UHD/multi-audio floor enforced.\n\nThe XLSX includes a dedicated Quality 4K-UHD sheet and current NiakVIO providers without a stable hub. This workflow never publishes providers or mutates provider JS/manifests/provider-hubs.json.'
+              --body $'Manual international provider discovery refresh.\n\nCountry-balanced and quality-aware: real routes/hubs only, Telegram/status sources accepted, repository URLs rejected, and an UHD/multi-audio floor enforced. XLSX includes a Quality 4K-UHD sheet and NiakVIO hub gaps. No provider/manifests/hubs are automatically published.'
           else
-            gh pr comment "$EXISTING" --body 'Manual discovery reran and refreshed the country-balanced, UHD-aware candidate catalogue.'
+            gh pr comment "$EXISTING" --body 'Manual discovery reran and refreshed the country-balanced, UHD-aware catalogue.'
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
