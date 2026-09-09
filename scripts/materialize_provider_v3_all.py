@@ -317,27 +317,39 @@ def provider_model(
 
 
 def normalize_anime_transport_compatibility(entry: dict[str, Any]) -> bool:
-    """Preserve explicit anime semantics while exposing Nuvio TV/movie launch lanes."""
+    """Project canonical media capability onto Nuvio transport aliases."""
     canonical = []
-    for value in entry.get("canonicalSupportedTypes") or []:
+    source = entry.get("canonicalSupportedTypes") or entry.get("supportedTypes") or []
+    for value in source:
         item = str(value or "").strip().casefold()
         if item in {"movie", "tv", "anime"} and item not in canonical:
             canonical.append(item)
-    if "anime" not in canonical:
+    if not canonical:
         return False
+
     wanted = list(canonical)
-    for compatible in ("tv", "movie"):
-        if compatible not in wanted:
-            wanted.append(compatible)
-    current = [
+    if "anime" in canonical and "tv" not in wanted:
+        wanted.append("tv")
+    if "tv" in wanted and "series" not in wanted:
+        wanted.append("series")
+
+    current = []
+    for value in entry.get("supportedTypes") or []:
+        item = str(value or "").strip().casefold()
+        if item in {"movie", "tv", "anime", "series"} and item not in current:
+            current.append(item)
+
+    before_canonical = [
         str(value or "").strip().casefold()
-        for value in entry.get("supportedTypes") or []
+        for value in entry.get("canonicalSupportedTypes") or []
         if str(value or "").strip().casefold() in {"movie", "tv", "anime"}
     ]
-    if current == wanted and entry.get("canonicalSupportedTypes") == canonical:
+    if current == wanted and before_canonical == canonical:
         return False
-    entry["canonicalSupportedTypes"] = canonical
+
     entry["supportedTypes"] = wanted
+    if wanted != canonical or "canonicalSupportedTypes" in entry:
+        entry["canonicalSupportedTypes"] = canonical
     return True
 
 
