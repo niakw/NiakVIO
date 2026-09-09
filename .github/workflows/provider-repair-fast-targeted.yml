@@ -73,7 +73,11 @@ jobs:
           for provider in $BATCH_PROVIDERS; do
             args+=(--provider "$provider")
           done
+          # Selection policy has already been applied by the planner. Use an empty
+          # runner skip set so deliberate regressionGuardProviders (known green)
+          # are actually re-executed live instead of being discarded a second time.
           python scripts/run_provider_repair_fast_targeted_v20.py \
+            --skip-file automation/provider-repair-planner-authorized-skip.json \
             --attempts 3 \
             --workers 4 \
             --timeout 55 \
@@ -96,12 +100,13 @@ jobs:
           done
           python scripts/inspect_provider_fast_bundle_plans.py "${args[@]}"
 
-      - name: Validate shared V16-V21.6 and adaptive route-plan contracts
+      - name: Validate shared V16-V21.8 and adaptive route-plan contracts
         if: always()
         run: |
           python -m py_compile \
             scripts/provider_live_request_contract_bridge_v19.py \
             scripts/provider_route_proof_lkg.py \
+            scripts/provider_repair_learn_handoff_v1.py \
             scripts/merge_provider_repair_report_v6.py \
             scripts/upgrade_provider_response_value_correlation_v20.py \
             scripts/upgrade_provider_response_value_correlation_v20_1.py \
@@ -117,9 +122,11 @@ jobs:
             scripts/upgrade_provider_episode_scoped_json_v21_4.py \
             scripts/upgrade_provider_catalogue_identity_correlation_v21_5.py \
             scripts/upgrade_provider_player_fallback_v21_6.py \
+            scripts/upgrade_provider_composite_request_template_v21_8.py \
             scripts/audit_provider_repair_yield_v6.py
           node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
           python tests/provider_route_proof_lkg_test.py
+          python tests/provider_repair_learn_handoff_v1_test.py
           python tests/provider_execution_authority_v16_contract_test.py
           python tests/provider_route_slug_identity_v16_test.py
           python tests/provider_correlated_value_plan_v18_contract_test.py
@@ -139,6 +146,9 @@ jobs:
           python tests/provider_episode_scoped_json_v21_4_test.py
           python tests/provider_catalogue_identity_correlation_v21_5_test.py
           python tests/provider_player_fallback_v21_6_test.py
+          python tests/provider_player_fallback_v21_7_test.py
+          python tests/stream_output_correlated_player_fallback_v7_test.py
+          python tests/provider_composite_request_template_v21_8_test.py
           python tests/provider_yield_identity_diagnostics_v21_test.py
           python tests/runtime_route_plan_cap_v1_test.py
 
