@@ -4,23 +4,29 @@ from __future__ import annotations
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+V1 = ROOT / "scripts" / "build_provider_history_matrix.py"
 V3 = ROOT / "scripts" / "build_provider_history_matrix_v3.py"
 GATE = ROOT / "scripts" / "check_provider_non_regression_v1.py"
 MEDIA_PATCH = ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py"
+REPAIR_PIPELINE = ROOT / "scripts" / "run_provider_repair_pipeline_v6.py"
 FAST_GATE_TEST = ROOT / "tests" / "global_media_type_pre_network_gate_test.py"
 HISTORY_WF = ROOT / ".github" / "workflows" / "provider-history-matrix.yml"
 NONREG_WF = ROOT / ".github" / "workflows" / "provider-non-regression.yml"
+SYNC_WF = ROOT / ".github" / "workflows" / "sync.yml"
 OWNERSHIP = ROOT / "tests" / "provider_v3_workflow_ownership_test.py"
 
-for path in (V3, GATE, MEDIA_PATCH, FAST_GATE_TEST, HISTORY_WF, NONREG_WF, OWNERSHIP):
+for path in (V1, V3, GATE, MEDIA_PATCH, REPAIR_PIPELINE, FAST_GATE_TEST, HISTORY_WF, NONREG_WF, SYNC_WF, OWNERSHIP):
     assert path.exists(), f"missing anti-regression contract file: {path.relative_to(ROOT)}"
 
+v1 = V1.read_text(encoding="utf-8")
 v3 = V3.read_text(encoding="utf-8")
 gate = GATE.read_text(encoding="utf-8")
 media_patch = MEDIA_PATCH.read_text(encoding="utf-8")
+repair_pipeline = REPAIR_PIPELINE.read_text(encoding="utf-8")
 fast_gate_test = FAST_GATE_TEST.read_text(encoding="utf-8")
 history = HISTORY_WF.read_text(encoding="utf-8")
 nonreg = NONREG_WF.read_text(encoding="utf-8")
+sync = SYNC_WF.read_text(encoding="utf-8")
 ownership = OWNERSHIP.read_text(encoding="utf-8")
 
 # Four exact checkpoints. A newer/current result must never fill an older hole.
@@ -29,6 +35,10 @@ for token in ('"5.21.0"', '"5.21.16"', '"5.21.36"'):
 assert '"crossVersionFallbackAllowed": False' in v3
 assert '"historicalGreenMayBecomeUnknownSilently": False' in v3
 assert "historical_lanes = verified_lanes(row.get(\"historical52136\") or {})" in v3
+# Legacy V1 is still an input to V2/V3. It may not silently fill absent 5.21.36
+# evidence from the current quick-yield census either.
+assert "baseline = lanes_from_rows(by36.get(pid) or qrows)" not in v1
+assert "baseline = lanes_from_rows(by36.get(pid) or [])" in v1
 
 # Historical supportedTypes mixed transport aliases and semantics. Keep them as
 # diagnostics, but only explicit canonical declarations (plus normalized 5.21.0
@@ -97,6 +107,11 @@ for token in (
     'assert_pre_network_reject(["movie", "tv"], "anime"',
 ):
     assert token in fast_gate_test, f"pre-network fast-gate regression case lost: {token}"
+# This regression test must be owned by every path that can validate/rebuild the
+# shared Core: routine Quick, Repair V6, and the dedicated publication gate.
+assert "python tests/global_media_type_pre_network_gate_test.py" in sync
+assert '"tests/global_media_type_pre_network_gate_test.py",' in repair_pipeline
+assert "python tests/global_media_type_pre_network_gate_test.py" in nonreg
 
 # V3 is the authoritative historical builder. V2 can remain an internal input,
 # but the workflow may not publish V2 directly as its final authority.
@@ -123,4 +138,4 @@ assert "pull_request:" in nonreg
 assert "provider-non-regression.yml" in ownership
 assert "check_provider_non_regression_v1.py" in ownership
 
-print("provider non-regression contract passed: exact 4-state ledger + canonical semantic floor + semantic fast gate + partial-lane recovery + rolling candidate floor + 96 shared-core scope")
+print("provider non-regression contract passed: exact 4-state ledger + no legacy fallback + canonical semantic floor + semantic fast gate in CORE/Repair/gate + partial-lane recovery + rolling candidate floor + 96 shared-core scope")
