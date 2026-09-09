@@ -10,6 +10,7 @@ brain=(ROOT/".github/workflows/brain-learning-lab.yml").read_text(encoding="utf-
 repair=(ROOT/".github/workflows/provider-recognition-repair-v6.yml").read_text(encoding="utf-8")
 manual=(ROOT/".github/workflows/provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
 domain=(ROOT/".github/workflows/domain-refresh.yml").read_text(encoding="utf-8")
+nonreg=(ROOT/".github/workflows/provider-non-regression.yml").read_text(encoding="utf-8")
 legacy_core=ROOT/".github/workflows/core-media-finalize-main.yml"
 
 assert not legacy_core.exists(), "legacy duplicate Core finalizer workflow must stay deleted"
@@ -90,4 +91,21 @@ assert "audit_provider_v3_static.py" in domain
 assert "materialize_provider_v3_all.py" not in domain
 assert "verify_provider_v3_reverse_rebuild.py" not in domain
 
-print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one provider repair v6 engine")
+# Non-regression owns the exact four-version ledger plus the rolling accepted
+# quick-yield publication floor. It is deliberately separate from Repair:
+# Repair may propose/correct; this workflow decides whether proof regressed.
+assert nonreg.startswith("name: Provider Non-Regression Gate")
+for required in (
+    "build_provider_history_matrix_v3.py",
+    "check_provider_non_regression_v1.py",
+    "audit_provider_quick_yield.py",
+    "--candidate-gate",
+    "provider-v3-quick-yield.json",
+    "provider-non-regression-gate.json",
+    "workbench/systemic-recovery-20260909",
+):
+    assert required in nonreg, f"non-regression ownership missing: {required}"
+assert "pull_request:" in nonreg
+assert "--all" in nonreg, "workbench/global verification must exercise the complete 96-provider portfolio"
+
+print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one provider repair v6 engine + four-version non-regression gate")
