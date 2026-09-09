@@ -1,0 +1,53 @@
+name: CORE - Stream Metadata Contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/core-stream-metadata-contract.yml'
+      - 'scripts/provider_patches/global_stream_facts_v1.py'
+      - 'scripts/provider_patches/global_stream_identity_v1.py'
+      - 'scripts/provider_patches/global_stream_presentation_v1.py'
+      - 'scripts/provider_patches/stream_output_sanitizer_v6.py'
+      - 'tests/global_stream_metadata_preservation_contract_test.py'
+      - 'tests/global_stream_presentation_pipeline_test.py'
+      - 'tests/stream_quality_recovery_tv_test.py'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: core-stream-metadata-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  stream-metadata-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Security policy preflight
+        run: python3 tests/workflow_security_policy_test.py
+      - name: Install exact dependency tree
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Validate global lossless metadata contract
+        run: python3 tests/global_stream_metadata_preservation_contract_test.py
+      - name: Validate Core stream presentation pipeline
+        run: python3 tests/global_stream_presentation_pipeline_test.py
+      - name: Validate quality recovery contract
+        run: python3 tests/stream_quality_recovery_tv_test.py
+      - name: Validate presentation fixed point
+        run: python3 scripts/normalize_stream_presentation_v12.py --check
