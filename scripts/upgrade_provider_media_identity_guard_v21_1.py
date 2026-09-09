@@ -96,7 +96,19 @@ function _spv211ProviderIdAllowed(key, rawValue) {
   return /^[A-Za-z0-9._~-]{1,160}$/.test(value);
 }
 '''
-    text = _once(text, anchor, helper + "function _spv205StrictProviderValues(value, base, meta, season, mediaType) {\n", "v21.1-helper-and-signature")
+    text = _once(
+        text,
+        anchor,
+        helper + "function _spv205StrictProviderValues(value, base, meta, season, mediaType) {\n",
+        "v21.1-helper-and-signature",
+    )
+
+    # V20.4 intentionally still owns an older response-value helper with some
+    # similar data-id patterns. Patch only the current V20.5 strict resolver so
+    # historical ownership remains byte-stable and the migration has one owner.
+    strict_start = text.index("function _spv205StrictProviderValues(value, base, meta, season, mediaType) {")
+    strict_end = text.index("\nfunction _spv205HttpValues(", strict_start)
+    strict = text[strict_start:strict_end]
 
     old_json_score = '''        score: _spv4TitleScore(
           _spv4Scalar(row.title) || _spv4Scalar(row.name) ||
@@ -115,71 +127,92 @@ function _spv211ProviderIdAllowed(key, rawValue) {
           season
         )
 '''
-    text = _once(text, old_json_score, new_json_score, "v21.1-json-media-score")
+    strict = _once(strict, old_json_score, new_json_score, "v21.1-json-media-score")
 
-    old_anchor_score = '    const score = _spv4TitleScore(label, meta) + _spv205SeasonSignal(label + " " + href, season);\n'
-    new_anchor_score = '    const score = _spv211CandidateIdentityScore(label, href, meta, mediaType, season);\n'
-    text = _once(text, old_anchor_score, new_anchor_score, "v21.1-html-media-score")
+    strict = _once(
+        strict,
+        '    const score = _spv4TitleScore(label, meta) + _spv205SeasonSignal(label + " " + href, season);\n',
+        '    const score = _spv211CandidateIdentityScore(label, href, meta, mediaType, season);\n',
+        "v21.1-html-media-score",
+    )
+    strict = _once(
+        strict,
+        '    const score = _spv4TitleScore(label, meta) + _spv205SeasonSignal(segment, season);\n',
+        '    const score = _spv211CandidateIdentityScore(label, segment, meta, mediaType, season);\n',
+        "v21.1-path-media-score",
+    )
 
-    old_path_score = '    const score = _spv4TitleScore(label, meta) + _spv205SeasonSignal(segment, season);\n'
-    new_path_score = '    const score = _spv211CandidateIdentityScore(label, segment, meta, mediaType, season);\n'
-    text = _once(text, old_path_score, new_path_score, "v21.1-path-media-score")
-
-    old_data_id = '''    const idMatch = attrs.match(/\\bdata-(?:id|post-id|media-id|anime-id|movie-id|series-id|show-id)\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/i);
+    strict = _once(
+        strict,
+        '''    const idMatch = attrs.match(/\\bdata-(?:id|post-id|media-id|anime-id|movie-id|series-id|show-id)\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/i);
     if (idMatch) id = idMatch[1];
-'''
-    new_data_id = '''    const idMatch = attrs.match(/\\bdata-(id|post-id|media-id|anime-id|movie-id|series-id|show-id)\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/i);
+''',
+        '''    const idMatch = attrs.match(/\\bdata-(id|post-id|media-id|anime-id|movie-id|series-id|show-id)\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/i);
     if (idMatch && _spv211ProviderIdAllowed(idMatch[1], idMatch[2])) id = idMatch[2];
-'''
-    text = _once(text, old_data_id, new_data_id, "v21.1-anchor-id-filter")
-
-    old_query_filter = '''      if (!/(?:^|[_-])id$|id$/i.test(key)) continue;
+''',
+        "v21.1-anchor-id-filter",
+    )
+    strict = _once(
+        strict,
+        '''      if (!/(?:^|[_-])id$|id$/i.test(key)) continue;
       if (!/^[A-Za-z0-9._~-]{1,160}$/.test(candidate)) continue;
       const count = (counts.get(candidate) || 0) + 1;
-'''
-    new_query_filter = '''      if (!/(?:^|[_-])id$|id$/i.test(key)) continue;
+''',
+        '''      if (!/(?:^|[_-])id$|id$/i.test(key)) continue;
       if (!_spv211ProviderIdAllowed(key, candidate)) continue;
       const count = (counts.get(candidate) || 0) + 1;
-'''
-    text = _once(text, old_query_filter, new_query_filter, "v21.1-query-id-filter")
-
-    old_generic_data = '''  const dataIdRe = /\\bdata-(?:id|[a-z0-9_-]*[_-]id)\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/gi;
+''',
+        "v21.1-query-id-filter",
+    )
+    strict = _once(
+        strict,
+        '''  const dataIdRe = /\\bdata-(?:id|[a-z0-9_-]*[_-]id)\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/gi;
   scanned = 0;
   while ((match = dataIdRe.exec(source)) !== null && scanned++ < 320) {
     const candidate = _text(match[1]).trim();
     if (!candidate) continue;
     const count = (counts.get(candidate) || 0) + 1;
-'''
-    new_generic_data = '''  const dataIdRe = /\\bdata-((?:id|[a-z0-9_-]*[_-]id))\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/gi;
+''',
+        '''  const dataIdRe = /\\bdata-((?:id|[a-z0-9_-]*[_-]id))\\s*=\\s*["']?([A-Za-z0-9._~-]{1,160})/gi;
   scanned = 0;
   while ((match = dataIdRe.exec(source)) !== null && scanned++ < 320) {
     const key = _text(match[1]).trim();
     const candidate = _text(match[2]).trim();
     if (!_spv211ProviderIdAllowed(key, candidate)) continue;
     const count = (counts.get(candidate) || 0) + 1;
-'''
-    text = _once(text, old_generic_data, new_generic_data, "v21.1-generic-data-id-filter")
+''',
+        "v21.1-generic-data-id-filter",
+    )
+    text = text[:strict_start] + strict + text[strict_end:]
 
     # Both initial search identity and step-response identity must know the
     # requested semantic media lane.
-    search_call = '''        meta,
+    text = _once(
+        text,
+        '''        meta,
         season
       ) || { id: "", slug: "" };
-'''
-    step_call = '''            meta,
-            season
-          ) || { id: "", slug: "" };
-'''
-    text = _once(text, search_call, '''        meta,
+''',
+        '''        meta,
         season,
         mediaType
       ) || { id: "", slug: "" };
-''', "v21.1-search-media-type")
-    text = _once(text, step_call, '''            meta,
+''',
+        "v21.1-search-media-type",
+    )
+    text = _once(
+        text,
+        '''            meta,
+            season
+          ) || { id: "", slug: "" };
+''',
+        '''            meta,
             season,
             mediaType
           ) || { id: "", slug: "" };
-''', "v21.1-step-media-type")
+''',
+        "v21.1-step-media-type",
+    )
 
     BASE.write_text(text, encoding="utf-8")
     validate_base(text)
