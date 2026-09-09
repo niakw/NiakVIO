@@ -105,7 +105,7 @@ jobs:
             --defer-global-guard \
             "${args[@]}"
 
-      - name: Validate shared V16-V21 contracts and <=3 canonical runtime authorities
+      - name: Validate shared V16-V21.1 contracts and <=3 canonical runtime authorities
         if: always()
         run: |
           python -m py_compile \
@@ -117,7 +117,8 @@ jobs:
             scripts/upgrade_provider_response_value_correlation_v20_4.py \
             scripts/upgrade_provider_response_value_correlation_v20_5.py \
             scripts/upgrade_provider_response_value_correlation_v20_5_1.py \
-            scripts/upgrade_provider_shared_player_trace_v21.py
+            scripts/upgrade_provider_shared_player_trace_v21.py \
+            scripts/upgrade_provider_media_identity_guard_v21_1.py
           node --check scripts/nuvio_tv_probe_tmdb_ci.cjs
           python tests/provider_execution_authority_v16_contract_test.py
           python tests/provider_route_slug_identity_v16_test.py
@@ -132,6 +133,7 @@ jobs:
           python tests/provider_response_value_correlation_v20_5_test.py
           python tests/provider_response_value_correlation_v20_5_1_test.py
           python tests/provider_shared_player_trace_v21_test.py
+          python tests/provider_media_identity_guard_v21_1_test.py
           python tests/runtime_route_plan_cap_v1_test.py
 
       - name: Show proof summary
@@ -168,6 +170,6 @@ jobs:
           echo "prove_result=${{ needs.prove.result }}"
           echo "full_96_guard=DEFERRED_TO_CONSOLIDATED_CANDIDATE"
           # Every group enforces live upstream-positive preservation and current
-          # V16-V21 route/type/identity/player contracts. The expensive identical
+          # V16-V21.1 route/type/identity/player contracts. The expensive identical
           # 96-provider non-network guard is intentionally run once after all
           # recovered DATA is consolidated, before promotion/publication.
