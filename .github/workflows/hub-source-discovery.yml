@@ -8,6 +8,12 @@ on:
         required: false
         default: '0'
         type: string
+  push:
+    branches: [workbench/systemic-recovery-20260909]
+    paths:
+      - '.github/workflows/hub-source-discovery.yml'
+      - 'scripts/discover_provider_hub_sources.py'
+      - 'tests/provider_hub_source_discovery_guard_test.py'
   schedule:
     - cron: '41 4 * * 2,5'
 
@@ -16,7 +22,7 @@ permissions:
   pull-requests: write
 
 concurrency:
-  group: niakvio-hub-source-discovery
+  group: niakvio-hub-source-discovery-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
@@ -26,7 +32,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
-          ref: main
+          ref: ${{ github.event_name == 'push' && github.ref_name || 'main' }}
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
@@ -78,9 +84,10 @@ jobs:
       - name: Validate registry
         run: |
           python tests/provider_hub_registry_test.py
-          git diff --exit-code -- provider-overrides.json provider-domain-history.json manifest.json || true
+          git diff --exit-code -- provider-overrides.json provider-domain-history.json manifest.json
 
       - name: Propose confirmed additions as pull request
+        if: github.event_name != 'push'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
