@@ -1,5 +1,5 @@
 name: Workbench Authoritative Repair V1
-# Trigger revision: semantic-transport-v18-v20-forward-compat-v5.
+# Trigger revision: semantic-transport-v18-v20-runtime-plan-lkg-v6.
 
 on:
   push:
@@ -57,6 +57,7 @@ jobs:
           python tests/provider_repair_pipeline_v6_contract_test.py
           python tests/provider_quick_yield_fixture_selection_test.py
           python tests/provider_mixed_yield_acceptance_test.py
+          python tests/provider_runtime_plan_lkg_v1_test.py
           python tests/global_media_type_pre_network_gate_test.py
           node scripts/validate_provider_semantics.cjs
           node tests/provider_semantics.test.cjs
