@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-import argparse, csv, html, json, os, re, sys, unicodedata, urllib.request, zipfile
+import argparse, csv, html, json, os, re, sys, unicodedata, urllib.parse, urllib.request, zipfile
 from collections import defaultdict
 from datetime import datetime, timezone
 from html.parser import HTMLParser
@@ -27,7 +27,8 @@ def norm(v: str) -> str:
 
 def fetch_text(url: str, timeout: float = 12.0, token: str = '') -> str:
     headers = {'User-Agent': UA, 'Accept': 'text/html,application/json;q=0.9,*/*;q=0.8'}
-    if token and 'api.github.com' in url:
+    parsed = urllib.parse.urlparse(url)
+    if token and parsed.scheme == 'https' and parsed.hostname == 'api.github.com':
         headers['Authorization'] = f'Bearer {token}'
         headers['X-GitHub-Api-Version'] = '2022-11-28'
     req = urllib.request.Request(url, headers=headers)
