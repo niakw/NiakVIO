@@ -24,6 +24,10 @@ with tempfile.TemporaryDirectory() as td:
     assert 'System.getenv("NIAKVIO_LAB_IMDB_ID")' in text
     assert '"tmdbId" to JsonPrimitive(tmdbId)' in text
     assert '"imdbId" to JsonPrimitive(labImdbId)' in text
+    assert '"tmdbMetadata" to JsonObject(' in text
+    assert '"external_ids" to JsonObject(' in text
+    assert 'mapOf("imdb_id" to JsonPrimitive(labImdbId))' in text
+    assert '"imdb_id" to JsonPrimitive(labImdbId)' in text
     assert 'globalThis.__nuvioMediaContext' in text
     assert "TMDB_API_KEY" not in text
     assert "TMDB_ACCESS_TOKEN" not in text
@@ -32,4 +36,4 @@ with tempfile.TemporaryDirectory() as td:
     assert changed_again is False
     assert path.read_text(encoding="utf-8") == before
 
-print("native Desktop dual-ID context contract passed")
+print("native Desktop dual-ID context contract passed: canonical_tmdb_metadata=true")
