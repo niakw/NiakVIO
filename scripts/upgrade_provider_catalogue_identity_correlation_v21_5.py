@@ -59,8 +59,10 @@ function _spv215CatalogueCardValues(value, base, meta, season, mediaType) {
 
   // A title and navigation target from the same search/result/card record are
   // stronger identity evidence than an unrelated path or data-id elsewhere in
-  // the response. Bound both the number of records and bytes inspected.
-  const startRe = /<(?:div|article|li)\b[^>]*\bclass\s*=\s*(["'])[^"']*(?:search[-_ ]?item|search[-_ ]?result|result[-_ ]?item|catalog(?:ue)?[-_ ]?item|media[-_ ]?item|result[-_ ]?card)[^"']*\1[^>]*>/gi;
+  // the response. Bound both the number of records and bytes inspected. Search
+  // results may themselves be anchors, so <a class="...search-result..."> is a
+  // first-class record boundary too.
+  const startRe = /<(?:a|div|article|li)\b[^>]*\bclass\s*=\s*(["'])[^"']*(?:search[-_ ]?item|search[-_ ]?result|result[-_ ]?item|catalog(?:ue)?[-_ ]?item|media[-_ ]?item|result[-_ ]?card)[^"']*\1[^>]*>/gi;
   const starts = [];
   let match, scanned = 0;
   while ((match = startRe.exec(source)) !== null && scanned++ < 160) {
@@ -76,8 +78,12 @@ function _spv215CatalogueCardValues(value, base, meta, season, mediaType) {
     const opening = row.opening;
 
     let href = "";
-    const click = opening.match(/(?:location\s*\.\s*)?href\s*=\s*['"]([^'"]{1,900})['"]/i);
-    if (click) href = click[1];
+    const directHref = opening.match(/\bhref\s*=\s*(["'])([^"']{1,900})\1/i);
+    if (directHref) href = directHref[2];
+    if (!href) {
+      const click = opening.match(/(?:location\s*\.\s*)?href\s*=\s*['"]([^'"]{1,900})['"]/i);
+      if (click) href = click[1];
+    }
     if (!href) {
       const dataHref = opening.match(/\b(?:data-href|data-url|data-link)\s*=\s*(["'])([^"']{1,900})\1/i);
       if (dataHref) href = dataHref[2];
@@ -167,6 +173,8 @@ def validate_base(text: str | None = None) -> None:
         "function _spv205StrictProviderValues(value, base, meta, season, mediaType)",
         "function _spv215CatalogueCardValues(value, base, meta, season, mediaType)",
         "function _spv215CatalogueProviderValues(value, base, meta, season, mediaType)",
+        "const startRe = /<(?:a|div|article|li)",
+        "const directHref = opening.match(",
         "const fallback = _spv205StrictProviderValues(value, base, meta, season, mediaType)",
         "providerValues = _spv215CatalogueProviderValues(",
     ):
@@ -209,7 +217,7 @@ def main() -> int:
     print(
         f"PROVIDER_CATALOGUE_IDENTITY_CORRELATION_V21_5_OK changed={str(changed).lower()} "
         "strict_v21_1_signature_preserved=1 initial_catalogue_wrapper_only=1 "
-        "matched_record_id_authoritative=1 onclick_card_correlation=1 "
+        "matched_record_id_authoritative=1 anchor_result_records=1 onclick_card_correlation=1 "
         "later_response_id_learning_preserved=1 provider_specific_rules=0"
     )
     return 0
