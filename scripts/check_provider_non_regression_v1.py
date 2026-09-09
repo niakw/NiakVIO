@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MATRIX = ROOT / "automation" / "provider-history-matrix.json"
 DEFAULT_CANDIDATE = ROOT / "provider-v3-quick-yield.json"
 DEFAULT_OUT = ROOT / "automation" / "provider-non-regression-gate.json"
+CURRENT_MANIFEST = ROOT / "manifest.json"
+CURRENT_OVERRIDES = ROOT / "provider-overrides.json"
 EXPECTED = 96
 HISTORY = ("5.21.0", "5.21.16", "5.21.36")
 GREEN = "🟢"
@@ -77,6 +79,36 @@ def matrix_rows(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
         for row in matrix.get("providers") or []
         if isinstance(row, dict) and canon(row.get("provider"))
     }
+
+
+def current_activation_debt() -> dict[str, dict[str, Any]]:
+    manifest = load(CURRENT_MANIFEST)
+    overrides = load(CURRENT_OVERRIDES)
+    rows = {
+        canon(row.get("id")): row
+        for row in manifest.get("scrapers") or []
+        if isinstance(row, dict) and canon(row.get("id"))
+    }
+    patches = overrides.get("provider_patches") if isinstance(overrides.get("provider_patches"), dict) else {}
+    out: dict[str, dict[str, Any]] = {}
+    for pid, row in rows.items():
+        patch = patches.get(pid) if isinstance(patches.get(pid), dict) else {}
+        disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
+        state = canon(disposition.get("routeDataState"))
+        audited = (
+            row.get("enabled") is False
+            and disposition.get("authority") == "provider-repair-disposition-v1"
+            and disposition.get("activationState") == "disabled"
+            and state in {"repair", "off"}
+            and disposition.get("completeCapabilityProof") is False
+            and isinstance(disposition.get("missingLanes"), list)
+            and bool(disposition.get("missingLanes"))
+            and isinstance(disposition.get("reasonCodes"), list)
+            and bool(disposition.get("reasonCodes"))
+        )
+        if audited:
+            out[pid] = disposition
+    return out
 
 
 def diff_paths(base_ref: str) -> list[str]:
@@ -185,9 +217,11 @@ def candidate_gate(
     candidate_statuses = lane_statuses_from_quick(candidate)
     candidate_lanes = verified_lanes_from_quick(candidate)
     baseline_lanes = verified_lanes_from_quick(git_json(base_ref, "provider-v3-quick-yield.json"))
+    activation_debt = current_activation_debt()
 
     obligations: dict[str, Any] = {}
     failures: list[dict[str, Any]] = []
+    disabled_debt: list[str] = []
 
     for pid in scope:
         row = rows[pid]
@@ -207,11 +241,6 @@ def candidate_gate(
         lost_types = sorted({canon(x) for x in contract.get("lostSemanticTypes") or [] if canon(x)})
         hls_lost = bool(contract.get("hlsM3u8Lost"))
 
-        # A partial historical regression is not satisfied merely because one
-        # surviving lane still works. Every explicitly failed lane that remains
-        # part of the provider's canonical current semantic contract must recover.
-        # This closes the Streamzo-style hole: movie green cannot hide tv
-        # wrong-content or anime no-streams.
         partial_failed = set()
         if str(row.get("nonRegressionStatus") or "") == "PARTIAL_REGRESSION":
             partial_failed = {
@@ -221,13 +250,29 @@ def candidate_gate(
 
         require_any = historical_positive and not required_lanes
         any_missing = require_any and not got
+        debt = activation_debt.get(pid)
+        debt_accepted = isinstance(debt, dict)
+        debt_reasons: list[str] = []
         provider_failures: list[str] = []
+
         if missing:
-            provider_failures.append("missing_verified_lanes")
+            if debt_accepted:
+                debt_reasons.append("missing_verified_lanes")
+            else:
+                provider_failures.append("missing_verified_lanes")
         if any_missing:
-            provider_failures.append("historical_positive_without_candidate_verified_lane")
+            if debt_accepted:
+                debt_reasons.append("historical_positive_without_candidate_verified_lane")
+            else:
+                provider_failures.append("historical_positive_without_candidate_verified_lane")
         if unrecovered_partial:
-            provider_failures.append("partial_regression_not_recovered")
+            if debt_accepted:
+                debt_reasons.append("partial_regression_not_recovered")
+            else:
+                provider_failures.append("partial_regression_not_recovered")
+
+        # Disabling does not authorize silent contract deletion. Semantic/HLS
+        # capability changes remain hard failures until explicitly corrected.
         if lost_types:
             provider_failures.append("semantic_capability_regression")
         if hls_lost:
@@ -237,6 +282,8 @@ def candidate_gate(
             lane: sorted(values)
             for lane, values in sorted((candidate_statuses.get(pid) or {}).items())
         }
+        if debt_reasons:
+            disabled_debt.append(pid)
         obligations[pid] = {
             "historicalPositiveVersions": historical_positive_versions,
             "historicalVerifiedLanes": sorted(historical_specific),
@@ -251,6 +298,9 @@ def candidate_gate(
             "lostSemanticTypes": lost_types,
             "hlsM3u8Lost": hls_lost,
             "externalDriftRecorded": bool(row.get("externalDriftAccepted")),
+            "disabledDebtAccepted": bool(debt_reasons),
+            "disabledDebtState": debt.get("routeDataState") if isinstance(debt, dict) else None,
+            "disabledDebtReasons": debt_reasons,
             "passed": not provider_failures,
             "failures": provider_failures,
         }
@@ -258,7 +308,7 @@ def candidate_gate(
             failures.append({"provider": pid, "failures": provider_failures})
 
     return {
-        "schemaVersion": 1,
+        "schemaVersion": 2,
         "mode": "candidate",
         "baseRef": base_ref,
         "scopeAllProviders": global_scope,
@@ -268,6 +318,9 @@ def candidate_gate(
         "rollingBaselineSource": f"{base_ref}:provider-v3-quick-yield.json",
         "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
+        "disabledHistoricalDebtPolicy": "allowed only when manifest enabled=false and provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
+        "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
+        "disabledDebtProviders": sorted(set(disabled_debt)),
         "obligations": obligations,
         "failureCount": len(failures),
         "failures": failures,
@@ -333,7 +386,7 @@ def main() -> int:
     print(
         "PROVIDER_NON_REGRESSION_CANDIDATE "
         f"passed={str(result['passed']).lower()} scope={result['scopeProviderCount']} "
-        f"failures={result['failureCount']} base={args.base_ref}"
+        f"failures={result['failureCount']} disabled_debt={result['disabledDebtProviderCount']} base={args.base_ref}"
     )
     if result["failures"]:
         print("FAILED_PROVIDERS " + ",".join(item["provider"] for item in result["failures"]))
