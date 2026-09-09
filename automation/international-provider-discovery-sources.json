@@ -1,7 +1,8 @@
 {
-  "schema_version": 2,
-  "mode": "manual_curated_pool",
+  "schema_version": 3,
+  "mode": "manual_triggered_curated_discovery",
   "manual_catalog": "automation/international-provider-manual-candidates.json",
+  "manual_supplement": "automation/international-provider-manual-supplement.json",
   "public_reference_indexes": [
     "https://fmhy.net/non-english"
   ],
@@ -16,13 +17,14 @@
     "stable_hubs_include": [
       "official address/status page",
       "stable domain registry",
-      "public Telegram address channel or bot",
+      "public Telegram/Telegraph address channel or bot",
       "stable mirror index"
     ]
   },
   "notes": [
-    "The discovery workflow compiles the manually curated pool into JSON/CSV/XLSX and separately reports every current NiakVIO provider lacking a stable hub.",
-    "GitHub/GitLab/Bitbucket repository links may be used during human research but are rejected from route and hub fields.",
-    "No discovery candidate is automatically enabled or published as a provider."
+    "The workflow is workflow_dispatch-only and refreshes the research JSON/CSV/XLSX on demand.",
+    "The XLSX contains candidates, country coverage and the current NiakVIO providers missing a stable hub.",
+    "GitHub/GitLab/Bitbucket repository links may be research evidence but are forbidden in route and hub fields.",
+    "No discovery candidate automatically modifies provider code, provider-hubs.json or manifests."
   ]
 }
