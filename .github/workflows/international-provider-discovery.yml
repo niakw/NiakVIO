@@ -1,0 +1,153 @@
+name: MANUAL - International Provider Discovery
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_candidates:
+        description: Maximum candidates to retain (hard cap 100)
+        required: true
+        default: '100'
+        type: string
+      per_market_cap:
+        description: Maximum candidates per country/market
+        required: true
+        default: '4'
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: manual-international-provider-discovery
+  cancel-in-progress: false
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Validate manual limits
+        env:
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap }}
+        run: |
+          python - <<'PY'
+          import os
+          max_candidates = int(os.environ['MAX_CANDIDATES'])
+          cap = int(os.environ['PER_MARKET_CAP'])
+          assert 1 <= max_candidates <= 100, 'max_candidates must be between 1 and 100'
+          assert 1 <= cap <= 10, 'per_market_cap must be between 1 and 10'
+          print(f'limits ok: max={max_candidates} per_market={cap}')
+          PY
+
+      - name: Refresh international provider candidates
+        env:
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap }}
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/discover_international_provider_candidates.py
+          python scripts/discover_international_provider_candidates.py \
+            --max-candidates "$MAX_CANDIDATES" \
+            --per-market-cap "$PER_MARKET_CAP" \
+            --catalog provider_catalog.json \
+            --seed research/international-provider-candidates.xlsx \
+            --config automation/international-provider-discovery-sources.json \
+            --out-json research/international-provider-candidates.json \
+            --out-csv research/international-provider-candidates.csv \
+            --out-xlsx research/international-provider-candidates.xlsx
+
+      - name: Validate generated catalogue
+        env:
+          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+        run: |
+          python - <<'PY'
+          import json, re, unicodedata
+          from pathlib import Path
+
+          def norm(value):
+              value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
+              return re.sub(r'[^a-z0-9]+', '', value)
+
+          out = json.loads(Path('research/international-provider-candidates.json').read_text(encoding='utf-8'))
+          rows = out.get('candidates') or []
+          assert 0 < len(rows) <= min(100, int(__import__('os').environ['MAX_CANDIDATES']))
+
+          cat = json.loads(Path('provider_catalog.json').read_text(encoding='utf-8'))
+          known = set()
+          for row in cat.get('providers') or []:
+              if not isinstance(row, dict):
+                  continue
+              for value in (row.get('canonicalId'), (row.get('scraper') or {}).get('id'), (row.get('scraper') or {}).get('name')):
+                  n = norm(value)
+                  if n:
+                      known.add(n)
+
+          overlaps = []
+          seen = set()
+          for row in rows:
+              key = norm(row.get('name'))
+              if not key or key in seen:
+                  overlaps.append(('duplicate', row.get('name')))
+              seen.add(key)
+              if key in known:
+                  overlaps.append(('known', row.get('name')))
+          assert not overlaps, f'catalogue overlap/duplicate: {overlaps[:10]}'
+          print(f'catalogue validation ok: {len(rows)} candidates')
+          PY
+
+      - name: Publish refreshed files through review PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+          BRANCH='automation/international-provider-candidates-refresh'
+          git switch -C "$BRANCH"
+          git add \
+            research/international-provider-candidates.json \
+            research/international-provider-candidates.csv \
+            research/international-provider-candidates.xlsx
+
+          if git diff --cached --quiet; then
+            echo 'No candidate catalogue changes.'
+            exit 0
+          fi
+
+          git commit -m 'chore(research): refresh international provider candidates'
+          git push --force-with-lease origin "$BRANCH"
+
+          EXISTING="$(gh pr list --state open --head "$BRANCH" --json number --jq '.[0].number // empty')"
+          if [ -z "$EXISTING" ]; then
+            gh pr create \
+              --base main \
+              --head "$BRANCH" \
+              --title 'chore(research): refresh international provider candidates' \
+              --body $'Manual international provider discovery refresh.\n\nThe job re-scans configured public provider indexes/repositories, de-duplicates against the current NiakVIO provider catalog, caps the result at 100 candidates with per-market diversity, and regenerates the JSON/CSV/XLSX research catalogue.\n\nThis workflow never publishes providers or modifies provider JS/manifests/hubs.'
+          else
+            gh pr comment "$EXISTING" --body 'Manual discovery reran and refreshed the international candidate catalogue.'
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: international-provider-candidates-${{ github.run_id }}
+          path: |
+            research/international-provider-candidates.json
+            research/international-provider-candidates.csv
+            research/international-provider-candidates.xlsx
+          retention-days: 30
+          if-no-files-found: warn
