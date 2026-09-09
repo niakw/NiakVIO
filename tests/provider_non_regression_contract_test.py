@@ -6,15 +6,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 V3 = ROOT / "scripts" / "build_provider_history_matrix_v3.py"
 GATE = ROOT / "scripts" / "check_provider_non_regression_v1.py"
+MEDIA_PATCH = ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py"
+FAST_GATE_TEST = ROOT / "tests" / "global_media_type_pre_network_gate_test.py"
 HISTORY_WF = ROOT / ".github" / "workflows" / "provider-history-matrix.yml"
 NONREG_WF = ROOT / ".github" / "workflows" / "provider-non-regression.yml"
 OWNERSHIP = ROOT / "tests" / "provider_v3_workflow_ownership_test.py"
 
-for path in (V3, GATE, HISTORY_WF, NONREG_WF, OWNERSHIP):
+for path in (V3, GATE, MEDIA_PATCH, FAST_GATE_TEST, HISTORY_WF, NONREG_WF, OWNERSHIP):
     assert path.exists(), f"missing anti-regression contract file: {path.relative_to(ROOT)}"
 
 v3 = V3.read_text(encoding="utf-8")
 gate = GATE.read_text(encoding="utf-8")
+media_patch = MEDIA_PATCH.read_text(encoding="utf-8")
+fast_gate_test = FAST_GATE_TEST.read_text(encoding="utf-8")
 history = HISTORY_WF.read_text(encoding="utf-8")
 nonreg = NONREG_WF.read_text(encoding="utf-8")
 ownership = OWNERSHIP.read_text(encoding="utf-8")
@@ -25,6 +29,13 @@ for token in ('"5.21.0"', '"5.21.16"', '"5.21.36"'):
 assert '"crossVersionFallbackAllowed": False' in v3
 assert '"historicalGreenMayBecomeUnknownSilently": False' in v3
 assert "historical_lanes = verified_lanes(row.get(\"historical52136\") or {})" in v3
+
+# 5.21.16 predates the canonical semantic/transport split for some providers.
+# Keep its raw transport evidence, but never turn ambiguous supportedTypes into a
+# blocking movie/tv/anime semantic capability floor.
+assert 'allow_supported = version != "5.21.16"' in v3
+assert '"historicalAmbiguousTransportTypes"' in v3
+assert '"legacy52116SupportedTypesAreBlockingSemanticProof": False' in v3
 
 # Publication gate extends the floor release after release: exact 5.21.36 proof
 # plus the accepted baseline quick-yield from the PR/base commit.
@@ -48,6 +59,23 @@ for token in (
     assert token in gate, f"global non-regression scope lost shared path {token}"
 assert "if shared:" in gate and "return ids, changed, True" in gate
 
+# Fast gate must reject conclusive semantic mismatches before provider/TMDB
+# network. Never reintroduce the old singleton rewrite which made tv-only run on
+# movie (or movie-only on tv) merely because only one semantic type was declared.
+assert "semantic.length===1)type=semantic[0]" not in media_patch
+for token in (
+    'if(raw==="anime"&&!hasAnime)return null;',
+    'if(type==="movie"&&!hasMovie&&!hasAnime)return null;',
+    'if(type==="tv"&&!hasTv&&!hasAnime)return null;',
+):
+    assert token in media_patch, f"pre-network semantic fast gate lost: {token}"
+for token in (
+    'assert_pre_network_reject(["tv"], "movie"',
+    'assert_pre_network_reject(["movie"], "series"',
+    'assert_pre_network_reject(["movie", "tv"], "anime"',
+):
+    assert token in fast_gate_test, f"pre-network fast-gate regression case lost: {token}"
+
 # V3 is the authoritative historical builder. V2 can remain an internal input,
 # but the workflow may not publish V2 directly as its final authority.
 assert "build_provider_history_matrix_v3.py" in history
@@ -59,6 +87,7 @@ for token in (
     "python scripts/build_provider_history_matrix_v3.py",
     "python scripts/check_provider_non_regression_v1.py",
     "python scripts/audit_provider_quick_yield.py",
+    "python tests/global_media_type_pre_network_gate_test.py",
     "--candidate-gate",
     "provider-v3-quick-yield.json",
     "provider-non-regression-gate.json",
@@ -72,4 +101,4 @@ assert "pull_request:" in nonreg
 assert "provider-non-regression.yml" in ownership
 assert "check_provider_non_regression_v1.py" in ownership
 
-print("provider non-regression contract passed: exact 4-state ledger + rolling candidate floor + 96 shared-core scope")
+print("provider non-regression contract passed: exact 4-state ledger + semantic fast gate + rolling candidate floor + 96 shared-core scope")
