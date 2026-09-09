@@ -78,7 +78,11 @@ def merge_summary(
     attempts = max(0, min(int(summary.get("maxAttemptsPerTask") or 0), 20))
 
     for provider in targeted:
-        if provider in verified:
+        provider_lost_lanes = lost.get(provider, [])
+        # Provider-level verification is intentionally weaker than lane-level
+        # preservation. If movie is verified but TV lost an upstream-positive
+        # lane, the TV debt remains LEARN-owned instead of being erased.
+        if provider in verified and not provider_lost_lanes:
             providers.pop(provider, None)
             continue
         prior = providers.get(provider) if isinstance(providers.get(provider), dict) else {}
@@ -86,8 +90,8 @@ def merge_summary(
         providers[provider] = {
             "owner": "LEARN",
             "status": "pending",
-            "reason": "lost-upstream-positive" if provider in lost else "target-not-verified",
-            "mediaTypes": lost.get(provider, []),
+            "reason": "lost-upstream-positive" if provider_lost_lanes else "target-not-verified",
+            "mediaTypes": provider_lost_lanes,
             "lastRepairRunId": str(run_id or prior.get("lastRepairRunId") or "")[:32],
             "lastRepairAttemptsPerTask": attempts,
             "repairObservations": observations,
@@ -96,7 +100,7 @@ def merge_summary(
 
     return {
         "schemaVersion": 1,
-        "policy": "Residual targeted repair failures are LEARN-owned; automatic route/data repair skips them until LEARN or a deliberate explicit regression/priority run resolves them.",
+        "policy": "Residual targeted repair failures are LEARN-owned per semantic lane; automatic route/data repair skips them until LEARN or a deliberate explicit regression/priority run resolves them.",
         "providerCount": len(providers),
         "providers": dict(sorted(providers.items())),
         "publicationAllowed": False,
