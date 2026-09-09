@@ -51,7 +51,7 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 5
+          "taskLastRequestIndex": 6
         },
         {
           "route": "/meta/series/tt12343534.json",
@@ -90,7 +90,7 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 5
+          "taskLastRequestIndex": 6
         },
         {
           "route": "/template-php/defaut/fetch.php",
@@ -145,7 +145,7 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 5
+          "taskLastRequestIndex": 6
         },
         {
           "route": "/anime/{slug}/saison-1/episode-1.html",
@@ -186,15 +186,18 @@
           },
           "taskStreamCount": 1,
           "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 5
+          "taskLastRequestIndex": 6
         },
         {
+          "route": "/shell.php?videoid={id}",
+          "origin": "https://video.sibnet.ru",
           "role": "detail",
-          "status": 200,
-          "proofModelVersion": 5,
           "method": "GET",
-          "taskStreamCount": 1,
-          "requestSpecReusable": true,
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 4,
+          "providerValueCorrelation": true,
+          "externalIdentityCorrelation": false,
           "requestSpec": {
             "method": "GET",
             "headers": {
@@ -203,12 +206,14 @@
               "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
             }
           },
-          "requestIndex": 4,
-          "taskRawStreamCount": 1,
-          "taskLastRequestIndex": 6,
-          "semanticType": "anime",
-          "origin": "https://video.sibnet.ru",
-          "fixture": "jujutsu-kaisen-s01e01",
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=windows-1251",
+          "proofModelVersion": 5,
           "source": {
             "kind": "upstream",
             "sourceId": "gowaru",
@@ -219,10 +224,9 @@
             "currentSha256": "5b29194a13ad63967e109262a9e5e10c0346acebed8d7330c071bab14060dd75",
             "mode": "lkg-current-byte-exact"
           },
-          "providerValueCorrelation": true,
-          "route": "/shell.php?videoid={id}",
-          "contentType": "text/html; charset=windows-1251",
-          "externalIdentityCorrelation": false
+          "taskStreamCount": 1,
+          "taskRawStreamCount": 1,
+          "taskLastRequestIndex": 6
         }
       ],
       "routes": [
@@ -280,9 +284,9 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 3,
-          "taskRawStreamCount": 3,
-          "taskLastRequestIndex": 24
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
         },
         {
           "route": "/meta/series/tt12343534.json",
@@ -319,9 +323,9 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 3,
-          "taskRawStreamCount": 3,
-          "taskLastRequestIndex": 24
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
         },
         {
           "route": "/?s={query}",
@@ -359,9 +363,131 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 3,
-          "taskRawStreamCount": 3,
-          "taskLastRequestIndex": 24
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
+        },
+        {
+          "route": "/?trembed=0&trid={id}&trtype=2",
+          "origin": "https://animevostfr.org",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 5,
+          "providerValueCorrelation": true,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+              "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+              "referer": "https://animevostfr.org/episode/jujutsu-kaisen-2-saison-1-episode-1/",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "gowaru",
+            "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
+            "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "capturedAt": "2026-09-01T19:52:18+00:00",
+            "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
+        },
+        {
+          "route": "/?trembed=1&trid={id}&trtype=2",
+          "origin": "https://animevostfr.org",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 8,
+          "providerValueCorrelation": true,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+              "accept-language": "fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7",
+              "referer": "https://animevostfr.org/episode/jujutsu-kaisen-2-saison-1-episode-1/",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=UTF-8",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "gowaru",
+            "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
+            "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "capturedAt": "2026-09-01T19:52:18+00:00",
+            "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
+        },
+        {
+          "route": "/shell.php?videoid={id}",
+          "origin": "https://video.sibnet.ru",
+          "role": "detail",
+          "method": "GET",
+          "semanticType": "anime",
+          "fixture": "jujutsu-kaisen-s01e01",
+          "requestIndex": 9,
+          "providerValueCorrelation": true,
+          "externalIdentityCorrelation": false,
+          "requestSpec": {
+            "method": "GET",
+            "headers": {
+              "accept-language": "fr-FR,fr,en-US,en",
+              "referer": "https://video.sibnet.ru/",
+              "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36"
+            }
+          },
+          "requestSpecReusable": true,
+          "requestSpecSubstitutions": [],
+          "requestSpecResidue": [],
+          "proofBodyKind": "none",
+          "proofBodyValues": {},
+          "status": 200,
+          "contentType": "text/html; charset=windows-1251",
+          "proofModelVersion": 5,
+          "source": {
+            "kind": "upstream",
+            "sourceId": "gowaru",
+            "sha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "providerUrl": "https://raw.githubusercontent.com/Gowaru/gowaru-nuvio-providers/refs/heads/main/providers/animevostfr.js",
+            "wantedSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "capturedAt": "2026-09-01T19:52:18+00:00",
+            "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
+            "mode": "lkg-current-byte-exact"
+          },
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
         },
         {
           "route": "/animes/{slug}/",
@@ -399,9 +525,9 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 3,
-          "taskRawStreamCount": 3,
-          "taskLastRequestIndex": 24
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
         },
         {
           "route": "/episode/{slug}-{season}-episode-{episode}/",
@@ -439,15 +565,18 @@
             "currentSha256": "f75843cd26128bc78d31ecc641acfe155ca7a5e4046bea977fe5ab3c4f8e8c2a",
             "mode": "lkg-current-byte-exact"
           },
-          "taskStreamCount": 3,
-          "taskRawStreamCount": 3,
-          "taskLastRequestIndex": 24
+          "taskStreamCount": 2,
+          "taskRawStreamCount": 2,
+          "taskLastRequestIndex": 25
         }
       ],
       "routes": [
         "/api/v2/themoviedb?id={tmdbId}",
         "/meta/series/tt12343534.json",
         "/?s={query}",
+        "/?trembed=0&trid={id}&trtype=2",
+        "/?trembed=1&trid={id}&trtype=2",
+        "/shell.php?videoid={id}",
         "/animes/{slug}/",
         "/episode/{slug}-{season}-episode-{episode}/"
       ]
