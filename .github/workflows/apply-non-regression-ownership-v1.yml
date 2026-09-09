@@ -51,16 +51,16 @@ jobs:
           assert 'python tests/global_media_type_pre_network_gate_test.py' in sync
           print('NON_REGRESSION_OWNERSHIP_OK v1_cross_snapshot_fallback=false repair_v6=true core_quick=true')
           PY
-      - name: Commit hardened owners on workbench only
+      - name: Commit non-workflow hardened owners on workbench only
         run: |
           set -euo pipefail
           git diff --check
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/build_provider_history_matrix.py scripts/run_provider_repair_pipeline_v6.py .github/workflows/sync.yml
+          git add scripts/build_provider_history_matrix.py scripts/run_provider_repair_pipeline_v6.py
           if git diff --cached --quiet; then
             echo 'NON_REGRESSION_OWNERSHIP_COMMIT changed=false'
             exit 0
           fi
-          git commit -m 'fix(core): make semantic and history regression guards permanent'
+          git commit -m 'fix(core): make history and repair regression guards permanent'
           git push origin HEAD:workbench/systemic-recovery-20260909
