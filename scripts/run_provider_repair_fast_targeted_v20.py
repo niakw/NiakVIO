@@ -35,8 +35,10 @@ def _run_with_v215_boundary(*args: str, timeout: int | None = None) -> None:
             "series_slug_role_preserved=1 episode_indexed_json_scoped=1 "
             "episode_tagged_arrays_scoped=1 missing_episode_fail_closed=1 "
             "movie_unchanged=1 numeric_quality_maps_unchanged=1 "
-            "matched_row_id_authoritative=1 global_id_fallback_only=1 "
-            "provider_specific_rules=0 all_v21_5_owners_before_census=1",
+            "initial_catalogue_only=1 matched_record_id_authoritative=1 "
+            "onclick_card_correlation=1 later_response_id_learning_preserved=1 "
+            "global_id_fallback_preserved=1 provider_specific_rules=0 "
+            "all_v21_5_owners_before_census=1",
             flush=True,
         )
     _original_run(*args, timeout=timeout)
