@@ -1,5 +1,5 @@
 name: Workbench Authoritative Repair V1
-# Trigger revision: causal-external-identity-and-accounted-repair-debt-v2.
+# Trigger revision: semantic-transport-no-artificial-movie-v3.
 
 on:
   push:
@@ -58,6 +58,11 @@ jobs:
           python tests/provider_quick_yield_fixture_selection_test.py
           python tests/provider_mixed_yield_acceptance_test.py
           python tests/global_media_type_pre_network_gate_test.py
+          node scripts/validate_provider_semantics.cjs
+          node tests/provider_semantics.test.cjs
+          python tests/reapply_manifest_type_projection_test.py
+          python tests/provider_anime_semantic_transport_contract_test.py
+          python tests/provider_v3_documentation_contract_test.py
       - name: Run canonical Repair V6 over complete repair-eligible portfolio
         shell: bash
         run: |
