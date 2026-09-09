@@ -1,53 +1,30 @@
 {
-  "schema_version": 1,
-  "fmhy_urls": [
+  "schema_version": 3,
+  "mode": "manual_triggered_curated_discovery",
+  "manual_catalog": "automation/international-provider-manual-candidates.json",
+  "manual_supplement": "automation/international-provider-manual-supplement.json",
+  "public_reference_indexes": [
     "https://fmhy.net/non-english"
   ],
-  "fmhy_streaming_headings": [
-    "streaming",
-    "streamear",
-    "izleme",
-    "phát trực tuyến",
-    "стриминг",
-    "suoratoisto",
-    "nanonood"
-  ],
-  "fmhy_market_aliases": {
-    "Arabic": "Égypte / MENA",
-    "Bangla": "Bangladesh",
-    "Bulgarian": "Bulgarie",
-    "Chinese": "Chine / sinophone",
-    "Czech": "Tchéquie",
-    "Filipino": "Philippines",
-    "Finnish": "Finlande",
-    "French": "France",
-    "German": "Allemagne",
-    "Greek": "Grèce",
-    "Hindi": "Inde",
-    "Indonesian": "Indonésie",
-    "Italian": "Italie",
-    "Japanese": "Japon",
-    "Polish": "Pologne",
-    "Portuguese": "Brésil",
-    "Romanian": "Roumanie",
-    "Russian": "Russie / RU",
-    "Spanish": "Espagne / LATAM",
-    "Swedish": "Suède",
-    "Turkish": "Turquie",
-    "Ukrainian": "Ukraine",
-    "Vietnamese": "Vietnam"
+  "policy": {
+    "candidate_route_must_be_actual_web_or_public_telegram_endpoint": true,
+    "code_repository_urls_are_evidence_only_never_candidate_routes": true,
+    "deduplicate_against_provider_catalog": true,
+    "coverage_first": true,
+    "minimum_per_market_when_available": 2,
+    "maximum_per_market": 4,
+    "hard_candidate_cap": 100,
+    "stable_hubs_include": [
+      "official address/status page",
+      "stable domain registry",
+      "public Telegram/Telegraph address channel or bot",
+      "stable mirror index"
+    ]
   },
-  "github_sources": [
-    {"repo": "Gian-Fr/ItalianProvider", "market": "Italie", "languages": "it", "score": 92},
-    {"repo": "ibawova/GermanProviders", "market": "Allemagne", "languages": "de", "score": 91},
-    {"repo": "nikyokki/nik-cloudstream", "market": "Turquie", "languages": "tr", "score": 93},
-    {"repo": "lawlietbr/lietrepo", "market": "Brésil", "languages": "pt-BR", "score": 92},
-    {"repo": "ImZaw/cloudstream-extensions-arabic", "market": "Égypte / MENA", "languages": "ar", "score": 92}
-  ],
-  "direct_candidates": [
-    {"name": "Filmoflix", "market": "France", "languages": "fr", "content": "movie,tv,anime", "route": "filmoflixi.online", "score": 94, "source": "https://alexitauzin.com/filmoflix/", "note": "Current FR route check + identity continuity required."},
-    {"name": "Empire Streaming", "market": "France", "languages": "fr", "content": "movie,tv,anime", "route": "empire-streamings.live", "score": 93, "source": "https://alexitauzin.com/empire-streaming/", "note": "Current FR route check; expect domain churn."},
-    {"name": "DarkiWorld", "market": "France", "languages": "fr", "content": "movie,tv,anime", "route": "", "score": 89, "source": "https://www.map24.com/darkiworld/", "note": "Discover hub/redirector before onboarding."},
-    {"name": "Cinemay", "market": "France", "languages": "fr", "content": "movie,tv", "route": "", "score": 87, "source": "https://technplay.com/cinemay/", "note": "Verify identity/clone continuity."}
+  "notes": [
+    "The workflow is workflow_dispatch-only and refreshes the research JSON/CSV/XLSX on demand.",
+    "The XLSX contains candidates, country coverage and the current NiakVIO providers missing a stable hub.",
+    "GitHub/GitLab/Bitbucket repository links may be research evidence but are forbidden in route and hub fields.",
+    "No discovery candidate automatically modifies provider code, provider-hubs.json or manifests."
   ]
 }

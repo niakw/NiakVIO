@@ -8,6 +8,11 @@ on:
         required: true
         default: '100'
         type: string
+      min_per_market:
+        description: Minimum candidates per represented country/market when the curated pool contains enough
+        required: true
+        default: '2'
+        type: string
       per_market_cap:
         description: Maximum candidates per country/market
         required: true
@@ -25,7 +30,7 @@ concurrency:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -36,74 +41,120 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Validate manual limits
-        env:
-          MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
-          PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap }}
+      - name: Merge manual curated base and supplement
         run: |
           python - <<'PY'
-          import os
-          max_candidates = int(os.environ['MAX_CANDIDATES'])
-          cap = int(os.environ['PER_MARKET_CAP'])
-          assert 1 <= max_candidates <= 100, 'max_candidates must be between 1 and 100'
-          assert 1 <= cap <= 10, 'per_market_cap must be between 1 and 10'
-          print(f'limits ok: max={max_candidates} per_market={cap}')
+          import json, re, unicodedata
+          from pathlib import Path
+
+          base_path = Path('automation/international-provider-manual-candidates.json')
+          supplement_path = Path('automation/international-provider-manual-supplement.json')
+          out_path = Path('/tmp/international-provider-manual-merged.json')
+
+          def norm(value):
+              value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
+              return re.sub(r'[^a-z0-9]+', '', value)
+
+          base = json.loads(base_path.read_text(encoding='utf-8'))
+          supplement = json.loads(supplement_path.read_text(encoding='utf-8'))
+          merged = {}
+          order = []
+          for row in list(base.get('candidates') or []) + list(supplement.get('candidates') or []):
+              key = norm(row.get('name'))
+              if not key:
+                  continue
+              if key not in merged:
+                  order.append(key)
+              merged[key] = row
+          payload = dict(base)
+          payload['schema_version'] = max(int(base.get('schema_version') or 1), 2)
+          payload['candidates'] = [merged[key] for key in order]
+          payload['supplement_applied'] = str(supplement_path)
+          out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+          print(f"manual merge complete: base={len(base.get('candidates') or [])} supplement={len(supplement.get('candidates') or [])} merged={len(payload['candidates'])}")
           PY
 
-      - name: Refresh international provider candidates
+      - name: Compile curated discovery catalogue
         env:
           MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
           PER_MARKET_CAP: ${{ github.event.inputs.per_market_cap }}
         run: |
           set -euo pipefail
           python -m py_compile scripts/discover_international_provider_candidates.py
           python scripts/discover_international_provider_candidates.py \
             --max-candidates "$MAX_CANDIDATES" \
+            --min-per-market "$MIN_PER_MARKET" \
             --per-market-cap "$PER_MARKET_CAP" \
             --catalog provider_catalog.json \
-            --seed research/international-provider-candidates.xlsx \
-            --config automation/international-provider-discovery-sources.json \
+            --hubs provider-hubs.json \
+            --manual /tmp/international-provider-manual-merged.json \
             --out-json research/international-provider-candidates.json \
             --out-csv research/international-provider-candidates.csv \
             --out-xlsx research/international-provider-candidates.xlsx
 
-      - name: Validate generated catalogue
+      - name: Validate catalogue quality
         env:
           MAX_CANDIDATES: ${{ github.event.inputs.max_candidates }}
+          MIN_PER_MARKET: ${{ github.event.inputs.min_per_market }}
         run: |
           python - <<'PY'
-          import json, re, unicodedata
+          import json, re, unicodedata, urllib.parse, zipfile
+          from collections import Counter
           from pathlib import Path
 
           def norm(value):
               value = unicodedata.normalize('NFKD', str(value or '')).encode('ascii','ignore').decode().casefold()
               return re.sub(r'[^a-z0-9]+', '', value)
 
+          rejected_hosts = ('github.com','githubusercontent.com','gitlab.com','bitbucket.org','codeberg.org','sourceforge.net')
           out = json.loads(Path('research/international-provider-candidates.json').read_text(encoding='utf-8'))
           rows = out.get('candidates') or []
           assert 0 < len(rows) <= min(100, int(__import__('os').environ['MAX_CANDIDATES']))
+          assert out.get('market_count', 0) >= 25, f"country/market coverage too low: {out.get('market_count')}"
 
           cat = json.loads(Path('provider_catalog.json').read_text(encoding='utf-8'))
           known = set()
           for row in cat.get('providers') or []:
               if not isinstance(row, dict):
                   continue
-              for value in (row.get('canonicalId'), (row.get('scraper') or {}).get('id'), (row.get('scraper') or {}).get('name')):
-                  n = norm(value)
-                  if n:
-                      known.add(n)
+              scraper = row.get('scraper') or {}
+              for value in (row.get('canonicalId'), scraper.get('id'), scraper.get('name')):
+                  key = norm(value)
+                  if key:
+                      known.add(key)
 
-          overlaps = []
           seen = set()
+          last_market = ''
+          counts = Counter()
           for row in rows:
               key = norm(row.get('name'))
-              if not key or key in seen:
-                  overlaps.append(('duplicate', row.get('name')))
+              assert key and key not in seen, f"duplicate candidate: {row.get('name')}"
+              assert key not in known, f"already in NiakVIO: {row.get('name')}"
               seen.add(key)
-              if key in known:
-                  overlaps.append(('known', row.get('name')))
-          assert not overlaps, f'catalogue overlap/duplicate: {overlaps[:10]}'
-          print(f'catalogue validation ok: {len(rows)} candidates')
+              market = str(row.get('market') or '')
+              counts[market] += 1
+              assert not last_market or market.casefold() >= last_market.casefold(), 'Candidates must be sorted by market'
+              last_market = market
+              for field in ('route', 'hub'):
+                  value = str(row.get(field) or '')
+                  if not value:
+                      continue
+                  parsed = urllib.parse.urlparse(value)
+                  assert parsed.scheme in {'http','https'} and parsed.hostname, f"invalid {field}: {value}"
+                  host = parsed.hostname.casefold()
+                  assert not any(host == suffix or host.endswith('.' + suffix) for suffix in rejected_hosts), f"repository URL leaked into {field}: {value}"
+
+          floor = int(__import__('os').environ['MIN_PER_MARKET'])
+          under = {market: count for market, count in counts.items() if count < floor}
+          assert not under, f"markets below requested coverage floor: {under}"
+
+          xlsx = Path('research/international-provider-candidates.xlsx')
+          assert xlsx.stat().st_size > 5000
+          with zipfile.ZipFile(xlsx) as archive:
+              assert archive.testzip() is None
+              assert 'xl/worksheets/sheet3.xml' in archive.namelist(), 'NiakVIO hub gaps sheet missing'
+          print(f"catalogue validation ok: {len(rows)} candidates / {out.get('market_count')} markets / min={min(counts.values())} per market / {out.get('hub_gap_count')} NiakVIO hub gaps")
           PY
 
       - name: Publish refreshed files through review PR
@@ -136,9 +187,9 @@ jobs:
               --base main \
               --head "$BRANCH" \
               --title 'chore(research): refresh international provider candidates' \
-              --body $'Manual international provider discovery refresh.\n\nThe job re-scans configured public provider indexes/repositories, de-duplicates against the current NiakVIO provider catalog, caps the result at 100 candidates with per-market diversity, and regenerates the JSON/CSV/XLSX research catalogue.\n\nThis workflow never publishes providers or modifies provider JS/manifests/hubs.'
+              --body $'Manual international provider discovery refresh.\n\nThe catalogue is curated from actual provider routes and stable hub/Telegram/status sources, de-duplicated against NiakVIO, and selected coverage-first. Code-repository URLs are never accepted as provider routes.\n\nThe XLSX also reports current NiakVIO providers that still lack a stable hub. This workflow never publishes providers or mutates provider JS/manifests/provider-hubs.json.'
           else
-            gh pr comment "$EXISTING" --body 'Manual discovery reran and refreshed the international candidate catalogue.'
+            gh pr comment "$EXISTING" --body 'Manual discovery reran and refreshed the country-balanced candidate catalogue.'
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -150,4 +201,4 @@ jobs:
             research/international-provider-candidates.csv
             research/international-provider-candidates.xlsx
           retention-days: 30
-          if-no-files-found: warn
+          if-no-files-found: error
