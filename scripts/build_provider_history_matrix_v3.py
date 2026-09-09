@@ -59,16 +59,45 @@ def manifest_map(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
     }
 
 
-def semantic_types(row: dict[str, Any] | None) -> set[str]:
+def canonical_semantic_types(row: dict[str, Any] | None) -> set[str]:
+    """Return only an explicitly canonical semantic declaration.
+
+    Historical ``supportedTypes`` mixed semantic categories with transport aliases
+    (notably anime providers temporarily advertised as movie/tv and TV-capable
+    providers advertised as anime). It is therefore evidence about invocation
+    compatibility, not a safe semantic publication floor. V3 never promotes that
+    ambiguous field into a lost-capability regression.
+    """
     if not row:
         return set()
     canonical = row.get("canonicalSupportedTypes")
-    source = canonical if isinstance(canonical, list) and canonical else row.get("supportedTypes")
+    if not isinstance(canonical, list) or not canonical:
+        return set()
     return {
         canon(value)
-        for value in (source or [])
+        for value in canonical
         if canon(value) in {"movie", "tv", "anime"}
     }
+
+
+def transport_types(row: dict[str, Any] | None) -> set[str]:
+    if not row:
+        return set()
+    return {
+        canon(value)
+        for value in (row.get("supportedTypes") or [])
+        if canon(value) in {"movie", "tv", "anime"}
+    }
+
+
+def current_semantic_types(row: dict[str, Any] | None) -> tuple[set[str], str]:
+    canonical = canonical_semantic_types(row)
+    if canonical:
+        return canonical, "canonicalSupportedTypes"
+    # Current manifests are expected to be canonicalized, but retain a bounded
+    # compatibility fallback for providers that have not yet materialized the
+    # explicit field. This fallback may satisfy a floor; it never creates one.
+    return transport_types(row), "supportedTypes-current-fallback"
 
 
 def formats(row: dict[str, Any] | None) -> set[str]:
@@ -177,8 +206,13 @@ def main() -> int:
         missing_lanes = historical_lanes - current_lanes
 
         historical_types: dict[str, list[str]] = {}
+        historical_transport_types: dict[str, list[str]] = {}
+        historical_type_sources: dict[str, str] = {}
         for version in HISTORY:
-            values = semantic_types(manifests[version].get(pid))
+            manifest_row = manifests[version].get(pid)
+            historical_transport_types[version] = sorted(transport_types(manifest_row))
+            values = canonical_semantic_types(manifest_row)
+            source = "canonicalSupportedTypes" if values else "unproven-transport-only"
             if version == "5.21.0":
                 floor = fixture0_rows.get(pid) if isinstance(fixture0_rows, dict) else None
                 if isinstance(floor, dict):
@@ -192,11 +226,20 @@ def main() -> int:
                         for value in (floor.get("types") or [])
                         if canon(value) in {"movie", "tv", "anime"}
                     }
-                    values = explicit or legacy or values
+                    if explicit:
+                        values = explicit
+                        source = "5.21.0-fixture-semanticTypes"
+                    elif legacy:
+                        values = legacy
+                        source = "5.21.0-fixture-types"
             historical_types[version] = sorted(values)
+            historical_type_sources[version] = source
 
+        # Semantic floor uses normalized 5.21.0 evidence plus later *explicit*
+        # canonical declarations only. Bare historical supportedTypes are kept
+        # for diagnostics but can never create a blocking regression.
         type_floor = set().union(*(set(values) for values in historical_types.values()))
-        current_types = semantic_types(manifests["current"].get(pid))
+        current_types, current_type_source = current_semantic_types(manifests["current"].get(pid))
         lost_types = sorted(type_floor - current_types)
 
         historical_formats = set().union(
@@ -221,8 +264,11 @@ def main() -> int:
 
         contract = {
             "historicalSemanticTypes": historical_types,
+            "historicalSemanticTypeSources": historical_type_sources,
+            "historicalTransportTypes": historical_transport_types,
             "semanticTypeFloor": sorted(type_floor),
             "currentSemanticTypes": sorted(current_types),
+            "currentSemanticTypeSource": current_type_source,
             "lostSemanticTypes": lost_types,
             "historicalFormats": sorted(historical_formats),
             "currentFormats": sorted(current_formats),
@@ -270,6 +316,7 @@ def main() -> int:
         "history": list(HISTORY),
         "current": current_key,
         "crossVersionFallbackAllowed": False,
+        "historicalTransportTypesMayCreateSemanticFloor": False,
         "historicalGreenMayBecomeUnknownSilently": False,
         "knownVerifiedLaneMayDisappearWithoutCandidateProof": False,
         "semanticCapabilityLossAllowedSilently": False,
@@ -294,6 +341,7 @@ def main() -> int:
         "",
         "This section is generated from four exact states: **5.21.0 → 5.21.16 → 5.21.36 → current**.",
         "Historical evidence is never filled from a newer snapshot. A historical green that becomes unknown is explicit revalidation debt, not a silent pass.",
+        "Historical `supportedTypes` are transport/invocation compatibility only; only normalized or explicit canonical semantic declarations can create a semantic regression floor.",
         "",
         f"- Hard/contract regressions: **{len(set(hard))}** — " + (", ".join(f"`{x}`" for x in sorted(set(hard))) if hard else "none"),
         f"- Partial regressions: **{len(set(partial))}** — " + (", ".join(f"`{x}`" for x in sorted(set(partial))) if partial else "none"),
@@ -305,6 +353,7 @@ def main() -> int:
         "- A provider that was green in an exact historical snapshot cannot become `unknown` without being put on the revalidation list.",
         "- Every verified 5.21.36 lane becomes an explicit lane obligation until current/candidate proof supersedes it.",
         "- Semantic capability and historical HLS losses are contract regressions, independently of transient network health.",
+        "- Historical bare `supportedTypes` never create a semantic floor because old releases mixed semantic types and transport aliases.",
         "- The publication gate additionally unions the rolling accepted quick-yield baseline with these historical obligations, so future releases extend rather than reset the floor.",
         END,
         "",
