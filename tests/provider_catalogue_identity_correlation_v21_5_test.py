@@ -79,10 +79,10 @@ const seasonHtml = `
   </div>
 `;
 const out = {{
-  catalogue: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", true),
-  laterStep: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", false),
-  fallback: _spv205StrictProviderValues(fallbackHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", true),
-  season: _spv205StrictProviderValues(seasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv", true)
+  catalogue: _spv215CatalogueProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
+  laterStep: _spv205StrictProviderValues(correlatedHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
+  fallback: _spv215CatalogueProviderValues(fallbackHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv"),
+  season: _spv215CatalogueProviderValues(seasonHtml, "https://catalog.invalid/", {{title:"Alpha Show"}}, 1, "tv")
 }};
 process.stdout.write(JSON.stringify(out));
 '''
@@ -92,25 +92,22 @@ out = json.loads(proc.stdout)
 # Initial catalogue response: same-record title+onclick identity is authoritative.
 assert out["catalogue"]["id"] == "11111", out
 assert out["catalogue"]["slug"] == "11111-alpha-show-saison-1", out
-# Later response: historical response-wide id learning remains intact.
+# Later response: unchanged V20.5/V21.1 strict selector keeps response-wide id learning.
 assert out["laterStep"]["id"] == "22222", out
-# Initial response without a correlated row still gets the global fallback.
+# Initial response without a correlated row still gets the historical fallback.
 assert out["fallback"]["id"] == "fallback-77", out
 # Same-record season evidence selects the requested season.
 assert out["season"]["id"] == "44444", out
 assert out["season"]["slug"] == "44444-alpha-show-saison-1", out
 
-strict_start = base.index("function _spv205StrictProviderValues")
-strict_end = base.index("function _spv205HttpValues", strict_start)
-strict = base[strict_start:strict_end]
-assert "function _spv215CatalogueCardValues" in strict
-assert "catalogueIdentity" in strict
-assert "if ((catalogueIdentity !== true || !best.id) && bestId) best.id = bestId;" in strict
+assert "function _spv205StrictProviderValues(value, base, meta, season, mediaType)" in base
+assert "function _spv215CatalogueProviderValues(value, base, meta, season, mediaType)" in base
 
 resolver_start = base.index("async function _resolveProviderValuePlan")
 resolver_end = base.index("async function _resolveSearchRequestPlan", resolver_start)
 resolver = base[resolver_start:resolver_end]
-assert "mediaType,\n        true" in resolver
-assert "payload.base || stepUrl,\n            meta,\n            season,\n            mediaType,\n            true" not in resolver
+assert resolver.count("providerValues = _spv215CatalogueProviderValues(") == 1
+assert "const nextProviderValues = _spv205StrictProviderValues(" in resolver
+assert "const nextProviderValues = _spv215CatalogueProviderValues(" not in resolver
 
 print("provider catalogue identity correlation V21.5 tests passed")
