@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 workflow = (ROOT / '.github/workflows/provider-recognition-repair-v6.yml').read_text(encoding='utf-8')
 pipeline = (ROOT / 'scripts/run_provider_repair_pipeline_v6.py').read_text(encoding='utf-8')
 finalizer = (ROOT / 'scripts/finalize_provider_repair_disposition_v1.py').read_text(encoding='utf-8')
+strategy_contract = (ROOT / 'tests/provider_v3_strategy_plan_contract_test.py').read_text(encoding='utf-8')
 upgrade = (ROOT / 'scripts/upgrade_provider_repair_v6.py').read_text(encoding='utf-8')
 upgrade_v10 = (ROOT / 'scripts/upgrade_provider_base_runtime_v10.py').read_text(encoding='utf-8')
 upgrade_v14 = (ROOT / 'scripts/upgrade_provider_search_request_plan_v14.py').read_text(encoding='utf-8')
@@ -110,11 +111,20 @@ for marker in (
     '"provider-repair-disposition-v1"',
     'route_state = "off"',
     'route_state = "repair"',
+    'enabled = True',
     'manifest_row["enabled"] = enabled',
     '"evidenceDestructive": False',
     '"semanticTypeShrinkAllowed": False',
 ):
     assert marker in finalizer, marker
+
+for marker in (
+    'def off_evidence_ok(patch: dict) -> bool:',
+    'disposition.get("routeDataState") != "off"',
+    'quarantined or terminal in TERMINAL_DISABLED',
+    'off_audited.append(provider_id)',
+):
+    assert marker in strategy_contract, marker
 
 assert 'raw_providers' in portfolio_compare
 assert 'lost_raw' in portfolio_compare

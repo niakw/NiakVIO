@@ -113,6 +113,20 @@ def repair_evidence_ok(patch: dict) -> bool:
     return True
 
 
+def off_evidence_ok(patch: dict) -> bool:
+    disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
+    if disposition.get("authority") != "provider-repair-disposition-v1":
+        return False
+    if disposition.get("activationState") != "disabled" or disposition.get("routeDataState") != "off":
+        return False
+    reasons = disposition.get("reasonCodes") if isinstance(disposition.get("reasonCodes"), list) else []
+    if not reasons or disposition.get("completeCapabilityProof") is not False:
+        return False
+    terminal = str(disposition.get("terminalState") or "").strip().casefold()
+    quarantined = disposition.get("quarantined") is True
+    return quarantined or terminal in TERMINAL_DISABLED
+
+
 def main() -> int:
     run_child_test("provider_contract_recognizer_test.py")
     run_child_test("provider_v3_local_recognition_contract_test.py")
@@ -137,6 +151,7 @@ def main() -> int:
     quarantined: list[str] = []
     terminal_audited: list[str] = []
     repair_audited: list[str] = []
+    off_audited: list[str] = []
 
     for row, provider_id in zip(rows, ids):
         patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
@@ -229,6 +244,9 @@ def main() -> int:
             if not enabled and state in TERMINAL_DISABLED and terminal_evidence_ok(model, patch, state):
                 terminal_audited.append(provider_id)
                 continue
+            if not enabled and off_evidence_ok(patch):
+                off_audited.append(provider_id)
+                continue
             if not enabled and repair_evidence_ok(patch):
                 repair_audited.append(provider_id)
                 continue
@@ -240,11 +258,11 @@ def main() -> int:
     if failures:
         raise AssertionError("\n".join(failures))
 
-    executable_count = 96 - len(quarantined) - len(terminal_audited) - len(repair_audited)
+    executable_count = 96 - len(quarantined) - len(terminal_audited) - len(off_audited) - len(repair_audited)
     print(
         "PROVIDER_V3_STRATEGY_PLAN_OK "
         f"providers=96 executable={executable_count} quarantined={len(quarantined)} "
-        f"terminal_disabled={len(terminal_audited)} repair_disabled={len(repair_audited)} "
+        f"terminal_disabled={len(terminal_audited)} off_disabled={len(off_audited)} repair_disabled={len(repair_audited)} "
         f"strategies={json.dumps(counts, sort_keys=True)}"
     )
     return 0

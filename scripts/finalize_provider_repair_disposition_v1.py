@@ -191,10 +191,11 @@ def main() -> int:
         if complete and not quarantined:
             route_state = "on"
             reason_codes = ["all_declared_lanes_live_proven"]
-            # Do not override a deliberate disabled state owned elsewhere. This
-            # finalizer is authoritative for disabling broken providers, not for
-            # bypassing promotion/quarantine policy.
-            enabled = manifest_row.get("enabled") is not False
+            # Repair disposition is the activation authority for this candidate:
+            # complete live proof restores execution, while incomplete proof is
+            # disabled below as explicit repair/off debt. A stale historical
+            # enabled=false must not keep a fully recovered provider disabled.
+            enabled = True
         else:
             enabled = False
             if quarantined or terminal:
