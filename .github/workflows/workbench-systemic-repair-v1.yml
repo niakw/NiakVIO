@@ -7,6 +7,12 @@ on:
     paths:
       - '.github/workflows/workbench-systemic-repair-v1.yml'
       - '.github/triggers/provider-recognition-repair-v6.json'
+      - 'scripts/run_provider_repair_pipeline_v6.py'
+      - 'scripts/finalize_provider_repair_disposition_v1.py'
+      - 'scripts/check_provider_non_regression_v1.py'
+      - 'tests/provider_repair_pipeline_v6_contract_test.py'
+      - 'tests/provider_v3_strategy_plan_contract_test.py'
+      - 'tests/provider_non_regression_contract_test.py'
 
 permissions:
   contents: write
@@ -62,8 +68,13 @@ jobs:
           python tests/workflow_security_policy_test.py
           python tests/provider_v3_workflow_ownership_test.py
           python tests/provider_non_regression_contract_test.py
+          python tests/provider_repair_pipeline_v6_contract_test.py
           python tests/global_media_type_pre_network_gate_test.py
-          python -m py_compile scripts/run_provider_repair_pipeline_v6.py scripts/check_provider_non_regression_v1.py scripts/build_provider_history_matrix_v3.py
+          python -m py_compile \
+            scripts/run_provider_repair_pipeline_v6.py \
+            scripts/finalize_provider_repair_disposition_v1.py \
+            scripts/check_provider_non_regression_v1.py \
+            scripts/build_provider_history_matrix_v3.py
           python - <<'PY'
           import json
           from pathlib import Path
@@ -94,8 +105,10 @@ jobs:
           python scripts/build_provider_history_matrix_v3.py
           python scripts/check_provider_non_regression_v1.py
           test -s provider-v3-quick-yield.json
+          test -s automation/provider-repair-disposition.json
           python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref "$BASE_SHA"
           python tests/provider_521_capability_regression_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
           python tests/global_media_type_pre_network_gate_test.py
           python tests/global_media_type_resolution_test.py
           python tests/episodic_year_identity_regression_test.py
@@ -147,6 +160,7 @@ jobs:
             automation/provider-route-recovery-v6.json
             automation/provider-repair-yield-v6.json
             automation/provider-repair-v6-summary.json
+            automation/provider-repair-disposition.json
             automation/provider-repair-portfolio-baseline.json
             automation/provider-repair-portfolio-candidate.json
             automation/provider-repair-portfolio-retry.json
