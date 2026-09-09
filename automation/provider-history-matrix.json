@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "providerCount": 96,
   "currentManifestVersion": "5.21.37",
   "snapshotRefs": {
@@ -65,7 +65,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "4khdhub",
@@ -100,7 +123,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "4khdhubnew",
@@ -135,7 +181,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "allanime",
@@ -166,7 +235,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "allmovieland",
@@ -201,7 +293,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "allwish",
@@ -234,7 +349,30 @@
       "vfRegressionGuard": false,
       "classification": "HISTORICAL_GREEN_UNRETESTED",
       "historyVerdict": "5.21.36 census had at least one verified lane; no newer published-byte guard is recorded here.",
-      "action": "Retest published bytes before touching route/data."
+      "action": "Retest published bytes before touching route/data.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟢",
+          "label": "verified",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-untested",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "anidb",
@@ -266,7 +404,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "anikototv",
@@ -299,7 +460,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "anime-sama",
@@ -339,7 +523,30 @@
       "vfRegressionGuard": false,
       "classification": "PARTIAL_PROTECT",
       "historyVerdict": "Current TV field evidence is positive, but CI exposes at least one bad/zero lane.",
-      "action": "Freeze proven field lanes; LEARN only the bad lanes."
+      "action": "Freeze proven field lanes; LEARN only the bad lanes.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟡",
+          "label": "partial",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟡",
+          "label": "field-green/partial",
+          "source": "field+published-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "anime-ultime",
@@ -373,7 +580,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animekai",
@@ -403,7 +633,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animepahe",
@@ -438,7 +691,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animesalt",
@@ -474,7 +750,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animesama-co",
@@ -509,7 +808,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animesultra",
@@ -541,7 +863,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animetsu",
@@ -572,7 +917,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animevost-fr",
@@ -604,7 +972,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animevostfr",
@@ -636,7 +1027,30 @@
       "vfRegressionGuard": false,
       "classification": "CANDIDATE_GREEN",
       "historyVerdict": "A recent reconstruction candidate verified live, but this is not equivalent to current published-byte proof.",
-      "action": "Keep candidate; A/B against published bytes before promotion."
+      "action": "Keep candidate; A/B against published bytes before promotion.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟡",
+          "label": "candidate-green",
+          "source": "recent-reconstruction"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animeworld",
@@ -668,7 +1082,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animezey",
@@ -701,7 +1138,30 @@
       "vfRegressionGuard": false,
       "classification": "LEARN",
       "historyVerdict": "Residual repair debt is already handed to LEARN.",
-      "action": "Do not spend manual Repair loops unless a shared family fix is proven."
+      "action": "Do not spend manual Repair loops unless a shared family fix is proven.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "degraded",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟠",
+          "label": "learn-debt",
+          "source": "repair-handoff"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "animoflix",
@@ -733,7 +1193,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "anizone",
@@ -765,7 +1248,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "castle",
@@ -806,7 +1312,30 @@
       "vfRegressionGuard": false,
       "classification": "PROTECT",
       "historyVerdict": "Current published manifest has direct TV field evidence.",
-      "action": "Immutable live baseline; A/B required before replacement."
+      "action": "Immutable live baseline; A/B required before replacement.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟢",
+          "label": "verified",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟢",
+          "label": "field-verified",
+          "source": "current-TV-field"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "cineby",
@@ -839,7 +1368,30 @@
       "vfRegressionGuard": false,
       "classification": "HISTORICAL_GREEN_UNRETESTED",
       "historyVerdict": "5.21.36 census had at least one verified lane; no newer published-byte guard is recorded here.",
-      "action": "Retest published bytes before touching route/data."
+      "action": "Retest published bytes before touching route/data.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟢",
+          "label": "verified",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-untested",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "cinefreak",
@@ -872,7 +1424,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "cinemacity",
@@ -906,7 +1481,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "cinemm",
@@ -938,7 +1536,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "cinevibe",
@@ -968,7 +1589,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "coflix",
@@ -1002,7 +1646,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "ctgmovies",
@@ -1035,7 +1702,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "desiflix",
@@ -1076,7 +1766,30 @@
       "vfRegressionGuard": false,
       "classification": "PARTIAL_PROTECT",
       "historyVerdict": "Current TV field evidence is positive, but CI exposes at least one bad/zero lane.",
-      "action": "Freeze proven field lanes; LEARN only the bad lanes."
+      "action": "Freeze proven field lanes; LEARN only the bad lanes.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟡",
+          "label": "field-green/partial",
+          "source": "field+published-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "dooflix",
@@ -1109,7 +1822,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "dulourd",
@@ -1141,7 +1877,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "dvdplay",
@@ -1175,7 +1934,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "einthusan",
@@ -1210,7 +1992,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "fibwatch",
@@ -1245,7 +2050,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "flemmix",
@@ -1280,7 +2108,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "french-manga",
@@ -1312,7 +2163,30 @@
       "vfRegressionGuard": false,
       "classification": "CANDIDATE_GREEN",
       "historyVerdict": "A recent reconstruction candidate verified live, but this is not equivalent to current published-byte proof.",
-      "action": "Keep candidate; A/B against published bytes before promotion."
+      "action": "Keep candidate; A/B against published bytes before promotion.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟡",
+          "label": "candidate-green",
+          "source": "recent-reconstruction"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "frenchstream",
@@ -1346,7 +2220,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "fullanime",
@@ -1378,7 +2275,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "goatapi",
@@ -1408,7 +2328,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "goated",
@@ -1443,7 +2386,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "gramcinema",
@@ -1478,7 +2444,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "hdghartv",
@@ -1511,7 +2500,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "hdhub4u",
@@ -1543,7 +2555,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "hianime",
@@ -1574,7 +2609,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "hindmoviez",
@@ -1610,7 +2668,30 @@
       "vfRegressionGuard": false,
       "classification": "PARTIAL",
       "historyVerdict": "Current published bytes have at least one verified lane and at least one failing/contradictory lane.",
-      "action": "Preserve green lanes; LEARN failing lanes."
+      "action": "Preserve green lanes; LEARN failing lanes.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "degraded",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "degraded",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟡",
+          "label": "partial",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟡",
+          "label": "published-partial",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "kehflix",
@@ -1648,7 +2729,30 @@
       "vfRegressionGuard": true,
       "classification": "UPSTREAM_DRIFT",
       "historyVerdict": "5.21.36 was historically green, but replaying the old 5.21.36 bytes against today's backend also fails.",
-      "action": "P1 LEARN/upstream refresh; do not rewrite Core as a fake regression fix."
+      "action": "P1 LEARN/upstream refresh; do not rewrite Core as a fake regression fix.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟢",
+          "label": "verified",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": true
     },
     {
       "provider": "kisskh",
@@ -1683,7 +2787,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "kurage",
@@ -1713,7 +2840,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "mallumv",
@@ -1747,7 +2897,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "moonflix",
@@ -1780,7 +2953,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "movieblast",
@@ -1815,7 +3011,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "moviebox",
@@ -1850,7 +3069,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "movies4u",
@@ -1884,7 +3126,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "moviesdrive",
@@ -1917,7 +3182,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "movieshunt",
@@ -1950,7 +3238,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": true
     },
     {
       "provider": "moviesmod",
@@ -1982,7 +3293,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "movix",
@@ -2016,7 +3350,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "mugiwarastream",
@@ -2048,7 +3405,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "mycima",
@@ -2082,7 +3462,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "nakios",
@@ -2117,7 +3520,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "neko-sama",
@@ -2149,7 +3575,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "no-report",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "netmirror",
@@ -2184,7 +3633,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "onlykdrama",
@@ -2216,7 +3688,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "papadustream",
@@ -2251,7 +3746,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "peachify",
@@ -2287,7 +3805,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "persianstremio",
@@ -2332,7 +3873,30 @@
       "vfRegressionGuard": false,
       "classification": "PROTECT",
       "historyVerdict": "Current published manifest has direct TV field evidence.",
-      "action": "Immutable live baseline; A/B required before replacement."
+      "action": "Immutable live baseline; A/B required before replacement.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "degraded",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟢",
+          "label": "field-verified",
+          "source": "current-TV-field"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "playimdb",
@@ -2365,7 +3929,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "purstream",
@@ -2401,7 +3988,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": true
     },
     {
       "provider": "sekai",
@@ -2433,7 +4043,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "showbox",
@@ -2465,7 +4098,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "streamflix",
@@ -2498,7 +4154,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "streamzo",
@@ -2541,7 +4220,30 @@
       "vfRegressionGuard": true,
       "classification": "PARTIAL_PROTECT",
       "historyVerdict": "Movie is field/current green; TV wrong-content is reproduced by historical 5.21.36 bytes.",
-      "action": "P0 TV identity in LEARN; freeze movie path."
+      "action": "P0 TV identity in LEARN; freeze movie path.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟡",
+          "label": "partial",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🟡",
+          "label": "field-green/partial",
+          "source": "field+published-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "toflix",
@@ -2576,7 +4278,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "topcartoons",
@@ -2608,7 +4333,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "uhdmovies",
@@ -2643,7 +4391,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vegamovies",
@@ -2679,7 +4450,30 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "runtime-error",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "videasy",
@@ -2711,7 +4505,30 @@
       "vfRegressionGuard": false,
       "classification": "HISTORICAL_GREEN_UNRETESTED",
       "historyVerdict": "5.21.36 census had at least one verified lane; no newer published-byte guard is recorded here.",
-      "action": "Retest published bytes before touching route/data."
+      "action": "Retest published bytes before touching route/data.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟢",
+          "label": "healthy",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟡",
+          "label": "partial",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-untested",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vidfast",
@@ -2743,7 +4560,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vidlink",
@@ -2775,7 +4615,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vidlove",
@@ -2807,7 +4670,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vidnest",
@@ -2839,7 +4725,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vidnest-anime",
@@ -2871,7 +4780,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vidrock",
@@ -2903,7 +4835,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vidsrc",
@@ -2935,7 +4890,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vixsrc",
@@ -2968,7 +4946,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "voiranime",
@@ -3000,7 +5001,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "voiranime-homes",
@@ -3032,7 +5056,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "voiranime-rip",
@@ -3064,7 +5111,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🟡",
+          "label": "provider-unreachable/playable-host",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "vostfree",
@@ -3096,7 +5166,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "waveanime",
@@ -3128,7 +5221,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "wookafr",
@@ -3160,7 +5276,30 @@
       "vfRegressionGuard": false,
       "classification": "HISTORICAL_GREEN_UNRETESTED",
       "historyVerdict": "5.21.36 census had at least one verified lane; no newer published-byte guard is recorded here.",
-      "action": "Retest published bytes before touching route/data."
+      "action": "Retest published bytes before touching route/data.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "unavailable",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🟢",
+          "label": "verified",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-untested",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "xpass",
@@ -3193,7 +5332,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "yflix",
@@ -3225,7 +5387,30 @@
       "vfRegressionGuard": false,
       "classification": "UNVERIFIED",
       "historyVerdict": "No current field/published-byte positive is recorded.",
-      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts."
+      "action": "Continue portfolio sweep; route/data debt goes to LEARN after bounded attempts.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "⚪",
+          "label": "current-unverified",
+          "source": "no-current-proof"
+        }
+      },
+      "regressionWatch": false
     },
     {
       "provider": "zinkmovies",
@@ -3263,7 +5448,42 @@
       "vfRegressionGuard": false,
       "classification": "CURRENT_RED",
       "historyVerdict": "Current published-byte guard returns no verified requested lane.",
-      "action": "LEARN/diagnose; compare history before any Core change."
+      "action": "LEARN/diagnose; compare history before any Core change.",
+      "snapshotStates": {
+        "5.21.0": {
+          "icon": "🟡",
+          "label": "blocked",
+          "source": "5.21.0 availability-report"
+        },
+        "5.21.16": {
+          "icon": "⚪",
+          "label": "provider-unreachable/inconclusive",
+          "source": "5.21.16 availability-report"
+        },
+        "5.21.36": {
+          "icon": "🔴",
+          "label": "no-streams",
+          "source": "5.21.36 provider-v3-quick-yield"
+        },
+        "5.21.37": {
+          "icon": "🔴",
+          "label": "published-red",
+          "source": "published-byte-guard"
+        }
+      },
+      "regressionWatch": false
     }
+  ],
+  "stateLegend": {
+    "🟢": "live/health proof positive for that exact snapshot",
+    "🟡": "partial, degraded, blocked, wrong-content, or candidate-only",
+    "🟠": "repair debt handed to LEARN",
+    "🔴": "explicit failure/no-stream/current published guard red",
+    "⚪": "no reliable live proof or inconclusive snapshot"
+  },
+  "regressionWatchProviders": [
+    "kehflix",
+    "movieshunt",
+    "purstream"
   ]
 }
