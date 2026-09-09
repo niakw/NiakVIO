@@ -66,14 +66,24 @@ jobs:
           print('SEMANTIC_TRANSPORT_MANIFEST_OK providers=96')
           PY
 
-      - name: Commit corrected contract
+      - name: Commit corrected non-workflow contract
         shell: bash
         run: |
           set -euo pipefail
+          # GitHub Actions tokens cannot update workflow files without workflow
+          # permission. Keep those two reviewed edits for the authorized API
+          # transaction after this commit; everything else is committed here.
+          git checkout HEAD -- \
+            .github/workflows/provider-v3-reconstruct-all.yml \
+            .github/workflows/workbench-authoritative-repair-v1.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --check
+          if git diff --cached --name-only | grep -E '^\.github/workflows/'; then
+            echo 'Refusing workflow-file mutation from Actions token.' >&2
+            exit 1
+          fi
           git commit -m 'fix(types): restore canonical anime and tv-series transport contract'
           git fetch origin workbench/systemic-recovery-20260909
           test "$(git rev-parse ${{ github.sha }})" = "$(git rev-parse origin/workbench/systemic-recovery-20260909)"
