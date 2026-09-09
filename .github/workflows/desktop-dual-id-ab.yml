@@ -141,9 +141,15 @@ jobs:
 
           if os.environ.get("NIAKVIO_AB_MODE") == "dual":
               anchor = 'python3 "$REPOSITORY_HTTP_INSTRUMENTER" desktop "$DESKTOP_ROOT" || exit $?\n'
-              injection = anchor + '''python3 "${NIAKVIO}/scripts/augment_native_desktop_dual_id_context.py" \\
-  --source "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?\ngrep -q 'NIAKVIO_LAB_DUAL_ID_CONTEXT_V1' \\
-  "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?\necho "FIELD_NATIVE_DESKTOP_DUAL_ID_POST_AUDIT injected=true provider_bytes_mutated=false"\n'''
+              lines = [
+                  'python3 "${NIAKVIO}/scripts/augment_native_desktop_dual_id_context.py" \\',
+                  '  --source "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?',
+                  "grep -q 'NIAKVIO_LAB_DUAL_ID_CONTEXT_V1' \\",
+                  '  "${DESKTOP_ROOT}/composeApp/src/fullCommonMain/kotlin/com/nuvio/app/features/plugins/runtime/PluginRuntime.kt" || exit $?',
+                  'echo "FIELD_NATIVE_DESKTOP_DUAL_ID_POST_AUDIT injected=true provider_bytes_mutated=false"',
+                  '',
+              ]
+              injection = anchor + "\n".join(lines)
               if text.count(anchor) != 1:
                   raise SystemExit(f"post-audit dual-ID anchor count={text.count(anchor)}")
               text = text.replace(anchor, injection, 1)
