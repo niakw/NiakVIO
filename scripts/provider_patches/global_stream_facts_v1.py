@@ -4,6 +4,10 @@
 This layer is provider-agnostic and is applied to every reconstructed provider before
 presentation. It extracts only facts already present in a stream row/legacy text and
 never changes playback URL, headers or provider identity.
+
+Presentation may intentionally mirror/replace a few legacy UI fields for Nuvio clients.
+STREAM_FACTS therefore preserves the provider-owned originals first so presentation is
+lossless at the structured-data boundary.
 """
 from __future__ import annotations
 
@@ -28,6 +32,7 @@ function meaningful(v){var x=s(v);return x&&!/^(?:unknown|inconnue?|n\/?a|null|u
 function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
 function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
 /* NUVIO_STREAM_QUALITY_RECOVERY_V2 */
+/* NUVIO_STREAM_SOURCE_METADATA_PRESERVATION_V1 */
 function urlFacts(row){var u=s(row&&row.url);if(!u)return"";try{u=decodeURIComponent(u)}catch(_e){}return u.replace(/[?#&=/_\.\-]+/g," ")}
 function blob(row){return [row&&row.name,row&&row.title,row&&row.size,row&&row.description,row&&row.quality,row&&row.resolution,row&&row.height,row&&row.width,row&&row.label,row&&row.language,row&&row.codec,row&&row.audio,row&&row.sourceType,row&&row.releaseType,row&&row.format,row&&row.hdr,row&&row.videoTech,row&&row.bitDepth,row&&row.subtitles,row&&row.sourceLabel,row&&row.filename,urlFacts(row)].map(s).join(" ")}
 function qualityFromHeight(height){var h=Number(height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=450)return"480p";if(h>=300)return"360p";return""}
@@ -39,7 +44,8 @@ function duration(row,b){if(typeof row.duration==="number"&&Number.isFinite(row.
 function sourceType(row,b){if(meaningful(row.sourceType))return s(row.sourceType);var u=b.toUpperCase();if(/\b(?:BLU[- ]?RAY|BDRIP|BRRIP|BDREMUX)\b/.test(u))return"BLU-RAY";if(/\bWEB[- .]?DL\b/.test(u))return"WEB-DL";if(/\bWEB[- .]?RIP\b/.test(u))return"WEBRIP";if(/\bHDTV\b/.test(u))return"HDTV";if(/\bDVD[- .]?RIP\b/.test(u))return"DVD RIP";return""}
 function releaseType(row,b){if(meaningful(row.releaseType))return s(row.releaseType);return /\bREMUX\b/i.test(b)?"REMUX":""}
 function formatType(row){if(meaningful(row.format))return s(row.format);var u=s(row.url).split(/[?#]/)[0].toLowerCase();if(/\.m3u8$/.test(u))return"HLS";if(/\.mpd$/.test(u))return"DASH";if(/\.mp4$/.test(u))return"MP4";if(/\.mkv$/.test(u))return"MKV";return""}
-function facts(row){if(!row||typeof row!=="object")return row;var out=Object.assign({},row),b=blob(row),q=quality(row,b),l=language(row,b),c=codec(row,b),a=audio(row,b),d=duration(row,b),st=sourceType(row,b),rt=releaseType(row,b),f=formatType(row);if(q)out.quality=q;else if("quality" in out&&!meaningful(out.quality))delete out.quality;if(l)out.language=l;if(c)out.codec=c;if(a)out.audio=a;if(d)out.duration=d;if(st)out.sourceType=st;if(rt)out.releaseType=rt;if(f)out.format=f;return out}
+function preserveSource(row,out){if(meaningful(row.name)&&!meaningful(out.sourceName))out.sourceName=s(row.name).slice(0,512);if(meaningful(row.title)&&!meaningful(out.sourceTitle))out.sourceTitle=s(row.title).slice(0,512);if(meaningful(row.description)&&!meaningful(out.sourceDescription))out.sourceDescription=s(row.description).slice(0,4096);if(meaningful(row.size)&&!meaningful(out.sourceSize))out.sourceSize=s(row.size).slice(0,256);return out}
+function facts(row){if(!row||typeof row!=="object")return row;var out=preserveSource(row,Object.assign({},row)),b=blob(row),q=quality(row,b),l=language(row,b),c=codec(row,b),a=audio(row,b),d=duration(row,b),st=sourceType(row,b),rt=releaseType(row,b),f=formatType(row);if(q)out.quality=q;else if("quality" in out&&!meaningful(out.quality))delete out.quality;if(l)out.language=l;if(c)out.codec=c;if(a)out.audio=a;if(d)out.duration=d;if(st)out.sourceType=st;if(rt)out.releaseType=rt;if(f)out.format=f;return out}
 function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamFactsV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);return x?rebuild(v,x,x.list.map(facts)):v};wrap.__nuvioGlobalStreamFactsV1=true;o[k]=wrap;return true}
 var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
 })(typeof globalThis!=="undefined"?globalThis:this);
@@ -48,5 +54,5 @@ var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(modu
         text,
         MANAGED_FIX_ID,
         wrapper,
-        data={"revision": "global-facts-v1"},
+        data={"revision": "global-facts-v1-source-preservation-v2"},
     )
