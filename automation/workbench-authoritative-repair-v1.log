@@ -1,0 +1,452 @@
+FIELD_PROVIDER_REPAIR_SCOPE mode=repair catalogue=96 targeted=94 skipped_green=2 attempts=3 providers=anime-sama,purstream,flemmix,uhdmovies,movieshunt,zinkmovies,vegamovies,hindmoviez,4khdhub,desiflix,kehflix,4khdhubnew,allmovieland,anidb,anikototv,animekai,animepahe,animesalt,animesama-co,animesultra,animetsu,animevostfr,animezey,animoflix,anizone,cineby,cinemacity,cinemm,coflix,dooflix,dulourd,french-manga,goated,hdghartv,hdhub4u,hianime,kurage,movieblast,movies4u,moviesdrive,moviesmod,movix,mugiwarastream,nakios,neko-sama,papadustream,peachify,playimdb,sekai,streamflix,streamzo,toflix,videasy,vidfast,vidlink,vidrock,voiranime,voiranime-homes,voiranime-rip,vostfree,wookafr,yflix,1shows,allanime,allwish,anime-ultime,animevost-fr,animeworld,cinefreak,cinevibe,ctgmovies,dvdplay,einthusan,fibwatch,frenchstream,fullanime,goatapi,gramcinema,kisskh,mallumv,moonflix,moviebox,mycima,netmirror,onlykdrama,showbox,topcartoons,vidlove,vidnest,vidnest-anime,vidsrc,vixsrc,waveanime,xpass
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/audit_provider_quick_yield.py
+FIELD_PROVIDER_QUICK_YIELD providers=96 tasks=193 raw=10 playable=10 accepted_playable=9 verified=9 wrong_content=5
+FIELD_PROVIDER_QUICK_YIELD_PLAYABLE providers=allwish,anime-sama,castle,desiflix,hindmoviez,neko-sama,persianstremio,streamzo,videasy,wookafr
+FIELD_PROVIDER_QUICK_YIELD_ACCEPTED_PLAYABLE providers=allwish,anime-sama,castle,desiflix,hindmoviez,persianstremio,streamzo,videasy,wookafr
+FIELD_PROVIDER_QUICK_YIELD_VERIFIED providers=allwish,anime-sama,castle,desiflix,hindmoviez,persianstremio,streamzo,videasy,wookafr
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_network_zero_result tasks=72 providers=37
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_network_http_error tasks=68 providers=34
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=gate_runtime_plan_missing tasks=18 providers=10
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_returned_streams tasks=13 providers=9
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_network_exception tasks=12 providers=7
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_returned_wrong_content tasks=5 providers=5
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_zero_before_provider_network tasks=5 providers=3
+FIELD_PROVIDER_QUICK_YIELD_TYPE type=movie tasks=82 raw=9 playable=9 accepted_playable=6 verified=7 wrong_content=3
+FIELD_PROVIDER_QUICK_YIELD_TYPE type=tv tasks=71 raw=8 playable=8 accepted_playable=6 verified=6 wrong_content=2
+FIELD_PROVIDER_QUICK_YIELD_TYPE type=anime tasks=40 raw=1 playable=1 accepted_playable=1 verified=1 wrong_content=0
+FIELD_PROVIDER_REPAIR_PORTFOLIO file=provider-repair-portfolio-baseline.json raw=10 playable=10 verified=9 wrong=5
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/prepatch_identity_cleanup_shared_owner_v1.py
+IDENTITY_CLEANUP_SHARED_OWNER_PREPATCH_OK revision=cross-client-shared-tmdb-owner-zero-episodic-year-v11
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/apply_core_identity_ownership_cleanup.py
+CORE_IDENTITY_OWNERSHIP_CLEANUP_OK episodic_year_influence=0 already_current=true
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_worker_route_proof_v1.py
+PROVIDER_WORKER_ROUTE_PROOF_V2_OK changed=true
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_base_runtime_v5.py
+PROVIDER_BASE_RUNTIME_CURRENT_OK changed=false v5=1 v6=1 v7=1 v8=1 v9=1 external_ids=1 traversal_eligibility=1 nested_priority=1 source_plan_first=1 api_recipe_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1 identity_policy=core_stream_identity_v1 episodic_year_checks=0 movie_year_identity=core-owned unknown_stream_quality_projection=removed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_base_route_requests_v1.py
+PROVIDER_BASE_ROUTE_REQUEST_SPEC_V1_OK changed=false data_owned=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_route_authority_v5.py
+PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5_OK changed=true static_candidates_only=1 proof_v5_runtime_only=1 api_recipe_field_filtered=1 catalogue_preflight_year_required=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_route_recovery_request_specs_v1.py
+ROUTE_RECOVERY_REQUEST_SPEC_V1_OK changed=false
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_v3_source_plan_v5.py
+PROVIDER_V3_SOURCE_PLAN_V5_LOCAL_OK markers=4 externalProviderRepositories=0 network=0 fixtureSelectionChanged=false typeRouteGateChanged=false batchRoutesChanged=false batchRoutesV2Changed=true routeSafetyChanged=false kehflixTerminalChanged=false signedPlayerChanged=false
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_repair_v6.py
+PROVIDER_REPAIR_PORTFOLIO_V6_OK changed=true colon_search=1 body_search=1 terminal_post=1 causal_terminal=1 metadata_helper_guard=1 specific_route_precedence=1 provider_base_v10=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_repair_v7.py
+PROVIDER_REPAIR_V7_OK changed=true typed_resolver_classifier=1 prior_response_dependency_rejected=1 terminal_positive_required=1 pinned_worker_packages=1 blocked_builtins_preserved=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_repair_v8.py
+PROVIDER_REPAIR_V8_OK changed=true typed_zero_route_rejected=1 typed_positive_terminal_required=1 typed_identity_tmdb_direct=1 search_multihop_unchanged=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_text_body_request_v9.py
+PROVIDER_TEXT_BODY_REQUEST_V9_OK changed=true bounded_text=1024 secret_shapes_rejected=1 proof_substitution_required=1 opaque_static_text_rejected=1 replay=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_text_body_request_v9_1.py
+PROVIDER_TEXT_BODY_REQUEST_V9_1_OK changed=true legacy_double_residue=0 text_branch_single_owner=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_source_plan_v10.py
+PROVIDER_SOURCE_PLAN_V10_OK changed=true proof_search_base=1 runtime_domain_replacements=explicit-only recipe_domain_rewrite=1 partial_recipe_fallback=1 season_scoring=1 navigation_noise_guard=1 domain_authority=v10.1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_external_identity_route_v11_1.py
+PROVIDER_EXTERNAL_IDENTITY_ROUTE_V11_1_OK changed=true redundant_anchor_removed=1 helper_routes_evidence_only=1 imdb_hint=1 causal_helper_hints=1 imdb_search_query=1 generic_imdb_id_reclassified=1 provider_id_separation=1 literal_imdb_fail_closed=1 imdb_placeholder=1 proof_detail_base=1 source_plan_external_id=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_source_plan_v12.py
+PROVIDER_SOURCE_PLAN_V12_OK changed=true exact_title_distance=1 media_shape_ranking=1 file_resolver_crawl=1 direct_media_proof_required=1 provider_specific_hosts=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_route_plan_v13_2.py
+PROVIDER_ROUTE_PLAN_V13_2_OK changed=true regex_dependency=stdlib-re shared_placeholder_maps=2
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_search_request_plan_v14.py
+PROVIDER_SEARCH_REQUEST_PLAN_V14_OK changed=true structured_search_request=1 proof_host_precedence=1 flat_route_boundary_preserved=1 provider_specific_rules=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_search_request_plan_v14_1.py
+PROVIDER_SEARCH_REQUEST_PLAN_V14_1_OK changed=true resolver_host_authority_only=1 search_detail_mapping_preserved=1 label_aware_catalogue_identity=1 movie_year_conflict_rejected=1 provider_specific_rules=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_source_plan_v15.py
+PROVIDER_SOURCE_PLAN_V15_OK changed=true explicit_player_attrs=1 current_search_origin=1 noisy_data_attrs_rejected=1 third_party_short_embed=1 catalogue_article_identity=1 provider_specific_rules=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_route_retry_v1.py
+PROVIDER_ROUTE_RETRY_V1_OK changed=true max_attempts=4 default_attempts=3 deterministic_errors_retried=0 package_resolution_owner=provider_worker_module_resolution_v1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_base_runtime_v11.py
+PROVIDER_BASE_RUNTIME_V11_OK changed=true typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 stream_containers_v12=1 execution_authority_v16=1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_search_detail_bridge_v17.py
+PROVIDER_SEARCH_DETAIL_BRIDGE_V17_OK changed=true current_origin_preserved=1 canonical_detail_resolver=1 player_crawl_fallback=1 provider_specific_rules=0
+PROVIDER_CORRELATED_VALUE_PLAN_V18_OK changed=true provider_value_dataflow=1 semantic_positive_only=1 exact_proof_base=1 all_html_current_origin=1 provider_specific_rules=0
+PROVIDER_CORRELATED_VALUE_PLAN_V18_1_OK changed=true scored_json_slug_identity=1 deterministic_best_row=1 bounded_charset=1 html_slug_inference=0 provider_specific_rules=0
+PROVIDER_CORRELATED_VALUE_AUTHORITY_V18_2_OK changed=true provider_value_first=1 recipe_second=1 search_third=1 family_after=1 provider_specific_rules=0
+PROVIDER_CORRELATED_VALUE_JSON_TEXT_V18_4_OK changed=true json_text_first=1 strict_v18_identity_reused=1 html_fallback=1 bounded_payload=1 sanitized_stage_trace=1 provider_specific_rules=0
+PROVIDER_CORRELATED_VALUE_SEMANTIC_LANE_V18_5_OK changed=true canonical_anime_tv_transport=1 generic_tv_to_anime=0 shared_plan_gate=1 provider_specific_rules=0
+PROVIDER_PACKED_PLAYER_V18_6_OK changed=true packer_decode=1 eval_execution=0 bounded_blocks=8 bounded_dictionary=10000 provider_specific_rules=0
+PROVIDER_PLAYER_ROUTE_VARIANT_V18_7_OK changed=true same_origin=1 opaque_id_preserved=1 crawl_depth_cost=0 provider_specific_rules=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_provider_composite_request_template_v21_8.py
+PROVIDER_COMPOSITE_REQUEST_TEMPLATE_V21_8_OK changed=true dotted_title=1 movie_year=1 episodic_sxxexx=1 near_miss_fail_closed=1 redacted_fields_fail_closed=1 provider_specific_rules=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/upgrade_stream_sanitizer_v7_selection.py
+STREAM_SANITIZER_V7_SELECTION_OK overrides_changed=true hashes_changed=true
+FIELD_PROVIDER_REPAIR_CMD node --check scripts/provider_worker.cjs
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_route_proof_authority_test.py
+provider route proof authority tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_repair_v6_recipe_regression_test.py
+provider repair v6 recipe regressions passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_repair_merge_typed_recipe_test.py
+provider repair merged typed-recipe precedence regression passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_repair_v7_typed_resolver_test.py
+provider repair v7 typed resolver classification passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_repair_v8_partial_typed_resolver_test.py
+provider repair v8 partial typed resolver regression passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_text_body_request_v9_test.py
+provider text body request v9 tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_source_plan_v10_regression_test.py
+provider source plan v10 regression passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_external_identity_route_v11_test.py
+provider external identity route v11 tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_source_plan_v12_regression_test.py
+provider source plan v12 regression passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_route_plan_v13_regression_test.py
+provider route plan v13 regression passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_search_request_plan_v14_contract_test.py
+provider search request plan V14 generic contract passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_search_request_plan_v14_1_contract_test.py
+provider search request plan v14.1 contract passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_source_plan_v15_contract_test.py
+provider source plan v15 contract passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_execution_authority_v16_contract_test.py
+provider execution authority V16 contract passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_composite_request_template_v21_8_test.py
+provider composite request template V21.8 tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/stream_output_correlated_player_fallback_v7_test.py
+stream output correlated player fallback V7 tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/global_identity_policy_ownership_test.py
+global identity policy ownership tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_latest_request_cancellation_test.py
+latest provider request cancellation test passed ["https://provider.example/1/one","https://provider.example/2/one"]
+provider latest-request cancellation contract passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_native_abort_ignorant_cancellation_test.py
+abort-ignorant native fetch cancellation passed 1 ["https://provider.example/1/one","https://provider.example/2/one"]
+provider native abort-ignorant cancellation contract passed on media fast-gate v31
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_quick_yield_fixture_selection_test.py
+provider quick-yield fixture selection passed: anime-film movie lanes use JJK0; general movie lanes use Interstellar
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/recover_provider_routes_from_upstreams.py --workers 12 --timeout 55 --attempts 3 --out automation/provider-route-recovery-v6-targeted.json --provider anime-sama --provider purstream --provider flemmix --provider uhdmovies --provider movieshunt --provider zinkmovies --provider vegamovies --provider hindmoviez --provider 4khdhub --provider desiflix --provider kehflix --provider 4khdhubnew --provider allmovieland --provider anidb --provider anikototv --provider animekai --provider animepahe --provider animesalt --provider animesama-co --provider animesultra --provider animetsu --provider animevostfr --provider animezey --provider animoflix --provider anizone --provider cineby --provider cinemacity --provider cinemm --provider coflix --provider dooflix --provider dulourd --provider french-manga --provider goated --provider hdghartv --provider hdhub4u --provider hianime --provider kurage --provider movieblast --provider movies4u --provider moviesdrive --provider moviesmod --provider movix --provider mugiwarastream --provider nakios --provider neko-sama --provider papadustream --provider peachify --provider playimdb --provider sekai --provider streamflix --provider streamzo --provider toflix --provider videasy --provider vidfast --provider vidlink --provider vidrock --provider voiranime --provider voiranime-homes --provider voiranime-rip --provider vostfree --provider wookafr --provider yflix --provider 1shows --provider allanime --provider allwish --provider anime-ultime --provider animevost-fr --provider animeworld --provider cinefreak --provider cinevibe --provider ctgmovies --provider dvdplay --provider einthusan --provider fibwatch --provider frenchstream --provider fullanime --provider goatapi --provider gramcinema --provider kisskh --provider mallumv --provider moonflix --provider moviebox --provider mycima --provider netmirror --provider onlykdrama --provider showbox --provider topcartoons --provider vidlove --provider vidnest --provider vidnest-anime --provider vidsrc --provider vixsrc --provider waveanime --provider xpass
+FIELD_ROUTE_RECOVERY_PROVIDER provider=uhdmovies source=aio status=proven routes=24
+FIELD_ROUTE_RECOVERY_PROVIDER provider=purstream source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=4khdhubnew source=niakvio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=zinkmovies fixture=interstellar attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=4khdhub source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=anidb source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=anikototv source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=movieshunt source=aio status=proven routes=7
+FIELD_ROUTE_RECOVERY_PROVIDER provider=allmovieland source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=zinkmovies fixture=interstellar attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=flemmix source=gowaru status=proven routes=1
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animetsu source=aio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=zinkmovies fixture=breaking-bad-s01e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=zinkmovies fixture=breaking-bad-s01e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animesalt source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=animezey fixture=interstellar attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=animezey fixture=interstellar attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=zinkmovies fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=kehflix source=niakvio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=zinkmovies fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=animezey fixture=breaking-bad-s01e01 attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animesama-co source=gowaru status=proven routes=5
+FIELD_ROUTE_RECOVERY_PROVIDER provider=zinkmovies source=aio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=animezey fixture=breaking-bad-s01e01 attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animekai source=aio status=proven routes=8
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vegamovies source=aio status=proven routes=22
+FIELD_ROUTE_RECOVERY_PROVIDER provider=anime-sama source=gowaru status=proven routes=9
+FIELD_ROUTE_RECOVERY_PROVIDER provider=cinemm source=niakvio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=animezey fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=cinemacity source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=animezey fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=dooflix fixture=interstellar attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=dooflix fixture=interstellar attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animezey source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=cineby source=aio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=dooflix fixture=breaking-bad-s01e01 attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=dooflix fixture=breaking-bad-s01e01 attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=goated source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=hdghartv source=aio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=dooflix fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=dooflix fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=dooflix source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animoflix source=gowaru status=proven routes=4
+FIELD_ROUTE_RECOVERY_PROVIDER provider=hdhub4u source=aio status=proven routes=1
+FIELD_ROUTE_RECOVERY_PROVIDER provider=kurage source=aio status=proven routes=2
+FIELD_ROUTE_RECOVERY_PROVIDER provider=french-manga source=gowaru status=proven routes=8
+FIELD_ROUTE_RECOVERY_PROVIDER provider=movieblast source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=desiflix source=aio status=proven routes=2
+FIELD_ROUTE_RECOVERY_PROVIDER provider=moviesmod source=yoru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animevostfr source=gowaru status=proven routes=11
+FIELD_ROUTE_RECOVERY_PROVIDER provider=moviesdrive source=aio status=proven routes=2
+FIELD_ROUTE_RECOVERY_PROVIDER provider=nakios source=gowaru status=proven routes=1
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animesultra source=gowaru status=proven routes=2
+FIELD_ROUTE_RECOVERY_RETRY provider=dulourd fixture=jujutsu-kaisen-s01e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=peachify source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=playimdb source=aio status=proven routes=2
+FIELD_ROUTE_RECOVERY_PROVIDER provider=papadustream source=gowaru status=proven routes=5
+FIELD_ROUTE_RECOVERY_PROVIDER provider=movix source=gowaru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=movies4u source=aio status=proven routes=16
+FIELD_ROUTE_RECOVERY_PROVIDER provider=sekai source=gowaru status=proven routes=4
+FIELD_ROUTE_RECOVERY_PROVIDER provider=mugiwarastream source=gowaru status=proven routes=10
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vidfast source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=hindmoviez source=aio status=proven routes=31
+FIELD_ROUTE_RECOVERY_PROVIDER provider=streamzo source=gowaru status=proven routes=5
+FIELD_ROUTE_RECOVERY_PROVIDER provider=toflix source=niakvio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=dulourd fixture=jujutsu-kaisen-s01e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vidrock source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vidlink source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=voiranime-homes source=gowaru status=proven routes=8
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vostfree source=gowaru status=proven routes=2
+FIELD_ROUTE_RECOVERY_RETRY provider=animepahe fixture=jujutsu-kaisen-s01e01 attempt=2/3 reason=timeout
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=interstellar attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=voiranime-rip source=gowaru status=proven routes=5
+FIELD_ROUTE_RECOVERY_PROVIDER provider=yflix source=yoru status=proven routes=5
+FIELD_ROUTE_RECOVERY_PROVIDER provider=allanime source=aio status=proven routes=4
+FIELD_ROUTE_RECOVERY_PROVIDER provider=1shows source=aio status=proven routes=6
+FIELD_ROUTE_RECOVERY_PROVIDER provider=allwish source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=anizone fixture=jujutsu-kaisen-s01e01 attempt=2/3 reason=timeout
+FIELD_ROUTE_RECOVERY_RETRY provider=neko-sama fixture=breaking-bad-s01e01 attempt=2/3 reason=worker_no_result
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animevost-fr source=gowaru status=proven routes=18
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animeworld source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=hianime fixture=jujutsu-kaisen-s01e01 attempt=2/3 reason=timeout
+FIELD_ROUTE_RECOVERY_PROVIDER provider=cinefreak source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=cinevibe source=yoru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=videasy source=aio status=proven routes=1
+FIELD_ROUTE_RECOVERY_RETRY provider=dulourd fixture=breaking-bad-s01e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=anime-ultime source=gowaru status=proven routes=2
+FIELD_ROUTE_RECOVERY_PROVIDER provider=wookafr source=gowaru status=proven routes=6
+FIELD_ROUTE_RECOVERY_PROVIDER provider=einthusan source=aio status=proven routes=18
+FIELD_ROUTE_RECOVERY_PROVIDER provider=fibwatch source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=dvdplay source=yoru status=proven routes=12
+FIELD_ROUTE_RECOVERY_PROVIDER provider=goatapi source=niakvio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=gramcinema source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=kisskh source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=mallumv source=yoru status=proven routes=1
+FIELD_ROUTE_RECOVERY_PROVIDER provider=moonflix source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=ctgmovies fixture=interstellar attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=moviebox fixture=interstellar attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=moviebox fixture=interstellar attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=moviebox fixture=breaking-bad-s01e01 attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=voiranime fixture=interstellar attempt=2/3 reason=worker_no_result
+FIELD_ROUTE_RECOVERY_RETRY provider=moviebox fixture=breaking-bad-s01e01 attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=streamflix source=yoru status=proven routes=2
+FIELD_ROUTE_RECOVERY_RETRY provider=moviebox fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=http-429
+FIELD_ROUTE_RECOVERY_RETRY provider=moviebox fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=http-429
+FIELD_ROUTE_RECOVERY_PROVIDER provider=moviebox source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=dulourd fixture=breaking-bad-s01e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=interstellar attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=mycima source=yoru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=netmirror source=aio status=proven routes=3
+FIELD_ROUTE_RECOVERY_PROVIDER provider=frenchstream source=gowaru status=proven routes=13
+FIELD_ROUTE_RECOVERY_PROVIDER provider=onlykdrama source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=showbox source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vidnest source=yoru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vidlove source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vidnest-anime source=yoru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=neko-sama fixture=breaking-bad-s01e01 attempt=3/3 reason=worker_no_result
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vixsrc source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=vidsrc source=aio status=proven routes=3
+FIELD_ROUTE_RECOVERY_PROVIDER provider=topcartoons source=aio status=proven routes=2
+FIELD_ROUTE_RECOVERY_RETRY provider=animepahe fixture=jujutsu-kaisen-s01e01 attempt=3/3 reason=timeout
+FIELD_ROUTE_RECOVERY_PROVIDER provider=xpass source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=waveanime source=gowaru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=ctgmovies fixture=interstellar attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=anizone fixture=jujutsu-kaisen-s01e01 attempt=3/3 reason=timeout
+FIELD_ROUTE_RECOVERY_RETRY provider=hianime fixture=jujutsu-kaisen-s01e01 attempt=3/3 reason=timeout
+FIELD_ROUTE_RECOVERY_RETRY provider=dulourd fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=voiranime fixture=interstellar attempt=3/3 reason=worker_no_result
+FIELD_ROUTE_RECOVERY_RETRY provider=dulourd fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=ctgmovies fixture=breaking-bad-s01e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=dulourd source=gowaru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=ctgmovies fixture=breaking-bad-s01e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=hianime source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=neko-sama fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=worker_no_result
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=breaking-bad-s01e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=fullanime source=gowaru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=animepahe source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=voiranime source=gowaru status=proven routes=8
+FIELD_ROUTE_RECOVERY_PROVIDER provider=anizone source=yoru status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_RETRY provider=ctgmovies fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=neko-sama fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=worker_no_result
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=breaking-bad-s01e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=ctgmovies fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=ctgmovies source=aio status=no-proven-route routes=0
+FIELD_ROUTE_RECOVERY_PROVIDER provider=neko-sama source=gowaru status=proven routes=2
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=house-of-the-dragon-s03e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=house-of-the-dragon-s03e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=jujutsu-kaisen-s01e01 attempt=2/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_RETRY provider=coflix fixture=jujutsu-kaisen-s01e01 attempt=3/3 reason=fetch failed
+FIELD_ROUTE_RECOVERY_PROVIDER provider=coflix source=gowaru status=proven routes=8
+FIELD_ROUTE_RECOVERY_V5 providers=94 upstream=89 native=5 providers_proven=51 routes=318 recipes=8
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/merge_provider_repair_report_v6.py --baseline automation/provider-route-recovery-v5.json --targeted automation/provider-route-recovery-v6-targeted.json --output automation/provider-route-recovery-v6.json
+PROVIDER_REPAIR_REPORT_V6_MERGED targeted=94 preserved=2 proven=54 routes=321 recipes=8 typed_direct_sanitized=0 route_bootstrap=1 route_lkg_updated=24 route_lkg_retained=2 route_lkg_augmented=2
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/apply_provider_route_recovery_report.py automation/provider-route-recovery-v6.json
+FIELD_PROVIDER_LIVE_REQUEST_BRIDGE_V19 providers=0 plans=0 sibling=0 reviewed=0 static_without_live_positive=0 provider_specific_rules=0
+FIELD_ROUTE_RECOVERY_REPORT_APPLIED providers=96 evidence_routes=321 recipes=8 v19_bridged_providers=0 v19_bridged_plans=0 normal_entry_target=3 runtime_route_max=70 runtime_optimized=0 runtime_exceptions=25 structured_target=3 structured_max=2 structured_merged_fields=0 structured_exceptions=0 authority_preference_target=3 authority_candidates_max=70 authority_preferred_max=3 multi_authority=66
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/enforce_route_proof_manifest_policy_v1.py --report automation/provider-route-recovery-v6.json --manifest manifest.json --overrides provider-overrides.json
+ROUTE_PROOF_MANIFEST_POLICY_V1_OK movix_routes=0 movix_enabled=false state=disabled-no-proven-route health_action=published-disabled-no-proven-route
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/materialize_provider_base_v3_store.py
+PROVIDER_V3_EXECUTION_ROUTE_SANITIZE_OK providers=96 touched=8 removed=9 repaired=0 family_promoted=0 reasons=asset:2,empty:7
+PROVIDER_BASE_RUNTIME_CURRENT_OK changed=false v5=1 v6=1 v7=1 v8=1 v9=1 external_ids=1 traversal_eligibility=1 nested_priority=1 source_plan_first=1 api_recipe_first=1 alias_origin=1 dle_runtime=1 safe_html_text=1 identity_policy=core_stream_identity_v1 episodic_year_checks=0 movie_year_identity=core-owned unknown_stream_quality_projection=removed
+PROVIDER_BASE_RUNTIME_V10_OK changed=false external_bare_root_rejected=1 direct_media_preserved=1
+FIELD_PROVIDER_BASE_V3_STORE providers=96 unique_paths=96 reconstruction_required=0 provider_js_seed=false upstream_js_seed=false runtime_reader=v10 route_sanitizer=v1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/materialize_provider_v3_all.py
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=1 total=96 provider=anime-sama
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=2 total=96 provider=purstream
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=3 total=96 provider=flemmix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=4 total=96 provider=uhdmovies
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=5 total=96 provider=movieshunt
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=6 total=96 provider=zinkmovies
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=7 total=96 provider=vegamovies
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=8 total=96 provider=hindmoviez
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=9 total=96 provider=4khdhub
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=10 total=96 provider=persianstremio
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=11 total=96 provider=desiflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=12 total=96 provider=kehflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=13 total=96 provider=4khdhubnew
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=14 total=96 provider=allmovieland
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=15 total=96 provider=anidb
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=16 total=96 provider=anikototv
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=17 total=96 provider=animekai
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=18 total=96 provider=animepahe
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=19 total=96 provider=animesalt
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=20 total=96 provider=animesama-co
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=21 total=96 provider=animesultra
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=22 total=96 provider=animetsu
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=23 total=96 provider=animevostfr
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=24 total=96 provider=animezey
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=25 total=96 provider=animoflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=26 total=96 provider=anizone
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=27 total=96 provider=castle
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=28 total=96 provider=cineby
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=29 total=96 provider=cinemacity
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=30 total=96 provider=cinemm
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=31 total=96 provider=coflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=32 total=96 provider=dooflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=33 total=96 provider=dulourd
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=34 total=96 provider=french-manga
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=35 total=96 provider=goated
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=36 total=96 provider=hdghartv
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=37 total=96 provider=hdhub4u
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=38 total=96 provider=hianime
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=39 total=96 provider=kurage
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=40 total=96 provider=movieblast
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=41 total=96 provider=movies4u
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=42 total=96 provider=moviesdrive
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=43 total=96 provider=moviesmod
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=44 total=96 provider=movix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=45 total=96 provider=mugiwarastream
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=46 total=96 provider=nakios
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=47 total=96 provider=neko-sama
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=48 total=96 provider=papadustream
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=49 total=96 provider=peachify
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=50 total=96 provider=playimdb
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=51 total=96 provider=sekai
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=52 total=96 provider=streamflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=53 total=96 provider=streamzo
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=54 total=96 provider=toflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=55 total=96 provider=videasy
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=56 total=96 provider=vidfast
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=57 total=96 provider=vidlink
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=58 total=96 provider=vidrock
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=59 total=96 provider=voiranime
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=60 total=96 provider=voiranime-homes
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=61 total=96 provider=voiranime-rip
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=62 total=96 provider=vostfree
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=63 total=96 provider=wookafr
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=64 total=96 provider=yflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=65 total=96 provider=1shows
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=66 total=96 provider=allanime
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=67 total=96 provider=allwish
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=68 total=96 provider=anime-ultime
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=69 total=96 provider=animevost-fr
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=70 total=96 provider=animeworld
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=71 total=96 provider=cinefreak
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=72 total=96 provider=cinevibe
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=73 total=96 provider=ctgmovies
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=74 total=96 provider=dvdplay
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=75 total=96 provider=einthusan
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=76 total=96 provider=fibwatch
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=77 total=96 provider=frenchstream
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=78 total=96 provider=fullanime
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=79 total=96 provider=goatapi
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=80 total=96 provider=gramcinema
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=81 total=96 provider=kisskh
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=82 total=96 provider=mallumv
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=83 total=96 provider=moonflix
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=84 total=96 provider=moviebox
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=85 total=96 provider=mycima
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=86 total=96 provider=netmirror
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=87 total=96 provider=onlykdrama
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=88 total=96 provider=showbox
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=89 total=96 provider=topcartoons
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=90 total=96 provider=vidlove
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=91 total=96 provider=vidnest
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=92 total=96 provider=vidnest-anime
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=93 total=96 provider=vidsrc
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=94 total=96 provider=vixsrc
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=95 total=96 provider=waveanime
+FIELD_PROVIDER_V3_MATERIALIZE_BEGIN index=96 total=96 provider=xpass
+FIELD_PROVIDER_V3_ALL_MATERIALIZED providers=96 generation=60a5c74cfc431777 devices=tv,mobile,desktop
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+Generated manifest projections: VF=29, general_no_anime=73, vf_no_anime=17.
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/validate_published_provider_config.py --expected 96
+final published Provider CONFIG tests passed providers=96
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_js_lego_ownership_test.py
+Provider JS Lego ownership tests passed: providers=96 identity_owner=CORE.STREAM_IDENTITY.V1
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/global_stream_output_guard_test.py
+provider capability strategy tests passed
+global stream output guard passed: providers=96 managed_terminal_sanitizer=96 startfix_v3=true fail_closed_v6=true v7_extension_accepted=true
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/episodic_identity_runtime_test.py
+episodic identity runtime tests passed: provider=kehflix year=ignored S/E=authoritative movie_year=authoritative
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/episodic_year_identity_regression_test.py
+episodic zero-year identity regression tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/global_media_type_pre_network_gate_test.py
+global media fast gate passed: movie<->tv and explicit anime mismatches reject before provider/TMDB network
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/global_media_type_resolution_test.py
+global media resolver: runtime-only TMDB credentials, launch gate, canonical anime + tv/movie transport, and deferred verification passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/native_dual_id_identity_test.py
+native dual IMDb/TMDB identity tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/global_stream_presentation_test.py
+global stream presentation V20 client-projection name-mirror tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/global_stream_presentation_pipeline_test.py
+global stream facts/presentation/branding/sanitizer order and client projection tests passed
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/audit_provider_quick_yield.py
+FIELD_PROVIDER_QUICK_YIELD providers=96 tasks=193 raw=19 playable=18 accepted_playable=16 verified=17 wrong_content=6
+FIELD_PROVIDER_QUICK_YIELD_PLAYABLE providers=allwish,anime-sama,animekai,animesama-co,animevostfr,castle,desiflix,french-manga,frenchstream,movies4u,movieshunt,neko-sama,papadustream,persianstremio,playimdb,streamzo,videasy,voiranime-homes
+FIELD_PROVIDER_QUICK_YIELD_ACCEPTED_PLAYABLE providers=allwish,anime-sama,animekai,animesama-co,animevostfr,castle,desiflix,french-manga,frenchstream,movies4u,movieshunt,papadustream,playimdb,streamzo,videasy,voiranime-homes
+FIELD_PROVIDER_QUICK_YIELD_VERIFIED providers=allwish,anime-sama,animekai,animesama-co,animevostfr,castle,desiflix,french-manga,frenchstream,movies4u,movieshunt,papadustream,persianstremio,playimdb,streamzo,videasy,voiranime-homes
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_network_http_error tasks=83 providers=43
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_network_zero_result tasks=46 providers=28
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=gate_runtime_plan_missing tasks=20 providers=12
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_returned_streams tasks=20 providers=17
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_network_exception tasks=12 providers=8
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_returned_wrong_content tasks=7 providers=6
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=timeout tasks=3 providers=2
+FIELD_PROVIDER_QUICK_YIELD_STAGE stage=provider_zero_before_provider_network tasks=2 providers=2
+FIELD_PROVIDER_QUICK_YIELD_TYPE type=movie tasks=82 raw=11 playable=11 accepted_playable=7 verified=9 wrong_content=4
+FIELD_PROVIDER_QUICK_YIELD_TYPE type=tv tasks=71 raw=9 playable=8 accepted_playable=5 verified=6 wrong_content=3
+FIELD_PROVIDER_QUICK_YIELD_TYPE type=anime tasks=40 raw=7 playable=7 accepted_playable=7 verified=7 wrong_content=0
+FIELD_PROVIDER_REPAIR_PORTFOLIO file=provider-repair-portfolio-candidate.json raw=19 playable=18 verified=17 wrong=6
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/finalize_provider_repair_disposition_v1.py --recovery automation/provider-route-recovery-v6-targeted.json --quick-yield provider-v3-quick-yield.json
+PROVIDER_REPAIR_DISPOSITION_V1 providers=96 on=6 repair=74 off=16 disabled=90 active_broken=0
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+Generated manifest projections: VF=29, general_no_anime=73, vf_no_anime=17.
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python scripts/validate_published_provider_config.py --expected 96
+final published Provider CONFIG tests passed providers=96
+FIELD_PROVIDER_REPAIR_CMD /opt/hostedtoolcache/Python/3.12.14/x64/bin/python tests/provider_v3_strategy_plan_contract_test.py
+PROVIDER_V3_STRATEGY_PLAN_OK providers=96 executable=82 quarantined=5 terminal_disabled=0 off_disabled=2 repair_disabled=7 strategies={"api_stream_resolver": 11, "direct_media": 15, "html_scraper": 35, "iframe_player": 1, "mixed_embed_resolver": 28, "official_domain_hub": 1, "quarantined": 5}
+YIELD_BASELINE raw=8 playable=8 verified=7 wrong=4
+YIELD_CANDIDATE raw=19 playable=18 verified=17 wrong=4
+YIELD_LOST_RAW=
+YIELD_LOST_PLAYABLE=
+YIELD_LOST_VERIFIED=
+YIELD_NEW_WRONG_CONTENT=
+YIELD_PRESERVATION_OK
+YIELD_BASELINE raw=8 playable=8 verified=7 wrong=4
+YIELD_CANDIDATE raw=19 playable=18 verified=17 wrong=4
+YIELD_LOST_RAW=
+YIELD_LOST_PLAYABLE=
+YIELD_LOST_VERIFIED=
+YIELD_NEW_WRONG_CONTENT=
+YIELD_PRESERVATION_OK
+PROVIDER_REPAIR_YIELD_V8 targeted=94 tasks=189 raw=17 playable=16 accepted_playable=15 verified=15 wrong_content=4 upstream_positive=36 preserved=18 contradicted=2 lost=18
+PROVIDER_REPAIR_YIELD_V8_PLAYABLE providers=allwish,anime-sama,animekai,animesama-co,animevostfr,desiflix,french-manga,frenchstream,movies4u,movieshunt,neko-sama,papadustream,playimdb,streamzo,videasy,voiranime-homes
+PROVIDER_REPAIR_YIELD_V8_ACCEPTED_PLAYABLE providers=allwish,anime-sama,animekai,animesama-co,animevostfr,desiflix,french-manga,frenchstream,movies4u,movieshunt,papadustream,playimdb,streamzo,videasy,voiranime-homes
+PROVIDER_REPAIR_YIELD_V8_IDENTITY provider=anime-sama type=movie reasons=expected_title_alias,fixture_duration_mismatch
+PROVIDER_REPAIR_YIELD_V8_IDENTITY provider=desiflix type=movie reasons=expected_title_alias,fixture_duration_mismatch
+PROVIDER_REPAIR_YIELD_V8_IDENTITY provider=neko-sama type=tv reasons=fixture_duration_mismatch,season_episode_match
+PROVIDER_REPAIR_YIELD_V8_IDENTITY provider=streamzo type=tv reasons=fixture_duration_mismatch,season_episode_match
+PROVIDER_REPAIR_YIELD_V8_CONTRADICTED pairs=desiflix:movie,streamzo:tv
+PROVIDER_REPAIR_YIELD_V8_LOST pairs=cineby:movie,cineby:tv,desiflix:movie,frenchstream:tv,hindmoviez:movie,hindmoviez:tv,movieblast:movie,mugiwarastream:anime,neko-sama:anime,streamflix:movie,streamflix:tv,streamzo:tv,topcartoons:movie,topcartoons:tv,vegamovies:movie,vegamovies:tv,voiranime:anime,voiranime-rip:anime
+UPSTREAM_POSITIVE_ACCOUNTING lost=18 repair_debt=16 off_debt=2 active_loss=0 unaccounted=0
+FIELD_PROVIDER_REPAIR_V6_FINAL mode=repair revision=v21.8 targeted=94 targeted_proven=51 playable=16 verified=15 disabled=90 lost=18 upstream_gate=true portfolio_gate=true preservation_gate=true active_broken=false
