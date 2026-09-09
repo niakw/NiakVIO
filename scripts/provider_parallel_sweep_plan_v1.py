@@ -6,9 +6,13 @@ Selection authority:
 - provider-repair-skip.json contains only already accepted green providers;
 - provider-sweep-recent-v1.json prevents immediate duplicate automatic work but
   does not declare anything healthy;
-- provider-fast-trigger.json may provide `explicitProviders` for a one-off
-  revalidation. Explicit requests override the recent anti-duplication set, but
-  never the accepted-green skip set.
+- provider-repair-learn-handoff-v1.json marks residual repair work owned by LEARN;
+- provider-fast-trigger.json may provide explicitProviders for one-off repair
+  revalidation and regressionGuardProviders for deliberate green revalidation.
+
+Explicit repair requests still respect the accepted-green skip set. Regression
+guards intentionally bypass it: their purpose is to prove that known-good
+providers have not regressed after shared runtime changes.
 
 The planner partitions selected providers into bounded batches. It performs no
 network work and never changes provider state.
@@ -25,6 +29,7 @@ MANIFEST = ROOT / "manifest.json"
 SKIP = ROOT / "automation" / "provider-repair-skip.json"
 RECENT = ROOT / "automation" / "provider-sweep-recent-v1.json"
 TRIGGER = ROOT / "automation" / "provider-fast-trigger.json"
+LEARN_HANDOFF = ROOT / "automation" / "provider-repair-learn-handoff-v1.json"
 EXPECTED = 96
 
 
@@ -37,6 +42,17 @@ def load(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"{path}: object required")
     return value
+
+
+def unique(values: list[str]) -> list[str]:
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in values:
+        provider = cid(raw)
+        if provider and provider not in seen:
+            out.append(provider)
+            seen.add(provider)
+    return out
 
 
 def catalogue() -> list[str]:
@@ -52,23 +68,32 @@ def plan(limit: int, batch_size: int) -> dict[str, Any]:
     skip_cfg = load(SKIP)
     recent_cfg = load(RECENT)
     trigger_cfg = load(TRIGGER) if TRIGGER.exists() else {}
+    handoff_cfg = load(LEARN_HANDOFF) if LEARN_HANDOFF.exists() else {}
+
     green = {cid(value) for value in (skip_cfg.get("providers") or {}).keys() if cid(value)}
     recent = {cid(value) for value in recent_cfg.get("recentlySwept") or [] if cid(value)}
-    explicit = []
-    for raw in trigger_cfg.get("explicitProviders") or []:
-        provider = cid(raw)
-        if provider and provider not in explicit:
-            explicit.append(provider)
-    unknown = [provider for provider in explicit if provider not in ids]
-    if unknown:
-        raise SystemExit("unknown explicit providers: " + ",".join(unknown))
+    learn_owned = {cid(value) for value in (handoff_cfg.get("providers") or {}).keys() if cid(value)}
+    explicit = unique(list(trigger_cfg.get("explicitProviders") or []))
+    guards = unique(list(trigger_cfg.get("regressionGuardProviders") or []))
 
-    if explicit:
-        selected = [provider for provider in explicit if provider not in green]
-        selection_mode = "explicit-revalidation"
-        eligible = [provider for provider in ids if provider not in green]
+    unknown = [provider for provider in unique([*explicit, *guards]) if provider not in ids]
+    if unknown:
+        raise SystemExit("unknown explicit/guard providers: " + ",".join(unknown))
+
+    if explicit or guards:
+        selected = unique([
+            *[provider for provider in explicit if provider not in green],
+            *guards,
+        ])
+        selection_mode = "explicit-revalidation-with-regression-guards" if guards else "explicit-revalidation"
+        eligible = [provider for provider in ids if provider not in green and provider not in learn_owned]
     else:
-        eligible = [provider for provider in ids if provider not in green and provider not in recent]
+        eligible = [
+            provider for provider in ids
+            if provider not in green
+            and provider not in recent
+            and provider not in learn_owned
+        ]
         selected = eligible[:limit]
         selection_mode = "automatic-next-wave"
 
@@ -85,11 +110,14 @@ def plan(limit: int, batch_size: int) -> dict[str, Any]:
         ]
     }
     return {
-        "schemaVersion": 2,
+        "schemaVersion": 3,
         "selectionMode": selection_mode,
         "catalogueCount": len(ids),
         "greenSkippedCount": len(green),
         "recentSkippedCount": len(recent),
+        "learnHandoffSkippedCount": len(learn_owned),
+        "learnHandoffProviders": sorted(learn_owned),
+        "regressionGuardProviders": guards,
         "eligibleCount": len(eligible),
         "selectedCount": len(selected),
         "batchSize": batch_size,

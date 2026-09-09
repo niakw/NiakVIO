@@ -1,0 +1,70 @@
+name: Provider Repair to LEARN Handoff
+
+on:
+  workflow_run:
+    workflows:
+      - "Provider Repair Parallel Batch Proof"
+    types:
+      - completed
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  handoff:
+    name: persist-sanitized-learn-handoff
+    if: github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: "3.12"
+      - name: Security policy preflight
+        run: python tests/workflow_security_policy_test.py
+      - name: Download completed repair proof artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          pattern: provider-repair-*-${{ github.event.workflow_run.id }}
+          path: repair-proof-artifacts
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+      - name: Merge sanitized unresolved providers into LEARN ownership
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob globstar
+          reports=(repair-proof-artifacts/**/automation/provider-repair-fast-summary.json)
+          if [ ${#reports[@]} -eq 0 ]; then
+            echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF skipped=1 reason=no-summary"
+            exit 0
+          fi
+          args=()
+          for report in "${reports[@]}"; do
+            args+=(--summary "$report")
+          done
+          python scripts/provider_repair_learn_handoff_v1.py \
+            --registry automation/provider-repair-learn-handoff-v1.json \
+            --run-id "${{ github.event.workflow_run.id }}" \
+            "${args[@]}"
+          python tests/provider_repair_learn_handoff_v1_test.py
+      - name: Commit sanitized LEARN handoff only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add automation/provider-repair-learn-handoff-v1.json
+          if git diff --cached --quiet; then
+            echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF_PERSIST changed=false"
+            exit 0
+          fi
+          git commit -m 'data(learn): persist repair handoff'
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "FIELD_PROVIDER_REPAIR_LEARN_HANDOFF_PERSIST changed=true"
