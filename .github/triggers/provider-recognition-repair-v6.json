@@ -1,15 +1,11 @@
 {
-  "schemaVersion": 2,
-  "requestedAt": "2026-09-07T22:58:00+02:00",
-  "retry": 7,
+  "schemaVersion": 3,
+  "requestedAt": "2026-09-09T15:20:00+02:00",
+  "retry": 8,
   "mode": "repair",
-  "scope": "targeted-v13.2-typed-recipe-sanitizer-with-whole-portfolio-preservation",
-  "targetProviders": [
-    "animekai",
-    "movies4u",
-    "papadustream",
-    "frenchstream"
-  ],
-  "goal": "validate inherited typed recipe sanitizer, preserve every baseline-positive provider, block new wrong-content, and retain V13.2 target gains",
-  "branch": "workbench/route-recognition-v6"
+  "scope": "full-unresolved-portfolio-with-four-version-and-live-lane-preservation",
+  "targetProviders": [],
+  "goal": "Run the one canonical Repair V6 engine across every repair-eligible provider (96 catalogue minus exact full-capability skip set), recover missing runtime plans/routes and historical regressions, preserve every current live-positive lane, then require a fresh real 96-provider quick-yield plus the exact 5.21.0 -> 5.21.16 -> 5.21.36 -> current non-regression gate before any workbench candidate commit.",
+  "branch": "workbench/systemic-recovery-20260909",
+  "publication": false
 }
