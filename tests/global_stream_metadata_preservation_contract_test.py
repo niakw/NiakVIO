@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -9,8 +10,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
-
-from apply_provider_overrides import apply_overrides  # noqa: E402
 
 materialization = json.loads((ROOT / "provider-v3-materialization.json").read_text(encoding="utf-8"))
 rows = [row for row in materialization.get("providers") or [] if isinstance(row, dict)]
@@ -27,7 +26,9 @@ for row in rows:
     missing = required_core - set(row.get("fixIds") or [])
     assert not missing, (row.get("provider"), sorted(missing))
 
-facts_source = (ROOT / "scripts/provider_patches/global_stream_facts_v1.py").read_text(encoding="utf-8")
+facts_path = ROOT / "scripts/provider_patches/global_stream_facts_v1.py"
+presentation_path = ROOT / "scripts/provider_patches/global_stream_presentation_v1.py"
+facts_source = facts_path.read_text(encoding="utf-8")
 for token in (
     "NUVIO_STREAM_SOURCE_METADATA_PRESERVATION_V2",
     'keep(out,"sourceName",row.name,512)',
@@ -45,9 +46,17 @@ for token in (
 ):
     assert token in facts_source, token
 
+# Presentation's standalone compatibility path composes STREAM_FACTS +
+# STREAM_IDENTITY before presentation. Use it here to test the lossless metadata
+# boundary without fabricating a clean-v3 sanitizer ownership layout. Sanitizer
+# transport/header ownership is exercised separately by dedicated tests in the
+# same CI workflow.
+spec = importlib.util.spec_from_file_location("global_stream_presentation_contract", presentation_path)
+assert spec is not None and spec.loader is not None
+presentation = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(presentation)
+
 source = r'''
-/* BEGIN NIAKVIO_PROVIDER */
-/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
 module.exports={getStreams:async()=>[{
   name:'Provider Original Name',
   title:'Provider Original Title',
@@ -67,24 +76,19 @@ module.exports={getStreams:async()=>[{
   headers:{Referer:'https://provider.example/watch/42','User-Agent':'Neutral-UA'},
   opaqueProviderField:'keep-me'
 }]};
-/* END NIAKVIO_PROVIDER */
 '''
-patched, _records = apply_overrides(
-    "generic-core-test",
-    source.encode("utf-8"),
-    phase="discovery",
-)
+patched = presentation.apply(source, context={"provider_id": "generic-core-test", "profile": None})
 
 with tempfile.TemporaryDirectory(prefix="niakvio-metadata-preservation-") as raw:
     root = Path(raw)
     provider = root / "provider.cjs"
     runner = root / "runner.cjs"
-    provider.write_bytes(patched)
+    provider.write_text(patched, encoding="utf-8")
     runner.write_text(
         """
 global.TMDB_API_KEY='0123456789abcdef0123456789abcdef';
 global.__native_fetch=function(){};
-global.fetch=async function(url,options){
+global.fetch=async function(url){
   url=String(url);
   if(url.includes('api.themoviedb.org/3/movie/157336')){
     return {ok:true,status:200,url:url,headers:{get:function(){return 'application/json';}},json:async()=>({
@@ -92,9 +96,6 @@ global.fetch=async function(url,options){
       genres:[{id:18,name:'Drama'}],original_language:'en',production_countries:[{iso_3166_1:'US'}],
       keywords:{keywords:[]},release_dates:{results:[]}
     }),text:async()=>''};
-  }
-  if(url.includes('media.example/master.m3u8')){
-    return {ok:true,status:200,url:url,headers:{get:function(name){return String(name).toLowerCase()==='content-type'?'application/vnd.apple.mpegurl':null;}},text:async()=> '#EXTM3U\\n#EXT-X-TARGETDURATION:120\\n#EXTINF:120,\\nhttps://media.example/seg.ts\\n#EXT-X-ENDLIST'};
   }
   throw new Error('unexpected fetch '+url);
 };
@@ -142,5 +143,10 @@ assert row.get("url") == "https://media.example/master.m3u8", row
 assert row.get("headers", {}).get("Referer") == "https://provider.example/watch/42", row
 assert row.get("headers", {}).get("User-Agent") == "Neutral-UA", row
 assert row.get("opaqueProviderField") == "keep-me", row
+
+# Legacy client compatibility may mirror presentation into size, but original
+# provider size remains queryable in sourceSize and cannot be destroyed.
+assert row.get("size") == row.get("description"), row
+assert row.get("sourceSize") == "9.8 GB", row
 
 print("global stream metadata preservation contract passed for shared 96-provider Core")
