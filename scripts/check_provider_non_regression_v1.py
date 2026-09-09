@@ -1,0 +1,310 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import subprocess
+from pathlib import Path
+from typing import Any
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_MATRIX = ROOT / "automation" / "provider-history-matrix.json"
+DEFAULT_CANDIDATE = ROOT / "provider-v3-quick-yield.json"
+DEFAULT_OUT = ROOT / "automation" / "provider-non-regression-gate.json"
+EXPECTED = 96
+HISTORY = ("5.21.0", "5.21.16", "5.21.36")
+GREEN = "🟢"
+
+
+def canon(value: Any) -> str:
+    return str(value or "").strip().casefold()
+
+
+def load(path: Path) -> dict[str, Any]:
+    value = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError(path)
+    return value
+
+
+def git_text(ref: str, path: str) -> str:
+    proc = subprocess.run(
+        ["git", "show", f"{ref}:{path}"], cwd=ROOT, text=True,
+        capture_output=True, check=False,
+    )
+    return proc.stdout if proc.returncode == 0 else ""
+
+
+def git_json(ref: str, path: str) -> dict[str, Any]:
+    raw = git_text(ref, path)
+    if not raw:
+        return {}
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError:
+        return {}
+    return value if isinstance(value, dict) else {}
+
+
+def verified_lanes_from_quick(data: dict[str, Any]) -> dict[str, set[str]]:
+    out: dict[str, set[str]] = {}
+    for row in data.get("rows") or []:
+        if not isinstance(row, dict) or canon(row.get("status")) != "playable_verified":
+            continue
+        pid = canon(row.get("provider_id") or row.get("provider"))
+        lane = canon(row.get("semantic_type") or row.get("media_type") or row.get("type"))
+        if pid and lane:
+            out.setdefault(pid, set()).add(lane)
+    return out
+
+
+def provider_ids(matrix: dict[str, Any]) -> list[str]:
+    return sorted({canon(row.get("provider")) for row in matrix.get("providers") or [] if canon(row.get("provider"))})
+
+
+def matrix_rows(matrix: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        canon(row.get("provider")): row
+        for row in matrix.get("providers") or []
+        if isinstance(row, dict) and canon(row.get("provider"))
+    }
+
+
+def diff_paths(base_ref: str) -> list[str]:
+    proc = subprocess.run(
+        ["git", "diff", "--name-only", f"{base_ref}...HEAD"],
+        cwd=ROOT, text=True, capture_output=True, check=False,
+    )
+    if proc.returncode != 0:
+        proc = subprocess.run(
+            ["git", "diff", "--name-only", base_ref, "HEAD"],
+            cwd=ROOT, text=True, capture_output=True, check=False,
+        )
+    if proc.returncode != 0:
+        raise SystemExit(f"cannot derive changed paths against {base_ref}: {proc.stderr.strip()}")
+    return sorted({line.strip() for line in proc.stdout.splitlines() if line.strip()})
+
+
+GLOBAL_PREFIXES = (
+    "core/",
+    "lego/",
+    "runtime/",
+    "provider-base/",
+    "provider_base/",
+    "scripts/core_",
+    "scripts/build_provider_",
+    "scripts/materialize_provider_",
+    "scripts/audit_provider_quick_yield.py",
+    "scripts/resolve_",
+    "scripts/run_provider_repair_pipeline",
+    "automation/provider-v3-architecture.json",
+    "automation/provider-type-policy.json",
+    ".github/workflows/",
+)
+GLOBAL_EXACT = {
+    "manifest.json",
+    "provider-v3-quick-yield.json",
+    "package.json",
+    "package-lock.json",
+}
+
+
+def changed_scope(matrix: dict[str, Any], base_ref: str, force_all: bool) -> tuple[list[str], list[str], bool]:
+    ids = provider_ids(matrix)
+    if force_all:
+        return ids, ["--all"], True
+
+    changed = diff_paths(base_ref)
+    shared = any(path in GLOBAL_EXACT or path.startswith(GLOBAL_PREFIXES) for path in changed)
+    if shared:
+        return ids, changed, True
+
+    impacted: set[str] = set()
+    known = set(ids)
+    for path in changed:
+        p = Path(path)
+        stem = canon(p.stem)
+        if stem in known:
+            impacted.add(stem)
+        if path.startswith("providers/") and stem in known:
+            impacted.add(stem)
+        if path.startswith("providers-v3/") and stem in known:
+            impacted.add(stem)
+    return sorted(impacted), changed, False
+
+
+def ledger_failures(matrix: dict[str, Any]) -> list[str]:
+    failures: list[str] = []
+    if int(matrix.get("schemaVersion") or 0) != 3:
+        failures.append("matrix schemaVersion must be 3")
+    if int(matrix.get("providerCount") or 0) != EXPECTED:
+        failures.append(f"matrix providerCount must be {EXPECTED}")
+
+    policy = matrix.get("nonRegressionPolicy") or {}
+    if list(policy.get("history") or []) != list(HISTORY):
+        failures.append("matrix history must be exact 5.21.0 -> 5.21.16 -> 5.21.36")
+    if policy.get("crossVersionFallbackAllowed") is not False:
+        failures.append("cross-version evidence fallback must be forbidden")
+    if policy.get("historicalGreenMayBecomeUnknownSilently") is not False:
+        failures.append("historical green -> unknown may not pass silently")
+
+    rows = matrix_rows(matrix)
+    if len(rows) != EXPECTED:
+        failures.append(f"matrix must contain {EXPECTED} unique provider rows, got {len(rows)}")
+
+    for pid, row in rows.items():
+        states = row.get("snapshotStates") or {}
+        historical_green = any((states.get(version) or {}).get("icon") == GREEN for version in HISTORY)
+        status = str(row.get("nonRegressionStatus") or "")
+        required = bool(row.get("publicationProofRequired"))
+        if historical_green and status not in {"PRESERVED"} and not required:
+            failures.append(f"{pid}: historical positive provider lost proof without publicationProofRequired")
+        drift = row.get("contractDrift")
+        if not isinstance(drift, dict):
+            failures.append(f"{pid}: missing contractDrift ledger")
+    return failures
+
+
+def candidate_gate(
+    matrix: dict[str, Any], candidate: dict[str, Any], base_ref: str,
+    force_all: bool,
+) -> dict[str, Any]:
+    rows = matrix_rows(matrix)
+    scope, changed, global_scope = changed_scope(matrix, base_ref, force_all)
+    candidate_lanes = verified_lanes_from_quick(candidate)
+    baseline_lanes = verified_lanes_from_quick(git_json(base_ref, "provider-v3-quick-yield.json"))
+
+    obligations: dict[str, Any] = {}
+    failures: list[dict[str, Any]] = []
+
+    for pid in scope:
+        row = rows[pid]
+        states = row.get("snapshotStates") or {}
+        historical_positive_versions = [
+            version for version in HISTORY if (states.get(version) or {}).get("icon") == GREEN
+        ]
+        historical_positive = bool(historical_positive_versions)
+        historical_specific = {canon(x) for x in row.get("historicalVerifiedLanes") or [] if canon(x)}
+        rolling = set(baseline_lanes.get(pid) or set())
+        required_lanes = historical_specific | rolling
+        got = set(candidate_lanes.get(pid) or set())
+        missing = sorted(required_lanes - got)
+
+        contract = row.get("contractDrift") or {}
+        lost_types = sorted({canon(x) for x in contract.get("lostSemanticTypes") or [] if canon(x)})
+        hls_lost = bool(contract.get("hlsM3u8Lost"))
+
+        require_any = historical_positive and not required_lanes
+        any_missing = require_any and not got
+        provider_failures: list[str] = []
+        if missing:
+            provider_failures.append("missing_verified_lanes")
+        if any_missing:
+            provider_failures.append("historical_positive_without_candidate_verified_lane")
+        if lost_types:
+            provider_failures.append("semantic_capability_regression")
+        if hls_lost:
+            provider_failures.append("historical_hls_m3u8_regression")
+
+        obligations[pid] = {
+            "historicalPositiveVersions": historical_positive_versions,
+            "historicalVerifiedLanes": sorted(historical_specific),
+            "rollingAcceptedLanes": sorted(rolling),
+            "requiredVerifiedLanes": sorted(required_lanes),
+            "candidateVerifiedLanes": sorted(got),
+            "missingVerifiedLanes": missing,
+            "requireAnyVerifiedLane": require_any,
+            "lostSemanticTypes": lost_types,
+            "hlsM3u8Lost": hls_lost,
+            "externalDriftRecorded": bool(row.get("externalDriftAccepted")),
+            "passed": not provider_failures,
+            "failures": provider_failures,
+        }
+        if provider_failures:
+            failures.append({"provider": pid, "failures": provider_failures})
+
+    return {
+        "schemaVersion": 1,
+        "mode": "candidate",
+        "baseRef": base_ref,
+        "scopeAllProviders": global_scope,
+        "scopeProviderCount": len(scope),
+        "scopeProviders": scope,
+        "changedPaths": changed,
+        "rollingBaselineSource": f"{base_ref}:provider-v3-quick-yield.json",
+        "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
+        "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
+        "obligations": obligations,
+        "failureCount": len(failures),
+        "failures": failures,
+        "passed": not failures,
+    }
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="NiakVIO provider four-version non-regression gate")
+    parser.add_argument("--matrix", default=str(DEFAULT_MATRIX))
+    parser.add_argument("--candidate", default=str(DEFAULT_CANDIDATE))
+    parser.add_argument("--output", default=str(DEFAULT_OUT))
+    parser.add_argument("--base-ref", default="HEAD^")
+    parser.add_argument("--candidate-gate", action="store_true")
+    parser.add_argument("--all", action="store_true", dest="force_all")
+    args = parser.parse_args()
+
+    matrix_path = Path(args.matrix)
+    if not matrix_path.is_absolute():
+        matrix_path = ROOT / matrix_path
+    out_path = Path(args.output)
+    if not out_path.is_absolute():
+        out_path = ROOT / out_path
+
+    matrix = load(matrix_path)
+    failures = ledger_failures(matrix)
+    if failures:
+        result = {
+            "schemaVersion": 1,
+            "mode": "ledger",
+            "passed": False,
+            "failureCount": len(failures),
+            "failures": failures,
+        }
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(f"PROVIDER_NON_REGRESSION_LEDGER passed=false failures={len(failures)}")
+        return 1
+
+    if not args.candidate_gate:
+        result = {
+            "schemaVersion": 1,
+            "mode": "ledger",
+            "passed": True,
+            "failureCount": 0,
+            "failures": [],
+            "providerCount": int(matrix.get("providerCount") or 0),
+            "history": list(HISTORY),
+            "crossVersionFallbackAllowed": False,
+        }
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print("PROVIDER_NON_REGRESSION_LEDGER passed=true failures=0")
+        return 0
+
+    candidate_path = Path(args.candidate)
+    if not candidate_path.is_absolute():
+        candidate_path = ROOT / candidate_path
+    candidate = load(candidate_path)
+    result = candidate_gate(matrix, candidate, args.base_ref, args.force_all)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(
+        "PROVIDER_NON_REGRESSION_CANDIDATE "
+        f"passed={str(result['passed']).lower()} scope={result['scopeProviderCount']} "
+        f"failures={result['failureCount']} base={args.base_ref}"
+    )
+    if result["failures"]:
+        print("FAILED_PROVIDERS " + ",".join(item["provider"] for item in result["failures"]))
+    return 0 if result["passed"] else 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
