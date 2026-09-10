@@ -63,7 +63,9 @@ jobs:
   analyze:
     name: "CodeQL · ${{ matrix.language }}"
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # The generated 96-provider JS corpus legitimately exceeds the former 45-minute
+    # analysis ceiling. Keep the full security-extended query suite and allow it to finish.
+    timeout-minutes: 90
 
     strategy:
       fail-fast: false
