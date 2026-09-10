@@ -1,7 +1,16 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
-from scripts.build_provider_history_matrix_v3 import normalize_historical_semantic_types
+import importlib.util
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+MODULE_PATH = ROOT / "scripts" / "build_provider_history_matrix_v3.py"
+spec = importlib.util.spec_from_file_location("niakvio_provider_history_v3", MODULE_PATH)
+assert spec is not None and spec.loader is not None
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+normalize_historical_semantic_types = module.normalize_historical_semantic_types
 
 
 def norm(values: set[str], current: set[str], transport: set[str], verified: set[str]) -> tuple[set[str], bool]:
