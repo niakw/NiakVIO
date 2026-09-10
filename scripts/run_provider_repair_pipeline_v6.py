@@ -24,6 +24,7 @@ PORTFOLIO_CANDIDATE = ROOT / "automation" / "provider-repair-portfolio-candidate
 PORTFOLIO_RETRY = ROOT / "automation" / "provider-repair-portfolio-retry.json"
 PORTFOLIO_LOSSES = ROOT / "automation" / "provider-repair-portfolio-losses.json"
 DISPOSITION = ROOT / "automation" / "provider-repair-disposition.json"
+RUNTIME_PLAN_LKG = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / "provider-runtime-plan-lkg-v1.json"
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -155,6 +156,7 @@ def main() -> int:
         "tests/provider_native_abort_ignorant_cancellation_test.py",
         "tests/provider_quick_yield_fixture_selection_test.py",
         "tests/provider_runtime_plan_lkg_v1_test.py",
+        "tests/provider_external_drift_preservation_test.py",
     ):
         run(sys.executable, test)
 
@@ -234,11 +236,16 @@ def main() -> int:
         )
 
     final_portfolio_cmd = [
-        sys.executable,
-        "scripts/compare_quick_yield_preservation.py",
-        "--baseline", str(PORTFOLIO_BASELINE.relative_to(ROOT)),
-        "--candidate", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
-    ]
+    sys.executable,
+    "scripts/compare_quick_yield_preservation.py",
+    "--baseline", str(PORTFOLIO_BASELINE.relative_to(ROOT)),
+    "--candidate", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
+    "--baseline-runtime-lkg", str(RUNTIME_PLAN_LKG),
+    "--manifest", str(MANIFEST.relative_to(ROOT)),
+    "--disposition", str(DISPOSITION.relative_to(ROOT)),
+    "--root", ".",
+    "--losses-output", str(PORTFOLIO_LOSSES.relative_to(ROOT)),
+]
     if PORTFOLIO_RETRY.exists():
         final_portfolio_cmd.extend(["--candidate-retry", str(PORTFOLIO_RETRY.relative_to(ROOT))])
     portfolio_proc = subprocess.run(final_portfolio_cmd, cwd=ROOT, env=os.environ.copy(), check=False)
