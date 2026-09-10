@@ -179,7 +179,7 @@ for provider_id in ('1shows', 'allwish', 'anidb', 'cinefreak', 'moonflix', 'zink
     assert hubs[provider_id].get('direct_candidates'), provider_id
 
 assert hubs['1shows']['hub'] == 'https://flixnetwork.is/'
-assert hubs['1shows']['direct_fallback'] == 'https://1flixto.icu/'
+assert not resolver.is_http_url('https://${esc(s.domain)}/')
 one_shows_html = '''
 <article class="tile" data-domain="1flixto.icu" data-search="1flixto.icu 1flix.to">
   <span class="tile-domain">1flixto.icu</span>

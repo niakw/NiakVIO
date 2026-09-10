@@ -125,7 +125,18 @@ def canonical_provider_id(value: str) -> str:
 
 
 def is_http_url(value: Any) -> bool:
-    return isinstance(value, str) and value.strip().lower().startswith(("http://", "https://"))
+    if not isinstance(value, str):
+        return False
+    raw = value.strip()
+    if not raw.lower().startswith(("http://", "https://")):
+        return False
+    # Hub pages frequently embed JS/template URL constructors. They are address
+    # recipes, never concrete provider terminals and must not enter the registry.
+    if any(token in raw for token in ("${", "{{", "}}", "<%", "%>")) or "{" in raw or "}" in raw:
+        return False
+    parsed = urllib.parse.urlparse(raw)
+    hostname = str(parsed.hostname or "").strip().lower()
+    return bool(hostname) and not any(char in hostname for char in ("$", "{", "}"))
 
 
 def is_public_url(url: str) -> bool:
