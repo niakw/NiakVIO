@@ -68,6 +68,7 @@ jobs:
           python -m py_compile \
             scripts/run_provider_repair_pipeline_v6.py \
             scripts/upgrade_provider_repair_v6.py \
+            scripts/upgrade_provider_runtime_reconstruction_v21_12.py \
             scripts/merge_provider_repair_report_v6.py \
             scripts/audit_provider_repair_yield_v6.py \
             scripts/audit_provider_quick_yield_targeted.py \
@@ -75,6 +76,7 @@ jobs:
             scripts/upgrade_provider_worker_route_proof_v1.py \
             scripts/build_provider_history_matrix_v3.py \
             scripts/check_provider_non_regression_v1.py
+          python scripts/upgrade_provider_runtime_reconstruction_v21_12.py
           python tests/provider_repair_pipeline_v6_contract_test.py
           python tests/provider_non_regression_contract_test.py
 
