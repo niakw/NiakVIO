@@ -1,0 +1,103 @@
+name: TMP - Cache-visible release version bump
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/tmp-cache-visible-release-bump.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact main
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - name: Finalize cache-visible versions
+        env:
+          NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git show 971abf99c62e6dd7ae4915ad8fd6a8f8cc9f02e9:manifest.json > /tmp/previous-manifest.json
+          python scripts/sync_release_versions.py --previous /tmp/previous-manifest.json | tee /tmp/release-version-result.json
+
+      - name: Verify global and provider cache bumps
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          def load(path):
+              return json.loads(Path(path).read_text(encoding='utf-8'))
+          def ver(v):
+              return tuple(int(x) for x in str(v).split('.'))
+          def canon(v):
+              return str(v or '').strip().casefold()
+          def comparable(row):
+              out = json.loads(json.dumps(row))
+              out.pop('version', None)
+              return out
+
+          previous = load('/tmp/previous-manifest.json')
+          current = load('manifest.json')
+          assert current['version'] == '5.21.38', current['version']
+          previous_by_id = {canon(r.get('id')): r for r in previous['scrapers']}
+          changed = []
+          for row in current['scrapers']:
+              cid = canon(row.get('id'))
+              old = previous_by_id.get(cid)
+              if old is None:
+                  continue
+              if comparable(old) != comparable(row):
+                  ov = ver(old.get('version') or '1.0.0')
+                  cv = ver(row.get('version') or '0.0.0')
+                  assert cv >= (ov[0], ov[1], ov[2] + 1), (cid, old.get('version'), row.get('version'))
+                  changed.append(cid)
+          assert changed, 'expected changed provider rows after systemic recovery'
+
+          assert load('package.json')['version'] == '5.21.38'
+          assert load('package-lock.json')['version'] == '5.21.38'
+          assert load('sources.json')['manifest_version'] == '5.21.38'
+          for path in ('vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json'):
+              assert load(path)['version'] == '5.21.38', path
+          print(json.dumps({'release':'5.21.38','provider_rows_bumped':len(changed),'sample':changed[:12]}, ensure_ascii=False))
+          PY
+
+      - name: Regenerate and validate release integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+          git diff --check
+
+      - name: Commit cache-visible release metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git reset -- .github/workflows/tmp-cache-visible-release-bump.yml || true
+          if git diff --cached --quiet; then
+            echo 'No release metadata change produced.' >&2
+            exit 1
+          fi
+          git commit -m 'chore(release): bump systemic recovery cache versions to 5.21.38'
+          git push origin HEAD:main
