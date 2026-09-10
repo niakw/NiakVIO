@@ -60,20 +60,15 @@ permissions:
   security-events: write
 
 jobs:
-  analyze:
+  analyze-core:
     name: "CodeQL · ${{ matrix.language }}"
     runs-on: ubuntu-latest
-    # The generated 96-provider JS corpus legitimately exceeds the former 45-minute
-    # analysis ceiling. Keep the full security-extended query suite and allow it to finish.
     timeout-minutes: 90
-
     strategy:
       fail-fast: false
       matrix:
         include:
           - language: actions
-            build-mode: none
-          - language: javascript-typescript
             build-mode: none
           - language: python
             build-mode: none
@@ -95,3 +90,62 @@ jobs:
         uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
         with:
           category: "/language:${{ matrix.language }}"
+
+  analyze-javascript:
+    # The published provider corpus is intentionally large and generated in two
+    # deterministic trees. A monolithic JS database stalls while importing TRAP.
+    # Shard extraction by path instead of excluding code: the union of the three
+    # shards still covers every JS/TS file with the same security-extended suite.
+    name: "CodeQL · javascript-typescript · ${{ matrix.shard }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: source
+            config: |
+              paths-ignore:
+                - providers/**
+                - provider-bases/**
+          - shard: providers
+            config: |
+              paths:
+                - providers/**
+          - shard: provider-bases
+            config: |
+              paths:
+                - provider-bases/**
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL shard
+        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          queries: security-extended
+          config: ${{ matrix.config }}
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938 # v4
+        with:
+          category: "/language:javascript-typescript/shard:${{ matrix.shard }}"
+
+  javascript-result:
+    # Preserve the historical required-check name while making it depend on every
+    # JS shard. This can only pass when source + providers + provider-bases pass.
+    name: "CodeQL · javascript-typescript"
+    if: always()
+    needs: analyze-javascript
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enforce all JavaScript/TypeScript shards
+        env:
+          SHARD_RESULT: ${{ needs.analyze-javascript.result }}
+        run: test "$SHARD_RESULT" = "success"
