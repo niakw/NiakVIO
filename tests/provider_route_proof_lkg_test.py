@@ -35,14 +35,14 @@ def source(sha: str) -> dict:
     }
 
 
-def proof(route: str, index: int, *, sha: str, correlated: bool = False, streams: int = 1) -> dict:
+def proof(route: str, index: int, *, sha: str, semantic: str = "tv", correlated: bool = False, streams: int = 1) -> dict:
     return {
         "route": route,
         "origin": "https://example.invalid",
         "role": "search" if index == 1 else "detail",
         "method": "GET",
-        "semanticType": "tv",
-        "fixture": "neutral-s01e01",
+        "semanticType": semantic,
+        "fixture": "neutral-s01e01" if semantic != "movie" else "neutral-movie",
         "requestIndex": index,
         "providerValueCorrelation": correlated,
         "externalIdentityCorrelation": False,
@@ -69,8 +69,9 @@ old_registry = {
                 proof("/search", 1, sha=sha_a),
                 proof("/detail/{slug}", 2, sha=sha_a, correlated=True),
                 proof("/player?id={id}", 3, sha=sha_a, correlated=True),
+                proof("/movie/{id}", 1, sha=sha_a, semantic="movie", correlated=True),
             ],
-            "routes": ["/search", "/detail/{slug}", "/player?id={id}"],
+            "routes": ["/search", "/detail/{slug}", "/player?id={id}", "/movie/{id}"],
         }
     },
 }
@@ -88,13 +89,19 @@ current_report = {
 
 merged_registry, stats = module.merge_report_into_registry(old_registry, current_report)
 entry = merged_registry["providers"]["neutral-provider"]
+# Registry remains proof memory and keeps same-source historical evidence.
 assert "/player?id={id}" in entry["routes"], entry
-assert stats["retainedRows"] == 1, stats
+assert "/movie/{id}" in entry["routes"], entry
+assert stats["retainedRows"] == 2, stats
 
+# Active reconstruction is lane-aware: fresh-positive TV is authoritative, so
+# its obsolete player row is not reintroduced; unproven movie may still use LKG.
 enriched, retained = module.augment_provider_row(current_report["providers"][0], entry)
 assert retained == 1, enriched
-assert "/player?id={id}" in enriched["routes"], enriched
+assert "/player?id={id}" not in enriched["routes"], enriched
+assert "/movie/{id}" in enriched["routes"], enriched
 assert enriched["routeCount"] == 3, enriched
+assert enriched["routeProofFreshPositiveLanes"] == ["tv"], enriched
 
 changed_report = copy.deepcopy(current_report)
 changed_report["providers"][0]["source"] = source(sha_b)
@@ -135,4 +142,4 @@ assert "def eligible_bootstrap" in merge_text
 assert "routeProofBootstrapMatchedProviders" in merge_text
 assert "routeProofLkgRetainedRows" in merge_text
 
-print("provider route proof LKG tests passed")
+print("provider route proof LKG tests passed: fresh-positive lanes override stale same-source execution rows")

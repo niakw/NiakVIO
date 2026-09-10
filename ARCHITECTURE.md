@@ -97,17 +97,17 @@ Un provider anime-only reste donc :
 
 `supportedTypes` décrit les voies par lesquelles Nuvio peut lancer ce provider.
 
-Un provider anime peut devoir accepter les trois transports :
+Un provider anime-only peut exposer les alias de lancement épisodiques sans inventer de capacité movie :
 
 ```json
-{"supportedTypes":["anime","tv","movie"]}
+{"supportedTypes":["anime","tv","series"]}
 ```
 
 Cela permet :
 
 - anime épisodique via transport `tv`/`series` ;
 - namespace `anime` lorsqu’il est exposé par le client ;
-- transport `movie` uniquement lorsqu’une capacité canonique `movie` est réellement déclarée.
+- transport `movie` **uniquement** pour un provider qui déclare réellement une capacité canonique `movie` ; il ne doit jamais être ajouté artificiellement à un provider anime-only.
 
 **Cela n’ajoute jamais une capacité canonique `movie` ou `tv`.** Le Core doit rejeter une œuvre non-anime sur un provider anime-only après classification autoritative, avant le réseau provider lorsque l’information nécessaire est déjà disponible.
 

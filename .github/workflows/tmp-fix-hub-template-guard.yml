@@ -1,0 +1,64 @@
+name: TMP - Fix concrete hub terminal guard
+
+on:
+  push:
+    branches: [integrate/brain-learn-runtime-20260910]
+    paths: ['.github/workflows/tmp-fix-hub-template-guard.yml']
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: integrate/brain-learn-runtime-20260910
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - name: Reject template URLs and unpin stale 1Shows terminal assertion
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          resolver = Path('scripts/resolve_provider_hubs.py')
+          text = resolver.read_text()
+          old = '''def is_http_url(value: Any) -> bool:\n    return isinstance(value, str) and value.strip().lower().startswith(("http://", "https://"))\n'''
+          new = '''def is_http_url(value: Any) -> bool:\n    if not isinstance(value, str):\n        return False\n    raw = value.strip()\n    if not raw.lower().startswith(("http://", "https://")):\n        return False\n    # Hub pages frequently embed JS/template URL constructors. They are address\n    # recipes, never concrete provider terminals and must not enter the registry.\n    if any(token in raw for token in ("${", "{{", "}}", "<%", "%>")) or "{" in raw or "}" in raw:\n        return False\n    parsed = urllib.parse.urlparse(raw)\n    hostname = str(parsed.hostname or "").strip().lower()\n    return bool(hostname) and not any(char in hostname for char in ("$", "{", "}"))\n'''
+          if old not in text:
+              raise SystemExit('is_http_url anchor missing')
+          resolver.write_text(text.replace(old, new, 1))
+
+          txn = Path('scripts/domain_refresh_transaction_v2.py')
+          text = txn.read_text()
+          old = '''    terminal = str(terminal or "").strip().rstrip("/")\n    terminal_host = domain_host(terminal)\n    if not terminal or not terminal_host:\n        return False\n'''
+          new = '''    terminal = str(terminal or "").strip().rstrip("/")\n    if not resolver.is_http_url(terminal):\n        return False\n    terminal_host = domain_host(terminal)\n    if not terminal_host:\n        return False\n'''
+          if old not in text:
+              raise SystemExit('sync_registry_terminal anchor missing')
+          txn.write_text(text.replace(old, new, 1))
+
+          test = Path('tests/provider_hub_registry_test.py')
+          text = test.read_text()
+          old = "assert hubs['1shows']['hub'] == 'https://flixnetwork.is/'\nassert hubs['1shows']['direct_fallback'] == 'https://1flixto.icu/'\n"
+          new = "assert hubs['1shows']['hub'] == 'https://flixnetwork.is/'\nassert not resolver.is_http_url('https://${esc(s.domain)}/')\n"
+          if old not in text:
+              raise SystemExit('1shows stale assertion anchor missing')
+          test.write_text(text.replace(old, new, 1))
+          PY
+      - name: Validate domain contracts
+        run: |
+          set -euo pipefail
+          python tests/provider_hub_registry_test.py
+          python tests/domain_refresh_workflow_test.py
+          python tests/authoritative_hub_domain_refresh_test.py
+          python -m py_compile scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py
+      - name: Commit non-workflow patch
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/resolve_provider_hubs.py scripts/domain_refresh_transaction_v2.py tests/provider_hub_registry_test.py
+          git commit -m 'fix(domains): reject non-concrete hub terminal templates'
+          git push origin HEAD:integrate/brain-learn-runtime-20260910

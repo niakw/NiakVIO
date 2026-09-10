@@ -83,13 +83,18 @@ for forbidden in (
     assert forbidden not in tv_bootstrap, f"tv-wrapper:{forbidden}"
 
 # Diagnostic instrumentation bootstrap remains structural/version-agnostic and may
-# add only test plumbing. It must not manufacture production playback capabilities.
+# add only test plumbing. It may create the Mobile *device-test* manifest needed to
+# mirror the upstream Sentry auto-init flag, but must never mutate a production/main
+# Android manifest or manufacture production playback/networking capabilities.
 assert 'versionName = "0.8.4-beta"' not in shared_bootstrap
 assert "defaultConfig" in shared_bootstrap
 assert "testInstrumentationRunner" in shared_bootstrap
 assert "runtime_mutation=false" in shared_bootstrap
+assert 'composeApp/src/androidDeviceTest/AndroidManifest.xml' in shared_bootstrap
+assert 'androidApp/src/main/AndroidManifest.xml' not in shared_bootstrap
+assert 'composeApp/src/androidMain/AndroidManifest.xml' not in shared_bootstrap
+assert 'app/src/main/AndroidManifest.xml' not in shared_bootstrap
 for forbidden in (
-    "AndroidManifest.xml",
     "android.permission.INTERNET",
     "usesCleartextTraffic",
     "networkSecurityConfig",

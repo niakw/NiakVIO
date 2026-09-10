@@ -127,8 +127,10 @@ def sync_registry_terminal(registry: dict[str, Any], provider_id: str, terminal:
     if not isinstance(row, dict):
         return False
     terminal = str(terminal or "").strip().rstrip("/")
+    if not resolver.is_http_url(terminal):
+        return False
     terminal_host = domain_host(terminal)
-    if not terminal or not terminal_host:
+    if not terminal_host:
         return False
 
     normalized = terminal + "/"

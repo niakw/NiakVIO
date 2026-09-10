@@ -2715,6 +2715,38 @@ function _spv215CatalogueCardValues(value, base, meta, season, mediaType) {
   }
   return best;
 }
+/* NIAKVIO_PROVIDER_JSON_CATALOGUE_PRESERVATION_V21_9 */
+function _spv219JsonProviderValues(value, meta, season, mediaType) {
+  const rows = _spv4JsonRows(value, []).slice(0, 300);
+  const idKeys = ["id","ID","_id","media_id","post_id","anime_id","movie_id","series_id","show_id"];
+  const slugKeys = ["slug","provider_slug","seo_slug"];
+  let best = { id: "", slug: "", score: -1e9 };
+  for (const row of rows) {
+    if (!row || typeof row !== "object") continue;
+    const label =
+      _spv4Scalar(row.title) || _spv4Scalar(row.name) ||
+      _spv4Scalar(row.original_title) || _spv4Scalar(row.post_title) ||
+      _spv4Scalar(row.label) || _spv4Scalar(row.anime) ||
+      _spv4Scalar(row.movie) || _spv4Scalar(row.series) ||
+      _spv4Scalar(row.show) || _spv4Scalar(row.matched) || "";
+    const href = _spv4Scalar(row.url) || _spv4Scalar(row.href) || _spv4Scalar(row.permalink) || "";
+    const score = _spv211CandidateIdentityScore(label, href, meta, mediaType, season);
+    if (score < 90 || score < best.score) continue;
+    let id = "";
+    let slug = "";
+    for (const key of idKeys) {
+      const candidate = _spv4Scalar(row[key]);
+      if (_spv211ProviderIdAllowed(key, candidate)) { id = candidate; break; }
+    }
+    for (const key of slugKeys) {
+      const candidate = _spv4Scalar(row[key]);
+      if (candidate && candidate.length <= 160 && /^[A-Za-z0-9._~-]+$/.test(candidate)) { slug = candidate; break; }
+    }
+    if (!id && !slug) continue;
+    if (score > best.score) best = { id, slug, score };
+  }
+  return { id: best.id || "", slug: best.slug || "" };
+}
 function _spv215CatalogueProviderValues(value, base, meta, season, mediaType) {
   const fallback = _spv205StrictProviderValues(value, base, meta, season, mediaType) || { id: "", slug: "" };
   if (typeof value !== "string") return fallback;
@@ -3006,22 +3038,26 @@ async function _resolveProviderValuePlan(meta, mediaType, season, episode) {
         const rawSearchValue = _text(searchPayload.value).trim();
         if (rawSearchValue && rawSearchValue.length <= 4 * 1024 * 1024 && /^[\[{]/.test(rawSearchValue)) {
           try {
-            providerValues = _spv20ProviderValuesFromJson(JSON.parse(rawSearchValue), meta);
+            providerValues = _spv219JsonProviderValues(JSON.parse(rawSearchValue), meta, season, mediaType);
           } catch (_) {}
         }
         if (!providerValues || (!providerValues.id && !providerValues.slug)) {
           providerValues = _spv20ProviderValuesFromHtml(rawSearchValue, meta);
         }
       } else {
-        providerValues = _spv20ProviderValuesFromJson(searchPayload.value, meta);
+        providerValues = _spv219JsonProviderValues(searchPayload.value, meta, season, mediaType);
       }
-      providerValues = _spv215CatalogueProviderValues(
+      const catalogueProviderValues = _spv215CatalogueProviderValues(
         searchPayload.value,
         searchPayload.base || searchUrl,
         meta,
         season,
         mediaType
       ) || { id: "", slug: "" };
+      providerValues = {
+        id: providerValues.id || catalogueProviderValues.id || "",
+        slug: providerValues.slug || catalogueProviderValues.slug || ""
+      };
       const providerTraceId = providerValues.id || providerValues.slug || "";
       _spv184Trace(providerTraceId ? "identity_hit" : "identity_miss", mediaType, providerTraceId, -1, searchRoute);
       if (!providerValues.id && !providerValues.slug) continue;

@@ -7,7 +7,7 @@ on:
       - main
     paths:
       - '.github/workflows/provider-upstream-parity.yml'
-      - 'scripts/run_provider_upstream_parity.py'
+      - 'scripts/run_provider_upstream_parity_v2.py'
       - 'scripts/provider_worker.cjs'
       - 'scripts/network_guard.cjs'
 
@@ -36,7 +36,7 @@ jobs:
       - name: Validate hardened parity harness
         run: |
           set -euo pipefail
-          python -m py_compile scripts/run_provider_upstream_parity.py
+          python -m py_compile scripts/run_provider_upstream_parity_v2.py
           node scripts/provider_worker.cjs --self-test-response-wrapper
           node scripts/provider_worker.cjs --self-test-fixture-fallback
       - name: Compare current NiakVIO with all three upstreams
@@ -45,7 +45,7 @@ jobs:
           NIAKVIO_PARITY_TIMEOUT: '25'
         run: |
           set -euo pipefail
-          python scripts/run_provider_upstream_parity.py
+          python scripts/run_provider_upstream_parity_v2.py
       - name: Upload parity evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02

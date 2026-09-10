@@ -176,7 +176,6 @@ def validate_base(text: str | None = None) -> None:
         "const startRe = /<(?:a|div|article|li)",
         "const directHref = opening.match(",
         "const fallback = _spv205StrictProviderValues(value, base, meta, season, mediaType)",
-        "providerValues = _spv215CatalogueProviderValues(",
     ):
         if needle not in value:
             raise AssertionError(f"V21.5 ProviderBase missing {needle}")
@@ -184,8 +183,32 @@ def validate_base(text: str | None = None) -> None:
     resolver_start = value.index("async function _resolveProviderValuePlan")
     resolver_end = value.index("async function _resolveSearchRequestPlan", resolver_start)
     resolver = value[resolver_start:resolver_end]
-    if resolver.count("providerValues = _spv215CatalogueProviderValues(") != 1:
-        raise AssertionError("V21.5 catalogue wrapper must own exactly one initial identity call")
+
+    legacy_initial = "providerValues = _spv215CatalogueProviderValues("
+    v219_initial = "const catalogueProviderValues = _spv215CatalogueProviderValues("
+    strict_v219_owner = all(
+        needle in value
+        for needle in (
+            "NIAKVIO_PROVIDER_JSON_CATALOGUE_PRESERVATION_V21_9",
+            "function _spv219JsonProviderValues(value, meta, season, mediaType)",
+            "providerValues = _spv219JsonProviderValues(JSON.parse(rawSearchValue), meta, season, mediaType);",
+            v219_initial,
+            'id: providerValues.id || catalogueProviderValues.id || ""',
+            'slug: providerValues.slug || catalogueProviderValues.slug || ""',
+        )
+    )
+    if resolver.count(legacy_initial) == 1:
+        pass
+    elif strict_v219_owner and resolver.count(v219_initial) == 1:
+        # V21.9 preserves V21.5 as the initial HTML catalogue authority, but it
+        # augments missing JSON id/slug values instead of overwriting them. This
+        # is the forward-compatible owner of the same V21.5 contract.
+        pass
+    else:
+        raise AssertionError(
+            "V21.5 catalogue wrapper must own exactly one initial identity call, "
+            "directly or through strict V21.9 augmentation"
+        )
     if "const nextProviderValues = _spv215CatalogueProviderValues(" in resolver:
         raise AssertionError("V21.5 catalogue wrapper leaked into later response steps")
     if "const nextProviderValues = _spv205StrictProviderValues(" not in resolver:
@@ -218,7 +241,7 @@ def main() -> int:
         f"PROVIDER_CATALOGUE_IDENTITY_CORRELATION_V21_5_OK changed={str(changed).lower()} "
         "strict_v21_1_signature_preserved=1 initial_catalogue_wrapper_only=1 "
         "matched_record_id_authoritative=1 anchor_result_records=1 onclick_card_correlation=1 "
-        "later_response_id_learning_preserved=1 provider_specific_rules=0"
+        "later_response_id_learning_preserved=1 v21_9_owner_accepted=1 provider_specific_rules=0"
     )
     return 0
 

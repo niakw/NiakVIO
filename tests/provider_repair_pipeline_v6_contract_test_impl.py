@@ -52,8 +52,8 @@ for required in (
 ):
     assert required in pipeline, required
 
-# Canonical cumulative migration order. This is the regression that previously
-# made V16 fail before live recovery because Source Plan V15 had been skipped.
+# Canonical cumulative migration order. V21.11 is the current terminal
+# provider DATA revision: V21.9 generic owner, V21.10 VoirAnime authority, V21.11 retirement.
 ordered = [
     'scripts/upgrade_provider_search_request_plan_v14_1.py',
     'scripts/upgrade_provider_source_plan_v15.py',
@@ -61,6 +61,9 @@ ordered = [
     'scripts/upgrade_provider_base_runtime_v11.py',
     'scripts/upgrade_provider_search_detail_bridge_v17.py',
     'scripts/upgrade_provider_composite_request_template_v21_8.py',
+    'scripts/upgrade_provider_json_catalogue_preservation_v21_9.py',
+    'scripts/upgrade_provider_voiranime_homes_authority_v21_10.py',
+    'scripts/retire_provider_neko_sama_v21_11.py',
     'scripts/upgrade_stream_sanitizer_v7_selection.py',
 ]
 positions = [pipeline.index(token) for token in ordered]
@@ -75,6 +78,9 @@ for required in (
     'scripts/upgrade_provider_source_plan_v15.py',
     'scripts/upgrade_provider_search_detail_bridge_v17.py',
     'scripts/upgrade_provider_composite_request_template_v21_8.py',
+    'scripts/upgrade_provider_json_catalogue_preservation_v21_9.py',
+    'scripts/upgrade_provider_voiranime_homes_authority_v21_10.py',
+    'scripts/retire_provider_neko_sama_v21_11.py',
     'scripts/upgrade_stream_sanitizer_v7_selection.py',
     'tests/provider_external_identity_route_v11_test.py',
     'tests/provider_source_plan_v12_regression_test.py',
@@ -84,12 +90,15 @@ for required in (
     'tests/provider_source_plan_v15_contract_test.py',
     'tests/provider_execution_authority_v16_contract_test.py',
     'tests/provider_composite_request_template_v21_8_test.py',
+    'tests/provider_json_catalogue_preservation_v21_9_test.py',
+    'tests/provider_voiranime_homes_authority_v21_10_test.py',
+    'tests/provider_neko_sama_retirement_v21_11_test.py',
     'tests/stream_output_correlated_player_fallback_v7_test.py',
     'tests/provider_repair_merge_typed_recipe_test.py',
 ):
     assert required in pipeline, required
 
-assert '"routePlanRevision": "v21.8"' in pipeline
+assert '"routePlanRevision": "v21.11"' in pipeline
 assert 'tests/provider_repair_v6_recipe_regression_test.py' in pipeline
 assert 'tests/provider_quick_yield_fixture_selection_test.py' in pipeline
 assert 'scripts/audit_provider_repair_yield_v6.py' in pipeline
@@ -182,4 +191,4 @@ assert 'if provider_id not in targeted' in yield_audit
 assert 'lostUpstreamPositivePairs' in yield_audit
 assert 'require_upstream_positive_preserved' in yield_audit
 
-print('provider repair pipeline v6 contract passed: full-capability skip + V15->V16->V17->V21.8 order + disabled repair/off finalization')
+print('provider repair pipeline v6 contract passed: full-capability skip + V15->V16->V17->V21.9->V21.10->V21.11 order + disabled repair/off finalization')
