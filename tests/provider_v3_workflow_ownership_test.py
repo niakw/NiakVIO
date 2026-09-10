@@ -82,17 +82,34 @@ for required in ("materialize_provider_v3_all.py","verify_provider_v3_reverse_re
 assert "Refuse direct main mutation" in manual
 assert "NUVIO_PROVIDER_V3_CONTEXT: workspace" in manual
 
-# Domain refresh owns only authoritative hub -> official_site/history publication.
-# Terminal DNS/HTTP reachability is observation-only and must never gate the hub declaration.
-assert "refresh_authoritative_hub_domains.py" in domain
-assert "--apply" in domain
-assert "--domain-only" not in domain, "legacy terminal-gated domain updater must not own hub publication"
-assert "continue-on-error: true" in domain
-assert "provider_dns_preflight.mjs" in domain
-assert "update_provider_v3_domain_config.py" in domain
-assert "audit_provider_v3_static.py" in domain
-assert "materialize_provider_v3_all.py" not in domain
-assert "verify_provider_v3_reverse_rebuild.py" not in domain
+# Domain Refresh owns only address authority and the resulting managed Provider
+# CONFIG publication. It must never execute Repair or rematerialize the global Core.
+for required in (
+    "domain_refresh_transaction_v2.py",
+    "provider_dns_preflight.mjs",
+    "continue-on-error: true",
+    "generate_language_manifests.py",
+    "sync_release_versions.py",
+    "generate_release_hashes.py",
+    "validate_release_integrity.py",
+    "provider-hubs.json",
+):
+    assert required in domain, f"domain refresh ownership missing: {required}"
+for forbidden in (
+    "run_provider_repair_pipeline_v6.py",
+    "run_adaptive_deep_repair.py",
+    "run_adaptive_quick_repair.py",
+    "promote_candidates.py",
+    "promote_refresh_candidates.py",
+    "materialize_provider_v3_all.py",
+    "verify_provider_v3_reverse_rebuild.py",
+    "update_provider_v3_domain_config.py",
+):
+    assert forbidden not in domain, f"Domain Refresh must stay CONFIG/domain-only: {forbidden}"
+transaction=(ROOT/"scripts/domain_refresh_transaction_v2.py").read_text(encoding="utf-8")
+assert "replace_provider_fix" in transaction
+assert "domain refresh changed bytes outside CONFIG Lego" in transaction
+assert '"core_mutation": False' in transaction
 
 # Non-regression owns the exact four-version ledger plus the rolling accepted
 # quick-yield publication floor. Repair is allowed to propose/correct only if its
@@ -111,4 +128,4 @@ for required in (
 assert "pull_request:" in nonreg
 assert "--all" in nonreg, "workbench/global verification must exercise the complete 96-provider portfolio"
 
-print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one provider repair v6 engine + four-version non-regression gate")
+print("provider v3 workflow ownership contract passed: CORE verify-only + Brain evidence + one Repair engine + atomic Domain Refresh publication + four-version non-regression gate")
