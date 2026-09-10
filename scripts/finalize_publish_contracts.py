@@ -40,9 +40,10 @@ def assert_media_contract() -> bool:
         ):
             if needle not in text:
                 raise AssertionError(f"{label}: missing authoritative transport rule {needle}")
-        if 'for compatible in ("tv", "movie"):' in text:
-            raise AssertionError(f"{label}: artificial anime movie transport returned")
 
+    # The executable projection is validated behaviorally below by the manifest
+    # contract tests. Do not grep forbidden marker strings here: the enforcer
+    # intentionally contains those strings inside its own anti-regression list.
     for needle in (
         'transport.append("tv")',
         'transport.append("series")',
