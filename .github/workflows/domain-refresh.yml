@@ -15,6 +15,7 @@ on:
       - '.github/triggers/domain-refresh'
       - '.github/workflows/domain-refresh.yml'
       - 'scripts/domain_refresh_transaction_v2.py'
+      - 'scripts/sanitize_provider_hub_registry.py'
       - 'scripts/validate_domain_refresh_transaction.py'
       - 'scripts/refresh_authoritative_hub_domains.py'
       - 'scripts/resolve_provider_hubs.py'
@@ -59,6 +60,11 @@ jobs:
           cp provider-hubs.json "$RUNNER_TEMP/provider-hubs.before.json"
           cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
 
+      - name: Sanitize stale registry constructors before resolution
+        run: |
+          set -euo pipefail
+          python scripts/sanitize_provider_hub_registry.py --registry provider-hubs.json
+
       - name: Resolve and publish authoritative hub terminal DATA
         shell: bash
         run: |
@@ -97,8 +103,10 @@ jobs:
       - name: Validate domain-only Provider v3 mutation
         run: |
           set -euo pipefail
+          python scripts/sanitize_provider_hub_registry.py --registry provider-hubs.json --check
           python tests/authoritative_hub_domain_refresh_test.py
           python tests/domain_refresh_workflow_test.py
+          python tests/domain_refresh_transaction_guard_test.py
           python tests/priority_tv_year_domain_refresh_test.py
           python tests/provider_v3_workflow_ownership_test.py
           python scripts/audit_provider_v3_static.py
