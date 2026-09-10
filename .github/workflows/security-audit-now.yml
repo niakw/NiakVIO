@@ -105,7 +105,9 @@ jobs:
   codeql:
     name: CodeQL · ${{ matrix.language }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # Keep the one-shot audit aligned with SEC - CodeQL: the generated 96-provider
+    # JS corpus can exceed 45 minutes with the full security-extended query suite.
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
