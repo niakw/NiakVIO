@@ -1,5 +1,5 @@
 name: Recovery Finalize Provider Generation
-# revision: 6 - preserve semantic movie|tv|anime and episodic tv+series transport
+# revision: 7 - authoritative tv+series transport, strict behavioral validation
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - workbench/systemic-recovery-20260909
     paths:
       - '.github/workflows/recovery-finalize.yml'
+      - 'scripts/finalize_publish_contracts.py'
 
 permissions:
   contents: write
