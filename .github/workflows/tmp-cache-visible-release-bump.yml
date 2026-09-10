@@ -56,7 +56,7 @@ jobs:
 
           previous = load('/tmp/previous-manifest.json')
           current = load('manifest.json')
-          assert current['version'] == '5.21.38', current['version']
+          assert current['version'] == '5.21.40', current['version']
           previous_by_id = {canon(r.get('id')): r for r in previous['scrapers']}
           changed = []
           for row in current['scrapers']:
@@ -69,14 +69,14 @@ jobs:
                   cv = ver(row.get('version') or '0.0.0')
                   assert cv >= (ov[0], ov[1], ov[2] + 1), (cid, old.get('version'), row.get('version'))
                   changed.append(cid)
-          assert changed, 'expected changed provider rows after systemic recovery'
+          assert len(changed) == 96, len(changed)
 
-          assert load('package.json')['version'] == '5.21.38'
-          assert load('package-lock.json')['version'] == '5.21.38'
-          assert load('sources.json')['manifest_version'] == '5.21.38'
+          assert load('package.json')['version'] == '5.21.40'
+          assert load('package-lock.json')['version'] == '5.21.40'
+          assert load('sources.json')['manifest_version'] == '5.21.40'
           for path in ('vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json'):
-              assert load(path)['version'] == '5.21.38', path
-          print(json.dumps({'release':'5.21.38','provider_rows_bumped':len(changed),'sample':changed[:12]}, ensure_ascii=False))
+              assert load(path)['version'] == '5.21.40', path
+          print(json.dumps({'release':'5.21.40','provider_rows_bumped':len(changed),'sample':changed[:12]}, ensure_ascii=False))
           PY
 
       - name: Regenerate and validate release integrity
@@ -99,5 +99,5 @@ jobs:
             echo 'No release metadata change produced.' >&2
             exit 1
           fi
-          git commit -m 'chore(release): bump systemic recovery cache versions to 5.21.38'
+          git commit -m 'chore(release): bump systemic recovery cache versions to 5.21.40'
           git push origin HEAD:main
