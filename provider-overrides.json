@@ -14,14 +14,14 @@
     "anime-sama": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://anime-sama.to",
+      "official_site": "https://anime-sama.store",
       "manifest_overrides": {
         "enabled": false
       },
       "domain_substitutions": {
-        "animes-sama.fr": "anime-sama.to",
-        "anime-sama.store": "anime-sama.to",
-        "anime-sama.fr": "anime-sama.to"
+        "animes-sama.fr": "anime-sama.store",
+        "anime-sama.fr": "anime-sama.store",
+        "anime-sama.to": "anime-sama.store"
       },
       "published_types": [
         "movie",
@@ -242,6 +242,9 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "runtime_domain_replacements": {
+        "anime-sama.to": "anime-sama.store"
       }
     },
     "purstream": {
@@ -518,7 +521,7 @@
         "Cloudflare/browser verification is not by itself provider-unreachable; final activation remains governed by runtime media proof."
       ],
       "official_hub": "https://ww1.wiflix-adresses.fun/",
-      "official_site": "https://flemmix.kim",
+      "official_site": "https://flemmix.cloud",
       "manifest_overrides": {
         "supportsExternalPlayer": true,
         "logo": "https://flemmix.kim/favicon.ico",
@@ -544,48 +547,51 @@
         }
       },
       "domain_substitutions": {
-        "flemmix.me": "flemmix.kim",
-        "flemmix.casa": "flemmix.kim",
-        "flemmix.gold": "flemmix.kim",
-        "flemmix.voto": "flemmix.kim",
-        "flemmix.garden": "flemmix.kim",
-        "wiflix.name": "flemmix.kim",
-        "wiflix-hd.vip": "flemmix.kim",
-        "ww1.wiflix-adresses.fun": "flemmix.kim",
-        "flemmix.menn": "flemmix.kim",
-        "ww547.wiflix-hd.vip": "flemmix.kim",
-        "flemmix.wales": "flemmix.kim",
-        "flemmix.vip": "flemmix.kim",
-        "flemmix.prof": "flemmix.kim",
-        "wiflix.re": "flemmix.kim",
-        "flemmix.cafe": "flemmix.kim",
-        "flemmix.men": "flemmix.kim"
+        "flemmix.me": "flemmix.cloud",
+        "flemmix.casa": "flemmix.cloud",
+        "flemmix.gold": "flemmix.cloud",
+        "flemmix.voto": "flemmix.cloud",
+        "flemmix.garden": "flemmix.cloud",
+        "wiflix.name": "flemmix.cloud",
+        "wiflix-hd.vip": "flemmix.cloud",
+        "ww1.wiflix-adresses.fun": "flemmix.cloud",
+        "flemmix.menn": "flemmix.cloud",
+        "ww547.wiflix-hd.vip": "flemmix.cloud",
+        "flemmix.wales": "flemmix.cloud",
+        "flemmix.vip": "flemmix.cloud",
+        "flemmix.prof": "flemmix.cloud",
+        "wiflix.re": "flemmix.cloud",
+        "flemmix.cafe": "flemmix.cloud",
+        "flemmix.men": "flemmix.cloud",
+        "flemmix.kim": "flemmix.cloud"
       },
       "replacements": {
-        "flemmix.casa": "flemmix.kim",
-        "flemmix.garden": "flemmix.kim",
-        "flemmix.gold": "flemmix.kim",
-        "flemmix.me": "flemmix.kim",
-        "flemmix.menn": "flemmix.kim",
-        "flemmix.voto": "flemmix.kim",
-        "wiflix-hd.vip": "flemmix.kim",
-        "wiflix.name": "flemmix.kim",
-        "ww1.wiflix-adresses.fun": "flemmix.kim",
-        "ww547.wiflix-hd.vip": "flemmix.kim",
-        "flemmix.men": "flemmix.kim"
+        "flemmix.casa": "flemmix.cloud",
+        "flemmix.garden": "flemmix.cloud",
+        "flemmix.gold": "flemmix.cloud",
+        "flemmix.me": "flemmix.cloud",
+        "flemmix.menn": "flemmix.cloud",
+        "flemmix.voto": "flemmix.cloud",
+        "wiflix-hd.vip": "flemmix.cloud",
+        "wiflix.name": "flemmix.cloud",
+        "ww1.wiflix-adresses.fun": "flemmix.cloud",
+        "ww547.wiflix-hd.vip": "flemmix.cloud",
+        "flemmix.men": "flemmix.cloud",
+        "flemmix.kim": "flemmix.cloud"
       },
       "runtime_domain_replacements": {
-        "flemmix.casa": "flemmix.kim",
-        "flemmix.garden": "flemmix.kim",
-        "flemmix.gold": "flemmix.kim",
-        "flemmix.me": "flemmix.kim",
-        "flemmix.menn": "flemmix.kim",
-        "flemmix.voto": "flemmix.kim",
-        "wiflix-hd.vip": "flemmix.kim",
-        "wiflix.name": "flemmix.kim",
-        "ww1.wiflix-adresses.fun": "flemmix.kim",
-        "ww547.wiflix-hd.vip": "flemmix.kim",
-        "flemmix.men": "flemmix.kim"
+        "flemmix.casa": "flemmix.cloud",
+        "flemmix.garden": "flemmix.cloud",
+        "flemmix.gold": "flemmix.cloud",
+        "flemmix.me": "flemmix.cloud",
+        "flemmix.menn": "flemmix.cloud",
+        "flemmix.voto": "flemmix.cloud",
+        "wiflix-hd.vip": "flemmix.cloud",
+        "wiflix.name": "flemmix.cloud",
+        "ww1.wiflix-adresses.fun": "flemmix.cloud",
+        "ww547.wiflix-hd.vip": "flemmix.cloud",
+        "flemmix.men": "flemmix.cloud",
+        "flemmix.kim": "flemmix.cloud"
       },
       "candidate_learned_routes": [
         "/index.php?do=search&subaction=search&story={query}",
@@ -957,14 +963,16 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "movieshunt": {
       "capability": "direct_media",
       "official_hub": "https://movieshunt.cc/",
-      "official_site": "https://movieshunt.casa",
+      "official_site": "https://movieshunt.ws",
       "domain_substitutions": {
-        "movieshunt.work": "movieshunt.casa"
+        "movieshunt.work": "movieshunt.ws",
+        "movieshunt.casa": "movieshunt.ws"
       },
       "learned_routes": [
         "/?s={query}"
@@ -1148,6 +1156,9 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "runtime_domain_replacements": {
+        "movieshunt.casa": "movieshunt.ws"
       }
     },
     "zinkmovies": {
@@ -1323,15 +1334,15 @@
     },
     "vegamovies": {
       "capability": "html_scraper",
-      "official_hub": "https://vglist.top/",
-      "official_site": "https://1vegamovies.me",
+      "official_hub": "https://1vegamovies.tw",
+      "official_site": "https://1vegamovies.sbs",
       "manifest_overrides": {
         "enabled": false
       },
       "domain_substitutions": {
         "vegamovies.catering": "new2.vegamovies.futbol",
         "1vegamovies.cc": "new2.vegamovies.futbol",
-        "1vegamovies.me": "new2.vegamovies.futbol"
+        "1vegamovies.me": "1vegamovies.sbs"
       },
       "notes": [
         "Reviewed current-site authority points to new2.vegamovies.futbol with vglist.top as the official directory/hub.",
@@ -1502,6 +1513,9 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "runtime_domain_replacements": {
+        "1vegamovies.me": "1vegamovies.sbs"
       }
     },
     "hindmoviez": {
@@ -1524,9 +1538,7 @@
           "max_series_streams": 24
         }
       },
-      "domain_substitutions": {
-        "hindmovie.icu": "hindmovie.fit"
-      },
+      "domain_substitutions": {},
       "candidate_learned_routes": [
         "/?s={query}",
         "/search?q={query}",
@@ -1697,7 +1709,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "4khdhub": {
       "capability": "html_scraper",
@@ -1707,7 +1720,7 @@
         "GET /?s={query} remains a candidate until the strict N-to-N live probe executes it against 4khdhub.one.",
         "The canonical 4khdhub.one host must never be substituted to hdhub4u.* by historical override data."
       ],
-      "official_hub": "https://4khdhub.one/",
+      "official_hub": "https://hdhub4u.ec",
       "official_site": "https://hdhub4u.bi",
       "manifest_overrides": {
         "enabled": false
@@ -1878,7 +1891,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "persianstremio": {
       "capability": "api_stream_resolver",
@@ -2274,7 +2288,10 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "official_hub": "https://desiflix.me",
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "kehflix": {
       "notes": [
@@ -2287,7 +2304,7 @@
       ],
       "capability": "html_scraper",
       "official_hub": "https://kehflix.wiki/",
-      "official_site": "https://kehflix.wiki",
+      "official_site": "https://kehflix.lol",
       "published_types": [
         "movie",
         "tv",
@@ -2349,10 +2366,10 @@
         "recognition_seed_is_http_proof": false
       },
       "domain_substitutions": {
-        "kehflix.lol": "kehflix.wiki"
+        "kehflix.wiki": "kehflix.lol"
       },
       "runtime_domain_replacements": {
-        "kehflix.lol": "kehflix.wiki"
+        "kehflix.wiki": "kehflix.lol"
       },
       "terminal_domain_proof": {
         "schemaVersion": 1,
@@ -3264,7 +3281,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "animekai": {
       "capability": "mixed_embed_resolver",
@@ -3920,7 +3939,7 @@
     "animesama-co": {
       "capability": "mixed_embed_resolver",
       "official_hub": "https://anime-sama.wiki/",
-      "official_site": "https://animesama.co",
+      "official_site": "https://anime-sama.store",
       "manifest_overrides": {
         "enabled": false
       },
@@ -3946,7 +3965,7 @@
         "/anime/{id}-{slug}/saison-{season}/episode-{episode}.html"
       ],
       "domain_substitutions": {
-        "anime-sama.store": "animesama.co"
+        "animesama.co": "anime-sama.store"
       },
       "candidate_learned_routes": [
         "/catalogue/?search={query}",
@@ -4224,6 +4243,9 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "runtime_domain_replacements": {
+        "animesama.co": "anime-sama.store"
       }
     },
     "animesultra": {
@@ -4644,7 +4666,10 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "official_hub": "https://everythingmoe.com/s/animetsu",
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "animevostfr": {
       "capability": "mixed_embed_resolver",
@@ -5675,7 +5700,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "castle": {
       "capability": "api_stream_resolver",
@@ -5911,7 +5938,7 @@
     "cineby": {
       "capability": "api_stream_resolver",
       "official_hub": "https://warflix.cv/",
-      "official_site": "https://www.cineby.at",
+      "official_site": "https://cineby.top",
       "official_api": "https://api.speedracelight.com",
       "notes": [
         "Clean v3 Cineby uses the shared Wings/speedracelight seed + mvm1 encrypted-source family through a provider-owned Lego.",
@@ -5923,7 +5950,8 @@
         "https://api.speedracelight.com"
       ],
       "domain_substitutions": {
-        "warflix.im": "cineby.top"
+        "warflix.im": "cineby.top",
+        "www.cineby.at": "cineby.top"
       },
       "learned_routes": [],
       "provider_lego_scripts": [
@@ -6138,6 +6166,9 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "runtime_domain_replacements": {
+        "www.cineby.at": "cineby.top"
       }
     },
     "cinemacity": {
@@ -6610,7 +6641,7 @@
       ],
       "capability": "mixed_embed_resolver",
       "official_hub": "https://coflix.domains/",
-      "official_site": "https://coflix.group",
+      "official_site": "http://coflix.group",
       "manifest_overrides": {
         "logo": "https://coflix.group/favicon.ico",
         "supportsExternalPlayer": false,
@@ -6910,7 +6941,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "dooflix": {
       "capability": "html_scraper",
@@ -7925,7 +7957,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "hdhub4u": {
       "capability": "html_scraper",
@@ -8675,7 +8708,7 @@
         "Use the current Movies4u terminal route and drop unresolved or non-media direct links before playback."
       ],
       "official_hub": "https://movies4u.tube/",
-      "official_site": "https://movies4u.review",
+      "official_site": "https://movies4u.band",
       "manifest_overrides": {
         "enabled": false
       },
@@ -8685,9 +8718,10 @@
         }
       },
       "domain_substitutions": {
-        "m4uplay.store": "movies4u.review",
-        "new2.movies4u.clinic": "movies4u.review",
-        "new3.movies4u.clinic": "movies4u.review"
+        "m4uplay.store": "movies4u.band",
+        "new2.movies4u.clinic": "movies4u.band",
+        "new3.movies4u.clinic": "movies4u.band",
+        "movies4u.review": "movies4u.band"
       },
       "learned_routes": [],
       "candidate_learned_routes": [
@@ -8880,6 +8914,9 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "runtime_domain_replacements": {
+        "movies4u.review": "movies4u.band"
       }
     },
     "moviesdrive": {
@@ -9052,7 +9089,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "moviesmod": {
       "notes": [
@@ -9683,7 +9721,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "mugiwarastream": {
       "capability": "mixed_embed_resolver",
@@ -10009,7 +10048,7 @@
         "Final stream URL filtering remains Core-owned."
       ],
       "official_hub": "https://nakios.org/",
-      "official_site": "https://nakios.info",
+      "official_site": "https://nakios.live",
       "published_types": [
         "movie",
         "tv",
@@ -10017,7 +10056,8 @@
       ],
       "domain_substitutions": {
         "nakios.store": "nakios.live",
-        "api.nakios.store": "api.nakios.live"
+        "api.nakios.store": "api.nakios.live",
+        "nakios.info": "nakios.live"
       },
       "official_api": "https://api.nakios.store",
       "learned_routes": [
@@ -10197,6 +10237,9 @@
           ]
         },
         "evidenceDestructive": false
+      },
+      "runtime_domain_replacements": {
+        "nakios.info": "nakios.live"
       }
     },
     "neko-sama": {
@@ -10662,7 +10705,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "peachify": {
       "capability": "mixed_embed_resolver",
@@ -13031,7 +13076,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "voiranime-homes": {
       "capability": "mixed_embed_resolver",
@@ -14009,7 +14056,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "yflix": {
       "capability": "mixed_embed_resolver",
@@ -14454,7 +14502,10 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "official_hub": "https://flixnetwork.is",
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "allanime": {
       "capability": "direct_media",
@@ -14652,7 +14703,8 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {}
     },
     "allwish": {
       "capability": "html_scraper",
@@ -14847,7 +14899,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "anime-ultime": {
       "capability": "mixed_embed_resolver",
@@ -16606,8 +16660,8 @@
         "enabled": false
       },
       "capability": "mixed_embed_resolver",
-      "official_hub": "https://fstream.website/",
-      "official_site": "https://fs23.lol",
+      "official_hub": "https://fstream.org",
+      "official_site": "https://fs27.lol",
       "published_types": [
         "movie",
         "tv",
@@ -16632,7 +16686,8 @@
         "french-stream.one": "fs16.lol",
         "frenchstream.food": "fs16.lol",
         "fs03.lol": "fs16.lol",
-        "fs09.lol": "fs16.lol"
+        "fs09.lol": "fs16.lol",
+        "fs23.lol": "fs27.lol"
       },
       "capability_promotion": {
         "reason": "official_hub_recovered",
@@ -16652,18 +16707,20 @@
         "activation_policy": "remain_disabled_until_native_reader_acceptance"
       },
       "replacements": {
-        "french-stream.one": "fs23.lol",
-        "frenchstream.food": "fs23.lol",
-        "fs03.lol": "fs23.lol",
-        "fs09.lol": "fs23.lol",
-        "fs16.lol": "fs23.lol"
+        "french-stream.one": "fs27.lol",
+        "frenchstream.food": "fs27.lol",
+        "fs03.lol": "fs27.lol",
+        "fs09.lol": "fs27.lol",
+        "fs16.lol": "fs27.lol",
+        "fs23.lol": "fs27.lol"
       },
       "runtime_domain_replacements": {
-        "french-stream.one": "fs23.lol",
-        "frenchstream.food": "fs23.lol",
-        "fs03.lol": "fs23.lol",
-        "fs09.lol": "fs23.lol",
-        "fs16.lol": "fs23.lol"
+        "french-stream.one": "fs27.lol",
+        "frenchstream.food": "fs27.lol",
+        "fs03.lol": "fs27.lol",
+        "fs09.lol": "fs27.lol",
+        "fs16.lol": "fs27.lol",
+        "fs23.lol": "fs27.lol"
       },
       "candidate_learned_routes": [
         "/index.php?do=search&subaction=search&story={query}",
@@ -18134,7 +18191,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "moviebox": {
       "capability": "quarantined",
@@ -18330,7 +18389,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "mycima": {
       "notes": [
@@ -18747,7 +18808,9 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "runtime_domain_replacements": {},
+      "domain_substitutions": {}
     },
     "onlykdrama": {
       "capability": "html_scraper",
