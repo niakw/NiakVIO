@@ -36,6 +36,19 @@ def is_under(path: Path, directory: Path) -> bool:
         return False
 
 
+def is_niakvio_owned_v3(data: bytes) -> bool:
+    """Return whether this provider is a NiakVIO-owned ProviderBase v3 bundle.
+
+    ProviderBase intentionally contains generic P2P rejection code (for example
+    ``infoHash``/``magnet`` guards) in every generated provider. Those shared
+    safety markers must never make the availability stager classify the entire
+    catalogue as P2P. Provider identity/metadata exclusions remain authoritative;
+    script scanning is retained for legacy/non-owned provider code.
+    """
+    head = data[:256_000].decode("utf-8", errors="ignore")
+    return "NIAKVIO_PROVIDER_BASE_OWNED_V3" in head
+
+
 def exclusion_reason(entry: dict[str, Any], data: bytes, exclusions: dict[str, Any]) -> str | None:
     cid = canonical_id(str(entry.get("id") or entry.get("name") or ""))
     if cid in {canonical_id(str(x)) for x in exclusions.get("provider_ids", [])}:
@@ -44,10 +57,11 @@ def exclusion_reason(entry: dict[str, Any], data: bytes, exclusions: dict[str, A
     for pattern in exclusions.get("metadata_patterns", []):
         if str(pattern).casefold() in metadata:
             return f"metadata contains excluded marker: {pattern}"
-    script = data[:2_000_000].decode("utf-8", errors="ignore").casefold()
-    for pattern in exclusions.get("script_patterns", []):
-        if str(pattern).casefold() in script:
-            return f"script contains excluded marker: {pattern}"
+    if not is_niakvio_owned_v3(data):
+        script = data[:2_000_000].decode("utf-8", errors="ignore").casefold()
+        for pattern in exclusions.get("script_patterns", []):
+            if str(pattern).casefold() in script:
+                return f"script contains excluded marker: {pattern}"
     return None
 
 
