@@ -35,14 +35,21 @@ jobs:
 
           sync = Path('.github/workflows/sync.yml')
           text = sync.read_text(encoding='utf-8')
-          old = """    env:\n      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}\n      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}\n"""
-          new = """    env:\n      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}\n      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}\n      # Repair/reconstruction PRs deliberately carry workspace-addressed bundles.\n      # Every main/scheduled/direct verification remains strict publication mode.\n      NUVIO_PROVIDER_V3_CONTEXT: ${{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'workbench/') && 'workspace' || 'publication' }}\n"""
-          if old not in text:
-              if 'NUVIO_PROVIDER_V3_CONTEXT:' not in text:
-                  raise SystemExit('sync.yml job env anchor not found')
-          else:
-              text = text.replace(old, new, 1)
-              sync.write_text(text, encoding='utf-8')
+          if 'NUVIO_PROVIDER_V3_CONTEXT:' not in text:
+              lines = text.splitlines()
+              job_at = next(i for i, line in enumerate(lines) if line.strip() == 'verify-and-publish:')
+              token_at = next(
+                  i for i in range(job_at, len(lines))
+                  if lines[i].strip().startswith('TMDB_ACCESS_TOKEN:')
+              )
+              expr = '$' + "{{ github.event_name == 'pull_request' && startsWith(github.event.pull_request.head.ref, 'workbench/') && 'workspace' || 'publication' }}"
+              addition = [
+                  '      # Repair/reconstruction PRs deliberately carry workspace-addressed bundles.',
+                  '      # Every main/scheduled/direct verification remains strict publication mode.',
+                  f'      NUVIO_PROVIDER_V3_CONTEXT: {expr}',
+              ]
+              lines[token_at + 1:token_at + 1] = addition
+              sync.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
           test = Path('tests/provider_v3_workflow_ownership_test.py')
           src = test.read_text(encoding='utf-8')
