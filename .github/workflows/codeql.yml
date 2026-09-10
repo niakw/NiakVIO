@@ -14,24 +14,17 @@ on:
     branches:
       - main
     paths:
-      # GitHub Actions / security configuration
       - ".github/workflows/**"
       - ".github/actions/**"
       - ".github/dependabot.yml"
       - ".github/codeql/**"
-
-      # JavaScript / TypeScript
       - "**/*.js"
       - "**/*.jsx"
       - "**/*.mjs"
       - "**/*.cjs"
       - "**/*.ts"
       - "**/*.tsx"
-
-      # Python
       - "**/*.py"
-
-      # Dependency manifests / lockfiles
       - "package.json"
       - "package-lock.json"
       - "npm-shrinkwrap.json"
@@ -42,13 +35,10 @@ on:
       - "Pipfile.lock"
 
   schedule:
-    # Weekly security audit, Saturday 18:42 UTC.
     - cron: "42 18 * * 6"
 
   workflow_dispatch:
 
-# One CodeQL workflow run at a time for the entire repository. A newer PR/manual/
-# scheduled run supersedes an older one instead of building a queue.
 concurrency:
   group: niakvio-codeql
   cancel-in-progress: true
@@ -61,10 +51,10 @@ permissions:
 
 jobs:
   analyze:
-    # A single matrix keeps one immutable init/analyze action pair in the workflow,
-    # while JavaScript/TypeScript is split into bounded databases. The union of
-    # source + providers + provider-bases still scans every JS/TS file with the
-    # complete security-extended query suite.
+    # Keep one immutable init/analyze action pair while splitting the two generated
+    # flat JS trees into bounded databases. The range shards cover all normal
+    # alphanumeric provider names; the fallback shards cover anything else or any
+    # future nested files. Together with source this remains exhaustive JS/TS coverage.
     name: "${{ matrix.check_name }}"
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -90,20 +80,216 @@ jobs:
                 - providers/**
                 - provider-bases/**
             category: "/language:javascript-typescript/shard:source"
-          - check_name: "CodeQL · javascript-typescript · providers"
+
+          - check_name: "CodeQL · javascript-typescript · providers-0-f"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "providers/0*.js"
+                - "providers/1*.js"
+                - "providers/2*.js"
+                - "providers/3*.js"
+                - "providers/4*.js"
+                - "providers/5*.js"
+                - "providers/6*.js"
+                - "providers/7*.js"
+                - "providers/8*.js"
+                - "providers/9*.js"
+                - "providers/a*.js"
+                - "providers/b*.js"
+                - "providers/c*.js"
+                - "providers/d*.js"
+                - "providers/e*.js"
+                - "providers/f*.js"
+            category: "/language:javascript-typescript/shard:providers-0-f"
+          - check_name: "CodeQL · javascript-typescript · providers-g-l"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "providers/g*.js"
+                - "providers/h*.js"
+                - "providers/i*.js"
+                - "providers/j*.js"
+                - "providers/k*.js"
+                - "providers/l*.js"
+            category: "/language:javascript-typescript/shard:providers-g-l"
+          - check_name: "CodeQL · javascript-typescript · providers-m-r"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "providers/m*.js"
+                - "providers/n*.js"
+                - "providers/o*.js"
+                - "providers/p*.js"
+                - "providers/q*.js"
+                - "providers/r*.js"
+            category: "/language:javascript-typescript/shard:providers-m-r"
+          - check_name: "CodeQL · javascript-typescript · providers-s-z"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "providers/s*.js"
+                - "providers/t*.js"
+                - "providers/u*.js"
+                - "providers/v*.js"
+                - "providers/w*.js"
+                - "providers/x*.js"
+                - "providers/y*.js"
+                - "providers/z*.js"
+            category: "/language:javascript-typescript/shard:providers-s-z"
+          - check_name: "CodeQL · javascript-typescript · providers-fallback"
             language: javascript-typescript
             build_mode: none
             config: |
               paths:
                 - providers/**
-            category: "/language:javascript-typescript/shard:providers"
-          - check_name: "CodeQL · javascript-typescript · provider-bases"
+              paths-ignore:
+                - "providers/0*.js"
+                - "providers/1*.js"
+                - "providers/2*.js"
+                - "providers/3*.js"
+                - "providers/4*.js"
+                - "providers/5*.js"
+                - "providers/6*.js"
+                - "providers/7*.js"
+                - "providers/8*.js"
+                - "providers/9*.js"
+                - "providers/a*.js"
+                - "providers/b*.js"
+                - "providers/c*.js"
+                - "providers/d*.js"
+                - "providers/e*.js"
+                - "providers/f*.js"
+                - "providers/g*.js"
+                - "providers/h*.js"
+                - "providers/i*.js"
+                - "providers/j*.js"
+                - "providers/k*.js"
+                - "providers/l*.js"
+                - "providers/m*.js"
+                - "providers/n*.js"
+                - "providers/o*.js"
+                - "providers/p*.js"
+                - "providers/q*.js"
+                - "providers/r*.js"
+                - "providers/s*.js"
+                - "providers/t*.js"
+                - "providers/u*.js"
+                - "providers/v*.js"
+                - "providers/w*.js"
+                - "providers/x*.js"
+                - "providers/y*.js"
+                - "providers/z*.js"
+            category: "/language:javascript-typescript/shard:providers-fallback"
+
+          - check_name: "CodeQL · javascript-typescript · provider-bases-0-f"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "provider-bases/0*.js"
+                - "provider-bases/1*.js"
+                - "provider-bases/2*.js"
+                - "provider-bases/3*.js"
+                - "provider-bases/4*.js"
+                - "provider-bases/5*.js"
+                - "provider-bases/6*.js"
+                - "provider-bases/7*.js"
+                - "provider-bases/8*.js"
+                - "provider-bases/9*.js"
+                - "provider-bases/a*.js"
+                - "provider-bases/b*.js"
+                - "provider-bases/c*.js"
+                - "provider-bases/d*.js"
+                - "provider-bases/e*.js"
+                - "provider-bases/f*.js"
+            category: "/language:javascript-typescript/shard:provider-bases-0-f"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-g-l"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "provider-bases/g*.js"
+                - "provider-bases/h*.js"
+                - "provider-bases/i*.js"
+                - "provider-bases/j*.js"
+                - "provider-bases/k*.js"
+                - "provider-bases/l*.js"
+            category: "/language:javascript-typescript/shard:provider-bases-g-l"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-m-r"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "provider-bases/m*.js"
+                - "provider-bases/n*.js"
+                - "provider-bases/o*.js"
+                - "provider-bases/p*.js"
+                - "provider-bases/q*.js"
+                - "provider-bases/r*.js"
+            category: "/language:javascript-typescript/shard:provider-bases-m-r"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-s-z"
+            language: javascript-typescript
+            build_mode: none
+            config: |
+              paths:
+                - "provider-bases/s*.js"
+                - "provider-bases/t*.js"
+                - "provider-bases/u*.js"
+                - "provider-bases/v*.js"
+                - "provider-bases/w*.js"
+                - "provider-bases/x*.js"
+                - "provider-bases/y*.js"
+                - "provider-bases/z*.js"
+            category: "/language:javascript-typescript/shard:provider-bases-s-z"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-fallback"
             language: javascript-typescript
             build_mode: none
             config: |
               paths:
                 - provider-bases/**
-            category: "/language:javascript-typescript/shard:provider-bases"
+              paths-ignore:
+                - "provider-bases/0*.js"
+                - "provider-bases/1*.js"
+                - "provider-bases/2*.js"
+                - "provider-bases/3*.js"
+                - "provider-bases/4*.js"
+                - "provider-bases/5*.js"
+                - "provider-bases/6*.js"
+                - "provider-bases/7*.js"
+                - "provider-bases/8*.js"
+                - "provider-bases/9*.js"
+                - "provider-bases/a*.js"
+                - "provider-bases/b*.js"
+                - "provider-bases/c*.js"
+                - "provider-bases/d*.js"
+                - "provider-bases/e*.js"
+                - "provider-bases/f*.js"
+                - "provider-bases/g*.js"
+                - "provider-bases/h*.js"
+                - "provider-bases/i*.js"
+                - "provider-bases/j*.js"
+                - "provider-bases/k*.js"
+                - "provider-bases/l*.js"
+                - "provider-bases/m*.js"
+                - "provider-bases/n*.js"
+                - "provider-bases/o*.js"
+                - "provider-bases/p*.js"
+                - "provider-bases/q*.js"
+                - "provider-bases/r*.js"
+                - "provider-bases/s*.js"
+                - "provider-bases/t*.js"
+                - "provider-bases/u*.js"
+                - "provider-bases/v*.js"
+                - "provider-bases/w*.js"
+                - "provider-bases/x*.js"
+                - "provider-bases/y*.js"
+                - "provider-bases/z*.js"
+            category: "/language:javascript-typescript/shard:provider-bases-fallback"
 
     steps:
       - name: Checkout repository
@@ -125,9 +311,6 @@ jobs:
           category: ${{ matrix.category }}
 
   javascript-result:
-    # Preserve the historical required-check name. Because `analyze` is one matrix
-    # job, this result becomes green only after Actions, Python and all three JS
-    # shards have succeeded.
     name: "CodeQL · javascript-typescript"
     if: always()
     needs: analyze
