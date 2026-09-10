@@ -19,14 +19,13 @@ jobs:
           fetch-depth: 0
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: '3.12'}
-      - name: Import only durable workbench code and tests
+      - name: Import durable non-workflow code and tests
         shell: bash
         run: |
           set -euo pipefail
           git fetch origin workbench/systemic-recovery-20260909
           files=(
             ARCHITECTURE.md
-            .github/workflows/provider-recognition-repair-v6.yml
             scripts/finalize_provider_repair_disposition_v1_impl.py
             scripts/provider_base_store.py
             scripts/provider_patches/cineby_runtime_v1.py
@@ -55,21 +54,7 @@ jobs:
             tests/published_provider_lego_contract_test.py
           )
           git checkout origin/workbench/systemic-recovery-20260909 -- "${files[@]}"
-          # Neko-Sama is already absent from the executable 5.21.41 manifest.
-          # Keep its historical catalogue identity; do not reintroduce a manifest mutation script.
-          # The workbench's provider_manifest_execution_activation_test.py expected >=82 enabled
-          # providers and predates strict all-lane activation, so it is intentionally not imported.
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('.github/workflows/provider-upstream-parity.yml')
-          s=p.read_text()
-          s=s.replace("      - 'scripts/run_provider_upstream_parity.py'", "      - 'scripts/run_provider_upstream_parity_v2.py'")
-          s=s.replace('python -m py_compile scripts/run_provider_upstream_parity.py', 'python -m py_compile scripts/run_provider_upstream_parity_v2.py')
-          s=s.replace('python scripts/run_provider_upstream_parity.py', 'python scripts/run_provider_upstream_parity_v2.py')
-          p.write_text(s)
-          PY
-          git rm .github/workflows/tmp-integrate-brain-runtime.yml
-      - name: Validate imported runtime surface before commit
+      - name: Validate non-workflow runtime subset
         shell: bash
         run: |
           set -euo pipefail
@@ -89,19 +74,20 @@ jobs:
           python tests/provider_voiranime_homes_authority_v21_10_test.py
           python tests/cineby_tmdb_page_fallback_v2_test.py
           python tests/native_hls_short_vod_regression_test.py
-          python tests/provider_repair_pipeline_v6_contract_test.py
-          python tests/provider_v3_workflow_ownership_test.py
-          python tests/domain_refresh_workflow_test.py
           python scripts/audit_provider_v3_static.py
           git diff --exit-code -- manifest.json vf/manifest.json vf-no-anime/manifest.json no-anime/manifest.json provider-overrides.json provider-v3-materialization.json providers/ || {
             echo 'Imported code mutated published artifacts during validation'; exit 1;
           }
-      - name: Commit durable runtime handoff
+      - name: Commit durable non-workflow handoff
         shell: bash
         run: |
           set -euo pipefail
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add -A
+          git add ARCHITECTURE.md scripts tests
+          if git diff --cached --quiet; then
+            echo 'No non-workflow changes to publish.'
+            exit 0
+          fi
           git commit -m 'feat(brain): integrate durable provider reconstruction fixes'
           git push origin HEAD:integrate/brain-learn-runtime-20260910
