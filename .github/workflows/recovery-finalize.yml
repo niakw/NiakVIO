@@ -1,5 +1,5 @@
 name: Recovery Finalize Provider Generation
-# revision: 5 - idempotent safe HTML upgrader, then rematerialize 96
+# revision: 6 - preserve semantic movie|tv|anime and episodic tv+series transport
 
 on:
   push:
@@ -59,6 +59,7 @@ jobs:
           set -euo pipefail
           python tests/canonical_media_types_test.py
           python tests/provider_anime_semantic_transport_contract_test.py
+          python tests/provider_v3_documentation_contract_test.py
           python tests/global_provider_branding_test.py
           python tests/provider_html_filter_security_test.py --published
           python tests/provider_v3_minimizer_published_test.py
@@ -78,9 +79,20 @@ jobs:
           rows=m.get('scrapers') or []
           assert len(rows)==96, len(rows)
           assert sum(row.get('enabled') is not False for row in rows)==6
-          assert not [(row.get('id'),row.get('supportedTypes')) for row in rows if 'series' in (row.get('supportedTypes') or [])]
+          allowed_semantic={'movie','tv','anime'}
+          allowed_transport=allowed_semantic|{'series'}
+          for row in rows:
+              pid=row.get('id') or '<unknown>'
+              transport=[str(v).strip().lower() for v in (row.get('supportedTypes') or []) if str(v).strip()]
+              canonical=[str(v).strip().lower() for v in (row.get('canonicalSupportedTypes') or transport) if str(v).strip() and str(v).strip().lower()!='series']
+              assert transport and set(transport)<=allowed_transport, (pid, transport)
+              assert canonical and set(canonical)<=allowed_semantic, (pid, canonical)
+              assert 'series' not in canonical, (pid, canonical)
+              if 'anime' in canonical or 'tv' in canonical:
+                  assert 'tv' in transport and 'series' in transport, (pid, canonical, transport)
+              assert ('movie' in transport)==('movie' in canonical), (pid, canonical, transport)
           assert d.get('stateCounts')=={'on': 6, 'repair': 74, 'off': 16}, d.get('stateCounts')
-          print('FINAL_REPAIR_DISPOSITION_OK providers=96 on=6 repair=74 off=16 series_manifest=0')
+          print('FINAL_REPAIR_DISPOSITION_OK providers=96 on=6 repair=74 off=16 transport=tv+series movie_only_when_canonical')
           PY
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
@@ -96,5 +108,5 @@ jobs:
             echo 'No deterministic regeneration changes to commit.'
             exit 0
           fi
-          git commit -m 'fix(release): rematerialize 96 providers with canonical transport and safe HTML scanning'
+          git commit -m 'fix(release): rematerialize 96 providers with authoritative transport and safe HTML scanning'
           git push origin "HEAD:${GITHUB_REF_NAME}"
