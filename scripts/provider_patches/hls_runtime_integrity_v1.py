@@ -62,9 +62,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     max_recovery_candidates = max(2, min(int(cfg.get("max_recovery_candidates", 12)), 24))
     probe_all_urls = bool(cfg.get("probe_all_urls", False))
     fail_closed_unknown = bool(cfg.get("fail_closed_unknown", False))
-    probe_first_segment_native = bool(cfg.get("probe_first_segment_native", False))
-    native_probe_max_rows = max(1, min(int(cfg.get("native_probe_max_rows", 3)), 8))
+    probe_first_segment_native = bool(cfg.get("probe_first_segment_native", True))
+    native_probe_max_rows = max(1, min(int(cfg.get("native_probe_max_rows", 8)), 16))
     native_probe_timeout_ms = max(900, min(int(cfg.get("native_probe_timeout_ms", 2500)), 5000))
+    minimum_vod_duration_seconds = max(30, min(int(cfg.get("minimum_vod_duration_seconds", 90)), 600))
     payload_config = {
         "timeoutMs": timeout_ms,
         "maxChildren": max_children,
@@ -89,7 +90,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
                 "probeFirstSegmentNative": True,
                 "nativeProbeMaxRows": native_probe_max_rows,
                 "nativeProbeTimeoutMs": native_probe_timeout_ms,
-                "implementationRevision": "native-first-segment-container-proof-v8-tv-byte-capability",
+                "minimumVodDurationSeconds": minimum_vod_duration_seconds,
+                "implementationRevision": "native-vod-duration-proof-v9",
             }
         )
     payload = json.dumps(payload_config, separators=(",", ":"))
@@ -220,8 +222,16 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
       if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"variant_"+kind};
       if(kind==="master")return {state:"unknown",reason:"nested_master"};
     }
+    var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",reason:"vod_duration_too_short",durationSeconds:tiny};
     return proveMediaPlaylist(body,base,stream,referer);
   }
+  function finiteVodDurationSeconds(body){
+    var text=clean(body);if(!/#EXT-X-ENDLIST(?:\s|$)/i.test(text))return 0;
+    var re=/#EXTINF\s*:\s*([0-9]+(?:\.[0-9]+)?)/gi,m,total=0,count=0;
+    while((m=re.exec(text))!==null){var value=Number(m[1]);if(Number.isFinite(value)&&value>0){total+=value;count++}}
+    return count?total:0;
+  }
+  function shortFiniteVod(body){var d=finiteVodDurationSeconds(body),floor=Number(config.minimumVodDurationSeconds||90)||90;return d>0&&d<floor?d:0}
   function playlistKind(body){
     var text=clean(body);if(!/^#EXTM3U(?:\s|$)/i.test(text))return "invalid";
     if(/#EXT-X-STREAM-INF\s*:/i.test(text))return "master";
@@ -263,7 +273,7 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
     if(/^video\//i.test(ct))return {state:"direct",format:ct.indexOf("webm")>=0?"webm":"mp4",url:result.url,result:result};
     var body=await responseText(result),kind=playlistKind(body);
     if(kind==="invalid"||kind==="header_only")return {state:"invalid",kind:kind,body:body,result:result};
-    if(kind==="media")return {state:"valid",kind:kind,url:result.url,body:body,result:result};
+    if(kind==="media"){var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",kind:"vod_duration_too_short",durationSeconds:tiny,body:body,result:result};return {state:"valid",kind:kind,url:result.url,body:body,result:result}}
 
     var variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
     if(!variants.length)return {state:"invalid",kind:"master_without_variants",body:body,result:result};

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TMDB credentials are runtime inputs for all newly authored provider code."""
+"""TMDB credentials are Core runtime inputs and are never embedded in provider artifacts."""
 from __future__ import annotations
 
 import json
@@ -25,49 +25,50 @@ def scan(path: Path, failures: list[str]) -> None:
 
 failures: list[str] = []
 
+# The former encrypted repository payload was deliberately retired. Runtime
+# credentials are supplied by CI/host context and captured once inside the Core
+# closure; downstream provider logic consumes metadata only.
 RUNTIME_KEY_PATH = ROOT / "runtime" / "tmdb-runtime-key.json"
-runtime_key = json.loads(RUNTIME_KEY_PATH.read_text(encoding="utf-8"))
-assert runtime_key.get("version") == 1
-assert isinstance(runtime_key.get("salt"), str) and runtime_key["salt"]
-assert isinstance(runtime_key.get("cipher"), list) and runtime_key["cipher"]
-assert all(isinstance(value, int) and 0 <= value <= 255 for value in runtime_key["cipher"])
-assert "api_key" not in runtime_key and "token" not in runtime_key
+assert not RUNTIME_KEY_PATH.exists(), "embedded TMDB runtime-key payload must stay retired"
 
-def decrypt_runtime_key(payload: dict) -> str:
-    material = str(payload["salt"]) + "|NiakVIO/TMDB/v1"
-    seed = 2166136261
-    for char in material:
-        seed ^= ord(char)
-        seed = (seed * 16777619) & 0xFFFFFFFF
-    out = []
-    for raw in payload["cipher"]:
-        seed ^= (seed << 13) & 0xFFFFFFFF
-        seed &= 0xFFFFFFFF
-        seed ^= seed >> 17
-        seed &= 0xFFFFFFFF
-        seed ^= (seed << 5) & 0xFFFFFFFF
-        seed &= 0xFFFFFFFF
-        out.append(chr((int(raw) & 0xFF) ^ (seed & 0xFF)))
-    return "".join(out)
-
-runtime_plain_key = decrypt_runtime_key(runtime_key)
-assert re.fullmatch(r"[0-9a-fA-F]{32}", runtime_plain_key), (
-    "runtime TMDB key payload must decrypt to exactly one 32-hex v3 API key"
-)
-assert not runtime_plain_key.startswith("\\"), "runtime TMDB key must not carry an escaped-secret prefix"
-
-resolver_source = (ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py").read_text(encoding="utf-8")
-assert "tmdbKeyCipher" in resolver_source
-assert "normalizeKey" in resolver_source
-assert "api.themoviedb.org/3/" in resolver_source
+resolver_path = ROOT / "scripts" / "provider_patches" / "global_media_type_resolution_v1.py"
+resolver_source = resolver_path.read_text(encoding="utf-8")
+for forbidden in (
+    "RUNTIME_KEY_PATH",
+    "tmdbKeyCipher",
+    "tmdbKeySalt",
+    "function embeddedKey",
+    "normalizeKey(embeddedKey())",
+    "NiakVIO/TMDB/v1",
+):
+    assert forbidden not in resolver_source, forbidden
+for required in (
+    "normalizeKey",
+    "function localKey()",
+    "function localToken()",
+    "var coreCredentialKey=localKey(),coreCredentialToken=localToken();",
+    "g.__nuvioCoreGetTmdbDataV1=coreGetTmdbData",
+    "api.themoviedb.org/3/",
+):
+    assert required in resolver_source, required
 assert "www.themoviedb.org/" not in resolver_source
 
-# CI supplies TMDB credentials to Core as secrets. The repository may contain
-# only the encrypted runtime payload; neither secret value is provider-owned.
+# Validate ownership semantically rather than pinning one historical apiJson line:
+# request-time TMDB access uses the closure-captured credentials and must never
+# re-read host globals or reconstruct a repository-embedded secret.
+api_start = resolver_source.index("async function apiJson(url){")
+api_end = resolver_source.index("\nasync function findTmdb(", api_start)
+api_body = resolver_source[api_start:api_end]
+assert "coreCredentialKey" in api_body and "coreCredentialToken" in api_body
+assert "localKey()" not in api_body and "localToken()" not in api_body
+assert "tmdbKeyCipher" not in api_body and "tmdbKeySalt" not in api_body
+assert "embeddedKey" not in api_body
+
+# CI supplies credentials only to Core/runtime execution. No plaintext secret is
+# committed and provider business logic receives metadata rather than credentials.
 sync_workflow = (ROOT / ".github" / "workflows" / "sync.yml").read_text(encoding="utf-8")
 assert "TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}" in sync_workflow
 assert "TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}" in sync_workflow
-
 
 # All code that can author a future ProviderBase/provider is clean immediately.
 # TMDB network access is Core-owned: provider-specific adapters may consume
@@ -124,19 +125,18 @@ for provider_id, row in rows.items():
     pending_v2 += int(candidate)
     verified_v2 += int(verified)
 
-for path in (
-    ROOT / "scripts" / "provider_patches" / "global_stream_identity_v1.py",
-    ROOT / "scripts" / "provider_patches" / "global_stream_presentation_v1.py",
-    ROOT / "scripts" / "provider_patches" / "runtime_capability_media_safety_v4.py",
-):
-    text = path.read_text(encoding="utf-8")
-    assert "globalThis.TMDB_API_KEY" in text or "g.TMDB_API_KEY" in text, path
+# Downstream Core/ProviderBase consumers must request metadata through the Core
+# capability; they must not depend on the retired encrypted payload.
+provider_base_source = (ROOT / "scripts" / "provider_base_store.py").read_text(encoding="utf-8")
+presentation_source = (patch_root / "global_stream_presentation_v1.py").read_text(encoding="utf-8")
+assert "__nuvioCoreGetTmdbDataV1" in provider_base_source
+assert "__nuvioCoreGetTmdbDataV1" in presentation_source
 
 if failures:
     raise AssertionError("\n".join(failures))
 
 print(
-    "TMDB runtime-key contract passed: "
-    f"provider_authoring_clean=true verified_v2={verified_v2} pending_v2={pending_v2} "
-    "legacy_lkg_immutable=true"
+    "TMDB Core credential contract passed: "
+    f"embedded_runtime_key=false provider_authoring_clean=true verified_v2={verified_v2} "
+    f"pending_v2={pending_v2} legacy_lkg_immutable=true"
 )

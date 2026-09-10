@@ -128,6 +128,9 @@ def main() -> int:
         "scripts/upgrade_provider_base_runtime_v11.py",
         "scripts/upgrade_provider_search_detail_bridge_v17.py",
         "scripts/upgrade_provider_composite_request_template_v21_8.py",
+        "scripts/upgrade_provider_json_catalogue_preservation_v21_9.py",
+        "scripts/upgrade_provider_voiranime_homes_authority_v21_10.py",
+        "scripts/retire_provider_neko_sama_v21_11.py",
         "scripts/upgrade_stream_sanitizer_v7_selection.py",
     ]
     for migration in migrations:
@@ -150,6 +153,9 @@ def main() -> int:
         "tests/provider_source_plan_v15_contract_test.py",
         "tests/provider_execution_authority_v16_contract_test.py",
         "tests/provider_composite_request_template_v21_8_test.py",
+        "tests/provider_json_catalogue_preservation_v21_9_test.py",
+        "tests/provider_voiranime_homes_authority_v21_10_test.py",
+        "tests/provider_neko_sama_retirement_v21_11_test.py",
         "tests/stream_output_correlated_player_fallback_v7_test.py",
         "tests/global_identity_policy_ownership_test.py",
         "tests/provider_latest_request_cancellation_test.py",
@@ -270,7 +276,7 @@ def main() -> int:
         "targetedProviderCount": len(targets),
         "targetedProviders": targets,
         "maxAttemptsPerTask": attempts,
-        "routePlanRevision": "v21.8",
+        "routePlanRevision": "v21.11",
         "targetedProvidersWithProvenRoutes": int(targeted_report.get("providersWithProvenRoutes") or 0),
         "targetedProvenRoutes": int(targeted_report.get("provenRouteCount") or 0),
         "mergedProvidersWithProvenRoutes": int(merged_report.get("providersWithProvenRoutes") or 0),
@@ -295,7 +301,7 @@ def main() -> int:
     SUMMARY.write_text(json.dumps(summary, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
         "FIELD_PROVIDER_REPAIR_V6_FINAL "
-        f"mode={args.mode} revision=v21.8 targeted={len(targets)} targeted_proven={summary['targetedProvidersWithProvenRoutes']} "
+        f"mode={args.mode} revision=v21.11 targeted={len(targets)} targeted_proven={summary['targetedProvidersWithProvenRoutes']} "
         f"playable={len(summary['postRepairPlayableProviders'])} verified={len(summary['postRepairVerifiedProviders'])} "
         f"disabled={summary['disabledProviderCount']} lost={len(summary['lostUpstreamPositivePairs'])} "
         f"upstream_gate={str(summary['upstreamPositivePreservationGatePassed']).lower()} "

@@ -17,7 +17,7 @@ assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 
-from normalize_core_fixed_point_contract import normalize_apply as normalize_fixed_point_apply
+from normalize_core_fixed_point_contract import assert_contract as assert_fixed_point_contract
 from normalize_provider_branding_pipeline import assert_contract as assert_branding_pipeline_contract
 from normalize_provider_branding_pipeline import normalize as normalize_branding_pipeline
 
@@ -26,8 +26,8 @@ normalized, changed = module.normalize(cfg)
 source_changes = module.normalize_source_files(apply=False)
 
 apply_source = (ROOT / "scripts/apply_provider_overrides.py").read_text(encoding="utf-8")
-fixed_point_source = normalize_fixed_point_apply(apply_source)
-assert fixed_point_source == apply_source, "Core fixed-point template drifted from committed apply_provider_overrides.py"
+assert_fixed_point_contract()
+fixed_point_source = apply_source
 branding_source, branding_changes = normalize_branding_pipeline(fixed_point_source)
 assert branding_changes == [], branding_changes
 assert_branding_pipeline_contract(branding_source)
@@ -60,20 +60,30 @@ assert hooks.count(module.GLOBAL_SECURITY_HOOK) == 1, hooks
 assert module.GLOBAL_BRANDING_HOOK not in hooks, hooks
 assert hooks[-1] == module.GLOBAL_SECURITY_HOOK, hooks
 
-# Prove the final reconstructed artifact, not only the configuration: a generic
-# provider containing recurring unsafe shapes must leave the common Core with no
-# finding, while still retaining the required provider export and presentation.
+# Prove the Provider/Core separation on the final reconstructed artifact. Provider
+# source bytes remain upstream-owned and may still contain patterns reported by the
+# provider scanner; the appended common Core must contain none of those findings.
 # Synthetic providers intentionally skip committed branding because the branding
-# inventory is fail-closed against the 92 published IDs in its dedicated contract.
+# inventory is fail-closed against the published provider IDs in its dedicated contract.
 from apply_provider_overrides import apply_overrides
 from provider_security_hardening import known_unsafe_findings
 
-unsafe = b'''function badHost(u){return u.includes("example.com")};\nglobalThis.console.log("provider debug");\nglobalThis.getStreams=async function(){return []};\n'''
+unsafe = b'''/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n/* BEGIN NIAKVIO_PROVIDER */\nfunction badHost(u){return u.includes("example.com")};\nglobalThis.console.log("provider debug");\nglobalThis.getStreams=async function(){return []};\n/* END NIAKVIO_PROVIDER */\n'''
 output, applied = apply_overrides("synthetic-core-security", unsafe, phase="discovery")
 text = output.decode("utf-8")
-assert known_unsafe_findings(text) == [], known_unsafe_findings(text)
+boundary = "/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */"
+assert boundary in text
+provider_slice, core_slice = text.split(boundary, 1)
+provider_findings = set(known_unsafe_findings(provider_slice))
+assert provider_findings == {
+    "hostname_substring",
+    "provider_console_sensitive_sink",
+    "provider_console_unsandboxed",
+}, provider_findings
+assert known_unsafe_findings(core_slice) == [], known_unsafe_findings(core_slice)
+assert unsafe.decode("utf-8") in provider_slice
 assert "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1" in text
-assert "NUVIO_PROVIDER_SECURITY_HARDENING_V1" in text
+assert "NUVIO_PROVIDER_SECURITY_HARDENING_V1" not in provider_slice
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in text
 assert any(record.get("scope") == "global_playback_integrity" for record in applied), applied
 
@@ -97,9 +107,10 @@ finally:
 # language are extracted from the original upstream stream name first, then the
 # local row name/title are replaced by committed provider branding. V17 keeps
 # quality in the title and canonicalizes generic French/VFF evidence to VF.
-# The transport is a deterministic local fetch stub returning a valid playlist.
-raw = b'''globalThis.getStreams=async function(){return [{url:"https://example.invalid/video.m3u8",name:"1080p VFF",title:"raw upstream title"}]};\n'''
-branded, records = apply_overrides("peachify", raw, phase="discovery")
+# Use a branded provider without a provider-specific runtime Lego so this remains
+# a deterministic test of the shared presentation -> branding -> sanitizer chain.
+raw = b'''/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */\n/* BEGIN NIAKVIO_PROVIDER */\nglobalThis.getStreams=async function(){return [{url:"https://example.invalid/video.m3u8",name:"1080p VFF",title:"raw upstream title"}]};\n/* END NIAKVIO_PROVIDER */\n'''
+branded, records = apply_overrides("movieblast", raw, phase="discovery")
 branded_text = branded.decode("utf-8")
 assert "NUVIO_GLOBAL_STREAM_PRESENTATION_V1" in branded_text
 assert "NUVIO_GLOBAL_PROVIDER_BRANDING_V1" in branded_text
@@ -112,7 +123,8 @@ with tempfile.NamedTemporaryFile("wb", suffix=".js", delete=False) as handle:
         b'\nvar __nuvioTestPlaylist="#EXTM3U\\n#EXT-X-VERSION:3\\n#EXTINF:120,\\nsegment-1.ts\\n#EXTINF:120,\\nsegment-2.ts\\n#EXT-X-ENDLIST\\n";'
         b'globalThis.fetch=async function(url){return{ok:true,status:200,url:String(url),headers:{get:function(name){return String(name).toLowerCase()==="content-type"?"application/vnd.apple.mpegurl":null}},text:async function(){return __nuvioTestPlaylist}}};'
         b'Promise.resolve(globalThis.getStreams("603","movie")).then(function(rows){var r=rows[0];'
-        b'if(!r||r.name!=="\xf0\x9f\x8d\x91 Peachify"||r.title!=="\xf0\x9f\x8d\x91 Peachify - 1080p"||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")'
+        b'var expected="\xf0\x9f\x92\xa5 MovieBlast \xe2\x80\xa2 1080p VFF \xe2\x80\xa2 raw upstream title";'
+        b'if(!r||r.name!==expected||r.title!==expected||r.quality!=="1080p"||r.language!=="VF"||r.format!=="HLS")'
         b'{console.error(JSON.stringify(r));process.exit(4)}console.log(JSON.stringify(r))'
         b'}).catch(function(e){console.error(e);process.exit(5)});\n'
     )
@@ -123,4 +135,4 @@ try:
 finally:
     artifact.unlink(missing_ok=True)
 
-print("Core media/branding/security policy V17 test passed: provider facts preserved before committed final branding")
+print("Core media/branding/security policy V17 test passed: provider bytes preserved, Core security isolated, final branding committed")

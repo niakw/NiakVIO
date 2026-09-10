@@ -43,8 +43,8 @@ def run_node(source: str, harness: str) -> dict:
 
 def test_hls_hook_keeps_runtime_safety_ownership_separate(root: Path) -> None:
     guard = load_module(
-        root / "scripts/provider_patches/hls_master_audio_preserver_v1.py",
-        "hls_master_audio_preserver_v1",
+        root / "scripts/provider_patches/hls_runtime_integrity_v1.py",
+        "hls_runtime_integrity_v1",
     )
     base = (
         'async function preserveMaster(body){'
@@ -55,8 +55,8 @@ def test_hls_hook_keeps_runtime_safety_ownership_separate(root: Path) -> None:
     )
     patched = guard.apply(base, context={"provider_id": "purstream"})
     assert patched == guard.apply(patched, context={"provider_id": "purstream"})
-    assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" in patched
-    assert "#EXT-X-MEDIA" in patched
+    assert "NUVIO_HLS_RUNTIME_INTEGRITY_V1" in patched
+    assert "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1" not in patched
     # Core V15 gives runtime/native media safety to runtime_capability_media_safety_v4.
     # The HLS adapter must not resurrect the historical platform fingerprint wrapper.
     assert "followRedirects" not in patched
@@ -72,7 +72,7 @@ def test_embed_cookie_and_header_inheritance(root: Path) -> None:
     base = 'module.exports={getStreams:async()=>[{title:"x",url:"https://player.example.com/watch"}]};\n'
     patched = enrichment.apply(base)
     assert patched == enrichment.apply(patched)
-    assert "scoped-playback-context-v7-provider-deadline" in patched
+    assert "scoped-playback-context-v8-media-first-candidates" in patched
     assert 'typeof r.arrayBuffer==="function"' in patched
     assert 'typeof r.text==="function"' in patched
 

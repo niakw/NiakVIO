@@ -146,9 +146,6 @@ def validate(text: str | None = None) -> None:
     if value.count(TRACE_MARKER) != 1:
         raise AssertionError(f"V18.4 trace marker count={value.count(TRACE_MARKER)}")
 
-    # Invariants owned by V18.4 itself and still required after later V20.x
-    # response-value migrations. Later owners may replace local variable names,
-    # id/slug representation and replay depth, but not this bounded trace API.
     for needle in (
         "function _spv184Trace(stage, mediaType, providerId, stepIndex, route)",
         "globalThis.__nuvioProviderValueTraceV18",
@@ -182,9 +179,17 @@ def validate(text: str | None = None) -> None:
         "providerValues = _spv205StrictProviderValues(",
         "const providerTraceId = providerValues.id || providerValues.slug || \"\";",
     ))
-    if not legacy_identity_bridge and not response_value_bridge and not strict_v205_bridge:
+    strict_v219_bridge = all(needle in value for needle in (
+        "NIAKVIO_PROVIDER_JSON_CATALOGUE_PRESERVATION_V21_9",
+        "providerValues = _spv219JsonProviderValues(JSON.parse(rawSearchValue), meta, season, mediaType);",
+        "const catalogueProviderValues = _spv215CatalogueProviderValues(",
+        "id: providerValues.id || catalogueProviderValues.id || \"\"",
+        "slug: providerValues.slug || catalogueProviderValues.slug || \"\"",
+        "const providerTraceId = providerValues.id || providerValues.slug || \"\";",
+    ))
+    if not legacy_identity_bridge and not response_value_bridge and not strict_v205_bridge and not strict_v219_bridge:
         raise AssertionError(
-            "V18.4 JSON-text identity bridge missing legacy V18.4 or current V20.x owner"
+            "V18.4 JSON-text identity bridge missing legacy V18.4 or current V20/V21 owner"
         )
 
     legacy_trace = (
@@ -197,7 +202,7 @@ def validate(text: str | None = None) -> None:
     )
     if legacy_trace not in value and dependency_trace not in value:
         raise AssertionError(
-            "V18.4 identity trace missing legacy providerId or V20.5 providerTraceId owner"
+            "V18.4 identity trace missing legacy providerId or current providerTraceId owner"
         )
 
     legacy_depth = "const valueSteps = (plan.steps || []).slice(0, 4);"
@@ -207,11 +212,6 @@ def validate(text: str | None = None) -> None:
             "V18.4 provider-value depth missing legacy 4 or current V20.5 depth 8"
         )
 
-    # Security check must inspect the V18.4 trace helper itself, not every helper
-    # later migrations inserted before another resolver. V20.5 legitimately
-    # contains words such as `authorization` in its *rejection* filters; that is
-    # not trace output. Keep the forbidden-field policy unchanged and narrow only
-    # the ownership window.
     trace_start = value.index("/* NIAKVIO_PROVIDER_VALUE_TRACE_V18_4 */")
     trace_function = value.index("function _spv184Trace(", trace_start)
     trace_end = value.find("\n}\n", trace_function)
@@ -229,7 +229,7 @@ def main() -> int:
     changed = patch()
     print(
         f"PROVIDER_CORRELATED_VALUE_JSON_TEXT_V18_4_OK changed={str(changed).lower()} "
-        "json_text_first=1 strict_v18_identity_reused=1 html_fallback=1 bounded_payload=1 "
+        "json_text_first=1 current_json_owner_accepted=1 html_fallback=1 bounded_payload=1 "
         "sanitized_stage_trace=1 provider_specific_rules=0"
     )
     return 0
