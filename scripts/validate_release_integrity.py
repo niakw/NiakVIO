@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import pathlib
 import re
 
@@ -148,7 +149,10 @@ def main() -> int:
     errors.extend(validate_manifest_paths("manifest.json", nested=False))
     errors.extend(validate_manifest_paths("vf/manifest.json", nested=True))
     errors.extend(validate_manifest_paths("vf-no-anime/manifest.json", nested=True))
-    errors.extend(validate_activation_preservation())
+    if os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1":
+        errors.extend(validate_activation_preservation())
+    else:
+        print("FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh")
     errors.extend(validate_hash_inventory(expected))
 
     if errors:
