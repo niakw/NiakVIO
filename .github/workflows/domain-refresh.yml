@@ -15,11 +15,14 @@ on:
       - '.github/triggers/domain-refresh'
       - '.github/workflows/domain-refresh.yml'
       - 'scripts/domain_refresh_transaction_v2.py'
+      - 'scripts/validate_domain_refresh_transaction.py'
       - 'scripts/refresh_authoritative_hub_domains.py'
       - 'scripts/resolve_provider_hubs.py'
       - 'scripts/provider_base_store.py'
       - 'scripts/sync_release_versions.py'
       - 'scripts/audit_provider_v3_static.py'
+      - 'tests/domain_refresh_transaction_guard_test.py'
+      - 'tests/priority_tv_year_domain_refresh_test.py'
       - 'provider-hubs.json'
       - 'domain-observation-config.json'
   schedule:
@@ -54,6 +57,7 @@ jobs:
           cp manifest.json "$RUNNER_TEMP/published-manifest-baseline.json"
           cp provider-overrides.json "$RUNNER_TEMP/provider-overrides.before.json"
           cp provider-hubs.json "$RUNNER_TEMP/provider-hubs.before.json"
+          cp provider-domain-history.json "$RUNNER_TEMP/provider-domain-history.before.json"
 
       - name: Resolve and publish authoritative hub terminal DATA
         shell: bash
@@ -66,6 +70,17 @@ jobs:
             --apply \
             --output health-output/provider-hub-report.json \
             --changes-output health-output/domain-site-changes.json
+
+      - name: Fail closed on rollback, stale fallback or template terminal
+        run: |
+          set -euo pipefail
+          python tests/domain_refresh_transaction_guard_test.py
+          python scripts/validate_domain_refresh_transaction.py \
+            --before-overrides "$RUNNER_TEMP/provider-overrides.before.json" \
+            --before-hubs "$RUNNER_TEMP/provider-hubs.before.json" \
+            --before-history "$RUNNER_TEMP/provider-domain-history.before.json" \
+            --report health-output/provider-hub-report.json \
+            --changes health-output/domain-site-changes.json
 
       - name: Observe updated domains through DNS and HTTP
         continue-on-error: true
@@ -84,6 +99,7 @@ jobs:
           set -euo pipefail
           python tests/authoritative_hub_domain_refresh_test.py
           python tests/domain_refresh_workflow_test.py
+          python tests/priority_tv_year_domain_refresh_test.py
           python tests/provider_v3_workflow_ownership_test.py
           python scripts/audit_provider_v3_static.py
           git diff --exit-code -- scripts/provider_patches provider-bases provider-type-policy.json
@@ -120,6 +136,7 @@ jobs:
             FILE-HASHES.json PATCH-SHA256SUMS.txt SHA256SUMS.json
           if git diff --cached --quiet; then
             echo 'No authoritative hub domain publication change.'
+            echo 'FIELD_DOMAIN_REFRESH_IDEMPOTENT true'
             exit 0
           fi
           BASE_SHA="$(git rev-parse HEAD)"
