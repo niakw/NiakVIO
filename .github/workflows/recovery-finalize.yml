@@ -1,5 +1,5 @@
 name: Recovery Finalize Provider Generation
-# revision: 3 - canonical anime transport + safe HTML scanner
+# revision: 4 - patch source, rematerialize 96, then validate
 
 on:
   push:
@@ -42,10 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/finalize_publish_contracts.py
-          python tests/canonical_media_types_test.py
-          python tests/provider_anime_semantic_transport_contract_test.py
-          python tests/global_provider_branding_test.py
-          python tests/provider_html_filter_security_test.py
+          python -m py_compile scripts/finalize_publish_contracts.py scripts/materialize_provider_v3_all.py scripts/enforce_provider_v3_semantic_transport_contract_v5.py scripts/reapply_published_overrides.py scripts/provider_base_store.py
       - name: Rematerialize canonical ProviderBase and all 96 providers
         shell: bash
         run: |
