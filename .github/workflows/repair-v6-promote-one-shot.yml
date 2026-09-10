@@ -1,0 +1,249 @@
+name: ONE-SHOT - Promote Repair V6 #28
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/triggers/provider-repair-promote.json'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: one-shot-repair-v6-promote
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: publication
+      REPAIR_SOURCE_SHA: 974a2fdaf69362cf6886621cb1a6c4b8cee5e7da
+      REPAIR_ARTIFACT_ID: '10178083678'
+      REPAIR_ARTIFACT_SHA256: d685b89ce7ff901378520ecd69aeb25505e0ddabdba88fa1d02a743d92d50959
+      GH_TOKEN: ${{ github.token }}
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout exact promotion trigger
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Guard source lineage and fetch exact Repair artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import os, subprocess
+          source=os.environ['REPAIR_SOURCE_SHA']
+          allowed={
+              '.github/workflows/repair-v6-promote-one-shot.yml',
+              '.github/triggers/provider-repair-promote.json',
+          }
+          changed=set(subprocess.check_output(['git','diff','--name-only',f'{source}..HEAD'], text=True).splitlines())
+          bad=sorted(changed-allowed)
+          if bad:
+              raise SystemExit(f'promotion source advanced outside one-shot infra: {bad}')
+          print(f'PROMOTION_SOURCE_LINEAGE_OK source={source} infra_changes={len(changed)}')
+          PY
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Accept: application/vnd.github+json' \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/artifacts/${REPAIR_ARTIFACT_ID}/zip" \
+            -o /tmp/repair.zip
+          echo "${REPAIR_ARTIFACT_SHA256}  /tmp/repair.zip" | sha256sum -c -
+          mkdir -p /tmp/repair
+          unzip -q /tmp/repair.zip -d /tmp/repair
+
+      - name: Verify artifact gates and V9 materialization
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path('/tmp/repair')
+          summary=json.loads((root/'automation/provider-repair-v6-summary.json').read_text())
+          gate=json.loads((root/'automation/provider-non-regression-gate.json').read_text())
+          mat=json.loads((root/'provider-v3-materialization.json').read_text())
+          assert mat.get('sourceSha') == os.environ['REPAIR_SOURCE_SHA'], mat.get('sourceSha')
+          assert mat.get('providerCount') == 96 and mat.get('expectedProviderCount') == 96
+          assert summary.get('catalogueProviderCount') == 96
+          assert summary.get('portfolioPreservationGatePassed') is True
+          assert summary.get('upstreamPositivePreservationGatePassed') is True
+          assert summary.get('preservationGatePassed') is True
+          assert summary.get('activeBrokenProviderAllowed') is False
+          assert summary.get('repairDispositionStateCounts') == {'off': 16, 'on': 6, 'repair': 74}
+          assert gate.get('passed') is True and int(gate.get('failureCount') or 0) == 0
+          rows=mat.get('providers') or []
+          assert len(rows) == 96
+          missing=[]
+          no_v9=[]
+          for row in rows:
+              path=root/row['file']
+              if not path.is_file():
+                  missing.append(row['file'])
+                  continue
+              if 'native-vod-duration-proof-v9' not in path.read_text(encoding='utf-8', errors='ignore'):
+                  no_v9.append(row['provider'])
+          assert not missing, missing
+          assert not no_v9, no_v9
+          for rel, expected in [('manifest.json',96),('vf/manifest.json',29),('no-anime/manifest.json',71),('vf-no-anime/manifest.json',16)]:
+              data=json.loads((root/rel).read_text())
+              assert len(data.get('scrapers') or []) == expected, (rel, len(data.get('scrapers') or []))
+          print('REPAIR_ARTIFACT_AUTHORITY_OK providers=96 v9=96 on=6 repair=74 off=16 non_regression=pass')
+          PY
+
+      - name: Replay deterministic source migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_runtime_reconstruction_v21_12.py
+          python - <<'PY'
+          import ast, subprocess, sys
+          from pathlib import Path
+          path=Path('scripts/run_provider_repair_pipeline_v6.py')
+          tree=ast.parse(path.read_text(encoding='utf-8'))
+          migrations=None
+          for node in ast.walk(tree):
+              if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id=='migrations' for t in node.targets):
+                  if isinstance(node.value, (ast.List, ast.Tuple)):
+                      migrations=[elt.value for elt in node.value.elts if isinstance(elt, ast.Constant) and isinstance(elt.value,str)]
+                      break
+          if not migrations:
+              raise SystemExit('canonical migrations list not found')
+          for rel in migrations:
+              p=Path(rel)
+              if not p.is_file():
+                  raise SystemExit(f'missing declared migration before promotion: {rel}')
+              subprocess.run([sys.executable, rel], check=True)
+          print(f'PROMOTION_MIGRATIONS_OK count={len(migrations)}')
+          PY
+
+      - name: Overlay candidate DATA and strengthen Repair contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          rsync -a /tmp/repair/automation/ automation/
+          rsync -a /tmp/repair/provider-bases/ provider-bases/
+          cp /tmp/repair/provider-overrides.json provider-overrides.json
+          cp /tmp/repair/PROVENANCE.json PROVENANCE.json
+          cp /tmp/repair/provider-v3-quick-yield.json provider-v3-quick-yield.json
+          cp /tmp/repair/manifest.json manifest.json
+          cp /tmp/repair/vf/manifest.json vf/manifest.json
+          cp /tmp/repair/no-anime/manifest.json no-anime/manifest.json
+          cp /tmp/repair/vf-no-anime/manifest.json vf-no-anime/manifest.json
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('tests/provider_repair_pipeline_v6_contract_test_impl.py')
+          text=p.read_text(encoding='utf-8')
+          if 'import ast\n' not in text:
+              text=text.replace('from __future__ import annotations\n\nimport json\n', 'from __future__ import annotations\n\nimport ast\nimport json\n', 1)
+          marker='# Canonical cumulative migration order.'
+          guard="""# Every Python migration/test path declared by the canonical pipeline must\n# exist in the same revision. This prevents silent wiring of phantom steps.\npipeline_tree = ast.parse(pipeline)\ndeclared_python_paths = sorted({\n    node.value\n    for node in ast.walk(pipeline_tree)\n    if isinstance(node, ast.Constant)\n    and isinstance(node.value, str)\n    and node.value.endswith('.py')\n    and node.value.startswith(('scripts/', 'tests/'))\n})\nmissing_declared_python_paths = [\n    rel for rel in declared_python_paths if not (ROOT / rel).is_file()\n]\nassert not missing_declared_python_paths, missing_declared_python_paths\n\n"""
+          if 'missing_declared_python_paths' not in text:
+              if marker not in text:
+                  raise SystemExit('contract insertion marker not found')
+              text=text.replace(marker, guard+marker, 1)
+          p.write_text(text, encoding='utf-8')
+          print('REPAIR_DECLARED_PATH_EXISTENCE_GUARD_OK')
+          PY
+          python tests/provider_repair_pipeline_v6_contract_test.py
+
+      - name: Reconstruct exact publication bytes from promoted candidate DATA
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/finalize_provider_repair_disposition_v1.py \
+            --recovery automation/provider-route-recovery-v6-targeted.json \
+            --quick-yield provider-v3-quick-yield.json
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/provider_base_store.py validate
+          python scripts/provider_base_store.py validate --artifacts
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py --expected 96
+
+      - name: Verify exact CORE-critical publication contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/provider_v3_minimizer_published_test.py
+          python tests/provider_html_filter_security_test.py --published
+          python tests/provider_brick_portfolio_audit_test.py --published --require-all
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/global_stream_identity_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/global_playback_integrity_policy_test.py
+          python tests/stream_output_sanitizer_fail_closed_test.py
+          python tests/global_stream_output_guard_test.py
+          python scripts/audit_provider_v3_static.py
+          python scripts/verify_provider_v3_reverse_rebuild.py
+          for t in tests/provider_hub_registry_test.py tests/provider_specific_adapters_test.py tests/provider_upstream_lkg_test.py; do
+            if [ -f "$t" ]; then python "$t"; fi
+          done
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text())
+          d=json.loads(Path('automation/provider-repair-disposition.json').read_text())
+          rows=m.get('scrapers') or []
+          assert len(rows)==96
+          assert sum(row.get('enabled') is not False for row in rows)==6
+          assert d.get('stateCounts')=={'on': 6, 'repair': 74, 'off': 16}, d.get('stateCounts')
+          missing=[]; no_v9=[]
+          for row in rows:
+              p=Path(row['filename'])
+              if not p.is_file(): missing.append(row['filename']); continue
+              if 'native-vod-duration-proof-v9' not in p.read_text(encoding='utf-8', errors='ignore'):
+                  no_v9.append(row.get('id'))
+          assert not missing, missing
+          assert not no_v9, no_v9
+          print('PROMOTED_PUBLICATION_BYTES_OK providers=96 v9=96 enabled=6')
+          PY
+          python scripts/generate_release_hashes.py
+          python scripts/validate_release_integrity.py
+
+      - name: Commit promoted state atomically and remove one-shot infrastructure
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          CURRENT_SHA="$(git rev-parse origin/main)"
+          if [ "$CURRENT_SHA" != "${GITHUB_SHA}" ]; then
+            echo "PROMOTION_ABORTED main_advanced trigger=${GITHUB_SHA} current=${CURRENT_SHA}" >&2
+            exit 1
+          fi
+          rm -f .github/workflows/repair-v6-promote-one-shot.yml .github/triggers/provider-repair-promote.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --stat
+          if git diff --cached --quiet; then
+            echo 'Promotion unexpectedly produced no repository delta.' >&2
+            exit 1
+          fi
+          git commit -m 'fix(release): promote Repair V6 #28 canonical V9 generation'
+          git push origin HEAD:main
