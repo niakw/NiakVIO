@@ -8,9 +8,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "domain-refresh.yml"
 TRANSACTION = ROOT / "scripts" / "domain_refresh_transaction_v2.py"
+VALIDATOR = ROOT / "scripts" / "validate_release_integrity.py"
 
 text = WORKFLOW.read_text(encoding="utf-8")
 source = TRANSACTION.read_text(encoding="utf-8")
+validator = VALIDATOR.read_text(encoding="utf-8")
 
 assert text.startswith("name: CORE - Domain Refresh")
 assert "23 3 * * *" in text
@@ -25,6 +27,9 @@ assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in text
 assert "python tests/release_auto_bump_test.py" in text
 assert "python scripts/generate_release_hashes.py" in text
 assert "python scripts/validate_release_integrity.py" in text
+assert "NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'" in text
+assert 'os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1"' in validator
+assert "FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh" in validator
 assert "provider_dns_preflight.mjs" in text
 assert "continue-on-error: true" in text, "DNS/HTTP observation must not gate hub address authority"
 assert "authoritative_hub_domain_refresh_test.py" in text
@@ -138,4 +143,4 @@ assert "fs27.lol" not in patch["runtime_domain_replacements"], "current host mus
 assert patch["runtime_domain_replacements"]["api.example.old"] == "api.example.new"
 assert patch["notes"] == ["must remain byte-for-byte unrelated"]
 
-print("CORE domain refresh v2 contract passed: hub registry authority + registry persistence + CONFIG-only rebuild + cache-safe bump")
+print("CORE domain refresh v2 contract passed: hub registry authority + registry persistence + CONFIG-only rebuild + cache-safe bump + activation-neutral integrity")
