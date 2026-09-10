@@ -1,0 +1,111 @@
+name: WORKBENCH - External Drift Gate Install Once
+
+on:
+  push:
+    branches:
+      - workbench/systemic-recovery-20260909
+    paths:
+      - '.github/workflows/workbench-external-drift-gate-install-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  install-and-prove:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install final-only external drift policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/run_provider_repair_pipeline_v6.py')
+          text = path.read_text(encoding='utf-8')
+
+          constant_anchor = 'DISPOSITION = ROOT / "automation" / "provider-repair-disposition.json"\n'
+          constant_line = constant_anchor + 'RUNTIME_PLAN_LKG = Path(os.environ.get("RUNNER_TEMP") or (ROOT / "automation")) / "provider-runtime-plan-lkg-v1.json"\n'
+          if 'RUNTIME_PLAN_LKG =' not in text:
+              if text.count(constant_anchor) != 1:
+                  raise SystemExit('runtime LKG constant anchor missing or duplicated')
+              text = text.replace(constant_anchor, constant_line, 1)
+
+          test_anchor = '        "tests/provider_runtime_plan_lkg_v1_test.py",\n'
+          test_line = test_anchor + '        "tests/provider_external_drift_preservation_test.py",\n'
+          if '"tests/provider_external_drift_preservation_test.py"' not in text:
+              if text.count(test_anchor) != 1:
+                  raise SystemExit('repair test anchor missing or duplicated')
+              text = text.replace(test_anchor, test_line, 1)
+
+          final_anchor = '''    final_portfolio_cmd = [
+              sys.executable,
+              "scripts/compare_quick_yield_preservation.py",
+              "--baseline", str(PORTFOLIO_BASELINE.relative_to(ROOT)),
+              "--candidate", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
+          ]
+          '''
+          final_replacement = '''    final_portfolio_cmd = [
+              sys.executable,
+              "scripts/compare_quick_yield_preservation.py",
+              "--baseline", str(PORTFOLIO_BASELINE.relative_to(ROOT)),
+              "--candidate", str(PORTFOLIO_CANDIDATE.relative_to(ROOT)),
+              "--baseline-runtime-lkg", str(RUNTIME_PLAN_LKG),
+              "--manifest", str(MANIFEST.relative_to(ROOT)),
+              "--disposition", str(DISPOSITION.relative_to(ROOT)),
+              "--root", ".",
+              "--losses-output", str(PORTFOLIO_LOSSES.relative_to(ROOT)),
+          ]
+          '''
+          # Here-doc source is indented by YAML; normalize the exact Python source.
+          final_anchor = '\n'.join(line[10:] if line.startswith('          ') else line for line in final_anchor.splitlines()) + '\n'
+          final_replacement = '\n'.join(line[10:] if line.startswith('          ') else line for line in final_replacement.splitlines()) + '\n'
+          if '"--baseline-runtime-lkg", str(RUNTIME_PLAN_LKG)' not in text:
+              if text.count(final_anchor) != 1:
+                  raise SystemExit('final portfolio gate anchor missing or duplicated')
+              text = text.replace(final_anchor, final_replacement, 1)
+
+          path.write_text(text, encoding='utf-8')
+          PY
+      - name: Prove safety and ordering
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/compare_quick_yield_preservation.py scripts/run_provider_repair_pipeline_v6.py
+          python3 tests/provider_external_drift_preservation_test.py
+          python3 tests/provider_runtime_plan_lkg_v1_test.py
+          python3 tests/provider_repair_pipeline_v6_contract_test.py
+          python3 - <<'PY'
+          from pathlib import Path
+          text=Path('scripts/run_provider_repair_pipeline_v6.py').read_text(encoding='utf-8')
+          preliminary=text.index('preliminary_cmd = [')
+          final=text.index('final_portfolio_cmd = [')
+          waiver=text.index('"--baseline-runtime-lkg", str(RUNTIME_PLAN_LKG)')
+          assert preliminary < final < waiver
+          preliminary_block=text[preliminary:final]
+          assert '--baseline-runtime-lkg' not in preliminary_block
+          assert '"--losses-output", str(PORTFOLIO_LOSSES.relative_to(ROOT))' in text[final:]
+          assert 'tests/provider_external_drift_preservation_test.py' in text
+          print('EXTERNAL_DRIFT_PIPELINE_OK preliminary=strict retries=required final=guarded')
+          PY
+      - name: Commit verified integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/run_provider_repair_pipeline_v6.py
+          git diff --cached --check
+          git commit -m 'fix(repair): classify repeated byte-identical external drift'
+          git fetch origin workbench/systemic-recovery-20260909
+          git rebase origin/workbench/systemic-recovery-20260909
+          git push origin HEAD:workbench/systemic-recovery-20260909
