@@ -35,7 +35,7 @@ jobs:
           gh run download 34445456632 -n provider-recognition-repair-v6-34445456632 -D "$RUNNER_TEMP/repair"
           test -s "$RUNNER_TEMP/repair/manifest.json"
 
-      - name: Probe VidEasy movie and TV with stream identity detail
+      - name: Probe VidEasy movie and TV and summarize contradictions
         shell: bash
         run: |
           set -euo pipefail
@@ -63,6 +63,36 @@ jobs:
           print(json.dumps(data[sys.argv[1]],separators=(',',':')))
           PY
           )"
-            echo "===== VIDEASY $SLUG ====="
-            node scripts/nuvio_tv_probe_tmdb_ci.cjs "$PROVIDER" "$FIXTURE" '{}'
+            OUT="$RUNNER_TEMP/$SLUG.out"
+            set +e
+            node scripts/nuvio_tv_probe_tmdb_ci.cjs "$PROVIDER" "$FIXTURE" '{}' > "$OUT"
+            RC=$?
+            set -e
+            python - "$SLUG" "$RC" "$OUT" <<'PY'
+          import json,sys
+          slug,rc,path=sys.argv[1],int(sys.argv[2]),sys.argv[3]
+          rows=[]
+          for raw in open(path,encoding='utf-8'):
+              raw=raw.strip()
+              if raw.startswith('{'):
+                  try: rows.append(json.loads(raw))
+                  except Exception: pass
+          if not rows: raise SystemExit(f'VIDEASY_DIAG slug={slug} no_json rc={rc}')
+          d=rows[-1]
+          bad=[]
+          for item in d.get('streams') or []:
+              ident=item.get('identity') or {}
+              dur=item.get('duration_identity') or {}
+              if ident.get('status')=='contradiction' or dur.get('status')=='contradiction':
+                  row=item.get('row') or {}; media=item.get('media') or {}
+                  bad.append({
+                    'sourceName':row.get('sourceName'),
+                    'quality':row.get('quality'),
+                    'urlHost':(media.get('url') or row.get('url') or '').split('/')[2] if '://' in (media.get('url') or row.get('url') or '') else '',
+                    'mediaDurationSeconds':media.get('media_duration_seconds'),
+                    'identity':ident,
+                    'durationIdentity':dur,
+                  })
+          print('VIDEASY_DIAG '+json.dumps({'slug':slug,'rc':rc,'raw':d.get('raw_stream_count'),'playable':d.get('playable_stream_count'),'verified':d.get('content_verified_count'),'contradictions':d.get('identity_contradiction_count'),'bad':bad},separators=(',',':')))
+          PY
           done
