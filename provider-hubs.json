@@ -2914,7 +2914,9 @@
           "purpose": "Conservative fallback discovery; requires consecutive runtime validation before activation"
         }
       ],
-      "search_confirmation_runs": 2
+      "search_confirmation_runs": 2,
+      "direct_candidates": [],
+      "allowed_terminal_hosts": []
     },
     "kehflix": {
       "id": "kehflix",
@@ -2970,7 +2972,7 @@
       "manifest_status": "Désactivé",
       "category": "International",
       "hub": "https://flixnetwork.is/",
-      "direct": "https://${esc(s.domain)}/",
+      "direct": "https://1flixto.icu/",
       "source": "curated_user_registry",
       "aliases": [
         "1shows"
@@ -2988,11 +2990,9 @@
       ],
       "schema_notes": "FlixNetwork is the authoritative address hub; select the 1flixto tile/link and runtime-validate the terminal before persistence.",
       "direct_candidates": [
-        "https://${esc(s.domain)}/",
         "https://1flixto.icu/"
       ],
       "allowed_terminal_hosts": [
-        "${esc(s.domain)}",
         "1flixto.icu"
       ],
       "search_queries": [
