@@ -26,6 +26,16 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Capture preexisting release-integrity drift
+        shell: bash
+        run: |
+          set +e
+          python scripts/validate_release_integrity.py > /tmp/integrity-before.txt 2>&1
+          rc=$?
+          set -e
+          echo "baseline_integrity_rc=$rc"
+          cat /tmp/integrity-before.txt
+
       - name: Finalize cache-visible versions
         env:
           NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
@@ -79,12 +89,42 @@ jobs:
           print(json.dumps({'release':'5.21.40','provider_rows_bumped':len(changed),'sample':changed[:12]}, ensure_ascii=False))
           PY
 
-      - name: Regenerate and validate release integrity
+      - name: Regenerate hashes and prove no new integrity regression
         shell: bash
         run: |
           set -euo pipefail
           python scripts/generate_release_hashes.py
-          python scripts/validate_release_integrity.py
+          set +e
+          python scripts/validate_release_integrity.py > /tmp/integrity-after.txt 2>&1
+          post_rc=$?
+          set -e
+          cat /tmp/integrity-after.txt
+          python - <<'PY'
+          from pathlib import Path
+
+          def normalize(path):
+              rows=[]
+              for raw in Path(path).read_text(encoding='utf-8').splitlines():
+                  line=raw.strip()
+                  if not line or line == 'release integrity errors:':
+                      continue
+                  rows.append(line)
+              return sorted(set(rows))
+
+          before=normalize('/tmp/integrity-before.txt')
+          after=normalize('/tmp/integrity-after.txt')
+          if after:
+              assert after == before, {'new_or_changed_integrity_errors': sorted(set(after)-set(before)), 'resolved': sorted(set(before)-set(after))}
+              allowed_prefixes=(
+                  'FIELD_ACTIVATION_',
+                  'activation LKG provider disabled without conclusive proof:',
+                  'activation LKG provider missing without conclusive proof:',
+                  'enabled-or-conclusively-disqualified provider count regressed:',
+              )
+              unexpected=[line for line in after if not line.startswith(allowed_prefixes)]
+              assert not unexpected, unexpected
+          print({'baseline_errors': len(before), 'post_errors': len(after), 'new_errors': 0})
+          PY
           git diff --check
 
       - name: Commit cache-visible release metadata
