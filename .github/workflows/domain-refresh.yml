@@ -91,6 +91,7 @@ jobs:
       - name: Reproject manifests and finalize cache-safe version
         env:
           NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
+          NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'
         run: |
           set -euo pipefail
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
