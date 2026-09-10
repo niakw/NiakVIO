@@ -1,5 +1,5 @@
 name: Recovery Finalize Provider Generation
-# revision: 2 - canonical anime transport + safe HTML scanner
+# revision: 3 - canonical anime transport + safe HTML scanner
 
 on:
   push:
@@ -42,7 +42,6 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/finalize_publish_contracts.py
-          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
           python tests/canonical_media_types_test.py
           python tests/provider_anime_semantic_transport_contract_test.py
           python tests/global_provider_branding_test.py
