@@ -113,17 +113,18 @@ jobs:
 
           before=normalize('/tmp/integrity-before.txt')
           after=normalize('/tmp/integrity-after.txt')
-          if after:
-              assert after == before, {'new_or_changed_integrity_errors': sorted(set(after)-set(before)), 'resolved': sorted(set(before)-set(after))}
-              allowed_prefixes=(
-                  'FIELD_ACTIVATION_',
-                  'activation LKG provider disabled without conclusive proof:',
-                  'activation LKG provider missing without conclusive proof:',
-                  'enabled-or-conclusively-disqualified provider count regressed:',
-              )
-              unexpected=[line for line in after if not line.startswith(allowed_prefixes)]
-              assert not unexpected, unexpected
-          print({'baseline_errors': len(before), 'post_errors': len(after), 'new_errors': 0})
+          new=sorted(set(after)-set(before))
+          resolved=sorted(set(before)-set(after))
+          assert not new, {'new_integrity_errors': new, 'resolved': resolved}
+          allowed_prefixes=(
+              'FIELD_ACTIVATION_',
+              'activation LKG provider disabled without conclusive proof:',
+              'activation LKG provider missing without conclusive proof:',
+              'enabled-or-conclusively-disqualified provider count regressed:',
+          )
+          unexpected=[line for line in after if not line.startswith(allowed_prefixes)]
+          assert not unexpected, unexpected
+          print({'baseline_errors': len(before), 'post_errors': len(after), 'resolved': len(resolved), 'new_errors': 0})
           PY
           git diff --check
 
