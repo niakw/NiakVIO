@@ -52,9 +52,9 @@ permissions:
 jobs:
   analyze:
     # Keep one immutable init/analyze action pair while splitting the two generated
-    # flat JS trees into bounded databases. The range shards cover all normal
-    # alphanumeric provider names; the fallback shards cover anything else or any
-    # future nested files. Together with source this remains exhaustive JS/TS coverage.
+    # flat JS trees into bounded databases. Range shards cover 0-9/a-y; the final
+    # shard deliberately includes z* plus any atypical or nested files, so it is
+    # both non-empty today and a future-proof exhaustive fallback.
     name: "${{ matrix.check_name }}"
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -127,7 +127,7 @@ jobs:
                 - "providers/q*.js"
                 - "providers/r*.js"
             category: "/language:javascript-typescript/shard:providers-m-r"
-          - check_name: "CodeQL · javascript-typescript · providers-s-z"
+          - check_name: "CodeQL · javascript-typescript · providers-s-y"
             language: javascript-typescript
             build_mode: none
             config: |
@@ -139,9 +139,8 @@ jobs:
                 - "providers/w*.js"
                 - "providers/x*.js"
                 - "providers/y*.js"
-                - "providers/z*.js"
-            category: "/language:javascript-typescript/shard:providers-s-z"
-          - check_name: "CodeQL · javascript-typescript · providers-fallback"
+            category: "/language:javascript-typescript/shard:providers-s-y"
+          - check_name: "CodeQL · javascript-typescript · providers-z-fallback"
             language: javascript-typescript
             build_mode: none
             config: |
@@ -183,8 +182,7 @@ jobs:
                 - "providers/w*.js"
                 - "providers/x*.js"
                 - "providers/y*.js"
-                - "providers/z*.js"
-            category: "/language:javascript-typescript/shard:providers-fallback"
+            category: "/language:javascript-typescript/shard:providers-z-fallback"
 
           - check_name: "CodeQL · javascript-typescript · provider-bases-0-f"
             language: javascript-typescript
@@ -232,7 +230,7 @@ jobs:
                 - "provider-bases/q*.js"
                 - "provider-bases/r*.js"
             category: "/language:javascript-typescript/shard:provider-bases-m-r"
-          - check_name: "CodeQL · javascript-typescript · provider-bases-s-z"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-s-y"
             language: javascript-typescript
             build_mode: none
             config: |
@@ -244,9 +242,8 @@ jobs:
                 - "provider-bases/w*.js"
                 - "provider-bases/x*.js"
                 - "provider-bases/y*.js"
-                - "provider-bases/z*.js"
-            category: "/language:javascript-typescript/shard:provider-bases-s-z"
-          - check_name: "CodeQL · javascript-typescript · provider-bases-fallback"
+            category: "/language:javascript-typescript/shard:provider-bases-s-y"
+          - check_name: "CodeQL · javascript-typescript · provider-bases-z-fallback"
             language: javascript-typescript
             build_mode: none
             config: |
@@ -288,8 +285,7 @@ jobs:
                 - "provider-bases/w*.js"
                 - "provider-bases/x*.js"
                 - "provider-bases/y*.js"
-                - "provider-bases/z*.js"
-            category: "/language:javascript-typescript/shard:provider-bases-fallback"
+            category: "/language:javascript-typescript/shard:provider-bases-z-fallback"
 
     steps:
       - name: Checkout repository
