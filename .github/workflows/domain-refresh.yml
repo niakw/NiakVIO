@@ -96,6 +96,21 @@ jobs:
             --report health-output/provider-hub-report.json \
             --changes health-output/domain-site-changes.json
 
+      - name: Keep no-op history byte-stable
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os, shutil
+          from pathlib import Path
+          changes = json.loads(Path('health-output/domain-site-changes.json').read_text(encoding='utf-8'))
+          if not (changes.get('changed') or changes.get('registry_changed')):
+              source = Path(os.environ['RUNNER_TEMP']) / 'provider-domain-history.before.json'
+              shutil.copyfile(source, Path('provider-domain-history.json'))
+              print('FIELD_DOMAIN_HISTORY_NOOP_RESTORED true')
+          else:
+              print('FIELD_DOMAIN_HISTORY_NOOP_RESTORED false')
+          PY
+
       - name: Observe updated domains through DNS and HTTP
         continue-on-error: true
         env:
