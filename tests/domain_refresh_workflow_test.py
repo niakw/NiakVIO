@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -59,6 +60,12 @@ for required in (
 ):
     assert required in source, required
 
+# The transaction is normally executed as scripts/domain_refresh_transaction_v2.py,
+# which naturally places scripts/ on sys.path. Import-based contract tests must
+# reproduce that module search path explicitly rather than depending on cwd.
+scripts_dir = str(ROOT / "scripts")
+if scripts_dir not in sys.path:
+    sys.path.insert(0, scripts_dir)
 spec = importlib.util.spec_from_file_location("domain_refresh_transaction_v2", TRANSACTION)
 assert spec is not None and spec.loader is not None
 module = importlib.util.module_from_spec(spec)
