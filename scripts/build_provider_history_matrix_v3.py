@@ -90,6 +90,35 @@ def transport_types(row: dict[str, Any] | None) -> set[str]:
     }
 
 
+
+def normalize_historical_semantic_types(
+    values: set[str],
+    *,
+    current_semantic: set[str],
+    current_transport: set[str],
+    historical_verified_lanes: set[str],
+) -> tuple[set[str], bool]:
+    """Demote the legacy anime->tv invocation alias unless TV has real proof.
+
+    Some historical manifests wrote the Nuvio ``tv`` transport alias into
+    ``canonicalSupportedTypes`` for anime providers. That field is normally a
+    semantic source, but the alias must not become a permanent TV capability
+    obligation when current canonical semantics are anime-only and no historical
+    TV lane was independently verified.
+    """
+    normalized = set(values)
+    alias_only_tv = (
+        "anime" in normalized
+        and "tv" in normalized
+        and "anime" in current_semantic
+        and "tv" not in current_semantic
+        and "tv" in current_transport
+        and "tv" not in historical_verified_lanes
+    )
+    if alias_only_tv:
+        normalized.discard("tv")
+    return normalized, alias_only_tv
+
 def current_semantic_types(row: dict[str, Any] | None) -> tuple[set[str], str]:
     canonical = canonical_semantic_types(row)
     if canonical:
@@ -208,6 +237,9 @@ def main() -> int:
         historical_types: dict[str, list[str]] = {}
         historical_transport_types: dict[str, list[str]] = {}
         historical_type_sources: dict[str, str] = {}
+        current_manifest_semantics = manifests["current"].get(pid)
+        current_types, current_type_source = current_semantic_types(current_manifest_semantics)
+        current_transport = transport_types(current_manifest_semantics)
         for version in HISTORY:
             manifest_row = manifests[version].get(pid)
             historical_transport_types[version] = sorted(transport_types(manifest_row))
@@ -232,6 +264,14 @@ def main() -> int:
                     elif legacy:
                         values = legacy
                         source = "5.21.0-fixture-types"
+            values, alias_reclassified = normalize_historical_semantic_types(
+                values,
+                current_semantic=current_types,
+                current_transport=current_transport,
+                historical_verified_lanes=historical_lanes,
+            )
+            if alias_reclassified:
+                source += "+anime-tv-transport-alias-normalized"
             historical_types[version] = sorted(values)
             historical_type_sources[version] = source
 
@@ -239,7 +279,6 @@ def main() -> int:
         # canonical declarations only. Bare historical supportedTypes are kept
         # for diagnostics but can never create a blocking regression.
         type_floor = set().union(*(set(values) for values in historical_types.values()))
-        current_types, current_type_source = current_semantic_types(manifests["current"].get(pid))
         lost_types = sorted(type_floor - current_types)
 
         historical_formats = set().union(
