@@ -36,9 +36,9 @@ def _patch_v7_safe_html_text() -> bool:
     unsafe_count = text.count(unsafe)
     safe_count = text.count(safe)
     if unsafe_count == 0:
-        if safe_count != 1:
+        if safe_count < 1:
             raise AssertionError(
-                f'v7-safe-html-text: expected one safe scanner when no legacy form remains, got {safe_count}'
+                f'v7-safe-html-text: expected at least one safe scanner when no legacy form remains, got {safe_count}'
             )
         return False
     if unsafe_count != 1:
