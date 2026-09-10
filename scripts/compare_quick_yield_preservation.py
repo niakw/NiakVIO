@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Portfolio preservation gate with stream-level content and external-drift safety.
 
-Default behaviour is the historical strict gate.  The canonical Repair pipeline may
+Default behaviour is the historical strict gate. The canonical Repair pipeline may
 opt into one narrow external-drift exception: a baseline-positive provider may stop
 blocking publication when the *exact same provider bytes* later fail only because of
-transient external network/timeout states, and the final candidate explicitly disables
-the provider as repair/off debt.  This never turns the failed probe green and never
-preserves activation.
+transient external network/timeout states, two targeted retry observations confirm
+that state, and the final candidate explicitly disables the provider as repair/off
+debt. This never turns the failed probe green and never preserves activation.
 """
 from __future__ import annotations
 
@@ -20,6 +20,7 @@ import compare_quick_yield_preservation_impl as impl
 
 _original_load = impl.load
 TRANSIENT_EXTERNAL_STAGES = {"timeout", "provider_network_exception"}
+MIN_EXTERNAL_DRIFT_RETRY_OBSERVATIONS = 2
 
 
 def accepted_verified_stream(row: dict) -> bool:
@@ -154,14 +155,16 @@ def row_has_any_yield(row: dict) -> bool:
     return any(int(row.get(key) or 0) > 0 for key in ("raw", "playable", "verified"))
 
 
-def lane_is_transient_only(rows: list[dict]) -> bool:
+def rows_are_transient_only(rows: list[dict]) -> bool:
     if not rows:
         return False
     if any(int(row.get("contradictions") or 0) > 0 for row in rows):
         return False
-    if any(row_has_any_yield(row) for row in rows):
-        return True
-    return all(str(row.get("debug_stage") or "").strip().casefold() in TRANSIENT_EXTERNAL_STAGES for row in rows)
+    return all(
+        row_has_any_yield(row)
+        or str(row.get("debug_stage") or "").strip().casefold() in TRANSIENT_EXTERNAL_STAGES
+        for row in rows
+    )
 
 
 def external_drift_waiver(
@@ -209,14 +212,15 @@ def external_drift_waiver(
     cand_rows = row_index(candidate)
     retry_rows = row_index(retry)
     for lane in sorted(base_lanes):
-        observations = [*(cand_rows.get((provider, lane)) or []), *(retry_rows.get((provider, lane)) or [])]
-        # A lane that recovered is already preserved; a lane that did not recover
-        # may be waived only when every observed failure is external/transient.
-        if any(row_has_any_yield(row) for row in observations):
+        candidate_lane = list(cand_rows.get((provider, lane)) or [])
+        retry_lane = list(retry_rows.get((provider, lane)) or [])
+        if any(row_has_any_yield(row) for row in [*candidate_lane, *retry_lane]):
             continue
-        if not lane_is_transient_only(observations):
+        if len(retry_lane) < MIN_EXTERNAL_DRIFT_RETRY_OBSERVATIONS:
+            return False, f"lane-{lane}-retry-evidence-missing"
+        if not rows_are_transient_only([*candidate_lane, *retry_lane]):
             return False, f"lane-{lane}-not-transient"
-    return True, "byte-identical-transient-disabled-debt"
+    return True, "byte-identical-repeated-transient-disabled-debt"
 
 
 def strict_main() -> int:
@@ -224,12 +228,11 @@ def strict_main() -> int:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(add_help=False)
-    parser.add_argument("--baseline-runtime-lkg")
-    parser.add_argument("--manifest")
-    parser.add_argument("--disposition")
-    parser.add_argument("--root", default=".")
-    known, _unknown = parser.parse_known_args()
+    probe = argparse.ArgumentParser(add_help=False)
+    probe.add_argument("--baseline-runtime-lkg")
+    probe.add_argument("--manifest")
+    probe.add_argument("--disposition")
+    known, _unknown = probe.parse_known_args()
     if not (known.baseline_runtime_lkg and known.manifest and known.disposition):
         impl.load = load
         return strict_main()
@@ -313,7 +316,7 @@ def main() -> int:
         raise SystemExit("yield preservation failed")
     if new_wrong:
         raise SystemExit("new wrong-content provider detected")
-    print("YIELD_PRESERVATION_OK external_drift_policy=byte-identical-transient-disabled-debt")
+    print("YIELD_PRESERVATION_OK external_drift_policy=byte-identical-repeated-transient-disabled-debt")
     return 0
 
 
