@@ -3487,12 +3487,7 @@ function _spv14LabelScoreForUrl(html, base, targetUrl, meta, mediaType, season) 
   while ((match = pattern.exec(source))) {
     const candidate = _absolute(match[2], base);
     if (!candidate || candidate !== target) continue;
-    const label = _text(match[4])
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;/gi, " ")
-      .replace(/&amp;/gi, "&")
-      .replace(/\s+/g, " ")
-      .trim();
+    const label = _htmlVisibleText(match[4]);
     if (!label) continue;
     let score = _spv4TitleScore(label, meta);
     // A loose token overlap cannot promote a catalogue result by itself.
