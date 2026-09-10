@@ -48,7 +48,6 @@ jobs:
             tests/opaque_native_media_enrichment_test.py
             tests/playback_context_compat_test.py
             tests/provider_json_catalogue_preservation_v21_9_test.py
-            tests/provider_manifest_execution_activation_test.py
             tests/provider_repair_pipeline_v6_contract_test_impl.py
             tests/provider_route_proof_lkg_test.py
             tests/provider_tmdb_runtime_key_contract_test.py
@@ -58,6 +57,8 @@ jobs:
           git checkout origin/workbench/systemic-recovery-20260909 -- "${files[@]}"
           # Neko-Sama is already absent from the executable 5.21.41 manifest.
           # Keep its historical catalogue identity; do not reintroduce a manifest mutation script.
+          # The workbench's provider_manifest_execution_activation_test.py expected >=82 enabled
+          # providers and predates strict all-lane activation, so it is intentionally not imported.
           python - <<'PY'
           from pathlib import Path
           p=Path('.github/workflows/provider-upstream-parity.yml')
@@ -88,7 +89,6 @@ jobs:
           python tests/provider_voiranime_homes_authority_v21_10_test.py
           python tests/cineby_tmdb_page_fallback_v2_test.py
           python tests/native_hls_short_vod_regression_test.py
-          python tests/provider_manifest_execution_activation_test.py
           python tests/provider_repair_pipeline_v6_contract_test.py
           python tests/provider_v3_workflow_ownership_test.py
           python tests/domain_refresh_workflow_test.py
