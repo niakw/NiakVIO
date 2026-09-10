@@ -17,12 +17,14 @@ on:
       - 'scripts/domain_refresh_transaction_v2.py'
       - 'scripts/sanitize_provider_hub_registry.py'
       - 'scripts/validate_domain_refresh_transaction.py'
+      - 'scripts/reconcile_provider_domain_metadata.py'
       - 'scripts/refresh_authoritative_hub_domains.py'
       - 'scripts/resolve_provider_hubs.py'
       - 'scripts/provider_base_store.py'
       - 'scripts/sync_release_versions.py'
       - 'scripts/audit_provider_v3_static.py'
       - 'tests/domain_refresh_transaction_guard_test.py'
+      - 'tests/provider_domain_metadata_reconcile_test.py'
       - 'tests/priority_tv_year_domain_refresh_test.py'
       - 'provider-hubs.json'
       - 'domain-observation-config.json'
@@ -77,6 +79,12 @@ jobs:
             --output health-output/provider-hub-report.json \
             --changes-output health-output/domain-site-changes.json
 
+      - name: Reconcile provider-owned domain metadata
+        run: |
+          set -euo pipefail
+          python tests/provider_domain_metadata_reconcile_test.py
+          python scripts/reconcile_provider_domain_metadata.py --rebuild
+
       - name: Fail closed on rollback, stale fallback or template terminal
         run: |
           set -euo pipefail
@@ -107,6 +115,7 @@ jobs:
           python tests/authoritative_hub_domain_refresh_test.py
           python tests/domain_refresh_workflow_test.py
           python tests/domain_refresh_transaction_guard_test.py
+          python tests/provider_domain_metadata_reconcile_test.py
           python tests/priority_tv_year_domain_refresh_test.py
           python tests/provider_v3_workflow_ownership_test.py
           python scripts/audit_provider_v3_static.py
