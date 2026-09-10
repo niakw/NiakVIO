@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     env:
-      NUVIO_PROVIDER_V3_CONTEXT: publication
+      NUVIO_PROVIDER_V3_CONTEXT: main
       REPAIR_SOURCE_SHA: 974a2fdaf69362cf6886621cb1a6c4b8cee5e7da
       REPAIR_ARTIFACT_ID: '10178083678'
       REPAIR_ARTIFACT_SHA256: d685b89ce7ff901378520ecd69aeb25505e0ddabdba88fa1d02a743d92d50959
@@ -94,13 +94,11 @@ jobs:
           assert gate.get('passed') is True and int(gate.get('failureCount') or 0) == 0
           rows=mat.get('providers') or []
           assert len(rows) == 96
-          missing=[]
-          no_v9=[]
+          missing=[]; no_v9=[]
           for row in rows:
               path=root/row['file']
               if not path.is_file():
-                  missing.append(row['file'])
-                  continue
+                  missing.append(row['file']); continue
               if 'native-vod-duration-proof-v9' not in path.read_text(encoding='utf-8', errors='ignore'):
                   no_v9.append(row['provider'])
           assert not missing, missing
@@ -130,8 +128,7 @@ jobs:
           if not migrations:
               raise SystemExit('canonical migrations list not found')
           for rel in migrations:
-              p=Path(rel)
-              if not p.is_file():
+              if not Path(rel).is_file():
                   raise SystemExit(f'missing declared migration before promotion: {rel}')
               subprocess.run([sys.executable, rel], check=True)
           print(f'PROMOTION_MIGRATIONS_OK count={len(migrations)}')
