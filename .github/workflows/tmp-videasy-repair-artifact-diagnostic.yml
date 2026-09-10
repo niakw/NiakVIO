@@ -1,4 +1,4 @@
-name: TEMP - VidEasy Repair Artifact Diagnostic
+name: TEMP - VidEasy Identity-Safe Endpoint Fix
 
 on:
   push:
@@ -8,91 +8,71 @@ on:
       - '.github/workflows/tmp-videasy-repair-artifact-diagnostic.yml'
 
 permissions:
-  contents: read
-  actions: read
+  contents: write
 
 jobs:
-  inspect:
+  fix:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
-      GH_TOKEN: ${{ github.token }}
-      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 1
-          persist-credentials: false
+          fetch-depth: 0
+          persist-credentials: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
 
-      - name: Download exact failed-floor Repair artifact
+      - name: Remove contradicted VidEasy Nitrogen execution endpoint
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/repair"
-          gh run download 34445456632 -n provider-recognition-repair-v6-34445456632 -D "$RUNNER_TEMP/repair"
-          test -s "$RUNNER_TEMP/repair/manifest.json"
-
-      - name: Probe VidEasy movie and TV and summarize contradictions
-        shell: bash
-        run: |
-          set -euo pipefail
-          python - <<'PY' > "$RUNNER_TEMP/videasy-fixtures.json"
+          python - <<'PY'
           import json
           from pathlib import Path
-          corpus=json.loads(Path('.github/triggers/nuvio-client-lab.json').read_text(encoding='utf-8'))
-          wanted={'interstellar','breaking-bad-s01e01'}
-          out={row['slug']:row['fixture'] for row in corpus['fixtures'] if row.get('slug') in wanted}
-          print(json.dumps(out,separators=(',',':')))
+
+          patch=Path('scripts/provider_patches/videasy_runtime_v1.py')
+          src=patch.read_text(encoding='utf-8')
+          needle=' {"label":"Nitrogen","path":"m4uhd/sources-with-title"},\n'
+          if needle in src:
+              src=src.replace(needle,'',1)
+          if 'm4uhd/sources-with-title' in src:
+              raise SystemExit('VidEasy executable patch still contains Nitrogen/m4uhd endpoint')
+          patch.write_text(src,encoding='utf-8')
+
+          p=Path('provider-overrides.json')
+          data=json.loads(p.read_text(encoding='utf-8'))
+          row=data['provider_patches']['videasy']
+          notes=list(row.get('notes') or [])
+          notes=[n for n in notes if not str(n).startswith('Ten statically recovered source endpoints')]
+          notes.append('Nine content-safe Wings source endpoints are executable. Nitrogen/m4uhd remains recognition evidence only after live movie+TV probes proved a media identity contradiction; it must not be emitted by the VidEasy runtime.')
+          row['notes']=notes
+          # Candidate routes are evidence, not execution authority. Keep m4uhd here so Repair can remember
+          # the observed upstream route without silently re-promoting it into the runtime endpoint set.
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+
+          t=Path('tests/videasy_identity_safe_endpoint_policy_test.py')
+          t.write_text('''#!/usr/bin/env python3\nfrom __future__ import annotations\nimport json, sys\nfrom pathlib import Path\nROOT=Path(__file__).resolve().parents[1]\nsys.path.insert(0,str(ROOT/"scripts"))\nfrom provider_patches.videasy_runtime_v1 import DEFAULT_ENDPOINTS\npaths=[str(x.get("path") or "") for x in DEFAULT_ENDPOINTS]\nlabels=[str(x.get("label") or "") for x in DEFAULT_ENDPOINTS]\nassert len(DEFAULT_ENDPOINTS)==9, len(DEFAULT_ENDPOINTS)\nassert "cdn/sources-with-title" in paths\nassert "Hydrogen" in labels\nassert "m4uhd/sources-with-title" not in paths\nassert "Nitrogen" not in labels\noverrides=json.loads((ROOT/"provider-overrides.json").read_text(encoding="utf-8"))\nrow=overrides["provider_patches"]["videasy"]\nassert "/m4uhd/sources-with-title" in (row.get("candidate_learned_routes") or [])\nassert any("identity contradiction" in str(n) for n in (row.get("notes") or []))\nprint("VIDEASY_IDENTITY_SAFE_ENDPOINT_POLICY_OK executable=9 nitrogen=false evidence_retained=true")\n''',encoding='utf-8')
           PY
-          python - <<'PY' > "$RUNNER_TEMP/videasy-path.txt"
-          import json, os
-          from pathlib import Path
-          root=Path(os.environ['RUNNER_TEMP'])/'repair'
-          m=json.loads((root/'manifest.json').read_text(encoding='utf-8'))
-          row=next(x for x in m['scrapers'] if str(x.get('id','')).lower()=='videasy')
-          print(root/row['filename'])
-          PY
-          PROVIDER="$(cat "$RUNNER_TEMP/videasy-path.txt")"
-          for SLUG in interstellar breaking-bad-s01e01; do
-            FIXTURE="$(python - "$SLUG" <<'PY'
-          import json,sys,os
-          data=json.load(open(os.environ['RUNNER_TEMP']+'/videasy-fixtures.json'))
-          print(json.dumps(data[sys.argv[1]],separators=(',',':')))
-          PY
-          )"
-            OUT="$RUNNER_TEMP/$SLUG.out"
-            set +e
-            node scripts/nuvio_tv_probe_tmdb_ci.cjs "$PROVIDER" "$FIXTURE" '{}' > "$OUT"
-            RC=$?
-            set -e
-            python - "$SLUG" "$RC" "$OUT" <<'PY'
-          import json,sys
-          slug,rc,path=sys.argv[1],int(sys.argv[2]),sys.argv[3]
-          rows=[]
-          for raw in open(path,encoding='utf-8'):
-              raw=raw.strip()
-              if raw.startswith('{'):
-                  try: rows.append(json.loads(raw))
-                  except Exception: pass
-          if not rows: raise SystemExit(f'VIDEASY_DIAG slug={slug} no_json rc={rc}')
-          d=rows[-1]
-          bad=[]
-          for item in d.get('streams') or []:
-              ident=item.get('identity') or {}
-              dur=item.get('duration_identity') or {}
-              if ident.get('status')=='contradiction' or dur.get('status')=='contradiction':
-                  row=item.get('row') or {}; media=item.get('media') or {}
-                  bad.append({
-                    'sourceName':row.get('sourceName'),
-                    'quality':row.get('quality'),
-                    'urlHost':(media.get('url') or row.get('url') or '').split('/')[2] if '://' in (media.get('url') or row.get('url') or '') else '',
-                    'mediaDurationSeconds':media.get('media_duration_seconds'),
-                    'identity':ident,
-                    'durationIdentity':dur,
-                  })
-          print('VIDEASY_DIAG '+json.dumps({'slug':slug,'rc':rc,'raw':d.get('raw_stream_count'),'playable':d.get('playable_stream_count'),'verified':d.get('content_verified_count'),'contradictions':d.get('identity_contradiction_count'),'bad':bad},separators=(',',':')))
-          PY
-          done
+
+      - name: Validate durable VidEasy endpoint policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/provider_patches/videasy_runtime_v1.py
+          python tests/videasy_identity_safe_endpoint_policy_test.py
+          python tests/provider_wings_runtime_family_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          git diff --check
+
+      - name: Commit bounded durable fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/provider_patches/videasy_runtime_v1.py provider-overrides.json tests/videasy_identity_safe_endpoint_policy_test.py
+          git diff --cached --check
+          git commit -m 'fix(videasy): drop identity-unsafe Nitrogen source'
+          git push origin HEAD:workbench/systemic-recovery-20260909
