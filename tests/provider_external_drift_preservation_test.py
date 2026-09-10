@@ -61,9 +61,10 @@ def run_case(
     baseline_sha = hashlib.sha256(baseline_bytes).hexdigest()
 
     baseline = report([row("provider_returned_streams", raw=1, playable=1, verified=1)], positive=True)
-    candidate = report([row(candidate_stage)], wrong=new_wrong)
+    contradictions = 1 if new_wrong else 0
+    candidate = report([row(candidate_stage, contradictions=contradictions)], wrong=new_wrong)
     stages = retry_stages if retry_stages is not None else ["provider_network_exception", "timeout"]
-    retry = report([row(stage) for stage in stages], wrong=new_wrong)
+    retry = report([row(stage, contradictions=contradictions) for stage in stages], wrong=new_wrong)
     manifest = {"scrapers": [{"id": "same", "filename": filename, "enabled": enabled}]}
     lkg = {
         "providers": {
