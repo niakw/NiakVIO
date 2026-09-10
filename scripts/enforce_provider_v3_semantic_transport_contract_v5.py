@@ -147,29 +147,29 @@ def patch_media_transport() -> bool:
 
 
 def patch_materializer() -> bool:
-            path = ROOT / "scripts" / "materialize_provider_v3_all.py"
-            text = path.read_text(encoding="utf-8")
-            pattern = re.compile(
-                r"def normalize_anime_transport_compatibility\(entry: dict\[str, Any\]\) -> bool:
-.*?(?=def base_version\(value: object\) -> str:)",
-                re.S,
-            )
-            match = pattern.search(text)
-            if not match:
-                raise AssertionError("materializer semantic/transport projector missing")
-            current = match.group(0)
-            required = (
-                'if "anime" in canonical and "tv" not in wanted:',
-                'wanted.append("series")',
-                'item in {"movie", "tv", "anime", "series"}',
-            )
-            forbidden = (
-                'for compatible in ("tv", "movie"):',
-                'wanted = ["anime", "tv", "movie"]',
-            )
-            if any(value not in current for value in required) or any(value in current for value in forbidden):
-                raise AssertionError("materializer semantic/transport projector drifted")
-            return False
+    path = ROOT / "scripts" / "materialize_provider_v3_all.py"
+    text = path.read_text(encoding="utf-8")
+    pattern = re.compile(
+        r"def normalize_anime_transport_compatibility\(entry: dict\[str, Any\]\) -> bool:\n"
+        r".*?(?=def base_version\(value: object\) -> str:)",
+        re.S,
+    )
+    match = pattern.search(text)
+    if not match:
+        raise AssertionError("materializer semantic/transport projector missing")
+    current = match.group(0)
+    required = (
+        'if "anime" in canonical and "tv" not in wanted:',
+        'wanted.append("series")',
+        'item in {"movie", "tv", "anime", "series"}',
+    )
+    forbidden = (
+        'for compatible in ("tv", "movie"):',
+        'wanted = ["anime", "tv", "movie"]',
+    )
+    if any(value not in current for value in required) or any(value in current for value in forbidden):
+        raise AssertionError("materializer semantic/transport projector drifted")
+    return False
 
 
 def patch_runtime_regression_expectations() -> bool:
@@ -215,8 +215,7 @@ def normalize_manifest(path: Path, semantics: dict[str, list[str]]) -> int:
                 entry["canonicalSupportedTypes"] = canonical
             changed += 1
     if changed:
-        path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "
-", encoding="utf-8")
+        path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return changed
 
 
