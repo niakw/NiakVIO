@@ -61,6 +61,7 @@ jobs:
               'scripts/verify_provider_v3_reverse_rebuild.py',
               'tests/provider_v3_strategy_plan_contract_test.py',
               'tests/route_proof_manifest_policy_test.py',
+              'tests/provider_specific_adapters_test.py',
           }
           changed=set(subprocess.check_output(['git','diff','--name-only',f'{source}..HEAD'], text=True).splitlines())
           bad=sorted(changed-allowed)
