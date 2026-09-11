@@ -1,5 +1,4 @@
-name: TEMP - VoirAnime Coflix Payload Probe
-# retry: minimal-contract-proof
+name: TEMP - Integrate VoirAnime Coflix Runtimes
 
 on:
   push:
@@ -9,78 +8,105 @@ on:
       - '.github/workflows/temp-voiranime-coflix-payload-probe.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  probe:
+  integrate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Prove minimal current contracts
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Deterministic provider runtime tests
+        run: |
+          set -euo pipefail
+          python tests/coflix_rest_runtime_v1_test.py
+          python tests/voiranime_homes_runtime_v1_test.py
+      - name: Migrate DATA and materialize two providers
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/install_voiranime_coflix_runtime_v1.py
+          python scripts/materialize_provider_v3_one.py coflix
+          python scripts/materialize_provider_v3_one.py voiranime
           python - <<'PY'
-          import json,re,time,urllib.parse,urllib.request,urllib.error
-          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
-          def req(url,method='GET',data=None,referer=None,accept='*/*'):
-              h={'User-Agent':UA,'Accept':accept}
-              if referer:h['Referer']=referer
-              if isinstance(data,dict):data=urllib.parse.urlencode(data).encode();h['Content-Type']='application/x-www-form-urlencoded; charset=UTF-8'
-              try:
-                  with urllib.request.urlopen(urllib.request.Request(url,data=data,headers=h,method=method),timeout=20) as x:return x.status,x.geturl(),x.read().decode('utf-8','replace'),dict(x.headers)
-              except urllib.error.HTTPError as e:return e.code,url,e.read().decode('utf-8','replace'),dict(e.headers)
-              except Exception as e:return 0,url,'',{'error':type(e).__name__+':'+str(e)}
-          def hls(url,referer):
-              st,fu,body,h=req(url,referer=referer,accept='application/vnd.apple.mpegurl,application/x-mpegURL,*/*')
-              return st,bool(re.search(r'^#EXTM3U',body,re.M)),urllib.parse.urlparse(fu).hostname or ''
-
-          base='https://coflix.group/wp-json/coflix/v1/resolve'
-          fixtures=[
-              ('movie',{'tmdb':'157336','type':'movie'}),
-              ('tv',{'tmdb':'1396','type':'tv','season':'1','episode':'1'}),
-              ('anime-tv',{'tmdb':'95479','type':'tv','season':'1','episode':'1'}),
-          ]
-          for label,params in fixtures:
-              url=base+'?'+urllib.parse.urlencode(params)
-              final=None
-              for attempt in range(4):
-                  st,fu,body,h=req(url,referer='https://coflix.group/')
-                  try:j=json.loads(body)
-                  except:j={}
-                  print(f'COFLIX_MINIMAL {label} attempt={attempt} status={st} ok={1 if j.get("ok") else 0} pending={1 if j.get("pending") else 0} mode={j.get("mode")} servers={len(j.get("servers") or [])} error={j.get("error") or ""}')
-                  if j.get('ok'):
-                      final=j;break
-                  if not j.get('pending'):break
-                  time.sleep(2)
-              if final and final.get('play'):
-                  ms,valid,host=hls(final['play'],'https://coflix.group/')
-                  print(f'COFLIX_MINIMAL_HLS {label} status={ms} valid={1 if valid else 0} host={host} lang={final.get("lang") or ""}')
-
-          # VoirAnime exact S1/E1 path, then inspect whether current Vidzy embed yields a direct HLS in bounded HTML.
-          st,fu,body,h=req('https://voiranime.homes/engine/ajax/search.php','POST',{'query':'Jujutsu Kaisen','page':'1'},'https://voiranime.homes/')
-          m=re.search(r"location\.href=['\"]/(\d+)-jujutsu-kaisen-saison-1-2020\.html",body,re.I)
-          if not m:
-              print('VOIRANIME_MINIMAL unresolved=search_id')
-          else:
-              aid=m.group(1); detail=f'https://voiranime.homes/{aid}-jujutsu-kaisen-saison-1-2020.html'
-              es,ef,eb,eh=req(f'https://voiranime.homes/engine/ajax/manga_episodes_api.php?id={aid}',referer=detail,accept='application/json,*/*')
-              try:ej=json.loads(eb)
-              except:ej={}
-              row=((ej.get('vf') or {}).get('1') or {})
-              print(f'VOIRANIME_MINIMAL episodes_status={es} vf_hosts={len(row)} keys={";".join(sorted(row.keys()))}')
-              for name,embed in list(row.items())[:3]:
-                  ps,pf,pb,ph=req(embed,referer=detail)
-                  urls=re.findall(r'https?://[^"\'<>\\ ]+\.m3u8[^"\'<>\\ ]*',pb,re.I)
-                  valid=0;media_status=0;media_host=''
-                  for u in urls[:2]:
-                      media_status,ok,media_host=hls(u,pf)
-                      if ok:valid=1;break
-                  print(f'VOIRANIME_EMBED hoster={name} status={ps} html_bytes={len(pb)} hls_candidates={len(urls)} hls_valid={valid} media_status={media_status} media_host={media_host}')
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text())
+          rows={str(x.get('id','')).casefold():x for x in m['scrapers']}
+          for pid,marker in [('coflix','NIAKVIO_COFLIX_REST_RUNTIME_V1'),('voiranime','NIAKVIO_VOIRANIME_HOMES_RUNTIME_V1')]:
+              row=rows[pid]
+              assert row.get('enabled') is True,(pid,row.get('enabled'))
+              text=Path(row['filename']).read_text(encoding='utf-8')
+              assert marker in text,(pid,marker)
+              assert 'master.m3u8?t=kmt-' not in text
+              print(f'MATERIALIZED {pid} file={row["filename"]} enabled=1 marker=1')
+          ov=json.loads(Path('provider-overrides.json').read_text())
+          assert ov['provider_patches']['coflix']['official_site']=='https://coflix.group'
+          assert ov['provider_patches']['coflix']['official_api']=='https://coflix.group/wp-json/coflix/v1/resolve'
+          assert ov['provider_patches']['voiranime']['official_site']=='https://voiranime.homes'
+          k=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text())
+          assert k['providers']['coflix']['model']['officialSite']=='https://coflix.group'
+          assert k['providers']['voiranime']['model']['officialSite']=='https://voiranime.homes'
+          print('VOIRANIME_COFLIX_MATERIALIZATION_OK activation_46_targets_preserved=1 signed_media_persisted=0')
           PY
+      - name: Live generated-bundle proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs=require('fs'),path=require('path');
+          const manifest=JSON.parse(fs.readFileSync('manifest.json','utf8'));
+          function file(id){const r=manifest.scrapers.find(x=>String(x.id).toLowerCase()===id);if(!r)throw new Error('missing '+id);return path.resolve(r.filename)}
+          async function invoke(id,args,ctx){
+            globalThis.__nuvioMediaContext=ctx;
+            const p=file(id);delete require.cache[p];const mod=require(p);const fn=mod.getStreams||globalThis.getStreams;if(typeof fn!=='function')throw new Error(id+' no getStreams');
+            const rows=await fn(...args);console.log(`LIVE_BUNDLE ${id} streams=${Array.isArray(rows)?rows.length:-1} urls=${Array.isArray(rows)?rows.slice(0,4).map(x=>x.url).join(';'):''}`);return Array.isArray(rows)?rows:[];
+          }
+          (async()=>{
+            let rows=await invoke('coflix',['157336','movie'],{canonicalMediaType:'movie',tmdbId:'157336'});
+            if(!rows.some(x=>/^https?:/.test(String(x.url||''))))throw new Error('coflix movie live empty');
+            rows=await invoke('coflix',['1396','tv',1,1],{canonicalMediaType:'tv',tmdbId:'1396',season:1,episode:1});
+            if(!rows.some(x=>/^https?:/.test(String(x.url||''))))throw new Error('coflix tv live empty');
+            rows=await invoke('voiranime',['95479','tv',1,1],{canonicalMediaType:'anime',tmdbId:'95479',season:1,episode:1,tmdbMetadata:{name:'Jujutsu Kaisen'}});
+            if(!rows.some(x=>/^https?:/.test(String(x.url||''))))throw new Error('voiranime anime live empty');
+            console.log('LIVE_GENERATED_BUNDLES_OK coflix_movie=1 coflix_tv=1 voiranime_anime=1');
+          })().catch(e=>{console.error(e);process.exit(1)});
+          NODE
+      - name: Structural gates and refreshed blocker inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/validate_activation_preservation.py
+          python scripts/provider_base_store.py validate
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref main
+          python scripts/build_hub46_blocker_inventory.py
+          python - <<'PY'
+          import json
+          x=json.load(open('automation/evidence/hub46-blocker-inventory-20260911.json'))
+          print('HUB46_AFTER_RUNTIME_INTEGRATION opaque='+str(x['repoOpaqueCount'])+' providers='+','.join(x['repoOpaqueProviders']))
+          assert x['providerCount']==46 and x['enabledTargetCount']==46
+          assert 'coflix' not in x['repoOpaqueProviders']
+          assert 'voiranime' not in x['repoOpaqueProviders']
+          PY
+      - name: Commit integration and remove temporary harnesses
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f scripts/install_voiranime_coflix_runtime_v1.py
+          rm -f .github/workflows/temp-voiranime-coflix-payload-probe.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat(provider): integrate live-proven Coflix and VoirAnime runtimes'
+          git push origin HEAD:workbench/hub-matrix-46-20260911
