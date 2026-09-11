@@ -55,12 +55,13 @@ jobs:
           allowed={
               '.github/workflows/repair-v6-promote-one-shot.yml',
               '.github/triggers/provider-repair-promote.json',
+              'scripts/finalize_provider_repair_disposition_v1_impl.py',
           }
           changed=set(subprocess.check_output(['git','diff','--name-only',f'{source}..HEAD'], text=True).splitlines())
           bad=sorted(changed-allowed)
           if bad:
-              raise SystemExit(f'promotion source advanced outside one-shot infra: {bad}')
-          print(f'PROMOTION_SOURCE_LINEAGE_OK source={source} infra_changes={len(changed)}')
+              raise SystemExit(f'promotion source advanced outside one-shot infra/policy: {bad}')
+          print(f'PROMOTION_SOURCE_LINEAGE_OK source={source} approved_changes={len(changed)}')
           PY
           curl -fsSL \
             -H "Authorization: Bearer ${GH_TOKEN}" \
@@ -106,7 +107,7 @@ jobs:
           for rel, expected in [('manifest.json',96),('vf/manifest.json',29),('no-anime/manifest.json',71),('vf-no-anime/manifest.json',16)]:
               data=json.loads((root/rel).read_text())
               assert len(data.get('scrapers') or []) == expected, (rel, len(data.get('scrapers') or []))
-          print('REPAIR_ARTIFACT_AUTHORITY_OK providers=96 v9=96 on=6 repair=74 off=16 non_regression=pass')
+          print('REPAIR_ARTIFACT_AUTHORITY_OK providers=96 v9=96 diagnostic_on=6 repair=74 off=16 non_regression=pass')
           PY
 
       - name: Replay deterministic source migrations
@@ -208,7 +209,11 @@ jobs:
           d=json.loads(Path('automation/provider-repair-disposition.json').read_text())
           rows=m.get('scrapers') or []
           assert len(rows)==96
-          assert sum(row.get('enabled') is not False for row in rows)==6
+          assert sum(row.get('enabled') is not False for row in rows)==96
+          assert d.get('enabledProviderCount')==96, d.get('enabledProviderCount')
+          assert d.get('disabledProviderCount')==0, d.get('disabledProviderCount')
+          assert (d.get('policy') or {}).get('forceAllProvidersEnabled') is True
+          assert (d.get('policy') or {}).get('activationFollowsRepairState') is False
           assert d.get('stateCounts')=={'on': 6, 'repair': 74, 'off': 16}, d.get('stateCounts')
           missing=[]; no_v9=[]
           for row in rows:
@@ -218,7 +223,7 @@ jobs:
                   no_v9.append(row.get('id'))
           assert not missing, missing
           assert not no_v9, no_v9
-          print('PROMOTED_PUBLICATION_BYTES_OK providers=96 v9=96 enabled=6')
+          print('PROMOTED_PUBLICATION_BYTES_OK providers=96 v9=96 enabled=96 diagnostic_on=6 repair=74 off=16')
           PY
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
@@ -242,5 +247,5 @@ jobs:
             echo 'Promotion unexpectedly produced no repository delta.' >&2
             exit 1
           fi
-          git commit -m 'fix(release): promote Repair V6 #28 canonical V9 generation'
+          git commit -m 'fix(release): promote Repair V6 #28 V9 with all providers enabled'
           git push origin HEAD:main
