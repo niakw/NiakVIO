@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """Provider v3 strategy-to-executable-plan contract for the full 96 catalogue.
 
-Static candidates do not make a provider executable. After live Repair, an enabled
-provider must still have an executable live plan. A disabled provider may have no
-executable plan only when either:
-- the sequential gate attached explicit terminal blocked/unreachable evidence; or
-- Repair V6 attached the audited non-terminal ``routeDataState=repair`` debt state.
+Activation and repair confidence are separate concerns:
+- all 96 canonical providers may remain enabled/exposed;
+- a provider with executable LIVE DATA/recipe/Lego is directly executable;
+- a provider without a currently executable plan is accepted only when Repair V6
+  attached an audited ``routeDataState=repair`` or ``routeDataState=off``
+  disposition with ``forcedEnabled=true`` and explicit evidence;
+- quarantined providers may stay enabled in the catalogue, but must carry an
+  audited OFF disposition so runtime execution remains fail-closed rather than
+  pretending that quarantine is a live route.
 
-The latter is intentionally disabled: unresolved providers may remain in the
-catalogue/DATA for future learning without remaining active-but-broken.
+This keeps the catalogue force-ON while preserving strict evidence and fail-closed
+runtime behavior for unresolved providers.
 """
 from __future__ import annotations
 
@@ -102,7 +106,9 @@ def repair_evidence_ok(patch: dict) -> bool:
     disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
     if disposition.get("authority") != "provider-repair-disposition-v1":
         return False
-    if disposition.get("activationState") != "disabled" or disposition.get("routeDataState") != "repair":
+    if disposition.get("activationState") != "enabled" or disposition.get("routeDataState") != "repair":
+        return False
+    if disposition.get("forcedEnabled") is not True:
         return False
     missing = disposition.get("missingLanes") if isinstance(disposition.get("missingLanes"), list) else []
     reasons = disposition.get("reasonCodes") if isinstance(disposition.get("reasonCodes"), list) else []
@@ -117,7 +123,9 @@ def off_evidence_ok(patch: dict) -> bool:
     disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
     if disposition.get("authority") != "provider-repair-disposition-v1":
         return False
-    if disposition.get("activationState") != "disabled" or disposition.get("routeDataState") != "off":
+    if disposition.get("activationState") != "enabled" or disposition.get("routeDataState") != "off":
+        return False
+    if disposition.get("forcedEnabled") is not True:
         return False
     reasons = disposition.get("reasonCodes") if isinstance(disposition.get("reasonCodes"), list) else []
     if not reasons or disposition.get("completeCapabilityProof") is not False:
@@ -221,15 +229,21 @@ def main() -> int:
         bases = [str(value).strip() for value in bases if str(value or "").strip()]
 
         enabled = row.get("enabled") is not False
+        if not enabled:
+            failures.append(f"{provider_id}: force-ON catalogue requires enabled=true")
+            continue
+
         if strategy == "quarantined":
             quarantined.append(provider_id)
-            if enabled:
-                failures.append(f"{provider_id}: quarantined provider must be disabled")
             notes = patch.get("notes")
             reason = patch.get("quarantine_reason")
             note_text = json.dumps(notes, ensure_ascii=False).casefold() if notes else ""
             if not reason and "quarantin" not in note_text and "inert" not in note_text:
                 failures.append(f"{provider_id}: quarantine must carry explicit evidence/reason")
+            if not off_evidence_ok(patch):
+                failures.append(
+                    f"{provider_id}: force-enabled quarantine must carry audited routeDataState=off"
+                )
             continue
 
         executable = bool(legos) or recipe
@@ -241,28 +255,34 @@ def main() -> int:
         if not executable:
             recognition = model.get("routeRecognition") if isinstance(model.get("routeRecognition"), dict) else {}
             state = str(recognition.get("completionState") or "").strip()
+            # Legacy disabled terminal evidence remains recognized for historical
+            # data, but force-ON publication should normally arrive through the
+            # audited OFF disposition below.
             if not enabled and state in TERMINAL_DISABLED and terminal_evidence_ok(model, patch, state):
                 terminal_audited.append(provider_id)
                 continue
-            if not enabled and off_evidence_ok(patch):
+            if off_evidence_ok(patch):
                 off_audited.append(provider_id)
                 continue
-            if not enabled and repair_evidence_ok(patch):
+            if repair_evidence_ok(patch):
                 repair_audited.append(provider_id)
                 continue
             failures.append(
                 f"{provider_id}: strategy={strategy} has no executable LIVE DATA/recipe/Lego "
+                f"and no audited force-ON repair/off disposition "
                 f"(routeKinds={sorted(kinds)}, bases={len(bases)}, enabled={enabled}, terminal={state or 'none'})"
             )
 
     if failures:
         raise AssertionError("\n".join(failures))
 
-    executable_count = 96 - len(quarantined) - len(terminal_audited) - len(off_audited) - len(repair_audited)
+    diagnostic_non_executable = len(quarantined) + len(terminal_audited) + len(off_audited) + len(repair_audited)
+    executable_count = 96 - diagnostic_non_executable
     print(
         "PROVIDER_V3_STRATEGY_PLAN_OK "
-        f"providers=96 executable={executable_count} quarantined={len(quarantined)} "
-        f"terminal_disabled={len(terminal_audited)} off_disabled={len(off_audited)} repair_disabled={len(repair_audited)} "
+        f"providers=96 enabled=96 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
+        f"quarantined={len(quarantined)} terminal_legacy={len(terminal_audited)} "
+        f"off_diagnostic={len(off_audited)} repair_diagnostic={len(repair_audited)} "
         f"strategies={json.dumps(counts, sort_keys=True)}"
     )
     return 0
