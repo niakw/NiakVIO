@@ -4,7 +4,7 @@ This report distinguishes a provider that currently returns zero streams from a 
 
 - Targets: **46/46**.
 - Enabled in canonical manifest: **46/46**.
-- Repository-evidence opaque candidates: **9**.
+- Repository-evidence opaque candidates: **6**.
 - `repoOpaque=true` is a research queue, not a declaration that the provider is dead.
 
 ## Opaque candidates from repository evidence
@@ -12,10 +12,7 @@ This report distinguishes a provider that currently returns zero streams from a 
 - **voiranime** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego; hub relation: `match`; blocker: `network-or-antibot-timeout`.
 - **4khdhub** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego; hub relation: `match`; blocker: `network-or-antibot-timeout`.
 - **uhdmovies** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego; hub relation: `match`; blocker: `network-or-antibot-timeout`.
-- **movies4u** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego, no_executable_route_shape; hub relation: `match`; blocker: `network-or-antibot-timeout`.
-- **vidrock** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego, no_executable_route_shape, registry_only_hub; hub relation: `registry-only`; blocker: `network-or-antibot-timeout`.
 - **moviesdrive** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego; hub relation: `match`; blocker: `network-or-antibot-timeout`.
-- **anidb** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego, no_executable_route_shape; hub relation: `match`; blocker: `network-or-antibot-timeout`.
 - **cinefreak** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego, registry_only_hub; hub relation: `registry-only`; blocker: `network-or-antibot-timeout`.
 - **coflix** — mechanism `known-site-no-executable-route`; reasons: no_api_recipe, no_provider_lego; hub relation: `match`; blocker: `network-or-antibot-timeout`.
 
@@ -23,10 +20,10 @@ This report distinguishes a provider that currently returns zero streams from a 
 
 | Provider | Mechanism | Repo opaque | Lab blocker | Route state | Hub relation |
 |---|---|---:|---|---|---|
-| animesama-co | search-detail-extraction | no | network-or-antibot-timeout | repair | match |
+| animesama-co | structured-search-value-plan | no | network-or-antibot-timeout | repair | match |
 | vostfree | api-route | no | network-or-antibot-timeout | repair | registry-only |
-| papadustream | api-route | no | cross-runtime-divergence | repair | match |
-| mugiwarastream | search-detail-extraction | no | network-or-antibot-timeout | repair | match |
+| papadustream | external-identity-plan | no | cross-runtime-divergence | repair | match |
+| mugiwarastream | structured-search-value-plan | no | network-or-antibot-timeout | repair | match |
 | anime-sama | provider-lego | no | network-or-antibot-timeout | repair | match |
 | voiranime | known-site-no-executable-route | yes | network-or-antibot-timeout | repair | match |
 | movix | provider-lego | no | network-or-antibot-timeout | off | match |
@@ -42,21 +39,21 @@ This report distinguishes a provider that currently returns zero streams from a 
 | netmirror | typed-resolver-api | no | network-or-antibot-timeout | off | match |
 | vidfast | iframe-player | no | network-or-antibot-timeout | repair | registry-only |
 | vidlink | api-route | no | network-or-antibot-timeout | repair | registry-only |
-| hindmoviez | direct-media-site | no | network-or-antibot-timeout | repair | match |
+| hindmoviez | structured-search-value-plan | no | network-or-antibot-timeout | repair | match |
 | uhdmovies | known-site-no-executable-route | yes | network-or-antibot-timeout | repair | match |
 | vidsrc | player-or-source-route | no | network-or-antibot-timeout | repair | registry-only |
 | vixsrc | api-route | no | network-or-antibot-timeout | off | registry-only |
-| movies4u | known-site-no-executable-route | yes | network-or-antibot-timeout | repair | match |
+| movies4u | structured-search-plan | no | network-or-antibot-timeout | repair | match |
 | cineby | provider-lego | no | network-or-antibot-timeout | repair | match |
-| vidrock | known-site-no-executable-route | yes | network-or-antibot-timeout | repair | registry-only |
+| vidrock | provider-lego | no | network-or-antibot-timeout | repair | registry-only |
 | vegamovies | api-recipe | no | network-or-antibot-timeout | repair | match |
 | anizone | provider-lego | no | network-or-antibot-timeout | repair | match |
 | moviebox | player-or-source-route | no | network-or-antibot-timeout | off | match |
 | animetsu | search-detail-extraction | no | network-or-antibot-timeout | repair | match |
 | moviesdrive | known-site-no-executable-route | yes | network-or-antibot-timeout | repair | match |
 | zinkmovies | direct-media-site | no | network-or-antibot-timeout | repair | registry-only |
-| anidb | known-site-no-executable-route | yes | network-or-antibot-timeout | repair | match |
-| movieshunt | direct-media-site | no | network-or-antibot-timeout | on | match |
+| anidb | provider-lego | no | network-or-antibot-timeout | repair | match |
+| movieshunt | structured-search-plan | no | network-or-antibot-timeout | on | match |
 | wookafr | search-detail-extraction | no | network-or-antibot-timeout | repair | match |
 | allwish | player-or-source-route | no | content-identity | on | match |
 | cinefreak | known-site-no-executable-route | yes | network-or-antibot-timeout | repair | registry-only |
@@ -75,14 +72,17 @@ This report distinguishes a provider that currently returns zero streams from a 
 ### Mechanisms
 
 - `api-recipe`: 4
-- `api-route`: 7
-- `direct-media-site`: 4
+- `api-route`: 6
+- `direct-media-site`: 2
+- `external-identity-plan`: 1
 - `html-detail-scraper`: 1
 - `iframe-player`: 1
-- `known-site-no-executable-route`: 9
+- `known-site-no-executable-route`: 6
 - `player-or-source-route`: 4
-- `provider-lego`: 7
-- `search-detail-extraction`: 7
+- `provider-lego`: 9
+- `search-detail-extraction`: 5
+- `structured-search-plan`: 2
+- `structured-search-value-plan`: 3
 - `typed-resolver-api`: 2
 
 ### Current evidence blockers

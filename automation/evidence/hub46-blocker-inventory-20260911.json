@@ -3,28 +3,28 @@
   "authority": "hub46-mechanism-blocker-inventory-v1",
   "providerCount": 46,
   "enabledTargetCount": 46,
-  "repoOpaqueCount": 9,
+  "repoOpaqueCount": 6,
   "repoOpaqueProviders": [
     "voiranime",
     "4khdhub",
     "uhdmovies",
-    "movies4u",
-    "vidrock",
     "moviesdrive",
-    "anidb",
     "cinefreak",
     "coflix"
   ],
   "mechanismCounts": {
     "api-recipe": 4,
-    "api-route": 7,
-    "direct-media-site": 4,
+    "api-route": 6,
+    "direct-media-site": 2,
+    "external-identity-plan": 1,
     "html-detail-scraper": 1,
     "iframe-player": 1,
-    "known-site-no-executable-route": 9,
+    "known-site-no-executable-route": 6,
     "player-or-source-route": 4,
-    "provider-lego": 7,
-    "search-detail-extraction": 7,
+    "provider-lego": 9,
+    "search-detail-extraction": 5,
+    "structured-search-plan": 2,
+    "structured-search-value-plan": 3,
     "typed-resolver-api": 2
   },
   "blockerCounts": {
@@ -41,7 +41,7 @@
       "officialHub": "https://anime-sama.wiki/",
       "hubRelation": "match",
       "strategy": "mixed_embed_resolver",
-      "mechanism": "search-detail-extraction",
+      "mechanism": "structured-search-value-plan",
       "repoOpaque": false,
       "opaqueReasons": [],
       "executionAuthorities": [
@@ -76,6 +76,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 1,
+      "providerValuePlanCount": 1,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -148,6 +151,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -192,7 +198,7 @@
       "officialHub": "https://papadustream.info/acces/",
       "hubRelation": "match",
       "strategy": "html_scraper",
-      "mechanism": "api-route",
+      "mechanism": "external-identity-plan",
       "repoOpaque": false,
       "opaqueReasons": [],
       "executionAuthorities": [
@@ -209,6 +215,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 2,
       "routeDataState": "repair",
       "missingLanes": [
         "movie"
@@ -253,7 +262,7 @@
       "officialHub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
       "hubRelation": "match",
       "strategy": "mixed_embed_resolver",
-      "mechanism": "search-detail-extraction",
+      "mechanism": "structured-search-value-plan",
       "repoOpaque": false,
       "opaqueReasons": [],
       "executionAuthorities": [
@@ -282,6 +291,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 1,
+      "providerValuePlanCount": 1,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -360,6 +372,9 @@
       "providerLegos": [
         "scripts/provider_patches/anime_sama_runtime_v1.py"
       ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie"
@@ -437,6 +452,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -527,6 +545,9 @@
       "providerLegos": [
         "scripts/provider_patches/movix_runtime_v1.py"
       ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "off",
       "missingLanes": [
         "anime",
@@ -603,6 +624,9 @@
       "providerLegos": [
         "scripts/provider_patches/videasy_runtime_v1.py"
       ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "on",
       "missingLanes": [],
       "reasonCodes": [
@@ -668,6 +692,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -732,6 +759,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -793,6 +823,9 @@
       ],
       "apiRecipeKind": "typed-resolver-api",
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "on",
       "missingLanes": [],
       "reasonCodes": [
@@ -850,6 +883,9 @@
       "providerLegos": [
         "scripts/provider_patches/desiflix_runtime_v1.py"
       ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie"
@@ -915,6 +951,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime"
@@ -984,6 +1023,9 @@
       "providerLegos": [
         "scripts/provider_patches/anikototv_runtime_v1.py"
       ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -1047,6 +1089,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -1109,6 +1154,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1177,6 +1225,9 @@
       ],
       "apiRecipeKind": "typed-resolver-api",
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "off",
       "missingLanes": [
         "movie",
@@ -1241,6 +1292,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1306,6 +1360,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1350,7 +1407,7 @@
       "officialHub": "https://t.me/s/hindmoviez/1975",
       "hubRelation": "match",
       "strategy": "direct_media",
-      "mechanism": "direct-media-site",
+      "mechanism": "structured-search-value-plan",
       "repoOpaque": false,
       "opaqueReasons": [],
       "executionAuthorities": [
@@ -1366,6 +1423,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 3,
+      "providerValuePlanCount": 1,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1428,6 +1488,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1489,6 +1552,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1563,6 +1629,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "off",
       "missingLanes": [
         "movie",
@@ -1609,13 +1678,9 @@
       "officialHub": "https://movies4u.tube/",
       "hubRelation": "match",
       "strategy": "html_scraper",
-      "mechanism": "known-site-no-executable-route",
-      "repoOpaque": true,
-      "opaqueReasons": [
-        "no_api_recipe",
-        "no_provider_lego",
-        "no_executable_route_shape"
-      ],
+      "mechanism": "structured-search-plan",
+      "repoOpaque": false,
+      "opaqueReasons": [],
       "executionAuthorities": [
         "https://movies4u.band",
         "https://movies4u.review",
@@ -1629,6 +1694,9 @@
       "routes": [],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 1,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "tv"
@@ -1694,6 +1762,9 @@
       "providerLegos": [
         "scripts/provider_patches/cineby_runtime_v1.py"
       ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1738,14 +1809,9 @@
       "officialHub": null,
       "hubRelation": "registry-only",
       "strategy": "html_scraper",
-      "mechanism": "known-site-no-executable-route",
-      "repoOpaque": true,
-      "opaqueReasons": [
-        "no_api_recipe",
-        "no_provider_lego",
-        "no_executable_route_shape",
-        "registry_only_hub"
-      ],
+      "mechanism": "provider-lego",
+      "repoOpaque": false,
+      "opaqueReasons": [],
       "executionAuthorities": [
         "https://vidrock.net",
         "https://vidrock.ru"
@@ -1753,7 +1819,12 @@
       "routeKinds": [],
       "routes": [],
       "apiRecipeKind": null,
-      "providerLegos": [],
+      "providerLegos": [
+        "scripts/provider_patches/vidrock_runtime_v1.py"
+      ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1815,6 +1886,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 2,
+      "providerValuePlanCount": 3,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -1881,6 +1955,9 @@
       "providerLegos": [
         "scripts/provider_patches/anizone_runtime_v1.py"
       ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime"
@@ -1942,6 +2019,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "off",
       "missingLanes": [
         "movie",
@@ -2013,6 +2093,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime"
@@ -2076,6 +2159,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -2137,6 +2223,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -2180,23 +2269,23 @@
       "hub": "https://tbcpl.click/",
       "officialHub": "https://tbcpl.click/",
       "hubRelation": "match",
-      "strategy": "html_scraper",
-      "mechanism": "known-site-no-executable-route",
-      "repoOpaque": true,
-      "opaqueReasons": [
-        "no_api_recipe",
-        "no_provider_lego",
-        "no_executable_route_shape"
-      ],
+      "strategy": "mixed_embed_resolver",
+      "mechanism": "provider-lego",
+      "repoOpaque": false,
+      "opaqueReasons": [],
       "executionAuthorities": [
-        "https://anidb.pics",
-        "https://tbcpl.click",
-        "https://anidb.app"
+        "https://anidb.app",
+        "https://tbcpl.click"
       ],
       "routeKinds": [],
       "routes": [],
       "apiRecipeKind": null,
-      "providerLegos": [],
+      "providerLegos": [
+        "scripts/provider_patches/anidb_runtime_v1.py"
+      ],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime"
@@ -2240,7 +2329,7 @@
       "officialHub": "https://movieshunt.cc/",
       "hubRelation": "match",
       "strategy": "direct_media",
-      "mechanism": "direct-media-site",
+      "mechanism": "structured-search-plan",
       "repoOpaque": false,
       "opaqueReasons": [],
       "executionAuthorities": [
@@ -2259,6 +2348,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 2,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "on",
       "missingLanes": [],
       "reasonCodes": [
@@ -2332,6 +2424,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -2394,6 +2489,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "on",
       "missingLanes": [],
       "reasonCodes": [
@@ -2452,6 +2550,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -2535,6 +2636,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 1,
+      "providerValuePlanCount": 2,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -2599,6 +2703,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -2676,6 +2783,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -2738,6 +2848,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -2816,6 +2929,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -2890,6 +3006,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -2964,6 +3083,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "anime",
@@ -3032,6 +3154,9 @@
       ],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
@@ -3091,6 +3216,9 @@
       "routes": [],
       "apiRecipeKind": null,
       "providerLegos": [],
+      "searchRequestPlanCount": 0,
+      "providerValuePlanCount": 0,
+      "externalIdentityPlanCount": 0,
       "routeDataState": "repair",
       "missingLanes": [
         "movie",
