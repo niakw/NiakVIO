@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-11T19:12:07.408898+00:00",
+  "generated_at": "2026-09-11T22:39:13.523909+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
     "healthy": 2,
     "reachable": 1,
-    "blocked": 12,
-    "degraded": 2,
-    "no_streams": 28,
+    "blocked": 11,
+    "degraded": 1,
+    "no_streams": 29,
     "provider_unreachable": 41,
     "runtime_error": 0,
-    "unavailable": 10,
+    "unavailable": 11,
     "excluded": 0
   },
   "policy": {
@@ -2145,7 +2145,7 @@
     },
     {
       "id": "animesalt",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2298,7 +2298,7 @@
     },
     {
       "id": "animoflix",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3006,7 +3006,7 @@
     },
     {
       "id": "moviesmod",
-      "status": "provider_unreachable",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3357,27 +3357,27 @@
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
-        "quietmidnightgardeningideas.site"
+        "profitableaffiliatehub.site"
       ],
       "response_categories": [
         "playable"
       ],
       "host_health": {
         "quietmidnightgardeningideas.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
-          "last_category": "playable",
-          "reachable": true,
-          "http_status": 200,
-          "latency_ms": 940,
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
+          "last_category": "not_returned",
+          "reachable": false,
+          "http_status": null,
+          "latency_ms": null,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 0,
           "consecutive_blocked": 0
         },
         "premiumcontentengine.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3388,7 +3388,7 @@
           "consecutive_blocked": 0
         },
         "strategicgrowthpartners.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3399,7 +3399,7 @@
           "consecutive_blocked": 0
         },
         "onlinevisibilitysystem.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3410,7 +3410,7 @@
           "consecutive_blocked": 0
         },
         "smartincomeplaybook.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3421,7 +3421,7 @@
           "consecutive_blocked": 0
         },
         "growthmindsetcollective.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3432,7 +3432,7 @@
           "consecutive_blocked": 0
         },
         "nextlevelbrandstudio.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3443,7 +3443,7 @@
           "consecutive_blocked": 0
         },
         "startupmomentumengine.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3454,18 +3454,18 @@
           "consecutive_blocked": 0
         },
         "profitableaffiliatehub.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
-          "last_category": "not_returned",
-          "reachable": false,
-          "http_status": null,
-          "latency_ms": null,
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
+          "last_category": "playable",
+          "reachable": true,
+          "http_status": 200,
+          "latency_ms": 519,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 0,
+          "consecutive_successes": 1,
           "consecutive_blocked": 0
         },
         "nextgenmarketinghub.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3476,7 +3476,7 @@
           "consecutive_blocked": 0
         },
         "nicheauthorityengine.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3487,7 +3487,7 @@
           "consecutive_blocked": 0
         },
         "urbansolardiyprojectshub.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3498,7 +3498,7 @@
           "consecutive_blocked": 0
         },
         "highperformancebrands.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3509,7 +3509,7 @@
           "consecutive_blocked": 0
         },
         "visionaryfounderslab.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3520,7 +3520,7 @@
           "consecutive_blocked": 0
         },
         "digitalassetlaunchpad.site": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3541,7 +3541,7 @@
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 1,
+      "consecutive_successes": 2,
       "hosts": [
         "cdndirector.dailymotion.com"
       ],
@@ -3550,7 +3550,7 @@
       ],
       "host_health": {
         "4.mugiwara.one": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "not_returned",
           "reachable": false,
           "http_status": null,
@@ -3561,14 +3561,14 @@
           "consecutive_blocked": 0
         },
         "cdndirector.dailymotion.com": {
-          "last_checked_at": "2026-09-11T19:12:07.408898+00:00",
+          "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
           "last_category": "playable",
           "reachable": true,
           "http_status": 206,
-          "latency_ms": 539,
+          "latency_ms": 277,
           "kind": "hls",
           "consecutive_hard_failures": 0,
-          "consecutive_successes": 1,
+          "consecutive_successes": 2,
           "consecutive_blocked": 0
         }
       },
@@ -4220,7 +4220,7 @@
     },
     {
       "id": "allwish",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -4702,16 +4702,14 @@
     },
     {
       "id": "netmirror",
-      "status": "degraded",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
       "consecutive_successes": 0,
       "hosts": [],
-      "response_categories": [
-        "blocked"
-      ],
+      "response_categories": [],
       "host_health": {
         "bcdnw.hakunaymatata.com": {
           "last_checked_at": "2026-08-14T17:16:54.235250+00:00",
