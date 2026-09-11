@@ -1,5 +1,5 @@
 name: TEMP - Hub46 Inventory + Iframe Probe
-# retry: inline-structured-plan-patch
+# retry: inventory-already-migrated
 
 on:
   push:
@@ -23,40 +23,8 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Repair inventory semantics and rebuild
-        shell: bash
+      - name: Rebuild structured-plan-aware inventory
         run: |
-          set -euo pipefail
-          python - <<'PY'
-          from pathlib import Path
-          p=Path('scripts/build_hub46_blocker_inventory.py')
-          s=p.read_text(encoding='utf-8')
-          s=s.replace(
-          'def mechanism_for(*, strategy: str, recipe: dict[str, Any], legos: list[str], route_kinds: set[str], authorities: list[str]) -> str:\n',
-          'def mechanism_for(*, strategy: str, recipe: dict[str, Any], legos: list[str], route_kinds: set[str], authorities: list[str], search_plan_count: int = 0, value_plan_count: int = 0, external_identity_count: int = 0) -> str:\n',1)
-          needle='''    if legos:\n        return "provider-lego"\n    if "search" in route_kinds'''
-          repl='''    if legos:\n        return "provider-lego"\n    if search_plan_count and value_plan_count:\n        return "structured-search-value-plan"\n    if value_plan_count:\n        return "provider-value-plan"\n    if search_plan_count:\n        return "structured-search-plan"\n    if external_identity_count:\n        return "external-identity-plan"\n    if "search" in route_kinds'''
-          assert needle in s
-          s=s.replace(needle,repl,1)
-          needle='''        legos = uniq(list(patch.get("provider_lego_scripts") or []))\n\n        routes = uniq('''
-          repl='''        legos = uniq(list(patch.get("provider_lego_scripts") or []))\n        search_plan = [row for row in (patch.get("search_request_plan") or model.get("searchRequestPlan") or []) if isinstance(row, dict)]\n        value_plan = [row for row in (patch.get("provider_value_plan") or model.get("providerValuePlan") or []) if isinstance(row, dict)]\n        external_identity_plan = [row for row in (patch.get("external_identity_plan") or model.get("externalIdentityPlan") or []) if isinstance(row, dict)]\n\n        routes = uniq('''
-          assert needle in s
-          s=s.replace(needle,repl,1)
-          needle='''            route_kinds=route_kinds,\n            authorities=authorities,\n        )'''
-          repl='''            route_kinds=route_kinds,\n            authorities=authorities,\n            search_plan_count=len(search_plan),\n            value_plan_count=len(value_plan),\n            external_identity_count=len(external_identity_plan),\n        )'''
-          assert needle in s
-          s=s.replace(needle,repl,1)
-          needle='''            if not (route_kinds & EXEC_ROUTE_KINDS):\n                opaque_reasons.append("no_executable_route_shape")'''
-          repl='''            if not (route_kinds & EXEC_ROUTE_KINDS) and not search_plan and not value_plan and not external_identity_plan:\n                opaque_reasons.append("no_executable_route_shape_or_structured_plan")'''
-          assert needle in s
-          s=s.replace(needle,repl,1)
-          needle='''            "providerLegos": legos,\n            "routeDataState": disposition.get("routeDataState"),'''
-          repl='''            "providerLegos": legos,\n            "searchRequestPlanCount": len(search_plan),\n            "providerValuePlanCount": len(value_plan),\n            "externalIdentityPlanCount": len(external_identity_plan),\n            "routeDataState": disposition.get("routeDataState"),'''
-          assert needle in s
-          s=s.replace(needle,repl,1)
-          p.write_text(s,encoding='utf-8')
-          print('HUB46_INVENTORY_STRUCTURED_PLAN_PATCHED')
-          PY
           python -m py_compile scripts/build_hub46_blocker_inventory.py
           python scripts/build_hub46_blocker_inventory.py
       - name: Probe VoirAnime structured search and Coflix iframe surface
@@ -79,16 +47,13 @@ jobs:
                   return e.code,url,e.read().decode('utf-8','replace'),dict(e.headers)
               except Exception as e:
                   return 0,url,'',{'error':type(e).__name__+':'+str(e)}
-          vs='https://voiranime.homes/engine/ajax/search.php'
-          st,final,body,h=req(vs,'POST',{'query':'Jujutsu Kaisen','page':'1'},'https://voiranime.homes/')
+          st,final,body,h=req('https://voiranime.homes/engine/ajax/search.php','POST',{'query':'Jujutsu Kaisen','page':'1'},'https://voiranime.homes/')
           print(f'VOIRANIME_LIVE_SEARCH status={st} final={final} bytes={len(body)} type={h.get("Content-Type","")}')
           if st==200:
-              ids=re.findall(r'(?:newsid=|data-id=["\']?|"id"\s*:\s*["\']?)(\d+)',body,re.I)
-              ids=list(dict.fromkeys(ids))
+              ids=list(dict.fromkeys(re.findall(r'(?:newsid=|data-id=["\']?|"id"\s*:\s*["\']?)(\d+)',body,re.I)))
               print('VOIRANIME_LIVE_IDS count='+str(len(ids))+' sample='+','.join(ids[:5]))
               if ids:
-                  eu=f'https://voiranime.homes/engine/ajax/manga_episodes_api.php?id={ids[0]}'
-                  es,ef,eb,eh=req(eu,referer='https://voiranime.homes/')
+                  es,ef,eb,eh=req(f'https://voiranime.homes/engine/ajax/manga_episodes_api.php?id={ids[0]}',referer='https://voiranime.homes/')
                   hosts=sorted(set(re.findall(r'https?://([^/"\']+)',eb,re.I)))
                   print(f'VOIRANIME_LIVE_EPISODES status={es} bytes={len(eb)} hosts={";".join(hosts[:12])}')
           else:
@@ -98,14 +63,10 @@ jobs:
           st,final,body,h=req(cu,referer='https://coflix.group/')
           print(f'COFLIX_LIVE_DETAIL status={st} final={final} bytes={len(body)} type={h.get("Content-Type","")}')
           if st==200:
-              iframes=re.findall(r'<iframe[^>]+src=["\']([^"\']+)',body,re.I)
+              iframes=list(dict.fromkeys(urllib.parse.urljoin(final,x.replace('\\/','/')) for x in re.findall(r'<iframe[^>]+src=["\']([^"\']+)',body,re.I)))
               data_urls=re.findall(r'(?:data-(?:src|url|link|embed)|href)=["\']([^"\']+)',body,re.I)
+              interesting=list(dict.fromkeys(urllib.parse.urljoin(final,x.replace('\\/','/')) for x in data_urls if any(k in x.lower() for k in ('player','embed','dood','voe','uqload','vidzy','lecteur','coflix'))))
               ajax=sorted(set(re.findall(r'["\']([^"\']*(?:ajax|player|embed|stream|server)[^"\']*)["\']',body,re.I)))
-              def norm(u):
-                  try:return urllib.parse.urljoin(final,u.replace('\\/','/'))
-                  except:return u
-              iframes=list(dict.fromkeys(norm(x) for x in iframes))
-              interesting=list(dict.fromkeys(norm(x) for x in data_urls if any(k in x.lower() for k in ('player','embed','dood','voe','uqload','vidzy','lecteur','coflix'))))
               print('COFLIX_LIVE_IFRAMES count='+str(len(iframes))+' values='+';'.join(iframes[:12]))
               print('COFLIX_LIVE_DATA_URLS count='+str(len(interesting))+' values='+';'.join(interesting[:12]))
               print('COFLIX_LIVE_AJAX_HINTS count='+str(len(ajax))+' values='+';'.join(ajax[:12]))
