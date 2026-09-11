@@ -15,12 +15,13 @@ def sha256(path: Path) -> str:
 def main() -> int:
     expected = json.loads(EXPECTED.read_text(encoding="utf-8"))
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    if expected.get("providerCount") != 96 or len(manifest.get("scrapers") or []) != 96:
+    rows = manifest.get("scrapers") or []
+    if expected.get("providerCount") != 96 or len(rows) != 96:
         raise SystemExit("Provider v3 reverse rebuild requires exactly 96 providers")
-    movix = next((r for r in manifest["scrapers"] if str(r.get("id","")).lower()=="movix"), None)
-    pur = next((r for r in manifest["scrapers"] if str(r.get("id","")).lower()=="purstream"), None)
-    if not movix or movix.get("enabled") is not False:
-        raise SystemExit("MOVIX must remain disabled in production")
+    disabled = [str(row.get("id") or "") for row in rows if row.get("enabled") is False]
+    if disabled:
+        raise SystemExit(f"Provider v3 reverse rebuild requires all 96 providers enabled: {disabled}")
+    pur = next((r for r in rows if str(r.get("id","")).lower()=="purstream"), None)
     if not pur or pur.get("canonicalSupportedTypes") != ["movie", "tv"]:
         raise SystemExit("PURSTREAM canonical capability must remain movie/tv only")
     if pur.get("supportedTypes") != ["movie", "tv", "series"]:
@@ -49,7 +50,7 @@ def main() -> int:
                 raise SystemExit(f"{pid}: published artifact missing: {published}")
             if sha256(published) != row["sha256"] or published.read_bytes() != rebuilt_file.read_bytes():
                 raise SystemExit(f"{pid}: published bytes differ from reconstruction")
-    print(f"PROVIDER_V3_REVERSE_REBUILD_OK providers=96 generation={expected['generation'][:16]} byte_identical=96/96")
+    print(f"PROVIDER_V3_REVERSE_REBUILD_OK providers=96 enabled=96 generation={expected['generation'][:16]} byte_identical=96/96")
     return 0
 
 if __name__ == "__main__":
