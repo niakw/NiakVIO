@@ -1,0 +1,37 @@
+name: TEMP - Raw TMDB Route Identity
+
+on:
+  push:
+    branches:
+      - workbench/hub-matrix-46-20260911
+    paths:
+      - '.github/workflows/temp-raw-tmdb-route-identity.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  raw-tmdb-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Apply and validate typed resolver runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/upgrade_provider_base_runtime_v11.py tests/provider_raw_tmdb_route_identity_test.py
+          python scripts/upgrade_provider_base_runtime_v11.py
+          python tests/provider_raw_tmdb_route_identity_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python scripts/provider_base_store.py validate
