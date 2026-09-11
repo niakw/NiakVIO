@@ -1,736 +1,6 @@
-#!/usr/bin/env python3
-from __future__ import annotations
-
-import argparse
-import hashlib
-import json
-import re
-import subprocess
-import tempfile
-from datetime import datetime, timezone
-from pathlib import Path
-from typing import Any
-
-from apply_provider_overrides import apply_overrides, _strip_generated_core_tail
-from provider_byte_stability import split_owned_prefix_bootstraps
-from provider_patch_blocks import (
-    PROVIDER_BEGIN_MARKER,
-    PROVIDER_END_MARKER,
-    render_managed_fix,
-    strip_all_managed_fixes,
-    validate_managed_fixes,
-)
-
-ROOT = Path(__file__).resolve().parents[1]
-BASES = ROOT / "provider-bases"
-MANIFEST = ROOT / "manifest.json"
-PROVENANCE = ROOT / "PROVENANCE.json"
-QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
-
-# Read-only migration identifiers. These files are intentionally absent from the
-# clean-v3 patch surface; their names may still appear in historical provenance.
-LEGACY_SOURCE_PATCH_PATHS = {
-    "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
-    "scripts/provider_patches/adaptive_domain_recovery.py",
-    "scripts/provider_patches/adaptive_runtime_recovery.py",
-    "scripts/provider_patches/adaptive_runtime_recovery_v4.py",
-    "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
-    "scripts/provider_patches/castle_strict_identity_v1.py",
-}
-DERIVED_PATCH_SCRIPTS = {QUARANTINE_PATCH}
-
-# Clean reconstruction never replays historical source-shape patch paths.
-CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS = (
-    DERIVED_PATCH_SCRIPTS | LEGACY_SOURCE_PATCH_PATHS
-)
-
-# ProviderBase owns durable provider logic. Everything below is derived publication
-# state and must never become an input to the next Core build.
-DERIVED_BASE_MARKERS = (
-    "NIAKVIO_FIX",
-    "NUVIO_PROVIDER_SECURITY_HARDENING_V1",
-    "NUVIO_PROVIDER_CONSOLE_SHADOW_V1",
-    "NUVIO_PROVIDER_QUARANTINE_V1",
-    "NUVIO_GLOBAL_CORE_START_BOUNDARY_V1",
-    "NUVIO_GLOBAL_STREAM_FACTS_V1",
-    "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
-    "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
-    "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
-    "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
-    "NUVIO_STREAM_OUTPUT_SANITIZER_V4",
-    "NUVIO_STREAM_OUTPUT_SANITIZER_UTF8_BOM_V5",
-    "NUVIO_STREAM_OUTPUT_SANITIZER_ALL_URL_FAIL_CLOSED_V6",
-    "NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1",
-    "NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1",
-    "NUVIO_NATIVE_HLS_INTEGRITY_BUDGET_V1",
-    "NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1",
-    "NUVIO_GLOBAL_CATALOGUE_ALIAS_RECOVERY_V2",
-    "NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1",
-    "NUVIO_HLS_RUNTIME_INTEGRITY_V1",
-    "NUVIO_HLS_MASTER_AUDIO_PRESERVER_V1",
-    "NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1",
-    "NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
-    "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5",
-    "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1",
-    "NUVIO_ADAPTIVE_DOMAIN_RECOVERY_V1",
-    "NUVIO_RUNTIME_REPOSITORY_DOMAIN_MATERIALIZER_V1",
-)
-
-CLEAN_RECONSTRUCTION_SOURCE = "niakvio-clean-reconstruction-v3"
-CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE = "niakvio-clean-reconstruction-v3-candidate"
-CLEAN_RECONSTRUCTION_AUTHORING_VERSION = 3
-PROVIDER_BASE_OWNED_MARKER = "NIAKVIO_PROVIDER_BASE_OWNED_V3"
-CURRENT_PROVIDER_MODEL_AUTHORING = "niakvio-owned-v3"
-PROVIDER_BASE_AUTHORING_MARKER = f"NIAKVIO_PROVIDER_BASE_AUTHORING:{CURRENT_PROVIDER_MODEL_AUTHORING}"
-INITIAL_RECONSTRUCTION_SCOPE = 96
-
-
-def is_clean_reconstructed(provenance_row: dict[str, Any] | None) -> bool:
-    row = provenance_row if isinstance(provenance_row, dict) else {}
-    return (
-        str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_SOURCE
-        and row.get("clean_reconstruction_verified") is True
-        and int(row.get("clean_reconstruction_authoring_version") or 0)
-        >= CLEAN_RECONSTRUCTION_AUTHORING_VERSION
-    )
-
-
-def requires_clean_reconstruction(provenance_row: dict[str, Any] | None) -> bool:
-    return not is_clean_reconstructed(provenance_row)
-
-
-def is_clean_reconstruction_candidate(provenance_row: dict[str, Any] | None) -> bool:
-    row = provenance_row if isinstance(provenance_row, dict) else {}
-    return (
-        str(row.get("base_source") or "") == CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE
-        and row.get("clean_reconstruction_candidate") is True
-        and row.get("clean_reconstruction_verified") is not True
-        and int(row.get("clean_reconstruction_authoring_version") or 0)
-        >= CLEAN_RECONSTRUCTION_AUTHORING_VERSION
-    )
-
-
-def safe_fragment(value: str) -> str:
-    return re.sub(r"[^a-zA-Z0-9._-]+", "-", str(value).strip()).strip(".-")[:120] or "provider"
-
-
-def canonical_id(value: str) -> str:
-    return safe_fragment(value).casefold().replace("_", "-")
-
-
-NON_EXECUTABLE_KNOWLEDGE_HOSTS = {
-    "npms.io", "lodash.com", "www.lodash.com", "openjsf.org", "www.openjsf.org",
-    "underscorejs.org", "www.underscorejs.org", "arm.haglund.dev", "v3-cinemeta.strem.io",
-}
-
-
-def _provider_data_url_is_executable(value: object) -> bool:
-    text = str(value or "").strip()
-    if not text or "${" in text or "encodeURIComponent(" in text:
-        return False
-    lowered = text.casefold()
-    # NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2
-    # Telegram is an address/discovery hub, never a provider execution backend.
-    if re.search(r"://(?:[^/@]+\.)*(?:t\.me|telegram\.me|telegram\.dog)(?::\d+)?(?:[/?#]|$)", lowered):
-        return False
-    return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
-
-
-def _provider_data_route_is_executable(value: object) -> bool:
-    text = str(value or "").strip()
-    if not text or "${" in text or "encodeURIComponent(" in text or "decodeURIComponent(" in text:
-        return False
-    lowered = text.casefold()
-    if "q=ponyfill" in lowered or lowered.rstrip("/") == "/license":
-        return False
-    if text.count("{") != text.count("}") or text.count("[") != text.count("]") or text.count("(") != text.count(")"):
-        return False
-    if re.search(r"(?:\(\?:|\(\?=|\(\?!|\\[dDsSwW][+*?]?|\[[^\]]*$|(?:^|[/_-])i\[$)", text, re.I):
-        return False
-    if re.search(r"\.(?:css|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)", text, re.I):
-        return False
-    if re.search(r"/(?:refs/heads/[^/]+/)?domains?\.json(?:[?#]|$)", text, re.I):
-        return False
-    return True
-
-
-def sha256(data: bytes) -> str:
-    return hashlib.sha256(data).hexdigest()
-
-
-def base_relative(provider_id: str, digest: str) -> str:
-    return f"provider-bases/{safe_fragment(provider_id.casefold())}--base--{digest[:16]}.js"
-
-
-def safe_base_path(relative: str) -> Path | None:
-    if not isinstance(relative, str) or not relative.startswith("provider-bases/"):
-        return None
-    path = (ROOT / relative).resolve()
-    try:
-        path.relative_to(BASES.resolve())
-    except ValueError:
-        return None
-    return path
-
-
-def forbidden_base_markers(data: bytes) -> list[str]:
-    text = data.decode("utf-8", errors="strict")
-    return [marker for marker in DERIVED_BASE_MARKERS if marker in text]
-
-
-def _strip_leaked_provider_model_data(text: str) -> tuple[str, bool]:
-    """Remove only the serialized Provider DATA declaration from a contaminated base.
-
-    References to NIAKVIO_PROVIDER_MODEL are part of the common skeleton and are
-    preserved. This helper never derives code from a published provider and never
-    rewrites executable logic outside the single declaration statement.
-    """
-    prefixes = (
-        "const NIAKVIO_PROVIDER_MODEL = Object.freeze(",
-        "let NIAKVIO_PROVIDER_MODEL = Object.freeze(",
-        "var NIAKVIO_PROVIDER_MODEL = Object.freeze(",
-    )
-    starts = [(text.find(prefix), prefix) for prefix in prefixes if text.find(prefix) >= 0]
-    if not starts:
-        return text, False
-    if len(starts) != 1:
-        raise ValueError("ProviderBase contains multiple provider model DATA declarations")
-    start, prefix = starts[0]
-    open_paren = start + len(prefix) - 1
-    depth = 0
-    quote = ""
-    escaped = False
-    end = None
-    for index in range(open_paren, len(text)):
-        ch = text[index]
-        if quote:
-            if escaped:
-                escaped = False
-            elif ch == "\\":
-                escaped = True
-            elif ch == quote:
-                quote = ""
-            continue
-        if ch in ("'", '"', "`"):
-            quote = ch
-            continue
-        if ch == "(":
-            depth += 1
-        elif ch == ")":
-            depth -= 1
-            if depth == 0:
-                cursor = index + 1
-                while cursor < len(text) and text[cursor] in " \t":
-                    cursor += 1
-                if cursor >= len(text) or text[cursor] != ";":
-                    raise ValueError("ProviderBase provider model DATA declaration has no terminating semicolon")
-                cursor += 1
-                if cursor < len(text) and text[cursor] == "\r":
-                    cursor += 1
-                if cursor < len(text) and text[cursor] == "\n":
-                    cursor += 1
-                end = cursor
-                break
-    if end is None:
-        raise ValueError("ProviderBase provider model DATA declaration is unterminated")
-    cleaned = text[:start] + text[end:]
-    return cleaned, True
-
-
-def _strip_leaked_provider_identity_data(text: str) -> tuple[str, bool]:
-    """Remove only a standalone generated NIAKVIO_PROVIDER_ID comment."""
-    pattern = re.compile(r"(?m)^\s*/\*\s*NIAKVIO_PROVIDER_ID:[^*]+\*/\s*\r?\n?")
-    cleaned, count = pattern.subn("", text)
-    if count > 1:
-        raise ValueError("ProviderBase contains multiple provider identity DATA comments")
-    return cleaned, bool(count)
-
-
-def clean_derived_provider_base(provider_id: str, data: bytes) -> tuple[bytes, bool]:
-    """Strip only generated/composed layers from an existing ProviderBase.
-
-    This is the manual reconstruction cleanup path. It never consults published
-    Provider JS, upstream JS, snapshots or Git history.
-    """
-    text = data.decode("utf-8", errors="strict")
-    if PROVIDER_BEGIN_MARKER in text or PROVIDER_END_MARKER in text:
-        raise ValueError(f"{provider_id}: ProviderBase envelope contamination requires Learning review")
-    text, model_stripped = _strip_leaked_provider_model_data(text)
-    text, identity_stripped = _strip_leaked_provider_identity_data(text)
-    text, managed_fixes = strip_all_managed_fixes(
-        text,
-        restore_replaced_source=True,
-        require_provider_base_restore=True,
-    )
-    text, stripped_core = _strip_generated_core_tail(text)
-    text, stripped_adaptive = strip_adaptive_runtime_wrappers(text)
-    data_out = text.encode("utf-8")
-    prefix, body = split_owned_prefix_bootstraps(data_out)
-    if prefix:
-        data_out = body
-    assert_base_layering(data_out, provider_id)
-    return data_out, bool(
-        model_stripped or identity_stripped or managed_fixes
-        or stripped_core or stripped_adaptive or prefix
-    )
-
-
-def assert_base_layering(data: bytes, provider_id: str) -> None:
-    """ProviderBase is common code only: no envelope, DATA, Provider/Core Lego or derived tail."""
-    markers = forbidden_base_markers(data)
-    if markers:
-        raise ValueError(
-            f"{provider_id}: ProviderBase contains derived/composed layer(s): "
-            + ",".join(markers)
-        )
-    text = data.decode("utf-8", errors="strict")
-    if PROVIDER_BEGIN_MARKER in text or PROVIDER_END_MARKER in text:
-        raise ValueError(f"{provider_id}: ProviderBase must not contain the Provider envelope")
-    fix_ids = validate_managed_fixes(text)
-    if fix_ids:
-        raise ValueError(
-            f"{provider_id}: ProviderBase must not contain managed Lego: "
-            + ",".join(fix_ids)
-        )
-    if "NIAKVIO_PROVIDER_ID:" in text:
-        raise ValueError(f"{provider_id}: ProviderBase must not contain provider identity DATA")
-    if "NIAKVIO_PROVIDER_MODEL = Object.freeze(" in text:
-        raise ValueError(f"{provider_id}: ProviderBase must not contain provider model DATA")
-
-
-def assert_clean_provider_base(
-    data: bytes,
-    provider_id: str,
-    *,
-    require_current_authoring: bool = True,
-) -> None:
-    """Fail closed unless bytes are the common, owned, non-derived ProviderBase."""
-    assert_base_layering(data, provider_id)
-    text = data.decode("utf-8", errors="strict")
-    if PROVIDER_BASE_OWNED_MARKER not in text:
-        raise ValueError(
-            f"{provider_id}: clean ProviderBase missing owned marker {PROVIDER_BASE_OWNED_MARKER}"
-        )
-    if require_current_authoring and PROVIDER_BASE_AUTHORING_MARKER not in text:
-        raise ValueError(
-            f"{provider_id}: clean ProviderBase authoring drift "
-            f"expected={CURRENT_PROVIDER_MODEL_AUTHORING}"
-        )
-
-
-def strip_adaptive_runtime_wrappers(text: str) -> tuple[str, int]:
-    """Remove only owned adaptive runtime wrappers from legacy provider bytes."""
-    markers = (
-        "/* NUVIO_ADAPTIVE_RUNTIME_RECOVERY_V",
-        "/* NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5:",
-    )
-    call = '})(typeof globalThis!=="undefined"?globalThis:this,'
-    removed = 0
-    while True:
-        starts = [text.find(marker) for marker in markers]
-        starts = [value for value in starts if value >= 0]
-        if not starts:
-            break
-        start = min(starts)
-        call_at = text.find(call, start)
-        end = text.find(");", call_at) if call_at >= 0 else -1
-        if call_at < 0 or end < 0:
-            raise ValueError("unterminated adaptive runtime recovery wrapper in ProviderBase")
-        end += 2
-        if text[end:end + 2] == "\r\n":
-            end += 2
-        elif text[end:end + 1] in ("\r", "\n"):
-            end += 1
-        text = text[:start] + text[end:]
-        removed += 1
-    return text.rstrip(), removed
-
-
-def validate_base(data: bytes, provider_id: str) -> None:
-    # A ProviderBase must remain an independently valid provider implementation.
-    assert_base_layering(data, provider_id)
-    with tempfile.NamedTemporaryFile(suffix=".js", delete=False, dir=ROOT) as handle:
-        handle.write(data)
-        temporary = Path(handle.name)
-    try:
-        result = subprocess.run(
-            ["node", str(ROOT / "scripts" / "validate_provider_artifact.cjs"), "--provider-base", str(temporary)],
-            text=True,
-            capture_output=True,
-            check=False,
-        )
-        if result.returncode:
-            detail = "\n".join(v.strip() for v in (result.stdout, result.stderr) if v.strip())
-            raise ValueError(f"{provider_id}: ProviderBase rejected: {detail or 'no diagnostic'}")
-    finally:
-        temporary.unlink(missing_ok=True)
-
-
-def write_base(provider_id: str, data: bytes) -> tuple[str, str]:
-    digest = sha256(data)
-    relative = base_relative(provider_id, digest)
-    path = safe_base_path(relative)
-    if path is None:
-        raise ValueError(f"{provider_id}: unsafe ProviderBase path")
-    path.parent.mkdir(parents=True, exist_ok=True)
-    if not path.exists() or path.read_bytes() != data:
-        path.write_bytes(data)
-    return relative, digest
-
-
-def resolve_base(provider_id: str, provenance_row: dict[str, Any], *, require: bool = True) -> tuple[Path | None, str | None]:
-    relative = str(provenance_row.get("base_filename") or "").strip()
-    digest = str(provenance_row.get("base_sha256") or "").strip().casefold()
-    path = safe_base_path(relative)
-    if path is None or not path.is_file():
-        if require:
-            raise ValueError(f"{provider_id}: missing durable ProviderBase")
-        return None, None
-    actual = sha256(path.read_bytes())
-    if not digest or actual != digest:
-        raise ValueError(f"{provider_id}: ProviderBase SHA mismatch expected={digest or 'missing'} actual={actual}")
-    return path, actual
-
-
-def resolve_runtime_base(
-    provider_id: str,
-    provenance_row: dict[str, Any],
-    *,
-    require: bool = True,
-) -> tuple[Path | None, str | None]:
-    """Resolve the production seed without letting an unverified clean candidate regress LKG behavior.
-
-    The clean candidate remains the canonical reconstruction artifact in provenance
-    and is still used by Learning/Deep proof. Runtime compilation falls back to
-    the preserved pre-reconstruction ProviderBase until the clean candidate is
-    explicitly verified.
-    """
-    row = provenance_row if isinstance(provenance_row, dict) else {}
-    if is_clean_reconstruction_candidate(row):
-        relative = str(row.get("legacy_base_filename_before_clean_candidate") or "").strip()
-        digest = str(row.get("legacy_base_sha256_before_clean_candidate") or "").strip().casefold()
-        path = safe_base_path(relative)
-        if path is not None and path.is_file():
-            actual = sha256(path.read_bytes())
-            if digest and actual == digest:
-                return path, actual
-            if digest:
-                raise ValueError(
-                    f"{provider_id}: legacy runtime ProviderBase SHA mismatch "
-                    f"expected={digest} actual={actual}"
-                )
-    return resolve_base(provider_id, row, require=require)
-
-
-def clean_base_from_published(provider_id: str, published_data: bytes) -> tuple[bytes, bool]:
-    """Legacy-only recovery path.
-
-    ProviderBase v3 is never recovered from a published bundle. Its sole source
-    is the common NiakVIO skeleton plus persisted provider DATA/fix bricks.
-    """
-    published_text = published_data.decode("utf-8", errors="strict")
-    if "NIAKVIO_PROVIDER_BASE_OWNED_V3" in published_text or PROVIDER_BEGIN_MARKER in published_text:
-        raise ValueError(
-            f"{provider_id}: ProviderBase v3 reverse recovery from published JS is forbidden"
-        )
-    base_text, managed_fixes = strip_all_managed_fixes(
-        published_text,
-        restore_replaced_source=True,
-        require_provider_base_restore=True,
-    )
-    base_text, stripped_core = _strip_generated_core_tail(base_text)
-    base_text, stripped_adaptive = strip_adaptive_runtime_wrappers(base_text)
-    base_data = base_text.encode("utf-8")
-    prefix, body = split_owned_prefix_bootstraps(base_data)
-    if prefix:
-        base_data = body
-    assert_base_layering(base_data, provider_id)
-    return base_data, bool(managed_fixes or stripped_core or stripped_adaptive or prefix)
-
-
-def persist_base_from_published(provider_id: str, published_data: bytes) -> tuple[str, str, bool]:
-    """Persist provider logic only; generated Core/routing layers are always derived."""
-    base_data, stripped = clean_base_from_published(provider_id, published_data)
-    validate_base(base_data, provider_id)
-    relative, digest = write_base(provider_id, base_data)
-    return relative, digest, stripped
-
-
-def build_base_from_seed(
-    provider_id: str,
-    seed_data: bytes,
-    *,
-    overrides_path: Path | None = None,
-) -> tuple[bytes, bool]:
-    """Return common ProviderBase bytes without composing provider DATA or Lego."""
-    if PROVIDER_BASE_OWNED_MARKER.encode("utf-8") in seed_data:
-        # Clean v3 seeds are already the immutable common skeleton. Nothing may
-        # patch, strip or infer provider-specific behavior from these bytes.
-        assert_clean_provider_base(seed_data, provider_id)
-        validate_base(seed_data, provider_id)
-        return seed_data, False
-
-    # Compatibility-only path for pre-v3 seeds. It may recover historical base
-    # code, but a current clean ProviderBase is never reverse-engineered.
-    rebuilt, _records = apply_overrides(
-        provider_id,
-        seed_data,
-        phase="discovery",
-        excluded_patch_scripts=CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS,
-        include_global_core=False,
-        config_path=overrides_path,
-    )
-    base_data, stripped = clean_base_from_published(provider_id, rebuilt)
-    validate_base(base_data, provider_id)
-    return base_data, stripped
-
-
-def persist_base_from_seed(
-    provider_id: str,
-    seed_data: bytes,
-    *,
-    overrides_path: Path | None = None,
-) -> tuple[str, str, bool]:
-    """Rebuild durable provider logic from a clean provider seed.
-
-    Publication-only quarantine, dynamic domain materialization and adaptive
-    runtime/domain recovery are deliberately excluded. They remain derived state
-    and are regenerated later by the finalizer from current policy/evidence.
-    """
-    base_data, stripped = build_base_from_seed(
-        provider_id,
-        seed_data,
-        overrides_path=overrides_path,
-    )
-    relative, digest = write_base(provider_id, base_data)
-    return relative, digest, stripped
-
-
-
-def _normalize_identity_input(value: Any) -> dict[str, Any]:
-    """Normalize the explicit DATA execution contract; runtime never infers it."""
-    raw = value if isinstance(value, dict) else {}
-    mode = str(raw.get("mode") or "tmdb_direct").strip().casefold()
-    if mode not in {"tmdb_direct", "catalog_search", "external_id"}:
-        raise ValueError(f"invalid provider identityInput.mode: {mode}")
-    required = bool(raw.get("requiresTmdbBeforeRun", mode != "tmdb_direct"))
-    fields = [
-        str(item).strip()
-        for item in raw.get("requiredFields") or []
-        if str(item).strip()
-    ]
-    if not fields:
-        fields = (
-            ["title", "mediaType"]
-            if required
-            else ["tmdbId", "mediaType"]
-        )
-    return {
-        "mode": mode,
-        "requiresTmdbBeforeRun": required,
-        "requiredFields": list(dict.fromkeys(fields)),
-    }
-
-def build_provider_data_model(
-    provider_id: str,
-    manifest_entry: dict[str, Any] | None = None,
-    *,
-    known_site: str | None = None,
-    provider_model: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Normalize all provider-specific differences into deterministic structured DATA."""
-    entry = manifest_entry if isinstance(manifest_entry, dict) else {}
-    semantic_values = (
-        entry.get("canonicalSupportedTypes")
-        if isinstance(entry.get("canonicalSupportedTypes"), list) and entry.get("canonicalSupportedTypes")
-        else entry.get("supportedTypes")
-    )
-    supported = [
-        str(value).strip().casefold()
-        for value in semantic_values or []
-        if str(value).strip().casefold() in {"movie", "tv", "anime"}
-    ]
-    supported = list(dict.fromkeys(supported))
-    display_name = str(entry.get("name") or provider_id).strip() or provider_id
-    incoming_model = provider_model if isinstance(provider_model, dict) else {}
-    return {
-        "providerId": canonical_id(provider_id),
-        "displayName": display_name,
-        "knownSite": str(known_site or incoming_model.get("knownSite") or "").strip() or None,
-        "supportedTypes": supported,
-        "strategy": str(incoming_model.get("strategy") or "unknown").strip().casefold(),
-        "officialSite": str(incoming_model.get("officialSite") or "").strip() or None,
-        "officialHub": str(incoming_model.get("officialHub") or "").strip() or None,
-        "officialApi": str(incoming_model.get("officialApi") or "").strip() or None,
-        "fixedApi": str(incoming_model.get("fixedApi") or "").strip() or None,
-        "origins": [
-            str(value).strip()
-            for value in incoming_model.get("origins") or []
-            if _provider_data_url_is_executable(value)
-        ][:24],
-        "observedUrls": [
-            str(value).strip()
-            for value in incoming_model.get("observedUrls") or []
-            if _provider_data_url_is_executable(value)
-        ][:32],
-        "routes": [
-            str(value).strip()
-            for value in incoming_model.get("routes") or []
-            if _provider_data_route_is_executable(value)
-        ][:64],
-        "apiRecipe": (
-            incoming_model.get("apiRecipe")
-            if isinstance(incoming_model.get("apiRecipe"), dict)
-            else None
-        ),
-        "routeProofVersion": int(incoming_model.get("routeProofVersion") or 0),
-        "proofSearchBases": [
-            str(value).strip()
-            for value in incoming_model.get("proofSearchBases") or []
-            if _provider_data_url_is_executable(value)
-        ][:6],
-        "proofDetailBases": [
-            str(value).strip()
-            for value in incoming_model.get("proofDetailBases") or []
-            if _provider_data_url_is_executable(value)
-        ][:6],
-        "proofProtectedHosts": [
-            str(value).strip().casefold()
-            for value in incoming_model.get("proofProtectedHosts") or []
-            if str(value).strip()
-        ][:24],
-        "searchRequestPlan": [
-            {
-                "base": str(row.get("base") or "").strip(),
-                "route": str(row.get("route") or "").strip(),
-                "requestSpec": row.get("requestSpec") if isinstance(row.get("requestSpec"), dict) else {"method": "GET"},
-                "proofModelVersion": int(row.get("proofModelVersion") or 0),
-                "sourceRole": str(row.get("sourceRole") or "catalog-search"),
-                "semanticTypes": [
-                    str(value).strip().casefold()
-                    for value in row.get("semanticTypes") or []
-                    if str(value).strip().casefold() in {"movie", "tv", "anime"}
-                ],
-            }
-            for row in incoming_model.get("searchRequestPlan") or []
-            if isinstance(row, dict)
-            and _provider_data_url_is_executable(row.get("base"))
-            and _provider_data_route_is_executable(row.get("route"))
-            and int(row.get("proofModelVersion") or 0) >= 5
-        ][:6],
-        "providerValuePlan": [
-            {
-                "searchBase": str(plan.get("searchBase") or "").strip(),
-                "searchRoute": str(plan.get("searchRoute") or "").strip(),
-                "searchRequestSpec": plan.get("searchRequestSpec") if isinstance(plan.get("searchRequestSpec"), dict) else {"method": "GET"},
-                "steps": [
-                    {
-                        "base": str(step.get("base") or "").strip(),
-                        "route": str(step.get("route") or "").strip(),
-                        "requestSpec": step.get("requestSpec") if isinstance(step.get("requestSpec"), dict) else {"method": "GET"},
-                        "role": str(step.get("role") or "detail").strip().casefold(),
-                    }
-                    for step in plan.get("steps") or []
-                    if isinstance(step, dict)
-                    and _provider_data_url_is_executable(step.get("base"))
-                    and _provider_data_route_is_executable(step.get("route"))
-                    # NIAKVIO_PROVIDER_RESPONSE_VALUE_PROJECTION_V20_3
-                    and ("{id}" in str(step.get("route") or "") or "{slug}" in str(step.get("route") or ""))
-                ][:8],
-                "semanticTypes": [
-                    str(value).strip().casefold()
-                    for value in plan.get("semanticTypes") or []
-                    if str(value).strip().casefold() in {"movie", "tv", "anime"}
-                ],
-                "proofModelVersion": int(plan.get("proofModelVersion") or 0),
-                "sourceRole": str(plan.get("sourceRole") or "provider-value-correlation"),
-            }
-            for plan in incoming_model.get("providerValuePlan") or []
-            if isinstance(plan, dict)
-            and _provider_data_url_is_executable(plan.get("searchBase"))
-            and _provider_data_route_is_executable(plan.get("searchRoute"))
-            and int(plan.get("proofModelVersion") or 0) >= 5
-            and isinstance(plan.get("steps"), list)
-            and plan.get("steps")
-        ][:12],
-        "externalIdentityPlan": [
-            {
-                "base": str(row.get("base") or "").strip(),
-                "route": str(row.get("route") or "").strip(),
-                "requestSpec": row.get("requestSpec") if isinstance(row.get("requestSpec"), dict) else {"method": "GET"},
-                "proofModelVersion": int(row.get("proofModelVersion") or 0),
-                "sourceRole": str(row.get("sourceRole") or "external-identity-detail"),
-            }
-            for row in incoming_model.get("externalIdentityPlan") or []
-            if isinstance(row, dict)
-            and _provider_data_url_is_executable(row.get("base"))
-            and _provider_data_route_is_executable(row.get("route"))
-            and "{imdbid}" in str(row.get("route") or "").casefold()
-        ][:4],
-        "sourceRuntimeFamily": str(incoming_model.get("sourceRuntimeFamily") or "unknown"),
-        "identityInput": _normalize_identity_input(incoming_model.get("identityInput")),
-        "strictIdentity": bool(incoming_model.get("strictIdentity", False)),
-        "strictHtmlIdentity": bool(incoming_model.get("strictHtmlIdentity", False)),
-        "outputUrlHostRewrites": [
-            {
-                "fromHost": str(row.get("fromHost") or "").strip().casefold(),
-                "toHost": str(row.get("toHost") or "").strip().casefold(),
-            }
-            for row in incoming_model.get("outputUrlHostRewrites") or []
-            if isinstance(row, dict)
-            and str(row.get("fromHost") or "").strip()
-            and str(row.get("toHost") or "").strip()
-        ][:16],
-        "outputLanguageRules": [
-            {
-                "language": str(row.get("language") or "").strip().casefold(),
-                "hostPrefix": str(row.get("hostPrefix") or "").strip().casefold(),
-            }
-            for row in incoming_model.get("outputLanguageRules") or []
-            if isinstance(row, dict)
-            and str(row.get("language") or "").strip()
-            and str(row.get("hostPrefix") or "").strip()
-        ][:16],
-        "domainSubstitutions": {
-            str(old).strip().casefold(): str(new).strip().casefold()
-            for old, new in (
-                incoming_model.get("domainSubstitutions")
-                if isinstance(incoming_model.get("domainSubstitutions"), dict)
-                else {}
-            ).items()
-            if str(old).strip() and str(new).strip()
-        },
-        "reconstructionState": "learning-clean-seed",
-        "runtimeRole": "reader",
-        "runtimeDiscovery": False,
-        "routePlanVersion": 3,
-        "modelSchemaVersion": 4,
-        "authoring": CURRENT_PROVIDER_MODEL_AUTHORING,
-        "upstreamCodeEmbedded": False,
-        "upstreamCodeExecuted": False,
-    }
-
-
-def provider_data_sha256(model: dict[str, Any]) -> str:
-    payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
-
-
-def build_clean_provider_seed(
-    provider_id: str,
-    manifest_entry: dict[str, Any] | None = None,
-    *,
-    known_site: str | None = None,
-    provider_model: dict[str, Any] | None = None,
-) -> bytes:
-    """Build the immutable common ProviderBase skeleton.
-
-    Arguments are retained for call-site compatibility, but they MUST NOT affect
-    ProviderBase bytes. Provider identity/routes/types/endpoints are materialized
-    later as structured DATA by compose_provider_bundle().
-    """
-    del provider_id, manifest_entry, known_site, provider_model
-    template = r'''/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
+/* BEGIN NIAKVIO_PROVIDER */
+/* NIAKVIO_PROVIDER_ID:goated */
+/* NIAKVIO_PROVIDER_BASE_OWNED_V3 */
 /* NIAKVIO_PROVIDER_BASE_AUTHORING:niakvio-owned-v3 */
 "use strict";
 
@@ -4218,388 +3488,1760 @@ module.exports = {
   getStreams: _spv4GetStreams,
   get __niakvioProviderBase(){ return NIAKVIO_PROVIDER_MODEL; }
 };
-'''
-    return template.encode("utf-8")
 
-
-def compose_provider_bundle(
-    provider_id: str,
-    base_data: bytes,
-    provider_data: dict[str, Any],
-) -> bytes:
-    """Compose one Provider envelope from common Base + DATA; Core Lego comes later."""
-    assert_clean_provider_base(base_data, provider_id)
-    if not isinstance(provider_data, dict):
-        raise ValueError(f"{provider_id}: provider DATA must be an object")
-    model = dict(provider_data)
-    canonical = canonical_id(provider_id)
-    if str(model.get("providerId") or "") != canonical:
-        raise ValueError(
-            f"{provider_id}: provider DATA id mismatch actual={model.get('providerId')!r}"
-        )
-    if str(model.get("authoring") or "") != CURRENT_PROVIDER_MODEL_AUTHORING:
-        raise ValueError(
-            f"{provider_id}: provider DATA authoring mismatch "
-            f"actual={model.get('authoring')!r}"
-        )
-    payload = json.dumps(model, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-    fix_component = canonical.upper()
-    config_id = f"PROVIDER.{fix_component}.CONFIG.V1"
-    config_block = render_managed_fix(
-        config_id,
-        f"const NIAKVIO_PROVIDER_MODEL = Object.freeze({payload});",
-        data=model,
-    )
-    base_text = base_data.decode("utf-8", errors="strict").rstrip()
-    source = (
-        f"{PROVIDER_BEGIN_MARKER}\n"
-        f"/* NIAKVIO_PROVIDER_ID:{canonical} */\n"
-        f"{base_text}\n\n"
-        f"{config_block}\n"
-        f"{PROVIDER_END_MARKER}\n"
-    )
-    fix_ids = validate_managed_fixes(source)
-    if fix_ids != [config_id]:
-        raise ValueError(f"{provider_id}: invalid initial Provider Lego layout: {fix_ids}")
-    if source.count(PROVIDER_BEGIN_MARKER) != 1 or source.count(PROVIDER_END_MARKER) != 1:
-        raise ValueError(f"{provider_id}: composed Provider envelope cardinality invalid")
-    if not source.rstrip().endswith(PROVIDER_END_MARKER):
-        raise ValueError(f"{provider_id}: bytes found after END PROVIDER")
-    return source.encode("utf-8")
-
-
-def persist_clean_provider_seed(
-    provider_id: str,
-    manifest_entry: dict[str, Any] | None = None,
-    *,
-    known_site: str | None = None,
-    provider_model: dict[str, Any] | None = None,
-    overrides_path: Path | None = None,
-) -> tuple[str, str, bool]:
-    return persist_base_from_seed(
-        provider_id,
-        build_clean_provider_seed(
-            provider_id,
-            manifest_entry,
-            known_site=known_site,
-            provider_model=provider_model,
-        ),
-        overrides_path=overrides_path,
-    )
-
-
-def provider_base_store_metadata(
-    *,
-    provider_count: int,
-    unique_base_count: int,
-    clean_reconstructed: int,
-    reconstruction_required: int,
-    previous_store: dict[str, Any] | None = None,
-) -> dict[str, Any]:
-    """Canonical ProviderBase-store metadata shared by every publisher."""
-    previous = previous_store if isinstance(previous_store, dict) else {}
-    initial_scope = int(previous.get("initial_reconstruction_scope") or INITIAL_RECONSTRUCTION_SCOPE)
-    if provider_count > 0:
-        initial_scope = min(max(1, initial_scope), provider_count)
-    return {
-        "schema_version": max(4, int(previous.get("schema_version") or 0)),
-        "provider_count": int(provider_count),
-        "unique_base_count": int(unique_base_count),
-        "initial_reconstruction_scope": initial_scope,
-        "migration_scope": "all-current-providers",
-        "owner": "provider_pipeline",
-        "future_source": "provider_pipeline_only",
-        "clean_reconstructed": int(clean_reconstructed),
-        "reconstruction_required": int(reconstruction_required),
-        "authoring_version": CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
-        "authoring_policy": "niakvio-owned-clean-reconstruction-only",
-        "clean_source": CLEAN_RECONSTRUCTION_SOURCE,
-        "legacy_provider_role": "compatibility-lkg-and-knowledge-only",
-        "upstream_code_role": "knowledge-only",
-        "runtime_role": "reader-only",
-        "runtime_route_discovery": False,
-        "upstream_code_executed": False,
-        "published_legacy_code_may_seed_new_base": False,
-        "upstream_code_may_seed_new_base": False,
-        "git_history_code_may_seed_new_base": False,
-        "core_may_create_or_mutate_base": False,
-        "semantic_validation": "on_base_creation_or_change",
-        "core_integrity_validation": "coverage_and_sha_only",
-        "derived_layers_forbidden": list(DERIVED_BASE_MARKERS),
+/* STARTFIX:PROVIDER.GOATED.CONFIG.V1 */
+/* FIXDATA:PROVIDER.GOATED.CONFIG.V1:eyJhcGlSZWNpcGUiOm51bGwsImF1dGhvcmluZyI6Im5pYWt2aW8tb3duZWQtdjMiLCJkaXNwbGF5TmFtZSI6IvCfkJAgR29hdGVkIiwiZG9tYWluU3Vic3RpdHV0aW9ucyI6e30sImV4dGVybmFsSWRlbnRpdHlQbGFuIjpbXSwiZml4ZWRBcGkiOm51bGwsImlkZW50aXR5SW5wdXQiOnsibW9kZSI6InRtZGJfZGlyZWN0IiwicmVxdWlyZWRGaWVsZHMiOlsidG1kYklkIiwibWVkaWFUeXBlIl0sInJlcXVpcmVzVG1kYkJlZm9yZVJ1biI6ZmFsc2V9LCJrbm93blNpdGUiOiJodHRwczovL2dvYXRlZC5jeCIsIm1vZGVsU2NoZW1hVmVyc2lvbiI6NCwib2JzZXJ2ZWRVcmxzIjpbImh0dHBzOi8vYXBpLnJlYWxseWZhc3QueHl6IiwiaHR0cHM6Ly9nb2F0ZWQuY3giLCJodHRwczovL2FwaS5yZWFsbHlmYXN0Lnh5ei8iLCJodHRwczovL2dvYXRlZC5jeC8iLCJodHRwczovL2dvYXRlZC5jeC9hcGkvY2hhbGxlbmdlIiwiaHR0cHM6Ly9nb2F0ZWQuY3gvYXBpL3Jlc29sdmUiLCJodHRwczovL2dvYXRlZC5jeC9hcGkvc3VidGl0bGVzIiwiaHR0cHM6Ly9nb2F0ZWQuY3gvYXBpLnJlYWxseWZhc3QueHl6Il0sIm9mZmljaWFsQXBpIjpudWxsLCJvZmZpY2lhbEh1YiI6bnVsbCwib2ZmaWNpYWxTaXRlIjoiaHR0cHM6Ly9nb2F0ZWQuY3giLCJvcmlnaW5zIjpbImh0dHBzOi8vZ29hdGVkLmN4IiwiaHR0cHM6Ly9hcGkucmVhbGx5ZmFzdC54eXoiXSwib3V0cHV0TGFuZ3VhZ2VSdWxlcyI6W10sIm91dHB1dFVybEhvc3RSZXdyaXRlcyI6W10sInByb29mRGV0YWlsQmFzZXMiOltdLCJwcm9vZlByb3RlY3RlZEhvc3RzIjpbXSwicHJvb2ZTZWFyY2hCYXNlcyI6W10sInByb3ZpZGVySWQiOiJnb2F0ZWQiLCJwcm92aWRlclZhbHVlUGxhbiI6W10sInJlY29uc3RydWN0aW9uU3RhdGUiOiJsZWFybmluZy1jbGVhbi1zZWVkIiwicm91dGVQbGFuVmVyc2lvbiI6Mywicm91dGVQcm9vZlZlcnNpb24iOjUsInJvdXRlcyI6W10sInJ1bnRpbWVEaXNjb3ZlcnkiOmZhbHNlLCJydW50aW1lUm9sZSI6InJlYWRlciIsInNlYXJjaFJlcXVlc3RQbGFuIjpbXSwic291cmNlUnVudGltZUZhbWlseSI6InRtZGItZGlyZWN0LWFwaSIsInN0cmF0ZWd5IjoiYXBpX3N0cmVhbV9yZXNvbHZlciIsInN0cmljdEh0bWxJZGVudGl0eSI6ZmFsc2UsInN0cmljdElkZW50aXR5IjpmYWxzZSwic3VwcG9ydGVkVHlwZXMiOlsibW92aWUiLCJ0diJdLCJ1cHN0cmVhbUNvZGVFbWJlZGRlZCI6ZmFsc2UsInVwc3RyZWFtQ29kZUV4ZWN1dGVkIjpmYWxzZX0= */
+const NIAKVIO_PROVIDER_MODEL = Object.freeze({"apiRecipe":null,"authoring":"niakvio-owned-v3","displayName":"🐐 Goated","domainSubstitutions":{},"externalIdentityPlan":[],"fixedApi":null,"identityInput":{"mode":"tmdb_direct","requiredFields":["tmdbId","mediaType"],"requiresTmdbBeforeRun":false},"knownSite":"https://goated.cx","modelSchemaVersion":4,"observedUrls":["https://api.reallyfast.xyz","https://goated.cx","https://api.reallyfast.xyz/","https://goated.cx/","https://goated.cx/api/challenge","https://goated.cx/api/resolve","https://goated.cx/api/subtitles","https://goated.cx/api.reallyfast.xyz"],"officialApi":null,"officialHub":null,"officialSite":"https://goated.cx","origins":["https://goated.cx","https://api.reallyfast.xyz"],"outputLanguageRules":[],"outputUrlHostRewrites":[],"proofDetailBases":[],"proofProtectedHosts":[],"proofSearchBases":[],"providerId":"goated","providerValuePlan":[],"reconstructionState":"learning-clean-seed","routePlanVersion":3,"routeProofVersion":5,"routes":[],"runtimeDiscovery":false,"runtimeRole":"reader","searchRequestPlan":[],"sourceRuntimeFamily":"tmdb-direct-api","strategy":"api_stream_resolver","strictHtmlIdentity":false,"strictIdentity":false,"supportedTypes":["movie","tv"],"upstreamCodeEmbedded":false,"upstreamCodeExecuted":false});
+/* CLOSEFIX:PROVIDER.GOATED.CONFIG.V1 */
+/* NUVIO_GLOBAL_CORE_START_BOUNDARY_V1 */
+/* STARTFIX:CORE.MEDIA_ENRICHMENT.V1 */
+/* FIXDATA:CORE.MEDIA_ENRICHMENT.V1:eyJkZWZhdWx0VXNlckFnZW50IjoiIiwiaW1wbGVtZW50YXRpb25SZXZpc2lvbiI6InNjb3BlZC1wbGF5YmFjay1jb250ZXh0LXY4LW1lZGlhLWZpcnN0LWNhbmRpZGF0ZXMiLCJtYXhDYW5kaWRhdGVzIjoxMCwibWF4RGVwdGgiOjIsIm1heFJvd3MiOjYsInByZXNlcnZlT3JpZ2luYWwiOnRydWUsInRpbWVvdXRNcyI6NjUwMH0= */
+/* NUVIO_GLOBAL_MEDIA_ENRICHMENT_V1:8f06be4fdbd4 */
+;(function(g,c){"use strict";
+var ASSET=/\.(?:css|js|mjs|map|png|jpe?g|gif|svg|ico|woff2?|ttf|otf|eot|json|xml|vtt|srt)(?:[?#]|$)/i;
+var BADHOST=/(?:^|\.)(?:youtube\.com|youtu\.be|twitter\.com|x\.com|twimg\.com|facebook\.com|instagram\.com|googletagmanager\.com|google-analytics\.com|doubleclick\.net)$/i;
+var DEFAULT_UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+function s(v){return String(v==null?"":v).replace(/\\\//g,"/").trim()}
+function urlOf(row){var v=row&&row.url;if(v&&typeof v==="object")v=v.url||v.href||v.src;return s(v||(row&&(row.streamUrl||row.stream||row.link||row.file)))}
+function abs(v,b){try{return new URL(s(v),b).toString()}catch(_){return""}}
+function host(v){try{return new URL(v).hostname.toLowerCase()}catch(_){return""}}
+function rejected(v){var h=host(v);return !/^https?:\/\//i.test(v)||!h||BADHOST.test(h)||ASSET.test(v)||/(?:trailer|bande-annonce|big[_-]?buck[_-]?bunny|sample[-_]?video|\/troll\/master\.m3u8)/i.test(v)}
+function directByName(v){return /\.(?:m3u8|mpd|mp4|m4v|mkv|webm|ts)(?:[?#]|$)|\/hls2?\//i.test(v)}
+function declaredDirect(row,v){var t=s(row&&(row.type||row.format||row.mimeType||row.contentType)).toLowerCase();return !!(row&&row.isDirect===true)||directByName(v)||/hls|mpegurl|m3u8|dash|mpd|mp4|m4v|matroska|mkv|webm|mpegts|mp2t|video\//i.test(t)}
+function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+function providerDeadlineExpired(){try{var d=Number(g&&g.__nuvioProviderDeadlineMs);return Number.isFinite(d)&&d>0&&Date.now()>=d}catch(_){return false}}
+function keyOf(o,name){var keys=Object.keys(o||{}),want=String(name||"").toLowerCase();for(var i=0;i<keys.length;i++)if(String(keys[i]).toLowerCase()===want)return keys[i];return""}
+function setHeader(o,name,value){if(!value)return;var k=keyOf(o,name);if(k&&k!==name)delete o[k];o[name]=String(value)}
+function responseHeader(r,name){try{return r&&r.headers&&typeof r.headers.get==="function"?s(r.headers.get(name)):""}catch(_e){return""}}
+function baseHeaders(row){
+  var out={};
+  function merge(src){if(src&&typeof src==="object")Object.keys(src).forEach(function(k){if(String(k).toLowerCase()!=="range"&&s(src[k]))out[k]=s(src[k])})}
+  try{merge(row&&row.url&&typeof row.url==="object"&&row.url.headers)}catch(_e){}
+  try{merge(row&&row.headers)}catch(_e){}
+  try{merge(row&&row.requestHeaders)}catch(_e){}
+  try{merge(row&&row.behaviorHints&&row.behaviorHints.proxyHeaders&&row.behaviorHints.proxyHeaders.request)}catch(_e){}
+  return out;
+}
+function normalizeRow(row){var u=urlOf(row);if(!u)return row;return Object.assign({},row,{url:u,headers:baseHeaders(row)})}
+function splitSetCookie(value){
+  var raw=s(value);if(!raw)return[];
+  return raw.split(/,(?=\s*[^;,=\s]+\s*=)/g).map(function(x){return x.trim()}).filter(Boolean);
+}
+function defaultPath(url){try{var p=new URL(url).pathname||"/";if(p.charAt(0)!=="/")return"/";var i=p.lastIndexOf("/");return i<=0?"/":p.slice(0,i+1)}catch(_e){return"/"}}
+function rememberCookie(jar,setCookie,url){
+  if(!jar||!setCookie)return;
+  var parsed;try{parsed=new URL(url)}catch(_e){return}
+  splitSetCookie(setCookie).forEach(function(line){
+    var parts=line.split(";"),first=s(parts.shift()),eq=first.indexOf("=");if(eq<=0)return;
+    var name=s(first.slice(0,eq)),value=s(first.slice(eq+1));if(!name)return;
+    var item={name:name,value:value,domain:parsed.hostname.toLowerCase(),hostOnly:true,path:defaultPath(url),secure:false,expired:false};
+    parts.forEach(function(part){var x=s(part),i=x.indexOf("="),ak=(i>=0?x.slice(0,i):x).trim().toLowerCase(),av=i>=0?s(x.slice(i+1)):"";
+      if(ak==="domain"&&av){item.domain=av.replace(/^\./,"").toLowerCase();item.hostOnly=false}
+      else if(ak==="path"&&av.charAt(0)==="/")item.path=av;
+      else if(ak==="secure")item.secure=true;
+      else if(ak==="max-age"&&Number(av)<=0)item.expired=true;
+      else if(ak==="expires"){var ts=Date.parse(av);if(Number.isFinite(ts)&&ts<=Date.now())item.expired=true}
+    });
+    var id=item.name.toLowerCase()+"|"+item.domain+"|"+item.path;
+    for(var i=jar.length-1;i>=0;i--){var old=jar[i],oldId=old.name.toLowerCase()+"|"+old.domain+"|"+old.path;if(oldId===id)jar.splice(i,1)}
+    if(!item.expired&&item.value)jar.push(item);
+  });
+}
+function captureCookies(jar,response,url){
+  try{if(!response||!response.headers||typeof response.headers.get!=="function")return;var v=response.headers.get("set-cookie")||response.headers.get("Set-Cookie");if(v)rememberCookie(jar,v,url)}catch(_e){}
+}
+function cookieHeader(jar,target){
+  var u;try{u=new URL(target)}catch(_e){return""}
+  var h=u.hostname.toLowerCase(),p=u.pathname||"/",secure=u.protocol==="https:",out=[];
+  (jar||[]).forEach(function(x){var domainOk=x.hostOnly?h===x.domain:(h===x.domain||h.endsWith("."+x.domain));if(!domainOk)return;if(x.secure&&!secure)return;if(p.indexOf(x.path)!==0)return;out.push(x.name+"="+x.value)});
+  return out.join("; ");
+}
+function mergeCookies(a,b){
+  var order=[],map={};function add(raw){s(raw).split(";").forEach(function(part){var x=s(part),i=x.indexOf("=");if(i<=0)return;var n=s(x.slice(0,i)),v=s(x.slice(i+1)),k=n.toLowerCase();if(!map[k])order.push(k);map[k]={n:n,v:v}})}add(a);add(b);return order.map(function(k){return map[k].n+"="+map[k].v}).join("; ")
+}
+function headers(row,referer,target,jar){
+  var out=baseHeaders(row);
+  if(referer){setHeader(out,"Referer",referer);try{setHeader(out,"Origin",new URL(referer).origin)}catch(_e){}}
+  if(c.defaultUserAgent&&!keyOf(out,"User-Agent"))setHeader(out,"User-Agent",c.defaultUserAgent);
+  var scoped=cookieHeader(jar,target),existing=keyOf(out,"Cookie");if(scoped)setHeader(out,"Cookie",mergeCookies(existing?out[existing]:"",scoped));
+  if(!directByName(target)&&!keyOf(out,"Range"))out.Range="bytes=0-262143";
+  return out;
+}
+function kindBytes(bytes){if(!bytes||bytes.length<4)return null;if(bytes.length>=12&&String.fromCharCode(bytes[4],bytes[5],bytes[6],bytes[7])==="ftyp")return"mp4";if(bytes[0]===26&&bytes[1]===69&&bytes[2]===223&&bytes[3]===163)return"mkv";if(bytes[0]===71&&(bytes.length<189||bytes[188]===71))return"mpegts";return null}
+function extensionKind(value){var m=s(value).toLowerCase().match(/\.(m3u8|mpd|mp4|m4v|mkv|webm|ts)(?:[?&#"'\s;]|$)/);if(!m)return null;return m[1]==="m3u8"?"hls":m[1]==="mpd"?"dash":m[1]==="m4v"?"mp4":m[1]==="ts"?"mpegts":m[1]}
+function metadataKind(type,disposition,url){
+  var ct=s(type).toLowerCase(),byName=extensionKind(s(disposition)+" "+s(url));
+  if(/application\/(?:vnd\.apple\.mpegurl|x-mpegurl)|audio\/(?:mpegurl|x-mpegurl)/i.test(ct))return"hls";
+  if(/application\/dash\+xml/i.test(ct))return"dash";
+  if(/video\/(?:x-)?matroska|application\/(?:x-)?matroska/i.test(ct))return"mkv";
+  if(/video\/(?:mp4|x-m4v|quicktime)/i.test(ct))return"mp4";
+  if(/video\/webm/i.test(ct))return"webm";
+  if(/video\/(?:mp2t|mpegts)/i.test(ct))return"mpegts";
+  if(/^video\//i.test(ct))return byName||"video";
+  if(/application\/(?:octet-stream|force-download)/i.test(ct)&&byName&&byName!=="hls"&&byName!=="dash")return byName;
+  return byName&&byName!=="hls"&&byName!=="dash"?byName:null;
+}
+function decode(bytes){try{return new TextDecoder("utf-8").decode(bytes)}catch(_){var x="";for(var i=0;i<Math.min(bytes.length,262144);i++)x+=String.fromCharCode(bytes[i]);return x}}
+async function fetchResource(url,row,referer,jar){if(providerDeadlineExpired())return null;try{
+  var requestHeaders=headers(row,referer,url,jar),r=await g.fetch(url,{headers:requestHeaders,redirect:"follow",signal:timeout()});if(!r)return null;
+  var finalUrl=s(r.url||url);captureCookies(jar,r,finalUrl);
+  var type=responseHeader(r,"content-type"),disposition=responseHeader(r,"content-disposition"),bytes=null,text="",meta=metadataKind(type,disposition,finalUrl);
+  if(r.ok&&meta&&meta!=="hls"&&meta!=="dash")return{ok:true,status:r.status,url:finalUrl,type:type,disposition:disposition,bytes:null,text:"",metadataKind:meta,headers:headers(row,referer,finalUrl,jar)};
+  if(typeof r.arrayBuffer==="function"){var buf=await r.arrayBuffer();bytes=new Uint8Array(buf);text=decode(bytes.slice(0,300000))}
+  else if(typeof r.text==="function"){text=String(await r.text()||"").slice(0,300000)}
+  return{ok:!!r.ok,status:r.status,url:finalUrl,type:type,disposition:disposition,bytes:bytes,text:text,metadataKind:meta,headers:headers(row,referer,finalUrl,jar)}
+}catch(_){return null}}
+function proof(r){if(!r||!r.ok)return null;var t=s(r.text).trimStart();if(t.indexOf("#EXTM3U")===0)return"hls";if(/<MPD[\s>]/i.test(t.slice(0,4096))||/application\/dash\+xml/i.test(r.type))return"dash";var b=kindBytes(r.bytes);if(b)return b;if(r.metadataKind)return r.metadataKind;if(/^video\//i.test(r.type)&&r.bytes&&r.bytes.length>12)return"video";return null}
+function candidates(text,base){var out=[],seen={};function add(v){var u=abs(v,base);if(!u||rejected(u)||seen[u])return;seen[u]=1;out.push(u)}var body=s(text),patterns=[/(https?:\/\/[^"'<>\s\\]+\.(?:m3u8|mpd|mp4|m4v|mkv|webm|ts)(?:[?#][^"'<>\s\\]*)?)/gi,/(?:file|source|src|url|playlist|hls|stream|contentUrl)\s*[:=]\s*["'](https?:\/\/[^"']+)["']/gi,/(?:data-src|data-url|data-embed|data-player|data-file|src)=["']([^"']+)["']/gi,/(?:href)=["']([^"']*(?:\.m3u8|\.mpd|\.mp4|\.m4v|\.mkv|\.webm|\.ts|\/embed(?:[\/?#.-]|$)|\/player(?:[\/?#.-]|$)|\/e\/|\/hls2?\/)[^"']*)["']/gi,/(https?:\/\/[^"'<>\s\\]+(?:embed|player|\/e\/|\/hls2?\/)[^"'<>\s\\]*)/gi],m;for(var i=0;i<patterns.length;i++){patterns[i].lastIndex=0;while((m=patterns[i].exec(body))!==null){add(m[1]);if(out.length>=c.maxCandidates)return out}}return out}
+async function resolve(url,row,referer,depth,seen,jar){if(providerDeadlineExpired()||depth>c.maxDepth||rejected(url))return[];seen=seen||{};if(seen[url])return[];seen[url]=1;var r=await fetchResource(url,row,referer,jar);if(!r)return[];var k=proof(r);if(k)return[{url:r.url||url,kind:k,headers:r.headers}];if(!/html|text|json|javascript|xml/i.test(r.type)&&!/[<>{}\[\]"']/.test(r.text||""))return[];var next=candidates(r.text,r.url||url),out=[];for(var i=0;i<next.length&&out.length<c.maxCandidates;i++){var found=await resolve(next[i],row,r.url||url,depth+1,seen,jar);for(var j=0;j<found.length;j++)if(!out.some(function(x){return x.url===found[j].url}))out.push(found[j])}return out}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function clone(row,media){var out=Object.assign({},normalizeRow(row),{url:media.url,headers:media.headers||baseHeaders(row),isDirect:true,type:media.kind,__nuvioCoreMediaProofV1:{url:media.url,kind:media.kind}});if(media.kind==="hls"&&"format" in out)out.format="m3u8";if(media.kind==="dash"&&"format" in out)out.format="mpd";return out}
+function refererOf(row,u){var h=baseHeaders(row),k=keyOf(h,"Referer");return s(k?h[k]:(row&&(row.referer||row.referrer||row.playerUrl||row.embedUrl||row.pageUrl))||u)}
+async function enrich(list){if(providerDeadlineExpired())return[];var out=[],seen={};function add(row){row=normalizeRow(row);var u=urlOf(row);if(!u||seen[u])return;seen[u]=1;out.push(row)}for(var i=0;i<list.length;i++){var row=list[i];if(!row||typeof row!=="object")continue;var u=urlOf(row);if(!u||rejected(u))continue;if(declaredDirect(row,u)){add(row);continue}if(i<c.maxRows){var ref=refererOf(row,u),jar=[],found=await resolve(u,row,ref,0,{},jar);for(var j=0;j<found.length;j++)add(clone(row,found[j]));if(found.length)continue}/* Unresolved player/download pages are not playable streams. */}return out}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalMediaEnrichmentV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var list=await enrich(x.list);return rebuild(v,x,list)};wrap.__nuvioGlobalMediaEnrichmentV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"maxRows":6,"maxDepth":2,"maxCandidates":10,"timeoutMs":6500,"preserveOriginal":true,"defaultUserAgent":"","implementationRevision":"scoped-playback-context-v8-media-first-candidates"});
+/* CLOSEFIX:CORE.MEDIA_ENRICHMENT.V1 */
+/* STARTFIX:CORE.RUNTIME_MEDIA_SAFETY.V4 */
+/* FIXDATA:CORE.RUNTIME_MEDIA_SAFETY.V4:eyJjYXBhYmlsaXR5U3RyYXRlZ3kiOiJhcGlfc3RyZWFtX3Jlc29sdmVyIiwiZHVyYXRpb25JZGVudGl0eSI6dHJ1ZSwiaW1wbGVtZW50YXRpb25SZXZpc2lvbiI6ImZpZWxkLXNhZmV0eS12OC1tZWRpYS1vbmx5LXAycC12b2QtZHVyYXRpb24iLCJtYXhEdXJhdGlvblJhdGlvIjoxLjgsIm1heFJvd3MiOjQsIm1pbkR1cmF0aW9uUmF0aW8iOjAuNTUsInByb3ZpZGVySWQiOiJnb2F0ZWQiLCJyZXF1ZXN0VHlwZUFsaWFzZXMiOnt9LCJzdHJpY3RQbGF5YmFjayI6ZmFsc2UsInRpbWVvdXRNcyI6NjUwMCwidG1kYlRpbWVvdXRNcyI6NDUwMH0= */
+/* NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:689074e07724 */
+;(function(g,c){
+  "use strict";
+  function s(v){return String(v==null?"":v).trim()}
+  function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+  function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+  function requestInfo(a){var first=a[0],q=first&&typeof first==="object"&&!Array.isArray(first)?Object.assign({},first):{tmdbId:first,mediaType:a[1],season:a[2],episode:a[3]};q.tmdbId=s(q.tmdbId||q.id||first).replace(/^tmdb:/i,"").split(":")[0];q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
+  function invocationArgs(a,q){var out=Array.prototype.slice.call(a),aliases=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{},alias=s(aliases[q.mediaType]).toLowerCase();if(!alias||alias===q.mediaType)return out;var first=out[0];if(first&&typeof first==="object"&&!Array.isArray(first)){var copy=Object.assign({},first);copy.mediaType=alias;if("type" in copy)copy.type=alias;out[0]=copy}else out[1]=alias;return out}
+  function nativeHost(){try{return typeof g.__native_fetch==="function"}catch(_e){return false}}
+  function isTv(){try{var ua=s(g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_e){return false}}
+  function p2pReason(row){if(!row||typeof row!=="object")return"";var u=s(row.url).toLowerCase(),t=s(row.type||row.format||row.protocol).toLowerCase();if(/^(?:magnet|torrent|acestream|sop):/i.test(u))return"p2p_protocol";if(row.infoHash||row.infohash||row.magnet||row.torrent||row.peerId||row.peer_id)return"p2p_stream_field";if(/^(?:torrent|p2p|peer-to-peer|magnet|acestream|sopcast)$/i.test(t))return"p2p_stream_type";return""}
+  function obviousNonMedia(row){var p2p=p2pReason(row);if(p2p)return p2p;var u=s(row&&row.url);if(!u)return"missing_url";if(!/^https?:\/\//i.test(u))return"invalid_url";var lower=u.toLowerCase();if(/(?:youtube\.com|youtube-nocookie\.com)\/(?:embed|watch)(?:\/|\?|$)/i.test(lower))return"video_page_url";if(/\/embed(?:\/|\?|#|$)/i.test(lower))return"embed_page_url";if(/\.(?:html?|php)(?:[?#]|$)/i.test(lower))return"html_page_url";if(/^https?:\/\/[^/]+\/\/www\./i.test(u))return"malformed_nested_url";return""}
+  function staticSafety(row){if(!row||typeof row!=="object")return{keep:false,reason:"invalid_row"};var obvious=obviousNonMedia(row);if(obvious)return{keep:false,reason:obvious};return{keep:true}}
+  function rowHeaders(row,range){var out={},src=row&&row.headers&&typeof row.headers==="object"?row.headers:{};Object.keys(src).forEach(function(k){out[k]=s(src[k])});try{var bh=row&&row.behaviorHints&&row.behaviorHints.proxyHeaders&&row.behaviorHints.proxyHeaders.request;if(bh&&typeof bh==="object")Object.keys(bh).forEach(function(k){if(!(k in out))out[k]=s(bh[k])})}catch(_e){}if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"}))out.Range="bytes=0-65535";if(!Object.keys(out).some(function(k){return k.toLowerCase()==="accept"}))out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,video/*,*/*";return out}
+  function timeoutSignal(ms){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)return AbortSignal.timeout(ms)}catch(_e){}return void 0}
+  async function responseText(r){if(!r)return"";try{if(typeof r.text==="function")return s(await r.text())}catch(_e){}try{if(typeof r.arrayBuffer==="function"){var ab=await r.arrayBuffer();if(ab&&typeof TextDecoder!=="undefined")return s(new TextDecoder("utf-8").decode(new Uint8Array(ab)))}}catch(_e){}return""}
+  async function fetchText(url,row,range){try{var r=await g.fetch(url,{method:"GET",redirect:"follow",headers:rowHeaders(row,range),signal:timeoutSignal(c.timeoutMs)});if(!r)return{state:"unknown",reason:"no_response"};var st=Number(r.status||0),ct=s(r.headers&&r.headers.get?r.headers.get("content-type"):"").toLowerCase();if(st===401||st===403||st===404||st===410||st>=500)return{state:"dead",status:st,contentType:ct};if(!r.ok)return{state:"unknown",status:st,contentType:ct};return{state:"ok",status:st,url:s(r.url||url),contentType:ct,text:await responseText(r)}}catch(e){return{state:"unknown",reason:e&&e.name==="AbortError"?"timeout":"network_error"}}}
+  function playlistKind(text){var body=s(text).replace(/^\uFEFF/,"");if(!/^#EXTM3U(?:\s|$)/i.test(body))return"invalid";if(/#EXT-X-STREAM-INF\s*:/i.test(body))return"master";if(/#EXTINF\s*:/i.test(body))return"media";return"unknown"}
+  function firstVariant(text,base){var lines=s(text).split(/\r?\n/);for(var i=0;i<lines.length;i++){if(!/^#EXT-X-STREAM-INF\s*:/i.test(lines[i]))continue;for(var j=i+1;j<lines.length;j++){var v=s(lines[j]);if(!v||v.charAt(0)==="#")continue;try{return new URL(v,base).toString()}catch(_e){return""}}}return""}
+  function durationSeconds(text){var body=s(text);if(!/#EXT-X-ENDLIST(?:\s|$)/i.test(body))return null;var total=0,count=0,re=/#EXTINF\s*:\s*([0-9]+(?:\.[0-9]+)?)/gi,m;while((m=re.exec(body))!==null){var n=Number(m[1]);if(Number.isFinite(n)&&n>0){total+=n;count++}}return count>=2&&total>=60?total:null}
+  async function inspectHls(row,url){var r=await fetchText(url,row,false);if(r.state!=="ok")return r;var kind=playlistKind(r.text);if(kind==="invalid")return{state:"dead",reason:"not_hls",status:r.status};if(kind==="media")return{state:"ok",duration:durationSeconds(r.text)};if(kind==="master"){var child=firstVariant(r.text,r.url||url);if(!child)return{state:"dead",reason:"master_without_variant"};var cr=await fetchText(child,row,false);if(cr.state!=="ok")return cr;var ck=playlistKind(cr.text);if(ck!=="media"&&ck!=="master")return{state:"dead",reason:"invalid_child"};return{state:"ok",duration:durationSeconds(cr.text)}}return{state:"ok",duration:null}}
+  function mediaKind(row){var u=s(row&&row.url).toLowerCase(),t=s(row&&(row.type||row.format)).toLowerCase();if(/\.m3u8(?:[?#]|$)|\/hls2?\//i.test(u)||/hls|mpegurl|m3u8/.test(t))return"hls";if(/\.(?:mp4|mkv|webm)(?:[?#]|$)/i.test(u)||/mp4|matroska|webm|video\//.test(t))return"direct";return"other"}
+  async function expectedSeconds(q){var tmdbKey=s(g&&g.TMDB_API_KEY);if(!c.durationIdentity||!q||!tmdbKey||!/^\d+$/.test(q.tmdbId||""))return null;var kind=(q.mediaType==="tv"||q.mediaType==="anime"||q.mediaType==="series")?"tv":"movie",url;if(kind==="tv"&&q.season>0&&q.episode>0)url="https://api.themoviedb.org/3/tv/"+encodeURIComponent(q.tmdbId)+"/season/"+q.season+"/episode/"+q.episode+"?api_key="+encodeURIComponent(tmdbKey);else url="https://api.themoviedb.org/3/"+kind+"/"+encodeURIComponent(q.tmdbId)+"?api_key="+encodeURIComponent(tmdbKey);try{var r=await g.fetch(url,{headers:{Accept:"application/json"},signal:timeoutSignal(c.tmdbTimeoutMs)});if(!r||!r.ok)return null;var d=await r.json(),minutes=Number(d&&d.runtime||0);if(!minutes&&kind==="tv"&&Array.isArray(d&&d.episode_run_time)&&d.episode_run_time.length)minutes=Number(d.episode_run_time[0]||0);return minutes>=5?minutes*60:null}catch(_e){return null}}
+  async function directPlayable(row,url){var r=await fetchText(url,row,true);if(r.state!=="ok")return r;if(/text\/html|application\/xhtml/i.test(r.contentType)||/^<!doctype html|^<html/i.test(r.text||""))return{state:"dead",reason:"html_payload"};return{state:"ok"}}
+  async function remoteCheck(row,expected,tv){var kind=mediaKind(row),result;if(kind==="hls")result=await inspectHls(row,s(row.url));else if(kind==="direct")result=await directPlayable(row,s(row.url));else return{keep:true};if(result.state==="dead")return{keep:false,reason:result.reason||("http_"+result.status)};if(result.state==="unknown"){if(c.strictPlayback||tv)return{keep:false,reason:result.reason||"unverified_media"};return{keep:true}}if(kind==="hls"&&expected&&result.duration){var ratio=result.duration/expected;if(ratio<c.minDurationRatio||ratio>c.maxDurationRatio)return{keep:false,reason:"duration_identity_mismatch",ratio:ratio}}return{keep:true}}
+  function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioRuntimeCapabilitySafetyV4)return false;var native=o[k];var wrap=async function(){var q=requestInfo(arguments),invoke=invocationArgs(arguments,q),v=await native.apply(this,invoke),x=slot(v);if(!x||!x.list.length)return v;var tv=isTv(),nativeRuntime=nativeHost();var staticRows=x.list.filter(function(row){return staticSafety(row).keep});if(nativeRuntime)return rebuild(v,x,staticRows);var expected=await expectedSeconds(q),head=staticRows.slice(0,c.maxRows),tail=staticRows.slice(c.maxRows),checks=await Promise.all(head.map(function(row){return remoteCheck(row,expected,tv)})),kept=head.filter(function(_row,i){return checks[i]&&checks[i].keep}).concat(tail);return rebuild(v,x,kept)};wrap.__nuvioRuntimeCapabilitySafetyV4=true;o[k]=wrap;return true}
+  var ok=false;try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"providerId":"goated","capabilityStrategy":"api_stream_resolver","requestTypeAliases":{},"timeoutMs":6500,"tmdbTimeoutMs":4500,"maxRows":4,"minDurationRatio":0.55,"maxDurationRatio":1.8,"durationIdentity":true,"strictPlayback":false,"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"});
+/* CLOSEFIX:CORE.RUNTIME_MEDIA_SAFETY.V4 */
+/* STARTFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
+/* FIXDATA:CORE.HLS_RUNTIME_INTEGRITY.V1:eyJpbXBsZW1lbnRhdGlvblJldmlzaW9uIjoibmF0aXZlLXZvZC1kdXJhdGlvbi1wcm9vZi12OSIsIm1heENoaWxkcmVuIjoyLCJtYXhSZWNvdmVyeUNhbmRpZGF0ZXMiOjEyLCJtYXhSZWNvdmVyeVBhZ2VzIjo0LCJtaW5pbXVtVm9kRHVyYXRpb25TZWNvbmRzIjo5MCwibmF0aXZlUHJvYmVNYXhSb3dzIjo4LCJuYXRpdmVQcm9iZVRpbWVvdXRNcyI6MjUwMCwicHJvYmVGaXJzdFNlZ21lbnROYXRpdmUiOnRydWUsInRpbWVvdXRNcyI6NjUwMH0= */
+/* NUVIO_HLS_RUNTIME_INTEGRITY_V1:b6d3abe87164 */
+;(function(g,config){
+  "use strict";
+  function nativeHlsHost(){try{return typeof g.__native_fetch==="function"}catch(_e){return false}}
+  function clean(v){return String(v==null?"":v).replace(/^\uFEFF/,"").replace(/^ï»¿/,"").trim()}
+  function hlsHint(stream){
+    if(!stream||typeof stream!=="object")return false;
+    var u=String(stream.url||"").toLowerCase(),t=String(stream.type||stream.format||"").toLowerCase();
+    return /\.m3u8(?:[?#]|$)/i.test(u)||u.indexOf("/hls/")>=0||u.indexOf("/hls2/")>=0||t==="hls"||t==="m3u8"||t.indexOf("mpegurl")>=0;
+  }
+  function absolute(raw,base){try{return new URL(clean(raw),base).toString()}catch(_e){return ""}}
+  function headerValue(stream,name){
+    var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
+    var wanted=String(name||"").toLowerCase(),keys=Object.keys(src);
+    for(var i=0;i<keys.length;i++)if(String(keys[i]).toLowerCase()===wanted)return clean(src[keys[i]]);
+    return "";
+  }
+  function requestHeaders(stream,referer,range){
+    var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};
+    var out={};Object.keys(src).forEach(function(k){out[k]=String(src[k])});
+    if(referer){
+      var refKey=Object.keys(out).find(function(k){return k.toLowerCase()==="referer"}),currentRef=refKey?clean(out[refKey]):"";
+      if(!currentRef||currentRef!==clean(referer)){
+        Object.keys(out).forEach(function(k){var lower=k.toLowerCase();if(lower==="referer"||lower==="origin")delete out[k]});
+        out.Referer=referer;try{out.Origin=new URL(referer).origin}catch(_e){}
+      }
     }
-
-def repair_legacy_bases() -> dict[str, Any]:
-    """Mark every pre-v2 ProviderBase as compatibility-only legacy state.
-
-    This command deliberately does *not* reconstruct ProviderBase bytes. The
-    currently published implementation may remain available to existing clients
-    and may be observed as LKG evidence, but it is never an executable seed for
-    the new NiakVIO-owned ProviderBase.
-
-    A provider leaves this queue only after a clean NiakVIO seed has been
-    reconstructed independently, validated in Learning/Lab, materialized as a
-    ProviderBase, and recorded with CLEAN_RECONSTRUCTION_SOURCE.
-    """
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
-    rows = provenance.get("providers")
-    if not isinstance(rows, dict):
-        raise ValueError("PROVENANCE.providers must be an object")
-
-    provider_count = 0
-    reconstruction_required = 0
-    clean_reconstructed = 0
-    marked_at = datetime.now(timezone.utc).isoformat()
-
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
-        provider_id = canonical_id(str(entry.get("id") or ""))
-        if not provider_id:
-            continue
-        provider_count += 1
-        row = rows.get(provider_id)
-        if not isinstance(row, dict):
-            raise ValueError(f"{provider_id}: missing provenance row")
-
-        path, _digest = resolve_base(provider_id, row, require=True)
-        assert path is not None
-        assert_base_layering(path.read_bytes(), provider_id)
-
-        if requires_clean_reconstruction(row):
-            reconstruction_required += 1
-            row["clean_reconstruction_required"] = True
-            if is_clean_reconstruction_candidate(row):
-                row["legacy_provider_base_role"] = "superseded-by-clean-candidate"
-                row["clean_reconstruction_candidate_role"] = "pending-pipeline-proof"
-            else:
-                row["legacy_provider_base_role"] = "compatibility-lkg-only"
-                row.pop("clean_reconstruction_candidate_role", None)
-            row["legacy_provider_js_role"] = "knowledge-only-for-reconstruction"
-            row["legacy_provider_js_executed_for_reconstruction"] = False
-            row.setdefault("clean_reconstruction_marked_at", marked_at)
-        else:
-            clean_reconstructed += 1
-            row["clean_reconstruction_required"] = False
-            row.pop("legacy_provider_base_role", None)
-            row.pop("legacy_provider_js_role", None)
-            row.pop("legacy_provider_js_executed_for_reconstruction", None)
-            row.pop("clean_reconstruction_candidate_role", None)
-
-    store = provenance.get("provider_base_store")
-    if not isinstance(store, dict):
-        store = {}
-        provenance["provider_base_store"] = store
-    store.update(
-        provider_base_store_metadata(
-            provider_count=provider_count,
-            unique_base_count=provider_count,
-            clean_reconstructed=clean_reconstructed,
-            reconstruction_required=reconstruction_required,
-            previous_store=store,
-        )
-    )
-    PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return {
-        "providers": provider_count,
-        "clean_reconstructed": clean_reconstructed,
-        "reconstruction_required": reconstruction_required,
+    if(range&&!Object.keys(out).some(function(k){return k.toLowerCase()==="range"}))out.Range="bytes=0-4095";
+    if(!out.Accept)out.Accept="application/vnd.apple.mpegurl,application/x-mpegURL,application/dash+xml,video/*,text/plain,*/*";
+    return out;
+  }
+  async function fetchBounded(url,stream,referer,range,timeoutOverride){
+    if(!g||typeof g.fetch!=="function")return {state:"unknown",reason:"fetch_unavailable"};
+    var controller=typeof AbortController!=="undefined"?new AbortController():null;
+    var timer=null,timeoutMs=Number(timeoutOverride||config.timeoutMs)||config.timeoutMs;
+    if(controller&&typeof setTimeout==="function")timer=setTimeout(function(){try{controller.abort()}catch(_e){}},timeoutMs);
+    try{
+      var response=await g.fetch(url,{method:"GET",redirect:"follow",headers:requestHeaders(stream,referer,range),signal:controller?controller.signal:void 0});
+      if(!response)return {state:"unknown",reason:"no_response"};
+      if(response.status===404||response.status===410)return {state:"invalid",reason:"http_"+response.status};
+      if(!response.ok)return {state:"unknown",reason:"http_"+response.status};
+      var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
+      return {state:"ok",response:response,url:String(response.url||url),contentType:contentType};
+    }catch(error){return {state:"unknown",reason:error&&error.name==="AbortError"?"timeout":"network_error"}}
+    finally{if(timer!==null&&typeof clearTimeout==="function")try{clearTimeout(timer)}catch(_e){}}
+  }
+  async function responseText(result){
+    var response=result&&result.response;if(!response)return "";
+    try{if(typeof response.text==="function")return clean(await response.text())}catch(_e){}
+    try{if(typeof response.arrayBuffer==="function"){var ab=await response.arrayBuffer();return clean(new TextDecoder("utf-8").decode(ab))}}catch(_e){}
+    try{if(response.body&&typeof response.body.getReader==="function"){var reader=response.body.getReader(),chunks=[],total=0;while(total<131072){var part=await reader.read();if(part&&part.value){chunks.push(part.value);total+=part.value.byteLength||part.value.length||0}if(!part||part.done)break}try{if(typeof reader.cancel==="function")await reader.cancel()}catch(_e){}var merged=new Uint8Array(total),offset=0;for(var i=0;i<chunks.length;i++){var value=chunks[i],take=Math.min(value.byteLength||value.length||0,total-offset);merged.set(value.subarray?value.subarray(0,take):value,offset);offset+=take;if(offset>=total)break}return clean(new TextDecoder("utf-8").decode(merged))}}catch(_e){}
+    return "";
+  }
+  async function responseBytes(result,cap){
+    var response=result&&result.response,limit=Math.max(188,Number(cap||4096)||4096);if(!response)return new Uint8Array(0);
+    try{
+      if(response.body&&typeof response.body.getReader==="function"){
+        var reader=response.body.getReader(),chunks=[],total=0;
+        while(total<limit){var part=await reader.read();if(part&&part.value){var take=Math.min(part.value.byteLength||part.value.length||0,limit-total);chunks.push(part.value.subarray?part.value.subarray(0,take):part.value);total+=take}if(!part||part.done||total>=limit)break}
+        try{if(typeof reader.cancel==="function")await reader.cancel()}catch(_e){}
+        var merged=new Uint8Array(total),offset=0;for(var i=0;i<chunks.length;i++){var value=chunks[i],len=value.byteLength||value.length||0;merged.set(value,offset);offset+=len}return merged;
+      }
+    }catch(_e){}
+    try{if(typeof response.arrayBuffer==="function"){var ab=await response.arrayBuffer(),bytes=new Uint8Array(ab);return bytes.length>limit?bytes.slice(0,limit):bytes}}catch(_e){}
+    return new Uint8Array(0);
+  }
+  function asciiPrefix(bytes,cap){var out="",n=Math.min(bytes&&bytes.length||0,Number(cap||96)||96);for(var i=0;i<n;i++){var b=bytes[i];out+=b>=32&&b<=126?String.fromCharCode(b):" "}return out.trim().toLowerCase()}
+  function hasTsSync(bytes){var n=bytes&&bytes.length||0;if(n<188)return n>0&&bytes[0]===0x47;var max=Math.min(187,n-1);for(var o=0;o<=max;o++){if(bytes[o]!==0x47)continue;if(o+188<n&&bytes[o+188]!==0x47)continue;if(o+376<n&&bytes[o+376]!==0x47)continue;return true}return false}
+  function hasMp4Box(bytes){if(!bytes||bytes.length<8)return false;for(var o=0;o+8<=bytes.length&&o<64;o+=4){var a=String.fromCharCode(bytes[o+4]||0,bytes[o+5]||0,bytes[o+6]||0,bytes[o+7]||0);if(a==="ftyp"||a==="styp"||a==="moof"||a==="moov")return true}return false}
+  function nonMediaPayload(bytes,contentType){var ct=String(contentType||"").toLowerCase(),p=asciiPrefix(bytes,160);if(/text\/html|application\/(?:json|problem\+json)|text\/plain|application\/xhtml\+xml/.test(ct))return true;return /^<!doctype\s+html|^<html\b|^<\?xml\b|^\{|^\[/.test(p)}
+  function mapUri(body,base){var m=clean(body).match(/#EXT-X-MAP\s*:[^\n\r]*\bURI\s*=\s*"([^"]+)"/i)||clean(body).match(/#EXT-X-MAP\s*:[^\n\r]*\bURI\s*=\s*([^,\s]+)/i);return m?absolute(m[1],base):""}
+  function firstMediaUri(body,base){var lines=clean(body).split(/\r?\n/);for(var i=0;i<lines.length;i++){var v=clean(lines[i]);if(!v||v.charAt(0)==="#")continue;var u=absolute(v,base);if(u)return u}return ""}
+  function playlistEncrypted(body){var lines=clean(body).match(/#EXT-X-KEY\s*:[^\n\r]*/gi)||[];for(var i=0;i<lines.length;i++){var m=lines[i].match(/METHOD\s*=\s*([^,\s]+)/i),method=clean(m&&m[1]).toUpperCase();if(method&&method!=="NONE")return true}return false}
+  function segmentProof(bytes,contentType,url,hasMap,encrypted){
+    if(!bytes||!bytes.length)return {state:"unknown",reason:"segment_bytes_unavailable"};
+    if(nonMediaPayload(bytes,contentType))return {state:"invalid",reason:"segment_non_media_payload"};
+    if(encrypted)return {state:"unknown",reason:"encrypted_segment"};
+    var u=String(url||"").toLowerCase(),ct=String(contentType||"").toLowerCase();
+    var ts=/\.ts(?:[?#]|$)/i.test(u)||/video\/(?:mp2t|mpegts)|application\/(?:mp2t|mpegts)/i.test(ct);
+    if(ts)return hasTsSync(bytes)?{state:"valid",kind:"mpegts"}:{state:"invalid",reason:"ts_sync_missing"};
+    var fragmented=hasMap||/\.(?:m4s|mp4)(?:[?#]|$)/i.test(u)||/video\/mp4|application\/mp4/i.test(ct);
+    if(fragmented)return hasMp4Box(bytes)?{state:"valid",kind:"fmp4"}:{state:"invalid",reason:"fmp4_signature_missing"};
+    return {state:"unknown",reason:"segment_container_unknown"};
+  }
+  async function proveMediaPlaylist(body,playlistUrl,stream,referer){
+    var encrypted=playlistEncrypted(body),init=mapUri(body,playlistUrl),target=init||firstMediaUri(body,playlistUrl);
+    if(!target)return {state:"unknown",reason:"segment_uri_missing"};
+    var result=await fetchBounded(target,stream,referer,true,config.nativeProbeTimeoutMs||config.timeoutMs);
+    if(result.state==="invalid")return result;if(result.state!=="ok")return {state:"unknown",reason:result.reason||"segment_fetch_unknown"};
+    var bytes=await responseBytes(result,4096),proof=segmentProof(bytes,result.contentType,result.url||target,!!init,encrypted);
+    if(init&&proof.state==="valid"&&proof.kind==="fmp4")return proof;
+    return proof;
+  }
+  async function nativeFirstSegmentProof(stream){
+    var referer=headerValue(stream,"referer"),root=await fetchBounded(String(stream.url||""),stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+    if(root.state==="invalid")return root;if(root.state!=="ok")return {state:"unknown",reason:root.reason||"playlist_fetch_unknown"};
+    var body=await responseText(root),kind=playlistKind(body),base=root.url||String(stream.url||"");
+    if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"playlist_"+kind};
+    if(kind==="master"){
+      var variants=variantUris(body,base);if(!variants.length)return {state:"invalid",reason:"master_without_variants"};
+      var child=await fetchBounded(variants[0],stream,referer,false,config.nativeProbeTimeoutMs||config.timeoutMs);
+      if(child.state==="invalid")return child;if(child.state!=="ok")return {state:"unknown",reason:child.reason||"variant_fetch_unknown"};
+      body=await responseText(child);kind=playlistKind(body);base=child.url||variants[0];
+      if(kind==="invalid"||kind==="header_only")return {state:"invalid",reason:"variant_"+kind};
+      if(kind==="master")return {state:"unknown",reason:"nested_master"};
     }
+    var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",reason:"vod_duration_too_short",durationSeconds:tiny};
+    return proveMediaPlaylist(body,base,stream,referer);
+  }
+  function finiteVodDurationSeconds(body){
+    var text=clean(body);if(!/#EXT-X-ENDLIST(?:\s|$)/i.test(text))return 0;
+    var re=/#EXTINF\s*:\s*([0-9]+(?:\.[0-9]+)?)/gi,m,total=0,count=0;
+    while((m=re.exec(text))!==null){var value=Number(m[1]);if(Number.isFinite(value)&&value>0){total+=value;count++}}
+    return count?total:0;
+  }
+  function shortFiniteVod(body){var d=finiteVodDurationSeconds(body),floor=Number(config.minimumVodDurationSeconds||90)||90;return d>0&&d<floor?d:0}
+  function playlistKind(body){
+    var text=clean(body);if(!/^#EXTM3U(?:\s|$)/i.test(text))return "invalid";
+    if(/#EXT-X-STREAM-INF\s*:/i.test(text))return "master";
+    if(/#EXTINF\s*:/i.test(text)||/#EXT-X-PART\s*:/i.test(text)||/#EXT-X-MAP\s*:/i.test(text)){
+      var lines=text.split(/\r?\n/).map(function(v){return v.trim()}).filter(Boolean);
+      if(lines.some(function(v){return v.charAt(0)!=="#"}))return "media";
+    }
+    return "header_only";
+  }
+  function variantUris(body,base){
+    var lines=clean(body).split(/\r?\n/),out=[];
+    for(var i=0;i<lines.length;i++){
+      if(!/^#EXT-X-STREAM-INF\s*:/i.test(lines[i]))continue;
+      for(var j=i+1;j<lines.length;j++){
+        var candidate=clean(lines[j]);if(!candidate)continue;if(candidate.charAt(0)==="#")continue;
+        var u=absolute(candidate,base);if(u&&out.indexOf(u)<0)out.push(u);break;
+      }
+      if(out.length>=config.maxChildren)break;
+    }
+    return out;
+  }
+  function audioUris(body,base){
+    var out=[],lines=clean(body).split(/\r?\n/);
+    lines.forEach(function(line){
+      if(!/^#EXT-X-MEDIA\s*:/i.test(line)||!/TYPE\s*=\s*AUDIO/i.test(line))return;
+      var m=line.match(/URI\s*=\s*"([^"]+)"/i)||line.match(/URI\s*=\s*([^,\s]+)/i);
+      var u=m&&absolute(m[1],base);if(u&&out.indexOf(u)<0)out.push(u);
+    });
+    return out.slice(0,config.maxChildren);
+  }
+  async function validateChild(url,stream,referer){
+    var result=await fetchBounded(url,stream,referer,false);if(result.state!=="ok")return result.state;
+    var body=await responseText(result),kind=playlistKind(body);return kind==="media"||kind==="master"?"valid":"invalid";
+  }
+  async function inspectHls(url,stream,referer){
+    var result=await fetchBounded(url,stream,referer,false);
+    if(result.state!=="ok")return {state:result.state,reason:result.reason||"fetch_failed",result:result};
+    var ct=result.contentType||"";
+    if(/^video\//i.test(ct))return {state:"direct",format:ct.indexOf("webm")>=0?"webm":"mp4",url:result.url,result:result};
+    var body=await responseText(result),kind=playlistKind(body);
+    if(kind==="invalid"||kind==="header_only")return {state:"invalid",kind:kind,body:body,result:result};
+    if(kind==="media"){var tiny=shortFiniteVod(body);if(tiny)return {state:"invalid",kind:"vod_duration_too_short",durationSeconds:tiny,body:body,result:result};return {state:"valid",kind:kind,url:result.url,body:body,result:result}}
 
-def repair_derived_base_tails() -> dict[str, Any]:
-    """Remove leaked publication-only tails from canonical ProviderBase files.
-
-    This is a layering repair only. It never promotes a pending clean candidate,
-    never changes the preserved production LKG reference, and never invents
-    provider logic. If a previously verified canonical base must change, its
-    clean proof is invalidated and it returns to pending canonical Deep proof.
-    """
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
-    rows = provenance.get("providers")
-    if not isinstance(rows, dict):
-        raise ValueError("PROVENANCE.providers must be an object")
-
-    repaired: list[str] = []
-    invalidated: list[str] = []
-    repaired_at = datetime.now(timezone.utc).isoformat()
-
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
-        provider_id = canonical_id(str(entry.get("id") or ""))
-        if not provider_id:
-            continue
-        row = rows.get(provider_id)
-        if not isinstance(row, dict):
-            raise ValueError(f"{provider_id}: missing provenance row")
-        path, _digest = resolve_base(provider_id, row, require=True)
-        assert path is not None
-        data = path.read_bytes()
-        text = data.decode("utf-8", errors="strict")
-        leaked = forbidden_base_markers(data)
-        if "NIAKVIO_PROVIDER_MODEL = Object.freeze(" in text:
-            leaked.append("NIAKVIO_PROVIDER_MODEL_DATA")
-        if "NIAKVIO_PROVIDER_ID:" in text:
-            leaked.append("NIAKVIO_PROVIDER_ID_DATA")
-        if not leaked:
-            continue
-
-        clean, stripped = clean_derived_provider_base(provider_id, data)
-        if not stripped or clean == data:
-            raise ValueError(
-                f"{provider_id}: derived ProviderBase layer detected but deterministic strip made no change: "
-                + ",".join(leaked)
-            )
-        validate_base(clean, provider_id)
-        relative, digest = write_base(provider_id, clean)
-
-        was_verified = is_clean_reconstructed(row)
-        row["base_filename"] = relative
-        row["base_sha256"] = digest
-        row["base_migration_stripped_generated_core"] = True
-        row["base_layering_repaired_at"] = repaired_at
-        row["base_layering_repair"] = {
-            "schema_version": 1,
-            "mode": "strip-derived-publication-tail-only",
-            "removed_markers": leaked,
+    var variants=variantUris(body,result.url||url),audio=audioUris(body,result.url||url);
+    if(!variants.length)return {state:"invalid",kind:"master_without_variants",body:body,result:result};
+    var variantState="invalid";
+    for(var i=0;i<variants.length;i++){
+      var s=await validateChild(variants[i],stream,result.url||referer);if(s==="valid"){variantState="valid";break}if(s==="unknown")variantState="unknown";
+    }
+    if(variantState!=="valid")return {state:variantState,kind:"master_child_"+variantState,body:body,result:result};
+    if(audio.length){
+      var audioState="invalid";
+      for(var j=0;j<audio.length;j++){
+        var a=await validateChild(audio[j],stream,result.url||referer);if(a==="valid"){audioState="valid";break}if(a==="unknown")audioState="unknown";
+      }
+      if(audioState!=="valid")return {state:audioState,kind:"audio_child_"+audioState,body:body,result:result};
+    }
+    return {state:"valid",kind:"master",url:result.url,body:body,result:result};
+  }
+  function normalizedText(text){
+    return clean(text).replace(/\\u002[fF]/g,"/").replace(/\\\//g,"/").replace(/&amp;/g,"&");
+  }
+  function candidateUrls(text,base){
+    var body=normalizedText(text),out=[],seen={};
+    function add(raw){
+      var value=clean(raw).replace(/^['"]|['"]$/g,"");if(!value||/^javascript:|^data:/i.test(value))return;
+      var u=absolute(value,base);if(!/^https?:\/\//i.test(u)||seen[u])return;seen[u]=1;out.push(u);
+    }
+    var patterns=[
+      /(?:src|href|data-src|data-url|data-file|data-player|data-embed|file|source|url|playlist|hls|stream|embedUrl|embed_url)\s*[:=]\s*["']([^"']+)["']/gi,
+      /(https?:\/\/[^"'<>\s\\]+)/gi,
+      /["']([^"']+\.(?:m3u8|mpd|mp4|mkv|webm)(?:[?#][^"']*)?)["']/gi
+    ],m;
+    for(var i=0;i<patterns.length&&out.length<config.maxRecoveryCandidates;i++){
+      patterns[i].lastIndex=0;while((m=patterns[i].exec(body))!==null&&out.length<config.maxRecoveryCandidates)add(m[1]);
+    }
+    return out;
+  }
+  function mediaHint(url){return /\.m3u8(?:[?#]|$)|\/hls2?\//i.test(url)?"hls":/\.mpd(?:[?#]|$)/i.test(url)?"dash":/\.(?:mp4|mkv|webm)(?:[?#]|$)/i.test(url)?"direct":"page"}
+  function cloneRecovered(stream,url,format,referer){
+    var row=Object.assign({},stream,{url:url}),headers={};
+    var src=stream&&stream.headers&&typeof stream.headers==="object"?stream.headers:{};Object.keys(src).forEach(function(k){headers[k]=String(src[k])});
+    if(referer){
+      var refKey=Object.keys(headers).find(function(k){return k.toLowerCase()==="referer"}),currentRef=refKey?clean(headers[refKey]):"";
+      if(!currentRef||currentRef!==clean(referer)){
+        Object.keys(headers).forEach(function(k){var lower=k.toLowerCase();if(lower==="referer"||lower==="origin")delete headers[k]});
+        headers.Referer=referer;try{headers.Origin=new URL(referer).origin}catch(_e){}
+      }
+    }
+    if(Object.keys(headers).length)row.headers=headers;
+    if(format==="hls"){row.type="hls";if("format" in row)row.format="m3u8"}
+    else if(format==="dash"){row.type="dash";if("format" in row)row.format="mpd"}
+    else if(format){row.type=format;if("format" in row)row.format=format}
+    return row;
+  }
+  async function probeDirect(url,stream,referer){
+    var result=await fetchBounded(url,stream,referer,true);if(result.state!=="ok")return null;
+    var ct=result.contentType||"";
+    if(/^video\//i.test(ct))return cloneRecovered(stream,result.url,ct.indexOf("webm")>=0?"webm":"mp4",referer);
+    if(/(?:application\/dash\+xml|application\/xml|text\/xml)/i.test(ct)||/\.mpd(?:[?#]|$)/i.test(result.url)){
+      var dash=await responseText(result);if(/<MPD(?:\s|>)/i.test(dash))return cloneRecovered(stream,result.url,"dash",referer);
+    }
+    if(/mpegurl/i.test(ct)||/\.m3u8(?:[?#]|$)/i.test(result.url)){
+      var hls=await inspectHls(result.url,stream,referer);if(hls.state==="valid")return cloneRecovered(stream,hls.url||result.url,"hls",referer);
+    }
+    return null;
+  }
+  async function recover(stream,inspection){
+    var queue=[],seen={},pages=0;
+    function enqueue(url,referer){var u=absolute(url,referer||String(stream.url||""));if(!/^https?:\/\//i.test(u)||seen[u]||u===String(stream.url||""))return;seen[u]=1;queue.push({url:u,referer:referer||""})}
+    var base=inspection&&inspection.result&&inspection.result.url||String(stream.url||"");
+    candidateUrls(inspection&&inspection.body||"",base).forEach(function(u){enqueue(u,base)});
+    var outerReferer=headerValue(stream,"referer");
+    [stream&&stream.playerUrl,stream&&stream.embedUrl,stream&&stream.pageUrl,stream&&stream.sourceUrl,stream&&stream.referrer,stream&&stream.referer].forEach(function(u){if(u)enqueue(u,outerReferer||base)});
+    if(outerReferer)enqueue(outerReferer,"");
+    while(queue.length&&pages<config.maxRecoveryPages){
+      var item=queue.shift(),kind=mediaHint(item.url);
+      if(kind==="hls"){
+        var hls=await inspectHls(item.url,stream,item.referer);if(hls.state==="valid")return cloneRecovered(stream,hls.url||item.url,"hls",item.referer);if(hls.state==="direct")return cloneRecovered(stream,hls.url||item.url,hls.format||"mp4",item.referer);
+        candidateUrls(hls.body||"",hls.result&&hls.result.url||item.url).forEach(function(u){enqueue(u,hls.result&&hls.result.url||item.url)});continue;
+      }
+      if(kind==="direct"||kind==="dash"){
+        var direct=await probeDirect(item.url,stream,item.referer);if(direct)return direct;continue;
+      }
+      pages++;
+      var page=await fetchBounded(item.url,stream,item.referer,false);if(page.state!=="ok")continue;
+      var ct=page.contentType||"";
+      if(/^video\//i.test(ct))return cloneRecovered(stream,page.url,page.contentType.indexOf("webm")>=0?"webm":"mp4",item.referer);
+      var body=await responseText(page);
+      if(/^#EXTM3U(?:\s|$)/i.test(body)){
+        var pageHls=await inspectHls(page.url,stream,item.referer);if(pageHls.state==="valid")return cloneRecovered(stream,pageHls.url||page.url,"hls",item.referer);
+      }
+      if(/<MPD(?:\s|>)/i.test(body))return cloneRecovered(stream,page.url,"dash",item.referer);
+      candidateUrls(body,page.url||item.url).forEach(function(u){enqueue(u,page.url||item.url)});
+    }
+    return null;
+  }
+  async function validateOrRecover(stream){
+    var inspection=await inspectHls(String(stream.url||""),stream,headerValue(stream,"referer"));
+    if(inspection.state==="valid")return stream;
+    if(inspection.state==="unknown"&&!config.failClosedUnknown)return stream;
+    if(inspection.state==="direct")return cloneRecovered(stream,inspection.url||String(stream.url||""),inspection.format||"mp4",headerValue(stream,"referer"));
+    var recovered=await recover(stream,inspection);if(recovered)return recovered;
+    return null;
+  }
+  async function filterRows(value){
+    var rows=Array.isArray(value)?value:value&&Array.isArray(value.streams)?value.streams:null;
+    if(nativeHlsHost()){
+      if(!config.probeFirstSegmentNative||!rows||!rows.length)return value;
+      var remaining=Math.max(1,Number(config.nativeProbeMaxRows||1)||1);
+      var checks=await Promise.all(rows.map(async function(stream){
+        if(!hlsHint(stream)||remaining<=0)return stream;
+        remaining-=1;
+        var proof=await nativeFirstSegmentProof(stream);
+        if(proof.state==="invalid"){
+          try{console.warn("[Nuvio HLS integrity] rejected invalid first media container",proof.reason||"invalid",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
+          return null;
         }
-        if was_verified:
-            row["base_source"] = CLEAN_RECONSTRUCTION_CANDIDATE_SOURCE
-            row["clean_reconstruction_candidate"] = True
-            row["clean_reconstruction_verified"] = False
-            row["clean_reconstruction_required"] = True
-            row["clean_reconstruction_candidate_role"] = "pending-pipeline-proof"
-            row["legacy_provider_base_role"] = "superseded-by-clean-candidate"
-            invalidated.append(provider_id)
-        repaired.append(provider_id)
-
-    provider_ids = [
-        canonical_id(str(entry.get("id") or ""))
-        for entry in manifest.get("scrapers") or []
-        if isinstance(entry, dict) and canonical_id(str(entry.get("id") or ""))
-    ]
-    clean_count = sum(1 for provider_id in provider_ids if is_clean_reconstructed(rows.get(provider_id)))
-    store = provenance.get("provider_base_store")
-    if not isinstance(store, dict):
-        store = {}
-        provenance["provider_base_store"] = store
-    store.update(
-        provider_base_store_metadata(
-            provider_count=len(provider_ids),
-            unique_base_count=len(provider_ids),
-            clean_reconstructed=clean_count,
-            reconstruction_required=len(provider_ids) - clean_count,
-            previous_store=store,
-        )
-    )
-    if repaired:
-        PROVENANCE.write_text(
-            json.dumps(provenance, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-        )
-    return {
-        "providers": len(provider_ids),
-        "repaired": len(repaired),
-        "repaired_ids": repaired,
-        "invalidated": len(invalidated),
-        "invalidated_ids": invalidated,
+        return stream;
+      }));
+      var nativeFiltered=checks.filter(Boolean);
+      if(Array.isArray(value))return nativeFiltered;
+      var nativeCopy=Object.assign({},value);nativeCopy.streams=nativeFiltered;return nativeCopy;
     }
+    if(!rows||!rows.length)return value;
+    var checks=await Promise.all(rows.map(async function(stream){
+      if(!config.probeAllUrls&&!hlsHint(stream))return stream;
+      var output=await validateOrRecover(stream);
+      if(!output){
+        try{console.warn("[Nuvio HLS integrity] rejected malformed playlist after bounded recovery",String(stream&&stream.url||"").slice(0,180))}catch(_e){}
+      }
+      return output;
+    }));
+    var filtered=checks.filter(Boolean);
+    if(Array.isArray(value))return filtered;
+    var copy=Object.assign({},value);copy.streams=filtered;return copy;
+  }
+  function wrap(target,key){
+    if(!target||typeof target[key]!=="function"||target[key].__nuvioHlsIntegrityV1)return false;
+    var native=target[key];
+    var wrapped=async function(){return filterRows(await native.apply(this,arguments))};
+    try{Object.defineProperty(wrapped,"__nuvioHlsIntegrityV1",{value:true})}catch(_e){wrapped.__nuvioHlsIntegrityV1=true}
+    target[key]=wrapped;return true;
+  }
+  function install(){
+    var done=false;
+    try{done=wrap(g,"getStreams")||done}catch(_e){}
+    try{if(typeof module!=="undefined"&&module&&module.exports){done=wrap(module.exports,"getStreams")||done;done=wrap(module.exports,"streams")||done}}catch(_e){}
+    try{if(typeof exports!=="undefined")done=wrap(exports,"getStreams")||done}catch(_e){}
+    return done;
+  }
+  install();
+})(typeof globalThis!=="undefined"?globalThis:this,{"timeoutMs":6500,"maxChildren":2,"maxRecoveryPages":4,"maxRecoveryCandidates":12,"implementationRevision":"native-vod-duration-proof-v9","probeFirstSegmentNative":true,"nativeProbeMaxRows":8,"nativeProbeTimeoutMs":2500,"minimumVodDurationSeconds":90});
+/* CLOSEFIX:CORE.HLS_RUNTIME_INTEGRITY.V1 */
+/* STARTFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */
+/* FIXDATA:CORE.PROVIDER_SECURITY_BOUNDARY.V1:eyJwb3N0QnVpbGRNdXRhdGlvbiI6ZmFsc2UsInByb3ZpZGVyTXV0YXRpb24iOmZhbHNlLCJyZXZpc2lvbiI6InByZXZlbnRpdmUtY29yZS1zZWN1cml0eS12NCJ9 */
+/* NUVIO_GLOBAL_PROVIDER_SECURITY_HOOK_V1 */
+globalThis.__nuvioGlobalProviderSecurityBoundaryV1=true;
+/* CLOSEFIX:CORE.PROVIDER_SECURITY_BOUNDARY.V1 */
+/* STARTFIX:CORE.RUNTIME_COMPAT.V1 */
+/* FIXDATA:CORE.RUNTIME_COMPAT.V1:eyJyZXZpc2lvbiI6Mn0= */
+/* NUVIO_GLOBAL_RUNTIME_COMPAT_V1 */
+;(function(g){
+  "use strict";
+  if(!g||g.__nuvioGlobalRuntimeCompatV1)return;
+  g.__nuvioGlobalRuntimeCompatV1={revision:2};
 
-
-def migrate_existing() -> dict[str, Any]:
-    """Disabled legacy migration entry point.
-
-    Published, upstream, snapshot and Git-history JavaScript are knowledge only;
-    none of them may be transformed into a durable ProviderBase.
-    """
-    raise ValueError(
-        "migrate-existing is disabled: legacy/upstream/public JavaScript may not seed ProviderBase; "
-        "use NiakVIO clean reconstruction through Learning"
-    )
-
-def validate_all(*, validate_artifacts: bool = False) -> dict[str, Any]:
-    manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
-    provenance = json.loads(PROVENANCE.read_text(encoding="utf-8"))
-    rows = provenance.get("providers") or {}
-    checked = 0
-    bases: set[str] = set()
-    for entry in manifest.get("scrapers") or []:
-        if not isinstance(entry, dict):
-            continue
-        provider_id = str(entry.get("id") or "").strip().casefold()
-        if not provider_id:
-            continue
-        row = rows.get(provider_id)
-        if not isinstance(row, dict):
-            raise ValueError(f"{provider_id}: missing provenance row")
-        path, _digest = resolve_base(provider_id, row, require=True)
-        assert path is not None
-        data = path.read_bytes()
-        assert_base_layering(data, provider_id)
-        if validate_artifacts:
-            validate_base(data, provider_id)
-        bases.add(path.relative_to(ROOT).as_posix())
-        checked += 1
-    if checked != len(manifest.get("scrapers") or []):
-        raise ValueError(f"ProviderBase coverage mismatch checked={checked} manifest={len(manifest.get('scrapers') or [])}")
-    clean_reconstructed = sum(
-        1
-        for entry in manifest.get("scrapers") or []
-        if isinstance(entry, dict)
-        and is_clean_reconstructed(rows.get(canonical_id(str(entry.get("id") or ""))))
-    )
-    return {
-        "checked": checked,
-        "unique_bases": len(bases),
-        "artifact_validation": bool(validate_artifacts),
-        "clean_reconstructed": clean_reconstructed,
-        "reconstruction_required": checked - clean_reconstructed,
+  // NuvioDesktop's current URL polyfill stores href independently from hostname,
+  // host, pathname, search and hash. Replacing hostname therefore leaves
+  // URL#toString() stale. Keep the official parser, but return instances whose
+  // string form is reconstructed from their current public URL fields.
+  var NativeURL=g.URL;
+  if(typeof NativeURL==="function"){
+    function renderUrl(u){
+      try{
+        var protocol=String(u.protocol||"");
+        var host=String(u.host||"");
+        if(!host){
+          host=String(u.hostname||"");
+          var port=String(u.port||"");
+          if(port&&host.indexOf(":")<0)host+=":"+port;
+        }else if(u.hostname&&String(u.hostname)!==host.split(":")[0]){
+          host=String(u.hostname||"")+(u.port?":"+String(u.port):"");
+        }
+        var hierarchical=protocol&&host?protocol+"//"+host:"";
+        var pathname=String(u.pathname||"");
+        var search=String(u.search||"");
+        var hash=String(u.hash||"");
+        var rendered=hierarchical+pathname+search+hash;
+        if(rendered)return rendered;
+        // Some official QuickJS URL polyfills expose a correct href for
+        // new URL(relative, base) while leaving protocol/host/pathname empty.
+        // Fall back to href only when there is nothing mutable to reconstruct.
+        return String(u.href||"");
+      }catch(_error){
+        try{return String(u.href||"");}catch(_ignored){return "";}
+      }
     }
+    var staleMutableUrl=false;
+    try{
+      var probe=new NativeURL("https://old.invalid/a?b=1#c");
+      probe.hostname="new.invalid";
+      staleMutableUrl=String(probe).indexOf("new.invalid")<0;
+    }catch(_error){}
+    if(staleMutableUrl){
+      var CompatURL=function(input,base){
+        var u=arguments.length>1?new NativeURL(input,base):new NativeURL(input);
+        try{
+          u.toString=function(){return renderUrl(u);};
+          u.toJSON=function(){return renderUrl(u);};
+        }catch(_error){}
+        return u;
+      };
+      try{CompatURL.prototype=NativeURL.prototype;}catch(_error){}
+      try{
+        Object.getOwnPropertyNames(NativeURL).forEach(function(name){
+          if(name==="length"||name==="name"||name==="prototype")return;
+          try{CompatURL[name]=NativeURL[name];}catch(_ignored){}
+        });
+      }catch(_error){}
+      g.URL=CompatURL;
+    }
+  }
 
+  // Normalize URL/Request-like inputs before the official Desktop fetch bridge.
+  // QuickJS host bindings stringify arbitrary objects differently across clients;
+  // the network bridge itself expects one concrete URL string.
+  if(typeof g.fetch==="function"&&!g.fetch.__nuvioGlobalRuntimeCompatV1){
+    var nativeFetch=g.fetch.bind(g);
+    function providerTimedOut(){
+      try{
+        var deadline=Number(g&&g.__nuvioProviderDeadlineMs)||0;
+        return deadline>0&&Date.now()>deadline;
+      }catch(_error){return false;}
+    }
+    function providerTimeoutError(){
+      var error=new Error("NiakVIO provider execution budget exceeded");
+      error.name="NuvioProviderTimeoutError";
+      error.code="NUVIO_PROVIDER_TIMEOUT";
+      error.__nuvioProviderTimeout=true;
+      return error;
+    }
+    var compatFetch=function(input,init){
+      if(providerTimedOut())return Promise.reject(providerTimeoutError());
+      var next=input;
+      try{
+        if(input&&typeof input==="object"){
+          if(typeof input.url==="string")next=input.url;
+          else if(typeof input.href==="string"||typeof input.toString==="function")next=String(input);
+        }
+      }catch(_error){next=input;}
+      var pending;
+      try{pending=nativeFetch(next,init);}catch(error){return Promise.reject(error);}
+      return Promise.resolve(pending).then(function(value){
+        if(providerTimedOut())throw providerTimeoutError();
+        return value;
+      });
+    };
+    compatFetch.__nuvioGlobalRuntimeCompatV1=true;
+    compatFetch.__nuvioOriginal=nativeFetch;
+    g.fetch=compatFetch;
+  }
 
-def main() -> int:
-    parser = argparse.ArgumentParser()
-    sub = parser.add_subparsers(dest="command", required=True)
-    sub.add_parser("migrate-existing")
-    sub.add_parser("repair-legacy")
-    sub.add_parser("repair-derived")
-    validate_parser = sub.add_parser("validate")
-    validate_parser.add_argument(
-        "--artifacts",
-        action="store_true",
-        help="Also run the expensive Node provider validator for every base.",
-    )
-    args = parser.parse_args()
-    if args.command == "migrate-existing":
-        result = migrate_existing()
-        print(
-            f"FIELD_PROVIDER_BASE_MIGRATION providers={result['providers']} "
-            f"migrated={result['migrated']} reused={result['reused']}"
-        )
-    elif args.command == "repair-legacy":
-        result = repair_legacy_bases()
-        print(
-            f"FIELD_PROVIDER_BASE_REPAIR providers={result['providers']} "
-            f"clean={result['clean_reconstructed']} required={result['reconstruction_required']}"
-        )
-    elif args.command == "repair-derived":
-        result = repair_derived_base_tails()
-        print(
-            f"FIELD_PROVIDER_BASE_DERIVED_REPAIR providers={result['providers']} "
-            f"repaired={result['repaired']} invalidated={result['invalidated']} "
-            f"ids={','.join(result['repaired_ids']) or 'none'}"
-        )
-    else:
-        result = validate_all(validate_artifacts=bool(args.artifacts))
-        print(
-            f"FIELD_PROVIDER_BASE_COVERAGE checked={result['checked']} "
-            f"unique_bases={result['unique_bases']} "
-            f"clean={result['clean_reconstructed']} required={result['reconstruction_required']} "
-            f"artifact_validation={str(result['artifact_validation']).lower()}"
-        )
-    return 0
+  // Some provider helpers install abort timeouts even though NuvioDesktop QuickJS
+  // currently exposes no timer API. A positive delay is intentionally a no-op:
+  // firing an abort immediately is worse than allowing the native request budget
+  // to govern the request. Zero-delay callbacks keep microtask semantics.
+  if(typeof g.setTimeout!=="function"){
+    g.setTimeout=function(callback,delay){
+      if((Number(delay)||0)<=0&&typeof callback==="function"&&typeof Promise!=="undefined"){
+        Promise.resolve().then(callback).catch(function(){});
+      }
+      return 0;
+    };
+  }
+  if(typeof g.clearTimeout!=="function")g.clearTimeout=function(){};
+  if(typeof g.setInterval!=="function")g.setInterval=function(){return 0;};
+  if(typeof g.clearInterval!=="function")g.clearInterval=function(){};
+})(typeof globalThis!=="undefined"?globalThis:this);
+/* CLOSEFIX:CORE.RUNTIME_COMPAT.V1 */
+/* STARTFIX:CORE.STREAM_FACTS.V1 */
+/* FIXDATA:CORE.STREAM_FACTS.V1:eyJyZXZpc2lvbiI6Imdsb2JhbC1mYWN0cy12MS1zb3VyY2UtcHJlc2VydmF0aW9uLXYyIn0= */
+/* NUVIO_GLOBAL_STREAM_FACTS_V1:3f39765bf864 */
+;(function(g){"use strict";
+function s(v){return String(v==null?"":v).trim()}
+function meaningful(v){var x=s(v);return x&&!/^(?:unknown|inconnue?|n\/?a|null|undefined|none|-+)$/i.test(x)}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+/* NUVIO_STREAM_QUALITY_RECOVERY_V2 */
+/* NUVIO_STREAM_SOURCE_METADATA_PRESERVATION_V2 */
+function urlFacts(row){var u=s(row&&row.url);if(!u)return"";try{u=decodeURIComponent(u)}catch(_e){}return u.replace(/[?#&=/_\.\-]+/g," ")}
+function blob(row){return [row&&row.name,row&&row.title,row&&row.size,row&&row.description,row&&row.quality,row&&row.resolution,row&&row.height,row&&row.width,row&&row.label,row&&row.language,row&&row.codec,row&&row.audio,row&&row.sourceType,row&&row.releaseType,row&&row.format,row&&row.hdr,row&&row.videoTech,row&&row.bitDepth,row&&row.subtitles,row&&row.sourceLabel,row&&row.filename,urlFacts(row)].map(s).join(" ")}
+function qualityFromHeight(height){var h=Number(height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=450)return"480p";if(h>=300)return"360p";return""}
+function quality(row,b){if(meaningful(row.quality)){var v=s(row.quality);return /^(?:4k|2160p)$/i.test(v)?"2160p":v}var resolution=s(row&&row.resolution),rm=resolution.match(/(\d{2,5})\s*[xX×]\s*(\d{2,5})/);if(rm){var rq=qualityFromHeight(rm[2]);if(rq)return rq}var hq=qualityFromHeight(row&&row.height);if(hq)return hq;var u=b.toUpperCase();if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(u))return"2160p";var m=u.match(/\b(1440|1080|720|576|540|480|360)P?\b/);return m?m[1]+"p":""}
+function language(row,b){if(meaningful(row.language))return s(row.language);var u=b.toUpperCase();if(/\bMULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?\b/.test(u))return"Multi";if(/\bDUAL(?:[- ]?AUDIO)?\b/.test(u))return"Dual Audio";if(/\bVOSTFR\b/.test(u))return"VOSTFR";if(/\bVFQ\b/.test(u))return"VFQ";if(/\bVFF\b/.test(u))return"VFF";if(/\bVF\b/.test(u))return"VF";if(/\bVO\b/.test(u))return"VO";return""}
+function codec(row,b){if(meaningful(row.codec))return s(row.codec);var u=b.toUpperCase();if(/\b(?:HEVC|H[ ._-]?265|X265)\b/.test(u))return"HEVC";if(/\bAV1\b/.test(u))return"AV1";if(/\bVP9\b/.test(u))return"VP9";if(/\b(?:AVC|H[ ._-]?264|X264)\b/.test(u))return"AVC";return""}
+function audio(row,b){if(meaningful(row.audio))return s(row.audio);var u=b.toUpperCase(),ch="",m=u.match(/\b(7\.1|5\.1|2\.1|2\.0)\b/);if(m)ch=" "+m[1];if(/\b(?:ATMOS|DOLBY ATMOS)\b/.test(u))return"Dolby Atmos"+ch;if(/\bTRUE[ ._-]?HD\b/.test(u))return"TrueHD"+ch;if(/\b(?:E-?AC-?3|DDP|DD\+)\b/.test(u))return"E-AC3"+ch;if(/\bAC-?3\b/.test(u))return"AC3"+ch;if(/\bDTS[: ._-]?X\b/.test(u))return"DTS:X"+ch;if(/\bDTS[- ]?HD\b/.test(u))return"DTS-HD"+ch;if(/\bDTS\b/.test(u))return"DTS"+ch;if(/\bAAC\b/.test(u))return"AAC"+ch;return""}
+function duration(row,b){if(typeof row.duration==="number"&&Number.isFinite(row.duration)&&row.duration>0)return row.duration>600?Math.round(row.duration/60):Math.round(row.duration);var direct=s(row.duration),m=direct.match(/(\d{1,4})\s*(?:min|minutes?)\b/i);if(m)return Number(m[1]);var x=b.match(/\b(\d{1,3})\s*(?:min|minutes?)\b/i);return x?Number(x[1]):0}
+function sourceType(row,b){if(meaningful(row.sourceType))return s(row.sourceType);var u=b.toUpperCase();if(/\b(?:BLU[- ]?RAY|BDRIP|BRRIP|BDREMUX)\b/.test(u))return"BLU-RAY";if(/\bWEB[- .]?DL\b/.test(u))return"WEB-DL";if(/\bWEB[- .]?RIP\b/.test(u))return"WEBRIP";if(/\bHDTV\b/.test(u))return"HDTV";if(/\bDVD[- .]?RIP\b/.test(u))return"DVD RIP";return""}
+function releaseType(row,b){if(meaningful(row.releaseType))return s(row.releaseType);return /\bREMUX\b/i.test(b)?"REMUX":""}
+function formatType(row){if(meaningful(row.format))return s(row.format);var u=s(row.url).split(/[?#]/)[0].toLowerCase();if(/\.m3u8$/.test(u))return"HLS";if(/\.mpd$/.test(u))return"DASH";if(/\.mp4$/.test(u))return"MP4";if(/\.mkv$/.test(u))return"MKV";return""}
+function keep(out,key,value,limit){if(meaningful(value)&&!meaningful(out[key]))out[key]=s(value).slice(0,limit);return out}
+function preserveSource(row,out){keep(out,"sourceName",row.name,512);keep(out,"sourceTitle",row.title,512);keep(out,"sourceDescription",row.description,4096);keep(out,"sourceSize",row.size,256);keep(out,"sourceQuality",row.quality,128);keep(out,"sourceResolution",row.resolution,128);keep(out,"sourceLanguage",row.language,128);keep(out,"sourceCodec",row.codec,128);keep(out,"sourceAudio",row.audio,256);keep(out,"sourceTypeRaw",row.sourceType,128);keep(out,"releaseTypeRaw",row.releaseType,128);keep(out,"sourceFormat",row.format,128);return out}
+function facts(row){if(!row||typeof row!=="object")return row;var out=preserveSource(row,Object.assign({},row)),b=blob(row),q=quality(row,b),l=language(row,b),c=codec(row,b),a=audio(row,b),d=duration(row,b),st=sourceType(row,b),rt=releaseType(row,b),f=formatType(row);if(q)out.quality=q;else if("quality" in out&&!meaningful(out.quality))delete out.quality;if(l)out.language=l;if(c)out.codec=c;if(a)out.audio=a;if(d)out.duration=d;if(st)out.sourceType=st;if(rt)out.releaseType=rt;if(f)out.format=f;return out}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamFactsV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);return x?rebuild(v,x,x.list.map(facts)):v};wrap.__nuvioGlobalStreamFactsV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this);
+/* CLOSEFIX:CORE.STREAM_FACTS.V1 */
+/* STARTFIX:CORE.STREAM_IDENTITY.V1 */
+/* FIXDATA:CORE.STREAM_IDENTITY.V1:eyJjYXRhbG9ndWVZZWFyUG9saWN5IjoibW92aWUtb25seSIsImltcGxlbWVudGF0aW9uUmV2aXNpb24iOiJjcm9zcy1jbGllbnQtc2hhcmVkLXRtZGItb3duZXItemVyby1lcGlzb2RpYy15ZWFyLXYxMSIsInByb3ZpZGVySWQiOiJnb2F0ZWQiLCJ0bWRiUnVudGltZUtleVJlcXVpcmVkIjp0cnVlLCJ0bWRiVGltZW91dE1zIjoxMjAwfQ== */
+/* NUVIO_GLOBAL_STREAM_IDENTITY_V1:1ae7d6d5ed47 */
+;(function(g,c){"use strict";
+function s(v){return String(v==null?"":v).replace(/\\\//g,"/").trim()}
+function norm(v){try{return s(v).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}catch(_e){return s(v).toLowerCase()}}
+function uniq(values){var out=[],seen={};(values||[]).forEach(function(v){var x=s(v),k=norm(x);if(x&&k&&!seen[k]){seen[k]=1;out.push(x)}});return out}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function req(a){var f=a[0],q=f&&typeof f==="object"&&!Array.isArray(f)?Object.assign({},f):{tmdbId:f,mediaType:a[1],season:a[2],episode:a[3]};var raw=s(q.tmdbId||q.tmdb_id||q.id||f).replace(/^tmdb:/i,"");q.tmdbId=(raw.match(/^\d+/)||[])[0]||"";q.imdbId=s(q.imdbId||q.imdb_id||"").toLowerCase();q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
+function episodic(q){return q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime"}
+function providerMedia(v){var x=s(v).toLowerCase();return x==="movie"?"movie":((x==="tv"||x==="series"||x==="show"||x==="anime")?"tv":"")}
+function catalogueScore(e){
+  e=e&&typeof e==="object"?e:{};
+  var title=norm(e.title),expected=uniq(e.expectedTitles||[]).map(norm).filter(Boolean),actualMedia=providerMedia(e.actualMedia),expectedMedia=providerMedia(e.expectedMedia),providerId=s(e.providerId),strict=e.strictIdentity===true;
+  var movie=expectedMedia==="movie",year=s(e.year).slice(0,4),expectedYear=s(e.expectedYear).slice(0,4);
+  if(actualMedia&&expectedMedia&&actualMedia!==expectedMedia)return-1;
+  if(e.requireProviderTypeEvidence===true&&(!actualMedia||!expectedMedia))return-1;
+  if(strict){
+    if(!providerId||!title||!expected.length||expected.indexOf(title)<0)return-1;
+    if(movie&&expectedYear){
+      if(!/^\d{4}$/.test(year))return-1;
+      if(Math.abs(Number(year)-Number(expectedYear))>1)return-1;
+    }
+    return 120+(movie&&year===expectedYear?20:0);
+  }
+  if(movie&&year&&expectedYear&&year!==expectedYear)return-1;
+  var score=0,primary=expected[0]||"";
+  if(title&&expected.indexOf(title)>=0)score+=200;
+  else if(title&&primary&&(title.indexOf(primary)>=0||primary.indexOf(title)>=0))score+=90;
+  if(title&&primary){primary.split(" ").filter(function(v){return v.length>=3}).forEach(function(token){if(title.indexOf(token)>=0)score+=10})}
+  if(movie&&year&&expectedYear&&year===expectedYear)score+=40;
+  if(actualMedia&&expectedMedia&&actualMedia===expectedMedia)score+=60;
+  if(providerId)score+=15;
+  return score;
+}
+function htmlIdentityOk(e){
+  e=e&&typeof e==="object"?e:{};
+  if(e.strictIdentity!==true)return true;
+  var visible=norm(e.visibleText),expected=uniq(e.expectedTitles||[]).map(norm).filter(Boolean),media=providerMedia(e.mediaType);
+  if(!visible||!expected.length||!expected.some(function(title){return visible.indexOf(title)>=0}))return false;
+  if(media==="movie"){
+    var expectedYear=s(e.expectedYear).slice(0,4),html=s(e.html),years=html.match(/\b(?:19|20)\d{2}\b/g)||[];
+    if(expectedYear&&/^\d{4}$/.test(expectedYear)&&years.length&&years.indexOf(expectedYear)<0)return false;
+  }
+  return true;
+}
+try{if(g)g.__nuvioIdentityPolicyV1=Object.freeze({catalogueScore:catalogueScore,htmlIdentityOk:htmlIdentityOk,yearPolicy:"movie-only"})}catch(_e){}
+function kind(q){return episodic(q)?"tv":"movie"}
+function nativeFetchBridge(){try{return !!(g&&typeof g.__native_fetch==="function")}catch(_e){return false}}
+function runtimeTmdbKey(){try{return s(g&&g.TMDB_API_KEY)}catch(_e){return""}}
+function runtimeTmdbAllowed(){return !!runtimeTmdbKey()}
+async function cachedTmdb(q){try{var cache=g&&g.__nuvioTmdbMetadataCacheV1,key=kind(q)+":"+s(q.tmdbId);if(cache&&Object.prototype.hasOwnProperty.call(cache,key)){var value=await cache[key];if(value&&value.state==="ok"&&value.metadata)return value.metadata}}catch(_e){}return null}
+function signal(){try{if(typeof AbortSignal!=="undefined"&&typeof AbortSignal.timeout==="function")return AbortSignal.timeout(c.tmdbTimeoutMs)}catch(_e){}return null}
+async function jsonFetch(url){if(!g||typeof g.fetch!=="function"||!runtimeTmdbAllowed())return null;var nb=nativeFetchBridge(),sig=nb?null:signal();if(!nb&&!sig)return null;var init={headers:{Accept:"application/json"}};if(sig)init.signal=sig;try{var r=await g.fetch(url,init);if(!r||!r.ok)return null;return await r.json()}catch(_e){return null}}
+/* NUVIO_IDENTITY_SHARED_TMDB_CAPABILITY_V1 */
+async function tmdb(q){var titles=uniq([q.title]),episodeTitles=[],year=q.year,imdb=q.imdbId,key=runtimeTmdbKey();if(!/^\d+$/.test(q.tmdbId||""))return{titles:titles,episodeTitles:episodeTitles,year:year,imdbId:imdb};var k=kind(q),base="https://api.themoviedb.org/3/"+k+"/"+encodeURIComponent(q.tmdbId),d=await cachedTmdb(q),shared=false;if(!d){try{var getter=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof getter==="function"){shared=true;var result=await getter({tmdbId:q.tmdbId,mediaType:k,tmdbNamespace:k,season:q.season,episode:q.episode});if(result&&result.state==="ok"&&result.metadata)d=result.metadata}}catch(_e){}}if(!d&&!shared&&key)d=await jsonFetch(base+"?api_key="+encodeURIComponent(key)+"&language=fr-FR&append_to_response=external_ids");if(d){var date=s(d.release_date||d.first_air_date);titles=uniq(titles.concat([d.title,d.name,d.original_title,d.original_name]));year=year||Number((date.match(/(?:19|20)\d{2}/)||[])[0]||0)||0;imdb=imdb||s(d.external_ids&&d.external_ids.imdb_id).toLowerCase()}return{titles:titles,episodeTitles:episodeTitles,year:year,imdbId:imdb}}
+async function episodeJson(q,language){var key=runtimeTmdbKey();if(!key||!episodic(q)||q.season<=0||q.episode<=0||!/^\d+$/.test(q.tmdbId||""))return null;var cache=null,cacheKey="episode:tv:"+q.tmdbId+":"+q.season+":"+q.episode+":"+language;try{cache=g&&g.__nuvioTmdbMetadataCacheV1;if(cache&&Object.prototype.hasOwnProperty.call(cache,cacheKey))return await cache[cacheKey]}catch(_e){}var url="https://api.themoviedb.org/3/tv/"+encodeURIComponent(q.tmdbId)+"/season/"+encodeURIComponent(q.season)+"/episode/"+encodeURIComponent(q.episode)+"?api_key="+encodeURIComponent(key)+"&language="+encodeURIComponent(language),pending=jsonFetch(url);try{if(cache)cache[cacheKey]=pending}catch(_e){}var value=await pending;try{if(cache){if(value)cache[cacheKey]=value;else delete cache[cacheKey]}}catch(_e){}return value}
+async function ensureEpisodeTitles(q,m){if(!episodic(q)||q.season<=0||q.episode<=0||m.__episodeTitlesLoaded)return m;m.__episodeTitlesLoaded=true;var eps=await Promise.all([episodeJson(q,"fr-FR"),episodeJson(q,"en-US")]);eps.forEach(function(ep){if(ep)m.episodeTitles=uniq((m.episodeTitles||[]).concat([ep.name,ep.original_name]))});return m}
+function episode(v){return/(?:^|\D)s(?:eason|aison)?\s*0*(\d{1,3})\s*[-_. ]*e(?:p(?:isode)?)?\s*0*(\d{1,4})(?:\D|$)/i.exec(v)||/(?:season|saison)\s*0*(\d{1,3})[^\d]{0,12}(?:episode|ep)\s*0*(\d{1,4})/i.exec(v)}
+function explicitIds(row){var out={tmdbId:"",imdbId:""};var tv=s(row&&(row.tmdbId||row.tmdb_id||row.tmdb));if(/^\d+$/.test(tv))out.tmdbId=tv;var iv=s(row&&(row.imdbId||row.imdb_id||row.imdb)).toLowerCase();if(/^tt\d+$/.test(iv))out.imdbId=iv;try{var u=new URL(s(row&&row.url)),qp=u.searchParams,t=s(qp.get("tmdbId")||qp.get("tmdb")||"");if(!out.tmdbId&&/^\d+$/.test(t))out.tmdbId=t;var i=s(qp.get("imdbId")||qp.get("imdb")||"").toLowerCase();if(!out.imdbId&&/^tt\d+$/.test(i))out.imdbId=i}catch(_e){}return out}
+function tokens(v){var noise={the:1,a:1,an:1,le:1,la:1,les:1,un:1,une:1,de:1,des:1,du:1,and:1,et:1,film:1,movie:1,episode:1,season:1,saison:1,stream:1,streaming:1,source:1,server:1,serveur:1,player:1,video:1,watch:1,play:1,direct:1,download:1,quality:1,unknown:1,fallback:1};var tech={vcloud:1,hubcloud:1,file:1,web:1,dl:1,webrip:1,webdl:1,bluray:1,remux:1,hdr:1,dv:1,dolby:1,atmos:1,aac:1,ac3:1,eac3:1,ddp:1,x264:1,x265:1,h264:1,h265:1,hevc:1,av1:1,multi:1,vf:1,vff:1,vfq:1,vostfr:1,vo:1,french:1,english:1,truefrench:1,hd:1,uhd:1,fhd:1,sd:1};var provider=norm(c.providerId).split(" ");return norm(v).split(" ").filter(function(x){return x.length>1&&!noise[x]&&!tech[x]&&provider.indexOf(x)<0&&!/^\d{4}$/.test(x)&&!/^\d{3,4}p$/.test(x)&&!/^s\d+e\d+$/.test(x)})}
+function expectedTokens(m){var map={};uniq((m.titles||[]).concat(m.episodeTitles||[])).forEach(function(t){tokens(t).forEach(function(x){map[x]=1})});return map}
+function overlapsExpected(text,expected){var w=tokens(text);for(var i=0;i<w.length;i++)if(expected[w[i]])return true;return false}
+function explicitCandidates(row){var out=[],title=s(row&&row.title);if(title)out.push({text:title,kind:"title"});var filename=s(row&&row.filename);if(filename)out.push({text:filename,kind:"filename"});try{var base=decodeURIComponent(new URL(s(row&&row.url)).pathname.split("/").filter(Boolean).pop()||"").replace(/\.(?:m3u8|mpd|mp4|mkv|webm|m4v|ts)$/i,"");if(base)out.push({text:base,kind:"url"})}catch(_e){}var name=s(row&&row.name);if(name&&norm(name)!==norm(c.providerId))out.push({text:name,kind:"name"});return out}
+function contentLike(candidate,q){var w=tokens(candidate.text),se=episode(candidate.text),years=norm(candidate.text).match(/\b(?:19|20)\d{2}\b/g)||[];if(se)return true;if(!episodic(q)&&years.length&&w.length>=1)return true;if((candidate.kind==="title"||candidate.kind==="filename")&&w.length>=3)return true;return false}
+function queryTitle(text){return tokens(text).join(" ").trim()}
+function strongNameMatch(query,result){var a=tokens(query),names=uniq([result&&result.name,result&&result.original_name,result&&result.title,result&&result.original_title]);if(a.length<2)return false;for(var n=0;n<names.length;n++){var b=tokens(names[n]);if(!b.length)continue;var hit=0;a.forEach(function(x){if(b.indexOf(x)>=0)hit++});var ratio=hit/Math.max(a.length,b.length);if(ratio>=0.67)return true}return false}
+async function confirmOtherTitle(candidate,q){var key=runtimeTmdbKey();if(!key||!/^\d+$/.test(q.tmdbId||""))return false;var query=queryTitle(candidate.text);if(tokens(query).length<2)return false;var endpoint=episodic(q)?"tv":"movie",d=await jsonFetch("https://api.themoviedb.org/3/search/"+endpoint+"?api_key="+encodeURIComponent(key)+"&language=fr-FR&query="+encodeURIComponent(query)+"&include_adult=false");if(!d||!Array.isArray(d.results))return false;for(var i=0;i<Math.min(5,d.results.length);i++){var row=d.results[i];if(!strongNameMatch(query,row))continue;var id=s(row&&row.id);if(id===q.tmdbId)return false;return /^\d+$/.test(id)&&id!==q.tmdbId}return false}
+async function candidateContradicts(candidate,q,m,expected){var text=candidate.text,se=episode(text);if(q.mediaType==="movie"&&se)return true;if(se&&episodic(q)){var ss=Number(se[1])||0,ee=Number(se[2])||0;if((q.season&&ss&&ss!==q.season)||(q.episode&&ee&&ee!==q.episode))return true;if(overlapsExpected(text,expected))return false;m=await ensureEpisodeTitles(q,m);expected=expectedTokens(m);if(overlapsExpected(text,expected))return false;return await confirmOtherTitle(candidate,q)}var years=norm(text).match(/\b(?:19|20)\d{2}\b/g)||[];if(!episodic(q)&&m.year&&years.length&&!years.some(function(y){return Math.abs(Number(y)-Number(m.year))<=1}))return true;if(!contentLike(candidate,q)||overlapsExpected(text,expected))return false;var w=tokens(text);if(w.length<2)return false;if(w.length>=3&&(candidate.kind==="title"||candidate.kind==="filename"))return await confirmOtherTitle(candidate,q);return false}
+async function mismatch(row,q,m){var ids=explicitIds(row);if(ids.tmdbId&&q.tmdbId&&ids.tmdbId!==q.tmdbId)return true;if(ids.imdbId&&(q.imdbId||m.imdbId)&&ids.imdbId!==(q.imdbId||m.imdbId))return true;var expected=expectedTokens(m),cands=explicitCandidates(row);for(var i=0;i<cands.length;i++)if(await candidateContradicts(cands[i],q,m,expected))return true;return false}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamIdentityV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var m=await tmdb(q),kept=[];for(var i=0;i<x.list.length;i++)if(!(await mismatch(x.list[i],q,m)))kept.push(x.list[i]);return rebuild(v,x,kept)};wrap.__nuvioGlobalStreamIdentityV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"providerId":"goated","tmdbRuntimeKeyRequired":true,"tmdbTimeoutMs":1200,"implementationRevision":"cross-client-shared-tmdb-owner-zero-episodic-year-v11","catalogueYearPolicy":"movie-only"});
+/* CLOSEFIX:CORE.STREAM_IDENTITY.V1 */
+/* STARTFIX:CORE.MEDIA_TYPE_RESOLUTION.V1 */
+/* FIXDATA:CORE.MEDIA_TYPE_RESOLUTION.V1:eyJwcm92aWRlclRpbWVvdXRNcyI6NjAwMDAsInJlcXVlc3RUeXBlQWxpYXNlcyI6e30sInJldmlzaW9uIjoidG1kYi1kYXRhLWNvbnRyYWN0LWxhdW5jaC1nYXRlLXYzMS1wcmUtbmV0d29yay1zZW1hbnRpYy1nYXRlIiwic2VtYW50aWNUeXBlcyI6WyJtb3ZpZSIsInR2Il0sInN1cGVyc2VkZVNldHRsZU1zIjoxMjAwLCJ0aW1lb3V0TXMiOjE4MDAsInR2UHJvdmlkZXJUaW1lb3V0TXMiOjYwMDAwfQ== */
+/* NUVIO_GLOBAL_MEDIA_TYPE_RESOLUTION_V1:264b5d0b669a */
+/* NUVIO_GLOBAL_PROVIDER_EXECUTION_BUDGET_V1 */
+;(function(g,c){"use strict";
+function s(v){return String(v==null?"":v).trim()}
+function normalizeKey(v){var x=s(v);if(x.length===33&&x.charCodeAt(0)===92&&/^[0-9a-fA-F]{32}$/.test(x.slice(1)))x=x.slice(1);return /^[0-9a-fA-F]{32}$/.test(x)?x:""}
+function alias(v){var x=s(v||"movie").toLowerCase();if(x==="series"||x==="show"||x==="other")return"tv";if(x==="anime")return"anime";if(x==="movie")return"movie";return"tv"}
+function namespaceOf(v){var x=alias(v);return x==="movie"?"movie":"tv"}
+function sourceIdentity(v){
+  var raw=s(v),x=raw,kind="unknown";
+  x=x.replace(/^https?:\/\/(?:www\.)?imdb\.com\/title\//i,"");
+  var prefix=/^(tmdb|imdb|movie|tv|series)[:/]/i.exec(x);
+  if(prefix){kind=prefix[1].toLowerCase()==="imdb"?"imdb":"tmdb";x=x.slice(prefix[0].length)}
+  x=x.split(/[\/?#]/)[0];
+  var episodic=/^(tt\d+|\d+):\d+:\d+$/i.exec(x);if(episodic)x=episodic[1];
+  if(/^tt\d+$/i.test(x)){kind="imdb";x=x.toLowerCase()}
+  else if(/^\d+$/.test(x))kind="tmdb";
+  return{raw:raw,id:x,kind:kind};
+}
+function metadataImdb(m){
+  if(!m||typeof m!=="object")return"";
+  var x=s(m.imdb_id||m.imdbId||(m.external_ids&&m.external_ids.imdb_id)||"").toLowerCase();
+  return /^tt\d+$/.test(x)?x:"";
+}
+function providerTransport(canonical,namespace){
+  var map=c.requestTypeAliases&&typeof c.requestTypeAliases==="object"?c.requestTypeAliases:{};
+  var mapped=s(map[canonical]).toLowerCase();
+  if(mapped==="tmdb_namespace")return namespace==="movie"?"movie":"tv";
+  if(mapped)return alias(mapped);
+  // Anime is semantic, not a TMDB namespace. Once authoritative metadata has
+  // classified the work as anime, preserve its real TV/movie namespace for the
+  // provider API. The semantic capability gate still rejects non-anime works.
+  if(canonical==="anime")return namespace==="movie"?"movie":"tv";
+  return canonical==="movie"?"movie":"tv";
+}
+function namespaceCandidates(v,season,episode){
+  // Client media type is only a lookup hint. Never let it remove the alternate
+  // TMDB namespace before canonical identity has been established.
+  if(season!=null||episode!=null)return["tv","movie"];
+  var hint=alias(v);
+  if(hint==="movie")return["movie","tv"];
+  return["tv","movie"];
+}
+function rows(v){return Array.isArray(v)?v:[]}
+function keywordRows(m){var k=m&&m.keywords;return rows(k&&((k.results||k.keywords)||k))}
+function animeMeta(m){
+  if(!m||typeof m!=="object")return false;
+  var explicit=s(m.canonicalMediaType||m.canonical_media_type||m.category).toLowerCase();
+  if(explicit==="anime")return true;
+  var keywords=keywordRows(m).map(function(x){return s(x&&x.name).toLowerCase()});
+  if(keywords.indexOf("anime")>=0)return true;
+  var genres=rows(m.genres),ids=rows(m.genre_ids||m.genreIds).map(Number);
+  for(var i=0;i<genres.length;i++){if(Number(genres[i]&&genres[i].id)===16)ids.push(16)}
+  var animation=ids.indexOf(16)>=0||genres.some(function(x){return s(x&&x.name).toLowerCase()==="animation"});
+  var lang=s(m.original_language||m.originalLanguage).toLowerCase();
+  var countries=rows(m.origin_country||m.originCountry).map(function(x){return s(x).toUpperCase()});
+  var prod=rows(m.production_countries||m.productionCountries).map(function(x){return s(x&&x.iso_3166_1).toUpperCase()});
+  var japanese=lang==="ja"||countries.indexOf("JP")>=0||prod.indexOf("JP")>=0;
+  return animation&&japanese;
+}
+function timeout(){try{return typeof AbortSignal!=="undefined"&&AbortSignal.timeout?AbortSignal.timeout(c.timeoutMs):undefined}catch(_){return undefined}}
+function localKey(){
+  var key="";
+  try{key=normalizeKey(g&&g.TMDB_API_KEY);if(key)return key}catch(_){}
+  try{if(typeof TMDB_API_KEY!=="undefined"){key=normalizeKey(TMDB_API_KEY);if(key)return key}}catch(_){}
+  return"";
+}
+function localToken(){
+  try{if(g&&s(g.TMDB_ACCESS_TOKEN))return s(g.TMDB_ACCESS_TOKEN)}catch(_){}
+  try{if(typeof TMDB_ACCESS_TOKEN!=="undefined"&&s(TMDB_ACCESS_TOKEN))return s(TMDB_ACCESS_TOKEN)}catch(_){}
+  return "";
+}
+var coreCredentialKey=localKey(),coreCredentialToken=localToken();
+var mediaCache=Object.create(null);
+try{if(g)g.__nuvioTmdbMetadataCacheV1=mediaCache}catch(_){}
+function hasTmdbMetadata(m){
+  return !!(m&&typeof m==="object"&&(
+    Array.isArray(m.genres)||Array.isArray(m.genre_ids)||Array.isArray(m.genreIds)||
+    m.original_language||m.originalLanguage||m.origin_country||m.originCountry||
+    m.production_countries||m.productionCountries||m.keywords
+  ));
+}
+async function apiJson(url){
+  var key=coreCredentialKey,token=coreCredentialToken;
+  if(!g||typeof g.fetch!=="function"||(!key&&!token))return{state:"unavailable",value:null};
+  try{
+    if(key)url+=(url.indexOf("?")>=0?"&":"?")+"api_key="+encodeURIComponent(key);
+    var h={Accept:"application/json"};if(token)h.Authorization="Bearer "+token;
+    var api=await g.fetch(url,{headers:h,redirect:"follow",signal:timeout()});
+    if(!api)return{state:"unavailable",value:null};
+    if(api.status===404)return{state:"not_found",value:null};
+    if(!api.ok||typeof api.json!=="function")return{state:"unavailable",value:null};
+    var value=await api.json();
+    if(!value||typeof value!=="object")return{state:"unavailable",value:null};
+    return{state:"ok",value:value};
+  }catch(_){return{state:"unavailable",value:null}}
+}
+async function findTmdb(imdbId,candidates){
+  var imdb=s(imdbId).replace(/^imdb:/i,"").toLowerCase(),cacheKey="find:"+imdb;
+  if(!/^tt\d+$/.test(imdb))return{state:"not_found",tmdbId:"",namespace:"",metadata:null,imdbId:""};
+  if(Object.prototype.hasOwnProperty.call(mediaCache,cacheKey))return await mediaCache[cacheKey];
+  var pending=(async function(){
+    var probe=await apiJson("https://api.themoviedb.org/3/find/"+encodeURIComponent(imdb)+"?external_source=imdb_id");
+    if(!probe||probe.state!=="ok")return{state:probe&&probe.state||"unavailable",tmdbId:"",namespace:"",metadata:null,imdbId:imdb};
+    for(var i=0;i<candidates.length;i++){
+      var namespace=candidates[i]==="movie"?"movie":"tv";
+      var list=namespace==="movie"?rows(probe.value.movie_results):rows(probe.value.tv_results);
+      for(var j=0;j<list.length;j++){
+        var row=list[j],id=s(row&&row.id);
+        if(/^\d+$/.test(id))return{state:"ok",tmdbId:id,namespace:namespace,metadata:row,imdbId:imdb};
+      }
+    }
+    return{state:"not_found",tmdbId:"",namespace:"",metadata:null,imdbId:imdb};
+  })();
+  mediaCache[cacheKey]=pending;
+  var value=await pending;
+  if(value&&value.state==="unavailable")delete mediaCache[cacheKey];else mediaCache[cacheKey]=value;
+  return value;
+}
+async function tmdb(namespaceValue,tmdbId){
+  var namespace=namespaceValue==="movie"?"movie":"tv",id=s(tmdbId),cacheKey=namespace+":"+id;
+  if(!/^\d+$/.test(id))return{state:"unavailable",metadata:null};
+  if(Object.prototype.hasOwnProperty.call(mediaCache,cacheKey))return await mediaCache[cacheKey];
+  var pending=(async function(){
+    var append=namespace==="movie"?"keywords,alternative_titles,external_ids,release_dates":"keywords,alternative_titles,external_ids,content_ratings";
+    var probe=await apiJson("https://api.themoviedb.org/3/"+namespace+"/"+encodeURIComponent(id)+"?append_to_response="+encodeURIComponent(append)+"&language=fr-FR");
+    if(!probe||probe.state!=="ok")return{state:probe&&probe.state||"unavailable",metadata:null};
+    var value=probe.value;
+    if(Number(value.id||0)<=0)return{state:"unavailable",metadata:null};
+    value.__nuvioTmdbNamespace=namespace;
+    value.__nuvioTmdbId=id;
+    return{state:"ok",metadata:value};
+  })();
+  mediaCache[cacheKey]=pending;
+  var value=await pending;
+  if(value&&value.state==="unavailable")delete mediaCache[cacheKey];else mediaCache[cacheKey]=value;
+  return value;
+}
+async function coreGetTmdbData(request){
+  var q=request&&typeof request==="object"&&!Array.isArray(request)?request:{};
+  var source=sourceIdentity(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id),id="",imdbId="";
+  var explicit=s(q.tmdbNamespace||q.namespace).toLowerCase();
+  var candidates=explicit==="movie"||explicit==="tv"?[explicit]:namespaceCandidates(q.mediaType||q.type,q.season,q.episode);
+  if(source.kind==="imdb"){
+    imdbId=source.id;
+    var found=await findTmdb(imdbId,candidates);
+    if(!found||found.state!=="ok"||!/^\d+$/.test(s(found.tmdbId)))return{state:found&&found.state||"unavailable",tmdbId:"",imdbId:imdbId,tmdbNamespace:"",metadata:null,episodeMetadata:null};
+    id=s(found.tmdbId);candidates=[found.namespace];
+  }else if(source.kind==="tmdb")id=source.id;
+  else return{state:"not_found",tmdbId:"",imdbId:"",tmdbNamespace:"",metadata:null,episodeMetadata:null};
+  var unavailable=false;
+  for(var i=0;i<candidates.length;i++){
+    var namespace=candidates[i]==="movie"?"movie":"tv";
+    var probe=await tmdb(namespace,id);
+    if(!probe||probe.state==="unavailable"){unavailable=true;continue}
+    if(probe.state!=="ok"||!probe.metadata)continue;
+    imdbId=imdbId||metadataImdb(probe.metadata);
+    var episodeMetadata=null;
+    var season=Number(q.season||0)||0,episode=Number(q.episode||0)||0;
+    if(namespace==="tv"&&season>0&&episode>0){
+      var episodeKey="episode:tv:"+id+":"+season+":"+episode+":fr-FR";
+      if(Object.prototype.hasOwnProperty.call(mediaCache,episodeKey)){
+        var cachedEpisode=await mediaCache[episodeKey];
+        episodeMetadata=cachedEpisode&&cachedEpisode.metadata?cachedEpisode.metadata:cachedEpisode&&cachedEpisode.value?cachedEpisode.value:cachedEpisode||null;
+      }else{
+        var pendingEpisode=(async function(){
+          var row=await apiJson("https://api.themoviedb.org/3/tv/"+encodeURIComponent(id)+"/season/"+encodeURIComponent(season)+"/episode/"+encodeURIComponent(episode)+"?language=fr-FR");
+          if(!row||row.state!=="ok")return{state:row&&row.state||"unavailable",metadata:null};
+          return{state:"ok",metadata:row.value};
+        })();
+        mediaCache[episodeKey]=pendingEpisode;
+        var episodeResult=await pendingEpisode;
+        if(episodeResult&&episodeResult.state==="unavailable")delete mediaCache[episodeKey];else mediaCache[episodeKey]=episodeResult;
+        episodeMetadata=episodeResult&&episodeResult.metadata||null;
+      }
+    }
+    return{state:"ok",tmdbId:id,imdbId:imdbId,tmdbNamespace:namespace,metadata:probe.metadata,episodeMetadata:episodeMetadata};
+  }
+  return{state:unavailable?"unavailable":"not_found",tmdbId:id,imdbId:imdbId,tmdbNamespace:"",metadata:null,episodeMetadata:null};
+}
+try{if(g)g.__nuvioCoreGetTmdbDataV1=coreGetTmdbData}catch(_){}
+function fallbackType(input,semantic){
+  var raw=s(input||"movie").toLowerCase(),transport=alias(input);
+  if(raw==="anime")return"anime";
+  if(transport==="tv"&&semantic.indexOf("tv")<0&&semantic.indexOf("anime")>=0)return"anime";
+  if(raw==="movie"&&semantic.indexOf("movie")<0&&semantic.indexOf("anime")>=0)return"anime";
+  return transport;
+}
+async function canonicalResolution(id,input,metadata,season,episode,semantic){
+  var candidates=namespaceCandidates(input,season,episode);
+  var source=sourceIdentity(id),rawId=source.id,tmdbId=source.kind==="tmdb"?source.id:"",imdbId=source.kind==="imdb"?source.id:"",seedMetadata=null;
+  if(imdbId){
+    var found=await findTmdb(imdbId,candidates);
+    if(found&&found.state==="ok"){
+      tmdbId=found.tmdbId;
+      candidates=[found.namespace];
+      seedMetadata=found.metadata||null;
+    }else if(found&&found.state==="unavailable"){
+      var degradedType=fallbackType(input,semantic),degradedNamespace=namespaceOf(input);
+      return{type:degradedType,namespace:degradedNamespace,tmdbId:"",imdbId:imdbId,metadata:null,authoritative:false,degraded:true};
+    }else return null;
+  }
+  if(hasTmdbMetadata(metadata)){
+    var declared=s(metadata&&metadata.__nuvioTmdbNamespace).toLowerCase();
+    var namespace=declared==="movie"?"movie":declared==="tv"?"tv":candidates[0];
+    var declaredId=s(metadata&&metadata.__nuvioTmdbId||metadata&&metadata.id);
+    if(/^\d+$/.test(declaredId))tmdbId=declaredId;
+    imdbId=imdbId||metadataImdb(metadata);
+    var type=animeMeta(metadata)?"anime":namespace;
+    return{type:type,namespace:namespace,tmdbId:/^\d+$/.test(tmdbId)?tmdbId:"",imdbId:imdbId,metadata:metadata,authoritative:true,degraded:false};
+  }
+  var unavailable=false;
+  for(var i=0;i<candidates.length;i++){
+    var namespace=candidates[i],probe=await tmdb(namespace,tmdbId);
+    if(!probe||probe.state==="unavailable"){unavailable=true;continue}
+    if(probe.state==="not_found")continue;
+    var m=probe.metadata;imdbId=imdbId||metadataImdb(m);var type=animeMeta(m)?"anime":namespace;
+    return{type:type,namespace:namespace,tmdbId:tmdbId,imdbId:imdbId,metadata:m,authoritative:true,degraded:false};
+  }
+  if(unavailable&&seedMetadata){
+    var seedNamespace=candidates[0]||namespaceOf(input),seedType=animeMeta(seedMetadata)?"anime":seedNamespace;
+    seedMetadata.__nuvioTmdbNamespace=seedNamespace;
+    seedMetadata.__nuvioTmdbId=tmdbId;
+    return{type:seedType,namespace:seedNamespace,tmdbId:tmdbId,imdbId:imdbId,metadata:seedMetadata,authoritative:true,degraded:true};
+  }
+  if(unavailable){
+    var fallback=fallbackType(input,semantic),fallbackNamespace=namespaceOf(input);
+    return{type:fallback,namespace:fallbackNamespace,tmdbId:/^\d+$/.test(tmdbId)?tmdbId:"",imdbId:imdbId,metadata:null,authoritative:false,degraded:true};
+  }
+  return null;
+}
+function objectRequest(a){return a&&typeof a==="object"&&!Array.isArray(a)}
+function provisional(a){
+  var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
+  var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
+  var raw=s(input).toLowerCase(),namespace=namespaceOf(input);
+  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+  var type=raw==="anime"?"anime":namespace;
+  // Native Nuvio bridges may expose only a non-abortable host fetch. For a
+  // numeric TMDB id, let a semantic-anime provider run provisionally even when
+  // the client transports the work as tv/movie; authoritative TMDB verification
+  // still happens before any positive output can escape.
+  if(semantic.length&&semantic.indexOf(type)<0){
+    var hasMovie=semantic.indexOf("movie")>=0,hasTv=semantic.indexOf("tv")>=0,hasAnime=semantic.indexOf("anime")>=0;
+    // Explicit anime is a semantic request, not a generic TV alias. A provider
+    // without anime capability must be rejected before provider/TMDB network.
+    if(raw==="anime"&&!hasAnime)return null;
+    // movie <-> tv transport mismatch is already conclusive from provider DATA.
+    // Do not rewrite a single declared type just to make the provisional call run.
+    if(type==="movie"&&!hasMovie&&!hasAnime)return null;
+    if(type==="tv"&&!hasTv&&!hasAnime)return null;
+    if(semantic.indexOf(namespace)>=0)type=namespace;
+    else if(hasAnime&&(namespace==="tv"||namespace==="movie"))type="anime";
+    else return null;
+  }
+  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first),source=sourceIdentity(id);
+  var providerType=providerTransport(type,namespace);
+  var resolvedTmdbId=source.kind==="tmdb"?source.id:"";
+  var resolvedImdbId=s(obj&&(q.imdbId||q.imdb_id)||(source.kind==="imdb"?source.id:"")).toLowerCase();
+  var context={
+    sourceId:source.id,
+    sourceIdType:source.kind,
+    tmdbId:resolvedTmdbId,
+    imdbId:resolvedImdbId,
+    tmdbNamespace:namespace,
+    tmdbIdentity:namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id),
+    tmdbMetadata:null,
+    canonicalMediaType:type,
+    tmdbResolutionDegraded:true,
+    tmdbVerificationDeferred:true,
+    nuvioInputMediaType:input,
+    providerMediaType:providerType
+  };
+  if(obj){
+    q.sourceId=source.id;q.sourceIdType=source.kind;
+    q.nuvioInputMediaType=input;
+    if(resolvedTmdbId)q.tmdbId=resolvedTmdbId;
+    if(resolvedImdbId)q.imdbId=resolvedImdbId;
+    q.tmdbNamespace=namespace;
+    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id);
+    q.canonicalMediaType=type;
+    q.providerMediaType=providerType;
+    q.mediaType=providerType;q.type=providerType;
+    if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
+    var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
+  }
+  var out=Array.prototype.slice.call(a);out[0]=resolvedTmdbId||resolvedImdbId||source.id||out[0];out[1]=providerType;out.__nuvioContext=context;return out;
+}
+function hasProviderOutput(value){
+  if(Array.isArray(value))return value.length>0;
+  if(!value||typeof value!=="object")return false;
+  for(var i=0;i<3;i++){
+    var key=["streams","results","data"][i];
+    if(Array.isArray(value[key]))return value[key].length>0;
+  }
+  var url=value.url;
+  if(typeof url==="string"&&s(url))return true;
+  if(url&&typeof url==="object"&&typeof url.url==="string"&&s(url.url))return true;
+  return false;
+}
+function reconcileOutputContext(value,context){
+  if(!value||!context)return value;
+  function stamp(row){
+    if(!row||typeof row!=="object")return;
+    try{
+      if(Object.prototype.hasOwnProperty.call(row,"canonicalMediaType"))row.canonicalMediaType=context.canonicalMediaType;
+      if(Object.prototype.hasOwnProperty.call(row,"providerMediaType"))row.providerMediaType=context.providerMediaType;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbNamespace"))row.tmdbNamespace=context.tmdbNamespace;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbIdentity"))row.tmdbIdentity=context.tmdbIdentity;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbId")&&context.tmdbId)row.tmdbId=context.tmdbId;
+      if(Object.prototype.hasOwnProperty.call(row,"degraded"))row.degraded=context.tmdbResolutionDegraded===true;
+      if(Object.prototype.hasOwnProperty.call(row,"tmdbResolutionDegraded"))row.tmdbResolutionDegraded=context.tmdbResolutionDegraded===true;
+    }catch(_){}
+  }
+  if(Array.isArray(value)){
+    for(var i=0;i<value.length;i++)stamp(value[i]);
+    return value;
+  }
+  if(typeof value==="object"){
+    stamp(value);
+    for(var j=0;j<3;j++){
+      var key=["streams","results","data"][j],list=value[key];
+      if(Array.isArray(list))for(var k=0;k<list.length;k++)stamp(list[k]);
+    }
+  }
+  return value;
+}
+function invocationEvent(a){
+  var first=a[0],obj=objectRequest(first),settings=obj?first:(a[4]&&typeof a[4]==="object"?a[4]:null),event="";
+  try{event=s(settings&&(settings.providerEvent||settings.event)||"")}catch(_){}
+  try{if(!event&&g)event=s(g.__nuvioProviderEvent||g.__nuvioEvent||"")}catch(_){}
+  event=event.toLowerCase();
+  return event||"launch";
+}
+function requestHasExternalIdentity(a){
+  try{
+    var first=a&&a[0],raw=objectRequest(first)?s(first.tmdbId||first.tmdb_id||first.imdbId||first.imdb_id||first.id):s(first);
+    return sourceIdentity(raw).kind==="imdb";
+  }catch(_){return false}
+}
+function providerNeedsTmdbBeforeStreams(container){
+  try{
+    var model=container&&container.__niakvioProviderBase;
+    var contract=model&&model.identityInput;
+    if(!contract||contract.requiresTmdbBeforeRun!==true)return false;
+    var mode=s(contract.mode).toLowerCase();
+    return mode==="catalog_search"||mode==="external_id";
+  }catch(_){return false}
+}
+function hasResolvedTmdbMetadata(args){
+  try{return !!(args&&args.__nuvioContext&&args.__nuvioContext.tmdbMetadata)}catch(_){return false}
+}
 
+async function resolve(a){
+  var first=a[0],obj=objectRequest(first),q=obj?Object.assign({},first):null;
+  var input=obj?s(q.mediaType||q.type||q.category||"movie"):s(a[1]||"movie");
+  var namespace=namespaceOf(input);
+  var semantic=rows(c.semanticTypes).map(function(x){return s(x).toLowerCase()});
+  // TMDB identity/type resolution is the first provider gate for every request.
+  // Provider capability filtering happens only after canonical movie|tv|anime
+  // classification so transport aliases can never suppress a valid anime match.
+  // Per-request isolation: canonical type/metadata must come only from the
+  // current work request (plus TMDB), never from a previous getStreams call.
+  var metadata=obj&&(q.tmdbMetadata||q.tmdb_metadata||q.metadata||q);
+  var id=obj?s(q.tmdbId||q.tmdb_id||q.imdbId||q.imdb_id||q.id):s(first),source=sourceIdentity(id);
+  var season=obj?q.season:a[2],episode=obj?q.episode:a[3];
+  var resolved=await canonicalResolution(id,input,metadata,season,episode,semantic);
+  if(!resolved)return null;
+  var type=resolved.type;namespace=resolved.namespace;
+  if(resolved.authoritative&&semantic.length&&semantic.indexOf(type)<0)return null;
+  var providerType=providerTransport(type,namespace);
+  var resolvedTmdbId=s(resolved.tmdbId||(source.kind==="tmdb"?source.id:""));
+  var resolvedImdbId=s(resolved.imdbId||obj&&(q.imdbId||q.imdb_id)||(source.kind==="imdb"?source.id:"")).toLowerCase();
+  var context={
+    sourceId:source.id,
+    sourceIdType:source.kind,
+    tmdbId:resolvedTmdbId,
+    imdbId:resolvedImdbId,
+    tmdbNamespace:namespace,
+    tmdbIdentity:namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id),
+    tmdbMetadata:resolved.metadata||null,
+    canonicalMediaType:type,
+    tmdbResolutionDegraded:resolved.degraded===true,
+    nuvioInputMediaType:input,
+    providerMediaType:providerType
+  };
+  if(obj){
+    q.sourceId=source.id;q.sourceIdType=source.kind;
+    q.nuvioInputMediaType=input;
+    if(resolvedTmdbId)q.tmdbId=resolvedTmdbId;
+    if(resolvedImdbId)q.imdbId=resolvedImdbId;
+    q.tmdbNamespace=namespace;
+    q.tmdbIdentity=namespace+":"+(resolvedTmdbId||resolvedImdbId||source.id);
+    q.tmdbMetadata=resolved.metadata||q.tmdbMetadata||q.tmdb_metadata||null;
+    q.canonicalMediaType=type;
+    q.providerMediaType=providerType;
+    q.mediaType=providerType;q.type=providerType;
+    if(type==="anime")q.category="anime";else if(!q.category||["series","show","other"].indexOf(s(q.category).toLowerCase())>=0)q.category=type;
+    var out=[q];for(var i=1;i<a.length;i++)out.push(a[i]);out.__nuvioContext=context;return out;
+  }
+  var out=Array.prototype.slice.call(a);out[0]=resolvedTmdbId||resolvedImdbId||source.id||out[0];out[1]=providerType;out.__nuvioContext=context;return out;
+}
+/* NUVIO_PROVIDER_LATEST_REQUEST_OWNS_FETCH_V2 */
+var requestSerial=0;
+function providerTimeoutError(){var e=new Error("nuvio_provider_timeout");e.name="TimeoutError";e.code="NUVIO_PROVIDER_TIMEOUT";e.__nuvioProviderTimeout=true;return e}
+function providerStaleError(){var e=new Error("nuvio_provider_superseded");e.name="AbortError";e.code="NUVIO_PROVIDER_SUPERSEDED";e.__nuvioProviderStale=true;return e}
+function tokenOwns(token){try{return !token||!g||g.__nuvioProviderRequestToken===token}catch(_){return false}}
+function abortController(controller){try{if(controller&&typeof controller.abort==="function")controller.abort()}catch(_){}}
+function requestAbortPromise(controller,requestToken){
+  return new Promise(function(_resolve,reject){
+    try{
+      var signal=controller&&controller.signal;
+      if(!signal)return;
+      var fail=function(){reject(tokenOwns(requestToken)?providerTimeoutError():providerStaleError())};
+      if(signal.aborted){fail();return}
+      if(typeof signal.addEventListener==="function")signal.addEventListener("abort",fail,{once:true});
+    }catch(_){}
+  });
+}
+async function settlePrior(promise){if(!promise||typeof promise.then!=="function")return;try{if(typeof setTimeout!=="function"){await Promise.resolve();return}await Promise.race([promise,new Promise(function(resolve){setTimeout(resolve,Number(c.supersedeSettleMs||1200))})])}catch(_){}}
+function deadlineExpired(deadline){var n=Number(deadline);return Number.isFinite(n)&&n>0&&Date.now()>=n}
+function tvRuntime(){try{var ua=s(g&&g.navigator&&g.navigator.userAgent);return /NuvioTV|Android TV/i.test(ua)||(g&&g.__NUVIO_TV_RUNTIME__===true)}catch(_){return false}}
+function providerBudgetMs(){return tvRuntime()?Number(c.tvProviderTimeoutMs||60000):Number(c.providerTimeoutMs||60000)}
+function budgetedFetch(original,deadline,requestToken,requestController){
+  if(typeof original!=="function")return original;
+  var base=original.__nuvioProviderExecutionBudgetBase||original;
+  var wrapped=async function(){
+    if(!tokenOwns(requestToken))throw providerStaleError();
+    if(deadlineExpired(deadline))throw providerTimeoutError();
+    var args=Array.prototype.slice.call(arguments),remaining=deadline>0?Math.max(1,deadline-Date.now()):0;
+    if(remaining>0&&args.length>=1){
+      var init=args[1]&&typeof args[1]==="object"?Object.assign({},args[1]):{};
+      if(!init.signal&&requestController&&requestController.signal)init.signal=requestController.signal;
+      if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(remaining)}catch(_){}}
+      args[1]=init;
+    }
+    if(!tokenOwns(requestToken))throw providerStaleError();
+    var timer=null;
+    var timeoutPromise=new Promise(function(_resolve,reject){
+      if(typeof setTimeout!=="function"||remaining<=0)return;
+      timer=setTimeout(function(){abortController(requestController);reject(providerTimeoutError())},remaining);
+    });
+    var value,abortPromise=requestAbortPromise(requestController,requestToken);
+    try{
+      value=(typeof setTimeout==="function"&&remaining>0)
+        ? await Promise.race([base.apply(this,args),timeoutPromise,abortPromise])
+        : await Promise.race([base.apply(this,args),abortPromise]);
+    }finally{
+      try{if(timer!=null&&typeof clearTimeout==="function")clearTimeout(timer)}catch(_){}
+    }
+    if(!tokenOwns(requestToken))throw providerStaleError();
+    if(deadlineExpired(deadline))throw providerTimeoutError();
+    return value;
+  };
+  try{
+    Object.defineProperty(wrapped,"__nuvioProviderExecutionBudgetV1",{value:true});
+    Object.defineProperty(wrapped,"__nuvioProviderExecutionBudgetBase",{value:base});
+  }catch(_){
+    wrapped.__nuvioProviderExecutionBudgetV1=true;
+    wrapped.__nuvioProviderExecutionBudgetBase=base;
+  }
+  return wrapped;
+}
+function install(o,k){
+  if(!o||typeof o[k]!=="function"||o[k].__nuvioMediaTypeResolutionV1)return false;
+  var native=o[k];
+  var wrap=async function(){
+    var originalArgs=Array.prototype.slice.call(arguments);
+    var providerEvent=invocationEvent(originalArgs);
+    // Absolute first gate: non-launch invocations do not touch provider runtime state.
+    if(providerEvent!=="launch")return [];
 
-if __name__ == "__main__":
-    raise SystemExit(main())
+    var requestToken=0,requestDeadline=0,hadFetch=false,previousFetch,fetchBase,budgetFetchInstalled=false;
+    var requestController=null,priorController=null,priorDone=null,resolveDone=null,invocationDone=null;
+    try{
+      // Capture the prior invocation before claiming the global token/fetch slot.
+      // The previous fetch wrapper stays installed during settlement grace, so a
+      // stale catch/retry still hits its token-bound wrapper and is rejected.
+      if(g){priorController=g.__nuvioProviderAbortController||null;priorDone=g.__nuvioProviderInvocationDone||null}
+      if(g&&Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
+      if(g){
+        var priorSerial=Number(g.__nuvioProviderRequestSerial||requestSerial);
+        requestToken=(Number.isFinite(priorSerial)&&priorSerial>=0?priorSerial:requestSerial)+1;
+        requestSerial=requestToken;
+        g.__nuvioProviderRequestSerial=requestToken;
+        g.__nuvioProviderRequestToken=requestToken;
+      }
+      invocationDone=new Promise(function(resolve){resolveDone=resolve});
+      if(g)g.__nuvioProviderInvocationDone=invocationDone;
+      abortController(priorController);
+      hadFetch=!!(g&&Object.prototype.hasOwnProperty.call(g,"fetch"));
+      previousFetch=g&&g.fetch;
+      fetchBase=previousFetch&&previousFetch.__nuvioProviderExecutionBudgetBase||previousFetch;
+    }catch(_){}
+    try{
+      await settlePrior(priorDone);
+      if(!tokenOwns(requestToken))return [];
+      requestDeadline=Date.now()+providerBudgetMs();
+      try{requestController=typeof AbortController!=="undefined"?new AbortController():null}catch(_){requestController=null}
+      if(g){
+        g.__nuvioProviderDeadlineMs=requestDeadline;
+        g.__nuvioProviderAbortController=requestController;
+        if(typeof fetchBase==="function"){g.fetch=budgetedFetch(fetchBase,requestDeadline,requestToken,requestController);budgetFetchInstalled=g.fetch!==fetchBase;}
+      }
+      // Gate 2: build request-local provisional transport without TMDB by default.
+      // A provider whose declared DATA contract requires a title-based catalogue
+      // lookup is the only exception: resolve TMDB once before its first call.
+      var a=provisional(originalArgs);
+      if(!a||deadlineExpired(requestDeadline))return [];
+      if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+      if(a.__nuvioContext)a.__nuvioContext.requestToken=requestToken;
+      if(g)g.__nuvioMediaContext=a.__nuvioContext||null;
+
+      var verified=null,preResolved=null;
+      var needsPlanMetadata=providerNeedsTmdbBeforeStreams(o);
+      var needsIdNormalization=requestHasExternalIdentity(originalArgs);
+      if(needsPlanMetadata||needsIdNormalization){
+        preResolved=await resolve(originalArgs);
+        if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+        if(preResolved&&!deadlineExpired(requestDeadline)&&hasResolvedTmdbMetadata(preResolved)){
+          verified=preResolved;
+          if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
+          if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
+          a=verified;
+        }
+      }
+
+      var value=await native.apply(this,a);
+      if(deadlineExpired(requestDeadline))return [];
+      if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+      if(!hasProviderOutput(value))return [];
+
+      // Gate 3: ordinary providers pay TMDB/type cost only after positive output.
+      // Providers which required TMDB to execute their declared plan already ran
+      // with verified context, so the same verified object is reused with no
+      // second metadata call.
+      if(!verified){
+        verified=preResolved||await resolve(originalArgs);
+        if(!verified||deadlineExpired(requestDeadline))return [];
+        if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+      }
+      var provisionalContext=a.__nuvioContext||{},verifiedContext=verified.__nuvioContext||{};
+      var rerun=(
+        s(provisionalContext.canonicalMediaType)!==s(verifiedContext.canonicalMediaType)
+        || s(provisionalContext.providerMediaType)!==s(verifiedContext.providerMediaType)
+        || s(provisionalContext.tmdbNamespace)!==s(verifiedContext.tmdbNamespace)
+        || s(provisionalContext.tmdbId)!==s(verifiedContext.tmdbId)
+        || s(provisionalContext.tmdbIdentity)!==s(verifiedContext.tmdbIdentity)
+      );
+      if(rerun){
+        if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
+        if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
+        value=await native.apply(this,verified);
+        if(deadlineExpired(requestDeadline))return [];
+        if(g&&requestToken&&g.__nuvioProviderRequestToken!==requestToken)return [];
+        if(!hasProviderOutput(value))return [];
+      }else{
+        // Identity/type stayed stable: do not execute the provider twice. Promote
+        // the authoritative TMDB context and reconcile only diagnostic fields
+        // already exposed by the returned rows.
+        if(verified.__nuvioContext)verified.__nuvioContext.requestToken=requestToken;
+        if(g)g.__nuvioMediaContext=verified.__nuvioContext||null;
+        value=reconcileOutputContext(value,verifiedContext);
+      }
+      return value;
+    }catch(error){
+      if(error&&(error.__nuvioProviderTimeout||error.__nuvioProviderStale))return [];
+      throw error;
+    }finally{
+      try{if(typeof resolveDone==="function")resolveDone()}catch(_){}
+      try{
+        if(g){
+          // An older request must never clean state owned by a newer request.
+          var ownsRequest=!requestToken||g.__nuvioProviderRequestToken===requestToken;
+          if(ownsRequest){
+            if(Object.prototype.hasOwnProperty.call(g,"__nuvioMediaContext"))delete g.__nuvioMediaContext;
+            if(budgetFetchInstalled){if(hadFetch&&typeof fetchBase==="function")g.fetch=fetchBase;else if(!hadFetch)delete g.fetch}
+            if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderDeadlineMs"))delete g.__nuvioProviderDeadlineMs;
+            if(g.__nuvioProviderAbortController===requestController)delete g.__nuvioProviderAbortController;
+            if(g.__nuvioProviderInvocationDone===invocationDone)delete g.__nuvioProviderInvocationDone;
+            if(Object.prototype.hasOwnProperty.call(g,"__nuvioProviderRequestToken"))delete g.__nuvioProviderRequestToken;
+          }
+        }
+      }catch(_){}
+    }
+  };
+  wrap.__nuvioMediaTypeResolutionV1=true;
+  o[k]=wrap;return true;
+}
+var ok=false;
+try{if(typeof module!=="undefined"&&module.exports)ok=install(module.exports,"getStreams")}catch(_){}
+try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"timeoutMs":1800,"providerTimeoutMs":60000,"tvProviderTimeoutMs":60000,"supersedeSettleMs":1200,"semanticTypes":["movie","tv"],"requestTypeAliases":{},"revision":"tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate"});
+/* CLOSEFIX:CORE.MEDIA_TYPE_RESOLUTION.V1 */
+/* STARTFIX:CORE.STREAM_PRESENTATION.V1 */
+/* FIXDATA:CORE.STREAM_PRESENTATION.V1:eyJpbXBsZW1lbnRhdGlvblJldmlzaW9uIjoiYWxsLXByb3ZpZGVycy1jbGllbnQtcHJvamVjdGlvbi1uYW1lLW1pcnJvci12MjAiLCJsYW5ndWFnZUZhbGxiYWNrIjoiVk8iLCJwcm92aWRlcklkIjoiZ29hdGVkIiwicHJvdmlkZXJMYW5ndWFnZU1vZGUiOiJ2byIsInRtZGJDb3JlQ2FwYWJpbGl0eVJlcXVpcmVkIjp0cnVlLCJ0bWRiVGltZW91dE1zIjoxMjAwfQ== */
+/* NUVIO_GLOBAL_STREAM_PRESENTATION_V1:e6c9f23bc140 */
+;(function(g,c){"use strict";
+function s(v){return String(v==null?"":v).trim()}
+function meaningful(v){var x=s(v);return x&&!/^(?:unknown|inconnue?|n\/?a|null|undefined|none|-+)$/i.test(x)}
+function uniq(a){var o=[];(a||[]).forEach(function(v){if(v&&o.indexOf(v)<0)o.push(v)});return o}
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function streamPayload(v){var x=slot(v);if(x&&x.list&&x.list.length){var r=x.list[0];return !!(r&&typeof r==="object"&&(typeof r.url==="string"||r.url&&typeof r.url==="object"))}return false}
+function asciiJson(v){var out="",n;for(var i=0;i<v.length;i++){n=v.charCodeAt(i);out+=n>127?"\\u"+("0000"+n.toString(16)).slice(-4):v.charAt(i)}return out}
+function installJvmSafeStreamStringify(){try{var j=g&&g.JSON?g.JSON:(typeof JSON!=="undefined"?JSON:null);if(!j||typeof j.stringify!=="function"||j.stringify.__nuvioJvmSafeStreamStringify)return;var native=j.stringify;var wrapped=function(value,replacer,space){var raw=native.call(j,value,replacer,space);return typeof raw==="string"&&streamPayload(value)?asciiJson(raw):raw};wrapped.__nuvioJvmSafeStreamStringify=true;wrapped.__nuvioOriginal=native;j.stringify=wrapped}catch(_e){}}
+function req(a){var f=a[0],q=f&&typeof f==="object"&&!Array.isArray(f)?Object.assign({},f):{tmdbId:f,mediaType:a[1],season:a[2],episode:a[3]};q.tmdbId=s(q.tmdbId||q.id||f).replace(/^tmdb:/i,"").split(":")[0];q.mediaType=s(q.mediaType||q.type||a[1]||"movie").toLowerCase();q.title=s(q.title||q.name||q.label);q.year=Number(q.year||0)||0;q.season=Number(q.season||a[2]||0)||0;q.episode=Number(q.episode||a[3]||0)||0;return q}
+function urlFacts(r){var u=s(r&&r.url);if(!u)return"";try{u=decodeURIComponent(u)}catch(_e){}return u.replace(/[?#&=/_\\.\-]+/g," ")}
+function blob(r){return [r&&r.name,r&&r.title,r&&r.size,r&&r.description,r&&r.quality,r&&r.resolution,r&&r.height,r&&r.width,r&&r.label,r&&r.language,r&&r.codec,r&&r.audio,r&&r.sourceType,r&&r.releaseType,r&&r.format,r&&r.hdr,r&&r.videoTech,r&&r.bitDepth,r&&r.subtitles,r&&r.sourceLabel,r&&r.filename,r&&r.edition,r&&r.releaseGroup,r&&r.release_group,r&&r.bitrate,r&&r.container,r&&r.encode,r&&r.indexer,r&&r.network,urlFacts(r)].map(s).join(" ")}
+function quality(r){var v=meaningful(r&&r.quality)?s(r.quality):blob(r),u=v.toUpperCase();if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(u))return"2160p";var m=u.match(/\b(1440|1080|720|576|540|480|360)P?\b/);if(m)return m[1]+"p";if(/\b(?:FULL[ ._-]?HD|FHD)\b/.test(u))return"1080p";if(/\bHD\b/.test(u))return"720p";if(/\bSD\b/.test(u))return"480p";var h=Number(r&&r.height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=450)return"480p";return""}
+function language(r){var explicit=meaningful(r&&r.language)?s(r.language):"",all=blob(r),u=explicit.toUpperCase(),a=all.toUpperCase(),vfMode=s(c.providerLanguageMode).toLowerCase()==="vf";function isMulti(x){return /\bMULTI(?:[- ]?AUDIO|LANG(?:UE)?S?)?\b/.test(x)||/\bDUAL(?:[- ]?AUDIO)?\b/.test(x)}function isVost(x){return /\bVOSTFR\b/.test(x)||/\bVOST[ ._-]?FR\b/.test(x)||/\bVO[ ._-]?ST[ ._-]?FR\b/.test(x)}function isVfq(x){return /\bVFQ\b/.test(x)||/\bFR[ ._-]?CA\b/.test(x)||/\bFRENCH[ ._-]?(?:CANADA|CANADIAN|QUEBEC)\b/.test(x)||/\b(?:QUEBEC|QU[ÉE]B[ÉE]COIS)\b/.test(x)}function isVf(x){return /\b(?:VF|VFF|FR|FRA|FRE|FRENCH|FRANCAIS|FRANÇAIS|FR[ ._-]?FR)\b/.test(x)}function isVo(x){return /\bVO\b/.test(x)||/\bORIGINAL(?:[ ._-]?(?:AUDIO|LANG(?:UAGE)?))?\b/.test(x)||/\b(?:EN|ENG|ENGLISH)\b/.test(x)}var hasVost=isVost(a),hasVf=isVf(a)||isVfq(a);if(isMulti(u)||isMulti(a)||(hasVost&&hasVf))return vfMode?"MULTI (VF/VO)":"MULTI";if(isVost(u))return"VOSTFR";if(isVfq(u))return"VFQ";if(isVf(u))return"VF";if(isVo(u))return"VO";if(!u){if(hasVost)return"VOSTFR";if(hasVf)return"VF";if(isVo(a))return"VO"}return s(c.languageFallback)||(vfMode?"VF":"VO")}
+function codec(r){var v=meaningful(r&&r.codec)?s(r.codec):blob(r),u=v.toUpperCase();if(/\b(?:HEVC|H[ ._-]?265|X265)\b/.test(u))return"HEVC";if(/\bAV1\b/.test(u))return"AV1";if(/\bVP9\b/.test(u))return"VP9";if(/\b(?:AVC|H[ ._-]?264|X264)\b/.test(u))return"AVC";return meaningful(r&&r.codec)?s(r.codec):""}
+function audioFacts(r){var u=(s(r&&r.audio)+" "+blob(r)).toUpperCase(),tech=[],codec="",ch="",cm=u.match(/\b(7\.1|5\.1|2\.1|2\.0|1\.0)\b/);if(cm)ch=cm[1];if(/\b(?:ATMOS|DOLBY ATMOS)\b/.test(u))tech.push("Dolby Atmos");if(/\bDTS[: ._-]?X\b/.test(u))tech.push("DTS:X");if(/\bTRUE[ ._-]?HD\b/.test(u))codec="TrueHD";else if(/\b(?:E-?AC-?3|DDP|DD\+)\b/.test(u))codec="E-AC3";else if(/\bAC-?3\b/.test(u))codec="AC3";else if(/\bDTS[- ]?HD\b/.test(u))codec="DTS-HD";else if(/\bDTS\b/.test(u))codec="DTS";else if(/\bAAC\b/.test(u))codec="AAC";else if(/\bFLAC\b/.test(u))codec="FLAC";else if(/\bOPUS\b/.test(u))codec="Opus";else if(meaningful(r&&r.audio)&&!tech.length)codec=s(r.audio);return{tech:uniq(tech),codec:codec,channels:ch}}
+function duration(r){var raw=r&&r.duration;if(typeof raw==="number"&&Number.isFinite(raw)&&raw>0)return raw>600?Math.round(raw/60):Math.round(raw);var d=s(raw),h=d.match(/(\d{1,2})\s*h(?:eures?)?\s*(\d{1,2})?/i);if(h)return Number(h[1])*60+Number(h[2]||0);var m=d.match(/(\d{1,4})\s*(?:min|minutes?)\b/i);if(m)return Number(m[1]);var x=blob(r).match(/\b(\d{1,3})\s*(?:min|minutes?)\b/i);return x?Number(x[1]):0}
+function source(r){var raw=(s(r&&r.sourceType)+" "+s(r&&r.releaseType)+" "+blob(r)),u=raw.toUpperCase(),sourceType="",releaseType="";if(/\b(?:ULTRA[ ._-]?HD[ ._-]?BLU[ ._-]?RAY|UHD[ ._-]?BLU[ ._-]?RAY|UHD[ ._-]?BD)\b/.test(u))sourceType="ULTRA HD BLU-RAY";else if(/\b(?:BLU[- ]?RAY|BDRIP|BRRIP|BDREMUX)\b/.test(u))sourceType="BLU-RAY";else if(/\bWEB[- .]?DL\b/.test(u))sourceType="WEB-DL";else if(/\bWEB[- .]?RIP\b/.test(u))sourceType="WEBRIP";else if(/\bHDTV\b/.test(u))sourceType="HDTV";else if(/\bDVD[- .]?RIP\b/.test(u))sourceType="DVD RIP";if(/\bREMUX\b/.test(u))releaseType="REMUX";return{sourceType:sourceType||(meaningful(r&&r.sourceType)?s(r.sourceType):""),releaseType:releaseType||(meaningful(r&&r.releaseType)?s(r.releaseType):"")}}
+function formatType(r){var v=meaningful(r&&r.format)?s(r.format):"",u=v.toUpperCase();if(/(?:M3U8|HLS)/.test(u))return"HLS";if(/(?:MPD|DASH)/.test(u))return"DASH";if(/\bMP4\b/.test(u))return"MP4";if(/\bMKV\b/.test(u))return"MKV";var url=s(r&&r.url).split(/[?#]/)[0].toLowerCase();if(/\.m3u8$/.test(url))return"HLS";if(/\.mpd$/.test(url))return"DASH";if(/\.mp4$/.test(url))return"MP4";if(/\.mkv$/.test(url))return"MKV";return v}
+function videoFacts(r){var u=blob(r).toUpperCase(),tech=[],bit="";if(/\b(?:DOLBY VISION|DOVI)\b/.test(u))tech.push("Dolby Vision");if(/\bHDR10\+\b|\bHDR10 PLUS\b/.test(u))tech.push("HDR10+");else if(/\bHDR10\b/.test(u))tech.push("HDR10");else if(/\bHDR\b/.test(u))tech.push("HDR");if(/\bIMAX[ ._-]?ENHANCED\b/.test(u))tech.push("IMAX Enhanced");else if(/\bIMAX\b/.test(u))tech.push("IMAX");if(/\b10[ ._-]?BIT\b|\bHI10P\b/.test(u))bit="10bit";else if(/\b8[ ._-]?BIT\b/.test(u))bit="8bit";return{tech:uniq(tech),bitDepth:bit}}
+function subtitleFacts(r){var u=blob(r).toUpperCase(),out=[];if(/\bVOSTFR\b/.test(u))out.push("VOSTFR");if(/\bSUB[ ._-]?FR\b/.test(u))out.push("SUB FR");if(/\bSUB[ ._-]?EN\b/.test(u))out.push("SUB EN");if(/\bFORCED\b/.test(u))out.push("FORCED");if(/\bSDH\b/.test(u))out.push("SDH");return uniq(out)}
+function age(r){var v=r&&(r.ageRating||r.certification||r.contentRating);return meaningful(v)?s(v):""}
+function cleanProviderLabel(v){var x=s(v).replace(/\s*(?:[-|•:])\s*(?:unknown|inconnue?|n\/?a|null|undefined|none|-+)\s*$/i,"").trim();return meaningful(x)?x:""}
+function providerName(r){var raw=cleanProviderLabel(r&&r.name),n=raw.split(/[|\n]/)[0].trim(),u=n.toUpperCase(),looksTechnical=/(?:\b4K\b|\b(?:2160|1440|1080|720|576|480)P?\b|\b(?:VF|VFF|VFQ|VOSTFR|VO|MULTI|DUAL[ -]?AUDIO)\b|\b(?:HEVC|AVC|H[ ._-]?26[45]|X26[45]|AV1|VP9)\b|\b(?:WEB[ ._-]?DL|WEB[ ._-]?RIP|BLU[ ._-]?RAY|REMUX|HDR|DOLBY|DTS)\b)/.test(u);if(n&&n.length<=40&&!looksTechnical)return n;var id=s(c.providerId).replace(/[-_]+/g," ");return id?id.replace(/\b\w/g,function(x){return x.toUpperCase()}):"Source"}
+function fileSize(r){var v=s(r&&r.size);if(!meaningful(v))return"";var m=v.match(/\b\d+(?:[.,]\d+)?\s*(?:KB|MB|GB|TB)\b/i);return m?m[0]:""}
+function qualityLabel(v){return v==="2160p"?"4K":s(v)}
+function badgeIds(f){var ids=[];var q={"2160p":"4k-ultra-hd","1080p":"1080p-full-hd","720p":"720p-hd","480p":"480p-sd"}[f.quality];if(q)ids.push(q);var src={"ULTRA HD BLU-RAY":"uhd-blu-ray","BLU-RAY":"blu-ray-disc","WEB-DL":"webdl","WEBRIP":"webrip","HDTV":"hdtv","DVD RIP":"dvd-rip"}[f.sourceType];if(src)ids.push(src);if(f.releaseType==="REMUX")ids.push("remux");f.videoTech.forEach(function(v){var id={"Dolby Vision":"dolby-vision","HDR10+":"hdr10-plus","HDR10":"hdr10","IMAX Enhanced":"imax-enhanced","IMAX":"imax"}[v];if(id)ids.push(id)});var co={"HEVC":"hevc","AVC":"avc"}[f.codec];if(co)ids.push(co);if(f.bitDepth)ids.push(f.bitDepth);(f.audioTech||[]).forEach(function(v){var id={"Dolby Atmos":"dolby-atmos","DTS:X":"dts-x"}[v];if(id)ids.push(id)});var ac={"TrueHD":"truehd","E-AC3":"dolby-digital-plus","AC3":"dolby-digital","DTS-HD":"dts-hd-master-audio"}[f.audioCodec];if(ac)ids.push(ac);if(f.audioChannels==="7.1")ids.push("7.1");else if(f.audioChannels==="5.1")ids.push("5.1");var lg={"MULTI (VF/VO)":"multi","MULTI":"multi","VF":"vf","VFQ":"vfq","VO":"vo","VOSTFR":"vostfr"}[f.language];if(lg)ids.push(lg);(f.subtitles||[]).forEach(function(v){var id={"VOSTFR":"vostfr","SUB FR":"sub-fr","SUB EN":"sub-en","FORCED":"forced","SDH":"sdh-cc"}[v];if(id)ids.push(id)});return uniq(ids)}
+function badgeLabels(f){var out=[];if(f.quality)out.push(qualityLabel(f.quality));if(f.sourceType)out.push(f.sourceType);if(f.releaseType)out.push(f.releaseType);out=out.concat(f.videoTech);if(f.codec)out.push(f.codec);if(f.bitDepth)out.push(f.bitDepth);out=out.concat(f.audioTech||[]);if(f.audioCodec)out.push(f.audioCodec);if(f.audioChannels)out.push(f.audioChannels);if(f.language)out.push(f.language);if(f.duration)out.push(humanDuration(f.duration));if(f.ageRating)out.push(f.ageRating);return uniq(out)}
+function humanDuration(v){v=Number(v)||0;if(v<=0)return"";var h=Math.floor(v/60),m=v%60;return h?h+"h"+String(m).padStart(2,"0"):v+"min"}
+function technicalLine(f,fs){var groups=[],video=[],audio=[],misc=[],src=f.sourceType+(f.releaseType?" "+f.releaseType:"");if(src)video.push(src);if(f.edition)video.push(f.edition);if(f.codec)video.push(f.codec+(f.bitDepth?" "+f.bitDepth:""));else if(f.bitDepth)video.push(f.bitDepth);video=video.concat(f.videoTech||[]);if(f.format)video.push(f.format);if(video.length)groups.push("🎞️ "+uniq(video).join(" • "));audio=audio.concat(f.audioTech||[]);if(f.audioCodec)audio.push(f.audioCodec);if(f.audioChannels)audio.push(f.audioChannels);if(audio.length)groups.push("🔊 "+uniq(audio).join(" • "));if(fs)misc.push("💾 "+fs);if(f.bitrate)misc.push("📶 "+f.bitrate);if(f.releaseGroup)misc.push("🏷️ "+f.releaseGroup);if(misc.length)groups.push(misc.join(" • "));return groups.join("  |  ")}
+function durationAgeLine(f){var out=[];if(f.duration)out.push("⏱ "+humanDuration(f.duration));if(f.ageRating)out.push("🔞 "+f.ageRating);return out.join(" • ")}
+function languageLine(f){if(!f.language)return"";var prefix=(f.language==="VF"||f.language==="VFQ"||f.language==="MULTI (VF/VO)")?"🇫🇷 ":(f.language==="VOSTFR"?"🌐🇫🇷 ":"🌐 ");var subs=(f.subtitles||[]).filter(function(v){return v&&v!=="VOSTFR"});return prefix+f.language+(subs.length?" • 💬 "+subs.join(" • "):"")}
+async function cacheValue(key){try{var cache=g&&g.__nuvioTmdbMetadataCacheV1;if(cache&&Object.prototype.hasOwnProperty.call(cache,key))return await cache[key]}catch(_e){}return null}
+function certification(d,kind){var rows=kind==="movie"?(d&&d.release_dates&&d.release_dates.results):(d&&d.content_ratings&&d.content_ratings.results);if(!Array.isArray(rows))return"";var row=rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="FR"})||rows.find(function(x){return s(x&&x.iso_3166_1).toUpperCase()==="US"})||rows[0];if(!row)return"";if(kind==="movie"){var releases=Array.isArray(row.release_dates)?row.release_dates:[];for(var i=0;i<releases.length;i++){var v=s(releases[i]&&releases[i].certification);if(v)return v}return""}return s(row.rating)}
+/* NUVIO_PRESENTATION_REUSE_MEDIA_CONTEXT_TMDB_V1 */
+function contextTmdb(q,kind){try{var ctx=g&&g.__nuvioMediaContext;if(!ctx||typeof ctx!=="object"||!ctx.tmdbMetadata)return null;if(s(ctx.tmdbId)!==s(q.tmdbId))return null;var ns=s(ctx.tmdbNamespace).toLowerCase();if(ns&&ns!==kind)return null;return ctx.tmdbMetadata}catch(_e){return null}}
+async function coreTmdb(q){if(!/^\d+$/.test(q.tmdbId||""))return null;var kind=(q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"tv":"movie",result=null,d=contextTmdb(q,kind),ep=null,needsEpisode=kind==="tv"&&q.season>0&&q.episode>0;if(!d){var cached=await cacheValue(kind+":"+s(q.tmdbId));d=cached&&cached.metadata?cached.metadata:cached&&cached.value?cached.value:cached||null}if(needsEpisode){var cachedEpisode=await cacheValue("episode:tv:"+s(q.tmdbId)+":"+q.season+":"+q.episode+":fr-FR");ep=cachedEpisode&&cachedEpisode.metadata?cachedEpisode.metadata:cachedEpisode&&cachedEpisode.value?cachedEpisode.value:cachedEpisode||null}if(!d||(needsEpisode&&!ep)){try{var getter=g&&g.__nuvioCoreGetTmdbDataV1;if(typeof getter==="function")result=await getter({tmdbId:q.tmdbId,mediaType:kind,tmdbNamespace:kind,season:q.season,episode:q.episode})}catch(_e){}if(result&&result.state==="ok"){if(!d)d=result.metadata||null;if(!ep)ep=result.episodeMetadata||null}}if(!d)return null;var date=s(d.release_date||d.first_air_date),runtime=Number(d.runtime||0);if(ep&&Number(ep.runtime||0)>0)runtime=Number(ep.runtime||0);else if(!runtime&&Array.isArray(d.episode_run_time)&&d.episode_run_time.length)runtime=Number(d.episode_run_time[0]||0);return{title:s(d.title||d.name||q.title),year:Number((date.match(/(?:19|20)\d{2}/)||[])[0]||q.year||0)||0,runtime:runtime>0?Math.round(runtime):0,age:certification(d,kind)}}
+function mediaLine(meta,q){var mt=meta&&meaningful(meta.title)?s(meta.title):"",qt=meaningful(q&&q.title)?s(q.title):"",title=mt||qt,year=Number((meta&&meta.year)||q.year||0)||0,parts=[];if(title)parts.push(title);if(year)parts.push(String(year));if((q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")&&(q.season>0||q.episode>0))parts.push("S"+String(q.season||0).padStart(2,"0")+"E"+String(q.episode||0).padStart(2,"0"));return parts.join(" • ")}
+function present(r,meta,q){if(!r||typeof r!=="object")return r;var out=Object.assign({},r),au=audioFacts(r),so=source(r),vf=videoFacts(r),f={quality:quality(r),language:language(r),codec:codec(r),audioTech:au.tech,audioCodec:au.codec,audioChannels:au.channels,duration:duration(r)||(meta&&meta.runtime)||0,sourceType:so.sourceType,releaseType:so.releaseType,format:formatType(r),videoTech:vf.tech,bitDepth:vf.bitDepth,subtitles:subtitleFacts(r),ageRating:age(r)||(meta&&meta.age)||"",edition:meaningful(r&&r.edition)?s(r.edition):"",releaseGroup:meaningful(r&&(r.releaseGroup||r.release_group))?s(r.releaseGroup||r.release_group):"",bitrate:meaningful(r&&r.bitrate)?s(r.bitrate):""};if(f.quality)out.quality=f.quality;else if("quality" in out)delete out.quality;if(!f.quality&&("resolution" in out)&&!meaningful(out.resolution))delete out.resolution;if(f.language)out.language=f.language;if(f.codec)out.codec=f.codec;var audioCombined=uniq((f.audioTech||[]).concat([f.audioCodec,f.audioChannels].filter(Boolean))).join(" ");if(audioCombined)out.audio=audioCombined;if(f.duration)out.duration=f.duration;if(f.sourceType)out.sourceType=f.sourceType;if(f.releaseType)out.releaseType=f.releaseType;if(f.format)out.format=f.format;if(f.ageRating)out.ageRating=f.ageRating;out.badgeIds=badgeIds(f);out.displayBadges=badgeLabels(f);out.presentationFacts=f;var provider=providerName(r),media=mediaLine(meta,q),fs=fileSize(r),technical=technicalLine(f,fs),timing=durationAgeLine(f),lang=languageLine(f),lines=[];if(media)lines.push(((q.mediaType==="tv"||q.mediaType==="series"||q.mediaType==="anime")?"📺 ":"🎬 ")+media);if(timing)lines.push(timing);if(lang)lines.push(lang);if(technical)lines.push(technical);out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"");out.name=out.title;out.description=lines.join("\n");if(out.description)out.size=out.description;else if(fs)out.size=fs;else if("size" in out)delete out.size;return out}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalStreamPresentationV1)return false;var native=o[k];var wrap=async function(){var q=req(arguments),v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;var meta=null;try{meta=await coreTmdb(q)}catch(_e){}return rebuild(v,x,x.list.map(function(r){return present(r,meta,q)}))};wrap.__nuvioGlobalStreamPresentationV1=true;o[k]=wrap;return true}
+installJvmSafeStreamStringify();
+var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"providerId":"goated","providerLanguageMode":"vo","languageFallback":"VO","tmdbCoreCapabilityRequired":true,"tmdbTimeoutMs":1200,"implementationRevision":"all-providers-client-projection-name-mirror-v20"});
+/* CLOSEFIX:CORE.STREAM_PRESENTATION.V1 */
+/* STARTFIX:CORE.PROVIDER_BRANDING.V1 */
+/* FIXDATA:CORE.PROVIDER_BRANDING.V1:eyJpbXBsZW1lbnRhdGlvblJldmlzaW9uIjoicG9zdC1wcmVzZW50YXRpb24tbG9zc2xlc3Mtc291cmNlLWxhYmVsLXY4IiwicHJvdmlkZXJFbW9qaSI6IvCfkJAiLCJwcm92aWRlcklkIjoiZ29hdGVkIiwicHJvdmlkZXJOYW1lIjoiR29hdGVkIn0= */
+/* NUVIO_GLOBAL_PROVIDER_BRANDING_V1:961146cd3f16 */
+;(function(g,c){"use strict";
+function slot(v){if(Array.isArray(v))return{key:null,list:v};if(v&&typeof v==="object"){for(var i=0;i<3;i++){var k=["streams","results","data"][i];if(Array.isArray(v[k]))return{key:k,list:v[k]}}}return null}
+function rebuild(v,x,list){if(x.key===null)return list;var o=Object.assign({},v);o[x.key]=list;return o}
+function s(v){return String(v==null?"":v).replace(/\s+/g," ").trim()}
+function label(){return(s(c.providerEmoji)+" "+s(c.providerName||c.providerId||"Source")).trim()}
+function placeholder(v){return/^(?:unknown|inconnu(?:e)?|n\/?a|none|null|undefined|unknown\s+(?:quality|language)|qualit(?:e|é)\s+inconnue|langue\s+inconnue|-+)$/i.test(s(v))}
+function cleanSource(v){var x=s(v);if(!x)return"";var m=x.match(/^(.*?)(?:\s*[-|•:]\s*)(unknown|inconnu(?:e)?|n\/?a|none|null|undefined|unknown\s+(?:quality|language)|qualit(?:e|é)\s+inconnue|langue\s+inconnue)$/i);if(m)x=s(m[1]);return placeholder(x)?"":x}
+function norm(v){return s(v).toLowerCase().replace(/[^a-z0-9à-ÿ]+/g,"")}
+function qualityToken(v){v=s(v);var u=v.toUpperCase();if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(u))return"4K";var m=u.match(/\b(1440|1080|720|576|540|480|360)P?\b/);return m?m[1]+"p":""}
+function oldQuality(old){old=s(old);var token=" - ",i=old.lastIndexOf(token);if(i<0)return"";var suffix=s(old.slice(i+token.length));return suffix&&!placeholder(suffix)?qualityToken(suffix)||suffix:""}
+function addUnique(out,value){value=cleanSource(value);if(!value)return;var n=norm(value);if(!n)return;for(var i=0;i<out.length;i++){var p=norm(out[i]);if(p===n||p.indexOf(n)>=0)return;if(n.indexOf(p)>=0){out[i]=value;return}}out.push(value)}
+function sourceParts(r){var out=[];addUnique(out,r&&r.sourceName);addUnique(out,r&&r.sourceTitle);addUnique(out,r&&r.sourceLabel);addUnique(out,r&&r.server);addUnique(out,r&&r.hoster);addUnique(out,r&&r.player);addUnique(out,r&&r.indexer);addUnique(out,r&&r.network);return out}
+function containsQuality(parts,q){q=qualityToken(q);if(!q)return false;var aliases=q==="4K"?["4k","2160p","uhd"]:[q.toLowerCase()];var all=(parts||[]).join(" ").toLowerCase();for(var i=0;i<aliases.length;i++)if(all.indexOf(aliases[i])>=0)return true;return false}
+function visibleTitle(r,v,old){var parts=[v],sources=sourceParts(r);for(var i=0;i<sources.length;i++){var value=sources[i],n=norm(value),pn=norm(c.providerName),vl=norm(v);if(n&&n!==pn&&n!==vl)addUnique(parts,value)}var q=qualityToken(r&&r.quality)||oldQuality(old),base=parts.join(" • ");return q&&!containsQuality(parts,q)?base+" - "+q:base}
+function brand(r){if(!r||typeof r!=="object")return r;var o=Object.assign({},r),v=label();if(!v)return o;var display=visibleTitle(o,v,o.title);o.title=display;o.name=display;return o}
+function install(o,k){if(!o||typeof o[k]!=="function"||o[k].__nuvioGlobalProviderBrandingV1)return false;var native=o[k];var wrap=async function(){var v=await native.apply(this,arguments),x=slot(v);if(!x||!x.list.length)return v;return rebuild(v,x,x.list.map(brand))};wrap.__nuvioGlobalProviderBrandingV1=true;o[k]=wrap;return true}
+var ok=false;try{if(typeof module!=="undefined"&&module.exports){ok=install(module.exports,"getStreams")||install(module.exports,"streams")}}catch(_e){}try{if(g&&typeof g.getStreams==="function"){if(ok&&typeof module!=="undefined"&&module.exports)g.getStreams=module.exports.getStreams;else install(g,"getStreams")}}catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"providerId":"goated","providerName":"Goated","providerEmoji":"🐐","implementationRevision":"post-presentation-lossless-source-label-v8"});
+/* CLOSEFIX:CORE.PROVIDER_BRANDING.V1 */
+/* STARTFIX:CORE.STREAM_SANITIZER.V6 */
+/* FIXDATA:CORE.STREAM_SANITIZER.V6:eyJpbXBsZW1lbnRhdGlvblJldmlzaW9uIjoidGVybWluYWwtc2luZ2xlLW93bmVyLXY2IiwibWF4UHJvYmVzIjo4LCJtaW5Wb2REdXJhdGlvblNlY29uZHMiOjYwLCJwcm9iZUFsbFVybHMiOnRydWUsInByb2JlVGltZW91dE1zIjo2NTAwfQ== */
+/* NUVIO_STREAM_OUTPUT_SANITIZER_V4:eb109cc8a760 */
+;(function(g,config){
+  "use strict";
+  function nativeHost(){try{return typeof g.__native_fetch==="function"}catch(_e){return false}}
+  function providerDeadlineExpired(){try{var d=Number(g&&g.__nuvioProviderDeadlineMs);return Number.isFinite(d)&&d>0&&Date.now()>=d}catch(_e){return false}}
+  function hostOf(raw){try{return new URL(String(raw)).hostname.toLowerCase()}catch(_e){return ""}}
+  function blocked(raw){
+    var host=hostOf(raw);
+    if(!host)return true;
+    for(var i=0;i<config.blockedHosts.length;i++){
+      var rule=config.blockedHosts[i];
+      if(host===rule||host.endsWith("."+rule))return true;
+    }
+    try{
+      var parsed=new URL(String(raw)),path=parsed.pathname.toLowerCase();
+      for(var j=0;j<config.blockedPathPatterns.length;j++){
+        if(path.indexOf(config.blockedPathPatterns[j])>=0)return true;
+      }
+      // NUVIO_EMBED_HTML_ALLOWLIST_V1
+      // External-player pages often legitimately end in .html. Preserve them
+      // only when their path has an explicit player/embed/watch role.
+      var embedLike=/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path);
+      if(/\.(?:js|mjs|css|json|xml|txt|map|woff2?|ttf|otf|ico|jpe?g|png|gif|webp|svg)(?:$|[?#])/i.test(path))return true;
+      if(/\.html?(?:$|[?#])/i.test(path)&&!embedLike)return true;
+    }catch(_e){}
+    return false;
+  }
+  function streamSlot(value){if(Array.isArray(value))return {key:null,list:value};if(value&&typeof value==="object"){for(var i=0;i<3;i++){var key=["streams","results","data"][i];if(Array.isArray(value[key]))return {key:key,list:value[key]}}}return null}
+  function rebuild(value,slot,list){if(slot.key===null)return list;var out=Object.assign({},value);out[slot.key]=list;return out}
+  function urlOf(stream){return stream&&typeof stream.url==="string"?stream.url.trim():""}
+  function directExtension(url){return /(?:\.m3u8?|\.mpd|\.mp4|\.m4v|\.mov|\.mkv|\.webm|\.mpeg|\.mpg|\.ogv)(?:[?#]|$)/i.test(String(url||""))}
+  function isDirect(stream,url){
+    var hint=String((stream&&(stream.type||stream.format||stream.mimeType||stream.contentType))||"").toLowerCase();
+    return directExtension(url)||/(?:hls|mpegurl|dash|mp4|matroska|webm|video\/)/.test(hint);
+  }
+  function markDirect(stream,url){
+    if(!stream||typeof stream!=="object")return;
+    if(url&&!blocked(url))stream.url=String(url);
+    stream.isDirect=true;
+  }
+  function rank(stream,url){
+    if(isDirect(stream,url))return 0;
+    try{
+      var path=new URL(String(url)).pathname.toLowerCase();
+      if(/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return 1;
+    }catch(_e){}
+    if(stream&&stream.headers&&typeof stream.headers==="object"&&Object.keys(stream.headers).length)return 2;
+    return 3;
+  }
+  function hasHeader(headers,name){
+    if(!headers||typeof headers!=="object")return false;
+    var wanted=String(name||"").toLowerCase(),keys=[];
+    try{keys=Object.keys(headers)}catch(_e){}
+    for(var i=0;i<keys.length;i++)if(String(keys[i]).toLowerCase()===wanted)return true;
+    return false;
+  }
+  function proxyRequestHeaders(stream){
+    try{
+      var hints=stream&&stream.behaviorHints;
+      var proxy=hints&&hints.proxyHeaders;
+      return proxy&&proxy.request&&typeof proxy.request==="object"?proxy.request:null;
+    }catch(_e){return null}
+  }
+  function ensureProxyRequest(stream){
+    if(!stream||typeof stream!=="object")return null;
+    if(!stream.behaviorHints||typeof stream.behaviorHints!=="object")stream.behaviorHints={};
+    if(!stream.behaviorHints.proxyHeaders||typeof stream.behaviorHints.proxyHeaders!=="object")stream.behaviorHints.proxyHeaders={};
+    if(!stream.behaviorHints.proxyHeaders.request||typeof stream.behaviorHints.proxyHeaders.request!=="object")stream.behaviorHints.proxyHeaders.request={};
+    stream.behaviorHints.notWebReady=true;
+    return stream.behaviorHints.proxyHeaders.request;
+  }
+  function setHeaderIfMissing(headers,key,value){
+    if(!headers||value==null||String(value).trim()===""||hasHeader(headers,key))return;
+    headers[key]=String(value);
+  }
+  function syncPlaybackHeaders(stream){
+    if(!stream||typeof stream!=="object")return;
+    var legacy=stream.headers&&typeof stream.headers==="object"?stream.headers:null;
+    if(!legacy)return;
+    var request=ensureProxyRequest(stream);
+    try{Object.keys(legacy).forEach(function(key){if(legacy[key]!=null)setHeaderIfMissing(request,key,legacy[key])})}catch(_e){}
+  }
+  function ensurePlaybackHeaders(stream,referer){
+    if(!stream||typeof stream!=="object"||!referer)return;
+    var request=ensureProxyRequest(stream);
+    if(!stream.headers||typeof stream.headers!=="object")stream.headers={};
+    setHeaderIfMissing(request,"Referer",referer);
+    setHeaderIfMissing(stream.headers,"Referer",referer);
+    try{
+      var origin=new URL(String(referer)).origin;
+      setHeaderIfMissing(request,"Origin",origin);
+      setHeaderIfMissing(stream.headers,"Origin",origin);
+    }catch(_e){}
+  }
+  function headersFor(stream,referer){
+    var output={"Accept":"application/vnd.apple.mpegurl,application/x-mpegURL,application/dash+xml,video/*,*/*;q=0.8","Range":"bytes=0-32767","User-Agent":"Mozilla/5.0"};
+    var legacy=stream&&stream.headers;
+    if(legacy&&typeof legacy==="object"){
+      try{Object.keys(legacy).forEach(function(key){if(legacy[key]!=null)output[key]=String(legacy[key])})}catch(_e){}
+    }
+    var proxy=proxyRequestHeaders(stream);
+    if(proxy){try{Object.keys(proxy).forEach(function(key){if(proxy[key]!=null)output[key]=String(proxy[key])})}catch(_e){}}
+    if(referer){
+      setHeaderIfMissing(output,"Referer",referer);
+      try{setHeaderIfMissing(output,"Origin",new URL(String(referer)).origin)}catch(_e){}
+    }
+    return output;
+  }
+  async function prefixBytes(response,controller){
+    if(response.body&&typeof response.body.getReader==="function"){
+      var reader=response.body.getReader(),chunks=[],total=0;
+      try{
+        while(total<32768){
+          var chunk=await reader.read();
+          if(!chunk||chunk.done)break;
+          var value=chunk.value||new Uint8Array(0);
+          if(!value.length)continue;
+          if(total+value.length>32768)value=value.slice(0,32768-total);
+          chunks.push(value);total+=value.length;
+        }
+        var output=new Uint8Array(total),offset=0;
+        for(var i=0;i<chunks.length;i++){output.set(chunks[i],offset);offset+=chunks[i].length}
+        return output;
+      }finally{try{await reader.cancel()}catch(_e){};try{controller.abort()}catch(_e){}}
+    }
+    if(typeof response.arrayBuffer==="function"){
+      var buffer=await response.arrayBuffer();
+      try{controller.abort()}catch(_e){}
+      return new Uint8Array(buffer.slice(0,32768));
+    }
+    // NuvioTV's QuickJS fetch Response is text/json-only. Preserve strict HLS
+    // validation there without requiring TextEncoder (also absent on TV).
+    if(typeof response.text==="function"){
+      var text=String(await response.text()||""),length=Math.min(text.length,32768);
+      var output=new Uint8Array(length);
+      for(var i=0;i<length;i++)output[i]=text.charCodeAt(i)&255;
+      try{controller.abort()}catch(_e){}
+      return output;
+    }
+    try{controller.abort()}catch(_e){}
+    return new Uint8Array(0);
+  }
+  function ascii(bytes){
+    var end=Math.min(bytes.length,32768),out="";
+    for(var i=0;i<end;i++)out+=String.fromCharCode(bytes[i]);
+    return out;
+  }
+  function absoluteMediaUri(raw,baseUrl){
+    var value=String(raw||"").trim();
+    if(!value||value.charAt(0)==="#")return value;
+    if(/^(?:data:|blob:|skd:|urn:)/i.test(value))return value;
+    try{return new URL(value,String(baseUrl||"")).toString()}catch(_e){return value}
+  }
+  function normalizeHlsText(text,baseUrl){
+    var value=String(text||"").replace(/^(?:\uFEFF|\u00EF\u00BB\u00BF)/,"").trimStart();
+    if(/^\s*(?:<!doctype|<html|<body|\{|\[)/i.test(value))return null;
+    var hadHeader=value.indexOf("#EXTM3U")===0;
+    if(!hadHeader){
+      if(!/(?:^|\n)#EXT-(?:X-[A-Z0-9-]+|INF)\s*[:]/i.test(value))return null;
+      value="#EXTM3U\n"+value;
+    }
+    if(!validHls(value))return null;
+    var lines=value.split(/\r?\n/);
+    for(var i=0;i<lines.length;i++){
+      var line=String(lines[i]||"");
+      if(line.charAt(0)==="#"){
+        lines[i]=line.replace(/URI=(["'])([^"']+)\1/gi,function(_all,quote,uri){return "URI="+quote+absoluteMediaUri(uri,baseUrl)+quote});
+      }else if(line.trim()){
+        lines[i]=absoluteMediaUri(line.trim(),baseUrl);
+      }
+    }
+    return {text:lines.join("\n"),repaired:!hadHeader};
+  }
+  /* NUVIO_STREAM_QUALITY_RECOVERY_V2 */
+  function meaningfulQuality(value){return !/^(?:|unknown|inconnue?|n\/?a|null|undefined|none|-+)$/i.test(String(value==null?"":value).trim())}
+  function qualityFromHeight(height){var h=Number(height||0);if(h>=2000)return"2160p";if(h>=1350)return"1440p";if(h>=900)return"1080p";if(h>=650)return"720p";if(h>=450)return"480p";if(h>=300)return"360p";return""}
+  function qualityFromHls(text,url){
+    var value=String(text||""),match,re=/RESOLUTION\s*=\s*(\d{2,5})x(\d{2,5})/gi,best=0;
+    while((match=re.exec(value))!==null)best=Math.max(best,Number(match[2]||0));
+    var q=qualityFromHeight(best);if(q)return q;
+    var source=String(url||"").toUpperCase();
+    if(/(?:\b4K\b|\b2160P?\b|\bUHD\b)/.test(source))return"2160p";
+    var m=source.match(/\b(1440|1080|720|576|540|480|360)P?\b/);return m?m[1]+"p":"";
+  }
+  function recoverQuality(stream,text,url){if(!stream||typeof stream!=="object"||meaningfulQuality(stream.quality))return;var q=qualityFromHls(text,url);if(q)stream.quality=q;else try{delete stream.quality}catch(_e){}}
+  function repairedHlsUrl(text){
+    return "data:application/vnd.apple.mpegurl;charset=utf-8,"+encodeURIComponent(String(text||""));
+  }
+  function looksHtml(text,contentType){
+    return /text\/html|application\/xhtml\+xml/i.test(String(contentType||""))||/^\s*(?:<!doctype|<html|<head|<body)/i.test(String(text||""));
+  }
+  function looksJson(text,contentType){
+    return /application\/(?:json|[^;]+\+json)/i.test(String(contentType||""))||/^\s*[\[{]/.test(String(text||""));
+  }
+  function mediaCandidatesFromPayload(text,baseUrl){
+    var value=String(text||"").replace(/\\\//g,"/").replace(/&amp;/gi,"&").replace(/\\u0026/gi,"&"),rows=[],seen=Object.create(null);
+    function push(raw,allowOpaque){
+      var candidate=String(raw||"").trim().replace(/^['"]|['"]$/g,"");
+      if(!candidate||candidate.length>4096)return;
+      candidate=absoluteMediaUri(candidate,baseUrl);
+      if(!candidate||candidate===baseUrl||blocked(candidate)||seen[candidate])return;
+      var path="";try{path=new URL(candidate).pathname.toLowerCase()}catch(_e){}
+      var embedLike=/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path);
+      if(!allowOpaque&&!directExtension(candidate)&&!embedLike)return;
+      seen[candidate]=1;rows.push({url:candidate,direct:isDirect(null,candidate)?0:1});
+    }
+    var match,re=/<(?:video|source|iframe)\b[^>]*?\b(?:src|data-src)\s*=\s*["']([^"']+)["']/gi;
+    while((match=re.exec(value))!==null)push(match[1],true);
+    re=/(?:["']?(?:file|src|source|url)["']?\s*[:=]\s*)["']([^"']+)["']/gi;
+    while((match=re.exec(value))!==null)push(match[1],true);
+    re=/https?:\/\/[^\s"'<>\\]+/gi;
+    while((match=re.exec(value))!==null)push(match[0],false);
+    rows.sort(function(a,b){return a.direct-b.direct});
+    return rows.slice(0,2).map(function(row){return row.url});
+  }
+  function validHls(text){
+    var value=String(text||"").replace(/^(?:\uFEFF|\u00EF\u00BB\u00BF)/,"").trimStart();
+    if(value.indexOf("#EXTM3U")!==0)return false;
+    var lines=value.split(/\r?\n/),hasVariantTag=false,hasVariantUri=false;
+    for(var i=0;i<lines.length;i++){
+      if(!/^#EXT-X-STREAM-INF\s*:/i.test(lines[i].trim()))continue;
+      hasVariantTag=true;
+      for(var j=i+1;j<lines.length;j++){
+        var child=String(lines[j]||"").trim();
+        if(!child)continue;
+        if(child.charAt(0)==="#")continue;
+        hasVariantUri=true;break;
+      }
+      if(hasVariantUri)break;
+    }
+    if(hasVariantTag&&!hasVariantUri)return false;
+    var hasMedia=/#EXTINF\s*:/i.test(value)||/#EXT-X-PART\s*:/i.test(value)||/#EXT-X-MAP\s*:/i.test(value);
+    if(!hasMedia&&!hasVariantUri)return false;
+    var isVod=/#EXT-X-ENDLIST(?:\r?\n|$)/i.test(value);
+    var durations=[],match,re=/#EXTINF:([0-9]+(?:\.[0-9]+)?)/gi;
+    while((match=re.exec(value))!==null)durations.push(Number(match[1])||0);
+    if(isVod&&durations.length&&config.minVodDurationSeconds>0){
+      var total=durations.reduce(function(sum,item){return sum+item},0);
+      if(total<config.minVodDurationSeconds)return false;
+    }
+    return true;
+  }
+  function validDash(text){
+    var value=String(text||"").trimStart();
+    return /<MPD[\s>]/i.test(value)&&/<(?:Representation|AdaptationSet)\b/i.test(value);
+  }
+  function dispositionMedia(value){
+    return /filename\*?=(?:UTF-8''|["']?)[^;\r\n]*\.(?:m3u8?|mpd|mp4|m4v|mov|mkv|webm|mpeg|mpg|ogv)(?:["';\r\n]|$)/i.test(String(value||""));
+  }
+  function isEbml(bytes){return bytes.length>=4&&bytes[0]===0x1a&&bytes[1]===0x45&&bytes[2]===0xdf&&bytes[3]===0xa3}
+  async function probeResolved(stream,url,depth,referer){
+    if(providerDeadlineExpired())return null;
+    if(typeof g.fetch!=="function")return true;
+    var controller=typeof AbortController!=="undefined"?new AbortController():{signal:void 0,abort:function(){}};
+    var timer=setTimeout(function(){try{controller.abort()}catch(_e){}},config.timeoutMs);
+    try{
+      var response=await g.fetch(url,{method:"GET",headers:headersFor(stream,referer),redirect:"follow",signal:controller.signal});
+      var finalUrl=response&&response.url?String(response.url):url;
+      if(!response)return null;
+      if(blocked(finalUrl))return false;
+      if(!response.ok){
+        var status=Number(response.status||0);
+        if(status===403||status===404||status===410)return false;
+        return null;
+      }
+      var contentType=String(response.headers&&response.headers.get?response.headers.get("content-type")||"":"").toLowerCase();
+      var disposition=String(response.headers&&response.headers.get?response.headers.get("content-disposition")||"":"");
+      var bytes=await prefixBytes(response,controller),text=ascii(bytes);
+      if(/(?:\.m3u8?)(?:[?#]|$)/i.test(url)||/(?:\.m3u8?)(?:[?#]|$)/i.test(finalUrl)||/(?:mpegurl|vnd\.apple)/.test(contentType)||/^\s*#EXT(?:M3U|-(?:X-[A-Z0-9-]+|INF)\s*:)/i.test(text)){
+        var hls=normalizeHlsText(text,finalUrl);
+        if(!hls)return false;
+        recoverQuality(stream,hls.text,finalUrl);
+        if(hls.repaired){
+          stream.url=repairedHlsUrl(hls.text);
+          if(!stream.type)stream.type="hls";
+          if(!stream.mimeType)stream.mimeType="application/vnd.apple.mpegurl";
+          stream.isDirect=true;
+        }else markDirect(stream,finalUrl);
+        syncPlaybackHeaders(stream);
+        return true;
+      }
+      if(looksHtml(text,contentType)||looksJson(text,contentType)){
+        var candidates=mediaCandidatesFromPayload(text,finalUrl);
+        if(depth<2&&candidates.length){
+          ensurePlaybackHeaders(stream,finalUrl);
+          for(var candidateIndex=0;candidateIndex<candidates.length;candidateIndex++){
+            if(await probeResolved(stream,candidates[candidateIndex],depth+1,finalUrl))return true;
+          }
+        }
+        return false;
+      }
+      if(/(?:\.mpd)(?:[?#]|$)/i.test(url)||/(?:\.mpd)(?:[?#]|$)/i.test(finalUrl)||/application\/dash\+xml/.test(contentType)||/^\s*(?:<\?xml[\s\S]{0,300})?<MPD[\s>]/i.test(text)){
+        if(!validDash(text))return false;
+        markDirect(stream,finalUrl);
+        return true;
+      }
+      var hasFtyp=bytes.length>=8&&ascii(bytes.slice(4,8))==="ftyp";
+      if(/(?:\.mp4|\.m4v|\.mov)(?:[?#]|$)/i.test(url)||/(?:\.mp4|\.m4v|\.mov)(?:[?#]|$)/i.test(finalUrl)||/video\/mp4/.test(contentType)||hasFtyp){
+        if(!(/video\/mp4/.test(contentType)||hasFtyp||bytes.length>0))return false;
+        markDirect(stream,finalUrl);
+        return true;
+      }
+      if(/(?:video\/(?:webm|x-matroska|mpeg|ogg)|application\/(?:x-matroska|ogg))/.test(contentType)||isEbml(bytes)||dispositionMedia(disposition)){
+        if(!bytes.length)return false;
+        markDirect(stream,finalUrl);
+        return true;
+      }
+      if(/^video\//.test(contentType)&&bytes.length){
+        markDirect(stream,finalUrl);
+        return true;
+      }
+      if(/^text\//i.test(contentType))return false;
+      return bytes.length>0;
+    }catch(_error){return null}
+    finally{clearTimeout(timer);try{controller.abort()}catch(_e){}}
+  }
+  /* NUVIO_STREAM_OUTPUT_CORRELATED_PLAYER_FALLBACK_V7 */
+  function genericAppShellMedia(url){
+    try{
+      var parsed=new URL(String(url||""));
+      var host=String(parsed.hostname||"").toLowerCase();
+      var path=String(parsed.pathname||"").toLowerCase().replace(/\/+$/,"");
+      if(host==="web.telegram.org"&&(path==="/a/nojs.mp4"||path==="/k/nojs.mp4"))return true;
+    }catch(_e){}
+    return false;
+  }
+  function correlatedPlayerFallback(stream,url){
+    if(!stream||typeof stream!=="object"||isDirect(stream,url))return false;
+    var proof=stream.__nuvioCorrelatedPlayerFallbackV1;
+    if(!proof||typeof proof!=="object"||String(proof.url||"")!==String(url||""))return false;
+    try{
+      var parsed=new URL(String(url||"")),path=String(parsed.pathname||"").toLowerCase();
+      if(/\/(?:embed|e|player|watch)(?:[-/]|$)/i.test(path))return true;
+      if(/\/(?:shell|video|stream)(?:\.php|[/?#.-]|$)/i.test(path)){
+        var keys=[];try{parsed.searchParams.forEach(function(_v,k){keys.push(String(k).toLowerCase())})}catch(_e){}
+        return keys.some(function(k){return /^(?:videoid|video|vid|file|embed|player|stream|source)$/.test(k)});
+      }
+    }catch(_e){}
+    return false;
+  }
+  function clearPrivateProofs(stream){
+    if(stream&&typeof stream==="object"){
+      try{delete stream.__nuvioCorrelatedPlayerFallbackV1}catch(_e){}
+      try{delete stream.__nuvioCoreMediaProofV1}catch(_e){}
+    }
+    return stream;
+  }
+  function coreMediaProof(stream,url){
+    var proof=stream&&stream.__nuvioCoreMediaProofV1;
+    if(!proof||typeof proof!=="object")return false;
+    var kind=String(proof.kind||"").toLowerCase();
+    return String(proof.url||"")===String(url||"")&&/^(?:hls|dash|mp4|mkv|webm|mpegts|video)$/.test(kind);
+  }
+  function clearCoreMediaProof(stream){
+    if(stream&&typeof stream==="object")try{delete stream.__nuvioCoreMediaProofV1}catch(_e){}
+    return stream;
+  }
+  async function probe(stream,url){return await probeResolved(stream,url,0,"")}
+  function install(container,key){
+    if(!container||typeof container[key]!=="function"||container[key].__nuvioSanitized)return false;
+    var original=container[key];
+    var wrapped=async function(){
+      var result=await original.apply(this,arguments);
+      var slot=streamSlot(result);
+      if(!slot)return [];
+      if(!slot.list.length)return result;
+      var rows=slot.list,seen=Object.create(null),candidates=[],probeCount=0;
+      for(var i=0;i<rows.length;i++){
+        var stream=rows[i];syncPlaybackHeaders(stream);var url=urlOf(stream);
+        if(!url||blocked(url)||seen[url])continue;
+        seen[url]=true;
+        candidates.push({stream:stream,url:url,rank:rank(stream,url),index:i});
+      }
+      candidates.sort(function(a,b){return a.rank-b.rank||a.index-b.index});
+      for(var c=0;c<candidates.length;c++){
+        candidates[c].probe=(config.probeAllUrls||(config.probeDirectMedia&&isDirect(candidates[c].stream,candidates[c].url)))&&probeCount++<config.maxProbes;
+      }
+      async function checkItem(item){
+        if(genericAppShellMedia(item.url))return null;if(correlatedPlayerFallback(item.stream,item.url))return clearPrivateProofs(item.stream);if(coreMediaProof(item.stream,item.url))return clearPrivateProofs(item.stream);if(!item.probe)return config.probeAllUrls?null:clearPrivateProofs(item.stream);
+        var verdict=await probe(item.stream,item.url);
+        return verdict===false?null:clearPrivateProofs(item.stream);
+      }
+      var checked=[];
+      if(nativeHost()){
+        for(var p=0;p<candidates.length;p++)checked.push(await checkItem(candidates[p]));
+      }else{
+        checked=await Promise.all(candidates.map(checkItem));
+      }
+      return rebuild(result,slot,checked.filter(Boolean));
+    };
+    wrapped.__nuvioSanitized=true;
+    wrapped.__nuvioOriginal=original;
+    container[key]=wrapped;
+    return true;
+  }
+  var installed=false;
+  try{if(typeof module!=="undefined"&&module.exports)installed=install(module.exports,"getStreams")||installed}catch(_e){}
+  try{if(g&&typeof g.getStreams==="function"){
+    if(installed&&typeof module!=="undefined"&&module.exports&&module.exports.getStreams)g.getStreams=module.exports.getStreams;
+    else install(g,"getStreams");
+  }}catch(_e){}
+})(typeof globalThis!=="undefined"?globalThis:this,{"blockedHosts":["analytics.google.com","api.themoviedb.org","arm.haglund.dev","cloudflareinsights.com","connect.facebook.net","doubleclick.net","google-analytics.com","googlesyndication.com","googletagmanager.com","graphql.anilist.co","kitsu.io","lodash.com","npms.io","openjsf.org","pagead2.googlesyndication.com","static.cloudflareinsights.com","underscorejs.org","v3-cinemeta.strem.io"],"probeDirectMedia":true,"probeAllUrls":true,"maxProbes":8,"timeoutMs":6500,"minVodDurationSeconds":60,"blockedPathPatterns":["/analytics","/beacon.min.js","/cdn-cgi/rum","/collect","/gtag/js"],"implementationVersion":9});
+/* CLOSEFIX:CORE.STREAM_SANITIZER.V6 */
+/* END NIAKVIO_PROVIDER */
