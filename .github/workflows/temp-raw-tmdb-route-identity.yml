@@ -1,4 +1,4 @@
-name: TEMP - Allwish Hub Leak Closure
+name: TEMP - Final Runtime Rebuild 96
 
 on:
   push:
@@ -11,9 +11,11 @@ permissions:
   contents: write
 
 jobs:
-  allwish-proof:
+  rebuild-96:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 45
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -26,41 +28,45 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Apply canonical runtime migrations and build only Allwish
+      - name: Validate canonical runtime source
         shell: bash
         run: |
           set -euo pipefail
           python scripts/upgrade_provider_base_runtime_v11.py
           python tests/provider_raw_tmdb_route_identity_test.py
           python tests/provider_runtime_origin_hub_separation_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python scripts/provider_base_store.py validate
+          grep -Fq 'NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19' scripts/provider_base_store.py
           grep -Fq 'NIAKVIO_PROVIDER_RUNTIME_SEARCH_HUB_SEPARATION_V21_1' scripts/provider_base_store.py
-          python - <<'PY'
-          import json,sys
-          from pathlib import Path
-          ROOT=Path('.').resolve();sys.path.insert(0,str(ROOT/'scripts'))
-          from materialize_provider_v3_all import provider_model
-          from provider_base_store import build_clean_provider_seed,build_base_from_seed,build_provider_data_model,compose_provider_bundle
-          from apply_provider_overrides import apply_overrides
-          manifest=json.load(open('manifest.json',encoding='utf-8'))
-          overrides=json.load(open('provider-overrides.json',encoding='utf-8'))
-          knowledge=json.load(open('automation/provider-v3-static-knowledge.json',encoding='utf-8'))
-          entry=next(r for r in manifest['scrapers'] if str(r.get('id','')).lower()=='allwish')
-          patch=overrides['provider_patches']['allwish'];cap=overrides['provider_capabilities']['allwish'];static=knowledge['providers']['allwish']
-          model=provider_model('allwish',patch,cap,static)
-          seed=build_clean_provider_seed('allwish',entry,known_site=model.get('knownSite'),provider_model=model)
-          base,_=build_base_from_seed('allwish',seed,overrides_path=ROOT/'provider-overrides.json')
-          data=build_provider_data_model('allwish',entry,known_site=model.get('knownSite'),provider_model=model)
-          bundle=compose_provider_bundle('allwish',base,data)
-          bundle,_=apply_overrides('allwish',bundle,phase='discovery',include_global_core=True,config_path=ROOT/'provider-overrides.json')
-          Path('/tmp/allwish.js').write_bytes(bundle)
-          print('ALLWISH_MODEL',json.dumps(model,sort_keys=True))
-          PY
-      - name: Prove no Telegram execution for unrelated Allwish fixtures
+          test -z "$(git status --porcelain scripts/provider_base_store.py)" || { echo 'canonical provider_base_store still mutates'; git diff -- scripts/provider_base_store.py; exit 1; }
+      - name: Materialize and validate all 96
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/native_five_lab_coverage_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/native_dual_id_identity_test.py
+      - name: Allwish cross-fixture hub leak gate on rebuilt artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          ALLWISH_FILE="$(python - <<'PY'
+          import json
+          m=json.load(open('manifest.json',encoding='utf-8'))
+          rows=[r for r in m.get('scrapers',[]) if str(r.get('id','')).strip().lower()=='allwish']
+          assert len(rows)==1,rows
+          print(rows[0]['filename'])
+          PY
+          )"
+          export ALLWISH_FILE
           node <<'JS'
-          const p=require('/tmp/allwish.js');
+          const p=require(require('path').resolve(process.env.ALLWISH_FILE));
           const calls=[];
           function response(status,url,body,contentType='text/plain'){
             const text=typeof body==='string'?body:JSON.stringify(body??{});
@@ -68,8 +74,7 @@ jobs:
           }
           globalThis.TMDB_API_KEY='ci-test-key';
           globalThis.fetch=async function(input,options){
-            const url=String(input&&input.url||input);
-            calls.push({url,method:String(options&&options.method||'GET'),referer:String(options&&options.headers&&options.headers.Referer||'')});
+            const url=String(input&&input.url||input);calls.push(url);
             if(/api\.themoviedb\.org/i.test(url)){
               if(/\/tv\/1396(?:[/?]|$)/.test(url))return response(200,url,{id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',external_ids:{imdb_id:'tt0903747'}},'application/json');
               return response(200,url,{id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05',external_ids:{imdb_id:'tt0816692'}},'application/json');
@@ -77,30 +82,44 @@ jobs:
             return response(404,url,'not found');
           };
           (async()=>{
+            const model=p.__niakvioProviderBase||{};
+            if((model.origins||[]).some(v=>/https?:\/\/(?:www\.)?t\.me(?:[:/]|$)/i.test(String(v))))throw new Error('Telegram leaked into model.origins');
             const movie=await p.getStreams('157336','movie');
-            const split=calls.length;
             const tv=await p.getStreams('1396','tv',1,1);
-            const movieCalls=calls.slice(0,split),tvCalls=calls.slice(split);
-            const telegram=calls.filter(x=>/https?:\/\/(?:www\.)?t\.me(?:[:/]|$)|telesco\.pe/i.test(x.url));
-            console.log('ALLWISH_MOVIE_CALLS '+JSON.stringify(movieCalls));
-            console.log('ALLWISH_TV_CALLS '+JSON.stringify(tvCalls));
-            console.log('ALLWISH_TELEGRAM_CALLS '+JSON.stringify(telegram));
-            if(telegram.length)throw new Error('Telegram runtime leak remains '+JSON.stringify(telegram));
-            if(!Array.isArray(movie)||movie.length!==0)throw new Error('Interstellar must fail closed '+JSON.stringify(movie));
-            if(!Array.isArray(tv)||tv.length!==0)throw new Error('Breaking Bad must fail closed '+JSON.stringify(tv));
-            console.log('ALLWISH_HUB_EXECUTION_LEAK_CLOSED movie=0 tv=0 telegram_requests=0');
+            const telegram=calls.filter(u=>/https?:\/\/(?:www\.)?t\.me(?:[:/]|$)|telesco\.pe/i.test(u));
+            if(telegram.length)throw new Error('Telegram runtime leak '+JSON.stringify(telegram));
+            if(!Array.isArray(movie)||movie.length!==0)throw new Error('Interstellar false positive '+JSON.stringify(movie));
+            if(!Array.isArray(tv)||tv.length!==0)throw new Error('Breaking Bad false positive '+JSON.stringify(tv));
+            console.log('ALLWISH_CROSS_FIXTURE_FAIL_CLOSED_OK movie=0 tv=0 telegram_requests=0');
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
-      - name: Commit canonical runtime source after proof
+      - name: Verify manifest and provider files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.load(open('manifest.json',encoding='utf-8'))
+          rows=m.get('scrapers') or []
+          assert len(rows)==96,len(rows)
+          assert all(bool(r.get('enabled')) for r in rows),sum(bool(r.get('enabled')) for r in rows)
+          missing=[str(r.get('filename')) for r in rows if not Path(str(r.get('filename') or '')).is_file()]
+          assert not missing,missing
+          ids=[str(r.get('id') or '').lower() for r in rows]
+          assert len(ids)==len(set(ids))==96
+          print(f'REBUILT_MANIFEST_OK providers=96 enabled=96 missing=0 version={m.get("version")}')
+          PY
+      - name: Commit final reconstructed candidate
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/provider_base_store.py
+          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json provider-v3-materialization.json providers/
           if git diff --cached --quiet; then
-            echo 'Canonical runtime source already current.'
+            echo 'No reconstructed candidate changes.'
             exit 0
           fi
-          git commit -m 'fix(runtime): exclude official hubs from search bases'
+          git commit -m 'fix(runtime): rebuild 96 after Allwish and TMDB corrections'
           git push origin HEAD:workbench/hub-matrix-46-20260911
