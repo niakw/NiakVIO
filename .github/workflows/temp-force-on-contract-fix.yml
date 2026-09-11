@@ -1,4 +1,4 @@
-name: TEMP - Repair Force-ON Contracts
+name: TEMP - Repair Force-ON Contracts v2
 
 on:
   push:
@@ -28,7 +28,10 @@ jobs:
           package-manager-cache: false
 
       - name: Apply force-ON and Movix contract patches
+        shell: bash
         run: |
+          set -euo pipefail
+          python -m py_compile scripts/temp_force_on_contract_fix.py scripts/temp_movix_test_fix.py
           python scripts/temp_force_on_contract_fix.py
           python scripts/temp_movix_test_fix.py
 
