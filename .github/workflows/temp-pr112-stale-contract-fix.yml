@@ -1,5 +1,5 @@
 name: TEMP - PR112 Stale Contract Fix
-# retry: hub46-wrapper-direct-contract
+# retry: desktop-provider-begin-semantic-anchor
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
         run: |
           set -euo pipefail
           python scripts/temp_fix_pr112_stale_contracts.py
-          python -m py_compile scripts/check_provider_non_regression_v1.py tests/provider_non_regression_contract_test_impl.py tests/native_evidence_codegen_pipeline_test.py
+          python -m py_compile scripts/check_provider_non_regression_v1.py scripts/augment_native_desktop_player.py tests/provider_non_regression_contract_test_impl.py tests/native_evidence_codegen_pipeline_test.py
       - name: Validate non-regression contract
         run: |
           set -euo pipefail
