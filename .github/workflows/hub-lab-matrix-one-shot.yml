@@ -1,0 +1,87 @@
+name: ONE-SHOT - 46 Hub Lab Evidence Matrix
+
+on:
+  push:
+    branches:
+      - workbench/hub-matrix-46-20260911
+    paths:
+      - '.github/triggers/hub-lab-matrix.json'
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: one-shot-hub-lab-matrix-46
+  cancel-in-progress: false
+
+jobs:
+  build-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout exact trigger
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.sha }}
+
+      - name: Download exact native Lab artifacts
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/{tv,macos,windows,android,ios}
+          gh run download 34587026051 -n native-tv-audited-ref-34587026051 -D evidence/tv
+          gh run download 34585968905 -n native-desktop-full-macos-34585968905 -D evidence/macos
+          gh run download 34585968905 -n native-desktop-full-windows-34585968905 -D evidence/windows
+          gh run download 34585969062 -n native-mobile-android-full-34585969062 -D evidence/android
+          gh run download 34585968903 -n native-mobile-ios-full-34585968903 -D evidence/ios
+          find evidence -type f | sort
+
+      - name: Generate and verify all 46 hub cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p automation/evidence
+          python3 scripts/build_hub_lab_matrix.py \
+            --root . \
+            --tv evidence/tv \
+            --macos evidence/macos \
+            --windows evidence/windows \
+            --android evidence/android \
+            --ios evidence/ios \
+            --output-md automation/HUB-LAB-MATRIX-46.md \
+            --output-json automation/evidence/hub-lab-matrix-46.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('automation/evidence/hub-lab-matrix-46.json')
+          d=json.loads(p.read_text(encoding='utf-8'))
+          assert d['hubCount'] == 46, d['hubCount']
+          assert len(d['rows']) == 46, len(d['rows'])
+          print('HUB_MATRIX_INVARIANT_OK hubs=46 rows=46')
+          PY
+
+      - name: Upload generated matrix
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: hub-lab-matrix-46-${{ github.run_id }}
+          path: |
+            automation/HUB-LAB-MATRIX-46.md
+            automation/evidence/hub-lab-matrix-46.json
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Commit evidence matrix to workbench
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add automation/HUB-LAB-MATRIX-46.md automation/evidence/hub-lab-matrix-46.json
+          git diff --cached --exit-code && { echo 'No matrix changes'; exit 0; } || true
+          git commit -m 'docs(hubs): record 46-hub native Lab evidence matrix'
+          git push origin HEAD:workbench/hub-matrix-46-20260911
