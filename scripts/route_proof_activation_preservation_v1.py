@@ -1,68 +1,27 @@
 #!/usr/bin/env python3
-"""Activation-preservation bridge for explicit proof-v5 route neutralization.
+"""Activation-preservation guard for route-proof diagnostics.
 
-The legacy activation guard correctly rejects ordinary network/no-stream failures as
-inconclusive. A proof-v5 route census is different evidence: when an explicit
-activation policy records that a provider has zero executable/proven routes, the
-provider may remain present but disabled without pretending that a network outage or
-quality gate conclusively failed.
+Route proof is diagnostic evidence only. It may classify a provider's route/DATA state
+as unresolved or off, but it may not justify removing or disabling a canonical provider
+from the published catalogue. Runtime behavior can still fail closed when no reliable
+route exists.
 
-This adapter is intentionally narrow. It accepts only the dedicated action emitted by
-``enforce_route_proof_manifest_policy_v1.py`` and cross-checks it against the current
-provider-route-recovery-v5 report. All other activation decisions are delegated to the
-existing deterministic Core-rehash-aware validator unchanged.
+The public function name is retained because release-integrity validation imports it.
+Legacy proof-v5 disable records are now explicitly rejected rather than granted a
+special disablement exception.
 """
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any, Callable
 
 import activation_preservation_core_rehash as core_rehash
 import validate_activation_preservation as legacy
 
-ROOT = Path(__file__).resolve().parents[1]
-ROUTE_REPORT = ROOT / "automation" / "provider-route-recovery-v5.json"
-ROUTE_PROOF_DISABLE_ACTION = "published-disabled-no-proven-route"
+ROUTE_PROOF_DIAGNOSTIC_ACTION = "route-proof-no-proven-route-diagnostic"
+LEGACY_ROUTE_PROOF_DISABLE_ACTION = "published-disabled-no-proven-route"
+ROUTE_PROOF_DISABLE_ACTION = LEGACY_ROUTE_PROOF_DISABLE_ACTION
 ROUTE_PROOF_FAILED_GATE = "route_proof_no_proven_route"
 ROUTE_PROOF_AUTHORITY = "provider-route-recovery-v5"
-
-
-def _cid(value: object) -> str:
-    return str(value or "").strip().casefold().replace("_", "-")
-
-
-def _strict_int(value: object) -> int | None:
-    """Parse an explicit integer without treating numeric zero as missing."""
-    if value is None or isinstance(value, bool):
-        return None
-    try:
-        text = str(value).strip()
-        if not text:
-            return None
-        return int(text)
-    except (TypeError, ValueError):
-        return None
-
-
-def _load_route_report() -> dict[str, Any] | None:
-    if not ROUTE_REPORT.is_file():
-        return None
-    try:
-        value = json.loads(ROUTE_REPORT.read_text(encoding="utf-8"))
-    except (OSError, ValueError, json.JSONDecodeError):
-        return None
-    return value if isinstance(value, dict) else None
-
-
-def _proof_row(provider_id: str) -> dict[str, Any] | None:
-    report = _load_route_report()
-    if not isinstance(report, dict) or _strict_int(report.get("schemaVersion")) != 5:
-        return None
-    for row in report.get("providers") or []:
-        if isinstance(row, dict) and _cid(row.get("providerId")) == provider_id:
-            return row
-    return None
 
 
 def conclusive_disablement_with_route_proof(
@@ -71,40 +30,14 @@ def conclusive_disablement_with_route_proof(
     *,
     missing: bool,
 ) -> tuple[bool, str]:
-    if not isinstance(record, dict) or str(record.get("action") or "") != ROUTE_PROOF_DISABLE_ACTION:
+    if not isinstance(record, dict):
         return original(record, missing=missing)
-    if missing:
-        return False, "route_proof_neutralization_may_not_remove_provider"
-    if record.get("enabled") is not False:
-        return False, "route_proof_disable_record_still_enabled"
-
-    failed = {str(value) for value in record.get("failed_gates") or [] if str(value)}
-    if ROUTE_PROOF_FAILED_GATE not in failed:
-        return False, "route_proof_disable_missing_failed_gate"
-
-    evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
-    provider_id = _cid(record.get("id") or evidence.get("provider_id"))
-    if not provider_id:
-        return False, "route_proof_disable_missing_provider_id"
-    if _strict_int(evidence.get("route_proof_version")) != 5:
-        return False, "route_proof_disable_wrong_proof_version"
-    evidence_routes = _strict_int(evidence.get("proven_route_count"))
-    if evidence_routes is None:
-        return False, "route_proof_disable_invalid_evidence_routes"
-    if evidence_routes != 0:
-        return False, "route_proof_disable_nonzero_evidence_routes"
-    if str(evidence.get("authority") or "") != ROUTE_PROOF_AUTHORITY:
-        return False, "route_proof_disable_wrong_authority"
-    if str(evidence.get("status") or "").casefold() != "no-proven-route":
-        return False, "route_proof_disable_wrong_status"
-
-    proof = _proof_row(provider_id)
-    if not isinstance(proof, dict):
-        return False, "route_proof_disable_current_report_missing_provider"
-    routes = [str(value) for value in proof.get("routes") or [] if str(value).strip()]
-    if str(proof.get("status") or "").casefold() != "no-proven-route" or routes:
-        return False, "route_proof_disable_current_report_not_zero_route"
-    return True, ROUTE_PROOF_DISABLE_ACTION
+    action = str(record.get("action") or "")
+    if action == ROUTE_PROOF_DIAGNOSTIC_ACTION:
+        return False, "route_proof_diagnostic_may_not_disable_provider"
+    if action == LEGACY_ROUTE_PROOF_DISABLE_ACTION:
+        return False, "legacy_route_proof_disablement_forbidden_force_all_enabled"
+    return original(record, missing=missing)
 
 
 def validate() -> list[str]:
@@ -124,4 +57,4 @@ if __name__ == "__main__":
     errors = validate()
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
-    print("provider activation preservation passed (proof-v5 route neutralization aware)")
+    print("provider activation preservation passed (route proof diagnostic-only)")
