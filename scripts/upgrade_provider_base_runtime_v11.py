@@ -11,8 +11,10 @@ V11 is also the single owner that chains the later V16 proof-authority ordering,
 so every canonical repair runner gets the same final execution semantics.
 V19 preserves a numeric TMDB routing id even when host metadata enrichment is
 unavailable; enriched metadata remains optional for direct typed resolver routes.
-V21.1 keeps public/address hubs out of generic search execution bases. A hub may
-execute only after independent live proof promotes it into proofSearchBases.
+V21.1 keeps public/address hubs out of generic search execution bases.
+V21.2 makes Telegram explicitly discovery-only: it remains available to the
+Domain Refresh hub resolver, but ProviderBase DATA and runtime fetches can never
+execute t.me/telegram.me/telegram.dog as provider backends.
 """
 from __future__ import annotations
 
@@ -26,6 +28,8 @@ TARGET = ROOT / "scripts" / "provider_base_store.py"
 MARKER = "NIAKVIO_PROVIDER_BASE_TYPED_RESOLVER_API_V11"
 RAW_TMDB_MARKER = "NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19"
 SEARCH_HUB_MARKER = "NIAKVIO_PROVIDER_RUNTIME_SEARCH_HUB_SEPARATION_V21_1"
+TELEGRAM_DATA_MARKER = "NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2"
+TELEGRAM_RUNTIME_MARKER = "NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_RUNTIME_V21_2"
 
 
 def once(text: str, old: str, new: str, label: str) -> str:
@@ -112,6 +116,91 @@ function _searchBases() {
     return True
 
 
+def _patch_telegram_discovery_only() -> bool:
+    """Keep Telegram as hub knowledge while blocking it from executable ProviderBase state."""
+    text = TARGET.read_text(encoding="utf-8")
+    changed = False
+
+    if TELEGRAM_DATA_MARKER not in text:
+        old = '''    lowered = text.casefold()
+    return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
+'''
+        new = '''    lowered = text.casefold()
+    # NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2
+    # Telegram is an address/discovery hub, never a provider execution backend.
+    if re.search(r"://(?:[^/@]+\\.)*(?:t\\.me|telegram\\.me|telegram\\.dog)(?::\\d+)?(?:[/?#]|$)", lowered):
+        return False
+    return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
+'''
+        text = once(text, old, new, "telegram-data-filter")
+        changed = True
+
+    if TELEGRAM_RUNTIME_MARKER not in text:
+        old = '''async function _fetch(url, options) {
+  if (_providerDeadlineExceeded()) throw _providerTimeoutError();
+'''
+        new = '''/* NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_RUNTIME_V21_2 */
+function _runtimeDiscoveryOnlyUrl(url) {
+  try {
+    const host = _text(new URL(_text(url)).hostname).toLowerCase().replace(/\\.$/, "");
+    return host === "t.me" || host.endsWith(".t.me") ||
+      host === "telegram.me" || host.endsWith(".telegram.me") ||
+      host === "telegram.dog" || host.endsWith(".telegram.dog");
+  } catch (_) {
+    return false;
+  }
+}
+async function _fetch(url, options) {
+  if (_runtimeDiscoveryOnlyUrl(url)) throw new Error("provider_discovery_only_host");
+  if (_providerDeadlineExceeded()) throw _providerTimeoutError();
+'''
+        text = once(text, old, new, "telegram-runtime-fetch-guard")
+        changed = True
+
+        old_search = '''function _searchBases() {
+  return _uniq([
+    ...(Array.isArray(NIAKVIO_PROVIDER_MODEL.proofSearchBases) ? NIAKVIO_PROVIDER_MODEL.proofSearchBases : []),
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+}
+'''
+        new_search = '''function _searchBases() {
+  return _uniq([
+    ...(Array.isArray(NIAKVIO_PROVIDER_MODEL.proofSearchBases) ? NIAKVIO_PROVIDER_MODEL.proofSearchBases : []),
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));
+}
+'''
+        text = once(text, old_search, new_search, "telegram-search-base-filter")
+
+        old_api = '''function _apiBases() {
+  return _uniq([
+    NIAKVIO_PROVIDER_MODEL.fixedApi,
+    NIAKVIO_PROVIDER_MODEL.officialApi,
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+}
+'''
+        new_api = '''function _apiBases() {
+  return _uniq([
+    NIAKVIO_PROVIDER_MODEL.fixedApi,
+    NIAKVIO_PROVIDER_MODEL.officialApi,
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));
+}
+'''
+        text = once(text, old_api, new_api, "telegram-api-base-filter")
+
+    if changed:
+        TARGET.write_text(text, encoding="utf-8")
+    validate_telegram_discovery_only(text)
+    return changed
+
+
 def patch() -> bool:
     text = TARGET.read_text(encoding="utf-8")
     changed = False
@@ -164,6 +253,7 @@ def patch() -> bool:
 
     changed = _patch_raw_tmdb_route_identity() or changed
     changed = _patch_runtime_search_hub_separation() or changed
+    changed = _patch_telegram_discovery_only() or changed
     changed = stream_v12.patch() or changed
     # V16 requires the V11 + stream-container state above and is intentionally
     # chained here so targeted/full pipelines cannot drift in execution order.
@@ -203,6 +293,23 @@ def validate_search_hub_separation(text: str | None = None) -> None:
             raise AssertionError(f"search base authority missing: {needle}")
 
 
+def validate_telegram_discovery_only(text: str | None = None) -> None:
+    value = text if text is not None else TARGET.read_text(encoding="utf-8")
+    if value.count(TELEGRAM_DATA_MARKER) != 1:
+        raise AssertionError(f"telegram DATA marker count={value.count(TELEGRAM_DATA_MARKER)}")
+    if value.count(TELEGRAM_RUNTIME_MARKER) != 1:
+        raise AssertionError(f"telegram runtime marker count={value.count(TELEGRAM_RUNTIME_MARKER)}")
+    for needle in (
+        't\\.me|telegram\\.me|telegram\\.dog',
+        'function _runtimeDiscoveryOnlyUrl(url)',
+        'host === "t.me" || host.endsWith(".t.me")',
+        'if (_runtimeDiscoveryOnlyUrl(url)) throw new Error("provider_discovery_only_host");',
+        'filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));',
+    ):
+        if needle not in value:
+            raise AssertionError(f"telegram discovery-only guard missing: {needle}")
+
+
 def validate_v11(text: str | None = None) -> None:
     value = text if text is not None else TARGET.read_text(encoding="utf-8")
     if value.count(MARKER) != 1:
@@ -226,6 +333,7 @@ def validate(text: str | None = None) -> None:
     validate_v11(value)
     validate_raw_tmdb(value)
     validate_search_hub_separation(value)
+    validate_telegram_discovery_only(value)
 
 
 def main() -> int:
@@ -237,7 +345,8 @@ def main() -> int:
         f"PROVIDER_BASE_RUNTIME_V11_OK changed={str(changed).lower()} "
         "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 "
         "stream_containers_v12=1 execution_authority_v16=1 raw_tmdb_route_identity_v19=1 "
-        "typed_resolver_empty_tmdb_fail_closed=1 runtime_search_hub_separation_v21_1=1"
+        "typed_resolver_empty_tmdb_fail_closed=1 runtime_search_hub_separation_v21_1=1 "
+        "telegram_discovery_only_v21_2=1"
     )
     return 0
 
