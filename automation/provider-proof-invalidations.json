@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "authority": "provider-proof-invalidation-v1",
+  "providers": {
+    "allwish": {
+      "active": true,
+      "invalidatedLanes": [
+        "movie",
+        "tv"
+      ],
+      "invalidateProviderPositive": true,
+      "contradictionAuthority": "cross-fixture-content-identity-contradiction",
+      "reasonCodes": [
+        "cross_fixture_identity_collision",
+        "short_media_identity_failure",
+        "discovery_hub_executed_as_runtime_origin"
+      ],
+      "summary": "The historical Allwish green proof is invalid: Interstellar and Breaking Bad resolved to the same Telegram CDN clips (~33.166s and ~23.233s) after provider-relative routes were replayed against the Telegram discovery hub. The corrected runtime now fails closed instead of crediting those clips as title-matched streams.",
+      "evidenceRefs": [
+        "github-actions:34587026051/native-tv-audited-ref-34587026051/tv-audited-interstellar-brain.json",
+        "github-actions:34587026051/native-tv-audited-ref-34587026051/tv-audited-breaking-bad-s01e01-brain.json",
+        "automation/HUB-LAB-MATRIX-46.md#allwish",
+        "github-actions:34611853251/runtime-hub-origin-separation"
+      ]
+    }
+  }
+}

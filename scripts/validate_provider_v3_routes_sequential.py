@@ -657,27 +657,43 @@ def _validate_declared_type_routes(
     return evidence_by_type, templates, validated
 
 
+# NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21
 def provider_origins(model: dict[str, Any], patch: dict[str, Any]) -> list[str]:
     fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}
-    values = [
-        patch.get("official_site"), patch.get("official_hub"), patch.get("official_api"), fixed.get("api"),
-        model.get("knownSite"), model.get("officialSite"), model.get("officialHub"), model.get("officialApi"), model.get("fixedApi"),
-        *(model.get("origins") or []),
-    ]
-    origins: list[str] = []
-    for raw in values:
+
+    def parsed_origin(raw: object) -> str:
         text = str(raw or "").strip()
         if not text:
-            continue
+            return ""
         try:
             parsed = urllib.parse.urlsplit(text)
             if parsed.scheme not in {"http", "https"} or not parsed.hostname:
-                continue
-            origin = f"{parsed.scheme}://{parsed.netloc}"
+                return ""
+            return f"{parsed.scheme}://{parsed.netloc}"
         except ValueError:
+            return ""
+
+    authority_values = [
+        patch.get("official_site"), patch.get("official_api"), fixed.get("api"),
+        model.get("knownSite"), model.get("officialSite"), model.get("officialApi"), model.get("fixedApi"),
+    ]
+    origins: list[str] = []
+    for raw in authority_values:
+        value = parsed_origin(raw)
+        if value and value not in origins:
+            origins.append(value)
+
+    hub_origins = {
+        value for value in (parsed_origin(patch.get("official_hub")), parsed_origin(model.get("officialHub"))) if value
+    }
+    for raw in (model.get("origins") or []):
+        value = parsed_origin(raw)
+        if not value:
             continue
-        if origin not in origins:
-            origins.append(origin)
+        if value in hub_origins and value not in origins:
+            continue
+        if value not in origins:
+            origins.append(value)
     return origins[:24]
 
 

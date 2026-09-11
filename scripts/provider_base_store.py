@@ -129,6 +129,10 @@ def _provider_data_url_is_executable(value: object) -> bool:
     if not text or "${" in text or "encodeURIComponent(" in text:
         return False
     lowered = text.casefold()
+    # NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2
+    # Telegram is an address/discovery hub, never a provider execution backend.
+    if re.search(r"://(?:[^/@]+\.)*(?:t\.me|telegram\.me|telegram\.dog)(?::\d+)?(?:[/?#]|$)", lowered):
+        return False
     return not any(f"://{host}" in lowered for host in NON_EXECUTABLE_KNOWLEDGE_HOSTS)
 
 
@@ -1313,7 +1317,19 @@ function _providerTimeoutError() {
   error.__nuvioProviderTimeout = true;
   return error;
 }
+/* NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_RUNTIME_V21_2 */
+function _runtimeDiscoveryOnlyUrl(url) {
+  try {
+    const host = _text(new URL(_text(url)).hostname).toLowerCase().replace(/\.$/, "");
+    return host === "t.me" || host.endsWith(".t.me") ||
+      host === "telegram.me" || host.endsWith(".telegram.me") ||
+      host === "telegram.dog" || host.endsWith(".telegram.dog");
+  } catch (_) {
+    return false;
+  }
+}
 async function _fetch(url, options) {
+  if (_runtimeDiscoveryOnlyUrl(url)) throw new Error("provider_discovery_only_host");
   if (_providerDeadlineExceeded()) throw _providerTimeoutError();
   const requestOptions = options && typeof options === "object" ? Object.assign({}, options) : {};
   requestOptions.redirect = requestOptions.redirect || "follow";
@@ -1387,13 +1403,13 @@ async function _tmdb(tmdbId, mediaType) {
   } catch (_) {}
   return null;
 }
+/* NIAKVIO_PROVIDER_RUNTIME_SEARCH_HUB_SEPARATION_V21_1 */
 function _searchBases() {
   return _uniq([
     ...(Array.isArray(NIAKVIO_PROVIDER_MODEL.proofSearchBases) ? NIAKVIO_PROVIDER_MODEL.proofSearchBases : []),
     NIAKVIO_PROVIDER_MODEL.officialSite,
-    NIAKVIO_PROVIDER_MODEL.knownSite,
-    NIAKVIO_PROVIDER_MODEL.officialHub
-  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));
 }
 function _apiBases() {
   return _uniq([
@@ -1401,7 +1417,7 @@ function _apiBases() {
     NIAKVIO_PROVIDER_MODEL.officialApi,
     NIAKVIO_PROVIDER_MODEL.officialSite,
     NIAKVIO_PROVIDER_MODEL.knownSite
-  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value) && !_runtimeDiscoveryOnlyUrl(value));
 }
 function _runtimeBases() {
   return _uniq([
@@ -4144,14 +4160,28 @@ const hasProofRecipe = !!NIAKVIO_PROVIDER_MODEL.apiRecipe;
 const hasProofSearch = Array.isArray(NIAKVIO_PROVIDER_MODEL.searchRequestPlan) && NIAKVIO_PROVIDER_MODEL.searchRequestPlan.length > 0;
 let proofMeta = null;
 if (hasProofValue || hasProofRecipe || hasProofSearch) proofMeta = await _tmdb(tmdbId, type);
+/* NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19 */
+const rawTmdbRouteId = _text(tmdbId).replace(/^tmdb:/i, "").split(":")[0].trim();
+if (hasProofRecipe && /^\d+$/.test(rawTmdbRouteId)) {
+  if (!proofMeta) {
+    proofMeta = {title:"", aliases:[], year:"", tmdbId:rawTmdbRouteId, imdbId:"", externalIds:{}};
+  } else if (!_text(proofMeta.tmdbId)) {
+    proofMeta = Object.assign({}, proofMeta, {tmdbId:rawTmdbRouteId});
+  }
+}
 if (hasProofValue && proofMeta && proofMeta.title) {
   const valuePrimary = await _resolveProviderValuePlan(proofMeta, type, season, episode);
   if (Array.isArray(valuePrimary) && valuePrimary.length) return valuePrimary;
 }
 if (hasProofRecipe) {
-  const recipePrimary = await _resolveApiRecipe(proofMeta, type, season, episode);
-  if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
-  if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  const typedRecipeNeedsTmdb = NIAKVIO_PROVIDER_MODEL.apiRecipe.recipeKind === "typed-resolver-api";
+  if (typedRecipeNeedsTmdb && (!proofMeta || !_text(proofMeta.tmdbId))) {
+    if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  } else {
+    const recipePrimary = await _resolveApiRecipe(proofMeta, type, season, episode);
+    if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
+    if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  }
 }
 if (hasProofSearch && proofMeta && proofMeta.title) {
   const searchPrimary = await _resolveSearchRequestPlan(proofMeta, type, season, episode);

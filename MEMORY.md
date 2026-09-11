@@ -872,3 +872,16 @@ Next execution order:
 - V10 validation is now forward-compatible with V14 while still requiring `runtime_domain_replacements` as the only executable domain-replacement authority.
 - V18.4 validation must preserve its bounded JSON-text bridge and sanitized trace but accept the current V20.x id/slug owner and depth-8 dependency replay. Its secret-leak audit is scoped to the actual `_spv184Trace` helper; later security-filter code containing words such as `authorization` is not trace output.
 - These fixes change validators only. They do not alter provider DATA, routes, runtime algorithms or accepted stream evidence. A fresh full authoritative Repair + four-version gate remains mandatory before cleanup/merge.
+
+## Media-type semantic/transport contract — authoritative 2026-09-11
+
+- Durable contract: `docs/media-type-transport-contract.md`.
+- Canonical semantic type owns identity/provider selection; runtime transport owns only the Nuvio ABI invocation lane.
+- Mapping: ordinary movie `movie -> movie`; ordinary TV/episode `tv -> tv`; anime series/episode `anime -> tv`; anime movie `anime -> movie`.
+- Anime films remain canonical `anime`; episodic anime remains canonical `anime`. Never globally rewrite canonical anime to tv.
+- `canonicalSupportedTypes` is semantic authority. `supportedTypes` may carry compatibility/transport aliases but must never widen semantic capability.
+- Provider selection occurs before runtime aliasing.
+- Native Lab evidence should expose `logical_type` and `request_type`, including both anime/tv and anime/movie cases.
+- Western animation is not automatically anime; trusted identity is required.
+- Current 46-provider workbench and final five-Lab evidence must conform to this contract.
+

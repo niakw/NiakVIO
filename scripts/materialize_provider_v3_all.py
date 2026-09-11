@@ -217,10 +217,25 @@ def provider_model(
     official_api = str(patch.get("official_api") or static_model.get("officialApi") or "").strip() or None
     fixed_api = str(fixed.get("api") or static_model.get("fixedApi") or "").strip() or None
 
-    origins: list[str] = []
-    for value in (official_site, official_hub, official_api, fixed_api, *(static_model.get("origins") or [])):
+    # NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21
+    # A hub is discovery/address knowledge, not an execution backend. Keep its
+    # origin only when the same origin is independently authoritative as the
+    # provider site/API/fixed API. This prevents Telegram/status hubs from
+    # receiving provider-relative player/API routes.
+    runtime_authorities: list[str] = []
+    for value in (official_site, official_api, fixed_api):
         item = origin(value)
-        if item and not item.endswith(".invalid") and item not in origins:
+        if item and not item.endswith(".invalid") and item not in runtime_authorities:
+            runtime_authorities.append(item)
+    hub_origin = origin(official_hub)
+    origins: list[str] = list(runtime_authorities)
+    for value in (static_model.get("origins") or []):
+        item = origin(value)
+        if not item or item.endswith(".invalid"):
+            continue
+        if item == hub_origin and item not in runtime_authorities:
+            continue
+        if item not in origins:
             origins.append(item)
 
     observed_urls: list[str] = []

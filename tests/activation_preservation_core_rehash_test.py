@@ -201,10 +201,10 @@ assert legacy.pending_clean_preservation_is_deferred(
     {},
 ) is False
 
-# Pending clean-v2 migration state must not hard-block P2 activation preservation.
+# Production activation is now force-ON; historical evidence helpers above
+# remain tested for compatibility, but no hub/health result may disable a row.
 validator_source = (ROOT / "scripts" / "validate_activation_preservation.py").read_text(encoding="utf-8")
-assert "deferred_to_learning" in validator_source
-assert '"preserved-published-state-clean-candidate-pending"' in validator_source
-assert '"pending-canonical-deep-proof"' in validator_source
-assert "FIELD_ACTIVATION_DEFERRED_TO_LEARNING" in validator_source
-assert "accounted_for = len(active) + len(justified) + len(deferred_to_learning)" in validator_source
+assert "NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1" in validator_source
+assert "non-target provider unexpectedly enabled" in validator_source
+assert "FIELD_ACTIVATION_HUB46_REGISTRY_ONLY" in validator_source
+assert "declared-hub activation mismatch" not in validator_source

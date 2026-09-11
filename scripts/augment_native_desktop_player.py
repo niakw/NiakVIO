@@ -247,8 +247,17 @@ def augment(path: Path, expected_minutes: int, stream_scope: str) -> None:
 
     begin = '        emit("FIELD_NATIVE_CORPUS_BEGIN client=desktop fixture=$fixtureSlug title64=${b64(title)} providers=${providers.size}")'
     text = replace_once(text, begin, begin + '\n        captureDesktopPhase("corpus-begin", fixtureSlug)', "corpus begin")
-    provider_begin = '                emit("FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} enabled=${provider.enabled} request_type=$requestMediaType route_mode=$routeMode declared_types64=${b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}")'
-    text = replace_once(text, provider_begin, provider_begin + '\n                captureDesktopPhase("provider-loading", fixtureSlug)', "provider begin")
+    provider_begin_marker = 'emit("FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)}'
+    provider_begin_lines = [line for line in text.splitlines() if provider_begin_marker in line]
+    if len(provider_begin_lines) != 1:
+        raise SystemExit(f"desktop reader provider-begin marker count={len(provider_begin_lines)}")
+    provider_begin = provider_begin_lines[0]
+    provider_indent = provider_begin[: len(provider_begin) - len(provider_begin.lstrip())]
+    text = text.replace(
+        provider_begin,
+        provider_begin + '\n' + provider_indent + 'captureDesktopPhase("provider-loading", fixtureSlug)',
+        1,
+    )
     result_marker = 'emit("FIELD_NATIVE_RESULT client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} request_type=$requestMediaType route_mode=$routeMode'
     text = text.replace(result_marker, 'captureDesktopPhase("provider-result", fixtureSlug)\n                ' + result_marker)
     end = '        emit("FIELD_NATIVE_CORPUS_END client=desktop fixture=$fixtureSlug errors=${errors.size}")'

@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "mode": "candidate",
-  "baseRef": "HEAD",
+  "baseRef": "main",
   "scopeAllProviders": true,
   "scopeProviderCount": 96,
   "scopeProviders": [
@@ -105,15 +105,15 @@
   "changedPaths": [
     "--all"
   ],
-  "rollingBaselineSource": "HEAD:provider-v3-quick-yield.json",
+  "rollingBaselineSource": "main:provider-v3-quick-yield.json",
   "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
+  "proofInvalidationSource": "automation/provider-proof-invalidations.json",
+  "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
   "candidateSource": "provider-v3-quick-yield.json",
-  "disabledHistoricalDebtPolicy": "allowed only when manifest enabled=false and provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
-  "disabledDebtProviderCount": 10,
+  "disabledHistoricalDebtPolicy": "audited route debt is allowed for hub46 targets or disabled non-targets when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
+  "disabledDebtProviderCount": 8,
   "disabledDebtProviders": [
     "anikototv",
-    "animesama-co",
-    "animevostfr",
     "cineby",
     "hindmoviez",
     "kehflix",
@@ -125,7 +125,14 @@
   "obligations": {
     "1shows": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -152,7 +159,14 @@
     },
     "4khdhub": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -179,7 +193,14 @@
     },
     "4khdhubnew": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -206,7 +227,14 @@
     },
     "allanime": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -230,7 +258,14 @@
     },
     "allmovieland": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -259,18 +294,26 @@
       "historicalPositiveVersions": [
         "5.21.36"
       ],
-      "historicalVerifiedLanes": [
+      "proofInvalidationApplied": true,
+      "proofInvalidationAuthority": "cross-fixture-content-identity-contradiction",
+      "proofInvalidationReasons": [
+        "cross_fixture_identity_collision",
+        "short_media_identity_failure",
+        "discovery_hub_executed_as_runtime_origin"
+      ],
+      "invalidatedVerifiedLanes": [
         "movie",
         "tv"
       ],
-      "rollingAcceptedLanes": [
+      "providerPositiveInvalidated": true,
+      "historicalVerifiedLanesRaw": [
         "movie",
         "tv"
       ],
-      "requiredVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "movie",
         "tv"
@@ -298,7 +341,14 @@
     },
     "anidb": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -324,7 +374,14 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -353,12 +410,19 @@
     },
     "anime-sama": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "anime"
+      ],
       "historicalVerifiedLanes": [
         "anime"
       ],
-      "rollingAcceptedLanes": [
-        "anime"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "anime"
       ],
@@ -388,7 +452,14 @@
     },
     "anime-ultime": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -418,13 +489,16 @@
     },
     "animekai": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "anime"
-      ],
-      "requiredVerifiedLanes": [
-        "anime"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "anime"
       ],
@@ -448,7 +522,14 @@
     },
     "animepahe": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -478,7 +559,14 @@
     },
     "animesalt": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -508,13 +596,16 @@
     },
     "animesama-co": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "anime"
-      ],
-      "requiredVerifiedLanes": [
-        "anime"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "anime": [
@@ -524,26 +615,29 @@
           "no_streams"
         ]
       },
-      "missingVerifiedLanes": [
-        "anime"
-      ],
+      "missingVerifiedLanes": [],
       "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
       "hlsM3u8Lost": false,
       "externalDriftRecorded": false,
-      "disabledDebtAccepted": true,
+      "disabledDebtAccepted": false,
       "disabledDebtState": "repair",
-      "disabledDebtReasons": [
-        "missing_verified_lanes"
-      ],
+      "disabledDebtReasons": [],
       "passed": true,
       "failures": []
     },
     "animesultra": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -570,7 +664,14 @@
     },
     "animetsu": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -594,7 +695,14 @@
     },
     "animevost-fr": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -618,13 +726,16 @@
     },
     "animevostfr": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "anime"
-      ],
-      "requiredVerifiedLanes": [
-        "anime"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "anime": [
@@ -634,26 +745,29 @@
           "no_streams"
         ]
       },
-      "missingVerifiedLanes": [
-        "anime"
-      ],
+      "missingVerifiedLanes": [],
       "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
       "hlsM3u8Lost": false,
       "externalDriftRecorded": false,
-      "disabledDebtAccepted": true,
+      "disabledDebtAccepted": false,
       "disabledDebtState": "repair",
-      "disabledDebtReasons": [
-        "missing_verified_lanes"
-      ],
+      "disabledDebtReasons": [],
       "passed": true,
       "failures": []
     },
     "animeworld": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -677,7 +791,14 @@
     },
     "animezey": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -704,7 +825,14 @@
     },
     "animoflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -731,7 +859,14 @@
     },
     "anizone": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -758,13 +893,21 @@
         "5.21.0",
         "5.21.36"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie",
+        "tv"
+      ],
       "historicalVerifiedLanes": [
         "movie",
         "tv"
       ],
-      "rollingAcceptedLanes": [
-        "movie"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie",
         "tv"
@@ -799,10 +942,20 @@
         "5.21.0",
         "5.21.36"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie",
+        "tv"
+      ],
       "historicalVerifiedLanes": [
         "movie",
         "tv"
       ],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie",
@@ -837,7 +990,14 @@
     },
     "cinefreak": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -864,7 +1024,14 @@
     },
     "cinemacity": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -891,7 +1058,14 @@
     },
     "cinemm": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -918,7 +1092,14 @@
     },
     "cinevibe": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -942,7 +1123,14 @@
     },
     "coflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -972,7 +1160,14 @@
     },
     "ctgmovies": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -999,13 +1194,16 @@
     },
     "desiflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "tv"
-      ],
-      "requiredVerifiedLanes": [
-        "tv"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "tv"
       ],
@@ -1032,7 +1230,14 @@
     },
     "dooflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1059,7 +1264,14 @@
     },
     "dulourd": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1086,7 +1298,14 @@
     },
     "dvdplay": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1113,7 +1332,14 @@
     },
     "einthusan": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1140,7 +1366,14 @@
     },
     "fibwatch": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1170,7 +1403,14 @@
     },
     "flemmix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1199,13 +1439,16 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "anime"
-      ],
-      "requiredVerifiedLanes": [
-        "anime"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "anime"
       ],
@@ -1218,7 +1461,7 @@
         ]
       },
       "missingVerifiedLanes": [],
-      "requireAnyVerifiedLane": false,
+      "requireAnyVerifiedLane": true,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
@@ -1232,13 +1475,16 @@
     },
     "frenchstream": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "movie"
-      ],
-      "requiredVerifiedLanes": [
-        "movie"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "movie"
       ],
@@ -1268,7 +1514,14 @@
     },
     "fullanime": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1292,7 +1545,14 @@
     },
     "goatapi": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1316,7 +1576,14 @@
     },
     "goated": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1343,7 +1610,14 @@
     },
     "gramcinema": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1370,7 +1644,14 @@
     },
     "hdghartv": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1397,7 +1678,14 @@
     },
     "hdhub4u": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1424,7 +1712,14 @@
     },
     "hianime": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1448,9 +1743,18 @@
     },
     "hindmoviez": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie"
+      ],
       "historicalVerifiedLanes": [
         "movie"
       ],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie"
@@ -1485,11 +1789,22 @@
       "historicalPositiveVersions": [
         "5.21.36"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "anime",
+        "movie",
+        "tv"
+      ],
       "historicalVerifiedLanes": [
         "anime",
         "movie",
         "tv"
       ],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "anime",
@@ -1529,7 +1844,14 @@
     },
     "kisskh": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1556,7 +1878,14 @@
     },
     "kurage": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1580,7 +1909,14 @@
     },
     "mallumv": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1604,7 +1940,14 @@
     },
     "moonflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1633,7 +1976,14 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1662,7 +2012,14 @@
     },
     "moviebox": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1689,13 +2046,16 @@
     },
     "movies4u": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "movie"
-      ],
-      "requiredVerifiedLanes": [
-        "movie"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "movie"
       ],
@@ -1722,7 +2082,14 @@
     },
     "moviesdrive": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1751,13 +2118,16 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "movie"
-      ],
-      "requiredVerifiedLanes": [
-        "movie"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "movie"
       ],
@@ -1767,7 +2137,7 @@
         ]
       },
       "missingVerifiedLanes": [],
-      "requireAnyVerifiedLane": false,
+      "requireAnyVerifiedLane": true,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
@@ -1781,7 +2151,14 @@
     },
     "moviesmod": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1808,7 +2185,14 @@
     },
     "movix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1838,7 +2222,14 @@
     },
     "mugiwarastream": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1865,7 +2256,14 @@
     },
     "mycima": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1895,7 +2293,14 @@
     },
     "nakios": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1925,7 +2330,14 @@
     },
     "neko-sama": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1949,7 +2361,14 @@
     },
     "netmirror": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -1976,7 +2395,14 @@
     },
     "onlykdrama": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2003,15 +2429,16 @@
     },
     "papadustream": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "anime",
-        "tv"
-      ],
-      "requiredVerifiedLanes": [
-        "anime",
-        "tv"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "anime",
         "tv"
@@ -2042,7 +2469,14 @@
     },
     "peachify": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2069,7 +2503,14 @@
     },
     "persianstremio": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2098,15 +2539,16 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "movie",
-        "tv"
-      ],
-      "requiredVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "movie",
         "tv"
@@ -2120,7 +2562,7 @@
         ]
       },
       "missingVerifiedLanes": [],
-      "requireAnyVerifiedLane": false,
+      "requireAnyVerifiedLane": true,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
@@ -2136,7 +2578,14 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2165,7 +2614,14 @@
     },
     "sekai": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2192,7 +2648,14 @@
     },
     "showbox": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2219,7 +2682,14 @@
     },
     "streamflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2248,12 +2718,19 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie"
+      ],
       "historicalVerifiedLanes": [
         "movie"
       ],
-      "rollingAcceptedLanes": [
-        "movie"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie"
       ],
@@ -2294,7 +2771,14 @@
     },
     "toflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2324,7 +2808,14 @@
     },
     "topcartoons": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2351,7 +2842,14 @@
     },
     "uhdmovies": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2378,7 +2876,14 @@
     },
     "vegamovies": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2407,12 +2912,19 @@
       "historicalPositiveVersions": [
         "5.21.0"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "tv"
+      ],
       "historicalVerifiedLanes": [
         "tv"
       ],
-      "rollingAcceptedLanes": [
-        "tv"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "tv"
       ],
@@ -2443,7 +2955,14 @@
     },
     "vidfast": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2470,7 +2989,14 @@
     },
     "vidlink": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2497,7 +3023,14 @@
     },
     "vidlove": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2524,7 +3057,14 @@
     },
     "vidnest": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2551,7 +3091,14 @@
     },
     "vidnest-anime": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2575,7 +3122,14 @@
     },
     "vidrock": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2602,7 +3156,14 @@
     },
     "vidsrc": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2629,7 +3190,14 @@
     },
     "vixsrc": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2656,7 +3224,14 @@
     },
     "voiranime": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2683,13 +3258,16 @@
     },
     "voiranime-homes": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [
-        "anime"
-      ],
-      "requiredVerifiedLanes": [
-        "anime"
-      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [
         "anime"
       ],
@@ -2716,7 +3294,14 @@
     },
     "voiranime-rip": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2743,7 +3328,14 @@
     },
     "vostfree": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2770,7 +3362,14 @@
     },
     "waveanime": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2796,10 +3395,20 @@
       "historicalPositiveVersions": [
         "5.21.36"
       ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie",
+        "tv"
+      ],
       "historicalVerifiedLanes": [
         "movie",
         "tv"
       ],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie",
@@ -2834,7 +3443,14 @@
     },
     "xpass": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2861,7 +3477,14 @@
     },
     "yflix": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],
@@ -2888,7 +3511,14 @@
     },
     "zinkmovies": {
       "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
       "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
       "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [],
       "candidateVerifiedLanes": [],

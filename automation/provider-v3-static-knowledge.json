@@ -713,6 +713,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://anime-sama.wiki/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -1244,6 +1246,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://purstream.wiki",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -1973,6 +1977,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://ww1.wiflix-adresses.fun/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -3384,6 +3390,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://mmodlist.org/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -4017,6 +4025,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://movieshunt.cc/",
           "forcedEnabled": true,
           "routeDataState": "on",
           "requiredLanes": [
@@ -4463,6 +4473,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -5884,6 +5896,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://1vegamovies.tw",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -8087,6 +8101,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://t.me/s/hindmoviez/1975",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -8655,6 +8671,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://hdhub4u.ec",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -9027,8 +9045,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -9526,6 +9546,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://desiflix.me",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -10843,6 +10865,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://kehflix.wiki/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -11567,8 +11591,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -11943,8 +11969,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -12099,14 +12127,13 @@
     },
     "anidb": {
       "model": {
-        "knownSite": "https://anidb.pics",
-        "strategy": "html_scraper",
-        "officialSite": "https://anidb.pics",
+        "knownSite": "https://anidb.app",
+        "strategy": "mixed_embed_resolver",
+        "officialSite": "https://anidb.app",
         "officialHub": "https://tbcpl.click/",
         "officialApi": null,
         "fixedApi": null,
         "origins": [
-          "https://anidb.pics",
           "https://tbcpl.click",
           "https://anidb.app"
         ],
@@ -12125,9 +12152,9 @@
           "fullProviderReconstructionRequired": false
         },
         "identityInput": {
-          "mode": "tmdb_direct",
+          "mode": "catalog_search",
           "requiredFields": [
-            "tmdbId",
+            "title",
             "mediaType"
           ],
           "requiresTmdbBeforeRun": true
@@ -12136,7 +12163,7 @@
           "anime"
         ],
         "domainSubstitutions": {
-          "anidb.app": "anidb.pics"
+          "anidb.pics": "anidb.app"
         },
         "materializationIntegrity": {
           "state": "matched",
@@ -12386,6 +12413,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://tbcpl.click/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -12413,7 +12442,8 @@
             ]
           },
           "evidenceDestructive": false
-        }
+        },
+        "runtimeDomainReplacements": {}
       },
       "knowledge": {
         "hosts": [
@@ -12860,6 +12890,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://streamingsiteshub.com/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -13799,8 +13831,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "on",
           "requiredLanes": [
             "anime"
@@ -14270,6 +14304,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -14924,6 +14960,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://animesalt.ac/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -16502,6 +16540,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://anime-sama.wiki/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -17488,8 +17528,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "anime",
@@ -18578,6 +18620,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://everythingmoe.com/s/animetsu",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -22905,8 +22949,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -23752,8 +23798,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie",
@@ -27706,8 +27754,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -28701,6 +28751,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://everythingmoe.com/s/anizone",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -29951,8 +30003,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "on",
           "requiredLanes": [
             "movie",
@@ -33859,6 +33913,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://warflix.cv/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -34533,8 +34589,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie",
@@ -35281,8 +35339,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -40581,6 +40641,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://coflix.domains/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -41438,8 +41500,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -43090,8 +43154,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -44555,8 +44621,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -45424,8 +45492,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -46731,6 +46801,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://hdghartv.com.pk/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -47424,8 +47496,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -47949,8 +48023,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime"
@@ -48571,8 +48647,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime"
@@ -49327,8 +49405,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -50871,6 +50951,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://movies4u.tube/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -51764,6 +51846,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://moviesdrives.mov/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -59505,8 +59589,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -61596,6 +61682,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://movix.online/",
           "forcedEnabled": true,
           "routeDataState": "off",
           "requiredLanes": [
@@ -64822,6 +64910,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -66132,6 +66222,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://nakios.org/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -67027,8 +67119,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime"
@@ -68179,6 +68273,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://papadustream.info/acces/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -68792,8 +68888,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -70461,6 +70559,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "on",
           "requiredLanes": [
@@ -72095,8 +72195,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -72935,8 +73037,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -74750,8 +74854,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -76305,6 +76411,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://toflix.wiki/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -81025,6 +81133,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://www.videasy.to/docs",
           "forcedEnabled": true,
           "routeDataState": "on",
           "requiredLanes": [
@@ -81960,6 +82070,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -82637,6 +82749,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -83220,6 +83334,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -85357,6 +85473,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://voiranime.org.uk/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -86732,8 +86850,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -88904,8 +89024,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -89795,6 +89917,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -94670,6 +94794,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://t.me/s/Wookafr2",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -95638,8 +95764,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -97179,6 +97307,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://flixnetwork.is",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -98012,6 +98142,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://allanime.sa.com/",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -99034,6 +99166,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://t.me/s/allwishme",
           "forcedEnabled": true,
           "routeDataState": "on",
           "requiredLanes": [
@@ -99641,8 +99775,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -100500,8 +100636,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime"
@@ -101070,8 +101208,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "anime"
@@ -101588,6 +101728,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -101922,8 +102064,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie"
@@ -102437,8 +102581,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie",
@@ -103933,8 +104079,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie",
@@ -105391,8 +105539,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -106043,8 +106193,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "anime",
@@ -112623,6 +112775,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://fstream.org",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -113282,8 +113436,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime"
@@ -113877,8 +114033,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie"
@@ -114543,8 +114701,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -116181,8 +116341,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -116812,8 +116974,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie"
@@ -117152,6 +117316,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://t.me/s/Moonflix_official_Channel",
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -118528,6 +118694,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://moviiebox.lol/",
           "forcedEnabled": true,
           "routeDataState": "off",
           "requiredLanes": [
@@ -119358,8 +119526,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime",
@@ -120447,6 +120617,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": "https://netmiror.com/",
           "forcedEnabled": true,
           "routeDataState": "off",
           "requiredLanes": [
@@ -121223,8 +121395,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie",
@@ -121899,8 +122073,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -122438,8 +122614,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie",
@@ -124004,8 +124182,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "movie",
@@ -124989,8 +125169,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
@@ -125624,8 +125806,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "off",
           "requiredLanes": [
             "anime"
@@ -126599,6 +126783,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "repair",
           "requiredLanes": [
@@ -127650,6 +127836,8 @@
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
           "activationState": "enabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
           "forcedEnabled": true,
           "routeDataState": "off",
           "requiredLanes": [
@@ -128542,8 +128730,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "anime"
@@ -128987,8 +129177,10 @@
         "repairDisposition": {
           "schemaVersion": 1,
           "authority": "provider-repair-disposition-v1",
-          "activationState": "enabled",
-          "forcedEnabled": true,
+          "activationState": "disabled",
+          "activationAuthority": "hub-lab-matrix-46",
+          "declaredHub": null,
+          "forcedEnabled": false,
           "routeDataState": "repair",
           "requiredLanes": [
             "movie",
