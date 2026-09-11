@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
-"""Finalize provider activation after a real Repair V6 candidate census.
+"""Finalize provider repair diagnostics without shrinking the executable catalogue.
 
 Policy:
-- an enabled provider must have current proof for every declared canonical lane;
-- an exact locked live lane may substitute only while the candidate still points
-  to the exact locked bundle bytes/path;
-- incomplete providers are disabled, never left active-but-broken;
-- terminal-blocked/unreachable or explicit quarantine -> route/DATA state ``off``;
-- every other unresolved/incomplete provider -> route/DATA state ``repair``;
-- existing route/DATA evidence is preserved for learning/repair. Disabling is an
-  execution decision, not evidence destruction;
+- all 96 canonical providers stay enabled in published manifests;
+- proof still controls diagnostic route/DATA state: ``on`` / ``repair`` / ``off``;
+- missing lane proof, terminal reachability and quarantine remain explicit evidence,
+  but they do not silently remove a provider from the executable catalogue;
+- existing route/DATA evidence is preserved for learning/repair;
 - this script never silently shrinks supported/canonical types.
+
+This deliberately separates *execution exposure* from *repair confidence*. Repair is
+allowed to say that a provider/lane still needs work; it is not allowed to turn that
+uncertainty into a mass ``enabled:false`` publication.
 """
 from __future__ import annotations
 
@@ -107,8 +108,6 @@ def exact_locked_lanes(
         manifest_row = manifest_rows.get(pid) or {}
         bundle = str(lock.get("bundle") or "").strip()
         filename = str(manifest_row.get("filename") or "").strip()
-        # A live lock belongs to exact published bytes. A newly hashed/materialized
-        # candidate must earn fresh proof instead of inheriting the old lane.
         if not bundle or bundle != filename:
             continue
         for raw_lane in lock.get("protectedLanes") or []:
@@ -137,7 +136,7 @@ def explicit_quarantine(patch: dict[str, Any], model: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair activation/disposition")
+    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics without disabling catalogue entries")
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
@@ -169,7 +168,6 @@ def main() -> int:
 
     report_rows: list[dict[str, Any]] = []
     counts: Counter[str] = Counter()
-    disabled: list[str] = []
     incomplete: list[str] = []
 
     for provider in sorted(manifest_rows):
@@ -191,17 +189,8 @@ def main() -> int:
         if complete and not quarantined:
             route_state = "on"
             reason_codes = ["all_declared_lanes_live_proven"]
-            # Repair disposition is the activation authority for this candidate:
-            # complete live proof restores execution, while incomplete proof is
-            # disabled below as explicit repair/off debt. A stale historical
-            # enabled=false must not keep a fully recovered provider disabled.
-            enabled = True
         else:
-            enabled = False
-            if quarantined or terminal:
-                route_state = "off"
-            else:
-                route_state = "repair"
+            route_state = "off" if (quarantined or terminal) else "repair"
             reason_codes = []
             if missing:
                 reason_codes.append("declared_lane_unproven")
@@ -216,18 +205,21 @@ def main() -> int:
                 reason_codes.append("quick_" + stage.replace("_", "-"))
             if not reason_codes:
                 reason_codes.append("repair_incomplete")
-            disabled.append(provider)
             incomplete.append(provider)
 
-        manifest_row["enabled"] = enabled
+        # Publication is deliberately fail-open at provider activation level.
+        # Repair/off remain diagnostic states only; they never hide catalogue entries.
+        enabled = True
+        manifest_row["enabled"] = True
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
-        manifest_overrides["enabled"] = enabled
+        manifest_overrides["enabled"] = True
         patch["manifest_overrides"] = manifest_overrides
         patch["route_data_state"] = route_state
         disposition = {
             "schemaVersion": 1,
             "authority": "provider-repair-disposition-v1",
-            "activationState": "enabled" if enabled else "disabled",
+            "activationState": "enabled",
+            "forcedEnabled": True,
             "routeDataState": route_state,
             "requiredLanes": sorted(required),
             "currentVerifiedLanes": sorted(current),
@@ -265,8 +257,10 @@ def main() -> int:
         "authority": "provider-repair-disposition-v1",
         "catalogueProviderCount": EXPECTED,
         "policy": {
-            "activeBrokenProviderAllowed": False,
-            "incompleteProviderEnabled": False,
+            "activeBrokenProviderAllowed": True,
+            "incompleteProviderEnabled": True,
+            "forceAllProvidersEnabled": True,
+            "activationFollowsRepairState": False,
             "terminalOrQuarantinedState": "off",
             "nonTerminalUnresolvedState": "repair",
             "evidenceDestructionAllowed": False,
@@ -274,8 +268,9 @@ def main() -> int:
             "exactLiveLocksRequireExactBundlePath": True,
         },
         "stateCounts": dict(sorted(counts.items())),
-        "disabledProviderCount": len(disabled),
-        "disabledProviders": disabled,
+        "enabledProviderCount": EXPECTED,
+        "disabledProviderCount": 0,
+        "disabledProviders": [],
         "incompleteProviderCount": len(incomplete),
         "incompleteProviders": incomplete,
         "providers": report_rows,
@@ -287,8 +282,8 @@ def main() -> int:
     write(args.output, summary)
     print(
         "PROVIDER_REPAIR_DISPOSITION_V1 "
-        f"providers={EXPECTED} on={counts['on']} repair={counts['repair']} off={counts['off']} "
-        f"disabled={len(disabled)} active_broken=0"
+        f"providers={EXPECTED} enabled={EXPECTED} on={counts['on']} repair={counts['repair']} off={counts['off']} "
+        f"diagnostic_incomplete={len(incomplete)} force_all_enabled=1"
     )
     return 0
 
