@@ -1,4 +1,5 @@
 name: TEMP - Prove Materialized VoirAnime Native Context
+# retry: parse-health-envelope
 
 on:
   push:
@@ -43,17 +44,20 @@ jobs:
           )"
           FIXTURE='{"label":"Jujutsu Kaisen S01E01","tmdbId":"95479","mediaType":"anime","category":"anime","season":1,"episode":1,"title":"Jujutsu Kaisen","year":2020}'
           CONTEXT='{"platform":"android","locale":"fr-FR","fixtureMetadata":{"id":95479,"name":"Jujutsu Kaisen","original_name":"呪術廻戦","first_air_date":"2020-10-03","origin_country":["JP"],"original_language":"ja","genres":[{"id":16,"name":"Animation"}],"keywords":{"results":[{"name":"anime"}]},"canonicalMediaType":"anime"},"networkLimits":{"maxFetches":30,"maxResponseBytes":5242880},"maxSettingsProfiles":1}'
-          echo "WORKER_PROVIDER=$PROVIDER"
-          node scripts/provider_worker.cjs "$PROVIDER" "$FIXTURE" "$CONTEXT" > /tmp/voiranime-worker.json
+          node scripts/provider_worker.cjs "$PROVIDER" "$FIXTURE" "$CONTEXT" > /tmp/voiranime-worker.out
           python - <<'PY'
           import json
-          x=json.load(open('/tmp/voiranime-worker.json'))
-          print('VOIRANIME_NATIVE_WORKER_RESULT '+json.dumps({k:x.get(k) for k in ('ok','stream_count','error','provider_observation_count','invocation_mode')},ensure_ascii=False))
+          lines=open('/tmp/voiranime-worker.out',encoding='utf-8').read().splitlines()
+          line=next((x for x in reversed(lines) if x.startswith('NUVIO_HEALTH_RESULT=')),None)
+          assert line, lines
+          x=json.loads(line.split('=',1)[1])
           streams=x.get('streams') or []
+          print('VOIRANIME_NATIVE_WORKER_RESULT '+json.dumps({'ok':x.get('ok'),'stream_count':x.get('stream_count'),'raw_stream_count':x.get('raw_stream_count'),'provider_server_hosts':x.get('provider_server_hosts'),'provider_server_http_statuses':x.get('provider_server_http_statuses')},ensure_ascii=False))
           print('VOIRANIME_NATIVE_WORKER_STREAMS '+json.dumps(streams[:4],ensure_ascii=False))
           print('VOIRANIME_NATIVE_WORKER_OBSERVATIONS '+json.dumps((x.get('network_observations') or [])[:12],ensure_ascii=False))
-          assert len(streams)>=1, x
-          assert any(str(s.get('url','')).startswith('http') for s in streams), streams
+          assert x.get('ok') is True,x
+          assert len(streams)>=1,x
+          assert any(str(s.get('url','')).startswith('http') for s in streams),streams
           PY
       - name: Prove direct invocation with trusted metadata contract
         shell: bash
@@ -61,8 +65,8 @@ jobs:
           set -euo pipefail
           node <<'NODE'
           const fs=require('fs'),path=require('path');
-          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));const row=m.scrapers.find(x=>String(x.id).toLowerCase()==='voiranime');const p=path.resolve(row.filename);
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8')),row=m.scrapers.find(x=>String(x.id).toLowerCase()==='voiranime'),p=path.resolve(row.filename);
           globalThis.__nuvioMediaContext={tmdbId:'95479',tmdbNamespace:'tv',tmdbIdentity:'tv:95479',canonicalMediaType:'anime',nuvioInputMediaType:'anime',tmdbResolutionDegraded:false,season:1,episode:1,tmdbMetadata:{id:95479,name:'Jujutsu Kaisen',canonicalMediaType:'anime',__nuvioTmdbNamespace:'tv',__nuvioTmdbId:'95479',origin_country:['JP'],original_language:'ja',genres:[{id:16,name:'Animation'}],keywords:{results:[{name:'anime'}]}}};
-          const mod=require(p);const fn=mod.getStreams||globalThis.getStreams;
+          const mod=require(p),fn=mod.getStreams||globalThis.getStreams;
           (async()=>{const rows=await fn('95479','anime',1,1);console.log('VOIRANIME_TRUSTED_CONTEXT_RESULT streams='+rows.length+' urls='+rows.slice(0,4).map(x=>x.url).join(';'));if(!rows.length)process.exit(2)})().catch(e=>{console.error(e);process.exit(1)});
           NODE
