@@ -11,6 +11,8 @@ V11 is also the single owner that chains the later V16 proof-authority ordering,
 so every canonical repair runner gets the same final execution semantics.
 V19 preserves a numeric TMDB routing id even when host metadata enrichment is
 unavailable; enriched metadata remains optional for direct typed resolver routes.
+V21.1 keeps public/address hubs out of generic search execution bases. A hub may
+execute only after independent live proof promotes it into proofSearchBases.
 """
 from __future__ import annotations
 
@@ -23,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_base_store.py"
 MARKER = "NIAKVIO_PROVIDER_BASE_TYPED_RESOLVER_API_V11"
 RAW_TMDB_MARKER = "NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19"
+SEARCH_HUB_MARKER = "NIAKVIO_PROVIDER_RUNTIME_SEARCH_HUB_SEPARATION_V21_1"
 
 
 def once(text: str, old: str, new: str, label: str) -> str:
@@ -79,6 +82,36 @@ if (hasProofRecipe && /^\\d+$/.test(rawTmdbRouteId)) {
     return True
 
 
+def _patch_runtime_search_hub_separation() -> bool:
+    """Never treat a public/address hub as a generic runtime search backend."""
+    text = TARGET.read_text(encoding="utf-8")
+    if SEARCH_HUB_MARKER in text:
+        validate_search_hub_separation(text)
+        return False
+    old = '''function _searchBases() {
+  return _uniq([
+    ...(Array.isArray(NIAKVIO_PROVIDER_MODEL.proofSearchBases) ? NIAKVIO_PROVIDER_MODEL.proofSearchBases : []),
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite,
+    NIAKVIO_PROVIDER_MODEL.officialHub
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+}
+'''
+    new = '''/* NIAKVIO_PROVIDER_RUNTIME_SEARCH_HUB_SEPARATION_V21_1 */
+function _searchBases() {
+  return _uniq([
+    ...(Array.isArray(NIAKVIO_PROVIDER_MODEL.proofSearchBases) ? NIAKVIO_PROVIDER_MODEL.proofSearchBases : []),
+    NIAKVIO_PROVIDER_MODEL.officialSite,
+    NIAKVIO_PROVIDER_MODEL.knownSite
+  ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
+}
+'''
+    text = once(text, old, new, "runtime-search-hub-separation")
+    TARGET.write_text(text, encoding="utf-8")
+    validate_search_hub_separation(text)
+    return True
+
+
 def patch() -> bool:
     text = TARGET.read_text(encoding="utf-8")
     changed = False
@@ -130,6 +163,7 @@ def patch() -> bool:
         validate_v11(text)
 
     changed = _patch_raw_tmdb_route_identity() or changed
+    changed = _patch_runtime_search_hub_separation() or changed
     changed = stream_v12.patch() or changed
     # V16 requires the V11 + stream-container state above and is intentionally
     # chained here so targeted/full pipelines cannot drift in execution order.
@@ -151,6 +185,22 @@ def validate_raw_tmdb(text: str | None = None) -> None:
     ):
         if needle not in value:
             raise AssertionError(f"raw TMDB route identity runtime missing: {needle}")
+
+
+def validate_search_hub_separation(text: str | None = None) -> None:
+    value = text if text is not None else TARGET.read_text(encoding="utf-8")
+    if value.count(SEARCH_HUB_MARKER) != 1:
+        raise AssertionError(f"search/hub separation marker count={value.count(SEARCH_HUB_MARKER)}")
+    start = value.find("function _searchBases() {")
+    end = value.find("\n}\nfunction _apiBases()", start)
+    if start < 0 or end < 0:
+        raise AssertionError("search base function not found")
+    body = value[start:end]
+    if "officialHub" in body:
+        raise AssertionError("officialHub remains executable in _searchBases")
+    for needle in ("proofSearchBases", "officialSite", "knownSite"):
+        if needle not in body:
+            raise AssertionError(f"search base authority missing: {needle}")
 
 
 def validate_v11(text: str | None = None) -> None:
@@ -175,6 +225,7 @@ def validate(text: str | None = None) -> None:
     value = text if text is not None else TARGET.read_text(encoding="utf-8")
     validate_v11(value)
     validate_raw_tmdb(value)
+    validate_search_hub_separation(value)
 
 
 def main() -> int:
@@ -186,7 +237,7 @@ def main() -> int:
         f"PROVIDER_BASE_RUNTIME_V11_OK changed={str(changed).lower()} "
         "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 "
         "stream_containers_v12=1 execution_authority_v16=1 raw_tmdb_route_identity_v19=1 "
-        "typed_resolver_empty_tmdb_fail_closed=1"
+        "typed_resolver_empty_tmdb_fail_closed=1 runtime_search_hub_separation_v21_1=1"
     )
     return 0
 
