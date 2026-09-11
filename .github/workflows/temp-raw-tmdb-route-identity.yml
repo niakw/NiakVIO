@@ -1,4 +1,4 @@
-name: TEMP - Raw TMDB Route Identity
+name: TEMP - Runtime Identity + Hub Origin Contracts
 
 on:
   push:
@@ -8,12 +8,12 @@ on:
       - '.github/workflows/temp-raw-tmdb-route-identity.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  raw-tmdb-contract:
+  runtime-contracts:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -26,13 +26,54 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Apply and validate typed resolver runtime
+      - name: Apply hub/runtime-origin separation
         shell: bash
         run: |
           set -euo pipefail
-          # V19 must be applied on top of an already-valid V11 baseline.
-          python -m py_compile scripts/upgrade_provider_base_runtime_v11.py tests/provider_raw_tmdb_route_identity_test.py
+          python - <<'PY'
+          from pathlib import Path
+
+          materializer = Path('scripts/materialize_provider_v3_all.py')
+          text = materializer.read_text(encoding='utf-8')
+          marker = 'NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21'
+          if marker not in text:
+              old = '''    origins: list[str] = []\n    for value in (official_site, official_hub, official_api, fixed_api, *(static_model.get("origins") or [])):\n        item = origin(value)\n        if item and not item.endswith(".invalid") and item not in origins:\n            origins.append(item)\n'''
+              new = '''    # NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21\n    # A hub is discovery/address knowledge, not an execution backend. Keep its\n    # origin only when the same origin is independently authoritative as the\n    # provider site/API/fixed API. This prevents Telegram/status hubs from\n    # receiving provider-relative player/API routes.\n    runtime_authorities: list[str] = []\n    for value in (official_site, official_api, fixed_api):\n        item = origin(value)\n        if item and not item.endswith(".invalid") and item not in runtime_authorities:\n            runtime_authorities.append(item)\n    hub_origin = origin(official_hub)\n    origins: list[str] = list(runtime_authorities)\n    for value in (static_model.get("origins") or []):\n        item = origin(value)\n        if not item or item.endswith(".invalid"):\n            continue\n        if item == hub_origin and item not in runtime_authorities:\n            continue\n        if item not in origins:\n            origins.append(item)\n'''
+              if text.count(old) != 1:
+                  raise SystemExit(f'materializer anchor count={text.count(old)}')
+              materializer.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          validator = Path('scripts/validate_provider_v3_routes_sequential.py')
+          text = validator.read_text(encoding='utf-8')
+          marker = 'NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21'
+          if marker not in text:
+              old = '''def provider_origins(model: dict[str, Any], patch: dict[str, Any]) -> list[str]:\n    fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}\n    values = [\n        patch.get("official_site"), patch.get("official_hub"), patch.get("official_api"), fixed.get("api"),\n        model.get("knownSite"), model.get("officialSite"), model.get("officialHub"), model.get("officialApi"), model.get("fixedApi"),\n        *(model.get("origins") or []),\n    ]\n    origins: list[str] = []\n    for raw in values:\n        text = str(raw or "").strip()\n        if not text:\n            continue\n        try:\n            parsed = urllib.parse.urlsplit(text)\n            if parsed.scheme not in {"http", "https"} or not parsed.hostname:\n                continue\n            origin = f"{parsed.scheme}://{parsed.netloc}"\n        except ValueError:\n            continue\n        if origin not in origins:\n            origins.append(origin)\n    return origins[:24]\n'''
+              new = '''# NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21\ndef provider_origins(model: dict[str, Any], patch: dict[str, Any]) -> list[str]:\n    fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}\n\n    def parsed_origin(raw: object) -> str:\n        text = str(raw or "").strip()\n        if not text:\n            return ""\n        try:\n            parsed = urllib.parse.urlsplit(text)\n            if parsed.scheme not in {"http", "https"} or not parsed.hostname:\n                return ""\n            return f"{parsed.scheme}://{parsed.netloc}"\n        except ValueError:\n            return ""\n\n    authority_values = [\n        patch.get("official_site"), patch.get("official_api"), fixed.get("api"),\n        model.get("knownSite"), model.get("officialSite"), model.get("officialApi"), model.get("fixedApi"),\n    ]\n    origins: list[str] = []\n    for raw in authority_values:\n        value = parsed_origin(raw)\n        if value and value not in origins:\n            origins.append(value)\n\n    hub_origins = {\n        value for value in (parsed_origin(patch.get("official_hub")), parsed_origin(model.get("officialHub"))) if value\n    }\n    for raw in (model.get("origins") or []):\n        value = parsed_origin(raw)\n        if not value:\n            continue\n        if value in hub_origins and value not in origins:\n            continue\n        if value not in origins:\n            origins.append(value)\n    return origins[:24]\n'''
+              if text.count(old) != 1:
+                  raise SystemExit(f'validator anchor count={text.count(old)}')
+              validator.write_text(text.replace(old, new, 1), encoding='utf-8')
+          PY
+      - name: Validate runtime contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/materialize_provider_v3_all.py scripts/validate_provider_v3_routes_sequential.py scripts/upgrade_provider_base_runtime_v11.py tests/provider_runtime_origin_hub_separation_test.py tests/provider_raw_tmdb_route_identity_test.py
+          python tests/provider_runtime_origin_hub_separation_test.py
           python scripts/upgrade_provider_base_runtime_v11.py
           python tests/provider_raw_tmdb_route_identity_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
           python scripts/provider_base_store.py validate
+      - name: Commit verified source corrections to workbench
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/materialize_provider_v3_all.py scripts/validate_provider_v3_routes_sequential.py
+          if git diff --cached --quiet; then
+            echo 'No source correction to commit.'
+            exit 0
+          fi
+          git commit -m 'fix(runtime): separate hubs from provider execution origins'
+          git push origin HEAD:workbench/hub-matrix-46-20260911
