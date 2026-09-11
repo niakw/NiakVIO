@@ -1,5 +1,5 @@
 name: TEMP - VF Smoke Before Main
-# retry: registered-after-create
+# smoke continues on workbench while main is published from a600ebe7
 
 on:
   push:
@@ -53,40 +53,13 @@ jobs:
           node <<'NODE'
           const fs=require('fs'),cp=require('child_process');
           const providers=JSON.parse(fs.readFileSync('/tmp/providers.json','utf8'));
-          const fixtures={
-            movie:{label:'Interstellar',tmdbId:'157336',mediaType:'movie',category:'movie',title:'Interstellar',year:2014},
-            tv:{label:'Breaking Bad S01E01',tmdbId:'1396',mediaType:'tv',category:'tv',season:1,episode:1,title:'Breaking Bad',year:2008},
-            anime:{label:'Jujutsu Kaisen S01E01',tmdbId:'95479',mediaType:'anime',category:'anime',season:1,episode:1,title:'Jujutsu Kaisen',year:2020}
-          };
-          const metadata={
-            movie:{id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05',original_language:'en',genres:[{id:18,name:'Drama'},{id:878,name:'Science Fiction'}],canonicalMediaType:'movie'},
-            tv:{id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',original_language:'en',origin_country:['US'],genres:[{id:18,name:'Drama'}],canonicalMediaType:'tv'},
-            anime:{id:95479,name:'Jujutsu Kaisen',original_name:'呪術廻戦',first_air_date:'2020-10-03',original_language:'ja',origin_country:['JP'],genres:[{id:16,name:'Animation'}],keywords:{results:[{name:'anime'}]},canonicalMediaType:'anime'}
-          };
+          const fixtures={movie:{label:'Interstellar',tmdbId:'157336',mediaType:'movie',category:'movie',title:'Interstellar',year:2014},tv:{label:'Breaking Bad S01E01',tmdbId:'1396',mediaType:'tv',category:'tv',season:1,episode:1,title:'Breaking Bad',year:2008},anime:{label:'Jujutsu Kaisen S01E01',tmdbId:'95479',mediaType:'anime',category:'anime',season:1,episode:1,title:'Jujutsu Kaisen',year:2020}};
+          const metadata={movie:{id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05',original_language:'en',genres:[{id:18,name:'Drama'},{id:878,name:'Science Fiction'}],canonicalMediaType:'movie'},tv:{id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',original_language:'en',origin_country:['US'],genres:[{id:18,name:'Drama'}],canonicalMediaType:'tv'},anime:{id:95479,name:'Jujutsu Kaisen',original_name:'呪術廻戦',first_air_date:'2020-10-03',original_language:'ja',origin_country:['JP'],genres:[{id:16,name:'Animation'}],keywords:{results:[{name:'anime'}]},canonicalMediaType:'anime'}};
           const plans={purstream:['movie','tv'],flemmix:['movie','tv'],frenchstream:['movie'],papadustream:['tv'],vidrock:['movie','tv'],voiranime:['anime'],coflix:['movie','tv']};
           let results=[];
-          for(const [pid,kinds] of Object.entries(plans)){
-            if(!providers[pid]){results.push({provider:pid,kind:'missing',ok:false,streams:0,error:'manifest_missing'});continue}
-            for(const kind of kinds){
-              const fixture=fixtures[kind];
-              const context={platform:'android',locale:'fr-FR',fixtureMetadata:metadata[kind],networkLimits:{maxFetches:40,maxResponseBytes:8388608},maxSettingsProfiles:1};
-              let parsed=null,err='';
-              try{
-                const out=cp.execFileSync('node',['scripts/provider_worker.cjs',providers[pid],JSON.stringify(fixture),JSON.stringify(context)],{encoding:'utf8',timeout:90000,maxBuffer:16*1024*1024});
-                parsed=JSON.parse(out);
-              }catch(e){err=String(e.stderr||e.stdout||e.message||e).slice(0,2000)}
-              const streams=(parsed&&Array.isArray(parsed.streams))?parsed.streams:[];
-              const sample=streams.slice(0,5).map(s=>({name:s.name||s.title||'',language:s.language||s.lang||'',quality:s.quality||'',url:String(s.url||'').slice(0,160)}));
-              const row={provider:pid,kind,ok:!!(parsed&&parsed.ok),streams:streams.length,error:(parsed&&parsed.error)||err,sample};
-              console.log('VF_SMOKE '+JSON.stringify(row));
-              results.push(row);
-            }
-          }
-          fs.writeFileSync('/tmp/vf-smoke.json',JSON.stringify(results,null,2));
-          const purMovie=results.find(x=>x.provider==='purstream'&&x.kind==='movie');
-          const purTv=results.find(x=>x.provider==='purstream'&&x.kind==='tv');
-          const vidMovie=results.find(x=>x.provider==='vidrock'&&x.kind==='movie');
-          console.log(`VF_SUMMARY purstream_movie=${purMovie?.streams||0} purstream_tv=${purTv?.streams||0} vidrock_movie=${vidMovie?.streams||0}`);
+          for(const [pid,kinds] of Object.entries(plans))for(const kind of kinds){const fixture=fixtures[kind],context={platform:'android',locale:'fr-FR',fixtureMetadata:metadata[kind],networkLimits:{maxFetches:40,maxResponseBytes:8388608},maxSettingsProfiles:1};let parsed=null,err='';try{const out=cp.execFileSync('node',['scripts/provider_worker.cjs',providers[pid],JSON.stringify(fixture),JSON.stringify(context)],{encoding:'utf8',timeout:90000,maxBuffer:16*1024*1024});parsed=JSON.parse(out)}catch(e){err=String(e.stderr||e.stdout||e.message||e).slice(0,2000)}const streams=(parsed&&Array.isArray(parsed.streams))?parsed.streams:[];const row={provider:pid,kind,ok:!!(parsed&&parsed.ok),streams:streams.length,error:(parsed&&parsed.error)||err,sample:streams.slice(0,5).map(s=>({name:s.name||s.title||'',language:s.language||s.lang||'',quality:s.quality||'',url:String(s.url||'').slice(0,160)}))};console.log('VF_SMOKE '+JSON.stringify(row));results.push(row)}
+          const purMovie=results.find(x=>x.provider==='purstream'&&x.kind==='movie'),vidMovie=results.find(x=>x.provider==='vidrock'&&x.kind==='movie');
+          console.log(`VF_SUMMARY purstream_movie=${purMovie?.streams||0} vidrock_movie=${vidMovie?.streams||0}`);
           if(!purMovie || purMovie.streams<1) process.exit(21);
           if(!vidMovie || vidMovie.streams<1) process.exit(22);
           NODE
