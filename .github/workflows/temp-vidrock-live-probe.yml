@@ -1,5 +1,5 @@
 name: TEMP - VidRock Live Probe
-# retry: encrypted-api-contract
+# retry: current-plain-id-api
 
 on:
   push:
@@ -23,75 +23,42 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Probe encrypted movie and TV APIs
+      - name: Probe current movie and TV APIs
         shell: bash
         run: |
           set -euo pipefail
           node <<'JS'
-          const crypto = require('crypto');
-          const passphrase = 'x7k9mPqT2rWvY8zA5bC3nF6hJ2lK4mN9';
-          const key = Buffer.from(passphrase, 'utf8');
-          const iv = key.subarray(0,16);
-          const headers = {
-            'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145.0.0.0 Safari/537.36',
+          const headers={
+            'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
             'referer':'https://vidrock.net/',
             'origin':'https://vidrock.net',
             'accept':'application/json,text/plain,*/*'
           };
-          function enc(plain){
-            const cipher=crypto.createCipheriv('aes-256-cbc',key,iv);
-            const raw=Buffer.concat([cipher.update(Buffer.from(plain,'utf8')),cipher.final()]);
-            return raw.toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+          async function fetchText(url){
+            const t=Date.now();
+            try{const r=await fetch(url,{headers,redirect:'follow'}); return {ok:r.ok,status:r.status,url:r.url,ct:r.headers.get('content-type')||'',ms:Date.now()-t,text:await r.text()};}
+            catch(e){return {ok:false,status:0,url,ct:'',ms:Date.now()-t,text:'',error:String(e)}}
           }
-          async function fetchText(url, opts={}){
-            const started=Date.now();
+          function summarize(text){
             try{
-              const r=await fetch(url,{redirect:'follow',...opts});
-              const text=await r.text();
-              return {ok:r.ok,status:r.status,url:r.url,ct:r.headers.get('content-type')||'',ms:Date.now()-started,text};
-            }catch(e){return {ok:false,status:0,url,ct:'',ms:Date.now()-started,text:'',error:String(e)}}
-          }
-          function compactJson(text){
-            try{
-              const j=JSON.parse(text);
-              const out={type:Array.isArray(j)?'array':'object'};
-              if(Array.isArray(j)) out.length=j.length;
-              else {
-                out.keys=Object.keys(j).slice(0,20);
-                out.servers=Object.entries(j).slice(0,12).map(([name,v])=>({name,url:v&&typeof v==='object'?String(v.url||'').slice(0,220):''}));
-              }
-              return out;
-            }catch(e){return {type:'non-json',preview:text.slice(0,300)}}
+              const j=JSON.parse(text); const keys=Object.keys(j);
+              return {kind:Array.isArray(j)?'array':'object',keys:keys.slice(0,20),entries:keys.slice(0,12).map(k=>({name:k,urlType:typeof(j[k]&&j[k].url),urlLength:String(j[k]&&j[k].url||'').length,urlPrefix:String(j[k]&&j[k].url||'').slice(0,28)})),error:j.error||null};
+            }catch(e){return {kind:'non-json',preview:text.slice(0,240)}}
           }
           (async()=>{
-            const fixtures=[
-              {name:'movie',plain:'157336',kind:'movie'},
-              {name:'tv',plain:'1396_1_1',kind:'tv'}
+            const urls=[
+              ['movie','https://vidrock.net/api/movie/157336'],
+              ['tv','https://vidrock.net/api/tv/1396/1/1'],
+              ['movie-ru','https://vidrock.ru/api/movie/157336'],
+              ['tv-ru','https://vidrock.ru/api/tv/1396/1/1']
             ];
-            let useful=0;
-            for(const f of fixtures){
-              const token=enc(f.plain);
-              const url=`https://vidrock.net/api/${f.kind}/${token}`;
-              const res=await fetchText(url,{headers});
-              const summary=compactJson(res.text);
-              console.log('VIDROCK_API '+JSON.stringify({fixture:f.name,tokenLength:token.length,status:res.status,finalUrl:res.url,ct:res.ct,ms:res.ms,error:res.error||null,summary}));
-              if(res.ok && summary.type==='object' && Array.isArray(summary.servers) && summary.servers.some(x=>x.url)){
-                useful++;
-                const first=summary.servers.find(x=>x.url)?.url;
-                if(first){
-                  const atlas=summary.servers.find(x=>/atlas/i.test(x.name)&&x.url)?.url;
-                  for(const [label,target] of [['first',first],['atlas',atlas]]){
-                    if(!target) continue;
-                    const probe=await fetchText(target,{headers});
-                    console.log('VIDROCK_SERVER '+JSON.stringify({fixture:f.name,label,target:target.slice(0,220),status:probe.status,finalUrl:probe.url,ct:probe.ct,ms:probe.ms,error:probe.error||null,bodyPreview:probe.text.slice(0,220)}));
-                  }
-                }
-              }
+            let jsonCount=0;
+            for(const [fixture,url] of urls){
+              const r=await fetchText(url); const s=summarize(r.text);
+              console.log('VIDROCK_CURRENT_API '+JSON.stringify({fixture,status:r.status,finalUrl:r.url,ct:r.ct,ms:r.ms,error:r.error||null,summary:s}));
+              if(r.ok&&s.kind==='object'&&s.entries&&s.entries.some(x=>x.urlLength>0)) jsonCount++;
             }
-            if(useful===0){
-              console.error('VIDROCK_ENCRYPTED_API_NO_USEFUL_JSON');
-              process.exit(2);
-            }
-            console.log(`VIDROCK_ENCRYPTED_API_OK usefulFixtures=${useful}`);
+            console.log(`VIDROCK_CURRENT_API_PROBE complete usefulJson=${jsonCount}`);
+            if(jsonCount===0) process.exit(2);
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
