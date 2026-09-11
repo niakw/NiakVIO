@@ -15,14 +15,20 @@ def load(path):
     return mod
 
 
-movix = load(Path('scripts/provider_patches/movix_multi_source.py'))
+# Movix's historical multi-source bridge was retired. The current clean-v3
+# provider-owned Lego is movix_runtime_v1.py; test the active adapter rather
+# than keeping a dangling import to the removed bridge.
+movix = load(Path('scripts/provider_patches/movix_runtime_v1.py'))
 sanitizer = load(Path('scripts/provider_patches/stream_output_sanitizer.py'))
 toflix = load(Path('scripts/provider_patches/toflix_official_endpoint.py'))
 
-legacy = 'module.exports={getStreams:function(){return Promise.resolve([])}};\n/* NUVIO_MOVIX_MULTI_SOURCE_V1 */\nlegacy foreign provider bridge'
-clean = movix.apply(legacy)
-assert 'NUVIO_MOVIX_MULTI_SOURCE_V1' not in clean
-assert 'legacy foreign provider bridge' not in clean
+seed = 'module.exports={getStreams:function(){return Promise.resolve([])}};'
+clean = movix.apply(seed)
+assert 'NIAKVIO_MOVIX_RUNTIME_V1' in clean
+assert '/api/swiftflow/movie/' in clean
+assert '/api/wiflix/movie/' in clean
+assert 'api.movix.fun' in clean
+assert 'NIAKVIO_MOVIX_MULTI_SOURCE_V1' not in clean
 assert movix.apply(clean) == clean
 
 cfg = json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
