@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-"""Finalize provider repair diagnostics without shrinking the executable catalogue.
+"""Finalize provider repair diagnostics and hub-authority activation.
 
 Policy:
-- all 96 canonical providers stay enabled in published manifests;
+- all 96 canonical providers stay present in the catalogue for census/recovery;
+- a provider is published enabled iff ``provider-overrides.json`` declares a
+  non-empty ``provider_patches.<provider>.official_hub``;
 - proof still controls diagnostic route/DATA state: ``on`` / ``repair`` / ``off``;
-- missing lane proof, terminal reachability and quarantine remain explicit evidence,
-  but they do not silently remove a provider from the executable catalogue;
+- diagnostic state never overrides hub activation;
 - existing route/DATA evidence is preserved for learning/repair;
 - this script never silently shrinks supported/canonical types.
 
-This deliberately separates *execution exposure* from *repair confidence*. Repair is
-allowed to say that a provider/lane still needs work; it is not allowed to turn that
-uncertainty into a mass ``enabled:false`` publication. An active-but-broken or
-active-but-unproven provider therefore remains visible while Repair keeps its debt.
+This deliberately separates *catalogue presence*, *activation authority* and
+*repair confidence*. Hub declaration is the single activation authority; Repair
+continues to classify route/DATA debt without enabling hub-less providers or
+silently deleting them from the recoverable 96-provider catalogue.
 """
 from __future__ import annotations
 
@@ -54,6 +55,11 @@ def cid(value: object) -> str:
 def lane(value: object) -> str:
     raw = str(value or "").strip().casefold()
     return "tv" if raw in {"series", "serie"} else raw
+
+
+def declared_hub(patch: dict[str, Any]) -> str:
+    """Return the provider-owned activation authority, or an empty string."""
+    return str(patch.get("official_hub") or "").strip()
 
 
 def declared_lanes(row: dict[str, Any]) -> list[str]:
@@ -137,7 +143,7 @@ def explicit_quarantine(patch: dict[str, Any], model: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics without disabling catalogue entries")
+    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with declared-hub activation")
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
@@ -170,6 +176,8 @@ def main() -> int:
     report_rows: list[dict[str, Any]] = []
     counts: Counter[str] = Counter()
     incomplete: list[str] = []
+    enabled_count = 0
+    disabled_providers: list[str] = []
 
     for provider in sorted(manifest_rows):
         manifest_row = manifest_rows[provider]
@@ -211,19 +219,27 @@ def main() -> int:
                 reason_codes.append("repair_incomplete")
             incomplete.append(provider)
 
-        # Publication is deliberately fail-open at provider activation level.
-        # Repair/off remain diagnostic states only; they never hide catalogue entries.
-        enabled = True
+        # Single publication activation authority: a declared official hub.
+        # Repair/off remain diagnostic states only and never override this rule.
+        hub = declared_hub(patch)
+        enabled = bool(hub)
         manifest_row["enabled"] = enabled
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
         manifest_overrides["enabled"] = enabled
         patch["manifest_overrides"] = manifest_overrides
         patch["route_data_state"] = route_state
+        if enabled:
+            enabled_count += 1
+        else:
+            disabled_providers.append(provider)
+
         disposition = {
             "schemaVersion": 1,
             "authority": "provider-repair-disposition-v1",
-            "activationState": "enabled",
-            "forcedEnabled": True,
+            "activationState": "enabled" if enabled else "disabled",
+            "activationAuthority": "declared-official-hub",
+            "declaredHub": hub or None,
+            "forcedEnabled": False,
             "routeDataState": route_state,
             "requiredLanes": sorted(required),
             "currentVerifiedLanes": sorted(current),
@@ -263,8 +279,11 @@ def main() -> int:
         "policy": {
             "activeBrokenProviderAllowed": True,
             "incompleteProviderEnabled": True,
-            "forceAllProvidersEnabled": True,
+            "forceAllProvidersEnabled": False,
             "activationFollowsRepairState": False,
+            "activationFollowsDeclaredHub": True,
+            "activationAuthority": "provider-overrides.json:provider_patches.*.official_hub",
+            "missingDeclaredHubState": "disabled",
             "terminalOrQuarantinedState": "off",
             "nonTerminalUnresolvedState": "repair",
             "evidenceDestructionAllowed": False,
@@ -272,9 +291,9 @@ def main() -> int:
             "exactLiveLocksRequireExactBundlePath": True,
         },
         "stateCounts": dict(sorted(counts.items())),
-        "enabledProviderCount": EXPECTED,
-        "disabledProviderCount": 0,
-        "disabledProviders": [],
+        "enabledProviderCount": enabled_count,
+        "disabledProviderCount": EXPECTED - enabled_count,
+        "disabledProviders": disabled_providers,
         "incompleteProviderCount": len(incomplete),
         "incompleteProviders": incomplete,
         "providers": report_rows,
@@ -286,8 +305,9 @@ def main() -> int:
     write(args.output, summary)
     print(
         "PROVIDER_REPAIR_DISPOSITION_V1 "
-        f"providers={EXPECTED} enabled={EXPECTED} on={counts['on']} repair={counts['repair']} off={counts['off']} "
-        f"diagnostic_incomplete={len(incomplete)} force_all_enabled=1"
+        f"providers={EXPECTED} enabled={enabled_count} disabled={EXPECTED-enabled_count} "
+        f"on={counts['on']} repair={counts['repair']} off={counts['off']} "
+        f"diagnostic_incomplete={len(incomplete)} activation=declared_hub"
     )
     return 0
 
