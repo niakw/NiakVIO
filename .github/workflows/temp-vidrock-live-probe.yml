@@ -1,5 +1,5 @@
 name: TEMP - AniDB Runtime Integration
-# retry: scripts-path-import-fixed
+# retry: static-authority-migrated
 
 on:
   push:
@@ -28,10 +28,9 @@ jobs:
           node-version: '24'
           package-manager-cache: false
       - name: Prove deterministic AniDB runtime
-        run: |
-          set -euo pipefail
-          python tests/anidb_runtime_v1_test.py
+        run: python tests/anidb_runtime_v1_test.py
       - name: Migrate AniDB DATA and materialize one provider
+        shell: bash
         run: |
           set -euo pipefail
           python scripts/install_anidb_runtime_v1.py
@@ -42,16 +41,19 @@ jobs:
           m=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
           row=next(x for x in m['scrapers'] if str(x.get('id','')).casefold()=='anidb')
           text=Path(row['filename']).read_text(encoding='utf-8')
+          o=json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
+          k=json.loads(Path('automation/provider-v3-static-knowledge.json').read_text(encoding='utf-8'))
+          p=o['provider_patches']['anidb']; model=k['providers']['anidb']['model']
           assert row.get('enabled') is True
           assert 'NIAKVIO_ANIDB_RUNTIME_V1' in text
-          o=json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
-          p=o['provider_patches']['anidb']
           assert p['official_site']=='https://anidb.app'
+          assert model['officialSite']=='https://anidb.app' and model['knownSite']=='https://anidb.app'
           assert p.get('runtime_domain_replacements')=={}
           assert 'scripts/provider_patches/anidb_runtime_v1.py' in p.get('provider_lego_scripts',[])
-          print('ANIDB_MATERIALIZED_OK enabled=1 site=anidb.app lego=1 stale_runtime_redirect=0')
+          print('ANIDB_MATERIALIZED_OK enabled=1 site=anidb.app static_authority=anidb.app lego=1 stale_runtime_redirect=0')
           PY
       - name: Run structural gates
+        shell: bash
         run: |
           set -euo pipefail
           python tests/provider_v3_strategy_plan_contract_test.py
@@ -59,51 +61,12 @@ jobs:
           python scripts/validate_activation_preservation.py
           python scripts/provider_base_store.py validate
       - name: Probe current AniDB frontend chain
+        run: python scripts/probe_anidb_live.py
+      - name: Commit verified integration and clean harness
         shell: bash
         run: |
           set -euo pipefail
-          node <<'NODE'
-          const h={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36','accept':'text/html,application/json,*/*'};
-          async function get(url){try{const r=await fetch(url,{headers:h,redirect:'follow'});const t=await r.text();return {ok:r.ok,status:r.status,url:r.url,text:t,type:r.headers.get('content-type')||''};}catch(e){return {ok:false,status:0,url,text:'',error:String(e&&e.message||e)}}}
-          (async()=>{
-            const search=await get('https://anidb.app/browse?q='+encodeURIComponent('Jujutsu Kaisen'));
-            console.log(`ANIDB_LIVE_SEARCH status=${search.status} final=${search.url} bytes=${search.text.length}`);
-            if(!search.ok){console.log('ANIDB_LIVE_STATUS unavailable_stage=search');return;}
-            const candidates=[...search.text.matchAll(/href=["'](?:https?:\/\/[^"']+)?\/anime\/([a-z0-9-]+-([0-9]+))["']/gi)].map(m=>({slug:m[1],id:m[2]}));
-            const chosen=candidates.find(x=>x.slug.replace(/-[0-9]+$/,'')==='jujutsu-kaisen')||candidates[0];
-            if(!chosen){console.log('ANIDB_LIVE_STATUS unresolved_stage=search_parse');return;}
-            console.log(`ANIDB_LIVE_ANIME id=${chosen.id} slug=${chosen.slug}`);
-            const eps=await get(`https://anidb.app/api/frontend/anime/${chosen.id}/episodes`);
-            console.log(`ANIDB_LIVE_EPISODES status=${eps.status} bytes=${eps.text.length}`);
-            if(!eps.ok){console.log('ANIDB_LIVE_STATUS unavailable_stage=episodes');return;}
-            let ej;try{ej=JSON.parse(eps.text)}catch{console.log('ANIDB_LIVE_STATUS unresolved_stage=episodes_json');return;}
-            const found=[];(function walk(n){if(!n)return;if(Array.isArray(n)){n.forEach(walk);return}if(typeof n!=='object')return;if(n.id!=null&&n.number!=null)found.push({id:Number(n.id),number:Number(n.number)});Object.values(n).forEach(walk)})(ej);
-            const ep=found.find(x=>x.number===1)||found[0];
-            if(!ep){console.log('ANIDB_LIVE_STATUS unresolved_stage=episode_select');return;}
-            console.log(`ANIDB_LIVE_EPISODE id=${ep.id} number=${ep.number} count=${found.length}`);
-            const langs=await get(`https://anidb.app/api/frontend/episode/${ep.id}/languages`);
-            console.log(`ANIDB_LIVE_LANGUAGES status=${langs.status} bytes=${langs.text.length}`);
-            if(!langs.ok){console.log('ANIDB_LIVE_STATUS unavailable_stage=languages');return;}
-            let lj;try{lj=JSON.parse(langs.text)}catch{console.log('ANIDB_LIVE_STATUS unresolved_stage=languages_json');return;}
-            const embeds=[];(function walk(n,path=[]){if(!n)return;if(Array.isArray(n)){n.forEach((x,i)=>walk(x,path.concat(String(i))));return}if(typeof n!=='object')return;if(n.embed_url||n.embedUrl)embeds.push({url:n.embed_url||n.embedUrl,path:path.join('.')});Object.entries(n).forEach(([k,v])=>{if(k!=='embed_url'&&k!=='embedUrl')walk(v,path.concat(k))})})(lj);
-            console.log(`ANIDB_LIVE_EMBEDS count=${embeds.length}`);
-            if(!embeds.length){console.log('ANIDB_LIVE_STATUS unresolved_stage=embed_list');return;}
-            let hls=0;
-            for(const row of embeds.slice(0,4)){
-              const embed=new URL(row.url,'https://anidb.app').href, page=await get(embed);
-              const m=/file\s*:\s*["']([^"']+)["']/i.exec(page.text)||/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/i.exec(page.text);
-              if(!page.ok||!m)continue;
-              const master=new URL(m[1].replace(/\\\//g,'/'),embed).href, media=await get(master),valid=media.ok&&/^#EXTM3U/m.test(media.text);
-              console.log(`ANIDB_LIVE_MEDIA embed_host=${new URL(embed).host} status=${media.status} hls=${valid?1:0} media_host=${new URL(master).host}`);
-              if(valid)hls++;
-            }
-            console.log(`ANIDB_LIVE_STATUS search=1 episodes=1 languages=1 embeds=${embeds.length} hls=${hls}`);
-          })().catch(e=>{console.log('ANIDB_LIVE_STATUS fatal='+String(e&&e.message||e));});
-          NODE
-      - name: Commit verified integration and remove installer/harness
-        run: |
-          set -euo pipefail
-          rm -f scripts/install_anidb_runtime_v1.py .github/workflows/temp-vidrock-live-probe.yml
+          rm -f scripts/install_anidb_runtime_v1.py scripts/probe_anidb_live.py .github/workflows/temp-vidrock-live-probe.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
