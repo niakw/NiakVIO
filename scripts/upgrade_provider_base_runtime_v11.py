@@ -9,6 +9,8 @@ source plan and are never flattened by this migration.
 
 V11 is also the single owner that chains the later V16 proof-authority ordering,
 so every canonical repair runner gets the same final execution semantics.
+V19 preserves a numeric TMDB routing id even when host metadata enrichment is
+unavailable; enriched metadata remains optional for direct typed resolver routes.
 """
 from __future__ import annotations
 
@@ -20,6 +22,7 @@ import upgrade_provider_execution_authority_v16 as authority_v16
 ROOT = Path(__file__).resolve().parents[1]
 TARGET = ROOT / "scripts" / "provider_base_store.py"
 MARKER = "NIAKVIO_PROVIDER_BASE_TYPED_RESOLVER_API_V11"
+RAW_TMDB_MARKER = "NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19"
 
 
 def once(text: str, old: str, new: str, label: str) -> str:
@@ -27,6 +30,34 @@ def once(text: str, old: str, new: str, label: str) -> str:
     if count != 1:
         raise AssertionError(f"{label}: expected one anchor, got {count}")
     return text.replace(old, new, 1)
+
+
+def _patch_raw_tmdb_route_identity() -> bool:
+    """Keep ABI TMDB route identity independent from optional metadata hydration."""
+    text = TARGET.read_text(encoding="utf-8")
+    if RAW_TMDB_MARKER in text:
+        validate_raw_tmdb(text)
+        return False
+
+    old = '''let proofMeta = null;
+if (hasProofValue || hasProofRecipe || hasProofSearch) proofMeta = await _tmdb(tmdbId, type);
+'''
+    new = '''let proofMeta = null;
+if (hasProofValue || hasProofRecipe || hasProofSearch) proofMeta = await _tmdb(tmdbId, type);
+/* NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19 */
+const rawTmdbRouteId = _text(tmdbId).replace(/^tmdb:/i, "").split(":")[0].trim();
+if (hasProofRecipe && /^\\d+$/.test(rawTmdbRouteId)) {
+  if (!proofMeta) {
+    proofMeta = {title:"", aliases:[], year:"", tmdbId:rawTmdbRouteId, imdbId:"", externalIds:{}};
+  } else if (!_text(proofMeta.tmdbId)) {
+    proofMeta = Object.assign({}, proofMeta, {tmdbId:rawTmdbRouteId});
+  }
+}
+'''
+    text = once(text, old, new, "raw-tmdb-route-identity")
+    TARGET.write_text(text, encoding="utf-8")
+    validate_raw_tmdb(text)
+    return True
 
 
 def patch() -> bool:
@@ -79,11 +110,26 @@ def patch() -> bool:
     else:
         validate(text)
 
+    changed = _patch_raw_tmdb_route_identity() or changed
     changed = stream_v12.patch() or changed
     # V16 requires the V11 + stream-container state above and is intentionally
     # chained here so targeted/full pipelines cannot drift in execution order.
     changed = authority_v16.patch() or changed
     return changed
+
+
+def validate_raw_tmdb(text: str | None = None) -> None:
+    value = text if text is not None else TARGET.read_text(encoding="utf-8")
+    if value.count(RAW_TMDB_MARKER) != 1:
+        raise AssertionError(f"raw TMDB routing marker count={value.count(RAW_TMDB_MARKER)}")
+    for needle in (
+        'const rawTmdbRouteId = _text(tmdbId).replace(/^tmdb:/i, "").split(":")[0].trim();',
+        'if (hasProofRecipe && /^\\d+$/.test(rawTmdbRouteId)) {',
+        'tmdbId:rawTmdbRouteId',
+        'Object.assign({}, proofMeta, {tmdbId:rawTmdbRouteId})',
+    ):
+        if needle not in value:
+            raise AssertionError(f"raw TMDB route identity runtime missing: {needle}")
 
 
 def validate(text: str | None = None) -> None:
@@ -102,6 +148,7 @@ def validate(text: str | None = None) -> None:
             raise AssertionError(f"typed resolver runtime missing: {needle}")
     if 'const bases = await _recipeBases(recipe);\n  if (!bases.length) return [];' in value:
         raise AssertionError("legacy unconditional recipe base gate remains")
+    validate_raw_tmdb(value)
 
 
 def main() -> int:
@@ -112,7 +159,7 @@ def main() -> int:
     print(
         f"PROVIDER_BASE_RUNTIME_V11_OK changed={str(changed).lower()} "
         "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 "
-        "stream_containers_v12=1 execution_authority_v16=1"
+        "stream_containers_v12=1 execution_authority_v16=1 raw_tmdb_route_identity_v19=1"
     )
     return 0
 
