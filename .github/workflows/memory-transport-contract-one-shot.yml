@@ -2,16 +2,13 @@ name: ONE-SHOT - Media Transport Contract Memory
 
 on:
   push:
-    branches: [main]
+    branches:
+      - workbench/hub-matrix-46-20260911
     paths:
-      - '.github/triggers/memory-transport-contract.json'
+      - '.github/workflows/memory-transport-contract-one-shot.yml'
 
 permissions:
   contents: write
-
-concurrency:
-  group: one-shot-media-transport-contract-memory
-  cancel-in-progress: false
 
 jobs:
   checkpoint:
@@ -20,33 +17,23 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
-          persist-credentials: true
-
-      - name: Write authoritative media transport contract and MEMORY checkpoint
+      - name: Materialize durable contract and MEMORY checkpoint
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-
           doc = Path('docs/media-type-transport-contract.md')
           doc.parent.mkdir(parents=True, exist_ok=True)
           doc.write_text('''# NiakVIO media type / transport contract
 
-This document is the authoritative human-readable contract for separating **content identity** from the **Nuvio provider ABI transport shape**.
+This is the durable contract for separating **canonical content identity** from the **Nuvio provider ABI transport lane**.
 
 ## Core rule
 
-Provider selection is based on the **canonical semantic content type first**. Runtime transport aliases are chosen **only after** a provider has been selected.
-
-Canonical type answers: **what kind of content is this?**
-
-Runtime transport answers: **which Nuvio ABI lane must be used to call the provider for this content shape?**
-
-These are deliberately not the same concept.
-
-## Authoritative mapping
+Provider selection is based on canonical semantic content type first. Runtime transport aliases are chosen only after provider selection.
 
 | Content | Canonical semantic type | Nuvio runtime transport |
 | --- | --- | --- |
@@ -55,102 +42,67 @@ These are deliberately not the same concept.
 | Anime series / anime episode | `anime` | `tv` |
 | Anime movie / theatrical anime film | `anime` | `movie` |
 
-### Critical anime invariant
+An anime film remains canonical `anime` even when invoked through runtime `movie`. An episodic anime remains canonical `anime` even when invoked through runtime `tv`. Therefore **never hardcode `anime -> tv` globally**.
 
-A film such as an anime theatrical feature is **not canonical `movie`** merely because Nuvio transports it through the `movie` lane. It remains canonical `anime` so anime-capable providers remain eligible and generic movie capability is not fabricated.
+## Mandatory order
 
-Likewise, an episodic anime remains canonical `anime` even though the provider ABI call uses the `tv` lane.
-
-Therefore **never hardcode `anime -> tv` globally**. Runtime transport for canonical anime depends on the work shape:
-
-- anime feature film -> `movie`;
-- anime series/episode -> `tv`.
-
-## Selection vs invocation
-
-The order is mandatory:
-
-1. Resolve trusted content identity and canonical type (`movie`, `tv`, `anime`).
-2. Select providers from `canonicalSupportedTypes` / authoritative semantic capability.
-3. Determine the runtime shape of the requested work.
-4. Translate to the Nuvio ABI lane (`movie` or `tv`).
+1. Resolve trusted identity and canonical type (`movie`, `tv`, `anime`).
+2. Select providers from semantic capability / `canonicalSupportedTypes`.
+3. Resolve work shape (movie vs episodic).
+4. Translate only the invocation to Nuvio ABI `movie` or `tv`.
 5. Invoke the provider.
 
-Transport aliases must never widen semantic capability.
-
-Example: an anime-only provider may be invoked with runtime `movie` for an anime film, but that does **not** make it a generic movie provider and must not make it eligible for Interstellar.
+Transport aliases must never widen semantic capability. An anime-only provider may receive runtime `movie` for an anime film without becoming eligible for ordinary films such as Interstellar.
 
 ## Manifest fields
 
 - `canonicalSupportedTypes` is semantic/provider-selection authority.
-- `supportedTypes` is client/runtime compatibility metadata and may contain transport aliases such as `tv`, `series`, or `movie` required to invoke canonical content.
+- `supportedTypes` is client/runtime compatibility metadata and may include transport aliases.
 - A transport alias alone must never manufacture canonical capability.
 
-## Anime recognition
+## Recognition
 
-Trusted metadata may refine a Nuvio `movie` or `tv` presentation into canonical `anime`.
+Trusted metadata may refine a Nuvio `movie`/`tv` presentation into canonical `anime`. Animation alone is not sufficient; Western animation remains ordinary movie/TV unless trusted identity says anime.
 
-Animation alone is not enough: Western animation must remain canonical `movie` or `tv` unless trusted metadata identifies it as anime.
-
-For canonical anime, transport shape should use, in order of authority:
-
-1. explicit trusted transport/work-shape metadata when present;
-2. original Nuvio/raw shape (`movie` vs `tv`/`series`);
-3. episodic season/episode evidence -> `tv`;
-4. conservative fallback only when the shape cannot otherwise be established.
+For canonical anime, transport shape should use, in order: explicit trusted shape metadata; original raw Nuvio shape; season/episode evidence; conservative fallback.
 
 ## Labs / evidence
 
-Native Labs must log both concepts separately when possible:
+Native Labs should expose both concepts separately:
 
-- `logical_type` / canonical type;
-- `request_type` / runtime transport.
+- `logical_type` / canonical semantic type;
+- `request_type` / ABI transport lane.
 
-Examples expected in evidence:
+Expected examples:
+- anime episode: `logical_type=anime request_type=tv`;
+- anime feature film: `logical_type=anime request_type=movie`.
 
-- Jujutsu Kaisen episode: `logical_type=anime request_type=tv`;
-- an anime film fixture: `logical_type=anime request_type=movie`.
-
-A Lab that filters anime providers using the runtime alias before canonical selection is invalid evidence.
+Evidence that filters anime providers using the runtime alias before canonical selection is invalid.
 
 ## Implementation authority
 
-Relevant implementation surfaces include:
+Relevant surfaces include `scripts/native_media_type_contract.py`, `scripts/augment_native_corpus_request_contract.py`, `scripts/provider_semantics.cjs`, provider materialization/projection, and native media-type regressions.
 
-- `scripts/native_media_type_contract.py`;
-- `scripts/augment_native_corpus_request_contract.py`;
-- `scripts/provider_semantics.cjs`;
-- provider materialization/projection code that maintains `canonicalSupportedTypes` separately from transport aliases;
-- native media-type contract/regression tests.
-
-Any implementation that globally maps canonical `anime` to runtime `tv` without preserving movie-vs-episodic shape is a regression against this document.
+Any implementation that globally maps canonical `anime` to runtime `tv` without preserving movie-vs-episodic shape is a regression.
 
 ## Regression floor
 
-Tests must cover at least all four rows in the mapping table, including a dedicated **anime movie** fixture. Passing only an episodic anime fixture is insufficient proof of this contract.
+Tests must cover all four mapping rows, including a dedicated anime-movie fixture. Passing only an episodic anime fixture is insufficient.
 ''', encoding='utf-8')
 
           memory = Path('MEMORY.md')
           marker = '## Media-type semantic/transport contract — authoritative 2026-09-11'
-          if marker not in memory.read_text(encoding='utf-8'):
-              checkpoint = '''\n\n## Media-type semantic/transport contract — authoritative 2026-09-11\n\n- Dedicated durable contract: `docs/media-type-transport-contract.md`.\n- Canonical semantic type owns content identity/provider selection; runtime transport owns only the Nuvio ABI invocation lane.\n- Authoritative mapping: ordinary movie = `movie -> movie`; ordinary TV/episode = `tv -> tv`; anime series/episode = `anime -> tv`; **anime movie = `anime -> movie`**.\n- Critical invariant: an anime film remains canonical `anime` even when invoked through runtime `movie`; an episodic anime remains canonical `anime` even when invoked through runtime `tv`.\n- `canonicalSupportedTypes` is semantic authority. `supportedTypes` may carry transport/client aliases but must never widen canonical capability.\n- Provider selection must happen on canonical type before runtime aliasing. A generic `anime -> tv` mapping is insufficient and is now considered a regression because it breaks anime films.\n- Native Lab evidence should expose both `logical_type` and `request_type`; required examples include `anime/tv` for episodic anime and `anime/movie` for anime films.\n- Western animation is not automatically anime; trusted metadata/identity is required.\n- Current TV repair work must conform to this contract before its evidence is treated as authoritative.\n'''
-              with memory.open('a', encoding='utf-8') as handle:
-                  handle.write(checkpoint)
+          text = memory.read_text(encoding='utf-8')
+          if marker not in text:
+              memory.write_text(text.rstrip() + '''\n\n## Media-type semantic/transport contract — authoritative 2026-09-11\n\n- Durable contract: `docs/media-type-transport-contract.md`.\n- Canonical semantic type owns identity/provider selection; runtime transport owns only the Nuvio ABI invocation lane.\n- Mapping: ordinary movie `movie -> movie`; ordinary TV/episode `tv -> tv`; anime series/episode `anime -> tv`; anime movie `anime -> movie`.\n- Anime films remain canonical `anime`; episodic anime remains canonical `anime`. Never globally rewrite canonical anime to tv.\n- `canonicalSupportedTypes` is semantic authority. `supportedTypes` may carry compatibility/transport aliases but must never widen semantic capability.\n- Provider selection occurs before runtime aliasing.\n- Native Lab evidence should expose `logical_type` and `request_type`, including both anime/tv and anime/movie cases.\n- Western animation is not automatically anime; trusted identity is required.\n- Current 46-provider workbench and final five-Lab evidence must conform to this contract.\n''', encoding='utf-8')
           PY
-
-      - name: Commit durable docs and self-remove one-shot infrastructure
+      - name: Self-remove completed one-shot infrastructure
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin main
-          test "$(git rev-parse origin/main)" = "${GITHUB_SHA}" || {
-            echo 'main advanced; refusing non-CAS documentation checkpoint push' >&2
-            exit 1
-          }
           rm -f .github/workflows/memory-transport-contract-one-shot.yml .github/triggers/memory-transport-contract.json
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          git diff --cached --quiet && exit 0
-          git commit -m 'docs(core): record canonical media transport contract'
-          git push origin HEAD:main
+          git commit -m 'docs(core): persist media transport contract'
+          git push origin HEAD:workbench/hub-matrix-46-20260911
