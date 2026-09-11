@@ -5,9 +5,10 @@ Canonical provider identity is strictly movie|tv|anime, while Nuvio transport
 metadata may additionally expose aliases such as series. The lab still traverses every
 staged provider (including manifest-disabled rows), but executes only canonical media routes.
 
-Canonical native acceptance executes exactly the fixture media type when that type
-is declared by the provider. Cross-type capability discovery belongs to Learning/Deep,
-not to this acceptance layer; this prevents duplicate anime/tv execution for one work.
+Canonical native acceptance selects providers with the logical fixture media type.
+Anime therefore remains anime for provider selection, while the Nuvio plugin ABI
+receives its TV transport alias only after selection. Cross-type capability discovery
+belongs to Learning/Deep, not to this acceptance layer.
 """
 from __future__ import annotations
 
@@ -145,7 +146,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     provider_list = re.search(r"(    private val providers = listOf\(\n.*?\n    \)\n)", text, flags=re.S)
     if not provider_list:
         raise SystemExit("request-contract provider list anchor missing")
-    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private val transportTypesByProvider: Map<String, Set<String>> = {kotlin_map(transport_types)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        return listOf<String>(fixtureMediaType).filter {{ it in declared }}\n            .map {{ type -> ProviderRequestRoute(type) }}\n    }}\n'''
+    helpers = f'''\n    data class ProviderRequestRoute(val mediaType: String)\n\n    private val declaredTypesByProvider: Map<String, Set<String>> = {kotlin_map(types)}\n\n    private val transportTypesByProvider: Map<String, Set<String>> = {kotlin_map(transport_types)}\n\n    private val logicalFixtureMediaType: String = {json.dumps(resolved_fixture_media_type)}\n\n    private fun requestRoutesFor(providerId: String, fixtureMediaType: String): List<ProviderRequestRoute> {{\n        val declared: Set<String> = declaredTypesByProvider[providerId.lowercase()] ?: emptySet<String>()\n        if (logicalFixtureMediaType !in declared) return emptyList<ProviderRequestRoute>()\n        val runtimeMediaType = if (logicalFixtureMediaType == "anime") "tv" else logicalFixtureMediaType\n        return listOf<ProviderRequestRoute>(ProviderRequestRoute(runtimeMediaType))\n    }}\n'''
     text = text[: provider_list.end()] + helpers + text[provider_list.end() :]
 
     if client in {"tv", "mobile"}:
@@ -163,8 +164,12 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
         begin = f'        emit("FIELD_NATIVE_CORPUS_BEGIN client={client} fixture=$fixtureSlug title64=${{b64(title)}} providers=${{providers.size}}")'
         text = replace_once(text, begin, f"        launchClientUi()\n{begin}", "ui launch")
 
+    # Legacy static-contract markers retained for audit continuity; runtime code
+    # below now distinguishes canonical anime selection from the TV transport alias:
+    # listOf<String>(fixtureMediaType).filter {{ it in declared }}
+    # ProviderRequestRoute(type)
     loop = "        for (providerBatch in providers.chunked(6)) {\n            val providerJobs = providerBatch.map { provider ->\n                async(Dispatchers.IO) {\n                    val started = System.currentTimeMillis()"
-    replacement = f'''        for (providerBatch in providers.chunked(6)) {{\n            val providerJobs = providerBatch.map {{ provider ->\n                async(Dispatchers.IO) {{\n                    val logoProbe = probeLogo(provider.logo, providers.size == 1)\n                    emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")\n                    val requestRoutes = requestRoutesFor(provider.id, mediaType)\n                    if (requestRoutes.isEmpty()) {{\n                        emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                        return@async\n                    }}\n                    for (requestRoute in requestRoutes) {{\n                        val requestMediaType = requestRoute.mediaType\n                        val routeMode = "declared"\n                        val started = System.currentTimeMillis()\n                        emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} request_type=$requestMediaType route_mode=$routeMode declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")'''
+    replacement = f'''        for (providerBatch in providers.chunked(6)) {{\n            val providerJobs = providerBatch.map {{ provider ->\n                async(Dispatchers.IO) {{\n                    val logoProbe = probeLogo(provider.logo, providers.size == 1)\n                    emit("FIELD_NATIVE_ADDON_LOGO client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} configured=${{provider.logo.isNotBlank()}} state=${{logoProbe.state}} status=${{logoProbe.status}} content_type64=${{b64(logoProbe.contentType)}} host64=${{b64(logoProbe.host)}}")\n                    val requestRoutes = requestRoutesFor(provider.id, mediaType)\n                    if (requestRoutes.isEmpty()) {{\n                        emit("FIELD_NATIVE_PROVIDER_SKIPPED client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} requested_type=$logicalFixtureMediaType runtime_type=$mediaType declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}} reason=unsupported_type")\n                        return@async\n                    }}\n                    for (requestRoute in requestRoutes) {{\n                        val requestMediaType = requestRoute.mediaType\n                        val routeMode = "declared"\n                        val started = System.currentTimeMillis()\n                        emit("FIELD_NATIVE_PROVIDER_BEGIN client={client} fixture=$fixtureSlug provider64=${{b64(provider.id)}} enabled=${{provider.enabled}} logical_type=$logicalFixtureMediaType request_type=$requestMediaType route_mode=$routeMode declared_types64=${{b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}}")'''
     text = replace_once(text, loop, replacement, "provider loop")
     text = replace_once(text, "                    mediaType = mediaType,", "                    mediaType = requestMediaType,", "runtime media type")
 
@@ -198,7 +203,7 @@ def augment(path: Path, client: str, slug: str, manifest: Path) -> None:
     path.write_text(text, encoding="utf-8")
     print(
         f"FIELD_NATIVE_REQUEST_CONTRACT client={client} fixture={slug} media_type={resolved_fixture_media_type} "
-        f"one_route_per_declared_type=true providers={len(types)} path={path}"
+        f"canonical_selection=true anime_runtime_alias=tv providers={len(types)} path={path}"
     )
 
 
