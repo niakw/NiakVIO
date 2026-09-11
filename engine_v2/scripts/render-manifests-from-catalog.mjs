@@ -22,6 +22,20 @@ function excludedFromNoAnime(scraper) {
   return animeOnly || identity.includes("anim");
 }
 
+function nestedProjectionFilename(value) {
+  const filename = String(value ?? "");
+  if (!filename) return filename;
+  if (
+    filename.startsWith("http://") ||
+    filename.startsWith("https://") ||
+    filename.startsWith("/") ||
+    filename.startsWith("../")
+  ) {
+    return filename;
+  }
+  return "../" + filename;
+}
+
 function noAnimeProjection(source) {
   const copy = structuredClone(source);
   copy.name = String(source.name || "NiakVIO") + " — Without anime providers";
@@ -29,9 +43,7 @@ function noAnimeProjection(source) {
     .filter((row) => !excludedFromNoAnime(row))
     .map((row) => {
       const projected = structuredClone(row);
-      if (typeof projected.filename === "string" && projected.filename.startsWith("providers/")) {
-        projected.filename = "../" + projected.filename;
-      }
+      projected.filename = nestedProjectionFilename(projected.filename);
       return projected;
     });
   return copy;
