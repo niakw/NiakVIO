@@ -27,7 +27,7 @@ assert '--previous "$RUNNER_TEMP/published-manifest-baseline.json"' in text
 assert "python tests/release_auto_bump_test.py" in text
 assert "python scripts/generate_release_hashes.py" in text
 assert "python scripts/validate_release_integrity.py" in text
-assert "NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'" in text
+assert "NUVIO_SKIP_ACTIVATION_PRESERVATION: '1'" not in text, "Domain Refresh is address authority and must preserve catalogue activation"
 assert 'os.environ.get("NUVIO_SKIP_ACTIVATION_PRESERVATION") != "1"' in validator
 assert "FIELD_RELEASE_INTEGRITY activation_preservation=skipped owner=domain_refresh" in validator
 assert "provider_dns_preflight.mjs" in text
