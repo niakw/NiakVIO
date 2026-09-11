@@ -1,23 +1,20 @@
 #!/usr/bin/env python3
-"""Prevent automated releases from silently shrinking the provider set.
+"""Prevent automated releases from silently violating provider activation authority.
 
-The activation LKG is a *preservation* guard, not an instruction to override the
-current strict publication gates. Historical providers therefore have two valid
-outcomes in a deep publication:
+Activation policy is now explicit and deterministic:
 
-* they stay enabled; or
-* the same deep promotion report records an explicit, conclusive reason for
-  disabling/removing them (for example P2P evidence or a failed strict quality
-  gate); or
-* an immutable client-lab finding records playable wrong-content evidence and
-  the currently published artifact is a matching, inert safety quarantine; or
-* the publication-scoped catalogue/media audit records a playable identity
-  contradiction and the currently published artifact is its matching inert
-  quarantine bundle.
+* all 96 canonical providers remain present for census/recovery;
+* ``provider-overrides.json -> provider_patches.<provider>.official_hub`` is the
+  single publication activation authority;
+* a non-empty declared hub means enabled, an absent hub means disabled;
+* historical activation LKG/deep evidence still protects route/DATA and safety
+  history, but it may not override declared-hub activation.
 
-CI-inconclusive results are deliberately not accepted as disablement proof. In
-that case the promoter must preserve the last published active artifact, and
-this validator continues to block any silent shrink.
+Legacy conclusive-disablement/quarantine evidence remains validated for historical
+providers that still have a declared hub. CI-inconclusive results may not disable
+such a provider. Conversely, hub-less providers do not require a fresh health
+failure merely to remain disabled: absence of the declared activation authority is
+itself the deterministic publication decision.
 """
 from __future__ import annotations
 
@@ -46,10 +43,6 @@ CATALOGUE_AUDIT_BLOCKER = "catalogue_audit_playable_identity_contradiction"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
-# These actions are emitted by promote_candidates.py only after current deep
-# evidence made a deterministic decision. The inconclusive-disabled action is
-# intentionally absent: an old active provider may not disappear merely because
-# CI could not prove it during this run.
 CONCLUSIVE_DISABLE_ACTIONS = {
     "published-disabled-failed-gates",
     "published-disabled-probation-or-performance",
@@ -71,13 +64,6 @@ def load_optional(path: Path) -> dict[str, Any]:
 
 
 def published_baseline_rows() -> dict[str, dict[str, Any]]:
-    """Return the exact manifest state published at the start of this transaction.
-
-    Publication jobs may provide an explicit captured baseline. Test/pretest
-    phases mutate the working tree before activation validation, so when no
-    explicit file is provided we read manifest.json from Git HEAD rather than
-    mistaking current working-tree output for a new disablement.
-    """
     raw = str(os.environ.get("NUVIO_PUBLISHED_MANIFEST_BASELINE") or "").strip()
     if raw:
         path = Path(raw)
@@ -86,7 +72,6 @@ def published_baseline_rows() -> dict[str, dict[str, Any]]:
                 return rows(load(path))
             except (OSError, ValueError, json.JSONDecodeError):
                 return {}
-
     try:
         process = subprocess.run(
             ["git", "show", "HEAD:manifest.json"],
@@ -131,8 +116,6 @@ def provider_patch_rows(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
             continue
         provider_id = str(key).casefold()
         current = result.get(provider_id)
-        # Some upstream aliases differ only by case and carry only a capability
-        # hint. Prefer the actionable patch record with publication controls.
         score = sum(name in row for name in ("manifest_overrides", "patch_scripts", "patch_script_options"))
         current_score = sum(
             name in (current or {}) for name in ("manifest_overrides", "patch_scripts", "patch_script_options")
@@ -140,6 +123,10 @@ def provider_patch_rows(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
         if current is None or score > current_score:
             result[provider_id] = row
     return result
+
+
+def declared_hub_enabled(patch: dict[str, Any] | None) -> bool:
+    return bool(str((patch or {}).get("official_hub") or "").strip())
 
 
 def provenance_rows(data: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -172,11 +159,9 @@ def configured_safety_quarantine(
     provenance: dict[str, Any] | None,
     finding: dict[str, Any] | None,
 ) -> tuple[bool, str]:
-    """Accept only complete, reproducible wrong-content quarantine evidence."""
     if not all(isinstance(value, dict) for value in (manifest_row, patch, provenance, finding)):
         return False, "missing_configured_safety_quarantine_evidence"
     assert manifest_row is not None and patch is not None and provenance is not None and finding is not None
-
     if manifest_row.get("enabled") is not False:
         return False, "safety_quarantine_manifest_not_disabled"
     if patch.get("capability") != "quarantined":
@@ -192,7 +177,6 @@ def configured_safety_quarantine(
     reason = str((quarantine_options or {}).get("reason") or "")
     if not reason or reason != str(finding.get("quarantine_reason") or ""):
         return False, "safety_quarantine_reason_mismatch"
-
     published_filename = str(manifest_row.get("filename") or "")
     published_path = ROOT / published_filename
     if not published_filename.startswith("providers/") or not published_path.is_file():
@@ -205,7 +189,6 @@ def configured_safety_quarantine(
         return False, "safety_quarantine_bundle_finding_sha_mismatch"
     if str(finding.get("quarantined_bundle") or "") != published_filename:
         return False, "safety_quarantine_bundle_finding_path_mismatch"
-
     if provenance.get("activation_mode") != "configured_safety_quarantine":
         return False, "safety_quarantine_provenance_mode_missing"
     if provenance.get("activation_eligible") is not False:
@@ -217,7 +200,6 @@ def configured_safety_quarantine(
         return False, "safety_quarantine_provenance_path_mismatch"
     if str(provenance.get("patched_sha256") or "") != published_sha:
         return False, "safety_quarantine_provenance_sha_mismatch"
-
     evidence_type = str(finding.get("evidence_type") or "")
     if evidence_type in {"manual_live_wrong_content", "manual_live_non_playable"}:
         if finding.get("evidence_source") != "operator_live_client_report":
@@ -250,7 +232,6 @@ def configured_safety_quarantine(
             if not finding.get("clients_with_failure"):
                 return False, "manual_non_playable_client_missing"
         return True, f"configured_safety_quarantine:{reason}:{evidence_type}"
-
     if finding.get("evidence_type") != "duration_identity_mismatch":
         return False, "unsupported_safety_finding_type"
     if finding.get("transport_playable") is not True:
@@ -261,7 +242,6 @@ def configured_safety_quarantine(
         return False, "safety_finding_commit_invalid"
     if not SHA256_RE.fullmatch(str(finding.get("tested_bundle_sha256") or "")):
         return False, "safety_finding_tested_bundle_sha_invalid"
-
     try:
         expected = float(finding["expected_duration_seconds"])
         measured = float(finding["measured_duration_seconds"])
@@ -284,19 +264,10 @@ def catalogue_audit_safety_quarantine(
     manifest_row: dict[str, Any] | None,
     provenance: dict[str, Any] | None,
 ) -> tuple[bool, str]:
-    """Accept a content-addressed inert catalogue-audit quarantine.
-
-    Older publication transactions could lose the verbose local audit record
-    while retaining the exact inert bundle, its catalogue-audit blocker and
-    matching provenance SHA/path. Those cryptographic/structural facts are the
-    durable evidence boundary; a future deep may still replace the quarantine
-    after proving a healthy candidate.
-    """
     if not isinstance(manifest_row, dict) or not isinstance(provenance, dict):
         return False, "missing_catalogue_audit_quarantine_evidence"
     if manifest_row.get("enabled") is not False:
         return False, "catalogue_audit_quarantine_manifest_not_disabled"
-
     published_filename = str(manifest_row.get("filename") or "")
     if "--nuvio-audit-quarantine--" not in published_filename:
         return False, "catalogue_audit_quarantine_filename_marker_missing"
@@ -310,7 +281,6 @@ def catalogue_audit_safety_quarantine(
     expected_suffix = published_filename.rsplit("--", 1)[-1].removesuffix(".js")
     if expected_suffix != published_sha[:16]:
         return False, "catalogue_audit_quarantine_content_address_mismatch"
-
     if provenance.get("activation_eligible") is not False:
         return False, "catalogue_audit_quarantine_provenance_still_eligible"
     blockers = {str(value) for value in provenance.get("activation_blockers") or []}
@@ -320,7 +290,6 @@ def catalogue_audit_safety_quarantine(
         return False, "catalogue_audit_quarantine_provenance_path_mismatch"
     if str(provenance.get("patched_sha256") or provenance.get("sha256") or "") != published_sha:
         return False, "catalogue_audit_quarantine_provenance_sha_mismatch"
-
     records = [
         row for row in provenance.get("local_patches") or []
         if isinstance(row, dict)
@@ -336,10 +305,6 @@ def catalogue_audit_safety_quarantine(
         playable = int(record.get("playable_streams") or 0)
         if contradictions > 0 and playable > 0:
             conclusive = True
-
-    # Older transactions may not have retained the verbose quarantine record,
-    # but they must still carry current activation-gate evidence. A stale
-    # filename/blocker is never enough by itself to keep a provider disabled.
     gates = provenance.get("activation_gates")
     if not conclusive and isinstance(gates, dict):
         identity = gates.get("10_content_identity_integrity")
@@ -352,25 +317,21 @@ def catalogue_audit_safety_quarantine(
                 duration_mismatches = int(identity_evidence.get("duration_identity_mismatch_count") or 0)
                 playable = int(playable_evidence.get("streams_playable") or 0)
                 conclusive = playable > 0 and (contradictions > 0 or duration_mismatches > 0)
-
     if not conclusive:
         return False, "catalogue_audit_quarantine_has_no_current_conclusive_contradiction"
     return True, f"catalogue_audit_safety_quarantine:{CATALOGUE_AUDIT_BLOCKER}"
 
 
 def report_failure_is_inconclusive(record: dict[str, Any] | None) -> bool:
-    """Treat zero-proof runtime/network failure as uncertainty regardless of action label."""
     if not isinstance(record, dict):
         return True
     evidence = record.get("evidence") if isinstance(record.get("evidence"), dict) else {}
     status = str(record.get("observed_status") or evidence.get("status") or "").strip().casefold()
-
     def count(name: str) -> int:
         try:
             return int(evidence.get(name) or 0)
         except (TypeError, ValueError):
             return 0
-
     hard_contradiction = (
         count("disallowed_streams") > 0
         or count("identity_contradiction_count") > 0
@@ -379,31 +340,19 @@ def report_failure_is_inconclusive(record: dict[str, Any] | None) -> bool:
     positive_runtime_proof = count("streams_playable") > 0 or count("payload_verified_streams") > 0
     if hard_contradiction or positive_runtime_proof:
         return False
-    if status in {
-        "unavailable", "no_streams", "blocked", "provider_unreachable",
-        "runtime_error", "reachable", "degraded",
-    }:
+    if status in {"unavailable", "no_streams", "blocked", "provider_unreachable", "runtime_error", "reachable", "degraded"}:
         return True
-    failures = {
-        str(value).strip().casefold()
-        for value in evidence.get("failure_classes") or []
-        if str(value).strip()
-    }
-    infrastructure_failures = {
-        "provider_http_error", "network_error", "dns_error", "timeout",
-        "provider_timeout", "runtime_timeout", "connection_error",
-    }
+    failures = {str(value).strip().casefold() for value in evidence.get("failure_classes") or [] if str(value).strip()}
+    infrastructure_failures = {"provider_http_error", "network_error", "dns_error", "timeout", "provider_timeout", "runtime_timeout", "connection_error"}
     return bool(failures) and failures <= infrastructure_failures
 
 
 def conclusive_disablement(record: dict[str, Any] | None, *, missing: bool) -> tuple[bool, str]:
-    """Return whether one deep report row explicitly justifies losing activation."""
     if not isinstance(record, dict):
         return False, "missing_deep_promotion_record"
     action = str(record.get("action") or "")
     failed = {str(value) for value in record.get("failed_gates") or [] if str(value)}
     enabled = record.get("enabled") is True
-
     if enabled:
         return False, "promotion_report_still_marks_provider_enabled"
     if action == INCONCLUSIVE_DISABLE_ACTION:
@@ -413,8 +362,6 @@ def conclusive_disablement(record: dict[str, Any] | None, *, missing: bool) -> t
             return False, "p2p_removal_missing_policy_gate_evidence"
         return True, action
     if missing:
-        # The complete catalogue publishes failed providers disabled. Absence is
-        # allowed only for a hard policy exclusion such as P2P/torrent output.
         return False, f"missing_provider_not_justified_by_{action or 'unknown_action'}"
     if action in CONCLUSIVE_DISABLE_ACTIONS:
         if not failed and action != "disabled-sustained-outage":
@@ -425,18 +372,11 @@ def conclusive_disablement(record: dict[str, Any] | None, *, missing: bool) -> t
     return False, f"non_conclusive_disable_action:{action or 'missing'}"
 
 
-def pending_clean_preservation_is_deferred(
-    record: dict[str, Any] | None,
-    provenance_row: dict[str, Any] | None,
-) -> bool:
-    """A clean-candidate-pending report is migration state, never disablement proof."""
-    del provenance_row  # Core rehash may legitimately rematerialize provenance.
+def pending_clean_preservation_is_deferred(record: dict[str, Any] | None, provenance_row: dict[str, Any] | None) -> bool:
+    del provenance_row
     if not isinstance(record, dict):
         return False
-    return bool(
-        str(record.get("action") or "") == "preserved-published-state-clean-candidate-pending"
-        and record.get("enabled") is False
-    )
+    return bool(str(record.get("action") or "") == "preserved-published-state-clean-candidate-pending" and record.get("enabled") is False)
 
 
 def preexisting_published_disable_is_deferred(
@@ -444,13 +384,6 @@ def preexisting_published_disable_is_deferred(
     baseline_row: dict[str, Any] | None,
     record: dict[str, Any] | None,
 ) -> bool:
-    """Accept an unchanged disabled baseline during non-publishing workspace rebuilds.
-
-    Manual Provider v3 reconstruction does not own activation decisions and may
-    legitimately validate against a committed Deep report that predates an
-    intentional published disablement. Production/Deep keeps the stricter rule:
-    its current report must also describe the provider as disabled.
-    """
     if not isinstance(manifest_row, dict) or manifest_row.get("enabled") is not False:
         return False
     if not isinstance(baseline_row, dict) or baseline_row.get("enabled") is not False:
@@ -478,108 +411,90 @@ def validate() -> list[str]:
     if str(report.get("test_mode") or "") != "deep":
         errors.append("activation preservation requires the current deep promotion report")
 
+    # Hub declaration is the current publication authority for every catalogue row.
+    # This is deliberately evaluated before historical activation-LKG handling.
+    for provider_id, manifest_row in sorted(main_rows.items()):
+        expected_enabled = declared_hub_enabled(patches_by_id.get(provider_id))
+        actual_enabled = manifest_row.get("enabled") is True
+        if actual_enabled != expected_enabled:
+            errors.append(
+                "declared-hub activation mismatch: "
+                f"{provider_id} expected_enabled={str(expected_enabled).lower()} "
+                f"actual_enabled={str(actual_enabled).lower()}"
+            )
+
     justified: dict[str, str] = {}
     deferred_to_learning: dict[str, str] = {}
     for provider_id in sorted(expected):
         manifest_row = main_rows.get(provider_id)
         is_missing = manifest_row is None
-        if not is_missing and manifest_row.get("enabled") is True:
+        if is_missing:
+            errors.append(f"activation LKG provider missing from 96-provider catalogue: {provider_id}")
             continue
-        if not is_missing:
-            accepted, reason = configured_safety_quarantine(
-                provider_id,
-                manifest_row,
-                patches_by_id.get(provider_id),
-                provenance_by_id.get(provider_id),
-                safety_by_id.get(provider_id),
-            )
-            if accepted:
-                justified[provider_id] = reason
-                continue
-            accepted, reason = catalogue_audit_safety_quarantine(
-                manifest_row,
-                provenance_by_id.get(provider_id),
-            )
-            if accepted:
-                justified[provider_id] = reason
-                continue
-        record = report_by_id.get(provider_id)
-        accepted, reason = conclusive_disablement(record, missing=is_missing)
+
+        # Explicitly supersede historical activation LKG when the provider no
+        # longer has the declared activation authority. This is not health proof;
+        # route/DATA evidence remains preserved separately for Learning/Repair.
+        if not declared_hub_enabled(patches_by_id.get(provider_id)):
+            if manifest_row.get("enabled") is True:
+                errors.append(f"hub-less activation LKG provider unexpectedly enabled: {provider_id}")
+            else:
+                justified[provider_id] = "declared_official_hub_absent"
+                print(
+                    "FIELD_ACTIVATION_LKG_SUPERSEDED_BY_HUB_AUTHORITY "
+                    f"provider={provider_id} enabled=false"
+                )
+            continue
+
+        if manifest_row.get("enabled") is True:
+            continue
+        accepted, reason = configured_safety_quarantine(
+            provider_id,
+            manifest_row,
+            patches_by_id.get(provider_id),
+            provenance_by_id.get(provider_id),
+            safety_by_id.get(provider_id),
+        )
         if accepted:
             justified[provider_id] = reason
             continue
-
-        # A persisted clean-v2 candidate is migration/Learning state, not an
-        # activation decision. When publication explicitly preserves the exact
-        # already-published state, do not block P2 just because activation-LKG
-        # metadata is older than that state. Learning/Repair owns reconciliation.
+        accepted, reason = catalogue_audit_safety_quarantine(manifest_row, provenance_by_id.get(provider_id))
+        if accepted:
+            justified[provider_id] = reason
+            continue
+        record = report_by_id.get(provider_id)
+        accepted, reason = conclusive_disablement(record, missing=False)
+        if accepted:
+            justified[provider_id] = reason
+            continue
         provenance_row = provenance_by_id.get(provider_id)
-        pending_v2_preserved = bool(
-            not is_missing
-            and pending_clean_preservation_is_deferred(record, provenance_row)
-        )
+        pending_v2_preserved = bool(pending_clean_preservation_is_deferred(record, provenance_row))
         if pending_v2_preserved:
             deferred_to_learning[provider_id] = "pending_clean_v2_preserved_published_state"
-            print(
-                "FIELD_ACTIVATION_DEFERRED_TO_LEARNING "
-                f"provider={provider_id} reason=pending_clean_v2_preserved_published_state"
-            )
+            print("FIELD_ACTIVATION_DEFERRED_TO_LEARNING " f"provider={provider_id} reason=pending_clean_v2_preserved_published_state")
             continue
-
-        # A previously conclusive safety quarantine may be preserved when the
-        # current CI run cannot re-establish enough evidence either way. That is
-        # a safe inert state, not a publication failure. Learning/Deep will
-        # revisit it; only a fresh positive proof can release the quarantine.
         preserved_safety_ci_uncertain = bool(
-            not is_missing
-            and isinstance(record, dict)
+            isinstance(record, dict)
             and str(record.get("action") or "") == "preserved-conclusive-safety-quarantine-ci-uncertain"
             and record.get("enabled") is False
             and isinstance(provenance_row, dict)
             and str(provenance_row.get("activation_mode") or "").startswith("catalogue_audit_")
-            and CATALOGUE_AUDIT_BLOCKER in {
-                str(value) for value in (provenance_row.get("activation_blockers") or [])
-            }
+            and CATALOGUE_AUDIT_BLOCKER in {str(value) for value in (provenance_row.get("activation_blockers") or [])}
         )
         if preserved_safety_ci_uncertain:
             justified[provider_id] = "preserved_conclusive_safety_quarantine_ci_uncertain"
-            print(
-                "FIELD_ACTIVATION_PRESERVED_SAFETY_QUARANTINE "
-                f"provider={provider_id} reason=ci_uncertain"
-            )
             continue
-
         baseline_row = baseline_by_id.get(provider_id)
-        preexisting_published_disable = bool(
-            not is_missing
-            and preexisting_published_disable_is_deferred(
-                manifest_row,
-                baseline_row,
-                record,
-            )
-        )
-        if preexisting_published_disable:
+        if preexisting_published_disable_is_deferred(manifest_row, baseline_row, record):
             deferred_to_learning[provider_id] = "preexisting_published_disabled_state_nonconclusive"
-            print(
-                "FIELD_ACTIVATION_DEFERRED_TO_LEARNING "
-                f"provider={provider_id} reason=preexisting_published_disabled_state_nonconclusive"
-            )
             continue
+        errors.append(f"declared-hub provider disabled without conclusive proof: {provider_id} ({reason})")
 
-        if is_missing:
-            errors.append(f"activation LKG provider missing without conclusive proof: {provider_id} ({reason})")
-        else:
-            errors.append(f"activation LKG provider disabled without conclusive proof: {provider_id} ({reason})")
-
-    # Preserve the original anti-shrink invariant, but count a historical member
-    # as accounted for when this exact deep run conclusively disqualified it.
-    # This catches silent mass disablement while allowing the strict gates to do
-    # their job instead of forcing stale providers active forever.
+    # Historical LKG floor remains an anti-deletion/accounting guard. Hub-less
+    # historical members count as explicitly accounted for, not as active.
     accounted_for = len(active) + len(justified) + len(deferred_to_learning)
     if accounted_for < minimum:
-        errors.append(
-            f"enabled-or-conclusively-disqualified provider count regressed: {accounted_for} < {minimum}"
-        )
+        errors.append(f"enabled-or-authoritatively-accounted provider count regressed: {accounted_for} < {minimum}")
 
     mismatched = sorted(
         provider_id
@@ -587,14 +502,7 @@ def validate() -> list[str]:
         if bool(main_rows[provider_id].get("enabled")) != bool(vf_rows[provider_id].get("enabled"))
     )
     if mismatched:
-        # Activation validation runs before the language manifests are rendered
-        # back from the canonical catalog. Report transient drift here, but let
-        # validate_language_projection.py own the final publication invariant.
-        print(
-            "FIELD_ACTIVATION_PROJECTION_DRIFT_DEFERRED providers="
-            + ",".join(mismatched)
-        )
-
+        print("FIELD_ACTIVATION_PROJECTION_DRIFT_DEFERRED providers=" + ",".join(mismatched))
     return errors
 
 
@@ -603,10 +511,7 @@ def main() -> int:
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(
-        f"provider activation preservation passed ({active_count} enabled; "
-        "Learning-deferred drift allowed; evidence-backed shrink guarded)"
-    )
+    print(f"provider activation preservation passed ({active_count} enabled; declared-hub authority; LKG history preserved)")
     return 0
 
 
