@@ -1,149 +1,148 @@
 # Hub46 — secondary research on previously opaque providers — 2026-09-11
 
-This is the secondary research pass requested after reconciling older GPT discussions, `MEMORY.md` and current repository evidence.
+This pass reconciles older GPT discussions, `MEMORY.md`, current repository evidence and targeted external/runtime proof. The starting queue came from `automation/HUB46-BLOCKER-INVENTORY-20260911.md`: nine targets whose structured DATA did not demonstrate an executable mechanism.
 
-The starting queue came from `automation/HUB46-BLOCKER-INVENTORY-20260911.md`: nine targets whose current NiakVIO structured DATA did not demonstrate an executable mechanism.
-
-## Result
+## Current result
 
 - Starting repository-opaque queue: **9**.
-- Site mechanisms now understood at a useful architectural level: **9/9**.
+- Site mechanisms understood at a useful architectural level: **9/9**.
 - Completely unanalyzable sites after this pass: **0**.
-- Exact public invocation/API shape independently documented: **2** (`vidrock`, `anidb`).
-- Mechanism understood but final native-stream resolver still needs implementation/verification: **7**.
+- **VidRock:** runtime integrated and **live-proven** for movie + TV.
+- **AniDB:** runtime integrated and deterministic chain proven; current GitHub runner is blocked by **HTTP 403 at the first `/browse?q=...` search request**.
+- Remaining providers with exact final-hop resolver/playability debt: **7**.
 
-`Mechanism understood` is deliberately weaker than `provider repaired`. It means we now know what kind of site/provider it is and where NiakVIO should look next. It does **not** claim that its current bundle returns a playable stream.
+`Mechanism understood` is deliberately weaker than `provider repaired`. It means we know what kind of provider it is and the next execution stage. It does not claim a playable stream unless a live proof below says so.
 
-## 1. VidRock — resolved invocation shape
+## 1. VidRock — integrated and live-proven
 
-**Previous repo state:** registry-only hub; known site but no executable route recorded.
+The workbench now contains a dedicated clean-v3 runtime for the current VidRock contract. Public references exposed the modern API family; targeted network proof then validated the actual provider API and resulting HLS streams.
 
-Independent public integration documentation exposes the provider as an iframe service:
+### Current contract
 
-- base: `https://vidrock.ru`
-- movie: `/movie/{tmdb-or-imdb-id}`
-- TV: `/tv/{tmdb-or-imdb-id}/{season}/{episode}`
-- accepts TMDB or IMDb IDs
-- optional player parameters include `autoplay`, `autonext`, `theme`, `download`, `nextbutton`, `episodeselector`, `lang`
-- content-list endpoints are also publicly documented as `/list/movie.json` and `/list/tv.json`
+- provider API authority: `https://vidrock.ru`
+- movie: `/api/movie/{tmdbId}`
+- TV: `/api/tv/{tmdbId}/{season}/{episode}`
+- per-server URLs are AES-256-GCM tokens; runtime decrypts them and accepts only HTTP(S) HLS whose manifest begins with `#EXTM3U`
+- raw numeric TMDB is required; IMDb-like positional values fail closed
 
-Source checked: `OgBek/watchers-heaven`, `streaming-providers.md`, current public GitHub revision read on 2026-09-11.
+### Proof
 
-**NiakVIO classification:** `iframe-player`, exact route shape known. This should no longer be classified as opaque. Next work is to materialize/test these routes under the ProviderBase iframe contract and native clients.
+GitHub Actions run **34626186214** proved both fixtures live:
 
-## 2. AniDB (`anidb.app`, not `anidb.net`) — resolved public frontend API
+- movie / Interstellar (`157336`): API 200, 5 servers returned, **3 decrypted playable HLS**
+- TV / Breaking Bad S01E01 (`1396/1/1`): API 200, 5 servers returned, **3 playable HLS**
 
-The target is the streaming site `anidb.app`, not the unrelated long-running metadata database `anidb.net`.
+Observed playable server families included Atlas, Luna and Orion. The deterministic crypto/runtime test also verifies tamper fail-closed and IMDb no-network behavior.
 
-Current ani-cli v5 publicly documents and uses these endpoints:
+**Classification:** no longer opaque and no longer theoretical. VidRock has live movie+TV provider proof. Final native acceptance still belongs to the five same-candidate Labs.
+
+## 2. AniDB (`anidb.app`, not `anidb.net`) — integrated, live search currently 403
+
+The target is the streaming site `anidb.app`, not the unrelated metadata database `anidb.net`.
+
+The current public ani-cli v5 contract is:
 
 - base: `https://anidb.app`
 - search: `/browse?q={query}`
 - detail: `/anime/{anime-id-or-slug}`
 - episodes: `/api/frontend/anime/{anime-id}/episodes`
-- language/stream resolution: `/api/frontend/episode/{episode-id}/languages`
+- language/embed resolution: `/api/frontend/episode/{episode-id}/languages`
+- language response -> `embed_url` -> player page -> master HLS
 
-Recent ani-cli material confirms the move to `anidb.app` and also records a September 2026 outage/maintenance period, so a current network failure must not be confused with an unknown mechanism.
+NiakVIO previously carried stale structured authority pointing execution to `anidb.pics`. That has now been migrated in both `provider-overrides.json` and `automation/provider-v3-static-knowledge.json` so one-provider materialization can no longer silently resurrect the stale host.
 
-Sources checked:
-- `pystardust/ani-cli` current `ani-cli` script
-- ani-cli v5.0 discussion #1845
-- ani-cli issue #1890 (September 2026 outage context)
+### Integrated runtime
 
-**NiakVIO classification:** public JSON API + episode language/stream resolver. Not opaque. Current blocker can legitimately be upstream availability/network drift.
+The workbench now contains `PROVIDER.ANIDB.RUNTIME.V1`:
 
-## 3. VoirAnime — episode HTML + host selector + iframe player
+1. canonical media type must be `anime` **before the first provider network request**;
+2. canonical title is required;
+3. search HTML resolves the AniDB numeric anime id;
+4. episode API resolves the requested episode id;
+5. language API resolves one or more embeds;
+6. embed page resolves a master `.m3u8`;
+7. the master must be a valid `#EXTM3U` manifest.
 
-The currently indexed VoirAnime family still exposes anime/episode pages, while domains rotate (`voiranime.com`, versioned subdomains and `voir-anime.to` have all been used).
+Actions run **34626987178** proved the deterministic runtime and the materialization/gates:
 
-The public `BetterVoirAnime` browser-extension implementation reveals the useful runtime structure:
+- `ANIDB_RUNTIME_V1_OK streams=2 sub=1 dub=1 canonical_gate_network=0 missing_title_network=0`
+- materialized bundle: `providers/anidb-32a0a3f84a6c73ed.js`
+- exact activation remains **46 enabled / 50 disabled**
+- Provider v3 strategy plan passed for all 96
+- Provider Non-Regression passed for all 96
+- ProviderBase store remained **96/96 clean**
+
+### Current live blocker
+
+The same run attempted the real first hop and got:
+
+- `GET https://anidb.app/browse?q=Jujutsu%20Kaisen` -> **HTTP 403**
+- no provider call beyond search was attempted
+
+**Classification:** mechanism and runtime are understood/implemented. Current live blocker is **anti-bot/network at search**, not parser uncertainty and not an unknown site. Do not claim live AniDB stream proof until this first-hop 403 is overcome or the upstream becomes reachable again.
+
+## 3. VoirAnime — episode HTML -> host selector -> iframe
+
+Public `BetterVoirAnime` code establishes the runtime structure:
 
 - episode pages expose `#manga-reading-nav-head`
-- episode navigation is in `.single-chapter-select`
-- host selection is a `.host-select`
-- changing the host select switches the player
-- the player lives under `.entry-content .reading-content .chapter-video-frame`
-- the selected player is an `<iframe>`
-- the extension parses an episode id and can build alternate player URLs using that id
+- navigation is in `.single-chapter-select`
+- host selection is `.host-select`
+- player is under `.entry-content .reading-content .chapter-video-frame`
+- selected player is an `<iframe>`
 
-Current indexed episode URLs also confirm an `/anime/.../<episode-slug>/` page shape.
+**Current unresolved stage:** obtain and validate the currently live selected host iframe/media chain on the rotating VoirAnime domain family. This is a **dynamic iframe extraction** problem, not an unknown-site problem.
 
-Sources checked:
-- `Dastan21/BetterVoirAnime`, `src/pages/episode.js` and parser/manifest references
-- public indexed VoirAnime episode pages/current-domain references
+## 4. Coflix — catalogue/search -> detail -> server selector -> iframe
 
-**NiakVIO classification:** HTML episode/detail scraper -> host selector -> iframe extraction. The architecture is understood; the exact currently live host iframe URL/extraction path still requires a live DOM/network proof. This is **partial resolver debt**, not an opaque site.
+Current domain/site evidence establishes searchable film/series details, language/server variants and embedded players; address portals/Telegram remain discovery-only.
 
-## 4. Coflix — searchable catalogue -> film/series detail -> server list -> iframe
+**Current unresolved stage:** live server/iframe extraction plus work-identity validation. This is a **dynamic iframe extraction** problem.
 
-Current official-domain information points to `coflix.group` for films/series and `coflix.domains` as the address/domain portal. The Telegram channel is address discovery only and must remain outside ProviderBase runtime execution.
+## 5. 4KHDHub — release detail -> downstream file host
 
-Current live/indexed pages establish:
+Current site evidence shows release/detail pages and downstream file hosts such as HubCloud.
 
-- homepage text search and catalogue
-- film route shape such as `/film/<slug>/`
-- film/detail metadata pages
-- `Serveurs disponibles`
-- language/server variants such as `VF`, `VOSTFR`, `Lecteurvideo`, `Dood`, `Voe`, `Uqload`
-- an embedded `iframe` player on detail pages
+**Current unresolved stage:** resolve a downstream host into a directly playable media URL, if available, and prove work identity/transport.
 
-Sources checked on 2026-09-11:
-- `https://coflix.group/`
-- indexed current film pages under `coflix.group/film/.../`
-- `https://coflix.domains/`
-- official/public Coflix Telegram address announcements for domain correlation only
+## 6. UHDMovies — UHD detail -> drive/file-host links
 
-**NiakVIO classification:** catalogue/search -> detail -> server selector -> iframe. Mechanism understood. Exact iframe/server extraction and identity validation still need live implementation/testing.
+Current references describe 1080p/2160p/4K/HDR/HEVC catalogue/detail pages with direct-drive/file links.
 
-## 5. 4KHDHub — release index -> release detail -> file host
+**Current unresolved stage:** downstream file-host resolution and native-playable media proof.
 
-Current domain evidence points to `4khdhub.one`. Public/current release references expose detail URLs such as `/disclosure-day-movie-7500/` and downstream file-host links such as HubCloud.
+## 7. Movies4u — catalogue/search -> detail -> download host
 
-**NiakVIO classification:** release/download index -> detail post -> external file host. The site is not an unknown iframe streaming API. A repair must therefore resolve a playable file/host chain (if one exists) rather than inventing a TMDB direct API.
+Current site evidence exposes searchable movie/series posts and download-host chains.
 
-## 6. UHDMovies — UHD download index -> detail -> direct-drive/file links
+**Current unresolved stage:** downstream host resolution and identity/playability proof.
 
-Current `uhdmovies.autos` metadata and current public references identify a high-resolution movie/TV download index advertising 1080p/2160p/4K/HDR/HEVC and Google Drive/direct links.
+## 8. MoviesDrive — release -> quality variant -> direct-drive/file host
 
-**NiakVIO classification:** catalogue/detail/download-host chain. Mechanism understood; playable-media host resolution is the remaining integration problem.
+Current indexed posts expose quality variants including 2160p/4K and direct-drive/download links.
 
-## 7. Movies4u — searchable catalogue -> post/detail -> download-host chain
+**Current unresolved stage:** extract the final media-bearing host/link and prove it is playable by Nuvio.
 
-Current `movies4u.kg` exposes a searchable/category-driven movie/series catalogue, detail posts and a download workflow.
+## 9. CineFreak — index/detail -> third-party watch/download links
 
-**NiakVIO classification:** catalogue/search -> detail post -> downstream host/download resolution. Not an unknown provider API. Do not model it as a direct TMDB resolver without live proof.
+Current site evidence says media files are hosted on third-party services and indexed through detail pages.
 
-## 8. MoviesDrive — release post -> quality variant -> direct G-Drive/download host
-
-Current 2026 indexed posts under the rotating MoviesDrive domain family explicitly expose film/series posts, quality variants (480p/720p/1080p/2160p/4K) and state that direct G-Drive download links are provided.
-
-Recent examples indexed in July-September 2026 include `new2.moviesdrive.christmas` and `new3.moviesdrive.christmas`.
-
-**NiakVIO classification:** release/detail post -> quality variant -> downstream direct-drive/file-host link. Mechanism understood; extraction to a Nuvio-playable media URL remains to be proven.
-
-## 9. CineFreak — index/detail -> third-party watch/download file links
-
-Current `cinefreak.net` describes itself as a movie/series/anime/K-drama download/watch index. Indexed pages explicitly state that files are not hosted locally and that the site indexes links hosted on third-party services.
-
-**NiakVIO classification:** catalogue/search -> detail -> third-party host/file links. Mechanism understood; final host resolution/playability remains open.
+**Current unresolved stage:** downstream third-party host resolution and playability/identity proof.
 
 ## What remains genuinely unresolved
 
-There is **no longer a 9-provider “we do not understand the site” bucket**.
+There is **no longer a provider in this nine-provider queue whose overall site mechanism is unknown**.
 
-The remaining research/implementation buckets are:
+The remaining exact final-hop queue is:
 
-1. **Exact integration ready to test:** `vidrock`, `anidb`.
-2. **Dynamic iframe extraction still needs live proof:** `voiranime`, `coflix`.
-3. **Download/file-host chain needs resolver + playability proof:** `4khdhub`, `uhdmovies`, `movies4u`, `moviesdrive`, `cinefreak`.
+- **Dynamic iframe extraction:** `voiranime`, `coflix`
+- **Download/file-host chain resolution:** `4khdhub`, `uhdmovies`, `movies4u`, `moviesdrive`, `cinefreak`
 
-If a later live attempt still cannot expose the final iframe/file URL for one of buckets 2-3, that provider should be reported to the user by name with the exact failed stage. Do not collapse it back into generic `0 streams`.
+If one of these seven still cannot expose the final iframe/file URL after targeted live work, report that provider to the user by name with the exact failed stage. Never collapse it back into a generic `0 streams` bucket.
 
-## Immediate execution consequence
+## Next execution order
 
-The next repair work should prioritize the two strongest newly recovered contracts first:
-
-- materialize/test VidRock's documented movie/TV iframe routes;
-- replace stale AniDB domain/route assumptions with the current `anidb.app` frontend API contract and distinguish upstream outage from parser failure.
-
-After that, attack VoirAnime/Coflix at the iframe extraction stage and the five download-index providers at their downstream host-resolution stage.
+1. VoirAnime and Coflix: capture the real currently selected iframe/server chain and validate identity.
+2. 4KHDHub, UHDMovies, Movies4u, MoviesDrive, CineFreak: resolve their downstream host/file chains into Nuvio-playable media where technically possible.
+3. Rebuild the per-provider blocker inventory from the corrected DATA.
+4. Run the five native Labs on one exact candidate SHA before any functional-success publication claim.
