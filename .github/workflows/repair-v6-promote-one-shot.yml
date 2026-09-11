@@ -56,6 +56,7 @@ jobs:
               '.github/workflows/repair-v6-promote-one-shot.yml',
               '.github/triggers/provider-repair-promote.json',
               'scripts/finalize_provider_repair_disposition_v1_impl.py',
+              'tests/provider_v3_strategy_plan_contract_test.py',
           }
           changed=set(subprocess.check_output(['git','diff','--name-only',f'{source}..HEAD'], text=True).splitlines())
           bad=sorted(changed-allowed)
