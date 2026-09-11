@@ -27,6 +27,7 @@ jobs:
       - name: Checkout exact replay trigger
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
+          path: niakvio
           fetch-depth: 0
           persist-credentials: true
           ref: ${{ github.sha }}
@@ -35,14 +36,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin "${NIAKVIO_RELEASE_SHA}"
-          git diff --exit-code "${NIAKVIO_RELEASE_SHA}"..HEAD -- \
+          git -C niakvio fetch origin "${NIAKVIO_RELEASE_SHA}"
+          git -C niakvio diff --exit-code "${NIAKVIO_RELEASE_SHA}"..HEAD -- \
             manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
             providers/ provider-bases/ provider-overrides.json provider_catalog.json PROVENANCE.json
           python3 - <<'PY'
           import json
           from pathlib import Path
-          m=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          m=json.loads(Path('niakvio/manifest.json').read_text(encoding='utf-8'))
           rows=m.get('scrapers') or []
           assert m.get('version') == '5.21.42', m.get('version')
           assert len(rows) == 96, len(rows)
@@ -76,7 +77,7 @@ jobs:
           SHA="$(python3 - <<'PY'
           import json
           from pathlib import Path
-          d=json.loads(Path('automation/nuvio-client-upstreams.json').read_text(encoding='utf-8'))
+          d=json.loads(Path('niakvio/automation/nuvio-client-upstreams.json').read_text(encoding='utf-8'))
           print(d['clients']['nuvio-tv']['verified_ref'])
           PY
           )"
@@ -97,7 +98,7 @@ jobs:
           umask 077
           printf 'TMDB_API_KEY=%s\n' "$TMDB_API_KEY" > nuvio-tv/local.properties
           touch nuvio-tv/local.dev.properties
-          python3 scripts/prepare_native_reader_acceptance.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial
+          python3 niakvio/scripts/prepare_native_reader_acceptance.py tv --fixture interstellar --workspace "$GITHUB_WORKSPACE" --manifest manifest.json --provider declared-type --streams 2 --initial
 
       - name: Prebuild audited TV reader once before QEMU
         shell: bash
@@ -106,12 +107,12 @@ jobs:
           NIAKVIO_TARGET_PROVIDER: declared-type
           NIAKVIO_PRIMARY_FIXTURE: interstellar
           NIAKVIO_PRIMARY_STREAM_SCOPE: "2"
-        run: bash scripts/prebuild_native_android_reader_suite.sh tv
+        run: bash niakvio/scripts/prebuild_native_android_reader_suite.sh tv
 
       - name: Enable KVM
         run: if [ -e /dev/kvm ]; then sudo chmod 666 /dev/kvm || true; fi
       - name: Prime Android adb server
-        run: bash scripts/prime_android_lab_adb.sh
+        run: bash niakvio/scripts/prime_android_lab_adb.sh
 
       - name: Execute movie TV anime in one TV boot
         uses: ReactiveCircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d
@@ -137,16 +138,16 @@ jobs:
           force-avd-creation: false
           emulator-boot-timeout: 600
           emulator-options: ${{ steps.avd-cache.outputs.cache-hit == 'true' && '-no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' || '-no-snapshot-load -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim' }}
-          script: bash "$GITHUB_WORKSPACE/scripts/run_native_corpus_tv_suite.sh"
+          script: bash "$GITHUB_WORKSPACE/niakvio/scripts/run_native_corpus_tv_suite.sh"
 
       - name: Verify exhaustive TV provider matrix
         shell: bash
         run: |
           set -euo pipefail
-          python3 scripts/gate_native_declared_provider_matrix.py \
+          python3 niakvio/scripts/gate_native_declared_provider_matrix.py \
             --client tv \
-            --manifest manifest.json \
-            --corpus .github/triggers/nuvio-client-lab.json \
+            --manifest niakvio/manifest.json \
+            --corpus niakvio/.github/triggers/nuvio-client-lab.json \
             "$GITHUB_WORKSPACE"/tv-native-corpus-*.log
 
       - name: Diagnose complete TV evidence
@@ -157,7 +158,7 @@ jobs:
           for fixture in $NIAKVIO_REPRESENTATIVE_FIXTURES; do
             LOG="$GITHUB_WORKSPACE/tv-native-corpus-${fixture}.log"
             test -s "$LOG"
-            node engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-audited-${fixture}-brain.json" "$LOG"
+            node niakvio/engine_v2/scripts/diagnose-native-reader.mjs --output "$GITHUB_WORKSPACE/tv-audited-${fixture}-brain.json" "$LOG"
           done
 
       - name: Upload TV audited-ref evidence
@@ -178,14 +179,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin main
-          test "$(git rev-parse origin/main)" = "${GITHUB_SHA}" || {
+          git -C niakvio fetch origin main
+          test "$(git -C niakvio rev-parse origin/main)" = "${GITHUB_SHA}" || {
             echo 'TV replay completed but main advanced; leave one-shot cleanup for a later commit.' >&2
             exit 0
           }
-          rm -f .github/workflows/native-tv-verified-ref-one-shot.yml .github/triggers/native-tv-verified-ref.json
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'chore(native): remove completed TV audited-ref one-shot'
-          git push origin HEAD:main
+          rm -f niakvio/.github/workflows/native-tv-verified-ref-one-shot.yml niakvio/.github/triggers/native-tv-verified-ref.json
+          git -C niakvio config user.name 'github-actions[bot]'
+          git -C niakvio config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git -C niakvio add -A
+          git -C niakvio commit -m 'chore(native): remove completed TV audited-ref one-shot'
+          git -C niakvio push origin HEAD:main
