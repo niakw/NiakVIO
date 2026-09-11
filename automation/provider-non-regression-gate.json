@@ -1,14 +1,3550 @@
 {
-  "schemaVersion": 1,
-  "mode": "ledger",
-  "passed": true,
+  "schemaVersion": 2,
+  "mode": "candidate",
+  "baseRef": "main",
+  "scopeAllProviders": true,
+  "scopeProviderCount": 96,
+  "scopeProviders": [
+    "1shows",
+    "4khdhub",
+    "4khdhubnew",
+    "allanime",
+    "allmovieland",
+    "allwish",
+    "anidb",
+    "anikototv",
+    "anime-sama",
+    "anime-ultime",
+    "animekai",
+    "animepahe",
+    "animesalt",
+    "animesama-co",
+    "animesultra",
+    "animetsu",
+    "animevost-fr",
+    "animevostfr",
+    "animeworld",
+    "animezey",
+    "animoflix",
+    "anizone",
+    "castle",
+    "cineby",
+    "cinefreak",
+    "cinemacity",
+    "cinemm",
+    "cinevibe",
+    "coflix",
+    "ctgmovies",
+    "desiflix",
+    "dooflix",
+    "dulourd",
+    "dvdplay",
+    "einthusan",
+    "fibwatch",
+    "flemmix",
+    "french-manga",
+    "frenchstream",
+    "fullanime",
+    "goatapi",
+    "goated",
+    "gramcinema",
+    "hdghartv",
+    "hdhub4u",
+    "hianime",
+    "hindmoviez",
+    "kehflix",
+    "kisskh",
+    "kurage",
+    "mallumv",
+    "moonflix",
+    "movieblast",
+    "moviebox",
+    "movies4u",
+    "moviesdrive",
+    "movieshunt",
+    "moviesmod",
+    "movix",
+    "mugiwarastream",
+    "mycima",
+    "nakios",
+    "neko-sama",
+    "netmirror",
+    "onlykdrama",
+    "papadustream",
+    "peachify",
+    "persianstremio",
+    "playimdb",
+    "purstream",
+    "sekai",
+    "showbox",
+    "streamflix",
+    "streamzo",
+    "toflix",
+    "topcartoons",
+    "uhdmovies",
+    "vegamovies",
+    "videasy",
+    "vidfast",
+    "vidlink",
+    "vidlove",
+    "vidnest",
+    "vidnest-anime",
+    "vidrock",
+    "vidsrc",
+    "vixsrc",
+    "voiranime",
+    "voiranime-homes",
+    "voiranime-rip",
+    "vostfree",
+    "waveanime",
+    "wookafr",
+    "xpass",
+    "yflix",
+    "zinkmovies"
+  ],
+  "changedPaths": [
+    "--all"
+  ],
+  "rollingBaselineSource": "main:provider-v3-quick-yield.json",
+  "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
+  "proofInvalidationSource": "automation/provider-proof-invalidations.json",
+  "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
+  "candidateSource": "provider-v3-quick-yield.json",
+  "disabledHistoricalDebtPolicy": "audited route debt is allowed for hub46 targets or disabled non-targets when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
+  "disabledDebtProviderCount": 8,
+  "disabledDebtProviders": [
+    "anikototv",
+    "cineby",
+    "hindmoviez",
+    "kehflix",
+    "movieblast",
+    "purstream",
+    "streamzo",
+    "wookafr"
+  ],
+  "obligations": {
+    "1shows": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "4khdhub": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "4khdhubnew": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "allanime": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "allmovieland": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "allwish": {
+      "historicalPositiveVersions": [
+        "5.21.36"
+      ],
+      "proofInvalidationApplied": true,
+      "proofInvalidationAuthority": "cross-fixture-content-identity-contradiction",
+      "proofInvalidationReasons": [
+        "cross_fixture_identity_collision",
+        "short_media_identity_failure",
+        "discovery_hub_executed_as_runtime_origin"
+      ],
+      "invalidatedVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "providerPositiveInvalidated": true,
+      "historicalVerifiedLanesRaw": [
+        "movie",
+        "tv"
+      ],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateLaneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": null,
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "anidb": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "anikototv": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": true,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "historical_positive_without_candidate_verified_lane"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "anime-sama": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "anime"
+      ],
+      "historicalVerifiedLanes": [
+        "anime"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "anime"
+      ],
+      "candidateVerifiedLanes": [
+        "anime"
+      ],
+      "candidateLaneStatuses": {
+        "anime": [
+          "playable_verified"
+        ],
+        "movie": [
+          "wrong_content"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "anime-ultime": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animekai": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "anime"
+      ],
+      "candidateLaneStatuses": {
+        "anime": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": null,
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animepahe": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animesalt": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animesama-co": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animesultra": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animetsu": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animevost-fr": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animevostfr": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animeworld": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animezey": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "animoflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "anizone": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "timeout"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "castle": {
+      "historicalPositiveVersions": [
+        "5.21.0",
+        "5.21.36"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie",
+        "tv"
+      ],
+      "historicalVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateLaneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": null,
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "cineby": {
+      "historicalPositiveVersions": [
+        "5.21.0",
+        "5.21.36"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie",
+        "tv"
+      ],
+      "historicalVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "missing_verified_lanes"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "cinefreak": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "cinemacity": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "cinemm": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "cinevibe": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "coflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "ctgmovies": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "desiflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "tv"
+      ],
+      "candidateLaneStatuses": {
+        "movie": [
+          "wrong_content"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "dooflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "dulourd": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "dvdplay": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "einthusan": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "fibwatch": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "flemmix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "french-manga": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "anime"
+      ],
+      "candidateLaneStatuses": {
+        "anime": [
+          "playable_verified"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": true,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "frenchstream": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "movie"
+      ],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "fullanime": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "goatapi": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "goated": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "gramcinema": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "hdghartv": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "hdhub4u": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "hianime": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "hindmoviez": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie"
+      ],
+      "historicalVerifiedLanes": [
+        "movie"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "movie"
+      ],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [
+        "movie"
+      ],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "missing_verified_lanes"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "kehflix": {
+      "historicalPositiveVersions": [
+        "5.21.36"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "historicalVerifiedLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": true,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "missing_verified_lanes"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "kisskh": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "kurage": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "mallumv": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "moonflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "movieblast": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": true,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "historical_positive_without_candidate_verified_lane"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "moviebox": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "movies4u": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "movie"
+      ],
+      "candidateLaneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "moviesdrive": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "movieshunt": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "movie"
+      ],
+      "candidateLaneStatuses": {
+        "movie": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": true,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": null,
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "moviesmod": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "movix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "mugiwarastream": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "mycima": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "nakios": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "neko-sama": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "netmirror": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "returned_unplayable"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "onlykdrama": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "papadustream": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "anime",
+        "tv"
+      ],
+      "candidateLaneStatuses": {
+        "anime": [
+          "playable_verified"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "peachify": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "persianstremio": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "playimdb": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateLaneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": true,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": null,
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "purstream": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": true,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "historical_positive_without_candidate_verified_lane"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "sekai": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "showbox": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "streamflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "streamzo": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie"
+      ],
+      "historicalVerifiedLanes": [
+        "movie"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "movie"
+      ],
+      "candidateVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [
+        "anime",
+        "tv"
+      ],
+      "unrecoveredPartialRegressionLanes": [
+        "anime"
+      ],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "partial_regression_not_recovered"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "toflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "topcartoons": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "uhdmovies": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vegamovies": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "videasy": {
+      "historicalPositiveVersions": [
+        "5.21.0"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "tv"
+      ],
+      "historicalVerifiedLanes": [
+        "tv"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "tv"
+      ],
+      "candidateVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateLaneStatuses": {
+        "movie": [
+          "playable_verified"
+        ],
+        "tv": [
+          "playable_verified"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": null,
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vidfast": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vidlink": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vidlove": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vidnest": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vidnest-anime": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vidrock": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vidsrc": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vixsrc": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "off",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "voiranime": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "voiranime-homes": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [
+        "anime"
+      ],
+      "candidateLaneStatuses": {
+        "anime": [
+          "playable_verified"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "voiranime-rip": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "vostfree": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ],
+        "movie": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "waveanime": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "anime": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "wookafr": {
+      "historicalPositiveVersions": [
+        "5.21.36"
+      ],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [
+        "movie",
+        "tv"
+      ],
+      "historicalVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": true,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [
+        "missing_verified_lanes"
+      ],
+      "passed": true,
+      "failures": []
+    },
+    "xpass": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "yflix": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    },
+    "zinkmovies": {
+      "historicalPositiveVersions": [],
+      "proofInvalidationApplied": false,
+      "proofInvalidationAuthority": null,
+      "proofInvalidationReasons": null,
+      "invalidatedVerifiedLanes": [],
+      "providerPositiveInvalidated": false,
+      "historicalVerifiedLanesRaw": [],
+      "historicalVerifiedLanes": [],
+      "rollingAcceptedLanesRaw": [],
+      "rollingAcceptedLanes": [],
+      "requiredVerifiedLanes": [],
+      "candidateVerifiedLanes": [],
+      "candidateLaneStatuses": {
+        "movie": [
+          "no_streams"
+        ],
+        "tv": [
+          "no_streams"
+        ]
+      },
+      "missingVerifiedLanes": [],
+      "requireAnyVerifiedLane": false,
+      "partialRegressionFailedLanes": [],
+      "unrecoveredPartialRegressionLanes": [],
+      "lostSemanticTypes": [],
+      "hlsM3u8Lost": false,
+      "externalDriftRecorded": false,
+      "disabledDebtAccepted": false,
+      "disabledDebtState": "repair",
+      "disabledDebtReasons": [],
+      "passed": true,
+      "failures": []
+    }
+  },
   "failureCount": 0,
   "failures": [],
-  "providerCount": 96,
-  "history": [
-    "5.21.0",
-    "5.21.16",
-    "5.21.36"
-  ],
-  "crossVersionFallbackAllowed": false
+  "passed": true
 }

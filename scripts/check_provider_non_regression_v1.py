@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MATRIX = ROOT / "automation" / "provider-history-matrix.json"
 DEFAULT_CANDIDATE = ROOT / "provider-v3-quick-yield.json"
 DEFAULT_OUT = ROOT / "automation" / "provider-non-regression-gate.json"
+DEFAULT_INVALIDATIONS = ROOT / "automation" / "provider-proof-invalidations.json"
 CURRENT_MANIFEST = ROOT / "manifest.json"
 CURRENT_OVERRIDES = ROOT / "provider-overrides.json"
 EXPECTED = 96
@@ -27,6 +28,52 @@ def load(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(path)
     return value
+
+
+def load_proof_invalidations(path: Path = DEFAULT_INVALIDATIONS) -> dict[str, dict[str, Any]]:
+    if not path.exists():
+        return {}
+    doc = load(path)
+    if int(doc.get("schemaVersion") or 0) != 1:
+        raise ValueError("proof invalidation schemaVersion must be 1")
+    if doc.get("authority") != "provider-proof-invalidation-v1":
+        raise ValueError("proof invalidation authority mismatch")
+    raw = doc.get("providers")
+    if not isinstance(raw, dict):
+        raise ValueError("proof invalidation providers must be an object")
+    out: dict[str, dict[str, Any]] = {}
+    for raw_pid, raw_row in raw.items():
+        pid = canon(raw_pid)
+        if not pid or not isinstance(raw_row, dict):
+            raise ValueError("proof invalidation provider row invalid")
+        if raw_row.get("active") is not True:
+            continue
+        lanes = sorted({canon(x) for x in raw_row.get("invalidatedLanes") or [] if canon(x)})
+        reasons = [canon(x) for x in raw_row.get("reasonCodes") or [] if canon(x)]
+        refs = [str(x).strip() for x in raw_row.get("evidenceRefs") or [] if str(x).strip()]
+        authority = canon(raw_row.get("contradictionAuthority"))
+        invalidate_positive = raw_row.get("invalidateProviderPositive") is True
+        if not lanes:
+            raise ValueError(f"{pid}: active proof invalidation must name lanes")
+        if not authority or not reasons or len(refs) < 2:
+            raise ValueError(f"{pid}: proof invalidation requires contradiction authority, reasons, and >=2 evidence refs")
+        if invalidate_positive and "cross_fixture_identity_collision" not in reasons:
+            raise ValueError(f"{pid}: provider-positive invalidation requires cross_fixture_identity_collision")
+        row = dict(raw_row)
+        row["invalidatedLanes"] = lanes
+        row["reasonCodes"] = reasons
+        row["evidenceRefs"] = refs
+        row["contradictionAuthority"] = authority
+        row["invalidateProviderPositive"] = invalidate_positive
+        out[pid] = row
+    return out
+
+
+def invalidated_lanes_for(invalidations: dict[str, dict[str, Any]], provider_id: str) -> set[str]:
+    row = invalidations.get(canon(provider_id))
+    if not isinstance(row, dict):
+        return set()
+    return {canon(x) for x in row.get("invalidatedLanes") or [] if canon(x)}
 
 
 def git_text(ref: str, path: str) -> str:
@@ -220,6 +267,7 @@ def candidate_gate(
     candidate_lanes = verified_lanes_from_quick(candidate)
     baseline_lanes = verified_lanes_from_quick(git_json(base_ref, "provider-v3-quick-yield.json"))
     activation_debt = current_activation_debt()
+    invalidations = load_proof_invalidations()
 
     obligations: dict[str, Any] = {}
     failures: list[dict[str, Any]] = []
@@ -232,9 +280,14 @@ def candidate_gate(
             version for version in HISTORY if (states.get(version) or {}).get("icon") == GREEN
         ]
         historical_positive = bool(historical_positive_versions)
-        historical_specific = {canon(x) for x in row.get("historicalVerifiedLanes") or [] if canon(x)}
-        rolling = set(baseline_lanes.get(pid) or set())
+        invalidation = invalidations.get(pid) if isinstance(invalidations.get(pid), dict) else {}
+        invalidated_lanes = invalidated_lanes_for(invalidations, pid)
+        historical_specific_raw = {canon(x) for x in row.get("historicalVerifiedLanes") or [] if canon(x)}
+        rolling_raw = set(baseline_lanes.get(pid) or set())
+        historical_specific = historical_specific_raw - invalidated_lanes
+        rolling = rolling_raw - invalidated_lanes
         required_lanes = historical_specific | rolling
+        provider_positive_invalidated = bool(invalidation.get("invalidateProviderPositive"))
         got = set(candidate_lanes.get(pid) or set())
         missing = sorted(required_lanes - got)
 
@@ -250,7 +303,7 @@ def candidate_gate(
             } & current_semantic
         unrecovered_partial = sorted(partial_failed - got)
 
-        require_any = historical_positive and not required_lanes
+        require_any = historical_positive and not required_lanes and not provider_positive_invalidated
         any_missing = require_any and not got
         debt = activation_debt.get(pid)
         debt_accepted = isinstance(debt, dict)
@@ -288,7 +341,14 @@ def candidate_gate(
             disabled_debt.append(pid)
         obligations[pid] = {
             "historicalPositiveVersions": historical_positive_versions,
+            "proofInvalidationApplied": bool(invalidation),
+            "proofInvalidationAuthority": invalidation.get("contradictionAuthority") if isinstance(invalidation, dict) else None,
+            "proofInvalidationReasons": invalidation.get("reasonCodes") if isinstance(invalidation, dict) else [],
+            "invalidatedVerifiedLanes": sorted(invalidated_lanes),
+            "providerPositiveInvalidated": provider_positive_invalidated,
+            "historicalVerifiedLanesRaw": sorted(historical_specific_raw),
             "historicalVerifiedLanes": sorted(historical_specific),
+            "rollingAcceptedLanesRaw": sorted(rolling_raw),
             "rollingAcceptedLanes": sorted(rolling),
             "requiredVerifiedLanes": sorted(required_lanes),
             "candidateVerifiedLanes": sorted(got),
@@ -319,6 +379,8 @@ def candidate_gate(
         "changedPaths": changed,
         "rollingBaselineSource": f"{base_ref}:provider-v3-quick-yield.json",
         "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
+        "proofInvalidationSource": str(DEFAULT_INVALIDATIONS.relative_to(ROOT)),
+        "proofInvalidationPolicy": "only active, evidence-backed contradiction records may remove invalidated historical/rolling lanes from the candidate floor; all other floors remain unchanged",
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
         "disabledHistoricalDebtPolicy": "audited route debt is allowed for hub46 targets or disabled non-targets when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
         "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
