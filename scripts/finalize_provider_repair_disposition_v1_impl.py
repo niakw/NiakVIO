@@ -7,6 +7,8 @@ Policy:
   non-empty ``provider_patches.<provider>.official_hub``;
 - proof still controls diagnostic route/DATA state: ``on`` / ``repair`` / ``off``;
 - diagnostic state never overrides hub activation;
+- an active-but-broken provider may remain enabled only because it still has a
+  declared hub; its broken state stays explicit repair evidence, never success;
 - existing route/DATA evidence is preserved for learning/repair;
 - this script never silently shrinks supported/canonical types.
 
