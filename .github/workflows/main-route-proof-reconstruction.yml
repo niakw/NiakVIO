@@ -142,7 +142,7 @@ jobs:
               print('ROUTE_PROOF_SOURCE_UNAVAILABLE providers='+','.join(str(x) for x in missing))
           PY
 
-      - name: Apply the single census as structured DATA and activation policy
+      - name: Apply the single census as structured DATA only
         shell: bash
         run: |
           set -euo pipefail
@@ -152,23 +152,60 @@ jobs:
             --manifest manifest.json \
             --overrides provider-overrides.json
           python - <<'PY'
-          import json
+          import json, os
+          from pathlib import Path
+
+          def cid(value):
+              return str(value or '').strip().casefold().replace('_','-')
+
+          def activation_map(manifest):
+              return {
+                  cid(row.get('id')): row.get('enabled')
+                  for row in manifest.get('scrapers') or []
+                  if isinstance(row, dict) and cid(row.get('id'))
+              }
+
+          def override_activation_map(overrides):
+              out={}
+              for provider_id, patch in (overrides.get('provider_patches') or {}).items():
+                  if not isinstance(patch, dict):
+                      continue
+                  manifest_overrides=patch.get('manifest_overrides')
+                  if isinstance(manifest_overrides, dict) and 'enabled' in manifest_overrides:
+                      out[cid(provider_id)]=manifest_overrides.get('enabled')
+              return out
+
           r=json.load(open('automation/provider-route-recovery-v5.json'))
           a=r.get('applied') or {}
           assert a.get('patchedProviders')==96, a
-          o=json.load(open('provider-overrides.json'))
+          current_overrides=json.load(open('provider-overrides.json'))
+          current_manifest=json.load(open('manifest.json'))
+          before_manifest=json.load(open(Path(os.environ['RUNNER_TEMP'])/'manifest.before.json'))
+          before_overrides=json.load(open(Path(os.environ['RUNNER_TEMP'])/'provider-overrides.before.json'))
           k=json.load(open('automation/provider-v3-static-knowledge.json'))
-          m=json.load(open('manifest.json'))
-          patches=o.get('provider_patches') or {}
+          patches=current_overrides.get('provider_patches') or {}
           rows=k.get('providers') or {}
-          movix=next(row for row in m.get('scrapers',[]) if str(row.get('id','')).casefold()=='movix')
-          assert movix.get('enabled') is False, movix
-          assert (patches.get('movix') or {}).get('manifest_overrides',{}).get('enabled') is False
           assert len(patches)>=96 and len(rows)>=96
+          before_activation=activation_map(before_manifest)
+          after_activation=activation_map(current_manifest)
+          assert len(before_activation)==96 and len(after_activation)==96
+          assert after_activation==before_activation, {
+              key:(before_activation.get(key),after_activation.get(key))
+              for key in sorted(set(before_activation)|set(after_activation))
+              if before_activation.get(key)!=after_activation.get(key)
+          }
+          before_override_activation=override_activation_map(before_overrides)
+          after_override_activation=override_activation_map(current_overrides)
+          assert after_override_activation==before_override_activation, {
+              key:(before_override_activation.get(key),after_override_activation.get(key))
+              for key in sorted(set(before_override_activation)|set(after_override_activation))
+              if before_override_activation.get(key)!=after_override_activation.get(key)
+          }
+          movix=next(row for row in current_manifest.get('scrapers',[]) if cid(row.get('id'))=='movix')
           print(
               'ROUTE_PROOF_DATA_APPLIED '
               f"providers={a.get('patchedProviders')} routes={a.get('provenRoutes')} recipes={a.get('apiRecipes')} "
-              'movix_enabled=false'
+              f"activation_changed=0 movix_enabled={str(movix.get('enabled')).lower()}"
           )
           PY
 
@@ -229,15 +266,27 @@ jobs:
           print('ROUTE_PROOF_V29_PRESENT providers=96')
           PY
 
-      - name: Verify reconstructed workspace cardinality
+      - name: Verify reconstructed workspace cardinality and activation neutrality
         timeout-minutes: 2
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import json
+          import json, os
           from pathlib import Path
+
+          def cid(value):
+              return str(value or '').strip().casefold().replace('_','-')
+
+          def activation_map(manifest):
+              return {
+                  cid(row.get('id')): row.get('enabled')
+                  for row in manifest.get('scrapers') or []
+                  if isinstance(row, dict) and cid(row.get('id'))
+              }
+
           m=json.load(open('manifest.json')); rows=m.get('scrapers') or []
+          before=json.load(open(Path(os.environ['RUNNER_TEMP'])/'manifest.before.json'))
           mat=json.load(open('provider-v3-materialization.json'))
           assert len(rows)==96, len(rows)
           assert mat.get('providerCount')==96, mat.get('providerCount')
@@ -246,9 +295,19 @@ jobs:
           assert mat.get('mainTouched') is False
           files=[Path(row['filename']) for row in rows]
           assert all(path.is_file() for path in files)
-          movix=next(row for row in rows if str(row.get('id','')).casefold()=='movix')
-          assert movix.get('enabled') is False, movix
-          print('ROUTE_PROOF_RECONSTRUCTION_96_OK providers=96 publication=false movix_enabled=false')
+          before_activation=activation_map(before)
+          after_activation=activation_map(m)
+          assert len(before_activation)==96 and len(after_activation)==96
+          assert after_activation==before_activation, {
+              key:(before_activation.get(key),after_activation.get(key))
+              for key in sorted(set(before_activation)|set(after_activation))
+              if before_activation.get(key)!=after_activation.get(key)
+          }
+          movix=next(row for row in rows if cid(row.get('id'))=='movix')
+          print(
+              'ROUTE_PROOF_RECONSTRUCTION_96_OK '
+              f"providers=96 publication=false activation_changed=0 movix_enabled={str(movix.get('enabled')).lower()}"
+          )
           PY
 
       - name: Reverse, static and integrity proof
