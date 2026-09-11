@@ -3,9 +3,9 @@
 
 Route proof owns route/DATA confidence, not publication exposure. A provider with no
 currently proven route may be diagnostic ``off`` and must still remain present in the
-catalogue. In particular, MOVIX no longer receives an ``enabled:false`` manifest or
-override mutation from this policy. Runtime repair remains fail-closed when no usable
-route exists; activation is owned by the catalogue/final publication policy.
+catalogue. Route proof must not write, remove, or reinterpret any ``enabled`` field in
+the manifest or provider overrides. Runtime repair remains fail-closed when no usable
+route exists; activation is owned exclusively by the catalogue/final publication policy.
 
 The health report still records the no-proven-route gate so Repair/Learn can retain the
 debt and evidence without turning that evidence into a destructive catalogue change.
@@ -97,14 +97,12 @@ def main() -> int:
     if not isinstance(movix_manifest, dict):
         raise SystemExit("MOVIX manifest row missing")
 
+    # Activation is deliberately read-only here. Keep whatever publication state
+    # currently exists in both the manifest and provider-overrides byte-for-byte.
+    activation_before = movix_manifest.get("enabled")
     manifest_overrides = movix_patch.get("manifest_overrides")
-    if not isinstance(manifest_overrides, dict):
-        manifest_overrides = {}
-        movix_patch["manifest_overrides"] = manifest_overrides
-
-    # Activation no longer belongs to route proof. Remove the legacy override if it
-    # exists, but preserve the manifest's current activation for the publication owner.
-    manifest_overrides.pop("enabled", None)
+    override_enabled_present = isinstance(manifest_overrides, dict) and "enabled" in manifest_overrides
+    override_enabled_before = manifest_overrides.get("enabled") if override_enabled_present else None
 
     report_row = health_row(health, "movix")
     evidence = report_row.get("evidence") if isinstance(report_row.get("evidence"), dict) else {}
@@ -144,6 +142,15 @@ def main() -> int:
         })
         report_row["evidence"] = evidence
         state = "proof-present-preserve-activation"
+
+    # Fail closed if this diagnostic owner ever starts mutating activation again.
+    if movix_manifest.get("enabled") != activation_before:
+        raise SystemExit("route proof attempted to mutate MOVIX manifest activation")
+    manifest_overrides_after = movix_patch.get("manifest_overrides")
+    override_enabled_present_after = isinstance(manifest_overrides_after, dict) and "enabled" in manifest_overrides_after
+    override_enabled_after = manifest_overrides_after.get("enabled") if override_enabled_present_after else None
+    if (override_enabled_present_after, override_enabled_after) != (override_enabled_present, override_enabled_before):
+        raise SystemExit("route proof attempted to mutate MOVIX override activation")
 
     patches["movix"] = movix_patch
     overrides["provider_patches"] = patches
