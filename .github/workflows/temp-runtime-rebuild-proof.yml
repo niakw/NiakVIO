@@ -1,0 +1,159 @@
+name: TEMP - Runtime Rebuild Proof
+
+on:
+  push:
+    branches:
+      - workbench/hub-matrix-46-20260911
+    paths:
+      - '.github/workflows/temp-runtime-rebuild-proof.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  rebuild-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+
+      - name: Canonicalize runtime source and contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_base_runtime_v11.py
+          python tests/provider_raw_tmdb_route_identity_test.py
+          python tests/provider_runtime_origin_hub_separation_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python scripts/provider_base_store.py validate
+          grep -Fq 'NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19' scripts/provider_base_store.py
+          grep -Fq 'NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21' scripts/materialize_provider_v3_all.py
+          grep -Fq 'NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21' scripts/validate_provider_v3_routes_sequential.py
+
+      - name: Rebuild all 96 provider bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/native_five_lab_coverage_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/native_dual_id_identity_test.py
+
+      - name: Prove Allwish cannot execute its Telegram hub
+        shell: bash
+        run: |
+          set -euo pipefail
+          ALLWISH_FILE="$(python - <<'PY'
+          import json
+          m=json.load(open('manifest.json',encoding='utf-8'))
+          rows=[r for r in m.get('scrapers',[]) if str(r.get('id','')).strip().lower()=='allwish']
+          assert len(rows)==1, rows
+          print(rows[0]['filename'])
+          PY
+          )"
+          export ALLWISH_FILE
+          node <<'JS'
+          const path = require('path');
+          const file = path.resolve(process.env.ALLWISH_FILE);
+          const p = require(file);
+          const model = p.__niakvioProviderBase || {};
+          const origins = Array.isArray(model.origins) ? model.origins : [];
+          if (!String(model.officialHub || '').includes('t.me/')) throw new Error('Allwish officialHub unexpectedly lost');
+          if (origins.some(v => /https?:\/\/(?:www\.)?t\.me(?:[:/]|$)/i.test(String(v)))) {
+            throw new Error('Telegram hub leaked into runtime origins: '+JSON.stringify(origins));
+          }
+          if (!origins.some(v => /^https:\/\/all-wish\.me(?:[:/]|$)/i.test(String(v)))) {
+            throw new Error('Allwish provider runtime origin missing: '+JSON.stringify(origins));
+          }
+
+          const calls = [];
+          function response(status, url, body, contentType='text/plain') {
+            const text = typeof body === 'string' ? body : JSON.stringify(body ?? {});
+            return {
+              ok: status >= 200 && status < 300,
+              status,
+              url,
+              headers: { get(name) { return String(name).toLowerCase()==='content-type' ? contentType : ''; } },
+              text: async () => text,
+              json: async () => typeof body === 'string' ? JSON.parse(body || '{}') : (body ?? {}),
+              arrayBuffer: async () => Buffer.from(text),
+            };
+          }
+          globalThis.TMDB_API_KEY = 'ci-test-key';
+          globalThis.fetch = async function(input) {
+            const url = String(input && input.url || input);
+            calls.push(url);
+            if (/https?:\/\/(?:www\.)?t\.me(?:[:/]|$)|telesco\.pe/i.test(url)) {
+              throw new Error('ALLWISH_HUB_RUNTIME_LEAK '+url);
+            }
+            if (/api\.themoviedb\.org/i.test(url)) {
+              if (/\/tv\/1396(?:[/?]|$)/.test(url)) {
+                return response(200, url, {id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',external_ids:{imdb_id:'tt0903747'}}, 'application/json');
+              }
+              return response(200, url, {id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05',external_ids:{imdb_id:'tt0816692'}}, 'application/json');
+            }
+            if (/https?:\/\/all-wish\.me(?:[:/]|$)/i.test(url)) return response(404, url, 'not found');
+            return response(404, url, 'not found');
+          };
+
+          (async () => {
+            const movie = await p.getStreams('157336','movie');
+            const tv = await p.getStreams('1396','tv',1,1);
+            if (!Array.isArray(movie) || movie.length !== 0) throw new Error('Interstellar must fail closed: '+JSON.stringify(movie));
+            if (!Array.isArray(tv) || tv.length !== 0) throw new Error('Breaking Bad must fail closed: '+JSON.stringify(tv));
+            if (calls.some(u => /https?:\/\/(?:www\.)?t\.me(?:[:/]|$)|telesco\.pe/i.test(u))) throw new Error('Telegram runtime request observed');
+            console.log('ALLWISH_HUB_ORIGIN_CROSS_FIXTURE_OK movie=0 tv=0 telegram_requests=0 runtime_origins='+JSON.stringify(origins));
+          })().catch(err => { console.error(err); process.exit(1); });
+          JS
+
+      - name: Prove candidate manifest references 96 real files
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.load(open('manifest.json',encoding='utf-8'))
+          rows=m.get('scrapers') or []
+          assert len(rows)==96, len(rows)
+          missing=[]
+          for row in rows:
+              p=Path(str(row.get('filename') or ''))
+              if not p.is_file(): missing.append(str(p))
+          assert not missing, missing
+          enabled=sum(bool(r.get('enabled')) for r in rows)
+          print(f'REBUILT_MANIFEST_OK providers={len(rows)} enabled={enabled} missing=0 version={m.get("version")}')
+          PY
+
+      - name: Commit verified reconstructed candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add \
+            scripts/provider_base_store.py \
+            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            provider-v3-materialization.json providers/
+          if git diff --cached --quiet; then
+            echo 'No reconstructed candidate changes.'
+            exit 0
+          fi
+          git commit -m 'fix(runtime): rebuild 96 after TMDB and hub-origin corrections'
+          git push origin HEAD:workbench/hub-matrix-46-20260911
