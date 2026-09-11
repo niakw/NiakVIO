@@ -11,7 +11,8 @@ Policy:
 
 This deliberately separates *execution exposure* from *repair confidence*. Repair is
 allowed to say that a provider/lane still needs work; it is not allowed to turn that
-uncertainty into a mass ``enabled:false`` publication.
+uncertainty into a mass ``enabled:false`` publication. An active-but-broken or
+active-but-unproven provider therefore remains visible while Repair keeps its debt.
 """
 from __future__ import annotations
 
@@ -190,7 +191,10 @@ def main() -> int:
             route_state = "on"
             reason_codes = ["all_declared_lanes_live_proven"]
         else:
-            route_state = "off" if (quarantined or terminal) else "repair"
+            if quarantined or terminal:
+                route_state = "off"
+            else:
+                route_state = "repair"
             reason_codes = []
             if missing:
                 reason_codes.append("declared_lane_unproven")
@@ -210,9 +214,9 @@ def main() -> int:
         # Publication is deliberately fail-open at provider activation level.
         # Repair/off remain diagnostic states only; they never hide catalogue entries.
         enabled = True
-        manifest_row["enabled"] = True
+        manifest_row["enabled"] = enabled
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
-        manifest_overrides["enabled"] = True
+        manifest_overrides["enabled"] = enabled
         patch["manifest_overrides"] = manifest_overrides
         patch["route_data_state"] = route_state
         disposition = {
