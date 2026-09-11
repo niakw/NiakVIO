@@ -24,182 +24,37 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           persist-credentials: false
-
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: '3.12'}
-
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with: {node-version: '24', package-manager-cache: false}
-
       - name: Install locked dependencies
         run: npm ci --ignore-scripts --no-audit --no-fund
-
-      - name: Snapshot currently published manifest
-        run: cp manifest.json "$RUNNER_TEMP/published-manifest-before-hub-policy.json"
-
-      - name: Apply declared-hub activation authority
+      - name: Snapshot public manifest
+        run: cp manifest.json "$RUNNER_TEMP/manifest-before-hub-policy.json"
+      - name: Apply declared-hub activation
         run: |
           set -euo pipefail
           python scripts/finalize_provider_repair_disposition_v1.py
-          python - <<'PY'
-          import json
-          from pathlib import Path
-
-          manifest = json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          overrides = json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
-          disposition = json.loads(Path('automation/provider-repair-disposition.json').read_text(encoding='utf-8'))
-          patches = overrides.get('provider_patches') or {}
-          rows = [row for row in manifest.get('scrapers') or [] if isinstance(row, dict)]
-          assert len(rows) == 96, len(rows)
-
-          enabled = []
-          disabled = []
-          for row in rows:
-              pid = str(row.get('id') or '').strip().casefold().replace('_', '-')
-              patch = patches.get(pid) if isinstance(patches.get(pid), dict) else {}
-              hub = str(patch.get('official_hub') or '').strip()
-              expected = bool(hub)
-              assert bool(row.get('enabled')) is expected, (pid, row.get('enabled'), hub)
-              (enabled if expected else disabled).append(pid)
-              mo = patch.get('manifest_overrides') if isinstance(patch.get('manifest_overrides'), dict) else {}
-              assert bool(mo.get('enabled')) is expected, (pid, mo.get('enabled'), hub)
-
-          assert enabled, 'declared-hub activation unexpectedly empty'
-          assert len(enabled) < 96, 'declared-hub policy must not silently reproduce force-all-enabled'
-          assert disposition.get('enabledProviderCount') == len(enabled), disposition.get('enabledProviderCount')
-          assert disposition.get('disabledProviderCount') == len(disabled), disposition.get('disabledProviderCount')
-          policy = disposition.get('policy') or {}
-          assert policy.get('activationFollowsDeclaredHub') is True, policy
-          assert policy.get('forceAllProvidersEnabled') is False, policy
-
-          scope = {
-              'schemaVersion': 1,
-              'authority': 'provider-overrides.json:provider_patches.*.official_hub',
-              'catalogueProviderCount': len(rows),
-              'enabledProviderCount': len(enabled),
-              'disabledProviderCount': len(disabled),
-              'enabledProviders': sorted(enabled),
-              'disabledProviders': sorted(disabled),
-              'repairScope': 'declared-hub-providers-only',
-              'nativeLabPolicy': 'reuse-existing-artifacts-first; rerun-only-for-specific-fix-validation',
-          }
-          Path('automation/hub-activation-scope.json').write_text(
-              json.dumps(scope, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
-          )
-          print('FIELD_DECLARED_HUB_ENABLED_COUNT', len(enabled))
-          print('FIELD_DECLARED_HUB_DISABLED_COUNT', len(disabled))
-          print('FIELD_DECLARED_HUB_ENABLED_PROVIDERS', ','.join(sorted(enabled)))
-          PY
-
-      - name: Validate activation contracts
-        run: |
-          set -euo pipefail
+          python scripts/hub_activation_publication.py --write-scope
           python tests/provider_repair_pipeline_v6_contract_test.py
           python tests/provider_non_regression_contract_test.py
-
-      - name: Reproject catalogue and finalize cache-visible release
+      - name: Reproject and version
         env:
           NUVIO_SKIP_CLIENT_UPSTREAM_GUARD: '1'
         run: |
           set -euo pipefail
           python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
-          python scripts/sync_release_versions.py \
-            --manifest manifest.json \
-            --previous "$RUNNER_TEMP/published-manifest-before-hub-policy.json"
+          python scripts/sync_release_versions.py --manifest manifest.json --previous "$RUNNER_TEMP/manifest-before-hub-policy.json"
           node engine_v2/scripts/bootstrap-provider-catalog.mjs
           node engine_v2/scripts/render-manifests-from-catalog.mjs
           python scripts/validate_language_projection.py
           node engine_v2/tests/provider-catalog.test.mjs
+          python scripts/hub_activation_publication.py --write-scope --verify-catalog --append-memory
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
-
-      - name: Prove final manifest still follows declared hubs
-        run: |
-          set -euo pipefail
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          m=json.loads(Path('manifest.json').read_text())
-          o=json.loads(Path('provider-overrides.json').read_text())
-          c=json.loads(Path('provider_catalog.json').read_text())
-          scope=json.loads(Path('automation/hub-activation-scope.json').read_text())
-          patches=o.get('provider_patches') or {}
-          enabled=[]
-          for row in m.get('scrapers') or []:
-              pid=str(row.get('id') or '').strip().casefold().replace('_','-')
-              hub=str(((patches.get(pid) or {}).get('official_hub')) or '').strip()
-              assert bool(row.get('enabled')) == bool(hub), (pid, row.get('enabled'), hub)
-              if row.get('enabled'): enabled.append(pid)
-          catalog_enabled=[]
-          for row in c.get('providers') or []:
-              scraper=row.get('scraper') or {}
-              pid=str(row.get('canonicalId') or scraper.get('id') or '').strip().casefold().replace('_','-')
-              hub=str(((patches.get(pid) or {}).get('official_hub')) or '').strip()
-              assert bool(scraper.get('enabled')) == bool(hub), (pid, scraper.get('enabled'), hub)
-              if scraper.get('enabled'): catalog_enabled.append(pid)
-          assert sorted(enabled)==sorted(catalog_enabled)==sorted(scope['enabledProviders'])
-          print('FIELD_FINAL_VERSION', m.get('version'))
-          print('FIELD_FINAL_ENABLED', len(enabled))
-          print('FIELD_FINAL_DISABLED', 96-len(enabled))
-          PY
           git diff --exit-code -- providers provider-bases scripts/provider_patches
-
-      - name: Append durable recovery checkpoint and backlog
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION="$(python -c 'import json;print(json.load(open("manifest.json"))["version"])')"
-          ENABLED="$(python -c 'import json;print(json.load(open("automation/hub-activation-scope.json"))["enabledProviderCount"])')"
-          DISABLED="$(python -c 'import json;print(json.load(open("automation/hub-activation-scope.json"))["disabledProviderCount"])')"
-          cat >> MEMORY.md <<EOF
-
-## 2026-09-11 — declared-hub activation + artifact-first repair checkpoint
-
-This checkpoint supersedes the short-lived force-all-96 activation policy recorded by later chat/release work.
-
-### Publication/activation authority
-- Catalogue census remains 96 Provider Objects for recovery/history; catalogue membership is not activation.
-- **Single activation rule:** a provider is enabled iff \`provider-overrides.json -> provider_patches.<provider>.official_hub\` is non-empty.
-- Current publication generated by this transaction: **${VERSION}**.
-- Declared-hub enabled providers: **${ENABLED}**; hub-less disabled providers: **${DISABLED}**.
-- \`on / repair / off\` remains route/DATA diagnostic evidence only and never overrides hub activation.
-- Durable scope file: \`automation/hub-activation-scope.json\`.
-
-### Native Lab / repair operating rule
-- Repair scope is **declared-hub providers only** until this policy is explicitly changed.
-- Reuse existing native OS Lab artifacts/logs first. Do **not** rerun the five Labs systematically after every change.
-- Rerun only the OS/provider/fixture needed to validate a concrete repair or when existing evidence is missing/stale for that exact question.
-- Distinguish failures explicitly: provider not executed / no provider network / zero streams / wrong content / duplicate streams / transport invalid / player-client failure.
-- A returned URL or HTTP 206 is not success. Stream acceptance requires correct requested work/episode identity, non-duplicate useful output, and media integrity before native playback evidence is credited.
-
-### Allwish — current high-priority integrity regression
-- User confirms Allwish still returns two identical/unrelated streams.
-- Existing 5.21.42 native artifacts already corroborate the core issue: both Interstellar and Breaking Bad S01E01 return exactly two Allwish rows with the same generic title \`All-Wish #2\`, same host \`cdn4.telesco.pe\`, while the Lab previously classified extraction as healthy merely because rows/HTTP media existed.
-- Therefore Allwish is **not green**. Treat this as wrong-content + duplicate/fixture-invariant output until repaired.
-- Repair must reject/correct this at identity/stream-integrity level; do not hide it by counting transport reachability as provider success.
-
-### Active repair plan — execute in this order
-1. Build one provider x OS x fixture matrix from **existing** Android, iOS, macOS, Windows and TV artifacts, filtered to \`automation/hub-activation-scope.json\`.
-2. Prioritize hub providers by evidence class: wrong-content/duplicate first, then not-executed/no-network, then zero-stream, then transport/player integrity.
-3. Fix Allwish identity/result selection first and add a regression proving different fixtures cannot accept the same generic output without matching identity evidence.
-4. Repair other hub providers only from observed artifact evidence; preserve provider-specific evidence and shared Core ownership boundaries.
-5. For each concrete repair, run the smallest local/static/provider test possible; rerun a native Lab only for the affected OS/provider/fixture when native confirmation is actually required.
-6. Keep Domain Refresh activation-neutral except for the deterministic declared-hub rule; hub discovery/removal may change activation only by changing \`official_hub\` authority.
-7. Update the artifact matrix and this MEMORY checkpoint after every accepted repair/publication.
-
-### Deferred/backlog tasks that must not be lost
-- Finish native harness truthfulness: wrong-content and duplicate outputs must not be labeled extraction-healthy; separate client player setup failures from provider failures.
-- TV Android: current NuvioTV HEAD contains an upstream compile regression around \`topInputFocusRequester\`; keep this as upstream-client evidence. Use the audited ref only for a targeted replay when a provider fix specifically needs TV validation.
-- Complete iOS artifact ingestion when its current run finishes; do not relaunch merely for completeness.
-- Repair-pipeline targeting: make automated Repair/Learn selection consume declared-hub scope by default while retaining all 96 in historical knowledge.
-- Domain Refresh: preserve full structured CONFIG/source-qualified filenames and ensure activation is recomputed from final \`official_hub\` values without route-proof ownership leaks.
-- Reconcile stale documentation/release debt: CHANGELOG, VALIDATION metadata, README EN/FR, ARCHITECTURE/VALIDATION wording, \`ARCHITECTURE.docx\`, and stale client-lab trigger counters.
-- Recheck security on the final stabilized publication: CodeQL/security-extended and \`npm audit --omit=dev --audit-level=high\`; do not weaken gates for green CI.
-- Repository hygiene after runtime stabilization: remove obsolete one-shots/triggers, verify main-only publication assumptions, and prune stale provider artifacts only when unreferenced/recoverable.
-- Revisit provider-level audio/player metadata only after identity + extraction correctness is stable; do not confuse missing UI controls with extraction repair.
-EOF
-
-      - name: Publish atomically and remove one-shot workflow
+      - name: Publish atomically and remove one-shot
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
@@ -209,16 +64,10 @@ EOF
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git add -A
-          git diff --cached --stat
           git diff --cached --quiet && { echo 'nothing to publish'; exit 1; }
-
           git fetch origin main
           CURRENT="$(git rev-parse origin/main)"
-          if [ "$CURRENT" != "$GITHUB_SHA" ]; then
-            echo "FIELD_HUB_POLICY_PUBLICATION_SKIPPED reason=main_advanced validated=$GITHUB_SHA current=$CURRENT"
-            exit 1
-          fi
-
+          test "$CURRENT" = "$GITHUB_SHA" || { echo "FIELD_HUB_POLICY_PUBLICATION_SKIPPED validated=$GITHUB_SHA current=$CURRENT"; exit 1; }
           git commit -m 'fix(release): publish declared-hub provider activation'
           AUTH="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           git -c http.https://github.com/.extraheader="AUTHORIZATION: basic $AUTH" push origin HEAD:main
