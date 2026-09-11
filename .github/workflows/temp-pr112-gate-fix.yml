@@ -1,0 +1,81 @@
+name: TEMP - PR112 Gate Contract Repair
+
+on:
+  push:
+    branches:
+      - workbench/hub-matrix-46-20260911
+    paths:
+      - '.github/workflows/temp-pr112-gate-fix.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  repair-gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Install exact dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Apply gate contract repairs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m py_compile scripts/temp_pr112_gate_fix.py
+          python scripts/temp_pr112_gate_fix.py
+          python -m py_compile scripts/check_provider_non_regression_v1.py tests/provider_non_regression_contract_test_impl.py tests/native_evidence_codegen_pipeline_test.py
+
+      - name: Prove static and native codegen contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/provider_non_regression_contract_test.py
+          python tests/native_evidence_codegen_pipeline_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python scripts/validate_activation_preservation.py
+
+      - name: Prove real 96-provider non-regression debt semantics
+        shell: bash
+        env:
+          NIAKVIO_QUICK_YIELD_TIMEOUT: '45'
+        run: |
+          set -euo pipefail
+          python scripts/check_provider_non_regression_v1.py \
+            --matrix automation/provider-history-matrix.json \
+            --candidate provider-v3-quick-yield.json \
+            --output /tmp/provider-non-regression-gate.json \
+            --base-ref origin/main \
+            --candidate-gate \
+            --all
+          python - <<'PY'
+          import json
+          d=json.load(open('/tmp/provider-non-regression-gate.json'))
+          assert d.get('passed') is True, d.get('failures')
+          assert d.get('scopeProviderCount') == 96, d.get('scopeProviderCount')
+          assert 'routeHistoricalDebtPolicy' in d
+          assert isinstance(d.get('routeDebtProviders'), list)
+          print(f"FORCE_ON_NON_REGRESSION_GATE_OK providers=96 route_debt={d.get('routeDebtProviderCount')} failures=0")
+          PY
+
+      - name: Commit repairs and self-delete
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/temp-pr112-gate-fix.yml scripts/temp_pr112_gate_fix.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix(ci): align non-regression and native codegen contracts'
+          git push origin HEAD:workbench/hub-matrix-46-20260911
