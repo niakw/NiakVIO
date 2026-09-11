@@ -13308,7 +13308,29 @@
           ]
         },
         "evidenceDestructive": false
-      }
+      },
+      "provider_lego_scripts": [
+        "scripts/provider_patches/vidrock_runtime_v1.py"
+      ],
+      "provider_lego_options": {
+        "scripts/provider_patches/vidrock_runtime_v1.py": {
+          "base": "https://vidrock.ru",
+          "origin": "https://vidrock.net",
+          "referer": "https://vidrock.net/",
+          "key_hex": "7f3e9c2a8b5d1f4e6a9c3b7d2e5f8a1c4b6d9e2f5a8c1b4d7e9f2a5c8b1d4e7f",
+          "server_order": [
+            "Atlas",
+            "Luna",
+            "Orion",
+            "Astra",
+            "Nova"
+          ],
+          "max_streams": 5
+        }
+      },
+      "notes": [
+        "VidRock clean-v3 uses the live vidrock.ru TMDB-direct API and decrypts authenticated AES-256-GCM server tokens in NiakVIO-owned runtime code; the Cloudflare-blocked vidrock.net API remains knowledge/site authority only."
+      ]
     },
     "voiranime": {
       "capability": "mixed_embed_resolver",
