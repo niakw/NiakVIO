@@ -12127,14 +12127,13 @@
     },
     "anidb": {
       "model": {
-        "knownSite": "https://anidb.pics",
-        "strategy": "html_scraper",
-        "officialSite": "https://anidb.pics",
+        "knownSite": "https://anidb.app",
+        "strategy": "mixed_embed_resolver",
+        "officialSite": "https://anidb.app",
         "officialHub": "https://tbcpl.click/",
         "officialApi": null,
         "fixedApi": null,
         "origins": [
-          "https://anidb.pics",
           "https://tbcpl.click",
           "https://anidb.app"
         ],
@@ -12153,9 +12152,9 @@
           "fullProviderReconstructionRequired": false
         },
         "identityInput": {
-          "mode": "tmdb_direct",
+          "mode": "catalog_search",
           "requiredFields": [
-            "tmdbId",
+            "title",
             "mediaType"
           ],
           "requiresTmdbBeforeRun": true
@@ -12164,7 +12163,7 @@
           "anime"
         ],
         "domainSubstitutions": {
-          "anidb.app": "anidb.pics"
+          "anidb.pics": "anidb.app"
         },
         "materializationIntegrity": {
           "state": "matched",
@@ -12443,7 +12442,8 @@
             ]
           },
           "evidenceDestructive": false
-        }
+        },
+        "runtimeDomainReplacements": {}
       },
       "knowledge": {
         "hosts": [

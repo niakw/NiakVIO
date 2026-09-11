@@ -3312,22 +3312,24 @@
       }
     },
     "anidb": {
-      "capability": "html_scraper",
+      "capability": "mixed_embed_resolver",
       "official_hub": "https://tbcpl.click/",
-      "official_site": "https://anidb.pics",
+      "official_site": "https://anidb.app",
       "domain_substitutions": {
-        "anidb.app": "anidb.pics"
+        "anidb.pics": "anidb.app"
       },
       "identity_input": {
-        "mode": "tmdb_direct",
-        "requires_tmdb_before_run": true,
+        "mode": "catalog_search",
         "required_fields": [
-          "tmdbId",
+          "title",
           "mediaType"
-        ]
+        ],
+        "requires_tmdb_before_run": true
       },
       "notes": [
-        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias."
+        "Anime-only semantic provider: TMDB/type classification is mandatory before the first provider network call; Nuvio may transport anime through the tv alias.",
+        "AniDB.app uses canonical-anime title search -> anime id -> episodes -> languages -> embed -> HLS; do not treat it as a direct TMDB API.",
+        "anidb.pics is historical/stale execution knowledge; current execution authority is https://anidb.app. The configured hub remains discovery-only."
       ],
       "candidate_config_reconciliation": {
         "version": 3,
@@ -3471,7 +3473,10 @@
         },
         "evidenceDestructive": false
       },
-      "runtime_domain_replacements": {}
+      "runtime_domain_replacements": {},
+      "provider_lego_scripts": [
+        "scripts/provider_patches/anidb_runtime_v1.py"
+      ]
     },
     "anikototv": {
       "capability": "mixed_embed_resolver",
@@ -21665,13 +21670,12 @@
       "generated_from_manifest_or_stage": true
     },
     "anidb": {
-      "strategy": "html_scraper",
+      "strategy": "mixed_embed_resolver",
       "validation": "provider_native",
       "allow_html_url": true,
       "requires_direct_media": false,
       "observed_origins": [
-        "https://anidb.pics",
-        "https://old.invalid"
+        "https://anidb.app"
       ],
       "generated_from_manifest": true,
       "generated_from_manifest_or_stage": true
