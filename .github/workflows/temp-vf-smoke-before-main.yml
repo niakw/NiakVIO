@@ -1,4 +1,5 @@
 name: TEMP - VF Smoke Before Main
+# retry: registered-after-create
 
 on:
   push:
@@ -62,15 +63,7 @@ jobs:
             tv:{id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',original_language:'en',origin_country:['US'],genres:[{id:18,name:'Drama'}],canonicalMediaType:'tv'},
             anime:{id:95479,name:'Jujutsu Kaisen',original_name:'呪術廻戦',first_air_date:'2020-10-03',original_language:'ja',origin_country:['JP'],genres:[{id:16,name:'Animation'}],keywords:{results:[{name:'anime'}]},canonicalMediaType:'anime'}
           };
-          const plans={
-            purstream:['movie','tv'],
-            flemmix:['movie','tv'],
-            frenchstream:['movie'],
-            papadustream:['tv'],
-            vidrock:['movie','tv'],
-            voiranime:['anime'],
-            coflix:['movie','tv']
-          };
+          const plans={purstream:['movie','tv'],flemmix:['movie','tv'],frenchstream:['movie'],papadustream:['tv'],vidrock:['movie','tv'],voiranime:['anime'],coflix:['movie','tv']};
           let results=[];
           for(const [pid,kinds] of Object.entries(plans)){
             if(!providers[pid]){results.push({provider:pid,kind:'missing',ok:false,streams:0,error:'manifest_missing'});continue}
