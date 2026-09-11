@@ -30,6 +30,7 @@ LOCKS = ROOT / "automation" / "provider-live-baseline-locks.json"
 RECOVERY = ROOT / "automation" / "provider-route-recovery-v6-targeted.json"
 QUICK = ROOT / "provider-v3-quick-yield.json"
 OUTPUT = ROOT / "automation" / "provider-repair-disposition.json"
+HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 EXPECTED = 96
 TERMINAL = {"terminal-blocked", "terminal-unreachable"}
 
@@ -142,7 +143,7 @@ def explicit_quarantine(patch: dict[str, Any], model: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with force-ON catalogue activation")
+    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with 46-hub targeted activation")
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
@@ -150,6 +151,7 @@ def main() -> int:
     parser.add_argument("--recovery", type=Path, default=RECOVERY)
     parser.add_argument("--quick-yield", type=Path, default=QUICK)
     parser.add_argument("--output", type=Path, default=OUTPUT)
+    parser.add_argument("--hub-matrix", type=Path, default=HUB_MATRIX)
     args = parser.parse_args()
 
     manifest = load(args.manifest)
@@ -158,6 +160,10 @@ def main() -> int:
     locks = load(args.locks, {"providers": {}})
     recovery = load(args.recovery, {"providers": []})
     quick = load(args.quick_yield)
+    hub_matrix = load(args.hub_matrix)
+    target_hubs = {cid(row.get("manifestId")) for row in hub_matrix.get("rows") or [] if isinstance(row, dict) and cid(row.get("manifestId"))}
+    if int(hub_matrix.get("hubCount") or 0) != 46 or len(target_hubs) != 46:
+        raise SystemExit(f"expected exact 46-hub activation matrix, got count={hub_matrix.get('hubCount')} ids={len(target_hubs)}")
 
     rows = [row for row in manifest.get("scrapers") or [] if isinstance(row, dict)]
     if len(rows) != EXPECTED:
@@ -218,25 +224,28 @@ def main() -> int:
                 reason_codes.append("repair_incomplete")
             incomplete.append(provider)
 
-        # NIAKVIO_FORCE_ON_REPAIR_DISPOSITION_V2
-        # Hub discovery and catalogue activation are independent. Repair/off
-        # remains explicit executable debt while every canonical provider stays ON.
+        # NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1
+        # Repair/off is route debt. Visibility is owned exclusively by the exact
+        # 46-provider hub matrix selected for this repair campaign.
         hub = declared_hub(patch)
-        enabled = True
-        manifest_row["enabled"] = True
+        enabled = provider in target_hubs
+        manifest_row["enabled"] = enabled
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
-        manifest_overrides["enabled"] = True
+        manifest_overrides["enabled"] = enabled
         patch["manifest_overrides"] = manifest_overrides
         patch["route_data_state"] = route_state
-        enabled_count += 1
+        if enabled:
+            enabled_count += 1
+        else:
+            disabled_providers.append(provider)
 
         disposition = {
             "schemaVersion": 1,
             "authority": "provider-repair-disposition-v1",
-            "activationState": "enabled",
-            "activationAuthority": "canonical-force-on",
+            "activationState": "enabled" if enabled else "disabled",
+            "activationAuthority": "hub-lab-matrix-46",
             "declaredHub": hub or None,
-            "forcedEnabled": True,
+            "forcedEnabled": enabled,
             "routeDataState": route_state,
             "requiredLanes": sorted(required),
             "currentVerifiedLanes": sorted(current),
@@ -276,11 +285,13 @@ def main() -> int:
         "policy": {
             "activeBrokenProviderAllowed": True,
             "incompleteProviderEnabled": True,
-            "forceAllProvidersEnabled": True,
+            "forceAllProvidersEnabled": False,
             "activationFollowsRepairState": False,
             "activationFollowsDeclaredHub": False,
-            "activationAuthority": "canonical-96-catalogue",
-            "missingDeclaredHubState": "enabled-repairable",
+            "activationAuthority": "automation/evidence/hub-lab-matrix-46.json:rows[].manifestId",
+            "targetHubProviderCount": 46,
+            "nonTargetProviderState": "disabled",
+            "registryOnlyTargetMayRemainEnabled": True,
             "terminalOrQuarantinedState": "off",
             "nonTerminalUnresolvedState": "repair",
             "evidenceDestructionAllowed": False,
@@ -304,7 +315,7 @@ def main() -> int:
         "PROVIDER_REPAIR_DISPOSITION_V1 "
         f"providers={EXPECTED} enabled={enabled_count} disabled={EXPECTED-enabled_count} "
         f"on={counts['on']} repair={counts['repair']} off={counts['off']} "
-        f"diagnostic_incomplete={len(incomplete)} activation=force_all_canonical"
+        f"diagnostic_incomplete={len(incomplete)} activation=hub_matrix_46"
     )
     return 0
 

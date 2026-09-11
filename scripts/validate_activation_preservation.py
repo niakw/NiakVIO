@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Prevent automated releases from shrinking the canonical provider catalogue.
 
-NIAKVIO_FORCE_ON_CATALOGUE_AUTHORITY_V2
+NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1
 
 Publication activation and runtime route confidence are separate concerns:
 
@@ -34,6 +34,7 @@ MAIN = ROOT / "manifest.json"
 VF = ROOT / "vf" / "manifest.json"
 REPORT = ROOT / "health-report.json"
 OVERRIDES = ROOT / "provider-overrides.json"
+HUB_MATRIX = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 PROVENANCE = ROOT / "PROVENANCE.json"
 SAFETY_FINDINGS = ROOT / "automation" / "nuvio-client-safety-findings.json"
 QUARANTINE_PATCH = "scripts/provider_patches/quarantine_provider_v1.py"
@@ -395,16 +396,15 @@ def preexisting_published_disable_is_deferred(
 
 
 def validate() -> list[str]:
-    policy = load(POLICY)
     main_rows = rows(load(MAIN))
     vf_rows = rows(load(VF))
     patches_by_id = provider_patch_rows(load_optional(OVERRIDES))
-    expected = {
-        str(value).casefold()
-        for value in policy.get("active_ids") or []
-        if str(value).strip()
+    matrix = load(HUB_MATRIX)
+    target = {
+        str(row.get("manifestId") or "").strip().casefold().replace("_", "-")
+        for row in matrix.get("rows") or []
+        if isinstance(row, dict) and str(row.get("manifestId") or "").strip()
     }
-    minimum = int(policy.get("minimum_enabled_count") or len(expected))
     active = {
         provider_id
         for provider_id, row in main_rows.items()
@@ -412,35 +412,28 @@ def validate() -> list[str]:
     }
 
     errors: list[str] = []
+    if int(matrix.get("hubCount") or 0) != 46 or len(target) != 46:
+        errors.append(f"hub activation authority must contain exactly 46 providers, got {len(target)}")
+    if len(main_rows) != 96:
+        errors.append(f"canonical catalogue must contain 96 providers, got {len(main_rows)}")
 
-    # NIAKVIO_FORCE_ON_CATALOGUE_AUTHORITY_V2
-    # A hub is discovery metadata. Health/Repair evidence owns executable route
-    # state, while the canonical catalogue itself remains force-ON.
-    for provider_id, manifest_row in sorted(main_rows.items()):
-        if manifest_row.get("enabled") is not True:
-            errors.append(
-                f"force-ON catalogue requires enabled=true: {provider_id}"
-            )
+    missing = sorted(target - set(main_rows))
+    extra = sorted(active - target)
+    disabled_target = sorted(target - active)
+    if missing:
+        errors.append("46-hub target missing from canonical catalogue: " + ",".join(missing))
+    if disabled_target:
+        errors.append("46-hub target unexpectedly disabled: " + ",".join(disabled_target))
+    if extra:
+        errors.append("non-target provider unexpectedly enabled: " + ",".join(extra))
+    if len(active) != 46:
+        errors.append(f"enabled provider count must be exactly 46, got {len(active)}")
 
-    for provider_id in sorted(expected):
-        manifest_row = main_rows.get(provider_id)
-        if manifest_row is None:
-            errors.append(
-                f"activation LKG provider missing from canonical catalogue: {provider_id}"
-            )
-            continue
-        if manifest_row.get("enabled") is not True:
-            errors.append(
-                f"activation LKG provider disabled in force-ON catalogue: {provider_id}"
-            )
+    for provider_id, patch in sorted(patches_by_id.items()):
+        mo = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
+        if "enabled" in mo and bool(mo.get("enabled")) != (provider_id in target):
+            errors.append(f"override activation mismatch for hub46 authority: {provider_id}")
 
-    if len(active) < minimum:
-        errors.append(
-            f"enabled canonical provider count regressed: {len(active)} < {minimum}"
-        )
-
-    # Language projections must never invent a different activation state for a
-    # provider they contain. Projection membership may legitimately be smaller.
     mismatched = sorted(
         provider_id
         for provider_id in set(main_rows) & set(vf_rows)
@@ -448,20 +441,17 @@ def validate() -> list[str]:
         != bool(vf_rows[provider_id].get("enabled"))
     )
     if mismatched:
-        errors.append(
-            "force-ON activation projection mismatch: " + ",".join(mismatched)
-        )
+        errors.append("hub46 activation projection mismatch: " + ",".join(mismatched))
 
-    hubless_enabled = sorted(
+    registry_only = sorted(
         provider_id
         for provider_id in active
         if not declared_hub_enabled(patches_by_id.get(provider_id))
     )
-    if hubless_enabled:
+    if registry_only:
         print(
-            "FIELD_ACTIVATION_HUB_DISCOVERY_ONLY "
-            f"enabled_without_hub={len(hubless_enabled)} "
-            "activation_authority=canonical_catalogue"
+            "FIELD_ACTIVATION_HUB46_REGISTRY_ONLY "
+            f"count={len(registry_only)} activation_authority=hub_lab_matrix_46"
         )
 
     return errors
@@ -472,7 +462,7 @@ def main() -> int:
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(f"provider activation preservation passed ({active_count} enabled; force-ON canonical catalogue; hub discovery-only)")
+    print(f"provider activation preservation passed ({active_count} enabled; exact hub-matrix-46 authority)")
     return 0
 
 

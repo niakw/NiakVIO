@@ -66,7 +66,7 @@ validator_source = (ROOT / 'scripts/validate_activation_preservation.py').read_t
 assert 'ci_inconclusive_is_not_disablement_proof' in validator_source
 assert 'removed-disallowed-p2p' in validator_source
 assert 'configured_safety_quarantine' in validator_source
-assert 'NIAKVIO_FORCE_ON_CATALOGUE_AUTHORITY_V2' in validator_source
+assert 'NIAKVIO_HUB46_ACTIVATION_AUTHORITY_V1' in validator_source
 assert 'declared-hub activation mismatch' not in validator_source
 assert '["git", "show", "HEAD:manifest.json"]' in validator_source
 assert 'NUVIO_PUBLISHED_MANIFEST_BASELINE' in validator_source
@@ -97,6 +97,8 @@ def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None):
             (safety or {}).get('provenance', {})
         ), encoding='utf-8')
         (root / 'automation').mkdir()
+        (root / 'automation' / 'evidence').mkdir()
+        (root / 'automation' / 'evidence' / 'hub-lab-matrix-46.json').write_text(json.dumps({'hubCount': 46, 'rows': [{'manifestId': 'a'}] + [{'manifestId': f'x{i}'} for i in range(45)]}), encoding='utf-8')
         (root / 'automation' / 'nuvio-client-safety-findings.json').write_text(json.dumps(
             (safety or {}).get('findings', {})
         ), encoding='utf-8')
@@ -117,55 +119,28 @@ def run_validator(*, manifest_rows, report_rows, mode='deep', safety=None):
         )
 
 
-# Catalogue activation is force-ON. Health, route proof and hub availability may
-# change executable route/DATA state, but they may not disable a canonical row.
-result = run_validator(
-    manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': True}],
-    report_rows=[
-        {'id': 'a', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},
-        {'id': 'b', 'enabled': False, 'action': 'published-disabled-failed-gates', 'failed_gates': ['08_quality_and_bitrate']},
-    ],
-)
-assert result.returncode == 0, result.stdout + result.stderr
-
-# A canonical row may not be disabled even with conclusive negative evidence.
+# Activation is targeted: only members of the selected hub matrix may be ON.
+# The synthetic validator fixture uses target 'a'; the other 45 matrix rows are
+# intentionally absent from this tiny catalogue, so this unit checks the specific
+# active/non-target invariant via the exact expected error surface.
 result = run_validator(
     manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': False}],
-    report_rows=[
-        {'id': 'a', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []},
-        {'id': 'b', 'enabled': False, 'action': 'removed-disallowed-p2p', 'failed_gates': ['01_policy_safe_no_p2p']},
-    ],
+    report_rows=[],
 )
 assert result.returncode == 1
-assert 'force-ON catalogue requires enabled=true: b' in result.stderr
+assert 'canonical catalogue must contain 96 providers' in result.stderr
+assert '46-hub target missing from canonical catalogue' in result.stderr
+assert 'non-target provider unexpectedly enabled' not in result.stderr
 
-# Historical LKG membership remains an anti-deletion guard.
-result = run_validator(
-    manifest_rows=[{'id': 'a', 'enabled': True}],
-    report_rows=[{'id': 'a', 'enabled': True, 'action': 'enabled-current-dns-access-stream-quality-passed', 'failed_gates': []}],
-)
-assert result.returncode == 1
-assert 'activation LKG provider missing from canonical catalogue: b' in result.stderr
-
-# Activation no longer depends on a Deep health run.
 result = run_validator(
     manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': True}],
     report_rows=[],
-    mode='quick',
 )
-assert result.returncode == 0, result.stdout + result.stderr
+assert result.returncode == 1
+assert 'non-target provider unexpectedly enabled: b' in result.stderr
 
-# Presence/absence of official_hub is discovery metadata only.
-result = run_validator(
-    manifest_rows=[{'id': 'a', 'enabled': True}, {'id': 'b', 'enabled': True}],
-    report_rows=[],
-    safety={'overrides': {'provider_patches': {
-        'a': {'official_hub': ''},
-        'b': {'official_hub': 'https://t.me/s/example'},
-    }}},
-)
-assert result.returncode == 0, result.stdout + result.stderr
-assert 'FIELD_ACTIVATION_HUB_DISCOVERY_ONLY' in result.stdout
+# official_hub itself is not activation authority; registry-only targets are legal.
+assert 'FIELD_ACTIVATION_HUB46_REGISTRY_ONLY' in validator_source
 
 
 # Verified manifest-language fallback regression tests.
