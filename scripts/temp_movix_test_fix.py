@@ -64,41 +64,41 @@ new = '''    output, records = apply_overrides("movix", source, phase="runtime")
 assert old in s, 'Movix stale runtime-domain assertion block not found'
 s = s.replace(old, new, 1)
 
-old_shim = '''def test_runtime_domain_override_rewrites_polyfilled_urls_without_mutating_hostname() -> None:
-    source = b'''module.exports={getStreams:async function(){await fetch("https://api.movix.cash/stream");return []}};'''
-    output, records = apply_overrides("movix", source, phase="runtime")
-    text = output.decode("utf-8")
-    assert "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in text
-    assert "url.hostname=replacement" in text
-    assert any(row.get("type") == "runtime_domain_overrides" for row in records)
-'''
-new_shim = '''def test_runtime_domain_override_rewrites_polyfilled_urls_without_mutating_hostname() -> None:
+old_shim = """def test_runtime_domain_override_rewrites_polyfilled_urls_without_mutating_hostname() -> None:
+    source = b'''module.exports={getStreams:async function(){await fetch(\"https://api.movix.cash/stream\");return []}};'''
+    output, records = apply_overrides(\"movix\", source, phase=\"runtime\")
+    text = output.decode(\"utf-8\")
+    assert \"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1\" in text
+    assert \"url.hostname=replacement\" in text
+    assert any(row.get(\"type\") == \"runtime_domain_overrides\" for row in records)
+"""
+new_shim = """def test_runtime_domain_override_rewrites_polyfilled_urls_without_mutating_hostname() -> None:
     # Test the generic runtime-domain primitive with an explicit synthetic config.
     # Do not couple this Core primitive to Movix, whose fixed-endpoint authority may
     # legitimately make the shim unnecessary.
-    source = b'''module.exports={getStreams:async function(){await fetch("https://api.old.invalid/stream");return []}};'''
-    with tempfile.TemporaryDirectory(prefix="niakvio-runtime-domain-") as tmp:
-        config_path = Path(tmp) / "overrides.json"
+    source = b'''module.exports={getStreams:async function(){await fetch(\"https://api.old.invalid/stream\");return []}};'''
+    with tempfile.TemporaryDirectory(prefix=\"niakvio-runtime-domain-\") as tmp:
+        config_path = Path(tmp) / \"overrides.json\"
         config_path.write_text(json.dumps({
-            "provider_patches": {
-                "synthetic": {
-                    "runtime_domain_replacements": {
-                        "api.old.invalid": "api.new.invalid"
+            \"provider_patches\": {
+                \"synthetic\": {
+                    \"runtime_domain_replacements\": {
+                        \"api.old.invalid\": \"api.new.invalid\"
                     }
                 }
             }
-        }), encoding="utf-8")
+        }), encoding=\"utf-8\")
         output, records = apply_overrides(
-            "synthetic",
+            \"synthetic\",
             source,
-            phase="runtime",
+            phase=\"runtime\",
             config_path=config_path,
         )
-    text = output.decode("utf-8")
-    assert "NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1" in text
-    assert "url.hostname=replacement" in text
-    assert any(row.get("type") == "runtime_domain_overrides" for row in records)
-'''
+    text = output.decode(\"utf-8\")
+    assert \"NUVIO_RUNTIME_DOMAIN_OVERRIDES_V1\" in text
+    assert \"url.hostname=replacement\" in text
+    assert any(row.get(\"type\") == \"runtime_domain_overrides\" for row in records)
+"""
 assert old_shim in s, 'generic runtime-domain shim fixture not found'
 s = s.replace(old_shim, new_shim, 1)
 p.write_text(s, encoding='utf-8')
