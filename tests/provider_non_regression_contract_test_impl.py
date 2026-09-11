@@ -70,23 +70,28 @@ for token in (
 ):
     assert token in gate, f"partial-lane non-regression gate lost: {token}"
 
-# Historical proof debt may be accepted only by removing the broken provider from
-# active execution. This exception may never hide semantic/HLS contract deletion.
+# Historical proof debt may be represented as audited route debt. A targeted
+# hub46 provider can remain visible while routeDataState=repair/off; non-targets
+# remain disabled. Neither case may hide semantic/HLS contract deletion.
 for token in (
     "def current_activation_debt()",
     'disposition.get("authority") == "provider-repair-disposition-v1"',
-    'disposition.get("activationState") == "disabled"',
+    'disposition.get("activationAuthority") == "hub-lab-matrix-46"',
+    'expected_activation_state = "enabled" if row.get("enabled") is True else "disabled"',
+    'bool(disposition.get("forcedEnabled")) == (row.get("enabled") is True)',
     'state in {"repair", "off"}',
     '"disabledDebtAccepted"',
     '"disabledDebtProviders"',
     '"semantic_capability_regression"',
     '"historical_hls_m3u8_regression"',
 ):
-    assert token in gate, f"disabled-debt non-regression policy lost: {token}"
+    assert token in gate, f"audited route-debt non-regression policy lost: {token}"
 assert 'manifest_row["enabled"] = enabled' in finalizer
+assert '"activationAuthority": "hub-lab-matrix-46"' in finalizer
 assert 'route_state = "repair"' in finalizer
 assert 'route_state = "off"' in finalizer
-assert '"activeBrokenProviderAllowed": False' in finalizer
+assert '"activeBrokenProviderAllowed": True' in finalizer
+assert '"forceAllProvidersEnabled": False' in finalizer
 
 for token in (
     '"core/"',

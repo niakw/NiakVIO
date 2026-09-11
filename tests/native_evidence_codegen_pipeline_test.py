@@ -94,7 +94,9 @@ with tempfile.TemporaryDirectory() as tmp_raw:
     provider_loading.augment(mobile_path, "mobile", manifest, PINNED_MANIFEST_URL, "")
     mobile_out = mobile_path.read_text(encoding="utf-8")
     for required in (
-        "listOf<String>(fixtureMediaType).filter { it in declared }",
+        "if (logicalFixtureMediaType !in declared) return emptyList<ProviderRequestRoute>()",
+        'val runtimeMediaType = if (logicalFixtureMediaType == "anime") "tv" else logicalFixtureMediaType',
+        "return listOf<ProviderRequestRoute>(ProviderRequestRoute(runtimeMediaType))",
         "FIELD_NATIVE_REPOSITORY_LOAD_BEGIN client=mobile",
         "PluginRepository.executeScraper(loadedScraper",
         "PlatformPlayerSurface",

@@ -95,10 +95,12 @@ def current_activation_debt() -> dict[str, dict[str, Any]]:
         patch = patches.get(pid) if isinstance(patches.get(pid), dict) else {}
         disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
         state = canon(disposition.get("routeDataState"))
+        expected_activation_state = "enabled" if row.get("enabled") is True else "disabled"
         audited = (
-            row.get("enabled") is False
-            and disposition.get("authority") == "provider-repair-disposition-v1"
-            and disposition.get("activationState") == "disabled"
+            disposition.get("authority") == "provider-repair-disposition-v1"
+            and disposition.get("activationAuthority") == "hub-lab-matrix-46"
+            and disposition.get("activationState") == expected_activation_state
+            and bool(disposition.get("forcedEnabled")) == (row.get("enabled") is True)
             and state in {"repair", "off"}
             and disposition.get("completeCapabilityProof") is False
             and isinstance(disposition.get("missingLanes"), list)
@@ -271,7 +273,7 @@ def candidate_gate(
             else:
                 provider_failures.append("partial_regression_not_recovered")
 
-        # Disabling does not authorize silent contract deletion. Semantic/HLS
+        # Activation state does not authorize silent contract deletion. Semantic/HLS
         # capability changes remain hard failures until explicitly corrected.
         if lost_types:
             provider_failures.append("semantic_capability_regression")
@@ -318,7 +320,7 @@ def candidate_gate(
         "rollingBaselineSource": f"{base_ref}:provider-v3-quick-yield.json",
         "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
         "candidateSource": str(DEFAULT_CANDIDATE.relative_to(ROOT)),
-        "disabledHistoricalDebtPolicy": "allowed only when manifest enabled=false and provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
+        "disabledHistoricalDebtPolicy": "audited route debt is allowed for hub46 targets or disabled non-targets when provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
         "disabledDebtProviderCount": len(sorted(set(disabled_debt))),
         "disabledDebtProviders": sorted(set(disabled_debt)),
         "obligations": obligations,
