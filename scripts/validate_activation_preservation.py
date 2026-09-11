@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
-"""Prevent automated releases from silently violating provider activation authority.
+"""Prevent automated releases from shrinking the canonical provider catalogue.
 
-Activation policy is now explicit and deterministic:
+NIAKVIO_FORCE_ON_CATALOGUE_AUTHORITY_V2
 
-* all 96 canonical providers remain present for census/recovery;
-* ``provider-overrides.json -> provider_patches.<provider>.official_hub`` is the
-  single publication activation authority;
-* a non-empty declared hub means enabled, an absent hub means disabled;
-* historical activation LKG/deep evidence still protects route/DATA and safety
-  history, but it may not override declared-hub activation.
+Publication activation and runtime route confidence are separate concerns:
 
-Legacy conclusive-disablement/quarantine evidence remains validated for historical
-providers that still have a declared hub. CI-inconclusive results may not disable
-such a provider. Conversely, hub-less providers do not require a fresh health
-failure merely to remain disabled: absence of the declared activation authority is
-itself the deterministic publication decision.
+* every canonical provider remains present and ``enabled=true`` in the catalogue;
+* ``official_hub`` is discovery/address metadata only and never an ON/OFF switch;
+* Repair/health evidence controls route/DATA state (on/repair/off), not catalogue
+  visibility;
+* quarantined, terminal or unresolved providers remain catalogued but must fail
+  closed at runtime through their audited route/DATA disposition;
+* historical activation LKG remains an anti-deletion/accounting source only.
+
+Legacy safety/provenance helpers remain in this module because historical evidence
+adapters import them, but they are not permitted to turn a canonical catalogue row
+off.
 """
 from __future__ import annotations
 
@@ -397,112 +398,72 @@ def validate() -> list[str]:
     policy = load(POLICY)
     main_rows = rows(load(MAIN))
     vf_rows = rows(load(VF))
-    report = load(REPORT)
-    report_by_id = report_rows(report)
-    baseline_by_id = published_baseline_rows()
     patches_by_id = provider_patch_rows(load_optional(OVERRIDES))
-    provenance_by_id = provenance_rows(load_optional(PROVENANCE))
-    safety_by_id = safety_finding_rows(load_optional(SAFETY_FINDINGS))
-    expected = {str(value).casefold() for value in policy.get("active_ids") or []}
+    expected = {
+        str(value).casefold()
+        for value in policy.get("active_ids") or []
+        if str(value).strip()
+    }
     minimum = int(policy.get("minimum_enabled_count") or len(expected))
-    active = {provider_id for provider_id, row in main_rows.items() if row.get("enabled") is True}
+    active = {
+        provider_id
+        for provider_id, row in main_rows.items()
+        if row.get("enabled") is True
+    }
 
     errors: list[str] = []
-    if str(report.get("test_mode") or "") != "deep":
-        errors.append("activation preservation requires the current deep promotion report")
 
-    # Hub declaration is the current publication authority for every catalogue row.
-    # This is deliberately evaluated before historical activation-LKG handling.
+    # NIAKVIO_FORCE_ON_CATALOGUE_AUTHORITY_V2
+    # A hub is discovery metadata. Health/Repair evidence owns executable route
+    # state, while the canonical catalogue itself remains force-ON.
     for provider_id, manifest_row in sorted(main_rows.items()):
-        expected_enabled = declared_hub_enabled(patches_by_id.get(provider_id))
-        actual_enabled = manifest_row.get("enabled") is True
-        if actual_enabled != expected_enabled:
+        if manifest_row.get("enabled") is not True:
             errors.append(
-                "declared-hub activation mismatch: "
-                f"{provider_id} expected_enabled={str(expected_enabled).lower()} "
-                f"actual_enabled={str(actual_enabled).lower()}"
+                f"force-ON catalogue requires enabled=true: {provider_id}"
             )
 
-    justified: dict[str, str] = {}
-    deferred_to_learning: dict[str, str] = {}
     for provider_id in sorted(expected):
         manifest_row = main_rows.get(provider_id)
-        is_missing = manifest_row is None
-        if is_missing:
-            errors.append(f"activation LKG provider missing from 96-provider catalogue: {provider_id}")
+        if manifest_row is None:
+            errors.append(
+                f"activation LKG provider missing from canonical catalogue: {provider_id}"
+            )
             continue
+        if manifest_row.get("enabled") is not True:
+            errors.append(
+                f"activation LKG provider disabled in force-ON catalogue: {provider_id}"
+            )
 
-        # Explicitly supersede historical activation LKG when the provider no
-        # longer has the declared activation authority. This is not health proof;
-        # route/DATA evidence remains preserved separately for Learning/Repair.
-        if not declared_hub_enabled(patches_by_id.get(provider_id)):
-            if manifest_row.get("enabled") is True:
-                errors.append(f"hub-less activation LKG provider unexpectedly enabled: {provider_id}")
-            else:
-                justified[provider_id] = "declared_official_hub_absent"
-                print(
-                    "FIELD_ACTIVATION_LKG_SUPERSEDED_BY_HUB_AUTHORITY "
-                    f"provider={provider_id} enabled=false"
-                )
-            continue
-
-        if manifest_row.get("enabled") is True:
-            continue
-        accepted, reason = configured_safety_quarantine(
-            provider_id,
-            manifest_row,
-            patches_by_id.get(provider_id),
-            provenance_by_id.get(provider_id),
-            safety_by_id.get(provider_id),
+    if len(active) < minimum:
+        errors.append(
+            f"enabled canonical provider count regressed: {len(active)} < {minimum}"
         )
-        if accepted:
-            justified[provider_id] = reason
-            continue
-        accepted, reason = catalogue_audit_safety_quarantine(manifest_row, provenance_by_id.get(provider_id))
-        if accepted:
-            justified[provider_id] = reason
-            continue
-        record = report_by_id.get(provider_id)
-        accepted, reason = conclusive_disablement(record, missing=False)
-        if accepted:
-            justified[provider_id] = reason
-            continue
-        provenance_row = provenance_by_id.get(provider_id)
-        pending_v2_preserved = bool(pending_clean_preservation_is_deferred(record, provenance_row))
-        if pending_v2_preserved:
-            deferred_to_learning[provider_id] = "pending_clean_v2_preserved_published_state"
-            print("FIELD_ACTIVATION_DEFERRED_TO_LEARNING " f"provider={provider_id} reason=pending_clean_v2_preserved_published_state")
-            continue
-        preserved_safety_ci_uncertain = bool(
-            isinstance(record, dict)
-            and str(record.get("action") or "") == "preserved-conclusive-safety-quarantine-ci-uncertain"
-            and record.get("enabled") is False
-            and isinstance(provenance_row, dict)
-            and str(provenance_row.get("activation_mode") or "").startswith("catalogue_audit_")
-            and CATALOGUE_AUDIT_BLOCKER in {str(value) for value in (provenance_row.get("activation_blockers") or [])}
-        )
-        if preserved_safety_ci_uncertain:
-            justified[provider_id] = "preserved_conclusive_safety_quarantine_ci_uncertain"
-            continue
-        baseline_row = baseline_by_id.get(provider_id)
-        if preexisting_published_disable_is_deferred(manifest_row, baseline_row, record):
-            deferred_to_learning[provider_id] = "preexisting_published_disabled_state_nonconclusive"
-            continue
-        errors.append(f"declared-hub provider disabled without conclusive proof: {provider_id} ({reason})")
 
-    # Historical LKG floor remains an anti-deletion/accounting guard. Hub-less
-    # historical members count as explicitly accounted for, not as active.
-    accounted_for = len(active) + len(justified) + len(deferred_to_learning)
-    if accounted_for < minimum:
-        errors.append(f"enabled-or-authoritatively-accounted provider count regressed: {accounted_for} < {minimum}")
-
+    # Language projections must never invent a different activation state for a
+    # provider they contain. Projection membership may legitimately be smaller.
     mismatched = sorted(
         provider_id
         for provider_id in set(main_rows) & set(vf_rows)
-        if bool(main_rows[provider_id].get("enabled")) != bool(vf_rows[provider_id].get("enabled"))
+        if bool(main_rows[provider_id].get("enabled"))
+        != bool(vf_rows[provider_id].get("enabled"))
     )
     if mismatched:
-        print("FIELD_ACTIVATION_PROJECTION_DRIFT_DEFERRED providers=" + ",".join(mismatched))
+        errors.append(
+            "force-ON activation projection mismatch: " + ",".join(mismatched)
+        )
+
+    hubless_enabled = sorted(
+        provider_id
+        for provider_id in active
+        if not declared_hub_enabled(patches_by_id.get(provider_id))
+    )
+    if hubless_enabled:
+        print(
+            "FIELD_ACTIVATION_HUB_DISCOVERY_ONLY "
+            f"enabled_without_hub={len(hubless_enabled)} "
+            "activation_authority=canonical_catalogue"
+        )
+
     return errors
 
 
@@ -511,7 +472,7 @@ def main() -> int:
     if errors:
         raise SystemExit("provider activation preservation failed:\n- " + "\n- ".join(errors))
     active_count = sum(1 for row in rows(load(MAIN)).values() if row.get("enabled") is True)
-    print(f"provider activation preservation passed ({active_count} enabled; declared-hub authority; LKG history preserved)")
+    print(f"provider activation preservation passed ({active_count} enabled; force-ON canonical catalogue; hub discovery-only)")
     return 0
 
 

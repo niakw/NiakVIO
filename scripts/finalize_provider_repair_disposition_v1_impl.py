@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-"""Finalize provider repair diagnostics and hub-authority activation.
+"""Finalize provider repair diagnostics without shrinking catalogue activation.
+
+NIAKVIO_FORCE_ON_REPAIR_DISPOSITION_V2
 
 Policy:
-- all 96 canonical providers stay present in the catalogue for census/recovery;
-- a provider is published enabled iff ``provider-overrides.json`` declares a
-  non-empty ``provider_patches.<provider>.official_hub``;
-- proof still controls diagnostic route/DATA state: ``on`` / ``repair`` / ``off``;
-- diagnostic state never overrides hub activation;
-- an active-but-broken provider may remain enabled only because it still has a
-  declared hub; its broken state stays explicit repair evidence, never success;
-- existing route/DATA evidence is preserved for learning/repair;
+- all 96 canonical providers stay present and enabled in the catalogue;
+- ``official_hub`` is discovery/address metadata, never activation authority;
+- proof controls diagnostic route/DATA state: ``on`` / ``repair`` / ``off``;
+- unresolved, terminal and quarantined providers remain enabled but fail closed
+  through an audited repair/off disposition;
+- existing route/DATA evidence is preserved for Learning/Repair;
 - this script never silently shrinks supported/canonical types.
 
-This deliberately separates *catalogue presence*, *activation authority* and
-*repair confidence*. Hub declaration is the single activation authority; Repair
-continues to classify route/DATA debt without enabling hub-less providers or
-silently deleting them from the recoverable 96-provider catalogue.
+Catalogue visibility and executable route confidence are deliberately independent.
 """
 from __future__ import annotations
 
@@ -145,7 +142,7 @@ def explicit_quarantine(patch: dict[str, Any], model: dict[str, Any]) -> bool:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with declared-hub activation")
+    parser = argparse.ArgumentParser(description="Finalize Provider v3 repair diagnostics with force-ON catalogue activation")
     parser.add_argument("--manifest", type=Path, default=MANIFEST)
     parser.add_argument("--overrides", type=Path, default=OVERRIDES)
     parser.add_argument("--knowledge", type=Path, default=KNOWLEDGE)
@@ -221,27 +218,25 @@ def main() -> int:
                 reason_codes.append("repair_incomplete")
             incomplete.append(provider)
 
-        # Single publication activation authority: a declared official hub.
-        # Repair/off remain diagnostic states only and never override this rule.
+        # NIAKVIO_FORCE_ON_REPAIR_DISPOSITION_V2
+        # Hub discovery and catalogue activation are independent. Repair/off
+        # remains explicit executable debt while every canonical provider stays ON.
         hub = declared_hub(patch)
-        enabled = bool(hub)
-        manifest_row["enabled"] = enabled
+        enabled = True
+        manifest_row["enabled"] = True
         manifest_overrides = patch.get("manifest_overrides") if isinstance(patch.get("manifest_overrides"), dict) else {}
-        manifest_overrides["enabled"] = enabled
+        manifest_overrides["enabled"] = True
         patch["manifest_overrides"] = manifest_overrides
         patch["route_data_state"] = route_state
-        if enabled:
-            enabled_count += 1
-        else:
-            disabled_providers.append(provider)
+        enabled_count += 1
 
         disposition = {
             "schemaVersion": 1,
             "authority": "provider-repair-disposition-v1",
-            "activationState": "enabled" if enabled else "disabled",
-            "activationAuthority": "declared-official-hub",
+            "activationState": "enabled",
+            "activationAuthority": "canonical-force-on",
             "declaredHub": hub or None,
-            "forcedEnabled": False,
+            "forcedEnabled": True,
             "routeDataState": route_state,
             "requiredLanes": sorted(required),
             "currentVerifiedLanes": sorted(current),
@@ -281,11 +276,11 @@ def main() -> int:
         "policy": {
             "activeBrokenProviderAllowed": True,
             "incompleteProviderEnabled": True,
-            "forceAllProvidersEnabled": False,
+            "forceAllProvidersEnabled": True,
             "activationFollowsRepairState": False,
-            "activationFollowsDeclaredHub": True,
-            "activationAuthority": "provider-overrides.json:provider_patches.*.official_hub",
-            "missingDeclaredHubState": "disabled",
+            "activationFollowsDeclaredHub": False,
+            "activationAuthority": "canonical-96-catalogue",
+            "missingDeclaredHubState": "enabled-repairable",
             "terminalOrQuarantinedState": "off",
             "nonTerminalUnresolvedState": "repair",
             "evidenceDestructionAllowed": False,
@@ -309,7 +304,7 @@ def main() -> int:
         "PROVIDER_REPAIR_DISPOSITION_V1 "
         f"providers={EXPECTED} enabled={enabled_count} disabled={EXPECTED-enabled_count} "
         f"on={counts['on']} repair={counts['repair']} off={counts['off']} "
-        f"diagnostic_incomplete={len(incomplete)} activation=declared_hub"
+        f"diagnostic_incomplete={len(incomplete)} activation=force_all_canonical"
     )
     return 0
 
