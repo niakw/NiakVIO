@@ -5,6 +5,7 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path('scripts').resolve()))
+from provider_base_store import resolve_base
 from provider_engine_normalizer import validate_provider_isolation
 
 
@@ -44,18 +45,26 @@ assert not [
 ]
 
 # Toflix's historical official-endpoint Python patch was retired. Endpoint
-# ownership now lives in the clean ProviderBase DATA/model, so validate that
-# durable ownership directly and reject any accidental reintroduction of the
-# removed adapter in the active provider chain.
+# ownership now lives in the canonical ProviderBase selected by PROVENANCE.
+# Historical content-addressed base files may coexist on disk, so never infer
+# authority from a provider-bases/toflix--base--*.js glob.
 toflix_cfg = cfg['provider_patches']['toflix']
 toflix_scripts = [str(path) for path in toflix_cfg.get('patch_scripts', [])]
 assert 'scripts/provider_patches/toflix_official_endpoint.py' not in toflix_scripts
 assert 'scripts/provider_patches/toflix_official_endpoint.py' not in {
     str(path) for path in toflix_cfg.get('patch_script_options', {})
 }
-toflix_bases = sorted(Path('provider-bases').glob('toflix--base--*.js'))
-assert len(toflix_bases) == 1, toflix_bases
-toflix_base = toflix_bases[0].read_text(encoding='utf-8')
+provenance = json.loads(Path('PROVENANCE.json').read_text(encoding='utf-8'))
+provenance_rows = provenance.get('providers')
+assert isinstance(provenance_rows, dict)
+toflix_row = provenance_rows.get('toflix')
+assert isinstance(toflix_row, dict)
+toflix_base_path, toflix_base_sha = resolve_base('toflix', toflix_row, require=True)
+assert toflix_base_path is not None
+assert toflix_base_sha
+assert toflix_base_path.is_file()
+assert str(toflix_base_path.relative_to(Path('.').resolve())).replace('\\', '/') == str(toflix_row.get('base_filename'))
+toflix_base = toflix_base_path.read_text(encoding='utf-8')
 assert 'NIAKVIO_PROVIDER_BASE_OWNED_V2' in toflix_base or 'NIAKVIO_PROVIDER_BASE_OWNED_V3' in toflix_base
 assert '"providerId":"toflix"' in toflix_base
 assert '"knownSite":"https://tfx05.lol"' in toflix_base
