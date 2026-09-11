@@ -12,4 +12,14 @@ new = 'finalizer = FINALIZER.read_text(encoding="utf-8") + "\\n" + (ROOT / "scri
 if source.count(old) != 1:
     raise AssertionError("provider non-regression finalizer compatibility anchor changed")
 source = source.replace(old, new, 1)
+
+# The durable implementation predates the declared-hub activation policy. Keep
+# all historical semantic/non-regression assertions, but make activation debt
+# explicitly depend on hub authority instead of the superseded force-all model.
+old_activation = 'assert \'"activeBrokenProviderAllowed": False\' in finalizer'
+new_activation = 'assert \'"activationFollowsDeclaredHub": True\' in finalizer'
+if source.count(old_activation) != 1:
+    raise AssertionError("provider non-regression activation assertion anchor changed")
+source = source.replace(old_activation, new_activation, 1)
+
 exec(compile(source, str(impl_path), "exec"), globals(), globals())
