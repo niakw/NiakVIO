@@ -1,4 +1,4 @@
-name: TEMP - Final Runtime Rebuild 96
+name: TEMP - Telegram Discovery-Only Rebuild 96
 
 on:
   push:
@@ -28,7 +28,8 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Validate canonical runtime source
+
+      - name: Apply and prove Telegram discovery-only runtime contract
         shell: bash
         run: |
           set -euo pipefail
@@ -40,7 +41,18 @@ jobs:
           python scripts/provider_base_store.py validate
           grep -Fq 'NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19' scripts/provider_base_store.py
           grep -Fq 'NIAKVIO_PROVIDER_RUNTIME_SEARCH_HUB_SEPARATION_V21_1' scripts/provider_base_store.py
-          test -z "$(git status --porcelain scripts/provider_base_store.py)" || { echo 'canonical provider_base_store still mutates'; git diff -- scripts/provider_base_store.py; exit 1; }
+          grep -Fq 'NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_DATA_V21_2' scripts/provider_base_store.py
+          grep -Fq 'NIAKVIO_PROVIDER_TELEGRAM_DISCOVERY_ONLY_RUNTIME_V21_2' scripts/provider_base_store.py
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+          sys.path.insert(0, str(Path('scripts').resolve()))
+          from resolve_provider_hubs import _default_source_type
+          assert _default_source_type('https://t.me/s/allwishme', 'latest_telegram_domain') == 'telegram_public'
+          assert _default_source_type('https://telegram.me/allwishme', 'telegram_description') == 'telegram_public'
+          print('DOMAIN_REFRESH_TELEGRAM_HUB_OK source=telegram_public')
+          PY
+
       - name: Materialize and validate all 96
         shell: bash
         run: |
@@ -52,7 +64,8 @@ jobs:
           python tests/provider_js_lego_ownership_test.py
           python tests/global_media_type_pre_network_gate_test.py
           python tests/native_dual_id_identity_test.py
-      - name: Allwish cross-fixture hub leak gate on rebuilt artifact
+
+      - name: Allwish cross-fixture Telegram runtime gate on rebuilt artifact
         shell: bash
         run: |
           set -euo pipefail
@@ -72,9 +85,11 @@ jobs:
             const text=typeof body==='string'?body:JSON.stringify(body??{});
             return {ok:status>=200&&status<300,status,url,headers:{get:n=>String(n).toLowerCase()==='content-type'?contentType:''},text:async()=>text,json:async()=>typeof body==='string'?JSON.parse(body||'{}'):(body??{}),arrayBuffer:async()=>Buffer.from(text)};
           }
+          const telegram=/https?:\/\/(?:[^/]+\.)?(?:t\.me|telegram\.me|telegram\.dog)(?:[:/]|$)|telesco\.pe/i;
           globalThis.TMDB_API_KEY='ci-test-key';
           globalThis.fetch=async function(input,options){
             const url=String(input&&input.url||input);calls.push(url);
+            if(telegram.test(url)) throw new Error('TELEGRAM_RUNTIME_FETCH_ATTEMPT '+url);
             if(/api\.themoviedb\.org/i.test(url)){
               if(/\/tv\/1396(?:[/?]|$)/.test(url))return response(200,url,{id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',external_ids:{imdb_id:'tt0903747'}},'application/json');
               return response(200,url,{id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05',external_ids:{imdb_id:'tt0816692'}},'application/json');
@@ -83,16 +98,19 @@ jobs:
           };
           (async()=>{
             const model=p.__niakvioProviderBase||{};
-            if((model.origins||[]).some(v=>/https?:\/\/(?:www\.)?t\.me(?:[:/]|$)/i.test(String(v))))throw new Error('Telegram leaked into model.origins');
+            if(!String(model.officialHub||'').includes('t.me/'))throw new Error('Allwish Telegram hub metadata lost');
+            const executableFields=[model.origins,model.observedUrls,model.proofSearchBases,model.proofDetailBases,model.searchRequestPlan,model.providerValuePlan,model.externalIdentityPlan];
+            if(executableFields.some(v=>telegram.test(JSON.stringify(v||[]))))throw new Error('Telegram leaked into executable Provider DATA');
             const movie=await p.getStreams('157336','movie');
             const tv=await p.getStreams('1396','tv',1,1);
-            const telegram=calls.filter(u=>/https?:\/\/(?:www\.)?t\.me(?:[:/]|$)|telesco\.pe/i.test(u));
-            if(telegram.length)throw new Error('Telegram runtime leak '+JSON.stringify(telegram));
+            const telegramCalls=calls.filter(u=>telegram.test(u));
+            if(telegramCalls.length)throw new Error('Telegram runtime leak '+JSON.stringify(telegramCalls));
             if(!Array.isArray(movie)||movie.length!==0)throw new Error('Interstellar false positive '+JSON.stringify(movie));
             if(!Array.isArray(tv)||tv.length!==0)throw new Error('Breaking Bad false positive '+JSON.stringify(tv));
-            console.log('ALLWISH_CROSS_FIXTURE_FAIL_CLOSED_OK movie=0 tv=0 telegram_requests=0');
+            console.log('ALLWISH_TELEGRAM_DISCOVERY_ONLY_OK hub_preserved=1 movie=0 tv=0 telegram_requests=0');
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
+
       - name: Verify manifest and provider files
         shell: bash
         run: |
@@ -110,16 +128,20 @@ jobs:
           assert len(ids)==len(set(ids))==96
           print(f'REBUILT_MANIFEST_OK providers=96 enabled=96 missing=0 version={m.get("version")}')
           PY
-      - name: Commit final reconstructed candidate
+
+      - name: Commit canonical source and reconstructed candidate
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json provider-v3-materialization.json providers/
+          git add \
+            scripts/provider_base_store.py \
+            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            provider-v3-materialization.json providers/
           if git diff --cached --quiet; then
-            echo 'No reconstructed candidate changes.'
+            echo 'No canonical/reconstructed changes.'
             exit 0
           fi
-          git commit -m 'fix(runtime): rebuild 96 after Allwish and TMDB corrections'
+          git commit -m 'fix(runtime): enforce Telegram discovery-only and rebuild 96'
           git push origin HEAD:workbench/hub-matrix-46-20260911
