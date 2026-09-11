@@ -24,6 +24,28 @@ def ids(manifest: dict[str, Any]) -> list[str]:
     ]
 
 
+def first_difference(expected: Any, actual: Any, path: str = "$") -> str:
+    if type(expected) is not type(actual):
+        return f"{path}: type expected={type(expected).__name__} actual={type(actual).__name__}"
+    if isinstance(expected, dict):
+        ekeys = list(expected.keys())
+        akeys = list(actual.keys())
+        if ekeys != akeys:
+            return f"{path}: keys expected={ekeys} actual={akeys}"
+        for key in ekeys:
+            if expected[key] != actual[key]:
+                return first_difference(expected[key], actual[key], f"{path}.{key}")
+        return f"{path}: dict values differ"
+    if isinstance(expected, list):
+        if len(expected) != len(actual):
+            return f"{path}: length expected={len(expected)} actual={len(actual)}"
+        for index, (left, right) in enumerate(zip(expected, actual)):
+            if left != right:
+                return first_difference(left, right, f"{path}[{index}]")
+        return f"{path}: list values differ"
+    return f"{path}: expected={expected!r} actual={actual!r}"
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--manifest", type=Path, default=ROOT / "manifest.json")
@@ -63,6 +85,7 @@ def main() -> int:
             f"extra={extra[:20]}",
             f"order_mismatch={order_mismatch}",
             f"version_expected={expected.get('version')} version_actual={actual.get('version')}",
+            f"first_difference={first_difference(expected, actual)}",
         ]
         raise SystemExit("VF projection validation failed: " + "; ".join(details))
 
@@ -81,7 +104,8 @@ def main() -> int:
         raise SystemExit(
             f"{label} projection validation failed: "
             f"expected={len(expected_ids)} actual={len(actual_ids)}; "
-            f"missing={missing[:20]}; extra={extra[:20]}"
+            f"missing={missing[:20]}; extra={extra[:20]}; "
+            f"first_difference={first_difference(expected_projection, actual_projection)}"
         )
 
     validate_exact("general no-anime", actual_no_anime, expected_no_anime)
