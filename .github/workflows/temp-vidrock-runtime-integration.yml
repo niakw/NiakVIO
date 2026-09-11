@@ -40,7 +40,7 @@ jobs:
           import json
           from pathlib import Path
           manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
-          row=next(x for x in manifest['scrapers'] if x.get('id')=='vidrock')
+          row=next(x for x in manifest['scrapers'] if str(x.get('id') or '').strip().casefold()=='vidrock')
           path=Path(row['filename'])
           text=path.read_text(encoding='utf-8')
           assert 'NIAKVIO_VIDROCK_RUNTIME_V1' in text, path
