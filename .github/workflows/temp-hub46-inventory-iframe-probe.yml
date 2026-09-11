@@ -1,5 +1,5 @@
 name: TEMP - Hub46 Inventory + Iframe Probe
-# retry: registered-after-create
+# retry: inline-structured-plan-patch
 
 on:
   push:
@@ -27,7 +27,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/temp_refresh_hub46_inventory_and_iframe_probe.py
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/build_hub46_blocker_inventory.py')
+          s=p.read_text(encoding='utf-8')
+          s=s.replace(
+          'def mechanism_for(*, strategy: str, recipe: dict[str, Any], legos: list[str], route_kinds: set[str], authorities: list[str]) -> str:\n',
+          'def mechanism_for(*, strategy: str, recipe: dict[str, Any], legos: list[str], route_kinds: set[str], authorities: list[str], search_plan_count: int = 0, value_plan_count: int = 0, external_identity_count: int = 0) -> str:\n',1)
+          needle='''    if legos:\n        return "provider-lego"\n    if "search" in route_kinds'''
+          repl='''    if legos:\n        return "provider-lego"\n    if search_plan_count and value_plan_count:\n        return "structured-search-value-plan"\n    if value_plan_count:\n        return "provider-value-plan"\n    if search_plan_count:\n        return "structured-search-plan"\n    if external_identity_count:\n        return "external-identity-plan"\n    if "search" in route_kinds'''
+          assert needle in s
+          s=s.replace(needle,repl,1)
+          needle='''        legos = uniq(list(patch.get("provider_lego_scripts") or []))\n\n        routes = uniq('''
+          repl='''        legos = uniq(list(patch.get("provider_lego_scripts") or []))\n        search_plan = [row for row in (patch.get("search_request_plan") or model.get("searchRequestPlan") or []) if isinstance(row, dict)]\n        value_plan = [row for row in (patch.get("provider_value_plan") or model.get("providerValuePlan") or []) if isinstance(row, dict)]\n        external_identity_plan = [row for row in (patch.get("external_identity_plan") or model.get("externalIdentityPlan") or []) if isinstance(row, dict)]\n\n        routes = uniq('''
+          assert needle in s
+          s=s.replace(needle,repl,1)
+          needle='''            route_kinds=route_kinds,\n            authorities=authorities,\n        )'''
+          repl='''            route_kinds=route_kinds,\n            authorities=authorities,\n            search_plan_count=len(search_plan),\n            value_plan_count=len(value_plan),\n            external_identity_count=len(external_identity_plan),\n        )'''
+          assert needle in s
+          s=s.replace(needle,repl,1)
+          needle='''            if not (route_kinds & EXEC_ROUTE_KINDS):\n                opaque_reasons.append("no_executable_route_shape")'''
+          repl='''            if not (route_kinds & EXEC_ROUTE_KINDS) and not search_plan and not value_plan and not external_identity_plan:\n                opaque_reasons.append("no_executable_route_shape_or_structured_plan")'''
+          assert needle in s
+          s=s.replace(needle,repl,1)
+          needle='''            "providerLegos": legos,\n            "routeDataState": disposition.get("routeDataState"),'''
+          repl='''            "providerLegos": legos,\n            "searchRequestPlanCount": len(search_plan),\n            "providerValuePlanCount": len(value_plan),\n            "externalIdentityPlanCount": len(external_identity_plan),\n            "routeDataState": disposition.get("routeDataState"),'''
+          assert needle in s
+          s=s.replace(needle,repl,1)
+          p.write_text(s,encoding='utf-8')
+          print('HUB46_INVENTORY_STRUCTURED_PLAN_PATCHED')
+          PY
           python -m py_compile scripts/build_hub46_blocker_inventory.py
           python scripts/build_hub46_blocker_inventory.py
       - name: Probe VoirAnime structured search and Coflix iframe surface
@@ -100,7 +129,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -f scripts/temp_refresh_hub46_inventory_and_iframe_probe.py .github/workflows/temp-hub46-inventory-iframe-probe.yml
+          rm -f .github/workflows/temp-hub46-inventory-iframe-probe.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
