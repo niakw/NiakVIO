@@ -20,7 +20,6 @@ def load(path):
 # than keeping a dangling import to the removed bridge.
 movix = load(Path('scripts/provider_patches/movix_runtime_v1.py'))
 sanitizer = load(Path('scripts/provider_patches/stream_output_sanitizer.py'))
-toflix = load(Path('scripts/provider_patches/toflix_official_endpoint.py'))
 
 seed = 'module.exports={getStreams:function(){return Promise.resolve([])}};'
 clean = movix.apply(seed)
@@ -43,6 +42,28 @@ assert not [
     path for path in purstream_cfg.get('patch_script_options', {})
     if '/purstream_' in str(path)
 ]
+
+# Toflix's historical official-endpoint Python patch was retired. Endpoint
+# ownership now lives in the clean ProviderBase DATA/model, so validate that
+# durable ownership directly and reject any accidental reintroduction of the
+# removed adapter in the active provider chain.
+toflix_cfg = cfg['provider_patches']['toflix']
+toflix_scripts = [str(path) for path in toflix_cfg.get('patch_scripts', [])]
+assert 'scripts/provider_patches/toflix_official_endpoint.py' not in toflix_scripts
+assert 'scripts/provider_patches/toflix_official_endpoint.py' not in {
+    str(path) for path in toflix_cfg.get('patch_script_options', {})
+}
+toflix_bases = sorted(Path('provider-bases').glob('toflix--base--*.js'))
+assert len(toflix_bases) == 1, toflix_bases
+toflix_base = toflix_bases[0].read_text(encoding='utf-8')
+assert 'NIAKVIO_PROVIDER_BASE_OWNED_V2' in toflix_base or 'NIAKVIO_PROVIDER_BASE_OWNED_V3' in toflix_base
+assert '"providerId":"toflix"' in toflix_base
+assert '"knownSite":"https://tfx05.lol"' in toflix_base
+assert '"officialSite":"https://tfx05.lol"' in toflix_base
+assert '"officialApi":"https://api.tfx05.lol"' in toflix_base
+assert '"officialHub":"https://toflix.wiki/"' in toflix_base
+assert 'NUVIO_TOFLIX_OFFICIAL_ENDPOINT_V1' not in toflix_base
+
 violations = validate_provider_isolation(cfg, Path('.').resolve())
 assert violations == [], '\n'.join(violations)
 
@@ -74,10 +95,6 @@ assert '/troll/' in s
 assert 'minVodDurationSeconds' in s
 assert 'total<config.minVodDurationSeconds' in s
 assert sanitizer.apply(s, options={'blocked_hosts': ['fstream.top'], 'blocked_path_patterns': ['/troll/'], 'probe_direct_media': True, 'min_vod_duration_seconds': 60}) == s
-
-t = toflix.apply('var _cachedEndpoint=null;function detectToflixEndpoint(){return Promise.resolve({})}module.exports={getStreams:async()=>[]};')
-assert 'NUVIO_TOFLIX_OFFICIAL_ENDPOINT_V1' in t
-assert 'tfx05.lol' in t
 
 hub = Path('scripts/resolve_provider_hubs.py').read_text()
 assert 'provider-hubs.json' in hub
