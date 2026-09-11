@@ -115,4 +115,29 @@ assert old in s, 'stale mobile request-route assertion missing'
 s = s.replace(old, new, 1)
 p.write_text(s, encoding='utf-8')
 
-print('PR112_STALE_CONTRACTS_PATCHED non_regression=hub46_route_debt native_codegen=current_alias_contract')
+# 4) Desktop player augmentation used an indentation-sensitive full-line anchor.
+# The request-contract generator now nests provider execution inside requestRoutes,
+# so the emitted FIELD line is more deeply indented. Match the semantic marker and
+# reuse its actual indentation instead of pinning a historical whitespace layout.
+p = ROOT / 'scripts' / 'augment_native_desktop_player.py'
+s = p.read_text(encoding='utf-8')
+old = '''    provider_begin = '                emit("FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)} enabled=${provider.enabled} request_type=$requestMediaType route_mode=$routeMode declared_types64=${b64(declaredTypesByProvider[provider.id.lowercase()].orEmpty().sorted().joinToString(","))}")'
+    text = replace_once(text, provider_begin, provider_begin + '\\n                captureDesktopPhase("provider-loading", fixtureSlug)', "provider begin")
+'''
+new = '''    provider_begin_marker = 'emit("FIELD_NATIVE_PROVIDER_BEGIN client=desktop fixture=$fixtureSlug provider64=${b64(provider.id)}'
+    provider_begin_lines = [line for line in text.splitlines() if provider_begin_marker in line]
+    if len(provider_begin_lines) != 1:
+        raise SystemExit(f"desktop reader provider-begin marker count={len(provider_begin_lines)}")
+    provider_begin = provider_begin_lines[0]
+    provider_indent = provider_begin[: len(provider_begin) - len(provider_begin.lstrip())]
+    text = text.replace(
+        provider_begin,
+        provider_begin + '\\n' + provider_indent + 'captureDesktopPhase("provider-loading", fixtureSlug)',
+        1,
+    )
+'''
+assert old in s, 'desktop provider-begin indentation-sensitive block missing'
+s = s.replace(old, new, 1)
+p.write_text(s, encoding='utf-8')
+
+print('PR112_STALE_CONTRACTS_PATCHED non_regression=hub46_route_debt native_codegen=current_alias_contract desktop_anchor=semantic_marker')
