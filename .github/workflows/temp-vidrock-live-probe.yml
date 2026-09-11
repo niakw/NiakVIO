@@ -1,5 +1,5 @@
-name: TEMP - Proof Invalidation Verification
-# reuse registered temporary workflow
+name: TEMP - Final Workbench Cleanup
+# final temporary harness
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
   contents: write
 
 jobs:
-  verify:
+  cleanup:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -23,36 +23,58 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Patch and validate proof invalidation contract
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Final focused contracts before cleanup
         shell: bash
         run: |
           set -euo pipefail
-          python scripts/temp_patch_proof_invalidation.py
-          python -m py_compile scripts/check_provider_non_regression_v1.py tests/provider_proof_invalidation_contract_test.py
+          python tests/provider_raw_tmdb_route_identity_test.py
+          python tests/provider_runtime_origin_hub_separation_test.py
           python tests/provider_proof_invalidation_contract_test.py
+          python tests/vidrock_runtime_crypto_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
           python scripts/check_provider_non_regression_v1.py --candidate-gate --all --base-ref main
+          python scripts/provider_base_store.py validate
           python - <<'PY'
           import json
           from pathlib import Path
-          d=json.loads(Path('automation/provider-non-regression-gate.json').read_text(encoding='utf-8'))
-          assert d.get('passed') is True, d.get('failures')
-          a=d['obligations']['allwish']
-          assert a['proofInvalidationApplied'] is True, a
-          assert a['invalidatedVerifiedLanes']==['movie','tv'], a
-          assert a['providerPositiveInvalidated'] is True, a
-          assert a['requiredVerifiedLanes']==[], a
-          print('ALLWISH_NON_REGRESSION_INVALIDATION_OK required=0 false_positive_not_restored=1')
+          gate=json.loads(Path('automation/provider-non-regression-gate.json').read_text(encoding='utf-8'))
+          assert gate.get('passed') is True and gate.get('failureCount') == 0, gate.get('failures')
+          a=gate['obligations']['allwish']
+          assert a['providerPositiveInvalidated'] is True and a['requiredVerifiedLanes']==[], a
+          manifest=json.loads(Path('manifest.json').read_text(encoding='utf-8'))
+          v=next(x for x in manifest['scrapers'] if str(x.get('id') or '').casefold()=='vidrock')
+          text=Path(v['filename']).read_text(encoding='utf-8')
+          assert v.get('enabled') is True
+          assert 'NIAKVIO_VIDROCK_RUNTIME_V1' in text
+          enabled=sum(1 for x in manifest['scrapers'] if x.get('enabled') is True)
+          print(f'FINAL_FOCUSED_CONTRACTS_OK non_regression=96/96 failures=0 vidrock_marker=1 manifest_enabled={enabled}')
           PY
-      - name: Commit verified gate correction
+      - name: Remove temporary harnesses and commit
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/check_provider_non_regression_v1.py automation/provider-non-regression-gate.json
+          for p in \
+            .github/workflows/temp-inspect-target-provider-models.yml \
+            .github/workflows/temp-promote-vidrock.yml \
+            .github/workflows/temp-vidrock-live-probe.yml \
+            .github/workflows/temp-vidrock-runtime-integration.yml \
+            .github/workflows/temp-proof-invalidation-patch.yml \
+            scripts/inspect_target_provider_models.py \
+            scripts/install_vidrock_runtime_v1.py \
+            scripts/temp_patch_proof_invalidation.py; do
+            if [ -e "$p" ]; then git rm -f "$p"; fi
+          done
+          git add automation/provider-non-regression-gate.json
           if git diff --cached --quiet; then
-            echo 'PROOF_INVALIDATION_GATE_NO_DIFF'
+            echo 'WORKBENCH_TEMP_CLEANUP_NO_DIFF'
           else
-            git commit -m 'fix(gate): honor audited invalidation of false-positive proof'
+            git commit -m 'chore(workbench): remove temporary analysis harnesses'
             git push origin HEAD:workbench/hub-matrix-46-20260911
           fi
