@@ -9,8 +9,10 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from materialize_provider_v3_all import provider_model  # noqa: E402
+from validate_provider_v3_routes_sequential import provider_origins  # noqa: E402
 
 MARKER = "NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21"
+VALIDATOR_MARKER = "NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21"
 
 
 def model_for(*, site: str, hub: str, api: str | None = None, static_origins: list[str] | None = None) -> dict:
@@ -65,6 +67,22 @@ def test_api_authority_survives_even_if_hub_matches() -> None:
     assert row["origins"] == ["https://provider.test", "https://api.provider.test"], row["origins"]
 
 
+def test_live_gate_uses_same_origin_contract() -> None:
+    model = {
+        "knownSite": "https://all-wish.me",
+        "officialSite": "https://all-wish.me",
+        "officialHub": "https://t.me/s/allwishme",
+        "officialApi": None,
+        "fixedApi": None,
+        "origins": ["https://all-wish.me"],
+    }
+    patch = {
+        "official_site": "https://all-wish.me",
+        "official_hub": "https://t.me/s/allwishme",
+    }
+    assert provider_origins(model, patch) == ["https://all-wish.me"], provider_origins(model, patch)
+
+
 def test_current_allwish_data_does_not_execute_telegram() -> None:
     overrides = json.loads((ROOT / "provider-overrides.json").read_text(encoding="utf-8"))
     knowledge = json.loads((ROOT / "automation/provider-v3-static-knowledge.json").read_text(encoding="utf-8"))
@@ -75,16 +93,20 @@ def test_current_allwish_data_does_not_execute_telegram() -> None:
     assert row.get("officialHub"), row
     assert "https://t.me" not in (row.get("origins") or []), row.get("origins")
     assert any(str(v).startswith("https://all-wish.me") for v in (row.get("origins") or [])), row.get("origins")
+    assert "https://t.me" not in provider_origins(row, patch), provider_origins(row, patch)
 
 
 def main() -> int:
-    source = (ROOT / "scripts/materialize_provider_v3_all.py").read_text(encoding="utf-8")
-    assert MARKER in source, "runtime hub/origin separation marker missing"
+    materializer = (ROOT / "scripts/materialize_provider_v3_all.py").read_text(encoding="utf-8")
+    validator = (ROOT / "scripts/validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
+    assert MARKER in materializer, "runtime hub/origin separation marker missing"
+    assert VALIDATOR_MARKER in validator, "live gate hub/origin separation marker missing"
     test_external_hub_is_not_runtime_origin()
     test_same_origin_site_hub_is_preserved()
     test_api_authority_survives_even_if_hub_matches()
+    test_live_gate_uses_same_origin_contract()
     test_current_allwish_data_does_not_execute_telegram()
-    print("PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_OK external_hub_runtime=0 same_origin_site=1 api_authority=1 allwish_telegram_runtime=0")
+    print("PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_OK external_hub_runtime=0 same_origin_site=1 api_authority=1 live_gate_hub_runtime=0 allwish_telegram_runtime=0")
     return 0
 
 
