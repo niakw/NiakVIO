@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 
@@ -51,6 +52,22 @@ for required in (
     'scripts/finalize_provider_repair_disposition_v1.py',
 ):
     assert required in pipeline, required
+
+# Every Python migration/test path declared by the canonical pipeline must
+# exist in the same revision. This prevents silent wiring of phantom steps.
+pipeline_tree = ast.parse(pipeline)
+declared_python_paths = sorted({
+    node.value
+    for node in ast.walk(pipeline_tree)
+    if isinstance(node, ast.Constant)
+    and isinstance(node.value, str)
+    and node.value.endswith('.py')
+    and node.value.startswith(('scripts/', 'tests/'))
+})
+missing_declared_python_paths = [
+    rel for rel in declared_python_paths if not (ROOT / rel).is_file()
+]
+assert not missing_declared_python_paths, missing_declared_python_paths
 
 # Canonical cumulative migration order. V21.11 is the current terminal
 # provider DATA revision: V21.9 generic owner, V21.10 VoirAnime authority, V21.11 retirement.

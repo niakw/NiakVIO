@@ -3,8 +3,10 @@
   "authority": "provider-repair-disposition-v1",
   "catalogueProviderCount": 96,
   "policy": {
-    "activeBrokenProviderAllowed": false,
-    "incompleteProviderEnabled": false,
+    "activeBrokenProviderAllowed": true,
+    "incompleteProviderEnabled": true,
+    "forceAllProvidersEnabled": true,
+    "activationFollowsRepairState": false,
     "terminalOrQuarantinedState": "off",
     "nonTerminalUnresolvedState": "repair",
     "evidenceDestructionAllowed": false,
@@ -16,99 +18,9 @@
     "on": 6,
     "repair": 74
   },
-  "disabledProviderCount": 90,
-  "disabledProviders": [
-    "1shows",
-    "4khdhub",
-    "4khdhubnew",
-    "allanime",
-    "allmovieland",
-    "anidb",
-    "anikototv",
-    "anime-sama",
-    "anime-ultime",
-    "animepahe",
-    "animesalt",
-    "animesama-co",
-    "animesultra",
-    "animetsu",
-    "animevost-fr",
-    "animevostfr",
-    "animeworld",
-    "animezey",
-    "animoflix",
-    "anizone",
-    "castle",
-    "cineby",
-    "cinefreak",
-    "cinemacity",
-    "cinemm",
-    "cinevibe",
-    "coflix",
-    "ctgmovies",
-    "desiflix",
-    "dooflix",
-    "dulourd",
-    "dvdplay",
-    "einthusan",
-    "fibwatch",
-    "flemmix",
-    "french-manga",
-    "frenchstream",
-    "fullanime",
-    "goatapi",
-    "goated",
-    "gramcinema",
-    "hdghartv",
-    "hdhub4u",
-    "hianime",
-    "hindmoviez",
-    "kehflix",
-    "kisskh",
-    "kurage",
-    "mallumv",
-    "moonflix",
-    "movieblast",
-    "moviebox",
-    "movies4u",
-    "moviesdrive",
-    "moviesmod",
-    "movix",
-    "mugiwarastream",
-    "mycima",
-    "nakios",
-    "neko-sama",
-    "netmirror",
-    "onlykdrama",
-    "papadustream",
-    "peachify",
-    "purstream",
-    "sekai",
-    "showbox",
-    "streamflix",
-    "streamzo",
-    "toflix",
-    "topcartoons",
-    "uhdmovies",
-    "vegamovies",
-    "vidfast",
-    "vidlink",
-    "vidlove",
-    "vidnest",
-    "vidnest-anime",
-    "vidrock",
-    "vidsrc",
-    "vixsrc",
-    "voiranime",
-    "voiranime-homes",
-    "voiranime-rip",
-    "vostfree",
-    "waveanime",
-    "wookafr",
-    "xpass",
-    "yflix",
-    "zinkmovies"
-  ],
+  "enabledProviderCount": 96,
+  "disabledProviderCount": 0,
+  "disabledProviders": [],
   "incompleteProviderCount": 90,
   "incompleteProviders": [
     "1shows",
@@ -131,7 +43,6 @@
     "animezey",
     "animoflix",
     "anizone",
-    "castle",
     "cineby",
     "cinefreak",
     "cinemacity",
@@ -175,6 +86,7 @@
     "onlykdrama",
     "papadustream",
     "peachify",
+    "persianstremio",
     "purstream",
     "sekai",
     "showbox",
@@ -207,7 +119,8 @@
       "provider": "1shows",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -244,7 +157,8 @@
       "provider": "4khdhub",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -264,8 +178,7 @@
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
-        "quick_provider-network-exception",
-        "quick_provider-network-http-error",
+        "quick_provider-network-zero-result",
         "recovery_no-proven-route"
       ],
       "laneStatuses": {
@@ -282,7 +195,8 @@
       "provider": "4khdhubnew",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -319,7 +233,8 @@
       "provider": "allanime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime"
@@ -351,7 +266,8 @@
       "provider": "allmovieland",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -390,6 +306,7 @@
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
       "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "on",
       "requiredLanes": [
         "movie",
@@ -427,7 +344,8 @@
       "provider": "anidb",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime"
@@ -459,7 +377,8 @@
       "provider": "anikototv",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -496,7 +415,8 @@
       "provider": "anime-sama",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -537,7 +457,8 @@
       "provider": "anime-ultime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -580,6 +501,7 @@
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
       "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "on",
       "requiredLanes": [
         "anime"
@@ -611,7 +533,8 @@
       "provider": "animepahe",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -653,7 +576,8 @@
       "provider": "animesalt",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -695,36 +619,33 @@
       "provider": "animesama-co",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
         "movie"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "exactLockedLanes": [],
-      "provenLanes": [
-        "anime"
-      ],
+      "provenLanes": [],
       "missingLanes": [
+        "anime",
         "movie"
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 5,
+      "provenRouteCount": 4,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
-        "quick_provider-network-zero-result",
-        "quick_provider-returned-streams",
+        "quick_provider-network-http-error",
         "recovery_proven"
       ],
       "laneStatuses": {
         "anime": [
-          "playable_verified"
+          "no_streams"
         ],
         "movie": [
           "no_streams"
@@ -736,7 +657,8 @@
       "provider": "animesultra",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "anime",
@@ -774,7 +696,8 @@
       "provider": "animetsu",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime"
@@ -806,22 +729,21 @@
       "provider": "animevost-fr",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "currentVerifiedLanes": [],
       "exactLockedLanes": [],
       "provenLanes": [],
       "missingLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 18,
+      "provenRouteCount": 4,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
@@ -832,9 +754,6 @@
       "laneStatuses": {
         "anime": [
           "no_streams"
-        ],
-        "tv": [
-          "no_streams"
         ]
       },
       "evidenceDestructive": false
@@ -843,20 +762,18 @@
       "provider": "animevostfr",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
         "movie"
       ],
-      "currentVerifiedLanes": [
-        "anime"
-      ],
+      "currentVerifiedLanes": [],
       "exactLockedLanes": [],
-      "provenLanes": [
-        "anime"
-      ],
+      "provenLanes": [],
       "missingLanes": [
+        "anime",
         "movie"
       ],
       "completeCapabilityProof": false,
@@ -867,12 +784,11 @@
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-network-zero-result",
-        "quick_provider-returned-streams",
         "recovery_proven"
       ],
       "laneStatuses": {
         "anime": [
-          "playable_verified"
+          "no_streams"
         ],
         "movie": [
           "no_streams"
@@ -884,7 +800,8 @@
       "provider": "animeworld",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "anime"
@@ -917,7 +834,8 @@
       "provider": "animezey",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -955,7 +873,8 @@
       "provider": "animoflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -992,18 +911,17 @@
       "provider": "anizone",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "currentVerifiedLanes": [],
       "exactLockedLanes": [],
       "provenLanes": [],
       "missingLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "no-proven-route",
@@ -1012,16 +930,12 @@
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
-        "quick_provider-zero-before-provider-network",
         "quick_timeout",
         "recovery_no-proven-route"
       ],
       "laneStatuses": {
         "anime": [
           "timeout"
-        ],
-        "tv": [
-          "no_streams"
         ]
       },
       "evidenceDestructive": false
@@ -1030,38 +944,37 @@
       "provider": "castle",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
-      "routeDataState": "repair",
+      "activationState": "enabled",
+      "forcedEnabled": true,
+      "routeDataState": "on",
       "requiredLanes": [
         "movie",
         "tv"
       ],
       "currentVerifiedLanes": [
-        "movie"
+        "movie",
+        "tv"
       ],
       "exactLockedLanes": [],
       "provenLanes": [
-        "movie"
-      ],
-      "missingLanes": [
+        "movie",
         "tv"
       ],
-      "completeCapabilityProof": false,
+      "missingLanes": [],
+      "completeCapabilityProof": true,
       "recoveryStatus": "unknown",
       "provenRouteCount": 0,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
-        "declared_lane_unproven",
-        "quick_provider-network-http-error",
-        "quick_provider-returned-streams"
+        "all_declared_lanes_live_proven"
       ],
       "laneStatuses": {
         "movie": [
           "playable_verified"
         ],
         "tv": [
-          "no_streams"
+          "playable_verified"
         ]
       },
       "evidenceDestructive": false
@@ -1070,7 +983,8 @@
       "provider": "cineby",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1107,7 +1021,8 @@
       "provider": "cinefreak",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1144,7 +1059,8 @@
       "provider": "cinemacity",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -1182,7 +1098,8 @@
       "provider": "cinemm",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1219,7 +1136,8 @@
       "provider": "cinevibe",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie"
@@ -1252,7 +1170,8 @@
       "provider": "coflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -1269,7 +1188,7 @@
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 8,
+      "provenRouteCount": 12,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
@@ -1295,7 +1214,8 @@
       "provider": "ctgmovies",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -1333,7 +1253,8 @@
       "provider": "desiflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1351,7 +1272,7 @@
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 2,
+      "provenRouteCount": 3,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
@@ -1374,7 +1295,8 @@
       "provider": "dooflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1411,7 +1333,8 @@
       "provider": "dulourd",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -1448,7 +1371,8 @@
       "provider": "dvdplay",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -1487,7 +1411,8 @@
       "provider": "einthusan",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1524,7 +1449,8 @@
       "provider": "fibwatch",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "anime",
@@ -1567,7 +1493,8 @@
       "provider": "flemmix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1587,7 +1514,7 @@
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
-        "quick_provider-network-http-error",
+        "quick_provider-network-zero-result",
         "recovery_proven"
       ],
       "laneStatuses": {
@@ -1604,7 +1531,8 @@
       "provider": "french-manga",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -1645,7 +1573,8 @@
       "provider": "frenchstream",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -1665,7 +1594,7 @@
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 13,
+      "provenRouteCount": 15,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
@@ -1691,18 +1620,17 @@
       "provider": "fullanime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "currentVerifiedLanes": [],
       "exactLockedLanes": [],
       "provenLanes": [],
       "missingLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "no-proven-route",
@@ -1717,9 +1645,6 @@
       "laneStatuses": {
         "anime": [
           "no_streams"
-        ],
-        "tv": [
-          "no_streams"
         ]
       },
       "evidenceDestructive": false
@@ -1728,7 +1653,8 @@
       "provider": "goatapi",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie"
@@ -1760,7 +1686,8 @@
       "provider": "goated",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1797,7 +1724,8 @@
       "provider": "gramcinema",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1834,7 +1762,8 @@
       "provider": "hdghartv",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1871,7 +1800,8 @@
       "provider": "hdhub4u",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1908,7 +1838,8 @@
       "provider": "hianime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime"
@@ -1940,7 +1871,8 @@
       "provider": "hindmoviez",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -1960,15 +1892,15 @@
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
-        "quick_timeout",
+        "quick_provider-network-http-error",
         "recovery_proven"
       ],
       "laneStatuses": {
         "movie": [
-          "timeout"
+          "no_streams"
         ],
         "tv": [
-          "timeout"
+          "no_streams"
         ]
       },
       "evidenceDestructive": false
@@ -1977,7 +1909,8 @@
       "provider": "kehflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -1993,15 +1926,14 @@
         "tv"
       ],
       "completeCapabilityProof": false,
-      "recoveryStatus": "no-proven-route",
-      "provenRouteCount": 0,
+      "recoveryStatus": "proven",
+      "provenRouteCount": 5,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
-        "quick_provider-network-exception",
         "quick_provider-network-http-error",
-        "recovery_no-proven-route"
+        "recovery_proven"
       ],
       "laneStatuses": {
         "anime": [
@@ -2020,7 +1952,8 @@
       "provider": "kisskh",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2057,7 +1990,8 @@
       "provider": "kurage",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime"
@@ -2089,7 +2023,8 @@
       "provider": "mallumv",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie"
@@ -2121,7 +2056,8 @@
       "provider": "moonflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2158,7 +2094,8 @@
       "provider": "movieblast",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2195,7 +2132,8 @@
       "provider": "moviebox",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -2233,7 +2171,8 @@
       "provider": "movies4u",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2274,7 +2213,8 @@
       "provider": "moviesdrive",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2312,6 +2252,7 @@
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
       "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "on",
       "requiredLanes": [
         "movie"
@@ -2343,7 +2284,8 @@
       "provider": "moviesmod",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2380,7 +2322,8 @@
       "provider": "movix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "anime",
@@ -2423,7 +2366,8 @@
       "provider": "mugiwarastream",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -2438,12 +2382,13 @@
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 10,
+      "provenRouteCount": 18,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-network-http-error",
+        "quick_provider-network-zero-result",
         "recovery_proven"
       ],
       "laneStatuses": {
@@ -2460,7 +2405,8 @@
       "provider": "mycima",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -2502,7 +2448,8 @@
       "provider": "nakios",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -2544,18 +2491,17 @@
       "provider": "neko-sama",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "currentVerifiedLanes": [],
       "exactLockedLanes": [],
       "provenLanes": [],
       "missingLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
@@ -2565,15 +2511,11 @@
       "reasonCodes": [
         "declared_lane_unproven",
         "quick_provider-network-zero-result",
-        "quick_provider-returned-wrong-content",
         "recovery_proven"
       ],
       "laneStatuses": {
         "anime": [
           "no_streams"
-        ],
-        "tv": [
-          "wrong_content"
         ]
       },
       "evidenceDestructive": false
@@ -2582,7 +2524,8 @@
       "provider": "netmirror",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -2621,7 +2564,8 @@
       "provider": "onlykdrama",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -2659,7 +2603,8 @@
       "provider": "papadustream",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -2706,7 +2651,8 @@
       "provider": "peachify",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2744,35 +2690,34 @@
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
       "activationState": "enabled",
-      "routeDataState": "on",
+      "forcedEnabled": true,
+      "routeDataState": "repair",
       "requiredLanes": [
         "movie",
         "tv"
       ],
-      "currentVerifiedLanes": [
-        "movie",
-        "tv"
-      ],
+      "currentVerifiedLanes": [],
       "exactLockedLanes": [],
-      "provenLanes": [
+      "provenLanes": [],
+      "missingLanes": [
         "movie",
         "tv"
       ],
-      "missingLanes": [],
-      "completeCapabilityProof": true,
+      "completeCapabilityProof": false,
       "recoveryStatus": "unknown",
       "provenRouteCount": 0,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
-        "all_declared_lanes_live_proven"
+        "declared_lane_unproven",
+        "quick_provider-network-http-error"
       ],
       "laneStatuses": {
         "movie": [
-          "wrong_content"
+          "no_streams"
         ],
         "tv": [
-          "wrong_content"
+          "no_streams"
         ]
       },
       "evidenceDestructive": false
@@ -2782,6 +2727,7 @@
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
       "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "on",
       "requiredLanes": [
         "movie",
@@ -2819,7 +2765,8 @@
       "provider": "purstream",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2856,7 +2803,8 @@
       "provider": "sekai",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -2894,7 +2842,8 @@
       "provider": "showbox",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2931,7 +2880,8 @@
       "provider": "streamflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -2968,7 +2918,8 @@
       "provider": "streamzo",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -2976,15 +2927,16 @@
         "tv"
       ],
       "currentVerifiedLanes": [
-        "movie"
+        "movie",
+        "tv"
       ],
       "exactLockedLanes": [],
       "provenLanes": [
-        "movie"
+        "movie",
+        "tv"
       ],
       "missingLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
@@ -2995,7 +2947,6 @@
         "declared_lane_unproven",
         "quick_gate-runtime-plan-missing",
         "quick_provider-returned-streams",
-        "quick_provider-returned-wrong-content",
         "recovery_proven"
       ],
       "laneStatuses": {
@@ -3006,7 +2957,7 @@
           "playable_verified"
         ],
         "tv": [
-          "wrong_content"
+          "playable_verified"
         ]
       },
       "evidenceDestructive": false
@@ -3015,7 +2966,8 @@
       "provider": "toflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -3057,7 +3009,8 @@
       "provider": "topcartoons",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -3095,7 +3048,8 @@
       "provider": "uhdmovies",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3132,7 +3086,8 @@
       "provider": "vegamovies",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3152,7 +3107,7 @@
       "quarantined": false,
       "reasonCodes": [
         "declared_lane_unproven",
-        "quick_provider-network-zero-result",
+        "quick_provider-network-http-error",
         "recovery_proven"
       ],
       "laneStatuses": {
@@ -3170,6 +3125,7 @@
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
       "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "on",
       "requiredLanes": [
         "movie",
@@ -3195,7 +3151,7 @@
       ],
       "laneStatuses": {
         "movie": [
-          "wrong_content"
+          "playable_verified"
         ],
         "tv": [
           "playable_verified"
@@ -3207,7 +3163,8 @@
       "provider": "vidfast",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3244,7 +3201,8 @@
       "provider": "vidlink",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3281,7 +3239,8 @@
       "provider": "vidlove",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -3319,7 +3278,8 @@
       "provider": "vidnest",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3356,7 +3316,8 @@
       "provider": "vidnest-anime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "anime"
@@ -3389,7 +3350,8 @@
       "provider": "vidrock",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3426,7 +3388,8 @@
       "provider": "vidsrc",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3463,7 +3426,8 @@
       "provider": "vixsrc",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "off",
       "requiredLanes": [
         "movie",
@@ -3502,7 +3466,8 @@
       "provider": "voiranime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -3517,7 +3482,7 @@
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 8,
+      "provenRouteCount": 7,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
@@ -3539,7 +3504,8 @@
       "provider": "voiranime-homes",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -3580,7 +3546,8 @@
       "provider": "voiranime-rip",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -3595,7 +3562,7 @@
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "proven",
-      "provenRouteCount": 5,
+      "provenRouteCount": 4,
       "terminalState": null,
       "quarantined": false,
       "reasonCodes": [
@@ -3617,7 +3584,8 @@
       "provider": "vostfree",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "anime",
@@ -3654,18 +3622,17 @@
       "provider": "waveanime",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "currentVerifiedLanes": [],
       "exactLockedLanes": [],
       "provenLanes": [],
       "missingLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "completeCapabilityProof": false,
       "recoveryStatus": "no-proven-route",
@@ -3680,9 +3647,6 @@
       "laneStatuses": {
         "anime": [
           "no_streams"
-        ],
-        "tv": [
-          "no_streams"
         ]
       },
       "evidenceDestructive": false
@@ -3691,7 +3655,8 @@
       "provider": "wookafr",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3728,7 +3693,8 @@
       "provider": "xpass",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3765,7 +3731,8 @@
       "provider": "yflix",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",
@@ -3802,7 +3769,8 @@
       "provider": "zinkmovies",
       "schemaVersion": 1,
       "authority": "provider-repair-disposition-v1",
-      "activationState": "disabled",
+      "activationState": "enabled",
+      "forcedEnabled": true,
       "routeDataState": "repair",
       "requiredLanes": [
         "movie",

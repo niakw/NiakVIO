@@ -503,19 +503,25 @@ _REPAIR_RECIPE_NON_EXECUTABLE_HOSTS = {"arm.haglund.dev", "v3-cinemeta.strem.io"
 
 
 # ROUTE_RECOVERY_COMPOSITE_SEARCH_TEMPLATE_V21_8
+# ROUTE_RECOVERY_IDENTITY_SEARCH_V21_12
 def _record_has_search_query(row: dict[str, Any]) -> bool:
     route = str(row.get("route") or "")
-    if any(marker in route for marker in ("{query}", "{queryDots}", "{query_dots}")):
+    query_markers = ("{query}", "{queryDots}", "{query_dots}")
+    identity_markers = ("{imdbId}", "{imdb_id}", "{tmdbId}", "{tmdb_id}")
+    if any(marker in route for marker in query_markers):
+        return True
+    role = str(row.get("role") or "").strip().casefold()
+    if role == "search" and any(marker in route for marker in identity_markers):
         return True
     spec = request_spec(row)
     if not isinstance(spec, dict):
         return False
     # Request specs are already sanitized/abstracted proof DATA. Searching the
-    # serialized structure here only detects the canonical placeholder produced
-    # by proof abstraction; it never recovers arbitrary provider code/data.
+    # serialized structure here only detects canonical proof placeholders.
     serialized = json.dumps(spec, ensure_ascii=False, sort_keys=True)
-    return any(marker in serialized for marker in ("{query}", "{queryDots}", "{query_dots}"))
-
+    return any(marker in serialized for marker in query_markers) or (
+        role == "search" and any(marker in serialized for marker in identity_markers)
+    )
 
 def _repair_recipe_origin_allowed(row: dict[str, Any]) -> bool:
     try:

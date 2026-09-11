@@ -2547,7 +2547,10 @@ function _spv211CandidateIdentityScore(title, href, meta, mediaType, season) {
       if (suffix) return -10000;
     }
   }
-  score += _spv205SeasonSignal(context, season);
+  /* NIAKVIO_PROVIDER_RUNTIME_RECONSTRUCTION_V21_12 */
+  const explicitSeasonSignal = _spv205SeasonSignal(context, season);
+  if (explicitSeasonSignal < 0) return -10000;
+  score += explicitSeasonSignal;
   return score;
 }
 /* NIAKVIO_PROVIDER_SERIES_SLUG_ROLE_V21_3 */
@@ -3166,6 +3169,16 @@ async function _resolveProviderValuePlan(meta, mediaType, season, episode) {
         if (crawl.length) {
           const streams = await _crawlDirectMedia(crawl.slice(0, 10), payload.base || stepUrl, 3);
           if (streams.length) return streams.slice(0, 40);
+          // V21.12: a successful HTTP player page is still a valid native-player
+          // fallback when this exact URL came from the proof-correlated response.
+          // Direct media remains on the ordinary probed path and is never marked.
+          const fallbackReferer = _text(payload.base || stepUrl);
+          for (const candidate of crawl.slice(0, 10)) {
+            if (_directMedia(candidate) || !_spv216PlayerFallbackEligible(candidate)) continue;
+            if (!playerFallbacks.some(row => row.url === candidate)) {
+              playerFallbacks.push({ url: candidate, referer: fallbackReferer });
+            }
+          }
         }
         }
         if (!progressed) break;

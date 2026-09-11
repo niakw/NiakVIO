@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "mode": "candidate",
-  "baseRef": "5868137d5888b31718056ce28ec02504942e62a4",
+  "baseRef": "HEAD",
   "scopeAllProviders": true,
   "scopeProviderCount": 96,
   "scopeProviders": [
@@ -105,14 +105,15 @@
   "changedPaths": [
     "--all"
   ],
-  "rollingBaselineSource": "5868137d5888b31718056ce28ec02504942e62a4:provider-v3-quick-yield.json",
+  "rollingBaselineSource": "HEAD:provider-v3-quick-yield.json",
   "historicalFloorSource": "automation/provider-history-matrix.json schema v3",
   "candidateSource": "provider-v3-quick-yield.json",
   "disabledHistoricalDebtPolicy": "allowed only when manifest enabled=false and provider-repair-disposition-v1 state is repair/off; semantic/HLS contract deletion remains forbidden",
-  "disabledDebtProviderCount": 9,
+  "disabledDebtProviderCount": 10,
   "disabledDebtProviders": [
     "anikototv",
-    "castle",
+    "animesama-co",
+    "animevostfr",
     "cineby",
     "hindmoviez",
     "kehflix",
@@ -418,8 +419,12 @@
     "animekai": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "anime"
+      ],
+      "requiredVerifiedLanes": [
+        "anime"
+      ],
       "candidateVerifiedLanes": [
         "anime"
       ],
@@ -504,29 +509,35 @@
     "animesama-co": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
-      "candidateVerifiedLanes": [
+      "rollingAcceptedLanes": [
         "anime"
       ],
+      "requiredVerifiedLanes": [
+        "anime"
+      ],
+      "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "anime": [
-          "playable_verified"
+          "no_streams"
         ],
         "movie": [
           "no_streams"
         ]
       },
-      "missingVerifiedLanes": [],
+      "missingVerifiedLanes": [
+        "anime"
+      ],
       "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
       "hlsM3u8Lost": false,
       "externalDriftRecorded": false,
-      "disabledDebtAccepted": false,
+      "disabledDebtAccepted": true,
       "disabledDebtState": "repair",
-      "disabledDebtReasons": [],
+      "disabledDebtReasons": [
+        "missing_verified_lanes"
+      ],
       "passed": true,
       "failures": []
     },
@@ -590,9 +601,6 @@
       "candidateLaneStatuses": {
         "anime": [
           "no_streams"
-        ],
-        "tv": [
-          "no_streams"
         ]
       },
       "missingVerifiedLanes": [],
@@ -611,29 +619,35 @@
     "animevostfr": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
-      "candidateVerifiedLanes": [
+      "rollingAcceptedLanes": [
         "anime"
       ],
+      "requiredVerifiedLanes": [
+        "anime"
+      ],
+      "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "anime": [
-          "playable_verified"
+          "no_streams"
         ],
         "movie": [
           "no_streams"
         ]
       },
-      "missingVerifiedLanes": [],
+      "missingVerifiedLanes": [
+        "anime"
+      ],
       "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
       "hlsM3u8Lost": false,
       "externalDriftRecorded": false,
-      "disabledDebtAccepted": false,
+      "disabledDebtAccepted": true,
       "disabledDebtState": "repair",
-      "disabledDebtReasons": [],
+      "disabledDebtReasons": [
+        "missing_verified_lanes"
+      ],
       "passed": true,
       "failures": []
     },
@@ -724,9 +738,6 @@
       "candidateLaneStatuses": {
         "anime": [
           "timeout"
-        ],
-        "tv": [
-          "no_streams"
         ]
       },
       "missingVerifiedLanes": [],
@@ -752,38 +763,34 @@
         "tv"
       ],
       "rollingAcceptedLanes": [
-        "movie",
-        "tv"
+        "movie"
       ],
       "requiredVerifiedLanes": [
         "movie",
         "tv"
       ],
       "candidateVerifiedLanes": [
-        "movie"
+        "movie",
+        "tv"
       ],
       "candidateLaneStatuses": {
         "movie": [
           "playable_verified"
         ],
         "tv": [
-          "no_streams"
+          "playable_verified"
         ]
       },
-      "missingVerifiedLanes": [
-        "tv"
-      ],
+      "missingVerifiedLanes": [],
       "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
       "hlsM3u8Lost": false,
       "externalDriftRecorded": false,
-      "disabledDebtAccepted": true,
-      "disabledDebtState": "repair",
-      "disabledDebtReasons": [
-        "missing_verified_lanes"
-      ],
+      "disabledDebtAccepted": false,
+      "disabledDebtState": null,
+      "disabledDebtReasons": [],
       "passed": true,
       "failures": []
     },
@@ -796,10 +803,7 @@
         "movie",
         "tv"
       ],
-      "rollingAcceptedLanes": [
-        "movie",
-        "tv"
-      ],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie",
         "tv"
@@ -996,8 +1000,12 @@
     "desiflix": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "tv"
+      ],
+      "requiredVerifiedLanes": [
+        "tv"
+      ],
       "candidateVerifiedLanes": [
         "tv"
       ],
@@ -1192,8 +1200,12 @@
         "5.21.0"
       ],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "anime"
+      ],
+      "requiredVerifiedLanes": [
+        "anime"
+      ],
       "candidateVerifiedLanes": [
         "anime"
       ],
@@ -1206,7 +1218,7 @@
         ]
       },
       "missingVerifiedLanes": [],
-      "requireAnyVerifiedLane": true,
+      "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
@@ -1221,8 +1233,12 @@
     "frenchstream": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "movie"
+      ],
+      "requiredVerifiedLanes": [
+        "movie"
+      ],
       "candidateVerifiedLanes": [
         "movie"
       ],
@@ -1258,9 +1274,6 @@
       "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "anime": [
-          "no_streams"
-        ],
-        "tv": [
           "no_streams"
         ]
       },
@@ -1438,19 +1451,17 @@
       "historicalVerifiedLanes": [
         "movie"
       ],
-      "rollingAcceptedLanes": [
-        "movie"
-      ],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie"
       ],
       "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "movie": [
-          "timeout"
+          "no_streams"
         ],
         "tv": [
-          "timeout"
+          "no_streams"
         ]
       },
       "missingVerifiedLanes": [
@@ -1479,11 +1490,7 @@
         "movie",
         "tv"
       ],
-      "rollingAcceptedLanes": [
-        "anime",
-        "movie",
-        "tv"
-      ],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "anime",
         "movie",
@@ -1683,8 +1690,12 @@
     "movies4u": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "movie"
+      ],
+      "requiredVerifiedLanes": [
+        "movie"
+      ],
       "candidateVerifiedLanes": [
         "movie"
       ],
@@ -1741,8 +1752,12 @@
         "5.21.0"
       ],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "movie"
+      ],
+      "requiredVerifiedLanes": [
+        "movie"
+      ],
       "candidateVerifiedLanes": [
         "movie"
       ],
@@ -1752,7 +1767,7 @@
         ]
       },
       "missingVerifiedLanes": [],
-      "requireAnyVerifiedLane": true,
+      "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
@@ -1917,9 +1932,6 @@
       "candidateLaneStatuses": {
         "anime": [
           "no_streams"
-        ],
-        "tv": [
-          "wrong_content"
         ]
       },
       "missingVerifiedLanes": [],
@@ -1992,8 +2004,14 @@
     "papadustream": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "anime",
+        "tv"
+      ],
+      "requiredVerifiedLanes": [
+        "anime",
+        "tv"
+      ],
       "candidateVerifiedLanes": [
         "anime",
         "tv"
@@ -2057,10 +2075,10 @@
       "candidateVerifiedLanes": [],
       "candidateLaneStatuses": {
         "movie": [
-          "wrong_content"
+          "no_streams"
         ],
         "tv": [
-          "wrong_content"
+          "no_streams"
         ]
       },
       "missingVerifiedLanes": [],
@@ -2071,7 +2089,7 @@
       "hlsM3u8Lost": false,
       "externalDriftRecorded": false,
       "disabledDebtAccepted": false,
-      "disabledDebtState": null,
+      "disabledDebtState": "repair",
       "disabledDebtReasons": [],
       "passed": true,
       "failures": []
@@ -2081,8 +2099,14 @@
         "5.21.0"
       ],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "movie",
+        "tv"
+      ],
+      "requiredVerifiedLanes": [
+        "movie",
+        "tv"
+      ],
       "candidateVerifiedLanes": [
         "movie",
         "tv"
@@ -2096,7 +2120,7 @@
         ]
       },
       "missingVerifiedLanes": [],
-      "requireAnyVerifiedLane": true,
+      "requireAnyVerifiedLane": false,
       "partialRegressionFailedLanes": [],
       "unrecoveredPartialRegressionLanes": [],
       "lostSemanticTypes": [],
@@ -2234,7 +2258,8 @@
         "movie"
       ],
       "candidateVerifiedLanes": [
-        "movie"
+        "movie",
+        "tv"
       ],
       "candidateLaneStatuses": {
         "anime": [
@@ -2244,7 +2269,7 @@
           "playable_verified"
         ],
         "tv": [
-          "wrong_content"
+          "playable_verified"
         ]
       },
       "missingVerifiedLanes": [],
@@ -2254,8 +2279,7 @@
         "tv"
       ],
       "unrecoveredPartialRegressionLanes": [
-        "anime",
-        "tv"
+        "anime"
       ],
       "lostSemanticTypes": [],
       "hlsM3u8Lost": false,
@@ -2393,11 +2417,12 @@
         "tv"
       ],
       "candidateVerifiedLanes": [
+        "movie",
         "tv"
       ],
       "candidateLaneStatuses": {
         "movie": [
-          "wrong_content"
+          "playable_verified"
         ],
         "tv": [
           "playable_verified"
@@ -2659,8 +2684,12 @@
     "voiranime-homes": {
       "historicalPositiveVersions": [],
       "historicalVerifiedLanes": [],
-      "rollingAcceptedLanes": [],
-      "requiredVerifiedLanes": [],
+      "rollingAcceptedLanes": [
+        "anime"
+      ],
+      "requiredVerifiedLanes": [
+        "anime"
+      ],
       "candidateVerifiedLanes": [
         "anime"
       ],
@@ -2748,9 +2777,6 @@
       "candidateLaneStatuses": {
         "anime": [
           "no_streams"
-        ],
-        "tv": [
-          "no_streams"
         ]
       },
       "missingVerifiedLanes": [],
@@ -2774,10 +2800,7 @@
         "movie",
         "tv"
       ],
-      "rollingAcceptedLanes": [
-        "movie",
-        "tv"
-      ],
+      "rollingAcceptedLanes": [],
       "requiredVerifiedLanes": [
         "movie",
         "tv"
