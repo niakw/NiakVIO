@@ -1,4 +1,4 @@
-name: TEMP - Runtime Identity + Hub Origin Contracts
+name: TEMP - Runtime Rebuild Proof
 
 on:
   push:
@@ -11,9 +11,11 @@ permissions:
   contents: write
 
 jobs:
-  runtime-contracts:
+  runtime-rebuild-proof:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 45
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -26,54 +28,132 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Apply hub/runtime-origin separation
+
+      - name: Canonicalize runtime source and contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/upgrade_provider_base_runtime_v11.py
+          python tests/provider_raw_tmdb_route_identity_test.py
+          python tests/provider_runtime_origin_hub_separation_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python scripts/provider_base_store.py validate
+          grep -Fq 'NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19' scripts/provider_base_store.py
+          grep -Fq 'NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21' scripts/materialize_provider_v3_all.py
+          grep -Fq 'NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21' scripts/validate_provider_v3_routes_sequential.py
+
+      - name: Rebuild all 96 provider bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/materialize_provider_v3_all.py
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          python scripts/validate_published_provider_config.py --expected 96
+          python tests/native_five_lab_coverage_test.py
+          python tests/provider_js_lego_ownership_test.py
+          python tests/global_media_type_pre_network_gate_test.py
+          python tests/native_dual_id_identity_test.py
+
+      - name: Prove Allwish cannot execute its Telegram hub
+        shell: bash
+        run: |
+          set -euo pipefail
+          ALLWISH_FILE="$(python - <<'PY'
+          import json
+          m=json.load(open('manifest.json',encoding='utf-8'))
+          rows=[r for r in m.get('scrapers',[]) if str(r.get('id','')).strip().lower()=='allwish']
+          assert len(rows)==1, rows
+          print(rows[0]['filename'])
+          PY
+          )"
+          export ALLWISH_FILE
+          node <<'JS'
+          const path = require('path');
+          const file = path.resolve(process.env.ALLWISH_FILE);
+          const p = require(file);
+          const model = p.__niakvioProviderBase || {};
+          const origins = Array.isArray(model.origins) ? model.origins : [];
+          if (!String(model.officialHub || '').includes('t.me/')) throw new Error('Allwish officialHub unexpectedly lost');
+          if (origins.some(v => /https?:\/\/(?:www\.)?t\.me(?:[:/]|$)/i.test(String(v)))) {
+            throw new Error('Telegram hub leaked into runtime origins: '+JSON.stringify(origins));
+          }
+          if (!origins.some(v => /^https:\/\/all-wish\.me(?:[:/]|$)/i.test(String(v)))) {
+            throw new Error('Allwish provider runtime origin missing: '+JSON.stringify(origins));
+          }
+
+          const calls = [];
+          function response(status, url, body, contentType='text/plain') {
+            const text = typeof body === 'string' ? body : JSON.stringify(body ?? {});
+            return {
+              ok: status >= 200 && status < 300,
+              status,
+              url,
+              headers: { get(name) { return String(name).toLowerCase()==='content-type' ? contentType : ''; } },
+              text: async () => text,
+              json: async () => typeof body === 'string' ? JSON.parse(body || '{}') : (body ?? {}),
+              arrayBuffer: async () => Buffer.from(text),
+            };
+          }
+          globalThis.TMDB_API_KEY = 'ci-test-key';
+          globalThis.fetch = async function(input) {
+            const url = String(input && input.url || input);
+            calls.push(url);
+            if (/https?:\/\/(?:www\.)?t\.me(?:[:/]|$)|telesco\.pe/i.test(url)) {
+              throw new Error('ALLWISH_HUB_RUNTIME_LEAK '+url);
+            }
+            if (/api\.themoviedb\.org/i.test(url)) {
+              if (/\/tv\/1396(?:[/?]|$)/.test(url)) {
+                return response(200, url, {id:1396,name:'Breaking Bad',original_name:'Breaking Bad',first_air_date:'2008-01-20',external_ids:{imdb_id:'tt0903747'}}, 'application/json');
+              }
+              return response(200, url, {id:157336,title:'Interstellar',original_title:'Interstellar',release_date:'2014-11-05',external_ids:{imdb_id:'tt0816692'}}, 'application/json');
+            }
+            if (/https?:\/\/all-wish\.me(?:[:/]|$)/i.test(url)) return response(404, url, 'not found');
+            return response(404, url, 'not found');
+          };
+
+          (async () => {
+            const movie = await p.getStreams('157336','movie');
+            const tv = await p.getStreams('1396','tv',1,1);
+            if (!Array.isArray(movie) || movie.length !== 0) throw new Error('Interstellar must fail closed: '+JSON.stringify(movie));
+            if (!Array.isArray(tv) || tv.length !== 0) throw new Error('Breaking Bad must fail closed: '+JSON.stringify(tv));
+            if (calls.some(u => /https?:\/\/(?:www\.)?t\.me(?:[:/]|$)|telesco\.pe/i.test(u))) throw new Error('Telegram runtime request observed');
+            console.log('ALLWISH_HUB_ORIGIN_CROSS_FIXTURE_OK movie=0 tv=0 telegram_requests=0 runtime_origins='+JSON.stringify(origins));
+          })().catch(err => { console.error(err); process.exit(1); });
+          JS
+
+      - name: Prove candidate manifest references 96 real files
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
+          import json
           from pathlib import Path
-
-          materializer = Path('scripts/materialize_provider_v3_all.py')
-          text = materializer.read_text(encoding='utf-8')
-          marker = 'NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21'
-          if marker not in text:
-              old = '''    origins: list[str] = []\n    for value in (official_site, official_hub, official_api, fixed_api, *(static_model.get("origins") or [])):\n        item = origin(value)\n        if item and not item.endswith(".invalid") and item not in origins:\n            origins.append(item)\n'''
-              new = '''    # NIAKVIO_PROVIDER_RUNTIME_ORIGIN_HUB_SEPARATION_V21\n    # A hub is discovery/address knowledge, not an execution backend. Keep its\n    # origin only when the same origin is independently authoritative as the\n    # provider site/API/fixed API. This prevents Telegram/status hubs from\n    # receiving provider-relative player/API routes.\n    runtime_authorities: list[str] = []\n    for value in (official_site, official_api, fixed_api):\n        item = origin(value)\n        if item and not item.endswith(".invalid") and item not in runtime_authorities:\n            runtime_authorities.append(item)\n    hub_origin = origin(official_hub)\n    origins: list[str] = list(runtime_authorities)\n    for value in (static_model.get("origins") or []):\n        item = origin(value)\n        if not item or item.endswith(".invalid"):\n            continue\n        if item == hub_origin and item not in runtime_authorities:\n            continue\n        if item not in origins:\n            origins.append(item)\n'''
-              if text.count(old) != 1:
-                  raise SystemExit(f'materializer anchor count={text.count(old)}')
-              materializer.write_text(text.replace(old, new, 1), encoding='utf-8')
-
-          validator = Path('scripts/validate_provider_v3_routes_sequential.py')
-          text = validator.read_text(encoding='utf-8')
-          marker = 'NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21'
-          if marker not in text:
-              old = '''def provider_origins(model: dict[str, Any], patch: dict[str, Any]) -> list[str]:\n    fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}\n    values = [\n        patch.get("official_site"), patch.get("official_hub"), patch.get("official_api"), fixed.get("api"),\n        model.get("knownSite"), model.get("officialSite"), model.get("officialHub"), model.get("officialApi"), model.get("fixedApi"),\n        *(model.get("origins") or []),\n    ]\n    origins: list[str] = []\n    for raw in values:\n        text = str(raw or "").strip()\n        if not text:\n            continue\n        try:\n            parsed = urllib.parse.urlsplit(text)\n            if parsed.scheme not in {"http", "https"} or not parsed.hostname:\n                continue\n            origin = f"{parsed.scheme}://{parsed.netloc}"\n        except ValueError:\n            continue\n        if origin not in origins:\n            origins.append(origin)\n    return origins[:24]\n'''
-              new = '''# NIAKVIO_PROVIDER_LIVE_GATE_HUB_ORIGIN_SEPARATION_V21\ndef provider_origins(model: dict[str, Any], patch: dict[str, Any]) -> list[str]:\n    fixed = patch.get("fixed_endpoint") if isinstance(patch.get("fixed_endpoint"), dict) else {}\n\n    def parsed_origin(raw: object) -> str:\n        text = str(raw or "").strip()\n        if not text:\n            return ""\n        try:\n            parsed = urllib.parse.urlsplit(text)\n            if parsed.scheme not in {"http", "https"} or not parsed.hostname:\n                return ""\n            return f"{parsed.scheme}://{parsed.netloc}"\n        except ValueError:\n            return ""\n\n    authority_values = [\n        patch.get("official_site"), patch.get("official_api"), fixed.get("api"),\n        model.get("knownSite"), model.get("officialSite"), model.get("officialApi"), model.get("fixedApi"),\n    ]\n    origins: list[str] = []\n    for raw in authority_values:\n        value = parsed_origin(raw)\n        if value and value not in origins:\n            origins.append(value)\n\n    hub_origins = {\n        value for value in (parsed_origin(patch.get("official_hub")), parsed_origin(model.get("officialHub"))) if value\n    }\n    for raw in (model.get("origins") or []):\n        value = parsed_origin(raw)\n        if not value:\n            continue\n        if value in hub_origins and value not in origins:\n            continue\n        if value not in origins:\n            origins.append(value)\n    return origins[:24]\n'''
-              if text.count(old) != 1:
-                  raise SystemExit(f'validator anchor count={text.count(old)}')
-              validator.write_text(text.replace(old, new, 1), encoding='utf-8')
+          m=json.load(open('manifest.json',encoding='utf-8'))
+          rows=m.get('scrapers') or []
+          assert len(rows)==96, len(rows)
+          missing=[]
+          for row in rows:
+              p=Path(str(row.get('filename') or ''))
+              if not p.is_file(): missing.append(str(p))
+          assert not missing, missing
+          enabled=sum(bool(r.get('enabled')) for r in rows)
+          print(f'REBUILT_MANIFEST_OK providers={len(rows)} enabled={enabled} missing=0 version={m.get("version")}')
           PY
-      - name: Validate runtime contracts
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m py_compile scripts/materialize_provider_v3_all.py scripts/validate_provider_v3_routes_sequential.py scripts/upgrade_provider_base_runtime_v11.py tests/provider_runtime_origin_hub_separation_test.py tests/provider_raw_tmdb_route_identity_test.py
-          python tests/provider_runtime_origin_hub_separation_test.py
-          python scripts/upgrade_provider_base_runtime_v11.py
-          python tests/provider_raw_tmdb_route_identity_test.py
-          python tests/provider_v3_source_plan_v4_contract_test.py
-          python tests/provider_v3_sequential_live_gate_test.py
-          python scripts/provider_base_store.py validate
-      - name: Commit verified source corrections to workbench
+
+      - name: Commit verified reconstructed candidate
         shell: bash
         run: |
           set -euo pipefail
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add scripts/materialize_provider_v3_all.py scripts/validate_provider_v3_routes_sequential.py
+          git add \
+            scripts/provider_base_store.py \
+            manifest.json vf/manifest.json no-anime/manifest.json vf-no-anime/manifest.json \
+            provider-v3-materialization.json providers/
           if git diff --cached --quiet; then
-            echo 'No source correction to commit.'
+            echo 'No reconstructed candidate changes.'
             exit 0
           fi
-          git commit -m 'fix(runtime): separate hubs from provider execution origins'
+          git commit -m 'fix(runtime): rebuild 96 after TMDB and hub-origin corrections'
           git push origin HEAD:workbench/hub-matrix-46-20260911
