@@ -39,10 +39,10 @@ def _patch_raw_tmdb_route_identity() -> bool:
         validate_raw_tmdb(text)
         return False
 
-    old = '''let proofMeta = null;
+    old_meta = '''let proofMeta = null;
 if (hasProofValue || hasProofRecipe || hasProofSearch) proofMeta = await _tmdb(tmdbId, type);
 '''
-    new = '''let proofMeta = null;
+    new_meta = '''let proofMeta = null;
 if (hasProofValue || hasProofRecipe || hasProofSearch) proofMeta = await _tmdb(tmdbId, type);
 /* NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19 */
 const rawTmdbRouteId = _text(tmdbId).replace(/^tmdb:/i, "").split(":")[0].trim();
@@ -54,7 +54,26 @@ if (hasProofRecipe && /^\\d+$/.test(rawTmdbRouteId)) {
   }
 }
 '''
-    text = once(text, old, new, "raw-tmdb-route-identity")
+    text = once(text, old_meta, new_meta, "raw-tmdb-route-identity")
+
+    old_recipe = '''if (hasProofRecipe) {
+  const recipePrimary = await _resolveApiRecipe(proofMeta, type, season, episode);
+  if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
+  if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+}
+'''
+    new_recipe = '''if (hasProofRecipe) {
+  const typedRecipeNeedsTmdb = NIAKVIO_PROVIDER_MODEL.apiRecipe.recipeKind === "typed-resolver-api";
+  if (typedRecipeNeedsTmdb && (!proofMeta || !_text(proofMeta.tmdbId))) {
+    if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  } else {
+    const recipePrimary = await _resolveApiRecipe(proofMeta, type, season, episode);
+    if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
+    if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  }
+}
+'''
+    text = once(text, old_recipe, new_recipe, "typed-resolver-empty-tmdb-fail-closed")
     TARGET.write_text(text, encoding="utf-8")
     validate_raw_tmdb(text)
     return True
@@ -127,6 +146,8 @@ def validate_raw_tmdb(text: str | None = None) -> None:
         'if (hasProofRecipe && /^\\d+$/.test(rawTmdbRouteId)) {',
         'tmdbId:rawTmdbRouteId',
         'Object.assign({}, proofMeta, {tmdbId:rawTmdbRouteId})',
+        'const typedRecipeNeedsTmdb = NIAKVIO_PROVIDER_MODEL.apiRecipe.recipeKind === "typed-resolver-api";',
+        'typedRecipeNeedsTmdb && (!proofMeta || !_text(proofMeta.tmdbId))',
     ):
         if needle not in value:
             raise AssertionError(f"raw TMDB route identity runtime missing: {needle}")
@@ -159,7 +180,8 @@ def main() -> int:
     print(
         f"PROVIDER_BASE_RUNTIME_V11_OK changed={str(changed).lower()} "
         "typed_resolver_api=1 generic_absolute_bypass=0 multi_hop_flattening=0 "
-        "stream_containers_v12=1 execution_authority_v16=1 raw_tmdb_route_identity_v19=1"
+        "stream_containers_v12=1 execution_authority_v16=1 raw_tmdb_route_identity_v19=1 "
+        "typed_resolver_empty_tmdb_fail_closed=1"
     )
     return 0
 
