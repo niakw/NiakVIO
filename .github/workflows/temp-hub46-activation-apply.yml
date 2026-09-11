@@ -1,0 +1,96 @@
+name: TEMP - Apply Exact Hub46 Activation
+
+on:
+  push:
+    branches:
+      - workbench/hub-matrix-46-20260911
+    paths:
+      - '.github/workflows/temp-hub46-activation-apply.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply-hub46:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Apply exact 46 ON / 50 OFF policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/temp_targeted_hub46_activation_fix.py
+          python -m py_compile scripts/finalize_provider_repair_disposition_v1_impl.py scripts/validate_activation_preservation.py
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('.')
+          matrix=json.load(open(root/'automation/evidence/hub-lab-matrix-46.json',encoding='utf-8'))
+          target={str(r['manifestId']).strip().casefold().replace('_','-') for r in matrix['rows']}
+          assert len(target)==46
+          for rel in ['manifest.json','vf/manifest.json','no-anime/manifest.json','vf-no-anime/manifest.json']:
+              m=json.load(open(root/rel,encoding='utf-8'))
+              rows=[r for r in m.get('scrapers',[]) if isinstance(r,dict)]
+              enabled={str(r.get('id','')).strip().casefold().replace('_','-') for r in rows if r.get('enabled') is True}
+              assert enabled == target.intersection({str(r.get('id','')).strip().casefold().replace('_','-') for r in rows}), (rel,len(enabled),sorted(enabled-target),sorted(target-enabled))
+              print(f'HUB46_MANIFEST_OK file={rel} enabled={len(enabled)} total={len(rows)}')
+          main=json.load(open(root/'manifest.json',encoding='utf-8'))
+          assert len(main.get('scrapers',[]))==96
+          assert sum(1 for r in main['scrapers'] if r.get('enabled') is True)==46
+          assert sum(1 for r in main['scrapers'] if r.get('enabled') is False)==50
+          o=json.load(open(root/'provider-overrides.json',encoding='utf-8'))
+          p=o.get('provider_patches',{})
+          mism=[]
+          for pid,row in p.items():
+              mo=row.get('manifest_overrides') or {}
+              if bool(mo.get('enabled')) != (str(pid).strip().casefold().replace('_','-') in target):
+                  mism.append(pid)
+          assert not mism,mism
+          print('HUB46_ACTIVATION_EXACT_OK enabled=46 disabled=50 overrides_aligned=96')
+          PY
+      - name: Run activation policy tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tests/ci_preservation_policy_test.py
+          python tests/activation_preservation_core_rehash_test.py
+          python scripts/validate_activation_preservation.py
+      - name: Prove Repair finalizer preserves exact target set
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/finalize_provider_repair_disposition_v1.py
+          python - <<'PY'
+          import json
+          m=json.load(open('manifest.json',encoding='utf-8'))
+          matrix=json.load(open('automation/evidence/hub-lab-matrix-46.json',encoding='utf-8'))
+          target={str(r['manifestId']).strip().casefold().replace('_','-') for r in matrix['rows']}
+          active={str(r.get('id','')).strip().casefold().replace('_','-') for r in m['scrapers'] if r.get('enabled') is True}
+          assert active==target,(len(active),sorted(active-target),sorted(target-active))
+          report=json.load(open('automation/provider-repair-disposition.json',encoding='utf-8'))
+          assert report['enabledProviderCount']==46,report['enabledProviderCount']
+          assert report['disabledProviderCount']==50,report['disabledProviderCount']
+          assert report['policy']['forceAllProvidersEnabled'] is False
+          print('HUB46_REPAIR_FINALIZER_OK enabled=46 disabled=50')
+          PY
+      - name: Commit exact activation policy and clean temporary patcher/workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f scripts/temp_targeted_hub46_activation_fix.py .github/workflows/temp-hub46-activation-apply.yml .github/workflows/temp-pr112-gate-fix.yml scripts/temp_pr112_gate_fix.py
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'fix(activation): enforce exact 46 hub targets'
+          git push origin HEAD:workbench/hub-matrix-46-20260911
