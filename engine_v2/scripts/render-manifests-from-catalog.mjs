@@ -37,16 +37,17 @@ function nestedProjectionFilename(value) {
 }
 
 function noAnimeProjection(source) {
-  const copy = structuredClone(source);
-  copy.name = String(source.name || "NiakVIO") + " — Without anime providers";
-  copy.scrapers = (source.scrapers || [])
-    .filter((row) => !excludedFromNoAnime(row))
-    .map((row) => {
-      const projected = structuredClone(row);
-      projected.filename = nestedProjectionFilename(projected.filename);
-      return projected;
-    });
-  return copy;
+  return {
+    name: String(source.name || "NiakVIO") + " — Without anime providers",
+    version: source.version,
+    scrapers: (source.scrapers || [])
+      .filter((row) => !excludedFromNoAnime(row))
+      .map((row) => {
+        const projected = structuredClone(row);
+        projected.filename = nestedProjectionFilename(projected.filename);
+        return projected;
+      }),
+  };
 }
 
 const catalogPath = String(args.get("--catalog") || "provider_catalog.json");
