@@ -4,11 +4,15 @@ from __future__ import annotations
 import importlib.util
 import json
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PATCH = ROOT / "scripts/provider_patches/anidb_runtime_v1.py"
+SCRIPTS = ROOT / "scripts"
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+PATCH = SCRIPTS / "provider_patches/anidb_runtime_v1.py"
 
 spec = importlib.util.spec_from_file_location("anidb_runtime_v1", PATCH)
 assert spec and spec.loader
