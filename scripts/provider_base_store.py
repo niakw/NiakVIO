@@ -1387,12 +1387,12 @@ async function _tmdb(tmdbId, mediaType) {
   } catch (_) {}
   return null;
 }
+/* NIAKVIO_PROVIDER_RUNTIME_SEARCH_HUB_SEPARATION_V21_1 */
 function _searchBases() {
   return _uniq([
     ...(Array.isArray(NIAKVIO_PROVIDER_MODEL.proofSearchBases) ? NIAKVIO_PROVIDER_MODEL.proofSearchBases : []),
     NIAKVIO_PROVIDER_MODEL.officialSite,
-    NIAKVIO_PROVIDER_MODEL.knownSite,
-    NIAKVIO_PROVIDER_MODEL.officialHub
+    NIAKVIO_PROVIDER_MODEL.knownSite
   ].map(_substituteDomain)).filter(value => /^https?:/i.test(value));
 }
 function _apiBases() {
@@ -4144,14 +4144,28 @@ const hasProofRecipe = !!NIAKVIO_PROVIDER_MODEL.apiRecipe;
 const hasProofSearch = Array.isArray(NIAKVIO_PROVIDER_MODEL.searchRequestPlan) && NIAKVIO_PROVIDER_MODEL.searchRequestPlan.length > 0;
 let proofMeta = null;
 if (hasProofValue || hasProofRecipe || hasProofSearch) proofMeta = await _tmdb(tmdbId, type);
+/* NIAKVIO_PROVIDER_RAW_TMDB_ROUTE_IDENTITY_V19 */
+const rawTmdbRouteId = _text(tmdbId).replace(/^tmdb:/i, "").split(":")[0].trim();
+if (hasProofRecipe && /^\d+$/.test(rawTmdbRouteId)) {
+  if (!proofMeta) {
+    proofMeta = {title:"", aliases:[], year:"", tmdbId:rawTmdbRouteId, imdbId:"", externalIds:{}};
+  } else if (!_text(proofMeta.tmdbId)) {
+    proofMeta = Object.assign({}, proofMeta, {tmdbId:rawTmdbRouteId});
+  }
+}
 if (hasProofValue && proofMeta && proofMeta.title) {
   const valuePrimary = await _resolveProviderValuePlan(proofMeta, type, season, episode);
   if (Array.isArray(valuePrimary) && valuePrimary.length) return valuePrimary;
 }
 if (hasProofRecipe) {
-  const recipePrimary = await _resolveApiRecipe(proofMeta, type, season, episode);
-  if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
-  if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  const typedRecipeNeedsTmdb = NIAKVIO_PROVIDER_MODEL.apiRecipe.recipeKind === "typed-resolver-api";
+  if (typedRecipeNeedsTmdb && (!proofMeta || !_text(proofMeta.tmdbId))) {
+    if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  } else {
+    const recipePrimary = await _resolveApiRecipe(proofMeta, type, season, episode);
+    if (Array.isArray(recipePrimary) && recipePrimary.length) return recipePrimary;
+    if (NIAKVIO_PROVIDER_MODEL.apiRecipe.allowGenericFallback !== true) return [];
+  }
 }
 if (hasProofSearch && proofMeta && proofMeta.title) {
   const searchPrimary = await _resolveSearchRequestPlan(proofMeta, type, season, episode);
