@@ -1,12 +1,4 @@
-#!/usr/bin/env python3
-from pathlib import Path
-
-ROOT = Path(__file__).resolve().parents[1]
-DOC = ROOT / "docs/media-type-transport-contract.md"
-MEMORY = ROOT / "MEMORY.md"
-
-DOC.parent.mkdir(parents=True, exist_ok=True)
-DOC.write_text("""# NiakVIO media type / transport contract
+# NiakVIO media type / transport contract
 
 This is the durable contract for separating **canonical content identity** from the **Nuvio provider ABI transport lane**.
 
@@ -67,25 +59,3 @@ Any implementation that globally maps canonical `anime` to runtime `tv` without 
 ## Regression floor
 
 Tests must cover all four mapping rows, including a dedicated anime-movie fixture. Passing only an episodic anime fixture is insufficient.
-""", encoding="utf-8")
-
-marker = "## Media-type semantic/transport contract — authoritative 2026-09-11"
-text = MEMORY.read_text(encoding="utf-8")
-if marker not in text:
-    checkpoint = """
-
-## Media-type semantic/transport contract — authoritative 2026-09-11
-
-- Durable contract: `docs/media-type-transport-contract.md`.
-- Canonical semantic type owns identity/provider selection; runtime transport owns only the Nuvio ABI invocation lane.
-- Mapping: ordinary movie `movie -> movie`; ordinary TV/episode `tv -> tv`; anime series/episode `anime -> tv`; anime movie `anime -> movie`.
-- Anime films remain canonical `anime`; episodic anime remains canonical `anime`. Never globally rewrite canonical anime to tv.
-- `canonicalSupportedTypes` is semantic authority. `supportedTypes` may carry compatibility/transport aliases but must never widen semantic capability.
-- Provider selection occurs before runtime aliasing.
-- Native Lab evidence should expose `logical_type` and `request_type`, including both anime/tv and anime/movie cases.
-- Western animation is not automatically anime; trusted identity is required.
-- Current 46-provider workbench and final five-Lab evidence must conform to this contract.
-"""
-    MEMORY.write_text(text.rstrip() + checkpoint + "\n", encoding="utf-8")
-
-print("MEDIA_TRANSPORT_DURABLE_CHECKPOINT_OK doc=1 memory=1")
