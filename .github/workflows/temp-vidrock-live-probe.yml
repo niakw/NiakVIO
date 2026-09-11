@@ -1,0 +1,64 @@
+name: TEMP - VidRock Remote Proof
+
+on:
+  push:
+    branches:
+      - workbench/hub-matrix-46-20260911
+    paths:
+      - '.github/workflows/temp-vidrock-live-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  remote-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: '24'
+          package-manager-cache: false
+      - name: Probe current VidRock API and authenticated HLS tokens
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const crypto = require('crypto');
+          const key = Buffer.from('7f3e9c2a8b5d1f4e6a9c3b7d2e5f8a1c4b6d9e2f5a8c1b4d7e9f2a5c8b1d4e7f','hex');
+          const headers = {
+            'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
+            'origin':'https://vidrock.net',
+            'referer':'https://vidrock.net/',
+            'accept':'application/json,text/plain,*/*'
+          };
+          function decryptToken(token) {
+            let s=String(token||'').replace(/-/g,'+').replace(/_/g,'/'); while (s.length%4) s+='=';
+            const raw=Buffer.from(s,'base64'); if (raw.length<=28) return null;
+            const iv=raw.subarray(0,12), ct=raw.subarray(12,raw.length-16), tag=raw.subarray(raw.length-16);
+            try { const d=crypto.createDecipheriv('aes-256-gcm',key,iv); d.setAuthTag(tag); const p=Buffer.concat([d.update(ct),d.final()]).toString('utf8').trim(); return /^https?:\/\//i.test(p)?p:null; } catch { return null; }
+          }
+          async function probe(path,label) {
+            const api='https://vidrock.ru'+path;
+            let r; try { r=await fetch(api,{headers,redirect:'follow'}); } catch(e) { console.log(`VIDROCK_API ${label} network_error=${String(e&&e.message||e)}`); return {label,ok:false,reason:'network'}; }
+            const body=await r.text();
+            console.log(`VIDROCK_API ${label} status=${r.status} final=${r.url} type=${r.headers.get('content-type')||''} bytes=${body.length}`);
+            if (!r.ok) return {label,ok:false,reason:'api_http_'+r.status};
+            let data; try { data=JSON.parse(body); } catch { console.log(`VIDROCK_API_BODY ${label} prefix=${JSON.stringify(body.slice(0,160))}`); return {label,ok:false,reason:'api_non_json'}; }
+            if (!data || typeof data!=='object' || Array.isArray(data)) return {label,ok:false,reason:'api_shape'};
+            const names=Object.keys(data); console.log(`VIDROCK_SERVERS ${label} count=${names.length} names=${names.slice(0,12).join(',')}`);
+            let decrypted=0,hls=0;
+            for (const name of names) {
+              const row=data[name], media=decryptToken(row&&row.url); if (!media) continue; decrypted++;
+              try { const mr=await fetch(media,{headers,redirect:'follow'}); const text=await mr.text(); const valid=mr.ok&&/^#EXTM3U/m.test(text); console.log(`VIDROCK_MEDIA ${label} server=${name} status=${mr.status} hls=${valid?1:0} host=${new URL(media).host}`); if(valid)hls++; }
+              catch(e){ console.log(`VIDROCK_MEDIA ${label} server=${name} error=${String(e&&e.message||e)}`); }
+            }
+            return {label,ok:hls>0,decrypted,hls,servers:names.length};
+          }
+          (async()=>{ const results=[await probe('/api/movie/157336','movie'),await probe('/api/tv/1396/1/1','tv')]; console.log('VIDROCK_REMOTE_PROOF '+JSON.stringify(results)); if(!results.some(x=>x.ok))process.exit(2); })().catch(e=>{console.error('VIDROCK_REMOTE_FATAL',e);process.exit(3)});
+          NODE
+      - name: Deterministic runtime proof
+        run: python tests/vidrock_runtime_crypto_test.py
