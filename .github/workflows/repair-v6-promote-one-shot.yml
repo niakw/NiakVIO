@@ -56,7 +56,11 @@ jobs:
               '.github/workflows/repair-v6-promote-one-shot.yml',
               '.github/triggers/provider-repair-promote.json',
               'scripts/finalize_provider_repair_disposition_v1_impl.py',
+              'scripts/enforce_route_proof_manifest_policy_v1.py',
+              'scripts/route_proof_activation_preservation_v1.py',
+              'scripts/verify_provider_v3_reverse_rebuild.py',
               'tests/provider_v3_strategy_plan_contract_test.py',
+              'tests/route_proof_manifest_policy_test.py',
           }
           changed=set(subprocess.check_output(['git','diff','--name-only',f'{source}..HEAD'], text=True).splitlines())
           bad=sorted(changed-allowed)
@@ -198,6 +202,7 @@ jobs:
           python tests/global_playback_integrity_policy_test.py
           python tests/stream_output_sanitizer_fail_closed_test.py
           python tests/global_stream_output_guard_test.py
+          python tests/route_proof_manifest_policy_test.py
           python scripts/audit_provider_v3_static.py
           python scripts/verify_provider_v3_reverse_rebuild.py
           for t in tests/provider_hub_registry_test.py tests/provider_specific_adapters_test.py tests/provider_upstream_lkg_test.py; do
