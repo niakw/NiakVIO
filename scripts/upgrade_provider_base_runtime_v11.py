@@ -127,7 +127,7 @@ def patch() -> bool:
         TARGET.write_text(text, encoding="utf-8")
         changed = True
     else:
-        validate(text)
+        validate_v11(text)
 
     changed = _patch_raw_tmdb_route_identity() or changed
     changed = stream_v12.patch() or changed
@@ -153,7 +153,7 @@ def validate_raw_tmdb(text: str | None = None) -> None:
             raise AssertionError(f"raw TMDB route identity runtime missing: {needle}")
 
 
-def validate(text: str | None = None) -> None:
+def validate_v11(text: str | None = None) -> None:
     value = text if text is not None else TARGET.read_text(encoding="utf-8")
     if value.count(MARKER) != 1:
         raise AssertionError(f"typed resolver marker count={value.count(MARKER)}")
@@ -169,6 +169,11 @@ def validate(text: str | None = None) -> None:
             raise AssertionError(f"typed resolver runtime missing: {needle}")
     if 'const bases = await _recipeBases(recipe);\n  if (!bases.length) return [];' in value:
         raise AssertionError("legacy unconditional recipe base gate remains")
+
+
+def validate(text: str | None = None) -> None:
+    value = text if text is not None else TARGET.read_text(encoding="utf-8")
+    validate_v11(value)
     validate_raw_tmdb(value)
 
 
