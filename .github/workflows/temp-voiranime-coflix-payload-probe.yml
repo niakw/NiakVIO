@@ -1,5 +1,5 @@
 name: TEMP - VoirAnime Coflix Payload Probe
-# retry: second-hop-and-rest-resolver
+# retry: minimal-contract-proof
 
 on:
   push:
@@ -22,79 +22,65 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
-      - name: Inspect local DATA and live second hops
+      - name: Prove minimal current contracts
         shell: bash
         run: |
           set -euo pipefail
           python - <<'PY'
-          import html,json,re,urllib.parse,urllib.request,urllib.error
+          import json,re,time,urllib.parse,urllib.request,urllib.error
           UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
-          def req(url,method='GET',data=None,referer=None,headers=None):
-              h={'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8'}
-              if headers:h.update(headers)
+          def req(url,method='GET',data=None,referer=None,accept='*/*'):
+              h={'User-Agent':UA,'Accept':accept}
               if referer:h['Referer']=referer
-              if isinstance(data,dict):
-                  data=urllib.parse.urlencode(data).encode();h['Content-Type']='application/x-www-form-urlencoded; charset=UTF-8'
-              r=urllib.request.Request(url,data=data,headers=h,method=method)
+              if isinstance(data,dict):data=urllib.parse.urlencode(data).encode();h['Content-Type']='application/x-www-form-urlencoded; charset=UTF-8'
               try:
-                  with urllib.request.urlopen(r,timeout=15) as x:return x.status,x.geturl(),x.read().decode('utf-8','replace'),dict(x.headers)
+                  with urllib.request.urlopen(urllib.request.Request(url,data=data,headers=h,method=method),timeout=20) as x:return x.status,x.geturl(),x.read().decode('utf-8','replace'),dict(x.headers)
               except urllib.error.HTTPError as e:return e.code,url,e.read().decode('utf-8','replace'),dict(e.headers)
               except Exception as e:return 0,url,'',{'error':type(e).__name__+':'+str(e)}
-          def compact(s,n=5000):return re.sub(r'\s+',' ',s or '').strip()[:n]
+          def hls(url,referer):
+              st,fu,body,h=req(url,referer=referer,accept='application/vnd.apple.mpegurl,application/x-mpegURL,*/*')
+              return st,bool(re.search(r'^#EXTM3U',body,re.M)),urllib.parse.urlparse(fu).hostname or ''
 
-          ov=json.load(open('provider-overrides.json'))
-          for pid in ('voiranime','coflix'):
-              p=ov.get('provider_patches',{}).get(pid,{})
-              wanted={k:p.get(k) for k in ('official_site','official_api','capability','identity_input','search_request_plan','provider_value_plan','external_identity_plan','api_recipe','provider_lego_scripts','candidate_learned_routes','learned_routes') if k in p}
-              print(pid.upper()+'_LOCAL_DATA '+json.dumps(wanted,ensure_ascii=False))
+          base='https://coflix.group/wp-json/coflix/v1/resolve'
+          fixtures=[
+              ('movie',{'tmdb':'157336','type':'movie'}),
+              ('tv',{'tmdb':'1396','type':'tv','season':'1','episode':'1'}),
+              ('anime-tv',{'tmdb':'95479','type':'tv','season':'1','episode':'1'}),
+          ]
+          for label,params in fixtures:
+              url=base+'?'+urllib.parse.urlencode(params)
+              final=None
+              for attempt in range(4):
+                  st,fu,body,h=req(url,referer='https://coflix.group/')
+                  try:j=json.loads(body)
+                  except:j={}
+                  print(f'COFLIX_MINIMAL {label} attempt={attempt} status={st} ok={1 if j.get("ok") else 0} pending={1 if j.get("pending") else 0} mode={j.get("mode")} servers={len(j.get("servers") or [])} error={j.get("error") or ""}')
+                  if j.get('ok'):
+                      final=j;break
+                  if not j.get('pending'):break
+                  time.sleep(2)
+              if final and final.get('play'):
+                  ms,valid,host=hls(final['play'],'https://coflix.group/')
+                  print(f'COFLIX_MINIMAL_HLS {label} status={ms} valid={1 if valid else 0} host={host} lang={final.get("lang") or ""}')
 
-          # VoirAnime: extract numeric id from live href then call episode API.
-          st,final,body,h=req('https://voiranime.homes/engine/ajax/search.php','POST',{'query':'Jujutsu Kaisen','page':'1'},'https://voiranime.homes/')
-          hrefs=re.findall(r"location\.href=['\"]([^'\"]+)|href=['\"]([^'\"]+)",body,re.I)
-          vals=[]
-          for a,b in hrefs:
-              v=a or b
-              if v and v not in vals:vals.append(v)
-          candidates=[]
-          for v in vals:
-              m=re.match(r'^/(\d+)-([^?#]+)\.html$',v)
-              if m:candidates.append((m.group(1),m.group(2),v))
-          print('VOIRANIME_SEARCH_CANDIDATES '+json.dumps(candidates[:12],ensure_ascii=False))
-          chosen=next((x for x in candidates if 'jujutsu-kaisen-saison-1-2020' in x[1]), candidates[0] if candidates else None)
-          if chosen:
-              aid=chosen[0]
-              eu=f'https://voiranime.homes/engine/ajax/manga_episodes_api.php?id={aid}'
-              es,ef,eb,eh=req(eu,referer='https://voiranime.homes'+chosen[2])
-              print(f'VOIRANIME_EPISODES status={es} bytes={len(eb)} type={eh.get("Content-Type","")}')
-              print('VOIRANIME_EPISODES_BODY '+json.dumps(compact(eb,7000),ensure_ascii=False))
-              print('VOIRANIME_EPISODES_URLS '+json.dumps(re.findall(r'https?://[^"\'<> ]+',eb,re.I)[:40],ensure_ascii=False))
-              try:
-                  j=json.loads(eb)
-                  print('VOIRANIME_EPISODES_JSON '+json.dumps(j,ensure_ascii=False)[:12000])
-              except Exception:pass
-              ds,df,db,dh=req('https://voiranime.homes'+chosen[2],referer='https://voiranime.homes/')
-              print(f'VOIRANIME_DETAIL status={ds} bytes={len(db)}')
-              print('VOIRANIME_DETAIL_IFRAMES '+json.dumps(re.findall(r'<iframe[^>]+src=["\']([^"\']+)',db,re.I)[:20],ensure_ascii=False))
-
-          # Coflix current player plugin code tells us exactly how REST /resolve is invoked.
-          ps,pf,pjs,ph=req('https://coflix.group/wp-content/plugins/coflix-player/assets/player.js?ver=0.8.5',referer='https://coflix.group/film/gandhari/')
-          print(f'COFLIX_PLAYER_JS status={ps} bytes={len(pjs)}')
-          for needle in ('resolve','cfg.rest','data-cfp','fetch(','URLSearchParams','tmdb','src1'):
-              idx=pjs.find(needle)
-              if idx>=0:print('COFLIX_PLAYER_WINDOW_'+re.sub('[^A-Z0-9]+','_',needle.upper())+' '+json.dumps(compact(pjs[max(0,idx-1600):idx+4000],5800),ensure_ascii=False))
-
-          detail='https://coflix.group/film/gandhari/'
-          cs,cf,cb,ch=req(detail,referer='https://coflix.group/')
-          m=re.search(r'data-cfp=["\']([^"\']+)["\']',cb,re.I)
-          if m:
-              cfg=json.loads(html.unescape(m.group(1)))
-              print('COFLIX_CFP '+json.dumps(cfg,ensure_ascii=False))
-              rest=cfg.get('rest');params=cfg.get('params') or {}
-              trials=[]
-              trials.append(('GET_QUERY',rest+'?'+urllib.parse.urlencode(params),'GET',None,{'Accept':'application/json'}))
-              trials.append(('POST_FORM',rest,'POST',params,{'Accept':'application/json'}))
-              for label,url,method,data,headers in trials:
-                  rs,rf,rb,rh=req(url,method,data,detail,headers)
-                  print(f'COFLIX_RESOLVE_{label} status={rs} bytes={len(rb)} type={rh.get("Content-Type","")} final={rf}')
-                  print('COFLIX_RESOLVE_'+label+'_BODY '+json.dumps(compact(rb,9000),ensure_ascii=False))
+          # VoirAnime exact S1/E1 path, then inspect whether current Vidzy embed yields a direct HLS in bounded HTML.
+          st,fu,body,h=req('https://voiranime.homes/engine/ajax/search.php','POST',{'query':'Jujutsu Kaisen','page':'1'},'https://voiranime.homes/')
+          m=re.search(r"location\.href=['\"]/(\d+)-jujutsu-kaisen-saison-1-2020\.html",body,re.I)
+          if not m:
+              print('VOIRANIME_MINIMAL unresolved=search_id')
+          else:
+              aid=m.group(1); detail=f'https://voiranime.homes/{aid}-jujutsu-kaisen-saison-1-2020.html'
+              es,ef,eb,eh=req(f'https://voiranime.homes/engine/ajax/manga_episodes_api.php?id={aid}',referer=detail,accept='application/json,*/*')
+              try:ej=json.loads(eb)
+              except:ej={}
+              row=((ej.get('vf') or {}).get('1') or {})
+              print(f'VOIRANIME_MINIMAL episodes_status={es} vf_hosts={len(row)} keys={";".join(sorted(row.keys()))}')
+              for name,embed in list(row.items())[:3]:
+                  ps,pf,pb,ph=req(embed,referer=detail)
+                  urls=re.findall(r'https?://[^"\'<>\\ ]+\.m3u8[^"\'<>\\ ]*',pb,re.I)
+                  valid=0;media_status=0;media_host=''
+                  for u in urls[:2]:
+                      media_status,ok,media_host=hls(u,pf)
+                      if ok:valid=1;break
+                  print(f'VOIRANIME_EMBED hoster={name} status={ps} html_bytes={len(pb)} hls_candidates={len(urls)} hls_valid={valid} media_status={media_status} media_host={media_host}')
           PY
