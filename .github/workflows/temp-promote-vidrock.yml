@@ -1,0 +1,29 @@
+name: TEMP - Promote VidRock Workbench
+
+on:
+  push:
+    branches:
+      - workbench/vidrock-runtime-temp
+    paths:
+      - '.github/workflows/temp-promote-vidrock.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: workbench/vidrock-runtime-temp
+          fetch-depth: 0
+      - name: Fast-forward validated workbench
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin workbench/hub-matrix-46-20260911
+          git merge-base --is-ancestor origin/workbench/hub-matrix-46-20260911 HEAD
+          git push origin HEAD:workbench/hub-matrix-46-20260911
+          echo "VIDROCK_WORKBENCH_PROMOTED $(git rev-parse HEAD)"
