@@ -1,17 +1,17 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-10T22:39:16.750383+00:00",
+  "generated_at": "2026-09-11T04:47:16.894030+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
     "healthy": 0,
     "reachable": 1,
-    "blocked": 8,
+    "blocked": 10,
     "degraded": 0,
-    "no_streams": 34,
-    "provider_unreachable": 42,
+    "no_streams": 32,
+    "provider_unreachable": 41,
     "runtime_error": 0,
-    "unavailable": 11,
+    "unavailable": 12,
     "excluded": 0
   },
   "policy": {
@@ -1627,7 +1627,7 @@
     },
     {
       "id": "kehflix",
-      "status": "provider_unreachable",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -2196,7 +2196,7 @@
     },
     {
       "id": "animesultra",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -2298,7 +2298,7 @@
     },
     {
       "id": "animoflix",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -2565,7 +2565,7 @@
     },
     {
       "id": "dooflix",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
