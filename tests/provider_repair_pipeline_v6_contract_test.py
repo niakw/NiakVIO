@@ -2,9 +2,10 @@
 """Compatibility-aware entrypoint for the canonical Repair V6 static contract.
 
 The durable implementation test is preserved byte-identically. Repair gate
-entrypoints may now wrap their implementation modules so stream-level acceptance
-and runtime-domain authority stay small and reviewable; static assertions must
-inspect both layers instead of requiring all implementation text inline.
+entrypoints may now wrap their implementation modules so stream-level acceptance,
+runtime-domain authority and activation policy stay small and reviewable; static
+assertions must inspect both layers instead of requiring all implementation text
+inline.
 """
 from __future__ import annotations
 
@@ -26,5 +27,12 @@ for old, new in replacements.items():
     if source.count(old) != 1:
         raise AssertionError(f"repair contract compatibility anchor changed: {old}")
     source = source.replace(old, new, 1)
+
+# Activation policy supersedes the short-lived force-all-enabled checkpoint.
+old_activation = "    'enabled = True',"
+new_activation = "    'enabled = bool(hub)',"
+if source.count(old_activation) != 1:
+    raise AssertionError("repair contract activation assertion anchor changed")
+source = source.replace(old_activation, new_activation, 1)
 
 exec(compile(source, str(impl_path), "exec"), globals(), globals())
