@@ -1,0 +1,76 @@
+name: TEMP - VoirAnime Coflix Payload Probe
+
+on:
+  push:
+    branches:
+      - workbench/hub-matrix-46-20260911
+    paths:
+      - '.github/workflows/temp-voiranime-coflix-payload-probe.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Inspect current payload shapes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import html,json,re,urllib.parse,urllib.request,urllib.error
+          UA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
+          def req(url,method='GET',data=None,referer=None,headers=None):
+              h={'User-Agent':UA,'Accept':'text/html,application/xhtml+xml,application/json;q=0.9,*/*;q=0.8'}
+              if headers: h.update(headers)
+              if referer: h['Referer']=referer
+              if isinstance(data,dict):
+                  data=urllib.parse.urlencode(data).encode(); h['Content-Type']='application/x-www-form-urlencoded; charset=UTF-8'
+              r=urllib.request.Request(url,data=data,headers=h,method=method)
+              try:
+                  with urllib.request.urlopen(r,timeout=15) as x:return x.status,x.geturl(),x.read().decode('utf-8','replace'),dict(x.headers)
+              except urllib.error.HTTPError as e:return e.code,url,e.read().decode('utf-8','replace'),dict(e.headers)
+              except Exception as e:return 0,url,'',{'error':type(e).__name__+':'+str(e)}
+          def compact(s,n=4000):
+              s=re.sub(r'\s+',' ',s or '').strip()
+              return s[:n]
+
+          # VoirAnime: inspect the exact search result markup/JSON without assuming newsid.
+          st,final,body,h=req('https://voiranime.homes/engine/ajax/search.php','POST',{'query':'Jujutsu Kaisen','page':'1'},'https://voiranime.homes/')
+          print(f'VOIRANIME_PAYLOAD status={st} bytes={len(body)} type={h.get("Content-Type","")}')
+          print('VOIRANIME_BODY '+json.dumps(compact(body,5000),ensure_ascii=False))
+          print('VOIRANIME_HREFS '+json.dumps(re.findall(r'href=["\']([^"\']+)',body,re.I)[:20],ensure_ascii=False))
+          print('VOIRANIME_DATA_ATTRS '+json.dumps(re.findall(r'(data-[a-z0-9_-]+)=["\']([^"\']*)',body,re.I)[:30],ensure_ascii=False))
+          print('VOIRANIME_JSON_KEYS '+json.dumps(sorted(set(re.findall(r'["\']([a-zA-Z_][a-zA-Z0-9_-]{1,30})["\']\s*:',body)))[:80]))
+
+          # Coflix: inspect server buttons and only the small script windows around player logic.
+          st,final,body,h=req('https://coflix.group/film/gandhari/',referer='https://coflix.group/')
+          print(f'COFLIX_PAYLOAD status={st} bytes={len(body)} final={final}')
+          for pat,label in [
+              (r'<[^>]+(?:class=["\'][^"\']*(?:server|lector|lecteur|player)[^"\']*["\'])[^>]*>','SERVER_TAGS'),
+              (r'<button[^>]*>','BUTTON_TAGS'),
+          ]:
+              vals=re.findall(pat,body,re.I)
+              vals=[v for v in vals if any(k in v.lower() for k in ('server','player','lector','lecteur','data-'))]
+              print('COFLIX_'+label+' '+json.dumps(vals[:40],ensure_ascii=False))
+          attrs=re.findall(r'(data-[a-z0-9_-]+)=["\']([^"\']*)',body,re.I)
+          interesting=[x for x in attrs if any(k in (x[0]+'='+x[1]).lower() for k in ('server','player','embed','token','movie','post','id','url'))]
+          print('COFLIX_DATA_ATTRS '+json.dumps(interesting[:120],ensure_ascii=False))
+          for needle in ('cfSwitchServer','cfPlayerToken','admin-ajax.php','ajaxurl','action:','embed +=','data-server','data-embed'):
+              idx=body.find(needle)
+              if idx>=0:
+                  start=max(0,idx-1800);end=min(len(body),idx+4200)
+                  print('COFLIX_WINDOW_'+re.sub('[^A-Z0-9]+','_',needle.upper())+' '+json.dumps(compact(body[start:end],6500),ensure_ascii=False))
+          actions=sorted(set(re.findall(r'action\s*[:=]\s*["\']([a-zA-Z0-9_-]+)["\']',body)))
+          print('COFLIX_ACTIONS '+json.dumps(actions))
+          endpoints=sorted(set(re.findall(r'https?://[^"\'<> ]+admin-ajax\.php[^"\'<> ]*|/[a-zA-Z0-9_./?-]*admin-ajax\.php[^"\'<> ]*',body,re.I)))
+          print('COFLIX_AJAX_ENDPOINTS '+json.dumps(endpoints[:20]))
+          PY
