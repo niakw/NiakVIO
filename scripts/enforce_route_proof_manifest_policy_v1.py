@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Apply explicit manifest activation policy from one completed route-proof census.
+"""Record route-proof diagnostics without mutating catalogue activation.
 
-This is deliberately conservative: lack of a proven route is not a generic reason to
-disable every provider. MOVIX is the explicit exception because its DATA marks the
-current route plan terminal-blocked/obsolete and production reverse-rebuild policy
-already requires it to stay neutralized until a real route is proved again.
+Route proof owns route/DATA confidence, not publication exposure. A provider with no
+currently proven route may be diagnostic ``off`` and must still remain present in the
+catalogue. In particular, MOVIX no longer receives an ``enabled:false`` manifest or
+override mutation from this policy. Runtime repair remains fail-closed when no usable
+route exists; activation is owned by the catalogue/final publication policy.
 
-When MOVIX is neutralized, the same decision is persisted into health-report.json as
-an explicit proof-v5 activation record. This prevents release-integrity validation
-from reading a stale earlier promotion row that still marks MOVIX enabled.
+The health report still records the no-proven-route gate so Repair/Learn can retain the
+debt and evidence without turning that evidence into a destructive catalogue change.
 """
 from __future__ import annotations
 
@@ -22,7 +22,8 @@ DEFAULT_REPORT = ROOT / "automation" / "provider-route-recovery-v5.json"
 DEFAULT_MANIFEST = ROOT / "manifest.json"
 DEFAULT_OVERRIDES = ROOT / "provider-overrides.json"
 DEFAULT_HEALTH_REPORT = ROOT / "health-report.json"
-ROUTE_PROOF_DISABLE_ACTION = "published-disabled-no-proven-route"
+ROUTE_PROOF_DIAGNOSTIC_ACTION = "route-proof-no-proven-route-diagnostic"
+LEGACY_ROUTE_PROOF_DISABLE_ACTION = "published-disabled-no-proven-route"
 ROUTE_PROOF_FAILED_GATE = "route_proof_no_proven_route"
 ROUTE_PROOF_AUTHORITY = "provider-route-recovery-v5"
 
@@ -101,14 +102,16 @@ def main() -> int:
         manifest_overrides = {}
         movix_patch["manifest_overrides"] = manifest_overrides
 
+    # Activation no longer belongs to route proof. Remove the legacy override if it
+    # exists, but preserve the manifest's current activation for the publication owner.
+    manifest_overrides.pop("enabled", None)
+
     report_row = health_row(health, "movix")
     evidence = report_row.get("evidence") if isinstance(report_row.get("evidence"), dict) else {}
+    report_row["enabled"] = movix_manifest.get("enabled") is not False
 
     if not proven_routes and explicit_block:
-        movix_manifest["enabled"] = False
-        manifest_overrides["enabled"] = False
-        report_row["enabled"] = False
-        report_row["action"] = ROUTE_PROOF_DISABLE_ACTION
+        report_row["action"] = ROUTE_PROOF_DIAGNOSTIC_ACTION
         report_row["failed_gates"] = [ROUTE_PROOF_FAILED_GATE]
         report_row["observed_status"] = "no-proven-route"
         evidence.update({
@@ -117,28 +120,29 @@ def main() -> int:
             "route_proof_version": 5,
             "proven_route_count": 0,
             "status": "no-proven-route",
+            "activation_destructive": False,
         })
         report_row["evidence"] = evidence
-        state = "disabled-no-proven-route"
+        state = "diagnostic-no-proven-route"
     else:
-        # A future positive proof may remove the route-proof quarantine, but this
-        # script never force-enables MOVIX: activation still belongs to promotion.
-        # Do not leave stale zero-route evidence behind after a positive proof.
-        if str(report_row.get("action") or "") == ROUTE_PROOF_DISABLE_ACTION:
-            report_row["enabled"] = movix_manifest.get("enabled") is True
+        if str(report_row.get("action") or "") in {
+            ROUTE_PROOF_DIAGNOSTIC_ACTION,
+            LEGACY_ROUTE_PROOF_DISABLE_ACTION,
+        }:
             report_row["action"] = "route-proof-present-preserve-activation"
             report_row["failed_gates"] = [
                 value for value in report_row.get("failed_gates") or []
                 if str(value) != ROUTE_PROOF_FAILED_GATE
             ]
-            evidence.update({
-                "authority": ROUTE_PROOF_AUTHORITY,
-                "provider_id": "movix",
-                "route_proof_version": 5,
-                "proven_route_count": len(proven_routes),
-                "status": str(movix_proof.get("status") or "proven"),
-            })
-            report_row["evidence"] = evidence
+        evidence.update({
+            "authority": ROUTE_PROOF_AUTHORITY,
+            "provider_id": "movix",
+            "route_proof_version": 5,
+            "proven_route_count": len(proven_routes),
+            "status": str(movix_proof.get("status") or "proven"),
+            "activation_destructive": False,
+        })
+        report_row["evidence"] = evidence
         state = "proof-present-preserve-activation"
 
     patches["movix"] = movix_patch
@@ -150,7 +154,7 @@ def main() -> int:
     print(
         "ROUTE_PROOF_MANIFEST_POLICY_V1_OK "
         f"movix_routes={len(proven_routes)} movix_enabled={str(movix_manifest.get('enabled')).lower()} "
-        f"state={state} health_action={report_row.get('action')}"
+        f"state={state} activation_mutated=false health_action={report_row.get('action')}"
     )
     return 0
 
