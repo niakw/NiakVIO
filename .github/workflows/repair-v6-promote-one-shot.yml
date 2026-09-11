@@ -53,12 +53,20 @@ jobs:
           import os, subprocess
           source=os.environ['REPAIR_SOURCE_SHA']
           allowed={
-              '.github/workflows/repair-v6-promote-one-shot.yml',
               '.github/triggers/provider-repair-promote.json',
+              '.github/workflows/domain-refresh.yml',
+              '.github/workflows/main-route-proof-reconstruction.yml',
+              '.github/workflows/repair-v6-promote-one-shot.yml',
+              'FILE-HASHES.json',
+              'PATCH-SHA256SUMS.txt',
+              'SHA256SUMS.json',
+              'availability-history.json',
+              'availability-report.json',
               'scripts/finalize_provider_repair_disposition_v1_impl.py',
               'scripts/enforce_route_proof_manifest_policy_v1.py',
               'scripts/route_proof_activation_preservation_v1.py',
               'scripts/verify_provider_v3_reverse_rebuild.py',
+              'tests/domain_refresh_workflow_test.py',
               'tests/provider_v3_strategy_plan_contract_test.py',
               'tests/route_proof_manifest_policy_test.py',
               'tests/provider_specific_adapters_test.py',
@@ -145,6 +153,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          cp provider-overrides.json /tmp/provider-overrides.trigger-head.json
           rsync -a /tmp/repair/automation/ automation/
           rsync -a /tmp/repair/provider-bases/ provider-bases/
           cp /tmp/repair/provider-overrides.json provider-overrides.json
@@ -154,6 +163,43 @@ jobs:
           cp /tmp/repair/vf/manifest.json vf/manifest.json
           cp /tmp/repair/no-anime/manifest.json no-anime/manifest.json
           cp /tmp/repair/vf-no-anime/manifest.json vf-no-anime/manifest.json
+          python - <<'PY'
+          import copy, json
+          from pathlib import Path
+          current=json.loads(Path('/tmp/provider-overrides.trigger-head.json').read_text(encoding='utf-8'))
+          candidate=json.loads(Path('provider-overrides.json').read_text(encoding='utf-8'))
+          current_patches=current.get('provider_patches') or {}
+          candidate_patches=candidate.get('provider_patches') or {}
+          domain_fields={
+              'official_site',
+              'official_hub',
+              'domain_substitutions',
+              'replacements',
+              'runtime_domain_replacements',
+          }
+          preserved=0
+          for provider_id, candidate_patch in candidate_patches.items():
+              if not isinstance(candidate_patch, dict):
+                  continue
+              current_patch=current_patches.get(provider_id)
+              if not isinstance(current_patch, dict):
+                  continue
+              for field in domain_fields:
+                  before=candidate_patch.get(field, object())
+                  if field in current_patch:
+                      value=copy.deepcopy(current_patch[field])
+                      if field not in candidate_patch or candidate_patch.get(field) != value:
+                          preserved += 1
+                      candidate_patch[field]=value
+                  elif field in candidate_patch:
+                      candidate_patch.pop(field, None)
+                      preserved += 1
+          candidate['provider_patches']=candidate_patches
+          Path('provider-overrides.json').write_text(
+              json.dumps(candidate, ensure_ascii=False, indent=2)+'\n', encoding='utf-8'
+          )
+          print(f'PROMOTION_DOMAIN_AUTHORITY_PRESERVED fields={preserved} owner=trigger-head-main')
+          PY
           python - <<'PY'
           from pathlib import Path
           p=Path('tests/provider_repair_pipeline_v6_contract_test_impl.py')
