@@ -86,7 +86,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-") as raw:
     health_movix = next(row for row in h["providers"] if str(row.get("id")).casefold() == "movix")
     assert movix["enabled"] is True, movix
     assert kehflix["enabled"] is True, kehflix
-    assert "enabled" not in o["provider_patches"]["movix"]["manifest_overrides"]
+    assert o["provider_patches"]["movix"]["manifest_overrides"]["enabled"] is False, "route proof must not rewrite even a stale publication-owned override"
     assert health_movix["enabled"] is True, health_movix
     assert health_movix["action"] == preservation.ROUTE_PROOF_DIAGNOSTIC_ACTION, health_movix
     assert health_movix["failed_gates"] == [preservation.ROUTE_PROOF_FAILED_GATE], health_movix
@@ -140,7 +140,7 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-positive-") as raw
     movix = m["scrapers"][0]
     health_movix = h["providers"][0]
     assert movix["enabled"] is False, "route proof must preserve activation rather than own it"
-    assert "enabled" not in o["provider_patches"]["movix"]["manifest_overrides"]
+    assert o["provider_patches"]["movix"]["manifest_overrides"]["enabled"] is False, "route proof must preserve override activation rather than own it"
     assert health_movix["enabled"] is False, health_movix
     assert health_movix["action"] == "route-proof-present-preserve-activation", health_movix
     assert preservation.ROUTE_PROOF_FAILED_GATE not in (health_movix.get("failed_gates") or []), health_movix
@@ -148,4 +148,4 @@ with tempfile.TemporaryDirectory(prefix="niakvio-route-policy-positive-") as raw
     assert evidence.get("proven_route_count") == 1, health_movix
     assert evidence.get("activation_destructive") is False, health_movix
 
-print("route-proof diagnostic-only activation policy tests passed: manifest+override+health+force-ON preservation")
+print("route-proof diagnostic-only activation policy tests passed: manifest+override activation bytes preserved")
