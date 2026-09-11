@@ -1,4 +1,4 @@
-name: TEMP - Diagnose Materialized VoirAnime
+name: TEMP - Prove Materialized VoirAnime Native Context
 
 on:
   push:
@@ -11,9 +11,9 @@ permissions:
   contents: read
 
 jobs:
-  diagnose:
+  prove:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -25,36 +25,44 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Materialize current candidate
+      - name: Materialize current VoirAnime candidate
         run: |
           set -euo pipefail
           python tests/voiranime_homes_runtime_v1_test.py
           python scripts/install_voiranime_coflix_runtime_v1.py
           python scripts/materialize_provider_v3_one.py voiranime
-      - name: Trace generated VoirAnime fetches and wrapper order
+      - name: Prove exact generated bundle with native worker metadata shape
+        shell: bash
+        run: |
+          set -euo pipefail
+          PROVIDER="$(python - <<'PY'
+          import json
+          m=json.load(open('manifest.json'))
+          print(next(x['filename'] for x in m['scrapers'] if str(x.get('id','')).casefold()=='voiranime'))
+          PY
+          )"
+          FIXTURE='{"label":"Jujutsu Kaisen S01E01","tmdbId":"95479","mediaType":"anime","category":"anime","season":1,"episode":1,"title":"Jujutsu Kaisen","year":2020}'
+          CONTEXT='{"platform":"android","locale":"fr-FR","fixtureMetadata":{"id":95479,"name":"Jujutsu Kaisen","original_name":"呪術廻戦","first_air_date":"2020-10-03","origin_country":["JP"],"original_language":"ja","genres":[{"id":16,"name":"Animation"}],"keywords":{"results":[{"name":"anime"}]},"canonicalMediaType":"anime"},"networkLimits":{"maxFetches":30,"maxResponseBytes":5242880},"maxSettingsProfiles":1}'
+          echo "WORKER_PROVIDER=$PROVIDER"
+          node scripts/provider_worker.cjs "$PROVIDER" "$FIXTURE" "$CONTEXT" > /tmp/voiranime-worker.json
+          python - <<'PY'
+          import json
+          x=json.load(open('/tmp/voiranime-worker.json'))
+          print('VOIRANIME_NATIVE_WORKER_RESULT '+json.dumps({k:x.get(k) for k in ('ok','stream_count','error','provider_observation_count','invocation_mode')},ensure_ascii=False))
+          streams=x.get('streams') or []
+          print('VOIRANIME_NATIVE_WORKER_STREAMS '+json.dumps(streams[:4],ensure_ascii=False))
+          print('VOIRANIME_NATIVE_WORKER_OBSERVATIONS '+json.dumps((x.get('network_observations') or [])[:12],ensure_ascii=False))
+          assert len(streams)>=1, x
+          assert any(str(s.get('url','')).startswith('http') for s in streams), streams
+          PY
+      - name: Prove direct invocation with trusted metadata contract
         shell: bash
         run: |
           set -euo pipefail
           node <<'NODE'
           const fs=require('fs'),path=require('path');
-          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));
-          const row=m.scrapers.find(x=>String(x.id).toLowerCase()==='voiranime');const p=path.resolve(row.filename);const src=fs.readFileSync(p,'utf8');
-          const markers=['NIAKVIO_VOIRANIME_HOMES_RUNTIME_V1','NUVIO_STREAM_OUTPUT_SANITIZER_V4','NUVIO_TARGET_MEDIA_HOST_FILTER_V4','SOURCE_PLAN_V4','STREAM_IDENTITY'];
-          for(const x of markers)console.log(`SOURCE_MARKER ${x} first=${src.indexOf(x)} last=${src.lastIndexOf(x)}`);
-          console.log(`SOURCE_INFO file=${row.filename} bytes=${src.length} getStreams_mentions=${(src.match(/getStreams/g)||[]).length}`);
-          const nativeFetch=globalThis.fetch.bind(globalThis);let n=0;
-          globalThis.fetch=async function(input,init){
-            const u=typeof input==='string'?input:String(input&&input.url||input);const method=String((init&&init.method)||'GET').toUpperCase();
-            let r;try{r=await nativeFetch(input,init)}catch(e){console.log(`FETCH_TRACE #${++n} ${method} ${u} ERROR ${e.message}`);throw e}
-            console.log(`FETCH_TRACE #${++n} ${method} ${u} status=${r.status} final=${r.url}`);
-            try{
-              if(u.includes('/engine/ajax/search.php')||u.includes('/manga_episodes_api.php')){
-                const clone=r.clone(),t=await clone.text();console.log(`FETCH_BODY #${n} bytes=${t.length} prefix=${JSON.stringify(t.slice(0,700))}`);
-              }
-            }catch(e){console.log('FETCH_CLONE_ERROR '+e.message)}
-            return r;
-          };
-          globalThis.__nuvioMediaContext={canonicalMediaType:'anime',tmdbId:'95479',season:1,episode:1,tmdbMetadata:{name:'Jujutsu Kaisen'}};
-          delete require.cache[p];const mod=require(p);const fn=mod.getStreams||globalThis.getStreams;
-          (async()=>{const rows=await fn('95479','tv',1,1);console.log('VOIRANIME_GENERATED_RESULT '+JSON.stringify(rows));console.log('VOIRANIME_TRACE_DONE fetches='+n+' streams='+(Array.isArray(rows)?rows.length:-1));})().catch(e=>{console.error(e);process.exit(1)});
+          const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));const row=m.scrapers.find(x=>String(x.id).toLowerCase()==='voiranime');const p=path.resolve(row.filename);
+          globalThis.__nuvioMediaContext={tmdbId:'95479',tmdbNamespace:'tv',tmdbIdentity:'tv:95479',canonicalMediaType:'anime',nuvioInputMediaType:'anime',tmdbResolutionDegraded:false,season:1,episode:1,tmdbMetadata:{id:95479,name:'Jujutsu Kaisen',canonicalMediaType:'anime',__nuvioTmdbNamespace:'tv',__nuvioTmdbId:'95479',origin_country:['JP'],original_language:'ja',genres:[{id:16,name:'Animation'}],keywords:{results:[{name:'anime'}]}}};
+          const mod=require(p);const fn=mod.getStreams||globalThis.getStreams;
+          (async()=>{const rows=await fn('95479','anime',1,1);console.log('VOIRANIME_TRUSTED_CONTEXT_RESULT streams='+rows.length+' urls='+rows.slice(0,4).map(x=>x.url).join(';'));if(!rows.length)process.exit(2)})().catch(e=>{console.error(e);process.exit(1)});
           NODE
