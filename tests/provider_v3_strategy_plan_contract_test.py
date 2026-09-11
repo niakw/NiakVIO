@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 """Provider v3 strategy-to-executable-plan contract for the full 96 catalogue.
 
-Activation and repair confidence are separate concerns:
-- all 96 canonical providers may remain enabled/exposed;
+Catalogue membership and activation are separate concerns:
+- all 96 canonical Provider Objects remain present for census/recoverability;
+- exactly the 46 providers in ``hub-lab-matrix-46.json`` are enabled targets;
+- the remaining 50 providers stay disabled and Repair must not widen the set;
 - a provider with executable LIVE DATA/recipe/Lego is directly executable;
 - a provider without a currently executable plan is accepted only when Repair V6
   attached an audited ``routeDataState=repair`` or ``routeDataState=off``
-  disposition with ``forcedEnabled=true`` and explicit evidence;
-- quarantined providers may stay enabled in the catalogue, but must carry an
-  audited OFF disposition so runtime execution remains fail-closed rather than
-  pretending that quarantine is a live route.
+  disposition whose activation state matches the exact 46-target policy;
+- quarantined providers carry an audited OFF disposition so runtime execution
+  remains fail-closed rather than pretending that quarantine is a live route.
 
-This keeps the catalogue force-ON while preserving strict evidence and fail-closed
-runtime behavior for unresolved providers.
+Hub presence is discovery knowledge, not activation or execution authority.
 """
 from __future__ import annotations
 
@@ -26,6 +26,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "scripts" / "provider_patches"))
+HUB46 = ROOT / "automation" / "evidence" / "hub-lab-matrix-46.json"
 ALLOWED = {
     "mixed_embed_resolver",
     "official_domain_hub",
@@ -39,7 +40,7 @@ TERMINAL_DISABLED = {"terminal-blocked", "terminal-unreachable"}
 
 
 def cid(value: object) -> str:
-    return str(value or "").strip().casefold()
+    return str(value or "").strip().casefold().replace("_", "-")
 
 
 def route_kind(route: object) -> str:
@@ -102,13 +103,21 @@ def terminal_evidence_ok(model: dict, patch: dict, state: str) -> bool:
     return bool(evidence) and all(isinstance(row, dict) and row.get("reachable") is False for row in evidence)
 
 
-def repair_evidence_ok(patch: dict) -> bool:
+def disposition_activation_ok(disposition: dict, expected_enabled: bool) -> bool:
+    expected_state = "enabled" if expected_enabled else "disabled"
+    return (
+        disposition.get("authority") == "provider-repair-disposition-v1"
+        and disposition.get("activationAuthority") == "hub-lab-matrix-46"
+        and disposition.get("activationState") == expected_state
+        and bool(disposition.get("forcedEnabled")) == expected_enabled
+    )
+
+
+def repair_evidence_ok(patch: dict, expected_enabled: bool) -> bool:
     disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
-    if disposition.get("authority") != "provider-repair-disposition-v1":
+    if not disposition_activation_ok(disposition, expected_enabled):
         return False
-    if disposition.get("activationState") != "enabled" or disposition.get("routeDataState") != "repair":
-        return False
-    if disposition.get("forcedEnabled") is not True:
+    if disposition.get("routeDataState") != "repair":
         return False
     missing = disposition.get("missingLanes") if isinstance(disposition.get("missingLanes"), list) else []
     reasons = disposition.get("reasonCodes") if isinstance(disposition.get("reasonCodes"), list) else []
@@ -119,13 +128,11 @@ def repair_evidence_ok(patch: dict) -> bool:
     return True
 
 
-def off_evidence_ok(patch: dict) -> bool:
+def off_evidence_ok(patch: dict, expected_enabled: bool) -> bool:
     disposition = patch.get("repair_disposition") if isinstance(patch.get("repair_disposition"), dict) else {}
-    if disposition.get("authority") != "provider-repair-disposition-v1":
+    if not disposition_activation_ok(disposition, expected_enabled):
         return False
-    if disposition.get("activationState") != "enabled" or disposition.get("routeDataState") != "off":
-        return False
-    if disposition.get("forcedEnabled") is not True:
+    if disposition.get("routeDataState") != "off":
         return False
     reasons = disposition.get("reasonCodes") if isinstance(disposition.get("reasonCodes"), list) else []
     if not reasons or disposition.get("completeCapabilityProof") is not False:
@@ -133,6 +140,19 @@ def off_evidence_ok(patch: dict) -> bool:
     terminal = str(disposition.get("terminalState") or "").strip().casefold()
     quarantined = disposition.get("quarantined") is True
     return quarantined or terminal in TERMINAL_DISABLED
+
+
+def hub46_targets() -> set[str]:
+    matrix = json.loads(HUB46.read_text(encoding="utf-8"))
+    rows = matrix.get("rows") if isinstance(matrix.get("rows"), list) else []
+    targets = {
+        cid(row.get("manifestId"))
+        for row in rows
+        if isinstance(row, dict) and cid(row.get("manifestId"))
+    }
+    assert int(matrix.get("hubCount") or 0) == 46, matrix.get("hubCount")
+    assert len(targets) == 46, len(targets)
+    return targets
 
 
 def main() -> int:
@@ -144,11 +164,14 @@ def main() -> int:
     knowledge = json.loads(
         (ROOT / "automation/provider-v3-static-knowledge.json").read_text(encoding="utf-8")
     )
+    targets = hub46_targets()
 
     rows = manifest.get("scrapers") or []
     assert len(rows) == 96, f"expected full 96-provider catalogue, got {len(rows)}"
     ids = [cid(row.get("id")) for row in rows]
     assert len(set(ids)) == 96, "provider ids must be unique after canonical case-fold"
+    missing_targets = sorted(targets - set(ids))
+    assert not missing_targets, f"hub46 targets missing from catalogue: {missing_targets}"
 
     patches = overrides.get("provider_patches") or {}
     capabilities = overrides.get("provider_capabilities") or {}
@@ -160,6 +183,7 @@ def main() -> int:
     terminal_audited: list[str] = []
     repair_audited: list[str] = []
     off_audited: list[str] = []
+    enabled_count = 0
 
     for row, provider_id in zip(rows, ids):
         patch = patches.get(provider_id) if isinstance(patches.get(provider_id), dict) else {}
@@ -170,6 +194,16 @@ def main() -> int:
         )
         model_row = static.get(provider_id) if isinstance(static.get(provider_id), dict) else {}
         model = model_row.get("model") if isinstance(model_row.get("model"), dict) else {}
+
+        expected_enabled = provider_id in targets
+        enabled = row.get("enabled") is True
+        if enabled:
+            enabled_count += 1
+        if enabled != expected_enabled:
+            failures.append(
+                f"{provider_id}: hub46 activation mismatch enabled={enabled} expected={expected_enabled}"
+            )
+            continue
 
         strategy = str(
             patch.get("capability")
@@ -212,26 +246,22 @@ def main() -> int:
         kinds = {route_kind(route) for route in routes}
         kinds.discard("ignore")
 
+        # A discovery hub is intentionally not sufficient to make an execution
+        # base. It may still appear in structured knowledge, but executable
+        # strategy proof comes from actual site/API/origin/route evidence.
         bases = [
             patch.get("official_site"),
-            patch.get("official_hub"),
             patch.get("official_api"),
             (patch.get("fixed_endpoint") or {}).get("api")
             if isinstance(patch.get("fixed_endpoint"), dict)
             else None,
             model.get("knownSite"),
             model.get("officialSite"),
-            model.get("officialHub"),
             model.get("officialApi"),
             model.get("fixedApi"),
             *(model.get("origins") or []),
         ]
         bases = [str(value).strip() for value in bases if str(value or "").strip()]
-
-        enabled = row.get("enabled") is not False
-        if not enabled:
-            failures.append(f"{provider_id}: force-ON catalogue requires enabled=true")
-            continue
 
         if strategy == "quarantined":
             quarantined.append(provider_id)
@@ -240,9 +270,9 @@ def main() -> int:
             note_text = json.dumps(notes, ensure_ascii=False).casefold() if notes else ""
             if not reason and "quarantin" not in note_text and "inert" not in note_text:
                 failures.append(f"{provider_id}: quarantine must carry explicit evidence/reason")
-            if not off_evidence_ok(patch):
+            if not off_evidence_ok(patch, expected_enabled):
                 failures.append(
-                    f"{provider_id}: force-enabled quarantine must carry audited routeDataState=off"
+                    f"{provider_id}: quarantine must carry audited routeDataState=off with matching hub46 activation"
                 )
             continue
 
@@ -255,23 +285,23 @@ def main() -> int:
         if not executable:
             recognition = model.get("routeRecognition") if isinstance(model.get("routeRecognition"), dict) else {}
             state = str(recognition.get("completionState") or "").strip()
-            # Legacy disabled terminal evidence remains recognized for historical
-            # data, but force-ON publication should normally arrive through the
-            # audited OFF disposition below.
             if not enabled and state in TERMINAL_DISABLED and terminal_evidence_ok(model, patch, state):
                 terminal_audited.append(provider_id)
                 continue
-            if off_evidence_ok(patch):
+            if off_evidence_ok(patch, expected_enabled):
                 off_audited.append(provider_id)
                 continue
-            if repair_evidence_ok(patch):
+            if repair_evidence_ok(patch, expected_enabled):
                 repair_audited.append(provider_id)
                 continue
             failures.append(
                 f"{provider_id}: strategy={strategy} has no executable LIVE DATA/recipe/Lego "
-                f"and no audited force-ON repair/off disposition "
+                f"and no audited hub46-aligned repair/off disposition "
                 f"(routeKinds={sorted(kinds)}, bases={len(bases)}, enabled={enabled}, terminal={state or 'none'})"
             )
+
+    if enabled_count != 46:
+        failures.append(f"hub46 enabled count mismatch: {enabled_count} != 46")
 
     if failures:
         raise AssertionError("\n".join(failures))
@@ -280,7 +310,7 @@ def main() -> int:
     executable_count = 96 - diagnostic_non_executable
     print(
         "PROVIDER_V3_STRATEGY_PLAN_OK "
-        f"providers=96 enabled=96 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
+        f"providers=96 enabled=46 disabled=50 executable={executable_count} diagnostic_non_executable={diagnostic_non_executable} "
         f"quarantined={len(quarantined)} terminal_legacy={len(terminal_audited)} "
         f"off_diagnostic={len(off_audited)} repair_diagnostic={len(repair_audited)} "
         f"strategies={json.dumps(counts, sort_keys=True)}"
