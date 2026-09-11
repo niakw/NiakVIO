@@ -1,4 +1,5 @@
 name: TEMP - VidRock Live Probe
+# retry: encrypted-api-contract
 
 on:
   push:
@@ -13,128 +14,84 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      NUVIO_PROVIDER_V3_CONTEXT: workspace
-      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
-      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.sha }}
-          fetch-depth: 0
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
-        with:
-          python-version: '3.12'
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Patch VidRock DATA in workspace only
+      - name: Probe encrypted movie and TV APIs
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          root=Path('.')
-          op=root/'provider-overrides.json'
-          data=json.load(open(op,encoding='utf-8'))
-          p=data['provider_patches']['vidrock']
-          p['capability']='iframe_player'
-          p['official_site']='https://vidrock.ru'
-          p['route_proof_version']=5
-          p['learned_routes']=['/movie/{tmdbId}','/tv/{tmdbId}/{season}/{episode}']
-          p['identity_input']={'mode':'tmdb_direct','requires_tmdb_before_run':False,'required_fields':['tmdbId','mediaType']}
-          p['preserve_embed_urls']=True
-          p['runtime_domain_replacements']={'vidrock.net':'vidrock.ru'}
-          p['domain_substitutions']={'vidrock.net':'vidrock.ru'}
-          c=data['provider_capabilities']['vidrock']
-          c.update({
-            'strategy':'iframe_player',
-            'movie_template':'https://vidrock.ru/movie/{tmdbId}',
-            'tv_template':'https://vidrock.ru/tv/{tmdbId}/{season}/{episode}',
-            'validation':'embed_page',
-            'allow_html_url':True,
-            'requires_direct_media':False,
-            'routes':['/movie/{tmdbId}','/tv/{tmdbId}/{season}/{episode}'],
-          })
-          op.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-
-          kp=root/'automation/provider-v3-static-knowledge.json'
-          k=json.load(open(kp,encoding='utf-8'))
-          row=k['providers']['vidrock']; m=row['model']
-          m['knownSite']='https://vidrock.ru'; m['officialSite']='https://vidrock.ru'
-          m['strategy']='iframe_player'; m['origins']=['https://vidrock.ru']
-          m['observedUrls']=['https://vidrock.ru','https://vidrock.ru/movie/157336','https://vidrock.ru/tv/1396/1/1']
-          m['routes']=['/movie/{tmdbId}','/tv/{tmdbId}/{season}/{episode}']
-          m['routeProofVersion']=5
-          m['domainSubstitutions']={'vidrock.net':'vidrock.ru'}
-          m['sourceRuntimeFamily']='tmdb-iframe-player'
-          m['identityInput']={'mode':'tmdb_direct','requiresTmdbBeforeRun':False,'requiredFields':['tmdbId','mediaType']}
-          row['model']=m
-          kp.write_text(json.dumps(k,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          print('VIDROCK_WORKSPACE_DATA_PATCHED')
-          PY
-      - name: Check public entry pages
-        shell: bash
-        run: |
-          set +e
-          for url in 'https://vidrock.ru/movie/157336' 'https://vidrock.ru/tv/1396/1/1' 'https://vidrock.net/movie/157336'; do
-            echo "=== $url ==="
-            curl -L --max-time 20 -sS -D /tmp/h -o /tmp/b "$url"
-            rc=$?
-            echo "curl_rc=$rc bytes=$(wc -c </tmp/b 2>/dev/null || echo 0)"
-            head -20 /tmp/h || true
-            grep -Eo 'https?://[^"'"' <>]+' /tmp/b 2>/dev/null | head -20 || true
-            grep -Eoi '(/api/[^"'"' <>]+|\.m3u8[^"'"' <>]*|\.mp4[^"'"' <>]*)' /tmp/b 2>/dev/null | head -30 || true
-          done
-          exit 0
-      - name: Materialize only VidRock
-        shell: bash
-        run: |
-          set -euo pipefail
-          python scripts/upgrade_provider_base_runtime_v11.py
-          python scripts/materialize_provider_v3_one.py --provider vidrock
-          python scripts/provider_base_store.py validate
-          python - <<'PY'
-          import json
-          m=json.load(open('manifest.json',encoding='utf-8'))
-          r=next(x for x in m['scrapers'] if str(x.get('id','')).lower()=='vidrock')
-          print('VIDROCK_FILE='+r['filename'])
-          open('/tmp/vidrock-file','w').write(r['filename'])
-          PY
-      - name: Execute generated provider live
-        shell: bash
-        run: |
-          set -euo pipefail
-          FILE="$(cat /tmp/vidrock-file)"
-          export FILE
           node <<'JS'
-          const path=require('path');
-          const originalFetch=globalThis.fetch;
-          const calls=[];
-          globalThis.fetch=async (...args)=>{
-            const u=String(args[0]&&args[0].url||args[0]);
-            const t=Date.now();
-            try{
-              const r=await originalFetch(...args);
-              calls.push({url:u,status:r.status,ms:Date.now()-t,ct:r.headers.get('content-type')||''});
-              return r;
-            }catch(e){calls.push({url:u,error:String(e),ms:Date.now()-t});throw e;}
+          const crypto = require('crypto');
+          const passphrase = 'x7k9mPqT2rWvY8zA5bC3nF6hJ2lK4mN9';
+          const key = Buffer.from(passphrase, 'utf8');
+          const iv = key.subarray(0,16);
+          const headers = {
+            'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/145.0.0.0 Safari/537.36',
+            'referer':'https://vidrock.net/',
+            'origin':'https://vidrock.net',
+            'accept':'application/json,text/plain,*/*'
           };
+          function enc(plain){
+            const cipher=crypto.createCipheriv('aes-256-cbc',key,iv);
+            const raw=Buffer.concat([cipher.update(Buffer.from(plain,'utf8')),cipher.final()]);
+            return raw.toString('base64').replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+          }
+          async function fetchText(url, opts={}){
+            const started=Date.now();
+            try{
+              const r=await fetch(url,{redirect:'follow',...opts});
+              const text=await r.text();
+              return {ok:r.ok,status:r.status,url:r.url,ct:r.headers.get('content-type')||'',ms:Date.now()-started,text};
+            }catch(e){return {ok:false,status:0,url,ct:'',ms:Date.now()-started,text:'',error:String(e)}}
+          }
+          function compactJson(text){
+            try{
+              const j=JSON.parse(text);
+              const out={type:Array.isArray(j)?'array':'object'};
+              if(Array.isArray(j)) out.length=j.length;
+              else {
+                out.keys=Object.keys(j).slice(0,20);
+                out.servers=Object.entries(j).slice(0,12).map(([name,v])=>({name,url:v&&typeof v==='object'?String(v.url||'').slice(0,220):''}));
+              }
+              return out;
+            }catch(e){return {type:'non-json',preview:text.slice(0,300)}}
+          }
           (async()=>{
-            const p=require(path.resolve(process.env.FILE));
-            for(const fixture of [
-              ['movie','157336','movie',undefined,undefined],
-              ['tv','1396','tv',1,1],
-            ]){
-              const [name,id,type,s,e]=fixture;
-              const started=Date.now();
-              let streams=[],err=null;
-              try{streams=await p.getStreams(id,type,s,e);}catch(e2){err=String(e2&&e2.stack||e2);}
-              console.log('VIDROCK_RESULT '+JSON.stringify({name,ms:Date.now()-started,err,streams}));
+            const fixtures=[
+              {name:'movie',plain:'157336',kind:'movie'},
+              {name:'tv',plain:'1396_1_1',kind:'tv'}
+            ];
+            let useful=0;
+            for(const f of fixtures){
+              const token=enc(f.plain);
+              const url=`https://vidrock.net/api/${f.kind}/${token}`;
+              const res=await fetchText(url,{headers});
+              const summary=compactJson(res.text);
+              console.log('VIDROCK_API '+JSON.stringify({fixture:f.name,tokenLength:token.length,status:res.status,finalUrl:res.url,ct:res.ct,ms:res.ms,error:res.error||null,summary}));
+              if(res.ok && summary.type==='object' && Array.isArray(summary.servers) && summary.servers.some(x=>x.url)){
+                useful++;
+                const first=summary.servers.find(x=>x.url)?.url;
+                if(first){
+                  const atlas=summary.servers.find(x=>/atlas/i.test(x.name)&&x.url)?.url;
+                  for(const [label,target] of [['first',first],['atlas',atlas]]){
+                    if(!target) continue;
+                    const probe=await fetchText(target,{headers});
+                    console.log('VIDROCK_SERVER '+JSON.stringify({fixture:f.name,label,target:target.slice(0,220),status:probe.status,finalUrl:probe.url,ct:probe.ct,ms:probe.ms,error:probe.error||null,bodyPreview:probe.text.slice(0,220)}));
+                  }
+                }
+              }
             }
-            console.log('VIDROCK_CALLS '+JSON.stringify(calls));
+            if(useful===0){
+              console.error('VIDROCK_ENCRYPTED_API_NO_USEFUL_JSON');
+              process.exit(2);
+            }
+            console.log(`VIDROCK_ENCRYPTED_API_OK usefulFixtures=${useful}`);
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
