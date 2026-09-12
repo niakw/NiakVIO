@@ -18,9 +18,13 @@ def main() -> int:
     rows = manifest.get("scrapers") or []
     if expected.get("providerCount") != 96 or len(rows) != 96:
         raise SystemExit("Provider v3 reverse rebuild requires exactly 96 providers")
-    disabled = [str(row.get("id") or "") for row in rows if row.get("enabled") is False]
-    if disabled:
-        raise SystemExit(f"Provider v3 reverse rebuild requires all 96 providers enabled: {disabled}")
+    ids = [str(row.get("id") or "").strip().lower() for row in rows]
+    if any(not pid for pid in ids) or len(set(ids)) != 96:
+        raise SystemExit("Provider v3 reverse rebuild requires 96 unique non-empty provider ids")
+    active = [pid for pid, row in zip(ids, rows) if row.get("enabled") is not False]
+    disabled = [pid for pid, row in zip(ids, rows) if row.get("enabled") is False]
+    if not active:
+        raise SystemExit("Provider v3 reverse rebuild requires at least one enabled provider")
     pur = next((r for r in rows if str(r.get("id","")).lower()=="purstream"), None)
     if not pur or pur.get("canonicalSupportedTypes") != ["movie", "tv"]:
         raise SystemExit("PURSTREAM canonical capability must remain movie/tv only")
@@ -36,9 +40,13 @@ def main() -> int:
             output_dir=tmp / "providers",
             report_path=tmp / "report.json",
         )
+        if rebuilt.get("providerCount") != 96 or len(rebuilt.get("providers") or []) != 96:
+            raise SystemExit("reverse rebuild did not reconstruct the full 96-provider catalogue")
         if rebuilt.get("generation") != expected.get("generation"):
             raise SystemExit(f"generation mismatch expected={expected.get('generation')} actual={rebuilt.get('generation')}")
         actual_by_id = {str(r["provider"]).lower(): r for r in rebuilt["providers"]}
+        if set(actual_by_id) != set(ids):
+            raise SystemExit("reverse rebuild provider ids differ from canonical manifest")
         for row in expected["providers"]:
             pid = str(row["provider"]).lower()
             actual = actual_by_id.get(pid)
@@ -50,7 +58,10 @@ def main() -> int:
                 raise SystemExit(f"{pid}: published artifact missing: {published}")
             if sha256(published) != row["sha256"] or published.read_bytes() != rebuilt_file.read_bytes():
                 raise SystemExit(f"{pid}: published bytes differ from reconstruction")
-    print(f"PROVIDER_V3_REVERSE_REBUILD_OK providers=96 enabled=96 generation={expected['generation'][:16]} byte_identical=96/96")
+    print(
+        f"PROVIDER_V3_REVERSE_REBUILD_OK providers=96 active={len(active)} disabled={len(disabled)} "
+        f"generation={expected['generation'][:16]} byte_identical=96/96 activation_policy=preserved"
+    )
     return 0
 
 if __name__ == "__main__":
