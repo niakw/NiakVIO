@@ -1076,3 +1076,19 @@ This section is the durable authority for the manual hub/site/network evidence s
 - Episode menu exposes exact episode links as `/play/<anime-session>/<episode-session>` with visible labels `Episode 1`, `Episode 2`, ...; exact episode selection is explicit and must be preserved.
 - User observed terminal HLS on `vault-11.uwucdn.top/.../uwu.m3u8`, HTTP 200, with an HLS key path `mon.key`. HLS/key URLs are runtime outputs and MUST NOT be hardcoded in provider DATA.
 - This is strong manual playback evidence, but NiakVIO still requires dynamic extraction + common playback verification before the lane becomes strict green.
+
+## 2026-09-12 — Strict-46 release candidate accepted for PR
+
+- Publication authority is exactly **96 catalogued providers / 46 ON / 50 OFF**. Every ON provider has all required declared lanes live-qualified; terminal-blocked, unreachable, partial-lane, and stale historical evidence remain non-positive.
+- Exact ON set: anime-sama, purstream, flemmix, uhdmovies, movieshunt, hindmoviez, 4khdhub, persianstremio, desiflix, kehflix, anikototv, animekai, animesalt, animesama-co, animesultra, animetsu, animevostfr, castle, coflix, french-manga, kurage, moviesmod, mugiwarastream, neko-sama, papadustream, playimdb, sekai, streamzo, videasy, vidfast, vidrock, voiranime, voiranime-homes, voiranime-rip, vostfree, wookafr, yflix, allanime, allwish, anime-ultime, animevost-fr, fullanime, mallumv, moviebox, showbox, vidlove.
+- Active46 proof matrix run 34708855797: **46/46 green**. Disabled50 fast-smoke run 34709068964: green.
+- Official sequential run 34709164157 is retained only as step-level evidence: its 96-provider live sequential gate succeeded and qualified the strict 46, then packaging failed on the obsolete reverse-rebuild expectation of 96 active providers. The reverse-rebuild contract was corrected to preserve the manifest active set.
+- Parallel recovery run 34711564739 re-proved **46/46 active providers** and preserved finalized DATA artifacts without another 96-provider sequential rerun.
+- Published HTML security was repaired at its actual Lego sources; run 34713445212 passed the source+published HTML gate before stopping later on an unrelated stale playback test.
+- Playback policy contract run 34713921358 confirmed media-safety revision **field-safety-v9-correlated-player-fallback**; the stale v8 assertion was updated without runtime changes.
+- Integrity recovery run 34714150864 restored the already-materialized strict-46 snapshot, regenerated omitted projections, and passed release hashes + release integrity with **no provider live rerun and no rematerialization**.
+- Post-sync static-knowledge contract run 34714329224 confirmed 4KHDHub's seed remains unexecuted while accepted durable DATA preserves independent HTTP-executed proof.
+- Latest main diagnostics were synchronized from main SHA e056c70770353b9832fbe043d90fc7556334d7b0.
+- Final post-sync preflight run 34714362290: **success** across Core/source-plan migrations, DATA contracts, ProviderBase store, and reconstruction input suite.
+- This release candidate is accepted for PR-only merge to main. Version finalization happens after merge.
+
