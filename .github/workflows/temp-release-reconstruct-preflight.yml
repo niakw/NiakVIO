@@ -1,0 +1,82 @@
+name: TEMP - Release Reconstruction Preflight
+on:
+  push:
+    branches: [release/stable-46-20260912]
+    paths: [.github/workflows/temp-release-reconstruct-preflight.yml]
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      NUVIO_PROVIDER_V3_CONTEXT: workspace
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}', fetch-depth: 0}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with: {node-version: '24', package-manager-cache: false}
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Source-plan and Core migration owners
+        run: |
+          python scripts/upgrade_provider_v3_source_plan_v5.py
+          python scripts/upgrade_provider_base_runtime_v5.py
+          python scripts/upgrade_provider_v3_finalization_v1.py
+          python scripts/enforce_provider_v3_semantic_transport_contract_v5.py
+      - name: Durable DATA preparation contracts
+        run: |
+          test -s automation/provider-v3-static-knowledge.json
+          test -s automation/provider-v3-recognition-seeds.json
+          python scripts/validate_provider_v3_routes_live.py --prepare-candidates
+          python scripts/enrich_provider_v3_static_knowledge.py
+          python scripts/sanitize_provider_v3_core_metadata_routes.py
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
+          python tests/provider_v3_static_knowledge_contract_test.py
+          python tests/provider_v3_live_route_validation_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_finalization_plan_test.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/active_provider_live_coverage_test.py
+      - name: ProviderBase store
+        run: |
+          python scripts/materialize_provider_base_v3_store.py
+          python scripts/provider_base_store.py validate
+          python scripts/provider_base_store.py validate --artifacts
+      - name: Reconstruction input test suite
+        run: |
+          python tests/provider_v3_workflow_ownership_test.py
+          python tests/provider_v3_documentation_contract_test.py
+          python tests/native_five_lab_coverage_test.py
+          python tests/canonical_media_types_test.py
+          python tests/provider_stream_scope_architecture_test.py
+          python tests/native_ios_watchdog_resume_test.py
+          python tests/provider_v3_minimizer_contract_test.py
+          python tests/provider_v3_minimizer_preview_test.py
+          python tests/provider_html_filter_security_test.py
+          python tests/provider_v3_static_knowledge_contract_test.py
+          python tests/provider_v3_core_metadata_route_sanitizer_test.py
+          python tests/provider_v3_strategy_plan_contract_test.py
+          python tests/provider_v3_source_plan_v4_contract_test.py
+          python tests/provider_patch_sibling_import_test.py
+          python tests/provider_v3_identity_preflight_contract_test.py
+          python tests/provider_v3_id_provenance_contract_test.py
+          python tests/provider_wings_runtime_family_test.py
+          python tests/peachify_runtime_crypto_test.py
+          python scripts/provider_base_store.py validate
+          python tests/provider_clean_reconstruction_contract_test.py
+          python tests/provider_521_capability_regression_test.py
+          python tests/provider_anime_semantic_transport_contract_test.py
+          python tests/global_media_type_resolution_test.py
+          python tests/global_stream_presentation_test.py
+          python tests/global_stream_presentation_pipeline_test.py
+          python tests/native_hls_integrity_budget_test.py
+          python tests/provider_v3_live_route_validation_test.py
+          python tests/provider_v3_sequential_live_gate_test.py
+          python tests/provider_v3_finalization_plan_test.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/active_provider_live_coverage_test.py
+          git diff --check
