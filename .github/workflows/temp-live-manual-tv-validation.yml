@@ -1,0 +1,188 @@
+name: TEMP Live manual TV validation
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-live-manual-tv-validation.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-live-manual-tv-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exact-live-matrix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout .44 branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24'
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+
+      - name: Install locked tooling
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Execute exact manual-TV live matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import concurrent.futures
+          import json
+          import pathlib
+          import subprocess
+          import sys
+
+          root = pathlib.Path.cwd()
+          matrix = json.loads((root / 'automation/manual-tv-live-matrix-20260912.json').read_text(encoding='utf-8'))
+          cases = matrix['cases']
+          outdir = root / 'automation/manual-tv-live-results-20260912'
+          outdir.mkdir(parents=True, exist_ok=True)
+
+          def execute(row):
+              output = outdir / f"{row['case']}--{row['provider']}.json"
+              cmd = [
+                  sys.executable, 'scripts/manual_tv_live_case_probe.py',
+                  '--case', row['case'], '--provider', row['provider'],
+                  '--tmdb', str(row['tmdb']), '--media-type', row['mediaType'],
+                  '--title', row['title'], '--year', str(row['year']),
+                  '--duration', str(row['duration']),
+                  '--aliases', json.dumps(row.get('aliases') or [], ensure_ascii=False),
+                  '--output', str(output),
+              ]
+              if row.get('season') is not None:
+                  cmd += ['--season', str(row['season'])]
+              if row.get('episode') is not None:
+                  cmd += ['--episode', str(row['episode'])]
+              proc = subprocess.run(cmd, cwd=root, capture_output=True, text=True, timeout=115, check=False)
+              marker = next((line for line in reversed(proc.stdout.splitlines()) if line.startswith('FIELD_MANUAL_TV_LIVE ')), '')
+              return row, proc.returncode, marker, proc.stderr[-1000:]
+
+          failures = []
+          with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+              futures = [pool.submit(execute, row) for row in cases]
+              for future in concurrent.futures.as_completed(futures):
+                  row, code, marker, stderr = future.result()
+                  if marker:
+                      print(marker)
+                  if code != 0:
+                      failures.append({'case': row['case'], 'provider': row['provider'], 'code': code, 'stderr': stderr})
+
+          results = []
+          for path in sorted(outdir.glob('*.json')):
+              results.append(json.loads(path.read_text(encoding='utf-8')))
+          aggregate = {
+              'schemaVersion': 1,
+              'mode': 'exact-manual-tv-live-evidence',
+              'caseCount': len(cases),
+              'resultCount': len(results),
+              'infraFailures': [{'case': r['case'], 'provider': r['provider'], 'code': r['code']} for r in failures],
+              'playableRows': sum(int(r.get('playable') or 0) for r in results),
+              'verifiedRows': sum(int(r.get('verified') or 0) for r in results),
+              'contradictions': sum(int(r.get('contradictions') or 0) for r in results),
+              'returned403Rows': sum(int(r.get('returned403Rows') or 0) for r in results),
+              'results': results,
+          }
+          (root / 'automation/manual-tv-live-results-20260912.json').write_text(json.dumps(aggregate, ensure_ascii=False, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          print('FIELD_MANUAL_TV_LIVE_AGGREGATE ' + json.dumps({k: aggregate[k] for k in ['caseCount','resultCount','playableRows','verifiedRows','contradictions','returned403Rows']}, separators=(',', ':')))
+          if failures or len(results) != len(cases):
+              for failure in failures:
+                  print('INFRA_FAILURE', failure, file=sys.stderr)
+              raise SystemExit(1)
+          PY
+
+      - name: Upload sanitized live evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: manual-tv-live-evidence-${{ github.run_id }}
+          path: |
+            automation/manual-tv-live-results-20260912.json
+            automation/manual-tv-live-results-20260912/*.json
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Persist rebuild and live checkpoint to MEMORY
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          import os
+          import pathlib
+
+          memory = pathlib.Path('MEMORY.md')
+          run_id = os.environ.get('GITHUB_RUN_ID', 'unknown')
+          marker = f"TEMP live manual-TV run `{run_id}`"
+          if marker in memory.read_text(encoding='utf-8'):
+              raise SystemExit(0)
+          aggregate_path = pathlib.Path('automation/manual-tv-live-results-20260912.json')
+          if aggregate_path.is_file():
+              data = json.loads(aggregate_path.read_text(encoding='utf-8'))
+              rows = data.get('results') or []
+              live_summary = (
+                  f"- {marker}: exact matrix results={data.get('resultCount')}/{data.get('caseCount')}, "
+                  f"playable={data.get('playableRows')}, verified={data.get('verifiedRows')}, "
+                  f"contradictions={data.get('contradictions')}, returned403Rows={data.get('returned403Rows')}.\n"
+              )
+              for row in rows:
+                  live_summary += (
+                      f"  - {row.get('case')} / {row.get('provider')}: state={row.get('probeState')} "
+                      f"raw={row.get('raw',0)} playable={row.get('playable',0)} verified={row.get('verified',0)} "
+                      f"contradictions={row.get('contradictions',0)} stage={row.get('debugStage','')} "
+                      f"transport={','.join(row.get('transportTypesObserved') or []) or 'none'} "
+                      f"qualities={','.join(row.get('qualities') or []) or 'none'} "
+                      f"languages={','.join(row.get('languages') or []) or 'none'} "
+                      f"returned403={row.get('returned403Rows',0)}.\n"
+                  )
+          else:
+              live_summary = f"- {marker}: aggregate evidence missing; inspect workflow failure before retry.\n"
+          block = (
+              "\n## 2026-09-12 — .44 full rebuild green + exact manual-TV live evidence\n\n"
+              "- Work remains isolated to `fix/labs-5.21.44-20260912`; `main` remains untouched and no merge is authorized yet.\n"
+              "- TEMP rebuild run `34720082372`, job `103624218582` completed success. ProviderBase rebuilt 96/96 with no provider/upstream JS seed; all 96 bundles materialized (`generation=8341fd44afe6c496`).\n"
+              "- Published overrides were reapplied to all 96 refs and `--check` hit fixed point (`contract=7173d12a7b7aaf1e`). Global stream output guard passed 96/96; focused manual-TV/Core regressions remained green after rebuild.\n"
+              "- Catalogue invariant after rebuild: manifest version 5.21.43, 96 rows, 46 enabled on this branch, 0 missing provider files; final published Provider CONFIG test passed 96.\n"
+              "- Generated rebuild commit pushed: `5bc5c2098c47a5cb3b5b2661babfc5242dec217f`.\n"
+              + live_summary
+          )
+          with memory.open('a', encoding='utf-8') as handle:
+              handle.write(block)
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add MEMORY.md
+          if git diff --cached --quiet; then
+            echo 'FIELD_MEMORY_LIVE_CHECKPOINT changed=0'
+            exit 0
+          fi
+          git commit -m "docs(memory): checkpoint .44 rebuild and live TV evidence"
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_MEMORY_LIVE_CHECKPOINT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
