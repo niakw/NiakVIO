@@ -1,10 +1,1 @@
-## 2026-09-12 — retry 10 confirms ProviderBase 96/96; layering test fully aligned to clean-v3 authority
-
-- TEMP run **34719305207**, job **103622096943**, again passed the complete focused regression suite and again successfully materialized the owned ProviderBase store **96/96** with `provider_js_seed=false` and `upstream_js_seed=false`.
-- Exact successful materializer proof repeated: `FIELD_PROVIDER_BASE_V3_STORE providers=96 unique_paths=96 reconstruction_required=0 provider_js_seed=false upstream_js_seed=false runtime_reader=v10 route_sanitizer=v1 html_text_hardening=deterministic-scanner-v1 movie_identity=v21.10 episode_identity=v22.1`.
-- Retry 10 then failed only on another historical assertion in `tests/provider_base_layering_contract_test.py`: it still required `CLEAN_RECONSTRUCTION_SOURCE == niakvio-clean-reconstruction-v2` / authoring version 2.
-- Current source authority in `scripts/provider_base_store.py` is explicitly `CLEAN_RECONSTRUCTION_SOURCE=niakvio-clean-reconstruction-v3`, `CLEAN_RECONSTRUCTION_AUTHORING_VERSION=3`, `PROVIDER_BASE_OWNED_MARKER=NIAKVIO_PROVIDER_BASE_OWNED_V3`. Other current tests (`provider_base_store_test.py`, `provider_clean_reconstruction_contract_test.py`) already enforce clean-v3.
-- Commit **193e3fb482c79bdb8d10fb6ebb9c83feaa49a70d** updates the full stale lower half of the layering test in one pass rather than chasing assertions individually: clean-v3 is current, clean-v2 is explicitly old/reconstruction-required, only quarantine remains in `DERIVED_PATCH_SCRIPTS`, and historical adaptive/domain runtime patch paths are asserted in `LEGACY_SOURCE_PATCH_PATHS` + `CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS` rather than replayed.
-- The layering/security invariant remains stricter, not weaker: `NUVIO_PROVIDER_SECURITY_HARDENING_V1` stays forbidden inside clean ProviderBase.
-- Retry 10 did not reach all-96 bundle rebuild because the stale layering assertion stopped the job after successful 96-base materialization. `main` remains untouched.
-- Next: retry the verifier with the fully clean-v3-aligned layering contract; required next milestone is reconstruction-input green followed by all-96 bundle materialization/reapply/fixed-point.
+<!-- NIAKVIO_MEMORY_PENDING_EMPTY -->
