@@ -1,4 +1,4 @@
-# retry-13: YAML-safe MEMORY checkpoint; continue all-96 bundle rebuild
+# retry-14: V34 strongest evidence + strict V8 + Mugiwara episodic fail-closed
 name: TEMP Fix manual TV regressions
 
 on:
@@ -58,6 +58,8 @@ jobs:
           python3 scripts/upgrade_provider_execution_failfast_v33.py
           python3 scripts/upgrade_provider_movie_catalogue_identity_v21_10.py
           python3 scripts/upgrade_provider_episode_identity_guard_v22_1.py
+          python3 scripts/upgrade_mugiwara_episode_failclosed_v2.py
+          python3 scripts/upgrade_manual_tv_live_regressions_v34.py
 
       - name: Focused regressions
         shell: bash
@@ -68,12 +70,52 @@ jobs:
           python3 tests/provider_no_timer_runtime_test.py
           python3 tests/provider_execution_failfast_v33_test.py
           python3 tests/manual_tv_regressions_contract_test.py
+          python3 tests/manual_tv_live_regressions_v34_test.py
           python3 tests/provider_latest_request_cancellation_test.py
           python3 tests/provider_native_abort_ignorant_cancellation_test.py
           python3 tests/stream_quality_recovery_tv_test.py
           python3 tests/stream_output_sanitizer_fail_closed_test.py
           python3 tests/stream_output_sanitizer_direct_normalization_test.py
           python3 tests/core_runtime_nonregression_contract_test.py
+
+      - name: Persist V34 and Mugiwara diagnostic checkpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='V34 + V8 + Mugiwara episodic fail-closed checkpoint (.44)'
+          if ! grep -Fq "$marker" MEMORY.md; then
+            python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md')
+          block='''
+          ## 2026-09-12 — V34 + V8 + Mugiwara episodic fail-closed checkpoint (.44)
+
+          - Work remains strictly on `fix/labs-5.21.44-20260912`; `main` is untouched and no merge is authorized yet.
+          - Exact safe Mugiwara diagnostic run `34721006209`: Ragna Crimson S1E4 mapped `rowId=1/index=3`, season 1 count 24, and produced 1 raw/1 playable stream. Hell Mode requested S2E10 while the catalogue page resolved to `/episodes/saison1`; structured data exposed season 1 count 12 and season 2 count 0, so requested S2E10 had `selection=none`, yet the previous native fallback still emitted 8 raw/8 playable rows. Root cause: specialized episodic resolution failed closed internally but then fell back to native/default-season output.
+          - `upgrade_mugiwara_episode_failclosed_v2.py` now preserves movie fallback but returns `[]` for episodic requests when the structured Mugiwara resolver cannot prove the requested S/E.
+          - V34 makes learned literal `type=movie|tv` API routes transport-compatible, uses strongest explicit quality evidence, preserves detailed language evidence, and selects terminal sanitizer V8.
+          - Sanitizer V8 publishes ordinary probed rows only on positive media proof; network/timeout/opaque outcomes fail closed. V8 reapplication restores the V7 source hook before rebuilding so managed sanitizer options remain byte-idempotent.
+          - Focused V34 test proves: declared 720p + explicit 1080P evidence => 1080p; generic VO + explicit Hindi evidence => Hindi; a dead direct row is removed; V8 identical reapplication is byte-identical.
+          '''
+          with p.open('a',encoding='utf-8') as f: f.write(block)
+          PY
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add MEMORY.md
+            git commit -m "docs(memory): checkpoint V34 and Mugiwara root cause"
+            for attempt in 1 2 3 4 5; do
+              git fetch origin fix/labs-5.21.44-20260912
+              git rebase origin/fix/labs-5.21.44-20260912
+              if git push origin HEAD:fix/labs-5.21.44-20260912; then
+                echo "FIELD_MEMORY_CHECKPOINT v34=written attempt=$attempt sha=$(git rev-parse HEAD)"
+                break
+              fi
+              if [ "$attempt" = 5 ]; then exit 1; fi
+              sleep 1
+            done
+          else
+            echo 'FIELD_MEMORY_CHECKPOINT v34=already-present'
+          fi
 
       - name: Rebuild owned ProviderBase store 96/96
         shell: bash
@@ -93,6 +135,7 @@ jobs:
           python3 tests/provider_base_layering_contract_test.py
           python3 tests/core_runtime_nonregression_contract_test.py
           python3 tests/manual_tv_regressions_contract_test.py
+          python3 tests/manual_tv_live_regressions_v34_test.py
           python3 tests/provider_movie_catalogue_identity_v21_10_test.py
           python3 tests/provider_episode_identity_guard_v22_1_test.py
           python3 tests/provider_no_timer_runtime_test.py
@@ -116,7 +159,7 @@ jobs:
             echo "FIELD_FIX_COMMIT changed=0"
             exit 0
           fi
-          git commit -m "fix(core): restore TV navigation stream truth and provider isolation"
+          git commit -m "fix(core): apply V34 strict stream truth and episode safety"
           for attempt in 1 2 3 4 5; do
             git fetch origin fix/labs-5.21.44-20260912
             git rebase origin/fix/labs-5.21.44-20260912
