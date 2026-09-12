@@ -27,6 +27,8 @@ patched = mod.apply(
         "semantic_types": ["movie"],
         "provider_timeout_ms": 25_000,
         "tv_provider_timeout_ms": 25_000,
+        "fetch_slice_ms": 7_000,
+        "max_hard_failures": 3,
         "supersede_settle_ms": 700,
     },
 )
@@ -65,6 +67,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
 source = PATCH.read_text(encoding="utf-8")
 assert 'if(typeof setTimeout!=="function"){await Promise.resolve();return}' in source
-assert 'typeof setTimeout!=="function"||remaining<=0' in source
+assert 'typeof setTimeout!=="function"||slice<=0' in source
 assert 'typeof clearTimeout==="function"' in source
+assert 'Promise.race([base.apply(this,args),abortPromise])' in source
 print("provider no-timer runtime contract passed")
