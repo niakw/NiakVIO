@@ -55,12 +55,20 @@ explicit = {
 value = identity_input(explicit, ["/api/movie/{id}"], {"directRoute": "/movie/{tmdbId}"})
 assert value["mode"] == "catalog_search" and value["requiredFields"] == ["title", "mediaType"], value
 
-# Most importantly, static refreshed DATA participates in inference.
+# Most importantly, executable refreshed static DATA participates in inference.
+# Proof V5 is the authority boundary: unproved static routes are candidate
+# knowledge only and must not influence runtime identity preflight.
 model = provider_model(
     "fixture",
     {"official_site": "https://example.test"},
     {"strategy": "html_scraper"},
-    {"model": {"routes": ["/?s={query}", "/film/{slug}"], "strategy": "html_scraper"}},
+    {
+        "model": {
+            "routes": ["/?s={query}", "/film/{slug}"],
+            "routeProofVersion": 5,
+            "strategy": "html_scraper",
+        }
+    },
 )
 assert_mode(model["identityInput"], "catalog_search", True)
 
@@ -68,7 +76,13 @@ direct_model = provider_model(
     "fixture-direct",
     {"official_site": "https://api.example.test"},
     {"strategy": "api_stream_resolver"},
-    {"model": {"routes": ["/api/sources/movie/{id}"], "strategy": "api_stream_resolver"}},
+    {
+        "model": {
+            "routes": ["/api/sources/movie/{id}"],
+            "routeProofVersion": 5,
+            "strategy": "api_stream_resolver",
+        }
+    },
 )
 assert_mode(direct_model["identityInput"], "tmdb_direct", False)
 
