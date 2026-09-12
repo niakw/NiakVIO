@@ -7,12 +7,19 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
+# Keep this contract test standalone: apply the durable migration before importing
+# the runtime under test. The full reconstruction source-plan applies it earlier.
+from upgrade_provider_terminal_media_block_v1 import patch as patch_terminal_media_block  # noqa: E402
+
+patch_terminal_media_block()
+
 from validate_provider_v3_routes_sequential import (  # noqa: E402
     coverage_target,
     derive_observed_route,
     evaluate_provider,
     should_pass,
 )
+from reconstruct_provider_v3_sequential_live import terminal_state  # noqa: E402
 
 fixture = {
     "tmdbId": "157336",
@@ -131,6 +138,91 @@ assert evaluation["declaredTypeCoverageRatio"] == 1.0, evaluation
 assert evaluation["declaredTypeRouteEvidence"]["tv"][0]["route"] == "/stream/{id}/episode?season={season}&episode={episode}", evaluation["declaredTypeRouteEvidence"]
 assert should_pass(evaluation) is True
 
+# Cineby-shaped regression: exact typed identity resolves to concrete HLS URLs, but
+# the runner is denied on every resolved media request. This is terminal transport
+# evidence only; movie/tv remain unvalidated and no blocked HLS is promoted.
+def request(url: str, status: int, content_type: str = "text/plain") -> dict:
+    return {
+        "url": url,
+        "final_url": url,
+        "method": "GET",
+        "status": status,
+        "content_type": content_type,
+        "header_names": ["accept"],
+        "body_kind": "none",
+        "body_fields": [],
+    }
+
+cineby_model = {
+    "canonicalSupportedTypes": ["movie", "tv"],
+    "routeData": [],
+}
+cineby_movie = {
+    "semantic_type": "movie",
+    "fixture_slug": "interstellar",
+    "fixture": {"tmdbId": "157336", "mediaType": "movie", "title": "Interstellar", "year": 2014},
+    "status": "no_streams",
+    "fetches": [
+        request("https://api.example.test/cdn/sources-with-title?title=Interstellar&mediaType=movie&tmdbId=157336", 200),
+        request("https://media.example.test/x/index-s1080p-v1-a1.m3u8", 403, "text/html"),
+        request("https://media.example.test/x/index-s720p-v1-a1.m3u8", 403, "text/html"),
+    ],
+}
+cineby_tv = {
+    "semantic_type": "tv",
+    "fixture_slug": "breaking-bad-s01e01",
+    "fixture": {"tmdbId": "1396", "mediaType": "tv", "title": "Breaking Bad", "season": 1, "episode": 1},
+    "status": "no_streams",
+    "fetches": [
+        request("https://api.example.test/cdn/sources-with-title?mediaType=tv&tmdbId=1396&seasonId=1&episodeId=1", 200),
+        request("https://media.example.test/y/playlist.m3u8", 403, "text/html"),
+    ],
+}
+media_blocked = evaluate_provider("cineby", cineby_model, [cineby_movie, cineby_tv], 0.75)
+assert media_blocked["validatedTypes"] == [], media_blocked
+assert media_blocked["missingTypes"] == ["movie", "tv"], media_blocked
+assert media_blocked["providerMediaBlockedTypes"] == ["movie", "tv"], media_blocked
+assert media_blocked["providerMediaBlockedComplete"] is True, media_blocked
+assert media_blocked["providerMediaBlockClassification"] == "exact-identity-resolved-media-blocked", media_blocked
+assert terminal_state(media_blocked, cineby_model, {}, 3)[0] == "terminal-blocked"
+assert should_pass(media_blocked) is False
+assert all(
+    row.get("validationState") != "live-validated"
+    for row in media_blocked["candidateRouteData"]
+    if str(row.get("route") or "").endswith(".m3u8")
+), media_blocked["candidateRouteData"]
+
+search_only = {
+    **cineby_movie,
+    "fetches": [
+        request("https://api.example.test/search?q=Interstellar", 200, "application/json"),
+        request("https://media.example.test/unrelated/master.m3u8", 403, "text/html"),
+    ],
+}
+search_eval = evaluate_provider("search-only", {"canonicalSupportedTypes": ["movie"], "routeData": []}, [search_only], 0.75)
+assert search_eval["providerMediaBlockedComplete"] is False, search_eval
+
+media_404 = {
+    **cineby_movie,
+    "fetches": [
+        request("https://api.example.test/cdn/sources-with-title?mediaType=movie&tmdbId=157336", 200),
+        request("https://media.example.test/missing/master.m3u8", 404, "text/html"),
+    ],
+}
+media_404_eval = evaluate_provider("media-404", {"canonicalSupportedTypes": ["movie"], "routeData": []}, [media_404], 0.75)
+assert media_404_eval["providerMediaBlockedComplete"] is False, media_404_eval
+
+tv_control_only = {
+    **cineby_tv,
+    "fetches": [
+        request("https://api.example.test/cdn/sources-with-title?mediaType=tv&tmdbId=1396&seasonId=1&episodeId=1", 200),
+    ],
+}
+partial_eval = evaluate_provider("partial", cineby_model, [cineby_movie, tv_control_only], 0.75)
+assert partial_eval["providerMediaBlockedTypes"] == ["movie"], partial_eval
+assert partial_eval["providerMediaBlockedComplete"] is False, partial_eval
+assert terminal_state(partial_eval, cineby_model, {}, 3)[0] is None
+
 source = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
 assert "ThreadPoolExecutor" not in source
 assert "as_completed" not in source
@@ -141,12 +233,16 @@ assert "missing live route proof for declared types" in source
 assert "_route_matches_model_url" in source
 assert "Unknown literal IDs" in source
 assert "write(knowledge_path, knowledge)" in source
+assert "PROVIDER_V3_TERMINAL_MEDIA_BLOCK_V1" in source
+assert "providerMediaBlockedComplete" in source
 
 reconstruct = (ROOT / "scripts" / "reconstruct_provider_v3_sequential_live.py").read_text(encoding="utf-8")
 assert 'completion_state = "declared-types-qualified"' in reconstruct
 assert "validated_types=" in reconstruct
 assert "missing_types=" in reconstruct
 assert "requiredDeclaredTypeCoverageRatio" in reconstruct
+assert "PROVIDER_V3_TERMINAL_MEDIA_BLOCK_V1" in reconstruct
+assert 'evaluation.get("providerMediaBlockedComplete")' in reconstruct
 
 probe = (ROOT / "scripts" / "nuvio_tv_probe_route_validation.cjs").read_text(encoding="utf-8")
 assert "function requestPhase()" in probe
@@ -158,7 +254,7 @@ assert "playback_request_count: playbackRequestCount" in probe
 assert "schema_version: 2" in probe
 
 print(
-    "Provider v3 sequential live gate tests passed: declared semantic types are the only gate denominator, "
-    "Purstream movie+tv requires both typed routes relative to its API base, literal internal ids are never promoted, "
-    "search/status/playback traffic cannot inflate coverage, and providers still advance strictly one at a time."
+    "Provider v3 sequential live gate tests passed: declared semantic types remain the only positive gate denominator, "
+    "exact-identity resolved media blocks are terminal transport evidence only, 404/search-only/partial-lane cases stay red, "
+    "and providers still advance strictly one at a time."
 )
