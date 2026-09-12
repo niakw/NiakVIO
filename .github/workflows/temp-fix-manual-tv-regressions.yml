@@ -1,0 +1,238 @@
+name: TEMP - Fix manual TV regressions
+
+on:
+  push:
+    branches:
+      - fix/labs-5.21.44-20260912
+    paths:
+      - .github/workflows/temp-fix-manual-tv-regressions.yml
+
+permissions:
+  contents: write
+
+env:
+  PYTHONDONTWRITEBYTECODE: "1"
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fix branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+
+      - name: Apply proven Core regressions and add locks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          ROOT = Path('.')
+
+          def replace_once(path: str, old: str, new: str, label: str) -> None:
+              p = ROOT / path
+              text = p.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected one anchor in {path}, got {count}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+              print(f'PATCHED {label}: {path}')
+
+          # 1) Restore the already-accepted 25s provider budget. The current 60s
+          # default is a regression and directly matches >1 minute manual loading.
+          media = ROOT / 'scripts/provider_patches/global_media_type_resolution_v1.py'
+          text = media.read_text(encoding='utf-8')
+          for old, new, label in (
+              ('cfg.get("provider_timeout_ms", 60_000)', 'cfg.get("provider_timeout_ms", 25_000)', 'provider timeout'),
+              ('cfg.get("tv_provider_timeout_ms", 60_000)', 'cfg.get("tv_provider_timeout_ms", 25_000)', 'tv provider timeout'),
+              ('tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate', 'tmdb-data-contract-launch-gate-v32-25s-navigation-budget', 'media owner revision'),
+          ):
+              if text.count(old) != 1:
+                  raise SystemExit(f'{label}: expected one anchor, got {text.count(old)}')
+              text = text.replace(old, new, 1)
+          media.write_text(text, encoding='utf-8')
+
+          # Keep cancellation tests pinned to the actual Core owner revision.
+          for p in (ROOT / 'tests').glob('*.py'):
+              t = p.read_text(encoding='utf-8')
+              if 'tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate' in t:
+                  p.write_text(t.replace('tmdb-data-contract-launch-gate-v31-pre-network-semantic-gate', 'tmdb-data-contract-launch-gate-v32-25s-navigation-budget'), encoding='utf-8')
+
+          # 2) A probed HLS master is stronger than provider-declared 480p/720p.
+          # Existing code only repaired Unknown and therefore preserved false labels.
+          replace_once(
+              'scripts/provider_patches/stream_output_sanitizer_v5.py',
+              'function recoverQuality(stream,text,url){if(!stream||typeof stream!=="object"||meaningfulQuality(stream.quality))return;var q=qualityFromHls(text,url);if(q)stream.quality=q;else try{delete stream.quality}catch(_e){}}',
+              'function recoverQuality(stream,text,url){if(!stream||typeof stream!=="object")return;var q=qualityFromHls(text,url);if(q){stream.quality=q;return}if(!meaningfulQuality(stream.quality))try{delete stream.quality}catch(_e){}}',
+              'verified HLS quality authority',
+          )
+
+          # 3) Uniform title while retaining safe language/dialect information.
+          presentation = ROOT / 'scripts/provider_patches/global_stream_presentation_v1.py'
+          ptext = presentation.read_text(encoding='utf-8')
+          ptext = ptext.replace('all-providers-client-projection-name-mirror-v20', 'all-providers-client-projection-language-detail-v21', 1)
+          codec_anchor = 'function codec(r){'
+          if ptext.count(codec_anchor) != 1:
+              raise SystemExit('presentation codec anchor drift')
+          language_helper = r'''function detailedLanguage(r,fallback){var raw=s(r&&r.language),u=raw.toLowerCase().replace(/[_-]+/g," ").replace(/\s+/g," ").trim(),map={hi:"Hindi",hindi:"Hindi",ta:"Tamil",tamil:"Tamil",te:"Telugu",telugu:"Telugu",ml:"Malayalam",malayalam:"Malayalam",kn:"Kannada",kannada:"Kannada",bn:"Bengali",bengali:"Bengali",mr:"Marathi",marathi:"Marathi",pa:"Punjabi",punjabi:"Punjabi",gu:"Gujarati",gujarati:"Gujarati",ur:"Urdu",urdu:"Urdu",en:"English",eng:"English",english:"English",ja:"Japanese",jpn:"Japanese",japanese:"Japanese",ko:"Korean",kor:"Korean",korean:"Korean"};if(map[u])return map[u];if(/^(?:vf|vff|vfq|vostfr|vo|multi|multi audio|dual audio)$/i.test(u))return fallback||raw.toUpperCase();if(meaningful(raw)&&raw.length<=32&&/^[A-Za-zÀ-ÿ .()/-]+$/.test(raw))return raw;return fallback||""}
+'''
+          ptext = ptext.replace(codec_anchor, language_helper + codec_anchor, 1)
+          old_out = 'if(f.language)out.language=f.language;if(f.codec)out.codec=f.codec;'
+          new_out = 'var languageDetailValue=detailedLanguage(r,f.language);if(languageDetailValue)out.language=languageDetailValue;else if(f.language)out.language=f.language;if(f.codec)out.codec=f.codec;'
+          if ptext.count(old_out) != 1:
+              raise SystemExit('presentation output-language anchor drift')
+          ptext = ptext.replace(old_out, new_out, 1)
+          old_title = 'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"");out.name=out.title;'
+          new_title = 'out.title=provider+(f.quality?" - "+qualityLabel(f.quality):"")+(languageDetailValue?" - "+languageDetailValue:"");out.name=out.title;'
+          if ptext.count(old_title) != 1:
+              raise SystemExit('presentation title anchor drift')
+          ptext = ptext.replace(old_title, new_title, 1)
+          presentation.write_text(ptext, encoding='utf-8')
+
+          # 4) Behavioral lock for the manual regressions: 25s default, verified
+          # quality overriding false provider quality, dialect title retention,
+          # 403 fail-closed, and A->B->C supersession without stale fallback/result.
+          test = ROOT / 'tests/manual_tv_regressions_contract_test.py'
+          test.write_text(r'''#!/usr/bin/env python3
+          from __future__ import annotations
+
+          import importlib.util
+          import subprocess
+          import tempfile
+          from pathlib import Path
+
+          ROOT = Path(__file__).resolve().parents[1]
+
+          def load(path: Path, name: str):
+              spec = importlib.util.spec_from_file_location(name, path)
+              assert spec is not None and spec.loader is not None
+              mod = importlib.util.module_from_spec(spec)
+              spec.loader.exec_module(mod)
+              return mod
+
+          media_source = (ROOT / "scripts/provider_patches/global_media_type_resolution_v1.py").read_text(encoding="utf-8")
+          assert 'cfg.get("provider_timeout_ms", 25_000)' in media_source
+          assert 'cfg.get("tv_provider_timeout_ms", 25_000)' in media_source
+          assert 'tmdb-data-contract-launch-gate-v32-25s-navigation-budget' in media_source
+
+          sanitizer = load(ROOT / "scripts/provider_patches/stream_output_sanitizer_v6.py", "manual_tv_sanitizer")
+          presentation = load(ROOT / "scripts/provider_patches/global_stream_presentation_v1.py", "manual_tv_presentation")
+          media = load(ROOT / "scripts/provider_patches/global_media_type_resolution_v1.py", "manual_tv_media")
+
+          def run_node(source: str, runner: str, timeout: int = 20) -> str:
+              with tempfile.TemporaryDirectory() as tmp:
+                  root = Path(tmp)
+                  provider = root / "provider.js"
+                  test_js = root / "test.js"
+                  provider.write_text(source, encoding="utf-8")
+                  test_js.write_text(runner, encoding="utf-8")
+                  result = subprocess.run(["node", str(test_js), str(provider)], text=True, capture_output=True, timeout=timeout)
+                  if result.returncode:
+                      raise AssertionError(result.stdout + "\n" + result.stderr)
+                  return result.stdout
+
+          # Provider says 480p; verified HLS master says 1080p => Core must expose 1080p.
+          base = 'module.exports={getStreams:async()=>[{name:"Papadustream",title:"Papadustream",quality:"480p",url:"https://cdn.example/master.m3u8"}]};\n'
+          patched = sanitizer.apply(base, options={"probe_all_urls": True, "probe_direct_media": True, "max_probes": 8, "probe_timeout_ms": 1500, "min_vod_duration_seconds": 60}, context={"provider_id":"papadustream"})
+          quality_runner = r'''
+          const playlist="#EXTM3U\n#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080\nhttps://cdn.example/1080.m3u8\n";
+          global.fetch=async u=>({ok:true,status:200,url:String(u),headers:{get:k=>String(k).toLowerCase()==="content-type"?"application/vnd.apple.mpegurl":""},arrayBuffer:async()=>new TextEncoder().encode(playlist).buffer});
+          const p=require(process.argv[2]);(async()=>{const rows=await p.getStreams();if(rows.length!==1||rows[0].quality!=="1080p")throw new Error(JSON.stringify(rows));console.log("QUALITY_OVERRIDE_OK")})().catch(e=>{console.error(e);process.exit(1)});
+          '''
+          assert "QUALITY_OVERRIDE_OK" in run_node(patched, quality_runner)
+
+          # Strict all-URL sanitizer: an HTTP 403 row must never reach Nuvio.
+          base_403 = 'module.exports={getStreams:async()=>[{name:"VidRock",title:"VidRock",quality:"720p",url:"https://cdn.example/forbidden.m3u8"}]};\n'
+          patched_403 = sanitizer.apply(base_403, options={"probe_all_urls": True, "probe_direct_media": True, "max_probes": 8, "probe_timeout_ms": 1000, "min_vod_duration_seconds": 60}, context={"provider_id":"vidrock"})
+          forbidden_runner = r'''
+          global.fetch=async u=>({ok:false,status:403,url:String(u),headers:{get:()=>"text/html"},arrayBuffer:async()=>new Uint8Array([60,104,116,109,108,62]).buffer});
+          const p=require(process.argv[2]);(async()=>{const rows=await p.getStreams();if(rows.length!==0)throw new Error("403 leaked "+JSON.stringify(rows));console.log("HTTP403_FAIL_CLOSED_OK")})().catch(e=>{console.error(e);process.exit(1)});
+          '''
+          assert "HTTP403_FAIL_CLOSED_OK" in run_node(patched_403, forbidden_runner)
+
+          # Uniform stream title + preserved Indian dialect/language.
+          pbase = 'module.exports={getStreams:async()=>[{name:"Castle",title:"random",quality:"1080p",language:"hi",url:"https://cdn.example/file.mp4"}]};\n'
+          presented = presentation.apply(pbase, context={"provider_id":"castle"})
+          presentation_runner = r'''
+          const p=require(process.argv[2]);(async()=>{const rows=await p.getStreams("not-a-tmdb-id","movie");const r=rows[0];if(r.language!=="Hindi")throw new Error("language "+JSON.stringify(r));if(!/1080p/.test(r.title)||!/Hindi/.test(r.title))throw new Error("title "+r.title);console.log("LANGUAGE_DETAIL_OK "+r.title)})().catch(e=>{console.error(e);process.exit(1)});
+          '''
+          assert "LANGUAGE_DETAIL_OK" in run_node(presented, presentation_runner)
+
+          # Real navigation shape: A and B ignore AbortSignal forever, C wins.
+          mbase = r'''
+          "use strict";
+          async function getStreams(id){await fetch("https://provider.example/"+id+"/one");return [{url:"https://media.example/"+id+".mp4",title:"row-"+id}];}
+          module.exports={getStreams};
+          '''
+          managed = media.apply(mbase, options={"semantic_types":["movie"],"provider_timeout_ms":25_000,"tv_provider_timeout_ms":25_000,"supersede_settle_ms":700})
+          navigation_runner = r'''
+          const calls=[];global.navigator={userAgent:"Nuvio TV Android"};
+          global.fetch=(url)=>{const u=String(url);calls.push(u);if(u.includes("/1/")||u.includes("/2/"))return new Promise(()=>{});return Promise.resolve({ok:true,status:200,url:u,headers:{get:()=>"video/mp4"},text:async()=>"ok",json:async()=>({})});};
+          const p=require(process.argv[2]);const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+          (async()=>{const a=p.getStreams("1","movie");await sleep(20);const b=p.getStreams("2","movie");await sleep(20);const started=Date.now();const c=p.getStreams("3","movie");const all=await Promise.race([Promise.all([a,b,c]),sleep(1800).then(()=>{throw new Error("navigation accumulation")})]);if(Date.now()-started>=1500)throw new Error("supersession too slow");if(all[0].length||all[1].length)throw new Error("stale rows leaked "+JSON.stringify(all));if(!all[2].length||!String(all[2][0].url).includes("/3.mp4"))throw new Error("latest row missing "+JSON.stringify(all));if(calls.some(x=>x.includes("/1/two")||x.includes("/2/two")))throw new Error("stale fallback network leaked "+JSON.stringify(calls));console.log("NAVIGATION_ABC_OK "+JSON.stringify(calls))})().catch(e=>{console.error(e);process.exit(1)});
+          '''
+          assert "NAVIGATION_ABC_OK" in run_node(managed, navigation_runner, timeout=8)
+
+          print("manual TV regression contract passed")
+          ''', encoding='utf-8')
+          print('WROTE tests/manual_tv_regressions_contract_test.py')
+          PY
+
+      - name: Run focused Core regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/manual_tv_regressions_contract_test.py
+          python3 tests/provider_latest_request_cancellation_test.py
+          python3 tests/provider_native_abort_ignorant_cancellation_test.py
+          python3 tests/stream_quality_recovery_tv_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+          python3 tests/stream_output_sanitizer_direct_normalization_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+
+      - name: Rebuild all published Provider v3 bundles from Base + DATA + Core
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/global_stream_output_guard_test.py
+          python3 tests/provider_base_layering_contract_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 tests/manual_tv_regressions_contract_test.py
+
+      - name: Assert active set and generated references remain coherent
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          m=json.loads(Path('manifest.json').read_text())
+          rows=m['scrapers']
+          active=[r for r in rows if r.get('enabled') is True]
+          missing=[r['id'] for r in rows if not (Path(r['filename'])).is_file()]
+          print(f'FIELD_FIX_BRANCH_STATE version={m.get("version")} catalogue={len(rows)} active={len(active)} missing_js={len(missing)}')
+          if len(rows)!=96 or len(active)!=46 or missing:
+              raise SystemExit(f'catalogue invariant failed catalogue={len(rows)} active={len(active)} missing={missing}')
+          PY
+
+      - name: Commit verified branch fix
+        shell: bash
+        env:
+          BRANCH: fix/labs-5.21.44-20260912
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'FIELD_FIX_COMMIT changed=0'
+            exit 0
+          fi
+          git commit -m "fix(core): restore TV navigation and stream truth contracts"
+          git push origin "HEAD:${BRANCH}"
+          echo "FIELD_FIX_COMMIT changed=1 sha=$(git rev-parse HEAD)"
