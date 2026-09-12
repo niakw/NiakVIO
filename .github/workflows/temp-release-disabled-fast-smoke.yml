@@ -23,9 +23,10 @@ jobs:
         with: {node-version: '24', package-manager-cache: false}
       - name: Apply source plan
         run: python scripts/upgrade_provider_v3_source_plan_v5.py
-      - name: Run fast advance and active-gate contracts
+      - name: Run fast advance, adaptive retry, and active-gate contracts
         run: |
           python tests/provider_v3_disabled_fast_advance_test.py
+          python tests/provider_v3_adaptive_live_retry_test.py
           python tests/provider_v3_sequential_live_gate_test.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/active_provider_live_coverage_test.py
