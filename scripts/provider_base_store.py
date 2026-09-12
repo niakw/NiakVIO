@@ -1118,6 +1118,28 @@ function _spv21DecodedObfuscatedHls(html, pageUrl) {
   }
   return videoUrl;
 }
+/* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PAYLOAD_V24_1 */
+function _spv241ExplicitPlayerPayloadUrls(text, base) {
+  const source = _text(text).slice(0, 524288);
+  const out = [];
+  // Decode only values explicitly handed to a video/player function. This is
+  // not a generic base64 sweep and cannot turn unrelated page data into routes.
+  /* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PAYLOAD_V24_2 */
+  const re = /(?:showVideo|loadVideo|setVideo|playVideo)\s*\(\s*["']([A-Za-z0-9+/_=-]{12,4096})["']\s*(?:,\s*["']?\d{1,4}["']?)?\s*\)/gi;
+  let match, scanned = 0;
+  while ((match = re.exec(source)) !== null && scanned++ < 24) {
+    let encoded = _text(match[1]).replace(/-/g, "+").replace(/_/g, "/");
+    while (encoded.length % 4) encoded += "=";
+    let decoded = "";
+    try { decoded = atob(encoded); } catch (_) { continue; }
+    if (!decoded || decoded.length > 16384) continue;
+    const direct = _absolute(decoded.trim(), base);
+    if (/^https?:\/\//i.test(direct)) out.push(direct);
+    out.push(..._extractUrls(decoded, base));
+    if (out.length >= 48) break;
+  }
+  return _uniq(out).slice(0, 48);
+}
 async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
   const queue = _spv187PrioritizedPlayerRoutes(seedUrls).filter(_crawlEligible).sort((a,b)=>_spv187QueueScore(b)-_spv187QueueScore(a)).slice(0, 8).map(url => ({ url, depth: 0, referer }));
   const seen = new Set();
@@ -1146,7 +1168,27 @@ async function _crawlDirectMedia(seedUrls, referer, maxDepth) {
       } else {
         playerText = await response.text();
         const decodedPlayerText = _spv186UnpackPackedPlayer(playerText);
-        urls = _extractUrls(decodedPlayerText, responseUrl);
+        /* NIAKVIO_PROVIDER_EXPLICIT_PLAYER_PRIORITY_V24_3 */
+        const explicitPlayerUrls = _spv241ExplicitPlayerPayloadUrls(decodedPlayerText, responseUrl);
+        const ordinaryPlayerUrls = _extractUrls(decodedPlayerText, responseUrl);
+        urls = _uniq(explicitPlayerUrls.concat(ordinaryPlayerUrls));
+        if (explicitPlayerUrls.length) {
+          const explicitDirect = explicitPlayerUrls.filter(_directMedia);
+          if (explicitDirect.length) {
+            streams.push(..._streams(explicitDirect, responseUrl));
+            continue;
+          }
+          if (row.depth < Math.max(0, Number(maxDepth) || 0)) {
+            for (const nested of explicitPlayerUrls.filter(_crawlEligible).slice(0, 8)) {
+              const next = _crawlCanonical(nested);
+              if (next && !seen.has(next)) queue.push({ url: next, depth: row.depth + 1, referer: responseUrl });
+            }
+          }
+          // An explicit player handoff outranks incidental raw download links
+          // present elsewhere in the same HTML page. Process queued players
+          // before considering those ordinary direct-looking links.
+          if (queue.length) continue;
+        }
       }
       const decodedObfuscatedHls = playerText
         ? _spv21DecodedObfuscatedHls(playerText, responseUrl) : "";
@@ -2198,6 +2240,104 @@ function _strictHtmlIdentityOk(html, meta, mediaType) {
     mediaType
   }) === true;
 }
+/* NIAKVIO_PROVIDER_EPISODE_HOP_V22 */
+function _spv22EpisodeMarker(rawUrl, season, episode) {
+  let path = "";
+  try { path = decodeURIComponent(new URL(_text(rawUrl)).pathname || "").toLowerCase(); }
+  catch (_) { return { marked: false, matches: false, strength: 0 }; }
+  const wantedSeason = Math.max(1, Number(season) || 1);
+  const wantedEpisode = Math.max(1, Number(episode) || 1);
+  const patterns = [
+    { re: /(?:^|[-_/])s(?:eason|aison)?[-_ ]*0*(\d{1,3})[-_ /]*(?:e|ep|episode)[-_ ]*0*(\d{1,4})(?:[-_/.]|$)/i, strength: 4 },
+    { re: /(?:season|saison)[-_ /]*0*(\d{1,3})[^?#]{0,80}?(?:episode|ep)[-_ /]*0*(\d{1,4})(?:[-_/.]|$)/i, strength: 4 },
+    { re: /(?:^|[-_/])0*(\d{1,3})x0*(\d{1,4})(?:[-_/.]|$)/i, strength: 4 },
+    { re: /(?:^|[-_/])0*(\d{1,3})[-_ ]*episode[-_ ]*0*(\d{1,4})(?:[-_/.]|$)/i, strength: 4 }
+  ];
+  for (const row of patterns) {
+    const match = path.match(row.re);
+    if (!match) continue;
+    return {
+      marked: true,
+      matches: Number(match[1]) === wantedSeason && Number(match[2]) === wantedEpisode,
+      strength: row.strength
+    };
+  }
+  const ep = path.match(/(?:^|[-_/])(?:episode|ep)[-_ ]*0*(\d{1,4})(?:[-_/.]|$)/i);
+  if (ep) return {
+    marked: true,
+    matches: wantedSeason === 1 && Number(ep[1]) === wantedEpisode,
+    strength: 2
+  };
+  /* NIAKVIO_PROVIDER_EPISODE_HOP_V24 */
+  // Season-1 anime catalogues often expose an exact episode leaf such as
+  // title-01-vostfr. The explicit language suffix is required so a year or
+  // franchise number can never be mistaken for an episode.
+  const languageEpisode = path.match(/(?:^|[-_/])0*(\d{1,4})[-_](?:vostfr|vf|vff|vfq|vo)(?:[-_/.]|$)/i);
+  if (languageEpisode) return {
+    marked: true,
+    matches: wantedSeason === 1 && Number(languageEpisode[1]) === wantedEpisode,
+    strength: 2
+  };
+  return { marked: false, matches: false, strength: 0 };
+}
+function _spv22EpisodeLinks(html, base, season, episode) {
+  const source = _embeddedText(html).slice(0, 1048576);
+  const out = [];
+  let baseUrl;
+  try { baseUrl = new URL(_text(base)); } catch (_) { return []; }
+  const re = /\b(?:href|data-href|data-url|data-link)\s*=\s*(["'])([^"']{1,1200})\1/gi;
+  let match, scanned = 0;
+  while ((match = re.exec(source)) !== null && scanned++ < 700) {
+    const absolute = _absolute(match[2], baseUrl.toString());
+    if (!absolute) continue;
+    let parsed;
+    try { parsed = new URL(absolute); } catch (_) { continue; }
+    if (parsed.origin !== baseUrl.origin) continue;
+    if (!/^https?:$/i.test(parsed.protocol)) continue;
+    if (/\.(?:css|js|jpe?g|png|gif|webp|svg|avif|ico|woff2?|ttf)(?:[?#]|$)/i.test(parsed.pathname)) continue;
+    const marker = _spv22EpisodeMarker(parsed.toString(), season, episode);
+    if (!marker.marked || !marker.matches) continue;
+    out.push({ url: parsed.toString(), strength: marker.strength });
+    if (out.length >= 16) break;
+  }
+  const seen = new Set();
+  return out
+    .sort((a,b)=>b.strength-a.strength)
+    .filter(row => row.url && !seen.has(row.url) && seen.add(row.url))
+    .map(row => row.url)
+    .slice(0, 4);
+}
+async function _spv22ResolveEpisodeHop(html, detailUrl, mediaType, season, episode) {
+  if (_text(mediaType).toLowerCase() === "movie" || season == null || episode == null) return [];
+  const episodeLinks = _spv22EpisodeLinks(html, detailUrl, season, episode);
+  if (!episodeLinks.length) return [];
+  const fallbacks = [];
+  for (const episodeUrl of episodeLinks.slice(0, 3)) {
+    try {
+      const response = await _fetch(episodeUrl, { headers: { Referer: _text(detailUrl) } });
+      const responseUrl = _text(response.url || episodeUrl);
+      const body = await response.text();
+      const candidates = _uniq([
+        ..._spv15ExplicitPlayerAttrs(body, responseUrl),
+        ..._extractUrls(body, responseUrl)
+      ]);
+      const direct = candidates.filter(_directMedia);
+      if (direct.length) return _streams(direct, responseUrl).slice(0, 40);
+      const players = candidates
+        .filter(_crawlEligible)
+        .sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a))
+        .slice(0, 10);
+      if (!players.length) continue;
+      const crawled = await _crawlDirectMedia(players, responseUrl, 3);
+      if (crawled.length) return crawled.slice(0, 40);
+      for (const candidate of players) {
+        if (_directMedia(candidate) || !_spv216PlayerFallbackEligible(candidate)) continue;
+        if (!fallbacks.some(row => row.url === candidate)) fallbacks.push({ url: candidate, referer: responseUrl });
+      }
+    } catch (_) {}
+  }
+  return _spv216FallbackStreams(fallbacks).slice(0, 12);
+}
 async function _resolveHtml(meta, mediaType, season, episode) {
   if (!meta || (!meta.title && !meta.tmdbId)) return [];
   const candidates = [];
@@ -2227,6 +2367,8 @@ async function _resolveHtml(meta, mediaType, season, episode) {
       const response = await _fetch(detailUrl);
       const html = await response.text();
       if (!_strictHtmlIdentityOk(html, meta, mediaType)) continue;
+      const episodeHop = await _spv22ResolveEpisodeHop(html, response.url || detailUrl, mediaType, season, episode);
+      if (episodeHop.length) return episodeHop.slice(0, 40);
       const explicitPlayers = _spv15ExplicitPlayerAttrs(html, response.url || detailUrl);
       if (explicitPlayers.length) {
         const explicitCrawled = await _crawlDirectMedia(explicitPlayers, response.url || detailUrl, 3);
@@ -2600,6 +2742,139 @@ function _spv213StableSeriesSlug(currentSlug, candidateSlug, mediaType, valueSte
 /* NIAKVIO_PROVIDER_EPISODE_SCOPED_JSON_V21_4 */
 /* Historical V20.5 proof marker only; executable V21.4 extraction below must
    never use this unscoped expression: ..._spv205HttpValues(payload.value, payload.base, []) */
+/* NIAKVIO_PROVIDER_EMBEDDED_STRUCTURED_EPISODE_V25_1 */
+function _spv251DecodeJsString(source, start) {
+  const quote = source[start];
+  if (quote !== '"' && quote !== "'") return null;
+  let out = "", escaped = false;
+  for (let i = start + 1; i < source.length && out.length <= 2097152; i += 1) {
+    const ch = source[i];
+    if (escaped) {
+      if (ch === "n") out += "\n";
+      else if (ch === "r") out += "\r";
+      else if (ch === "t") out += "\t";
+      else if (ch === "b") out += "\b";
+      else if (ch === "f") out += "\f";
+      else if (ch === "u" && /^[0-9a-fA-F]{4}$/.test(source.slice(i + 1, i + 5))) {
+        out += String.fromCharCode(parseInt(source.slice(i + 1, i + 5), 16)); i += 4;
+      } else out += ch;
+      escaped = false; continue;
+    }
+    if (ch === "\\") { escaped = true; continue; }
+    if (ch === quote) return { value: out, end: i + 1 };
+    out += ch;
+  }
+  return null;
+}
+function _spv251BalancedJsonAt(source, start) {
+  const open = source[start], close = open === "{" ? "}" : open === "[" ? "]" : "";
+  if (!close) return null;
+  const stack = [close];
+  let quote = "", escaped = false;
+  for (let i = start + 1; i < source.length && i - start <= 1048576; i += 1) {
+    const ch = source[i];
+    if (quote) {
+      if (escaped) { escaped = false; continue; }
+      if (ch === "\\") { escaped = true; continue; }
+      if (ch === quote) quote = "";
+      continue;
+    }
+    if (ch === '"') { quote = ch; continue; }
+    if (ch === "{" ) stack.push("}");
+    else if (ch === "[") stack.push("]");
+    else if (ch === "}" || ch === "]") {
+      if (stack[stack.length - 1] !== ch) return null;
+      stack.pop();
+      if (!stack.length) return { text: source.slice(start, i + 1), end: i + 1 };
+    }
+  }
+  return null;
+}
+function _spv251EmbeddedJsonValues(raw) {
+  const source = _text(raw).slice(0, 4194304);
+  const chunks = [];
+  const markers = ["self.__next_f.push([1,", "self.__next_f.push([0,"];
+  for (const marker of markers) {
+    let pos = 0, count = 0;
+    while (count++ < 96) {
+      const hit = source.indexOf(marker, pos);
+      if (hit < 0) break;
+      let cursor = hit + marker.length;
+      while (cursor < source.length && /\s/.test(source[cursor])) cursor += 1;
+      const decoded = _spv251DecodeJsString(source, cursor);
+      if (decoded) { chunks.push(decoded.value); pos = decoded.end; }
+      else pos = cursor + 1;
+    }
+  }
+  const decoded = chunks.join("").slice(0, 2097152);
+  const out = [], seen = new Set();
+  for (let i = 0, scanned = 0; i < decoded.length && scanned < 160 && out.length < 32; i += 1) {
+    if (decoded[i] !== ":") continue;
+    let cursor = i + 1;
+    while (cursor < decoded.length && /\s/.test(decoded[cursor])) cursor += 1;
+    if (decoded[cursor] !== "{" && decoded[cursor] !== "[") continue;
+    scanned += 1;
+    const block = _spv251BalancedJsonAt(decoded, cursor);
+    if (!block) continue;
+    try {
+      const value = JSON.parse(block.text);
+      const fingerprint = block.text.slice(0, 512) + ":" + block.text.length;
+      if (!seen.has(fingerprint)) { seen.add(fingerprint); out.push(value); }
+    } catch (_) {}
+    i = Math.max(i, block.end - 1);
+  }
+  return out;
+}
+function _spv251SeasonNumber(row) {
+  if (!row || typeof row !== "object" || Array.isArray(row)) return 0;
+  for (const key of ["season", "season_number", "seasonNumber"]) {
+    const value = Number(row[key]);
+    if (Number.isFinite(value) && value > 0 && value <= 1000) return Math.floor(value);
+  }
+  const id = _text(row.id).trim();
+  const structural = row.lang || row.languages || row.episodes || row.episode || row.sources;
+  if (structural && /^\d{1,3}$/.test(id)) return Number(id);
+  return 0;
+}
+function _spv251UrlMatrix(value, wantedEpisode) {
+  if (!Array.isArray(value) || !value.length || value.length > 12 || wantedEpisode <= 0) return null;
+  if (!value.every(row => Array.isArray(row) && row.length >= wantedEpisode && row.length <= 2000)) return null;
+  let urlCells = 0;
+  const selected = [];
+  for (const row of value) {
+    for (const cell of row.slice(0, 12)) {
+      if (typeof cell === "string" && /^(?:https?:)?\/\//i.test(cell.trim())) { urlCells += 1; break; }
+    }
+    const cell = row[wantedEpisode - 1];
+    if (typeof cell === "string" && /^(?:https?:)?\/\//i.test(cell.trim())) selected.push(cell);
+  }
+  return urlCells === value.length && selected.length ? selected : null;
+}
+function _spv251SeasonEpisodeScopedValue(value, mediaType, season, episode, depth) {
+  const lane = _text(mediaType).trim().toLowerCase();
+  const wantedSeason = Math.floor(Number(season) || 0), wantedEpisode = Math.floor(Number(episode) || 0);
+  depth = Number(depth) || 0;
+  if ((lane !== "tv" && lane !== "anime") || wantedEpisode <= 0 || depth > 12 || value == null) return value;
+  if (Array.isArray(value)) {
+    const seasonRows = value.filter(row => _spv251SeasonNumber(row) > 0);
+    if (wantedSeason > 0 && seasonRows.length) {
+      const exact = seasonRows.filter(row => _spv251SeasonNumber(row) === wantedSeason);
+      if (exact.length) return exact.map(row => _spv251SeasonEpisodeScopedValue(row, lane, wantedSeason, wantedEpisode, depth + 1));
+    }
+    const matrix = _spv251UrlMatrix(value, wantedEpisode);
+    if (matrix) return matrix;
+    return value.map(row => _spv251SeasonEpisodeScopedValue(row, lane, wantedSeason, wantedEpisode, depth + 1)).filter(row => row != null);
+  }
+  if (typeof value !== "object") return value;
+  const rowSeason = _spv251SeasonNumber(value);
+  if (wantedSeason > 0 && rowSeason > 0 && rowSeason !== wantedSeason) return null;
+  const out = {};
+  for (const [key, child] of Object.entries(value).slice(0, 256)) {
+    const scoped = _spv251SeasonEpisodeScopedValue(child, lane, wantedSeason, wantedEpisode, depth + 1);
+    if (scoped != null) out[key] = scoped;
+  }
+  return out;
+}
 function _spv214EpisodeNumber(row) {
   if (!row || typeof row !== "object" || Array.isArray(row)) return 0;
   for (const key of ["episode", "episode_number", "episodeNumber", "ep", "number", "num"]) {
@@ -3171,6 +3446,18 @@ async function _resolveProviderValuePlan(meta, mediaType, season, episode) {
             ..._extractUrls(scopedPayloadValue, payload.base),
             ..._spv15ExplicitPlayerAttrs(payload.value, payload.base)
           ]);
+          const embeddedValues = _spv251EmbeddedJsonValues(payload.value);
+          for (const embeddedValue of embeddedValues.slice(0, 16)) {
+            const scopedEmbedded = _spv251SeasonEpisodeScopedValue(
+              embeddedValue, mediaType, season, episode, 0
+            );
+            if (scopedEmbedded == null) continue;
+            urls.push(..._jsonUrls(scopedEmbedded));
+            urls.push(..._sourceUrls(scopedEmbedded, payload.base));
+            urls.push(..._spv18ValueUrls(scopedEmbedded, payload.base, []));
+            urls.push(..._spv205HttpValues(scopedEmbedded, payload.base, []));
+          }
+          urls = _uniq(urls);
         } else {
           urls = _uniq([
             ..._jsonUrls(scopedPayloadValue),
@@ -3181,6 +3468,10 @@ async function _resolveProviderValuePlan(meta, mediaType, season, episode) {
         }
         const direct = urls.filter(_directMedia);
         if (direct.length) return _streams(direct, payload.base || stepUrl).slice(0, 40);
+        if (typeof scopedPayloadValue === "string") {
+          const episodeHop = await _spv22ResolveEpisodeHop(scopedPayloadValue, payload.base || stepUrl, mediaType, season, episode);
+          if (episodeHop.length) return episodeHop.slice(0, 40);
+        }
         const crawl = urls.filter(_crawlEligible).sort((a,b)=>_crawlUrlScore(b)-_crawlUrlScore(a));
         if (crawl.length) {
           const streams = await _crawlDirectMedia(crawl.slice(0, 10), payload.base || stepUrl, 3);
@@ -4000,6 +4291,12 @@ async function _spv4ResolveDetail(detailUrl, meta, mediaType, season, episode, f
   } catch (_) { return []; }
   const base = response.url || detailUrl;
   if (!_strictHtmlIdentityOk(html, meta)) return [];
+
+  // V24: every proof-backed HTML source family gets the same exact episodic
+  // navigation contract before family-specific extraction. This is bounded to
+  // same-origin links carrying the requested season/episode identity.
+  const exactEpisodeHop = await _spv22ResolveEpisodeHop(html, base, mediaType, season, episode);
+  if (exactEpisodeHop.length) return exactEpisodeHop.slice(0, 40);
 
   if (family === "dle-full-story") {
     const special = await _spv4FullStory(base, meta, mediaType, season, episode);

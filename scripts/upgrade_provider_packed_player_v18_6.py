@@ -156,10 +156,14 @@ def validate(text: str | None = None) -> None:
         "radixRow.value > 62",
         "countRow.value > 10000",
         "const decodedPlayerText = _spv186UnpackPackedPlayer(playerText);",
-        "urls = _extractUrls(decodedPlayerText, responseUrl);",
     ):
         if needle not in value:
             raise AssertionError(f"V18.6 missing {needle}")
+    # Later generic player revisions may merge, prioritize or normalize the URL
+    # list around this call. V18.6 owns only the invariant that extraction reads
+    # the decoded payload. Do not pin validation to an obsolete assignment shape.
+    if "_extractUrls(decodedPlayerText, responseUrl)" not in value:
+        raise AssertionError("V18.6 decoded player payload is no longer consumed by URL extraction")
     section = value.split("/* NIAKVIO_PROVIDER_PACKED_PLAYER_V18_6 */", 1)[1].split(
         "async function _crawlDirectMedia", 1
     )[0].casefold()

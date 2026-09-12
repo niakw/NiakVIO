@@ -167,12 +167,12 @@ assert any(
     row.get("route") == "/fallback/{tmdbId}" and row.get("validationState") == "failed-live"
     for row in recognized["candidateRequests"]
 ), recognized["candidateRequests"]
-assert final_model["apiRecipe"]["statusUrl"] == "https://plan.test/status", final_model["apiRecipe"]
+assert "statusUrl" not in final_model["apiRecipe"], final_model["apiRecipe"]
 patch = overrides["provider_patches"]["plan-provider"]
 assert "/fallback/{tmdbId}" not in patch["learned_routes"], patch
 assert "/unused/{tmdbId}" not in patch["learned_routes"], patch
 assert not any("gateway/session-" in route for route in patch["learned_routes"]), patch
-assert patch["api_recipe"]["statusUrl"] == "https://plan.test/status", patch
+assert "statusUrl" not in patch["api_recipe"], patch
 assert final_model["routeRecognition"]["executionPlanRetainsAttemptedNon2xx"] is False
 assert final_model["routeRecognition"]["executionPlanRetainsFailedLive"] is False
 assert final_model["routeRecognition"]["blockedNon2xxPlanPreserved"] is False
@@ -250,5 +250,5 @@ print(
     "failed_live=diagnostic-only http451=terminal-blocked-not-validated "
     "blocked_non2xx_plan=preserved runtime_derived=pure-evidence "
     "runtime_observations=pure-evidence unexecuted_guess=pruned "
-    "blocked_stable_plan=preserved api_recipe=atomic"
+    "blocked_stable_plan=preserved api_recipe=proof-filtered"
 )

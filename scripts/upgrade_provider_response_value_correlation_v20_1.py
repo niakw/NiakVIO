@@ -180,15 +180,28 @@ def patch_materializer() -> bool:
             "v20.1-materializer-id-or-slug",
         )
     else:
-        # Current V18 materialization already copies the proof-owned structured
-        # step rows without an id-only filter. Keep that open semantic projection.
-        anchor = '        # PROVIDER_CORRELATED_VALUE_PLAN_V18\n        "providerValuePlan": [\n'
-        text = _once(
-            text,
-            anchor,
-            '        # PROVIDER_RESPONSE_VALUE_CORRELATION_V20\n' + anchor,
-            "v20.1-materializer-unfiltered-v18-plan",
-        )
+        # V18 originally projected providerValuePlan with a literal list. Newer
+        # execution-authority owners (V25+) project the same proof-owned DATA via
+        # execution_list(...), which is semantically equivalent and must not be
+        # rewritten back to the historical owner.
+        legacy_anchor = '        # PROVIDER_CORRELATED_VALUE_PLAN_V18\n        "providerValuePlan": [\n'
+        current_anchor = '        # PROVIDER_CORRELATED_VALUE_PLAN_V18\n        # PROVIDER_VALUE_CAUSAL_DEPTH_V20_5\n        "providerValuePlan": execution_list("provider_value_plan", "providerValuePlan")[:12],\n'
+        if legacy_anchor in text:
+            text = _once(
+                text,
+                legacy_anchor,
+                '        # PROVIDER_RESPONSE_VALUE_CORRELATION_V20\n' + legacy_anchor,
+                "v20.1-materializer-unfiltered-v18-plan",
+            )
+        elif current_anchor in text:
+            text = _once(
+                text,
+                current_anchor,
+                '        # PROVIDER_RESPONSE_VALUE_CORRELATION_V20\n' + current_anchor,
+                "v20.1-materializer-current-execution-plan",
+            )
+        else:
+            raise AssertionError("v20.1 materializer providerValuePlan projection anchor missing")
 
     MATERIALIZER.write_text(text, encoding="utf-8")
     validate_materializer(text)
@@ -199,8 +212,10 @@ def validate_materializer(text: str | None = None) -> None:
     value = text if text is not None else MATERIALIZER.read_text(encoding="utf-8")
     if MATERIALIZER_MARKER not in value:
         raise AssertionError("V20.1 materializer marker missing")
-    if '"providerValuePlan": [' not in value:
-        raise AssertionError("V20.1 materializer providerValuePlan missing")
+    legacy_projection = '"providerValuePlan": [' in value
+    current_projection = '"providerValuePlan": execution_list("provider_value_plan", "providerValuePlan")[:12]' in value
+    if not (legacy_projection or current_projection):
+        raise AssertionError("V20.1 materializer providerValuePlan projection missing")
     if 'and "{id}" in str(step.get("route") or "")' in value and 'or "{slug}" in str(step.get("route") or "")' not in value:
         raise AssertionError("V20.1 materializer retains an id-only provider-value step filter")
 

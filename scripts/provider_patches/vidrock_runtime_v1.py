@@ -89,12 +89,12 @@ WRAPPER = r'''
   }
   function requestArgs(args){
     var first=args[0],obj=first&&typeof first==="object"&&!Array.isArray(first)?first:null,ctx={};try{ctx=g&&g.__nuvioMediaContext||{}}catch(_e){}
-    var rawType=s((obj&&(obj.canonicalMediaType||obj.mediaType||obj.type))||ctx.canonicalMediaType||args[1]||"movie").toLowerCase();
+    var rawType=s((obj&&(obj.canonicalMediaType||obj.mediaType||obj.type))||args[1]||ctx.canonicalMediaType||ctx.mediaType||"movie").toLowerCase();
     return {
-      id:s((obj&&(obj.tmdbId||obj.tmdb_id||obj.id))||ctx.tmdbId||first).replace(/^tmdb:/i,"").split(":")[0],
+      id:s((obj&&(obj.tmdbId||obj.tmdb_id||obj.id))||first||ctx.tmdbId).replace(/^tmdb:/i,"").split(":")[0],
       type:rawType==="movie"?"movie":"tv",
-      season:Number((obj&&obj.season)!=null?obj.season:(ctx.season!=null?ctx.season:args[2]))||0,
-      episode:Number((obj&&obj.episode)!=null?obj.episode:(ctx.episode!=null?ctx.episode:args[3]))||0
+      season:Number((obj&&obj.season)!=null?obj.season:(args[2]!=null?args[2]:ctx.season))||0,
+      episode:Number((obj&&obj.episode)!=null?obj.episode:(args[3]!=null?args[3]:ctx.episode))||0
     };
   }
   function headers(){return {"User-Agent":c.userAgent,"Origin":c.origin,"Referer":c.referer,"Accept":"application/json,text/plain,*/*"}}
@@ -107,12 +107,13 @@ WRAPPER = r'''
     var url=base+"/api/"+q.type+"/"+encodeURIComponent(q.id);if(q.type==="tv")url+="/"+q.season+"/"+q.episode;
     var response,data;try{response=await g.fetch(url,{headers:headers(),redirect:"follow"});if(!response||!response.ok)return [];data=await response.json()}catch(_e){return []}
     if(!data||typeof data!=="object"||Array.isArray(data))return [];
-    var ordered=[],seenName=Object.create(null),preferred=Array.isArray(c.serverOrder)?c.serverOrder:[];
+    var ordered=[],seenName=Object.create(null),preferred=q.type==="movie"&&Array.isArray(c.movieServerOrder)?c.movieServerOrder:(Array.isArray(c.serverOrder)?c.serverOrder:[]);
     for(var pi=0;pi<preferred.length;pi++){var pn=s(preferred[pi]);if(pn&&data[pn]&&!seenName[pn]){seenName[pn]=1;ordered.push(pn)}}
-    Object.keys(data).forEach(function(name){if(!seenName[name]){seenName[name]=1;ordered.push(name)}});
+    /* NIAKVIO_VIDROCK_LUNA_ALL_LANES_EXCLUSION_V1 */
+    Object.keys(data).forEach(function(name){if(!seenName[name]&&!(Array.isArray(c.excludedServers)&&c.excludedServers.indexOf(name)>=0)){seenName[name]=1;ordered.push(name)}});
     var out=[],seenUrl=Object.create(null);
     for(var i=0;i<ordered.length;i++){
-      var name=ordered[i],row=data[name];if(!row||typeof row!=="object")continue;
+      var name=ordered[i],row=data[name];if(Array.isArray(c.excludedServers)&&c.excludedServers.indexOf(name)>=0)continue;if(!row||typeof row!=="object")continue;
       var token=s(row.url);if(!token)continue;
       var media=decryptToken(token);if(!media||seenUrl[media])continue;
       var probe,text="";try{probe=await g.fetch(media,{headers:headers(),redirect:"follow"});if(!probe||!probe.ok)continue;text=await probe.text()}catch(_e){continue}
@@ -142,6 +143,10 @@ WRAPPER = r'''
 
 def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> str:
     cfg = dict(options or {})
+    server_order = cfg.get("server_order") or ["Atlas", "Luna", "Orion", "Astra", "Nova"]
+    excluded_all = cfg.get("excluded_servers") or ["Luna"]
+    movie_excluded = cfg.get("movie_excluded_servers") or list(excluded_all)
+    movie_order = cfg.get("movie_server_order") or [x for x in server_order if x not in movie_excluded and x not in excluded_all]
     payload = {
         "base": str(cfg.get("base") or "https://vidrock.ru"),
         "keyHex": str(
@@ -154,7 +159,10 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             cfg.get("user_agent")
             or "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36"
         ),
-        "serverOrder": cfg.get("server_order") or ["Atlas", "Luna", "Orion", "Astra", "Nova"],
+        "serverOrder": server_order,
+        "movieServerOrder": movie_order,
+        "movieExcludedServers": movie_excluded,
+        "excludedServers": excluded_all,
         "maxStreams": int(cfg.get("max_streams") or 5),
     }
     wrapper = WRAPPER.replace(
@@ -170,6 +178,8 @@ def apply(text: str, options: dict[str, Any] | None = None, **_kwargs: Any) -> s
             "crypto": "pure-js-aes-256-gcm-authenticated",
             "identity": "tmdb-direct",
             "api": "plain-tmdb-id",
+            "movieServerEvidence": {"Luna": "excluded only on movie after repeat media_filename_title_mismatch; retained on tv"},
+            "argumentAuthority": "explicit-getStreams-args-before-global-context",
             "legacyExecutableSeed": False,
         },
     )

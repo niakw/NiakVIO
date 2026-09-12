@@ -8,6 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = ROOT / "manifest.json"
 OVERRIDES = ROOT / "provider-overrides.json"
 KNOWLEDGE = ROOT / "automation" / "provider-v3-static-knowledge.json"
+SEEDS = ROOT / "automation" / "provider-v3-recognition-seeds.json"
 EXPECTED = 96
 
 
@@ -18,6 +19,7 @@ def canonical(value: object) -> str:
 manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
 overrides = json.loads(OVERRIDES.read_text(encoding="utf-8"))
 knowledge = json.loads(KNOWLEDGE.read_text(encoding="utf-8"))
+seeds = json.loads(SEEDS.read_text(encoding="utf-8"))
 
 assert knowledge.get("schemaVersion") == 1
 assert knowledge.get("providerCount") == EXPECTED
@@ -99,8 +101,18 @@ assert vega_search.get("executedEvidence") is False, vega_search
 assert vega_search.get("httpUsed") is False, vega_search
 assert "current-domain-candidate-unexecuted" in (vega_search.get("evidenceSources") or []), vega_search
 
-# 4KHDHub and HDHub4u are separate catalogues. Reviewed authority must keep
-# provider 4khdhub on 4khdhub.one and must not treat the site refresh as HTTP proof.
+# 4KHDHub and HDHub4u are separate catalogues. The reviewed recognition seed is
+# intentionally still unexecuted: merely refreshing the current site must never
+# manufacture HTTP proof. The accepted strict-46 durable DATA, however, now has
+# independent executed proof for the same search route and route reconstruction
+# must preserve that stronger evidence rather than downgrade it back to the seed.
+hub4k_seed = (seeds.get("providers") or {}).get("4khdhub") or {}
+hub4k_seed_search = next(
+    row for row in hub4k_seed.get("requests") or []
+    if isinstance(row, dict) and row.get("route") == "/?s={query}"
+)
+assert hub4k_seed_search.get("executedEvidence") is False, hub4k_seed_search
+
 hub4k = providers["4khdhub"]["model"]
 assert hub4k.get("knownSite") == "https://4khdhub.one", hub4k.get("knownSite")
 assert hub4k.get("officialSite") == "https://4khdhub.one", hub4k.get("officialSite")
@@ -110,11 +122,12 @@ hub4k_search = next(
     row for row in hub4k.get("routeData") or []
     if isinstance(row, dict) and row.get("route") == "/?s={query}"
 )
-assert hub4k_search.get("executedEvidence") is False, hub4k_search
-assert hub4k_search.get("httpUsed") is False, hub4k_search
+assert hub4k_search.get("executedEvidence") is True, hub4k_search
+assert hub4k_search.get("httpUsed") is True, hub4k_search
+assert "current-domain-candidate-unexecuted" in (hub4k_search.get("evidenceSources") or []), hub4k_search
 
 print(
     f"Provider v3 durable static knowledge contract passed providers={len(providers)} routeful={routeful} "
     "vegamovies_current_domain=reviewed route_candidate=unexecuted "
-    "4khdhub_current_domain=reviewed separate_from_hdhub4u=true"
+    "4khdhub_seed=unexecuted durable_route=http-proven separate_from_hdhub4u=true"
 )

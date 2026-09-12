@@ -19,6 +19,26 @@ assert "prove_final_bundle(" in source
 assert "refusing to materialize or advance to provider" in source
 assert "active_coverage_main()" in source
 assert '"globalCandidateMaterialization": False' in source
+assert 'provider.get("enabled") is False' in source
+assert '"disabled-unqualified"' in source
+assert "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE" in source
+assert "PROVIDER_V3_BOUNDED_LIVE_RETRY_V1" in source
+assert "LIVE_PROBE_ATTEMPTS = _live_probe_attempts()" in source
+assert source.count("for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):") >= 2
+assert 'result["probe_attempt"] = attempt' in source
+assert "runtime_recovered_types" in source
+assert "FIELD_PROVIDER_FIXTURE_SKIPPED_TYPE_ALREADY_PROVED" in source
+from validate_provider_v3_routes_sequential import build_provider_queue, SEMANTIC_FIXTURE_FALLBACKS
+assert len(SEMANTIC_FIXTURE_FALLBACKS["movie"]) >= 4
+queue_rows, queue_count = build_provider_queue()
+assert queue_count == 96
+desiflix = next(row for row in queue_rows if row["provider_id"] == "desiflix")
+desiflix_movies = [task["fixture_slug"] for task in desiflix["tasks"] if task["semantic_type"] == "movie"]
+assert "interstellar" in desiflix_movies
+assert len(desiflix_movies) >= 4, desiflix_movies
+validator_source = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
+assert '"enabled": manifest_row.get("enabled") is not False' in validator_source
+assert 'completion_state = "disabled-unqualified"' in validator_source
 
 loop_at = source.index("for index, provider in enumerate(queue, start=1):")
 candidate_materialize_at = source.index("candidate_materialized = materialize_one(provider_id)", loop_at)

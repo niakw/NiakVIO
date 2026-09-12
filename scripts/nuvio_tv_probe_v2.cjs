@@ -170,6 +170,7 @@ async function inspectStream(row) {
     hls_variant_playable: null,
     hls_external_audio_playable: null,
     media_duration_seconds: null,
+    hls_duration_complete: null,
     error: null,
   };
   if (urlRejected(url)) { result.error = 'rejected_asset_or_demo'; return result; }
@@ -190,6 +191,7 @@ async function inspectStream(row) {
       result.kind = 'hls';
       const graph = hlsGraph(text, response.url || url);
       result.media_duration_seconds = graph.durationSeconds;
+      result.hls_duration_complete = graph.isVod === true;
       result.hls_master = graph.variants.length > 0 || /#EXT-X-STREAM-INF\s*:/i.test(text);
       result.hls_variant_count = graph.variants.length;
       result.hls_audio_group_count = graph.audioGroups;
@@ -208,6 +210,7 @@ async function inspectStream(row) {
         result.hls_variant_playable = variant.playable;
         if (Number.isFinite(variant.media_duration_seconds) && variant.media_duration_seconds > 0) {
           result.media_duration_seconds = variant.media_duration_seconds;
+          result.hls_duration_complete = variant.is_vod === true;
         }
         if (!variant.playable) {
           result.error = `hls_variant_${variant.error || 'invalid'}`;
@@ -264,8 +267,10 @@ async function main() {
     const expectedMinutes = Number(fixture?.expectedDurationMinutes || 0);
     const expectedSeconds = expectedMinutes > 0 ? expectedMinutes * 60 : null;
     const measuredSeconds = Number(mediaResult?.media_duration_seconds || 0);
-    let durationIdentity = { status: 'unknown', reason: 'duration_unavailable', ratio: null };
-    if (expectedSeconds && Number.isFinite(measuredSeconds) && measuredSeconds > 0) {
+    const durationComplete = mediaResult?.kind !== 'hls' || mediaResult?.hls_duration_complete === true;
+    let durationIdentity = { status: 'unknown', reason: durationComplete ? 'duration_unavailable' : 'duration_incomplete_hls', ratio: null };
+    /* NIAKVIO_HLS_DURATION_COMPLETENESS_V1 */
+    if (expectedSeconds && durationComplete && Number.isFinite(measuredSeconds) && measuredSeconds > 0) {
       const ratio = measuredSeconds / expectedSeconds;
       durationIdentity = (ratio < 0.55 || ratio > 1.8)
         ? { status: 'contradiction', reason: 'fixture_duration_mismatch', ratio }

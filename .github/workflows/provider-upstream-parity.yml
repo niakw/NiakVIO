@@ -22,6 +22,9 @@ jobs:
   parity:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
@@ -36,6 +39,7 @@ jobs:
       - name: Validate hardened parity harness
         run: |
           set -euo pipefail
+          test -n "${TMDB_API_KEY:-}${TMDB_ACCESS_TOKEN:-}"
           python -m py_compile scripts/run_provider_upstream_parity_v2.py
           node scripts/provider_worker.cjs --self-test-response-wrapper
           node scripts/provider_worker.cjs --self-test-fixture-fallback

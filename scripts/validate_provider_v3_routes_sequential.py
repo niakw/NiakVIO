@@ -54,6 +54,20 @@ from validate_provider_v3_routes_live import (
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MIN_COVERAGE = 0.75  # diagnostic compatibility only; type gate is always 100%.
+# PROVIDER_V3_SEMANTIC_FIXTURE_FALLBACKS_V1
+# A declared lane is a provider capability, not a promise that one particular
+# title is in catalogue today. Targeted fixtures stay first; these independent
+# fallbacks are attempted only while the semantic type is still unproved.
+SEMANTIC_FIXTURE_FALLBACKS = {
+    "movie": ("interstellar", "sinners-2025", "mon-ninja-et-moi-3", "colony-2021"),
+    "tv": ("breaking-bad-s01e01", "revenant-s01e01"),
+    "anime": (
+        "jujutsu-kaisen-s01e01",
+        "mushoku-tensei-s01e01",
+        "failure-frame-s01e01",
+        "hell-teacher-nube-2025-s01e01",
+    ),
+}
 # PROVIDER_V3_HTTP_BLOCK_CLASSIFICATION_V1
 # 451 is an explicit policy/jurisdiction block. It is never positive route
 # proof, but a 451-only traversal is terminal-blocked rather than broken.
@@ -139,15 +153,22 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
                 selected.append(row)
 
         for media_type in supported:
-            # A provider-targeted fixture is stronger than the generic fallback.
-            # In particular, anime-specialized providers use an anime feature film
-            # for canonical movie proof instead of being forced through Interstellar.
-            if any(existing["semantic_type"] == media_type for existing in selected):
-                continue
-            slug = REPRESENTATIVE[media_type]
-            row = by_slug.get(slug)
-            if row is not None and all(existing["slug"] != slug for existing in selected):
-                selected.append(row)
+            # Provider-targeted fixtures stay first. If none exists, keep the
+            # canonical representative first for backward-compatible ordering.
+            if not any(existing["semantic_type"] == media_type for existing in selected):
+                slug = REPRESENTATIVE[media_type]
+                row = by_slug.get(slug)
+                if row is not None and all(existing["slug"] != slug for existing in selected):
+                    selected.append(row)
+
+            # Then append independent catalogue fallbacks. The runner skips them
+            # once this semantic type has current-run proof, so healthy providers
+            # do not pay extra traffic. A missing title therefore cannot alone
+            # classify an entire declared lane as broken.
+            for slug in SEMANTIC_FIXTURE_FALLBACKS.get(media_type, ()):
+                row = by_slug.get(slug)
+                if row is not None and all(existing["slug"] != slug for existing in selected):
+                    selected.append(row)
 
         for row in fixtures:
             if not row["providers"] and row["semantic_type"] in supported:
@@ -166,6 +187,7 @@ def build_provider_queue() -> tuple[list[dict[str, Any]], int]:
             "provider_id": provider_id,
             "provider_name": str(manifest_row.get("name") or manifest_row.get("id") or provider_id),
             "filename": filename,
+            "enabled": manifest_row.get("enabled") is not False,
             "supported_types": supported,
             "tasks": tasks,
         })
@@ -966,7 +988,7 @@ def finalize_provider(
         and "{" in str(row.get("route") or "")
         and "}" in str(row.get("route") or "")
     ]
-    if completion_state in {"terminal-blocked", "terminal-unreachable"}:
+    if completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}:
         execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
         # PROVIDER_V3_FAILED_LIVE_NOT_EXECUTION_DATA_V2
@@ -1026,16 +1048,20 @@ def finalize_provider(
     execution_plan_set = set(model.get("routes") or [])
     # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
     candidate_model_recipe = model.get("candidateApiRecipe")
-    filtered_model_recipe = (
-        filter_recipe_by_live_routes(candidate_model_recipe, live_set)
-        if isinstance(candidate_model_recipe, dict)
-        else None
-    )
-    if isinstance(filtered_model_recipe, dict):
-        filtered_model_recipe["proofModelVersion"] = 5
-        model["apiRecipe"] = filtered_model_recipe
+    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}
+    if blocked_recipe_plan and isinstance(candidate_model_recipe, dict):
+        model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
     else:
-        model.pop("apiRecipe", None)
+        filtered_model_recipe = (
+            filter_recipe_by_live_routes(candidate_model_recipe, live_set)
+            if isinstance(candidate_model_recipe, dict)
+            else None
+        )
+        if isinstance(filtered_model_recipe, dict):
+            filtered_model_recipe["proofModelVersion"] = 5
+            model["apiRecipe"] = filtered_model_recipe
+        else:
+            model.pop("apiRecipe", None)
     model["routeProofVersion"] = 5
 
     model["routeRecognition"] = {
@@ -1070,9 +1096,9 @@ def finalize_provider(
         "declaredTypesAreGateDenominator": True,
         "internalRequestsAreNotGateDenominator": True,
         "executionPlanRouteCount": len(model.get("routes") or []),
-        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "executionPlanRetainsAttemptedNon2xx": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "executionPlanRetainsFailedLive": False,
-        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "blockedNon2xxPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "runtimeDerivedRouteCount": len(runtime_derived_rows),
         "runtimeDerivedRoutesPersisted": False,
         "safeRuntimeDerivedRouteCount": len(safe_runtime_derived_rows),
@@ -1082,7 +1108,7 @@ def finalize_provider(
         "runtimeObservedUrlCount": len(runtime_observed_urls),
         "runtimeObservedOriginCount": len(runtime_observed_origins),
         "runtimeObservationsPersistedAsProviderData": False,
-        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "sequentialProviderGate": True,
         "advancedToNextProvider": True,
         "originEvidence": origin_evidence,
@@ -1136,16 +1162,19 @@ def finalize_provider(
         if isinstance(patch.get("api_recipe"), dict) and not isinstance(patch.get("candidate_api_recipe"), dict):
             patch["candidate_api_recipe"] = copy.deepcopy(patch["api_recipe"])
         candidate_recipe = patch.get("candidate_api_recipe") if isinstance(patch.get("candidate_api_recipe"), dict) else patch.get("api_recipe")
-        filtered_patch_recipe = (
-            filter_recipe_by_live_routes(candidate_recipe, live_set)
-            if isinstance(candidate_recipe, dict)
-            else None
-        )
-        if isinstance(filtered_patch_recipe, dict):
-            filtered_patch_recipe["proofModelVersion"] = 5
-            patch["api_recipe"] = filtered_patch_recipe
+        if blocked_recipe_plan and isinstance(candidate_recipe, dict):
+            patch["api_recipe"] = copy.deepcopy(candidate_recipe)
         else:
-            patch.pop("api_recipe", None)
+            filtered_patch_recipe = (
+                filter_recipe_by_live_routes(candidate_recipe, live_set)
+                if isinstance(candidate_recipe, dict)
+                else None
+            )
+            if isinstance(filtered_patch_recipe, dict):
+                filtered_patch_recipe["proofModelVersion"] = 5
+                patch["api_recipe"] = filtered_patch_recipe
+            else:
+                patch.pop("api_recipe", None)
         patch["route_proof_version"] = 5
         patch["live_route_gate"] = {
             "completion_state": completion_state,
@@ -1167,7 +1196,7 @@ def finalize_provider(
             "runtime_observed_url_count": len(runtime_observed_urls),
             "runtime_observed_origin_count": len(runtime_observed_origins),
             "runtime_observations_persisted_as_provider_data": False,
-            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
             "declared_types_are_gate_denominator": True,
             "sequential": True,
         }
@@ -1258,6 +1287,14 @@ def main() -> int:
             elif origins and origin_evidence and not any(row.get("reachable") for row in origin_evidence):
                 completion_state = "terminal-unreachable"
                 passed = True
+            elif provider.get("enabled") is False:
+                completion_state = "disabled-unqualified"
+                passed = True
+                print(
+                    "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
+                    f"provider={provider_id} missing={','.join(evaluation['missingTypes']) or 'none'}",
+                    flush=True,
+                )
             else:
                 failure = {
                     **evaluation,

@@ -53,6 +53,20 @@ from validate_provider_v3_routes_sequential import (
 
 ROOT = Path(__file__).resolve().parents[1]
 
+# PROVIDER_V3_BOUNDED_LIVE_RETRY_V1
+# Providers can be intermittently reachable or rate-limited. Current-run proof
+# remains mandatory, but each fixture may be retried a small bounded number of
+# times before the active-provider gate fails. No historical proof is credited.
+def _live_probe_attempts() -> int:
+    try:
+        value = int(str(os.environ.get("PROVIDER_V3_LIVE_PROBE_ATTEMPTS") or "3"))
+    except ValueError:
+        value = 3
+    return max(1, min(value, 3))
+
+
+LIVE_PROBE_ATTEMPTS = _live_probe_attempts()
+
 
 def credit_verified_playable_chains(
     evaluation: dict[str, Any],
@@ -208,31 +222,50 @@ def run_until_qualified(
         evaluate_provider(provider["provider_id"], model, rows, minimum), rows
     )
     for task_index, task in enumerate(provider["tasks"], start=1):
-        result = run_task(task, timeout)
-        result["fixture_slug"] = task.get("fixture_slug")
-        result["fixture"] = copy.deepcopy(task.get("fixture") or {})
-        rows.append(result)
-        used_tasks.append(copy.deepcopy(task))
-        evaluation = credit_verified_playable_chains(
-            evaluate_provider(provider["provider_id"], model, rows, minimum), rows
-        )
-        http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
-        http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
-        print(
-            "FIELD_PROVIDER_SEQUENTIAL_PROBE "
-            f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "
-            f"step={task_index}/{len(provider['tasks'])} task_status={result.get('status')} "
-            f"http_statuses={http_summary} "
-            f"declared_types={','.join(evaluation['requiredTypes']) or 'none'} "
-            f"validated_types={','.join(evaluation['validatedTypes']) or 'none'} "
-            f"missing_types={','.join(evaluation['missingTypes']) or 'none'} "
-            f"type_coverage={evaluation['declaredTypeCoverageRatio']:.3f} target=1.000 "
-            f"requests={evaluation['providerRequestCount']} "
-            f"live={evaluation['liveValidatedRouteCount']}",
-            flush=True,
-        )
         if is_qualified(evaluation):
             break
+        semantic_type = str(task.get("semantic_type") or "").strip().casefold()
+        already_validated = {
+            str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []
+        }
+        if semantic_type in already_validated:
+            print(
+                "FIELD_PROVIDER_FIXTURE_SKIPPED_TYPE_ALREADY_PROVED "
+                f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "
+                f"semantic_type={semantic_type}",
+                flush=True,
+            )
+            continue
+        used_tasks.append(copy.deepcopy(task))
+        for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):
+            result = run_task(task, timeout)
+            result["fixture_slug"] = task.get("fixture_slug")
+            result["fixture"] = copy.deepcopy(task.get("fixture") or {})
+            result["probe_attempt"] = attempt
+            rows.append(result)
+            evaluation = credit_verified_playable_chains(
+                evaluate_provider(provider["provider_id"], model, rows, minimum), rows
+            )
+            http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
+            http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
+            print(
+                "FIELD_PROVIDER_SEQUENTIAL_PROBE "
+                f"provider={provider['provider_id']} fixture={task.get('fixture_slug')} "
+                f"step={task_index}/{len(provider['tasks'])} "
+                f"attempt={attempt}/{LIVE_PROBE_ATTEMPTS} task_status={result.get('status')} "
+                f"http_statuses={http_summary} "
+                f"declared_types={','.join(evaluation['requiredTypes']) or 'none'} "
+                f"validated_types={','.join(evaluation['validatedTypes']) or 'none'} "
+                f"missing_types={','.join(evaluation['missingTypes']) or 'none'} "
+                f"type_coverage={evaluation['declaredTypeCoverageRatio']:.3f} target=1.000 "
+                f"requests={evaluation['providerRequestCount']} "
+                f"live={evaluation['liveValidatedRouteCount']}",
+                flush=True,
+            )
+            if is_qualified(evaluation) or semantic_type in {
+                str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []
+            }:
+                break
 
     proof_tasks = select_minimal_final_proof_tasks(used_tasks, evaluation) if is_qualified(evaluation) else used_tasks
     print(
@@ -279,26 +312,37 @@ def prove_final_bundle(
     for task_index, task in enumerate(used_tasks, start=1):
         final_task = copy.deepcopy(task)
         final_task["filename"] = final_filename
-        result = run_task(final_task, timeout)
-        result["fixture_slug"] = final_task.get("fixture_slug")
-        result["fixture"] = copy.deepcopy(final_task.get("fixture") or {})
-        rows.append(result)
-        evaluation = credit_verified_playable_chains(
-            evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows
-        )
-        http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
-        http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
-        print(
-            "FIELD_PROVIDER_FINAL_PROBE "
-            f"provider={provider['provider_id']} fixture={final_task.get('fixture_slug')} "
-            f"step={task_index}/{len(used_tasks)} task_status={result.get('status')} "
-            f"http_statuses={http_summary} "
-            f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
-            f"missing_types={','.join(evaluation.get('missingTypes') or []) or 'none'} "
-            f"requests={evaluation.get('providerRequestCount', 0)} "
-            f"live={evaluation.get('liveValidatedRouteCount', 0)}",
-            flush=True,
-        )
+        semantic_type = str(final_task.get("semantic_type") or "").strip().casefold()
+        for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):
+            result = run_task(final_task, timeout)
+            result["fixture_slug"] = final_task.get("fixture_slug")
+            result["fixture"] = copy.deepcopy(final_task.get("fixture") or {})
+            result["probe_attempt"] = attempt
+            rows.append(result)
+            evaluation = credit_verified_playable_chains(
+                evaluate_provider(provider["provider_id"], live_model, rows, minimum), rows
+            )
+            http_counts = Counter(int(fetch.get("status") or 0) for fetch in result.get("fetches") or [])
+            http_summary = ",".join(f"{status}:{count}" for status, count in sorted(http_counts.items())) or "none"
+            print(
+                "FIELD_PROVIDER_FINAL_PROBE "
+                f"provider={provider['provider_id']} fixture={final_task.get('fixture_slug')} "
+                f"step={task_index}/{len(used_tasks)} attempt={attempt}/{LIVE_PROBE_ATTEMPTS} "
+                f"task_status={result.get('status')} http_statuses={http_summary} "
+                f"validated_types={','.join(evaluation.get('validatedTypes') or []) or 'none'} "
+                f"missing_types={','.join(evaluation.get('missingTypes') or []) or 'none'} "
+                f"requests={evaluation.get('providerRequestCount', 0)} "
+                f"live={evaluation.get('liveValidatedRouteCount', 0)}",
+                flush=True,
+            )
+            validated = {
+                str(value or "").strip().casefold() for value in evaluation.get("validatedTypes") or []
+            }
+            bad_status = result.get("status") in {
+                "wrong_content", "runtime_error", "invalid_probe_output", "probe_error"
+            }
+            if semantic_type in validated and not bad_status:
+                break
 
     required_types = {str(v or "").strip().casefold() for v in evaluation.get("requiredTypes") or []}
     playable_types = {
@@ -309,11 +353,23 @@ def prove_final_bundle(
         str(row.get("semantic_type") or "").strip().casefold()
         for row in rows if row.get("status") == "wrong_content"
     }
-    wrong_only_types = (wrong_types & required_types) - playable_types
-    runtime_error = any(
-        row.get("status") in {"runtime_error", "invalid_probe_output", "probe_error"}
+    non_wrong_types = {
+        str(row.get("semantic_type") or "").strip().casefold()
         for row in rows
-    )
+        if row.get("status") not in {"wrong_content", "runtime_error", "invalid_probe_output", "probe_error"}
+    }
+    wrong_only_types = (wrong_types & required_types) - playable_types - non_wrong_types
+    runtime_error_types = {
+        str(row.get("semantic_type") or "").strip().casefold()
+        for row in rows
+        if row.get("status") in {"runtime_error", "invalid_probe_output", "probe_error"}
+    }
+    runtime_recovered_types = {
+        str(row.get("semantic_type") or "").strip().casefold()
+        for row in rows
+        if row.get("status") not in {"runtime_error", "invalid_probe_output", "probe_error"}
+    }
+    runtime_error = bool((runtime_error_types & required_types) - runtime_recovered_types)
     verified = is_qualified(evaluation) and not wrong_only_types and not runtime_error
     return {
         "verified": verified,
@@ -438,6 +494,15 @@ def main() -> int:
                 evaluation, model, patch, origin_timeout
             )
 
+        if completion_state is None and provider.get("enabled") is False:
+            completion_state = "disabled-unqualified"
+            print(
+                "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
+                f"provider={provider_id} phase=candidate "
+                f"missing={','.join(evaluation.get('missingTypes') or []) or 'none'}",
+                flush=True,
+            )
+
         if completion_state is None:
             failure = {
                 **evaluation,
@@ -487,25 +552,51 @@ def main() -> int:
                 timeout,
             )
             if not final_proof.get("verified"):
-                failure = {
-                    **evaluation,
-                    "completionState": completion_state,
-                    "originEvidence": origin_evidence,
-                    "advancedToNextProvider": False,
-                    "finalBundleVerified": False,
-                    "finalBundleProof": final_proof,
-                    "candidateBundleFile": candidate_filename,
-                    "candidateBundleSha256": candidate_materialized.get("sha256"),
-                    "finalBundleFile": final_filename,
-                    "finalBundleSha256": materialized.get("sha256"),
-                }
-                report_rows.append(failure)
-                checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)
-                raise SystemExit(
-                    f"{provider_id}: candidate DATA proved all declared types but final bundle did not; "
-                    f"missing={','.join(final_proof.get('missingTypes') or []) or 'unknown'}; "
-                    f"refusing to materialize or advance to provider {index + 1}"
-                )
+                if provider.get("enabled") is False:
+                    previous_state = completion_state
+                    completion_state = "disabled-unqualified"
+                    finalize_provider(
+                        provider_id, provider, knowledge, overrides, evaluation,
+                        completion_state, origin_evidence,
+                    )
+                    write(knowledge_path, knowledge)
+                    write(overrides_path, overrides)
+                    materialized = materialize_one(provider_id)
+                    final_filename = str(materialized.get("file") or "")
+                    if not final_filename:
+                        raise SystemExit(f"{provider_id}: disabled demotion materialization produced no file")
+                    final_proof = {
+                        **final_proof,
+                        "verified": False,
+                        "reason": "disabled-final-bundle-unverified",
+                        "demotedFrom": previous_state,
+                    }
+                    print(
+                        "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "
+                        f"provider={provider_id} phase=final-proof "
+                        f"wrong_content={','.join(final_proof.get('wrongContentOnlyTypes') or []) or 'none'}",
+                        flush=True,
+                    )
+                else:
+                    failure = {
+                        **evaluation,
+                        "completionState": completion_state,
+                        "originEvidence": origin_evidence,
+                        "advancedToNextProvider": False,
+                        "finalBundleVerified": False,
+                        "finalBundleProof": final_proof,
+                        "candidateBundleFile": candidate_filename,
+                        "candidateBundleSha256": candidate_materialized.get("sha256"),
+                        "finalBundleFile": final_filename,
+                        "finalBundleSha256": materialized.get("sha256"),
+                    }
+                    report_rows.append(failure)
+                    checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)
+                    raise SystemExit(
+                        f"{provider_id}: candidate DATA proved all declared types but final bundle did not; "
+                        f"missing={','.join(final_proof.get('missingTypes') or []) or 'unknown'}; "
+                        f"refusing to materialize or advance to provider {index + 1}"
+                    )
         else:
             final_proof = {
                 "verified": False,

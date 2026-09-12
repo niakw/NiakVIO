@@ -38,6 +38,7 @@ GLOBAL_STREAM_IDENTITY = "scripts/provider_patches/global_stream_identity_v1.py"
 GLOBAL_STREAM_PRESENTATION = "scripts/provider_patches/global_stream_presentation_v1.py"
 GLOBAL_RUNTIME_MEDIA_SAFETY = "scripts/provider_patches/runtime_capability_media_safety_v4.py"
 GLOBAL_RUNTIME_COMPAT = "scripts/provider_patches/global_runtime_compat_v1.py"
+GLOBAL_PROVIDER_RUNTIME_DISPATCH = "scripts/provider_patches/global_provider_runtime_dispatch_v1.py"
 GLOBAL_DESKTOP_RUNTIME_COMPAT = "scripts/provider_patches/desktop_runtime_compat_v1.py"
 GLOBAL_PROVIDER_BRANDING = "scripts/provider_patches/global_provider_branding_v1.py"
 # NUVIO_STREAM_SANITIZER_V7_SELECTION
@@ -57,6 +58,7 @@ GENERATED_CORE_TAIL_MARKERS = (
     "NUVIO_GLOBAL_STREAM_FACTS_V1",
     "NUVIO_GLOBAL_STREAM_IDENTITY_V1",
     "NUVIO_GLOBAL_RUNTIME_COMPAT_V1",
+    "NUVIO_GLOBAL_PROVIDER_RUNTIME_DISPATCH_V1",
     "NUVIO_GLOBAL_STREAM_PRESENTATION_V1",
     "NUVIO_GLOBAL_PROVIDER_BRANDING_V1",
     "NUVIO_STREAM_OUTPUT_SANITIZER_V4",
@@ -1644,6 +1646,27 @@ def apply_overrides(
                 "phase": phase,
                 "scope": "global_runtime_compat",
             })
+
+        # Provider-specific transport code may register a resolver in Provider Lego,
+        # but the final execution wrapper is Core-owned. Install the dispatcher
+        # before facts/identity so resolver output still traverses every shared Core
+        # output policy; MEDIA_TYPE remains outside it and provides canonical context.
+        if "NIAKVIO_PROVIDER_RUNTIME_RESOLVER_V1" in text:
+            before = text
+            text = _apply_patch_script(
+                text,
+                provider_id,
+                GLOBAL_PROVIDER_RUNTIME_DISPATCH,
+                {},
+                None,
+            )
+            if text != before:
+                applied.append({
+                    "type": "patch_script",
+                    "path": GLOBAL_PROVIDER_RUNTIME_DISPATCH,
+                    "phase": phase,
+                    "scope": "global_provider_runtime_dispatch",
+                })
 
         # Facts and identity are independent owned Core Lego. Apply each one
         # explicitly so the v3 ownership guard can prove that a patch only mutates

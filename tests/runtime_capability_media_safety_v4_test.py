@@ -56,16 +56,16 @@ def run_node(source: str, fetch_impl: str, expression: str, prelude: str = "") -
 
 streamzo = patched("streamzo")
 assert streamzo.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"' in streamzo
+assert '"implementationRevision":"field-safety-v9-correlated-player-fallback"' in streamzo
 assert "routeIdentity(" not in streamzo
 assert "wrong_release_year" not in streamzo
 assert "season_episode_identity_mismatch" not in streamzo
 assert "collisionFixtures" not in streamzo
 # Any old published wrapper is replaced, never stacked.
-legacy = streamzo.replace('"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"', '"implementationRevision":"field-safety-v2"')
+legacy = streamzo.replace('"implementationRevision":"field-safety-v9-correlated-player-fallback"', '"implementationRevision":"field-safety-v2"')
 upgraded = patched("streamzo", legacy)
 assert upgraded.count("NUVIO_GLOBAL_RUNTIME_MEDIA_SAFETY_V1:") == 1
-assert '"implementationRevision":"field-safety-v8-media-only-p2p-vod-duration"' in upgraded
+assert '"implementationRevision":"field-safety-v9-correlated-player-fallback"' in upgraded
 assert '"implementationRevision":"field-safety-v2"' not in upgraded
 assert patched("streamzo", upgraded) == upgraded
 
@@ -87,6 +87,47 @@ value = run_node(
     tv_bad,
     "async function(){global.__fetchCalls++;throw new Error('must reject statically')}",
     "p.getStreams('1215638','movie',null,null).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+    "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+)
+assert value == {"rows": 0, "calls": 0}, value
+
+# Exact proof-correlated player fallbacks pass media safety so the terminal
+# sanitizer can arbitrate them. Native runtimes must not add a media probe.
+for player_url in (
+    "https://smoothpre.com/embed/abc123",
+    "https://video.sibnet.ru/shell.php?videoid=12345",
+):
+    marked = patched(
+        "generic-provider",
+        "module.exports={getStreams:async()=>[{url:" + json.dumps(player_url) + ",__nuvioCorrelatedPlayerFallbackV1:{url:" + json.dumps(player_url) + "}}]};\n",
+    )
+    value = run_node(
+        marked,
+        "async function(){global.__fetchCalls++;throw new Error('native path must not probe correlated player fallback')}",
+        "p.getStreams('95479','anime',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),url:(Array.isArray(v)&&v[0]&&v[0].url)||'',proof:(Array.isArray(v)&&v[0]&&!!v[0].__nuvioCorrelatedPlayerFallbackV1),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+        "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+    )
+    assert value == {"rows": 1, "url": player_url, "proof": True, "calls": 0}, (player_url, value)
+
+# Unmarked or mismatched embed proof remains rejected.
+for proof_url in ("", "https://smoothpre.com/embed/other"):
+    marker = "" if not proof_url else ",__nuvioCorrelatedPlayerFallbackV1:{url:" + json.dumps(proof_url) + "}"
+    source = "module.exports={getStreams:async()=>[{url:'https://smoothpre.com/embed/abc123'" + marker + "}]};\n"
+    value = run_node(
+        patched("generic-provider", source),
+        "async function(){global.__fetchCalls++;throw new Error('must reject statically')}",
+        "p.getStreams('95479','anime',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
+        "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
+    )
+    assert value == {"rows": 0, "calls": 0}, (proof_url, value)
+
+# Explicit video-page policy stays stronger than the correlated-player exception.
+youtube = "https://www.youtube.com/embed/abc123"
+source = "module.exports={getStreams:async()=>[{url:" + json.dumps(youtube) + ",__nuvioCorrelatedPlayerFallbackV1:{url:" + json.dumps(youtube) + "}}]};\n"
+value = run_node(
+    patched("generic-provider", source),
+    "async function(){global.__fetchCalls++;throw new Error('must reject statically')}",
+    "p.getStreams('95479','anime',1,1).then(v=>console.log(JSON.stringify({rows:(Array.isArray(v)?v.length:0),calls:global.__fetchCalls}))).catch(e=>{console.error(e);process.exit(1)})",
     "global.__fetchCalls=0;global.__native_fetch=function(){};global.navigator={userAgent:'NuvioTV Android TV'};",
 )
 assert value == {"rows": 0, "calls": 0}, value

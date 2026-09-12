@@ -37,155 +37,6 @@
   },
   "rows": [
     {
-      "registryId": "animesama-co",
-      "manifestId": "animesama-co",
-      "hub": "https://anime-sama.wiki/",
-      "officialHub": "https://anime-sama.wiki/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "vostfree",
-      "manifestId": "vostfree",
-      "hub": "https://streaminganime.fr/site/6/vostfree",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "papadustream",
-      "manifestId": "papadustream",
-      "hub": "https://papadustream.info/acces/",
-      "officialHub": "https://papadustream.info/acces/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🟢 1 stream(s), player ready + transport OK",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟢 1 stream(s), player ready + transport OK",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🟠 provider prouvé TV, divergence runtime",
-      "cause": "le provider/route fonctionne sur NuvioTV audité mais échoue ou retourne 0 sur Desktop/iOS",
-      "repair": "corriger le contrat runtime commun avant toute réparation provider spécifique"
-    },
-    {
-      "registryId": "mugiwarastream",
-      "manifestId": "mugiwarastream",
-      "hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
-      "officialHub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
       "registryId": "anime-sama",
       "manifestId": "ANIME-SAMA",
       "hub": "https://anime-sama.wiki/",
@@ -218,1267 +69,23 @@
           "mobile-ios": "🔴 0 stream"
         }
       },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "voiranime",
-      "manifestId": "voiranime",
-      "hub": "https://voiranime.org.uk/",
-      "officialHub": "https://voiranime.org.uk/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "movix",
-      "manifestId": "movix",
-      "hub": "https://movix.online/",
-      "officialHub": "https://movix.online/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "videasy",
-      "manifestId": "VIDEASY",
-      "hub": "https://www.videasy.to/docs",
-      "officialHub": "https://www.videasy.to/docs",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🟢 4 stream(s), player ready + transport OK",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🟢 4 stream(s), player ready + transport OK",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🟠 provider prouvé TV, divergence runtime",
-      "cause": "le provider/route fonctionne sur NuvioTV audité mais échoue ou retourne 0 sur Desktop/iOS",
-      "repair": "corriger le contrat runtime commun avant toute réparation provider spécifique"
-    },
-    {
-      "registryId": "animepahe",
-      "manifestId": "animepahe",
-      "hub": "https://theindex.moe/item/6128a375aa2f6e004d46d71d",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "anime",
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "4khdhub",
-      "manifestId": "4KHDHUB",
-      "hub": "https://hdhub4u.ec/",
-      "officialHub": "https://hdhub4u.ec",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "playimdb",
-      "manifestId": "PLAYIMDB",
-      "hub": "https://playimdb.domains/",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🟢 2 stream(s), player ready + transport OK",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🟢 3 stream(s), player ready + transport OK",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🟠 provider prouvé TV, divergence runtime",
-      "cause": "le provider/route fonctionne sur NuvioTV audité mais échoue ou retourne 0 sur Desktop/iOS",
-      "repair": "corriger le contrat runtime commun avant toute réparation provider spécifique"
-    },
-    {
-      "registryId": "desiflix",
-      "manifestId": "DESIFLIX",
-      "hub": "https://desiflix.me/",
-      "officialHub": "https://desiflix.me",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "allanime",
-      "manifestId": "ALLANIME",
-      "hub": "https://allanime.sa.com/",
-      "officialHub": "https://allanime.sa.com/",
-      "hubRelation": "match",
-      "capabilities": [
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "anikototv",
-      "manifestId": "ANIKOTOTV",
-      "hub": "https://streamingsiteshub.com/",
-      "officialHub": "https://streamingsiteshub.com/",
-      "hubRelation": "match",
-      "capabilities": [
-        "anime",
-        "movie"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "animesalt",
-      "manifestId": "animesalt",
-      "hub": "https://animesalt.ac/",
-      "officialHub": "https://animesalt.ac/",
-      "hubRelation": "match",
-      "capabilities": [
-        "anime",
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "hdghartv",
-      "manifestId": "HDGHARTV",
-      "hub": "https://hdghartv.com.pk/",
-      "officialHub": "https://hdghartv.com.pk/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "netmirror",
-      "manifestId": "netmirror",
-      "hub": "https://netmiror.com/",
-      "officialHub": "https://netmiror.com/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 8 raw, playback KO player=timeout,timeout transport=dead:429,dead:429",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "vidfast",
-      "manifestId": "VIDFAST",
-      "hub": "https://vidfast.vc/",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "vidlink",
-      "manifestId": "vidlink",
-      "hub": "https://streamindex.live/site/vidlink",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "hindmoviez",
-      "manifestId": "hindmoviez",
-      "hub": "https://t.me/s/hindmoviez/1975",
-      "officialHub": "https://t.me/s/hindmoviez/1975",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 timeout"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 timeout"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "uhdmovies",
-      "manifestId": "uhdmovies",
-      "hub": "https://mmodlist.org/",
-      "officialHub": "https://mmodlist.org/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "vidsrc",
-      "manifestId": "VIDSRC",
-      "hub": "https://vidsrc.to/",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "vixsrc",
-      "manifestId": "vixsrc",
-      "hub": "https://vixsrc.to/",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "movies4u",
-      "manifestId": "movies4u",
-      "hub": "https://movies4u.tube/",
-      "officialHub": "https://movies4u.tube/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "cineby",
-      "manifestId": "CINEBY",
-      "hub": "https://warflix.cv/",
-      "officialHub": "https://warflix.cv/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "vidrock",
-      "manifestId": "VIDROCK",
-      "hub": "https://vidrock.ru/",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "vegamovies",
-      "manifestId": "VEGAMOVIES",
-      "hub": "https://1vegamovies.tw/",
-      "officialHub": "https://1vegamovies.tw",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "anizone",
-      "manifestId": "anizone",
-      "hub": "https://everythingmoe.com/s/anizone",
-      "officialHub": "https://everythingmoe.com/s/anizone",
-      "hubRelation": "match",
-      "capabilities": [
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "moviebox",
-      "manifestId": "moviebox",
-      "hub": "https://moviiebox.lol/",
-      "officialHub": "https://moviiebox.lol/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "animetsu",
-      "manifestId": "animetsu",
-      "hub": "https://everythingmoe.com/s/animetsu",
-      "officialHub": "https://everythingmoe.com/s/animetsu",
-      "hubRelation": "match",
-      "capabilities": [
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "moviesdrive",
-      "manifestId": "moviesdrive",
-      "hub": "https://moviesdrives.mov/",
-      "officialHub": "https://moviesdrives.mov/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "zinkmovies",
-      "manifestId": "zinkmovies",
-      "hub": "https://zinkmovies.org/",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "anidb",
-      "manifestId": "anidb",
-      "hub": "https://tbcpl.click/",
-      "officialHub": "https://tbcpl.click/",
-      "hubRelation": "match",
-      "capabilities": [
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🟣 skipped despite declared capability",
-          "desktop-macos": "🟣 skipped despite declared capability",
-          "desktop-windows": "🟣 skipped despite declared capability",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "movieshunt",
-      "manifestId": "movieshunt",
-      "hub": "https://movieshunt.cc/",
-      "officialHub": "https://movieshunt.cc/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 provider_hard_timeout_ms=25000",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "wookafr",
-      "manifestId": "wookafr",
-      "hub": "https://t.me/s/Wookafr2",
-      "officialHub": "https://t.me/s/Wookafr2",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "allwish",
-      "manifestId": "ALLWISH",
-      "hub": "https://t.me/s/allwishme",
-      "officialHub": "https://t.me/s/allwishme",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 false positive: short_media 33.2s,23.2s",
-          "desktop-macos": "🟢 2 raw stream(s)",
-          "desktop-windows": "🟢 2 raw stream(s)",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 timeout"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 false positive: short_media 33.2s,23.2s",
-          "desktop-macos": "🟢 2 raw stream(s)",
-          "desktop-windows": "🟢 2 raw stream(s)",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 timeout"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 faux positifs d’identité",
-      "cause": "Interstellar et Breaking Bad renvoient les mêmes MP4 ~33s/~23s; lecteur=short_media, failure_stage=duration_identity",
-      "repair": "fail-closed après échec route canonique; interdire média social/générique comme preuve d’œuvre; test cross-fixture"
-    },
-    {
-      "registryId": "cinefreak",
-      "manifestId": "CINEFREAK",
-      "hub": "https://t.me/s/cinefreaktop",
-      "officialHub": null,
-      "hubRelation": "registry-only",
-      "capabilities": [
-        "movie",
-        "tv"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "⚪ N/A",
-          "desktop-macos": "⚪ N/A",
-          "desktop-windows": "⚪ N/A",
-          "mobile-android": "⚪ N/A",
-          "mobile-ios": "⚪ N/A"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "frenchstream",
-      "manifestId": "FRENCHSTREAM",
-      "hub": "https://fstream.org/",
-      "officialHub": "https://fstream.org",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🟠 3 raw, player ready mais transport KO (403,403)",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🟠 sortie brute non jouable",
-      "cause": "des streams sont retournés mais la preuve lecteur/transport échoue",
-      "repair": "réparer transport/headers/identité; ne pas compter la sortie brute comme succès"
-    },
-    {
-      "registryId": "nakios",
-      "manifestId": "NAKIOS",
-      "hub": "https://nakios.org/",
-      "officialHub": "https://nakios.org/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
     },
     {
       "registryId": "purstream",
@@ -1513,85 +120,23 @@
           "mobile-ios": "⚪ N/A"
         }
       },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "toflix",
-      "manifestId": "toflix",
-      "hub": "https://toflix.wiki/",
-      "officialHub": "https://toflix.wiki/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
-    },
-    {
-      "registryId": "coflix",
-      "manifestId": "coflix",
-      "hub": "https://coflix.domains/",
-      "officialHub": "https://coflix.domains/",
-      "hubRelation": "match",
-      "capabilities": [
-        "movie",
-        "tv",
-        "anime"
-      ],
-      "cells": {
-        "interstellar": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "breaking-bad-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        },
-        "jujutsu-kaisen-s01e01": {
-          "tv": "🔴 0 stream",
-          "desktop-macos": "🔴 0 stream",
-          "desktop-windows": "🔴 0 stream",
-          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
-          "mobile-ios": "🔴 0 stream"
-        }
-      },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
     },
     {
       "registryId": "flemmix",
@@ -1626,9 +171,303 @@
           "mobile-ios": "⚪ N/A"
         }
       },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "uhdmovies",
+      "manifestId": "uhdmovies",
+      "hub": "https://mmodlist.org/",
+      "officialHub": "https://mmodlist.org/",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 provider_hard_timeout_ms=25000",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 provider_hard_timeout_ms=25000",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "movieshunt",
+      "manifestId": "movieshunt",
+      "hub": "https://movieshunt.cc/",
+      "officialHub": "https://movieshunt.cc/",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 provider_hard_timeout_ms=25000",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "hindmoviez",
+      "manifestId": "hindmoviez",
+      "hub": "https://t.me/s/hindmoviez/1975",
+      "officialHub": "https://t.me/s/hindmoviez/1975",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 timeout"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 timeout"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "4khdhub",
+      "manifestId": "4KHDHUB",
+      "hub": "https://hdhub4u.ec/",
+      "officialHub": "https://hdhub4u.ec",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "persianstremio",
+      "manifestId": "persianstremio",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "desiflix",
+      "manifestId": "DESIFLIX",
+      "hub": "https://desiflix.me/",
+      "officialHub": "https://desiflix.me",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 provider_hard_timeout_ms=25000",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 provider_hard_timeout_ms=25000",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
     },
     {
       "registryId": "kehflix",
@@ -1664,15 +503,1017 @@
           "mobile-ios": "🔴 0 stream"
         }
       },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
     },
     {
-      "registryId": "1shows",
-      "manifestId": "1shows",
-      "hub": "https://flixnetwork.is/",
-      "officialHub": "https://flixnetwork.is",
+      "registryId": "anikototv",
+      "manifestId": "ANIKOTOTV",
+      "hub": "https://streamingsiteshub.com/",
+      "officialHub": "https://streamingsiteshub.com/",
+      "hubRelation": "match",
+      "capabilities": [
+        "anime",
+        "movie"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟣 skipped despite declared capability",
+          "desktop-macos": "🟣 skipped despite declared capability",
+          "desktop-windows": "🟣 skipped despite declared capability",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime",
+          "movie"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "animekai",
+      "manifestId": "ANIMEKAI",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "animesalt",
+      "manifestId": "animesalt",
+      "hub": "https://animesalt.ac/",
+      "officialHub": "https://animesalt.ac/",
+      "hubRelation": "match",
+      "capabilities": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "animesama-co",
+      "manifestId": "animesama-co",
+      "hub": "https://anime-sama.wiki/",
+      "officialHub": "https://anime-sama.wiki/",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟣 skipped despite declared capability",
+          "desktop-macos": "🟣 skipped despite declared capability",
+          "desktop-windows": "🟣 skipped despite declared capability",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "animesultra",
+      "manifestId": "animesultra",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "animetsu",
+      "manifestId": "animetsu",
+      "hub": "https://everythingmoe.com/s/animetsu",
+      "officialHub": "https://everythingmoe.com/s/animetsu",
+      "hubRelation": "match",
+      "capabilities": [
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟣 skipped despite declared capability",
+          "desktop-macos": "🟣 skipped despite declared capability",
+          "desktop-windows": "🟣 skipped despite declared capability",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "animevostfr",
+      "manifestId": "animevostfr",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "castle",
+      "manifestId": "castle",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "coflix",
+      "manifestId": "coflix",
+      "hub": "https://coflix.domains/",
+      "officialHub": "https://coflix.domains/",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "french-manga",
+      "manifestId": "FRENCH-MANGA",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "kurage",
+      "manifestId": "kurage",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "moviesmod",
+      "manifestId": "moviesmod",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "mugiwarastream",
+      "manifestId": "mugiwarastream",
+      "hub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
+      "officialHub": "https://streaminganime.fr/site/10/mugiwara-no-streaming",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟣 skipped despite declared capability",
+          "desktop-macos": "🟣 skipped despite declared capability",
+          "desktop-windows": "🟣 skipped despite declared capability",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "neko-sama",
+      "manifestId": "neko-sama",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "papadustream",
+      "manifestId": "papadustream",
+      "hub": "https://papadustream.info/acces/",
+      "officialHub": "https://papadustream.info/acces/",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🟢 1 stream(s), player ready + transport OK",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟢 1 stream(s), player ready + transport OK",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "playimdb",
+      "manifestId": "PLAYIMDB",
+      "hub": "https://playimdb.domains/",
+      "officialHub": null,
+      "hubRelation": "registry-only",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🟢 2 stream(s), player ready + transport OK",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🟢 3 stream(s), player ready + transport OK",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "sekai",
+      "manifestId": "sekai",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "streamzo",
+      "manifestId": "streamzo",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "tv",
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "videasy",
+      "manifestId": "VIDEASY",
+      "hub": "https://www.videasy.to/docs",
+      "officialHub": "https://www.videasy.to/docs",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🟢 4 stream(s), player ready + transport OK",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🟢 4 stream(s), player ready + transport OK",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "vidfast",
+      "manifestId": "VIDFAST",
+      "hub": "https://vidfast.vc/",
+      "officialHub": null,
+      "hubRelation": "registry-only",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "vidrock",
+      "manifestId": "VIDROCK",
+      "hub": "https://vidrock.ru/",
+      "officialHub": null,
+      "hubRelation": "registry-only",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "voiranime",
+      "manifestId": "voiranime",
+      "hub": "https://voiranime.org.uk/",
+      "officialHub": "https://voiranime.org.uk/",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟣 skipped despite declared capability",
+          "desktop-macos": "🟣 skipped despite declared capability",
+          "desktop-windows": "🟣 skipped despite declared capability",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "voiranime-homes",
+      "manifestId": "voiranime-homes",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "anime",
+        "movie"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime",
+          "movie"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "voiranime-rip",
+      "manifestId": "voiranime-rip",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "vostfree",
+      "manifestId": "vostfree",
+      "hub": "https://streaminganime.fr/site/6/vostfree",
+      "officialHub": null,
+      "hubRelation": "registry-only",
+      "capabilities": [
+        "movie",
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 0 stream",
+          "desktop-macos": "🔴 0 stream",
+          "desktop-windows": "🔴 0 stream",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟣 skipped despite declared capability",
+          "desktop-macos": "🟣 skipped despite declared capability",
+          "desktop-windows": "🟣 skipped despite declared capability",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "wookafr",
+      "manifestId": "wookafr",
+      "hub": "https://t.me/s/Wookafr2",
+      "officialHub": "https://t.me/s/Wookafr2",
       "hubRelation": "match",
       "capabilities": [
         "movie",
@@ -1701,15 +1542,260 @@
           "mobile-ios": "⚪ N/A"
         }
       },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
     },
     {
-      "registryId": "moonflix",
-      "manifestId": "moonflix",
-      "hub": "https://t.me/s/Moonflix_official_Channel",
-      "officialHub": "https://t.me/s/Moonflix_official_Channel",
+      "registryId": "yflix",
+      "manifestId": "yflix",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "allanime",
+      "manifestId": "ALLANIME",
+      "hub": "https://allanime.sa.com/",
+      "officialHub": "https://allanime.sa.com/",
+      "hubRelation": "match",
+      "capabilities": [
+        "anime"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "🟣 skipped despite declared capability",
+          "desktop-macos": "🟣 skipped despite declared capability",
+          "desktop-windows": "🟣 skipped despite declared capability",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 0 stream"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "allwish",
+      "manifestId": "ALLWISH",
+      "hub": "https://t.me/s/allwishme",
+      "officialHub": "https://t.me/s/allwishme",
+      "hubRelation": "match",
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "cells": {
+        "interstellar": {
+          "tv": "🔴 false positive: short_media 33.2s,23.2s",
+          "desktop-macos": "🟢 2 raw stream(s)",
+          "desktop-windows": "🟢 2 raw stream(s)",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 timeout"
+        },
+        "breaking-bad-s01e01": {
+          "tv": "🔴 false positive: short_media 33.2s,23.2s",
+          "desktop-macos": "🟢 2 raw stream(s)",
+          "desktop-windows": "🟢 2 raw stream(s)",
+          "mobile-android": "🟣 invalid Lab (client UI launch failed; incomplete evidence: mobile-android-route-breaking-bad-s01e01-brain.json; incomplete evidence: mobile-android-route-interstellar-brain.json; incomplete evidence: mobile-android-route-jujutsu-kaisen-s01e01-brain.json)",
+          "mobile-ios": "🔴 timeout"
+        },
+        "jujutsu-kaisen-s01e01": {
+          "tv": "⚪ N/A",
+          "desktop-macos": "⚪ N/A",
+          "desktop-windows": "⚪ N/A",
+          "mobile-android": "⚪ N/A",
+          "mobile-ios": "⚪ N/A"
+        }
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "anime-ultime",
+      "manifestId": "ANIME-ULTIME",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "anime",
+        "movie",
+        "tv"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime",
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "animevost-fr",
+      "manifestId": "ANIMEVOST-FR",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "fullanime",
+      "manifestId": "FULLANIME",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "anime"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "anime"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "mallumv",
+      "manifestId": "MALLUMV",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "moviebox",
+      "manifestId": "moviebox",
+      "hub": "https://moviiebox.lol/",
+      "officialHub": "https://moviiebox.lol/",
       "hubRelation": "match",
       "capabilities": [
         "movie",
@@ -1738,9 +1824,84 @@
           "mobile-ios": "⚪ N/A"
         }
       },
-      "overall": "🔴 aucune lane TV jouable prouvée",
-      "cause": "0 stream, timeout, faux média ou transport non jouable sur les lanes déclarées",
-      "repair": "réparer route/identité selon la première cause prouvée; conserver force-ON catalogue"
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication",
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      }
+    },
+    {
+      "registryId": "showbox",
+      "manifestId": "SHOWBOX",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
+    },
+    {
+      "registryId": "vidlove",
+      "manifestId": "vidlove",
+      "hub": null,
+      "officialHub": null,
+      "capabilities": [
+        "movie",
+        "tv"
+      ],
+      "currentLiveAudit": {
+        "date": "2026-09-12",
+        "result": "declared-types-qualified",
+        "validatedTypes": [
+          "movie",
+          "tv"
+        ],
+        "missingTypes": [],
+        "evidenceRuns": [
+          34698141582,
+          34696902428,
+          34698638738
+        ]
+      },
+      "overall": "🟢 toutes les lanes déclarées qualifiées par le census live courant",
+      "cause": "preuve live courante 100% des types sémantiques déclarés",
+      "repair": "revalider aux Labs après publication"
     }
+  ],
+  "selectionAuthority": "current-live-positive-audit-20260912",
+  "selectionPolicy": "enabled iff all declared semantic types are current-run qualified",
+  "selectionEvidenceRuns": [
+    34698141582,
+    34696902428,
+    34698638738
   ]
 }

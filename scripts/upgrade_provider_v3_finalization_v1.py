@@ -6,7 +6,7 @@ Stable Provider DATA and runtime evidence are different layers:
 - runtime-derived landing/gateway routes stay evidence-only;
 - runtime-observed full URLs/origins stay evidence-only too;
 - blocked runners preserve the complete stable candidate plan;
-- explicit apiRecipe remains an atomic execution plan.
+- explicit apiRecipe remains an atomic execution plan, filtered by current live proof.
 
 The upgrader also adds final-bundle probe diagnostics so candidate -> final drift is
 visible fixture-by-fixture in Actions logs.
@@ -59,7 +59,7 @@ def patch_finalizer() -> bool:
         and str(row.get("route") or "").strip()
         and row.get("liveDerived")
     ]
-    if completion_state in {"terminal-blocked", "terminal-unreachable"}:
+    if completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}:
         execution_plan_rows = stable_candidate_rows
     elif completion_state == "declared-types-qualified":
         execution_plan_rows = [
@@ -127,9 +127,23 @@ def patch_finalizer() -> bool:
 '''
     new_recipe = '''    live_set = set(evaluation["liveRoutes"])
     execution_plan_set = set(model.get("routes") or [])
+    # PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5
     candidate_model_recipe = model.get("candidateApiRecipe")
-    if isinstance(candidate_model_recipe, dict):
+    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}
+    if blocked_recipe_plan and isinstance(candidate_model_recipe, dict):
         model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)
+    else:
+        filtered_model_recipe = (
+            filter_recipe_by_live_routes(candidate_model_recipe, live_set)
+            if isinstance(candidate_model_recipe, dict)
+            else None
+        )
+        if isinstance(filtered_model_recipe, dict):
+            filtered_model_recipe["proofModelVersion"] = 5
+            model["apiRecipe"] = filtered_model_recipe
+        else:
+            model.pop("apiRecipe", None)
+    model["routeProofVersion"] = 5
 '''
     text = once(text, old_recipe, new_recipe, "atomic-api-recipe")
 
@@ -157,8 +171,20 @@ def patch_finalizer() -> bool:
         if isinstance(patch.get("api_recipe"), dict) and not isinstance(patch.get("candidate_api_recipe"), dict):
             patch["candidate_api_recipe"] = copy.deepcopy(patch["api_recipe"])
         candidate_recipe = patch.get("candidate_api_recipe") if isinstance(patch.get("candidate_api_recipe"), dict) else patch.get("api_recipe")
-        if isinstance(candidate_recipe, dict):
+        if blocked_recipe_plan and isinstance(candidate_recipe, dict):
             patch["api_recipe"] = copy.deepcopy(candidate_recipe)
+        else:
+            filtered_patch_recipe = (
+                filter_recipe_by_live_routes(candidate_recipe, live_set)
+                if isinstance(candidate_recipe, dict)
+                else None
+            )
+            if isinstance(filtered_patch_recipe, dict):
+                filtered_patch_recipe["proofModelVersion"] = 5
+                patch["api_recipe"] = filtered_patch_recipe
+            else:
+                patch.pop("api_recipe", None)
+        patch["route_proof_version"] = 5
 '''
     text = once(text, old_patch_routes, new_patch_routes, "override-plan-retention")
 
@@ -173,7 +199,7 @@ def patch_finalizer() -> bool:
         "runtimeObservedUrlCount": len(runtime_observed_urls),
         "runtimeObservedOriginCount": len(runtime_observed_origins),
         "runtimeObservationsPersistedAsProviderData": False,
-        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+        "blockedPlanPreserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
         "sequentialProviderGate": True,
 '''
     text = once(text, old_recognition, new_recognition, "route-recognition-plan-fields")
@@ -204,7 +230,7 @@ def patch_finalizer() -> bool:
             "runtime_observed_url_count": len(runtime_observed_urls),
             "runtime_observed_origin_count": len(runtime_observed_origins),
             "runtime_observations_persisted_as_provider_data": False,
-            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable"},
+            "blocked_plan_preserved": completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"},
             "declared_types_are_gate_denominator": True,
             "sequential": True,
 '''
@@ -277,8 +303,18 @@ def validate_finalizer(text: str) -> None:
         'model["observedUrls"] = stable_observed_urls[:128]',
         'runtimeObservationsPersistedAsProviderData": False',
         'execution_plan_set = set(model.get("routes") or [])',
+        'PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5',
+        'blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}',
         'model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)',
         'patch["api_recipe"] = copy.deepcopy(candidate_recipe)',
+        'filter_recipe_by_live_routes(candidate_model_recipe, live_set)',
+        'filtered_model_recipe["proofModelVersion"] = 5',
+        'model["apiRecipe"] = filtered_model_recipe',
+        'model["routeProofVersion"] = 5',
+        'filter_recipe_by_live_routes(candidate_recipe, live_set)',
+        'filtered_patch_recipe["proofModelVersion"] = 5',
+        'patch["api_recipe"] = filtered_patch_recipe',
+        'patch["route_proof_version"] = 5',
     )
     for needle in required:
         if needle not in text:
@@ -302,7 +338,7 @@ def main() -> int:
         "PROVIDER_V3_FINALIZATION_V1_OK "
         f"changed={str(changed).lower()} diagnostics_changed={str(diagnostics_changed).lower()} "
         "attempted_non2xx=preserved runtime_derived=pure-evidence "
-        "runtime_observations=pure-evidence blocked_plan=preserved api_recipe=atomic"
+        "runtime_observations=pure-evidence blocked_plan=preserved api_recipe=proof-v5"
     )
     return 0
 

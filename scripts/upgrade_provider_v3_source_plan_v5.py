@@ -19,6 +19,12 @@ import upgrade_provider_v3_batch_routes_v2 as batch_routes_v2
 import upgrade_route_proof_dataflow_safety_v2 as route_dataflow_safety
 import upgrade_kehflix_terminal_domain_v1 as kehflix_terminal
 import upgrade_signed_player_api_v1 as signed_player_api
+import upgrade_provider_auxiliary_metadata_filter_v1 as auxiliary_metadata_filter
+import upgrade_provider_terminal_media_block_v1 as terminal_media_block
+import upgrade_provider_disabled_fast_advance_v1 as disabled_fast_advance
+import upgrade_provider_adaptive_live_retry_v1 as adaptive_live_retry
+import upgrade_provider_execution_authority_finalization_v1 as execution_authority_finalization
+import upgrade_provider_final_transient_fixture_fallback_v1 as final_transient_fixture_fallback
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_STORE = ROOT / "scripts" / "provider_base_store.py"
@@ -42,11 +48,19 @@ def main() -> int:
     batch_routes.validate()
     batch_routes_v2_changed = batch_routes_v2.patch()
     batch_routes_v2.validate()
+    auxiliary_metadata_changed = auxiliary_metadata_filter.patch()
+    auxiliary_metadata_filter.validate()
+    terminal_media_block_changed = terminal_media_block.patch()
+    terminal_media_block.validate()
+    disabled_fast_advance_changed = disabled_fast_advance.patch()
+    disabled_fast_advance.validate()
+    adaptive_live_retry_changed = adaptive_live_retry.patch()
+    adaptive_live_retry.validate()
+    execution_authority_finalization_changed = execution_authority_finalization.patch()
+    execution_authority_finalization.validate()
+    final_transient_fixture_fallback_changed = final_transient_fixture_fallback.patch()
+    final_transient_fixture_fallback.validate()
 
-    # proof-v5 request-spec/recovery migrations are applied immediately before
-    # this gate by the full reconstruction/publication workflows. Apply the
-    # generic dataflow hardening only when that prerequisite is present so this
-    # source-plan gate remains safe in narrower maintenance contexts.
     proof_text = PROOF.read_text(encoding="utf-8") if PROOF.is_file() else ""
     route_safety_changed = False
     if "PROVIDER_ROUTE_PROOF_REQUEST_SPEC_V1" in proof_text:
@@ -54,9 +68,6 @@ def main() -> int:
         route_safety_changed = route_dataflow_safety.patch_recovery() or route_safety_changed
         route_dataflow_safety.validate()
 
-    # Current live proof establishes Kehflix's terminal and signed-player family
-    # contract. These are deterministic structured-DATA/common-runtime migrations,
-    # not runtime discovery and not imported upstream JavaScript.
     overrides = kehflix_terminal.load(kehflix_terminal.OVERRIDES)
     knowledge = kehflix_terminal.load(kehflix_terminal.KNOWLEDGE)
     kehflix_overrides_changed = kehflix_terminal.patch_overrides(overrides)
@@ -102,6 +113,12 @@ def main() -> int:
         f"typeRouteGateChanged={str(type_gate_changed).lower()} "
         f"batchRoutesChanged={str(batch_routes_changed).lower()} "
         f"batchRoutesV2Changed={str(batch_routes_v2_changed).lower()} "
+        f"auxiliaryMetadataChanged={str(auxiliary_metadata_changed).lower()} "
+        f"terminalMediaBlockChanged={str(terminal_media_block_changed).lower()} "
+        f"disabledFastAdvanceChanged={str(disabled_fast_advance_changed).lower()} "
+        f"adaptiveLiveRetryChanged={str(adaptive_live_retry_changed).lower()} "
+        f"executionAuthorityFinalizationChanged={str(execution_authority_finalization_changed).lower()} "
+        f"finalTransientFixtureFallbackChanged={str(final_transient_fixture_fallback_changed).lower()} "
         f"routeSafetyChanged={str(route_safety_changed).lower()} "
         f"kehflixTerminalChanged={str(kehflix_overrides_changed or kehflix_knowledge_changed).lower()} "
         f"signedPlayerChanged={str(signed_player_changed).lower()}"

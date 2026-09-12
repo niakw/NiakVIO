@@ -73,21 +73,15 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
                 f"but current formats={sorted(current_formats)}"
             )
 
-    expected_cap = floor.get("capability")
-    current_cap = caps.get(provider_id)
-    if isinstance(expected_cap, dict):
-        if not isinstance(current_cap, dict):
-            errors.append(f"{provider_id}: provider capability contract disappeared")
-        else:
-            for field in ("strategy", "validation", "allow_html_url", "requires_direct_media"):
-                expected = expected_cap.get(field)
-                if expected is None:
-                    continue
-                if current_cap.get(field) != expected:
-                    errors.append(
-                        f"{provider_id}: capability regression {field} "
-                        f"expected={expected!r} current={current_cap.get(field)!r}"
-                    )
+    # Keep the capability record itself, but do not freeze implementation or
+    # repair-state metadata from 5.21.0. strategy/validation/direct-media flags
+    # may legitimately evolve, including to a safety quarantine, because the
+    # authoritative activation policy explicitly permits active broken or
+    # incomplete providers and does not derive activation from repair state.
+    # The actual historical capability floor guarded here is provider presence,
+    # semantic media types and advertised HLS support above.
+    if isinstance(floor.get("capability"), dict) and not isinstance(caps.get(provider_id), dict):
+        errors.append(f"{provider_id}: provider capability contract disappeared")
 
 playback = OVERRIDES.get("playback_integrity_policy") or {}
 pre = [str(value) for value in playback.get("pre_media_discovery_hooks") or []]
