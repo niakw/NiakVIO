@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "scripts/report_new_upstream_providers.py"
 WORKFLOW = ROOT / ".github/workflows/weekly-upstream-provider-discovery.yml"
 SOURCES = ROOT / "sources.json"
+UPSTREAMS = ROOT / "engine_v2/config/provider-upstreams.json"
 
 
 def load_module():
@@ -55,7 +56,9 @@ def candidate(
 def main() -> int:
     module = load_module()
     sources = json.loads(SOURCES.read_text(encoding="utf-8"))
-    assert set(sources.get("upstreams") or {}) == {"gowaru", "aio", "yoru"}
+    registry = json.loads(UPSTREAMS.read_text(encoding="utf-8"))
+    assert "upstreams" not in sources, "sources.json is local policy, not external repository authority"
+    assert [row.get("id") for row in registry.get("upstreams") or []] == ["gowaru", "aio", "yoru"]
 
     catalog = {
         "providers": [
@@ -103,7 +106,6 @@ def main() -> int:
     assert "LKG snapshot" in md
 
     workflow = WORKFLOW.read_text(encoding="utf-8")
-    # Exactly one weekly schedule: day-of-week is constrained and no daily wildcard.
     cron_lines = [line.strip() for line in workflow.splitlines() if "cron:" in line]
     assert len(cron_lines) == 1, cron_lines
     fields = cron_lines[0].split("cron:", 1)[1].strip().strip("'\"").split()
@@ -119,6 +121,8 @@ def main() -> int:
     assert "gh issue" not in workflow
 
     script_source = SCRIPT.read_text(encoding="utf-8")
+    assert 'engine_v2" / "config" / "provider-upstreams.json"' in script_source
+    assert 'upstreams = sources.get("upstreams")' not in script_source
     for forbidden in ("provider_catalog.json').write", 'provider_catalog.json").write', "manifest.json').write", 'manifest.json").write'):
         assert forbidden not in script_source
 
