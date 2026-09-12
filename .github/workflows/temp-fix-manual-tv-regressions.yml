@@ -18,13 +18,23 @@ jobs:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 0
 
-      - name: Apply patch
-        run: python3 scripts/prepatch_manual_tv_regressions_20260912.py
+      - name: Apply durable common fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/prepatch_manual_tv_regressions_20260912.py
+          python3 scripts/upgrade_provider_execution_failfast_v33.py
+          python3 scripts/upgrade_provider_movie_catalogue_identity_v21_10.py
+          python3 scripts/upgrade_provider_episode_identity_guard_v22_1.py
 
       - name: Focused regressions
         shell: bash
         run: |
           set -euo pipefail
+          python3 tests/provider_movie_catalogue_identity_v21_10_test.py
+          python3 tests/provider_episode_identity_guard_v22_1_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
           python3 tests/manual_tv_regressions_contract_test.py
           python3 tests/provider_latest_request_cancellation_test.py
           python3 tests/provider_native_abort_ignorant_cancellation_test.py
@@ -33,22 +43,36 @@ jobs:
           python3 tests/stream_output_sanitizer_direct_normalization_test.py
           python3 tests/core_runtime_nonregression_contract_test.py
 
+      - name: Rebuild owned ProviderBase store 96/96
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_base_v3_store.py
+          python3 tests/provider_base_layering_contract_test.py
+          python3 tests/provider_reconstruction_input_suite_test.py
+
       - name: Rebuild all 96 bundles
         shell: bash
         run: |
           set -euo pipefail
+          python3 scripts/materialize_provider_v3_all.py
           python3 scripts/reapply_published_overrides.py
           python3 scripts/reapply_published_overrides.py --check
           python3 tests/global_stream_output_guard_test.py
           python3 tests/provider_base_layering_contract_test.py
           python3 tests/core_runtime_nonregression_contract_test.py
           python3 tests/manual_tv_regressions_contract_test.py
+          python3 tests/provider_movie_catalogue_identity_v21_10_test.py
+          python3 tests/provider_episode_identity_guard_v22_1_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
 
       - name: Catalogue invariants
         shell: bash
         run: |
           set -euo pipefail
           python3 -c 'import json,pathlib; m=json.load(open("manifest.json")); rows=m["scrapers"]; active=[r for r in rows if r.get("enabled") is True]; missing=[r["id"] for r in rows if not pathlib.Path(r["filename"]).is_file()]; print("FIELD_FIX_BRANCH_STATE",m.get("version"),len(rows),len(active),len(missing)); assert len(rows)==96 and len(active)==46 and not missing'
+          python3 scripts/validate_published_provider_config.py --expected 96
 
       - name: Commit verified fix
         shell: bash
@@ -61,6 +85,6 @@ jobs:
             echo "FIELD_FIX_COMMIT changed=0"
             exit 0
           fi
-          git commit -m "fix(core): restore TV navigation and stream truth contracts"
+          git commit -m "fix(core): restore TV navigation stream truth and provider isolation"
           git push origin HEAD:fix/labs-5.21.44-20260912
           echo "FIELD_FIX_COMMIT changed=1 sha=$(git rev-parse HEAD)"
