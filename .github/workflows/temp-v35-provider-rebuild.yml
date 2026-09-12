@@ -1,0 +1,113 @@
+name: TEMP V35 provider rebuild
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-v35-provider-rebuild.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-v35-provider-rebuild-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: { python-version: '3.12' }
+      - name: Apply capability and qualification migrations
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_anime_only_capability_v35.py
+          if test -f scripts/upgrade_provider_v3_positive_output_qualification_v4.py; then
+            python3 scripts/upgrade_provider_v3_positive_output_qualification_v4.py
+          fi
+          if test -f scripts/upgrade_domain_refresh_publication_v3.py; then
+            python3 scripts/upgrade_domain_refresh_publication_v3.py
+          fi
+      - name: Focused contracts
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/anime_only_capability_closure_v35_test.py
+          test ! -f tests/provider_v3_positive_output_qualification_v4_test.py || python3 tests/provider_v3_positive_output_qualification_v4_test.py
+          test ! -f tests/domain_refresh_publication_v3_test.py || python3 tests/domain_refresh_publication_v3_test.py
+          test ! -f tests/domain_refresh_transaction_guard_test.py || python3 tests/domain_refresh_transaction_guard_test.py
+          python3 tests/provider_base_layering_contract_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 tests/manual_tv_regressions_contract_test.py
+          python3 tests/manual_tv_live_regressions_v34_test.py
+      - name: Assert anime-only authority before rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          d=json.load(open('provider-overrides.json'))['provider_patches']
+          for pid in ('anime-sama','mugiwarastream'):
+              p=d[pid]
+              assert p.get('published_types') == ['anime'], (pid,p.get('published_types'))
+              rd=p.get('repair_disposition') or {}
+              assert 'movie' not in rd.get('requiredLanes',[]), (pid,rd)
+              rp=p.get('route_proof') or {}
+              a=rp.get('canonicalExecutionAuthority') or {}
+              assert 'movie' not in a.get('supportedLanes',[]), (pid,a)
+              assert 'movie' not in a.get('coveredLanes',[]), (pid,a)
+              g=p.get('live_route_gate') or {}
+              assert 'movie' not in g.get('required_types',[]), (pid,g)
+              assert 'movie' not in g.get('validated_types',[]), (pid,g)
+              print('FIELD_V35_AUTHORITY',pid,p.get('published_types'),rd.get('provenLanes'),rd.get('laneStatuses',{}).get('movie'))
+          PY
+      - name: Rebuild ProviderBase and all 96 bundles
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_base_v3_store.py
+          python3 scripts/materialize_provider_v3_all.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/global_stream_output_guard_test.py
+          python3 tests/provider_base_layering_contract_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 tests/provider_movie_catalogue_identity_v21_10_test.py
+          python3 tests/provider_episode_identity_guard_v22_1_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
+      - name: Final invariants and fixed point
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_anime_only_capability_v35.py
+          git diff --exit-code provider-overrides.json
+          python3 - <<'PY'
+          import json,pathlib
+          m=json.load(open('manifest.json')); rows=m['scrapers']; active=[r for r in rows if r.get('enabled') is True]
+          missing=[r['id'] for r in rows if not pathlib.Path(r['filename']).is_file()]
+          print('FIELD_V35_CATALOGUE',m.get('version'),len(rows),len(active),len(missing))
+          assert len(rows)==96 and not missing
+          PY
+          python3 scripts/validate_published_provider_config.py --expected 96
+      - name: Commit verified V35 rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A ':!.github/workflows/temp-v35-provider-rebuild.yml'
+          if git diff --cached --quiet; then echo 'FIELD_V35_COMMIT changed=0'; exit 0; fi
+          git commit -m 'fix(providers): close anime-only capability lanes and rebuild'
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then echo "FIELD_V35_COMMIT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"; exit 0; fi
+            sleep 1
+          done
+          exit 1
