@@ -79,7 +79,19 @@ for provider_id, floor in (FIXTURE.get("providers") or {}).items():
         if not isinstance(current_cap, dict):
             errors.append(f"{provider_id}: provider capability contract disappeared")
         else:
-            for field in ("strategy", "validation", "allow_html_url", "requires_direct_media"):
+            # Strategy is an implementation family, not a historical capability.
+            # It may legitimately evolve (for example html_scraper ->
+            # mixed_embed_resolver) while preserving the same semantic/output
+            # contract. The current strategy must nevertheless remain explicit
+            # and executable; quarantining is never accepted as preservation of
+            # a production capability.
+            strategy = str(current_cap.get("strategy") or "").strip().casefold()
+            if not strategy or strategy in {"unknown", "quarantined"}:
+                errors.append(
+                    f"{provider_id}: production capability lost executable strategy "
+                    f"current={current_cap.get('strategy')!r}"
+                )
+            for field in ("validation", "allow_html_url", "requires_direct_media"):
                 expected = expected_cap.get(field)
                 if expected is None:
                     continue
