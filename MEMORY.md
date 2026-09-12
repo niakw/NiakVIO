@@ -1262,3 +1262,9 @@ This section is the durable authority for the manual hub/site/network evidence s
   - mushoku-tensei-s03e11 / streamzo: state=completed raw=0 playable=0 verified=0 contradictions=0 stage=provider_network_http_error transport=none qualities=none languages=none returned403=0.
   - ragna-crimson-s01e04 / anime-sama: state=completed raw=2 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=MULTI (VF/VO),VOSTFR returned403=0.
   - ragna-crimson-s01e04 / mugiwarastream: state=completed raw=1 playable=1 verified=1 contradictions=0 stage=provider_returned_streams transport=none qualities=720p languages=VOSTFR returned403=0.
+
+## 2026-09-12 — Mugiwara season mapping diagnostic (.44)
+
+- Mugiwara safe season diagnostic run `34721006209`. Output is deliberately URL-safe: season ids/counts and selected index only; no media/player URLs.
+- `{"case":"ragna-s01e04","state":"ok","cataloguePath":"/catalogue/ragna-crimson/episodes/saison1","requestedSeason":1,"requestedEpisode":4,"selection":{"mode":"exact-id","rowId":"1","index":3},"seasons":[{"id":"1","notASeason":false,"episodeCount":24,"languageCounts":{"vostfr":24},"name":"Saison 1"}],"probeRaw":1,"probePlayable":1}`
+- `{"case":"hell-mode-s02e10","state":"ok","cataloguePath":"/catalogue/hell-mode-the-hardcore-gamer-dominates-in-another-world-with-garbage-balancing/episodes/saison1","requestedSeason":2,"requestedEpisode":10,"selection":{"mode":"none","rowId":"","index":null},"seasons":[{"id":"1","notASeason":false,"episodeCount":12,"languageCounts":{"vostfr":12},"name":"Saison 1"},{"id":"2","notASeason":false,"episodeCount":0,"languageCounts":{},"name":"Saison 2"}],"probeRaw":8,"probePlayable":8}`
