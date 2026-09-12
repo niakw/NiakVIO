@@ -28,11 +28,17 @@ for old, new in replacements.items():
         raise AssertionError(f"repair contract compatibility anchor changed: {old}")
     source = source.replace(old, new, 1)
 
-# Activation policy supersedes the short-lived force-all-enabled checkpoint.
-old_activation = "    'enabled = True',"
-new_activation = "    'enabled = bool(hub)',"
-if source.count(old_activation) != 1:
-    raise AssertionError("repair contract activation assertion anchor changed")
-source = source.replace(old_activation, new_activation, 1)
+# Activation is now an exact release authority: only the 46 current-live-positive
+# matrix members are visible. Repair/off remains separate route debt and can never
+# widen that set. Replace only historical static spellings; the implementation test
+# remains otherwise unchanged.
+compat_replacements = {
+    "    'active-but-broken',": "    '\"activationAuthority\": \"hub-lab-matrix-46\"',",
+    "    'enabled = True',": "    'enabled = provider in target_hubs',",
+}
+for old, new in compat_replacements.items():
+    if source.count(old) != 1:
+        raise AssertionError(f"repair contract activation assertion anchor changed: {old}")
+    source = source.replace(old, new, 1)
 
 exec(compile(source, str(impl_path), "exec"), globals(), globals())
