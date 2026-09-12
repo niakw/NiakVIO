@@ -3,10 +3,10 @@
 
 Before importing the ProviderBase generator, apply the deterministic execution
 route sanitizer, cumulative common runtime upgrades, the fail-closed HTML text
-hardening pass, and the provider-agnostic movie/episode identity guards. This
-ordering guarantees that all 96 generated bundles use the same repaired
-DATA/runtime contract, Core-owned catalogue identity policy, and no regex-based
-HTML stripping.
+hardening pass, provider-agnostic movie/episode identity guards, the live manual-TV
+V34 common fixes, and the durable Mugiwara episodic fail-closed migration. This
+ordering guarantees that all 96 generated bundles use the same repaired DATA/runtime
+contract and that provider-specific repaired runtime Lego cannot silently regress.
 '''
 from __future__ import annotations
 
@@ -30,6 +30,8 @@ def prepare_runtime() -> None:
         ROOT / "scripts" / "harden_provider_base_html_text.py",
         ROOT / "scripts" / "upgrade_provider_movie_catalogue_identity_v21_10.py",
         ROOT / "scripts" / "upgrade_provider_episode_identity_guard_v22_1.py",
+        ROOT / "scripts" / "upgrade_mugiwara_episode_failclosed_v2.py",
+        ROOT / "scripts" / "upgrade_manual_tv_live_regressions_v34.py",
     )
     for script in commands:
         subprocess.run([sys.executable, str(script)], cwd=ROOT, check=True)
@@ -136,6 +138,9 @@ def main() -> int:
     store["html_text_hardening"] = "deterministic-scanner-v1"
     store["movie_catalogue_identity_guard"] = "v21.10"
     store["episode_identity_guard"] = "v22.1"
+    store["manual_tv_live_regressions"] = "v34"
+    store["mugiwara_episode_fail_closed"] = "v2"
+    store["stream_sanitizer"] = "v8"
 
     PROVENANCE.write_text(json.dumps(provenance, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(
@@ -143,7 +148,7 @@ def main() -> int:
         f"unique_paths={len(unique)} reconstruction_required=0 "
         f"provider_js_seed=false upstream_js_seed=false runtime_reader=v{CURRENT_RUNTIME_READER_VERSION} "
         "route_sanitizer=v1 html_text_hardening=deterministic-scanner-v1 "
-        "movie_identity=v21.10 episode_identity=v22.1"
+        "movie_identity=v21.10 episode_identity=v22.1 manual_tv=v34 mugiwara_episode=v2 sanitizer=v8"
     )
     return 0
 
