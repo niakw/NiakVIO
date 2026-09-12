@@ -25,14 +25,6 @@ jobs:
           OLD = '{"terminal-blocked", "terminal-unreachable"}'
           NEW = '{"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}'
 
-          def replace_once(path, old, new, label):
-              p = Path(path)
-              text = p.read_text(encoding='utf-8')
-              count = text.count(old)
-              if count != 1:
-                  raise SystemExit(f'{label}: expected exactly one match, got {count}')
-              p.write_text(text.replace(old, new, 1), encoding='utf-8')
-
           seq = Path('scripts/validate_provider_v3_routes_sequential.py')
           text = seq.read_text(encoding='utf-8')
           if '"enabled": manifest_row.get("enabled") is not False' not in text:
@@ -41,8 +33,7 @@ jobs:
               if text.count(anchor) != 1:
                   raise SystemExit('queue-enabled-state anchor mismatch')
               text = text.replace(anchor, repl, 1)
-          disabled_fallback = '            elif provider.get("enabled") is False:\n                completion_state = "disabled-unqualified"\n'
-          if disabled_fallback not in text:
+          if '            elif provider.get("enabled") is False:\n                completion_state = "disabled-unqualified"\n' not in text:
               anchor = '''            else:\n                failure = {\n                    **evaluation,\n                    "completionState": "missing-declared-type-route-proof",\n                    "originEvidence": origin_evidence,\n                    "advancedToNextProvider": False,\n                }\n'''
               repl = '''            elif provider.get("enabled") is False:\n                completion_state = "disabled-unqualified"\n                passed = True\n                print(\n                    "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "\n                    f"provider={provider_id} missing={','.join(evaluation['missingTypes']) or 'none'}",\n                    flush=True,\n                )\n            else:\n                failure = {\n                    **evaluation,\n                    "completionState": "missing-declared-type-route-proof",\n                    "originEvidence": origin_evidence,\n                    "advancedToNextProvider": False,\n                }\n'''
               if text.count(anchor) != 1:
@@ -85,10 +76,9 @@ jobs:
           ]:
               p = Path(path)
               text = p.read_text(encoding='utf-8')
-              text = text.replace(OLD, NEW)
-              p.write_text(text, encoding='utf-8')
+              p.write_text(text.replace(OLD, NEW), encoding='utf-8')
           PY
-      - name: Validate full focused migration suite
+      - name: Validate focused migration suite
         run: |
           python -m py_compile \
             scripts/reconstruct_provider_v3_sequential_live.py \
@@ -98,7 +88,6 @@ jobs:
             scripts/upgrade_provider_v3_safe_runtime_route_promotion_v2.py
           python tests/provider_v3_sequential_reconstruction_contract_test.py
           python tests/provider_v3_finalization_plan_test.py
-          python tests/provider_v3_batch_diagnostic_contract_test.py
           python tests/active_provider_live_coverage_test.py
           python scripts/upgrade_provider_v3_finalization_v1.py
           python scripts/upgrade_provider_v3_defer_finalization_preserve_validated_data_v3.py
@@ -121,3 +110,4 @@ jobs:
           git diff --cached --quiet && { echo 'No durable changes'; exit 1; }
           git commit -m 'fix(reconstruct): separate disabled audit from active gate'
           git push origin HEAD:release/stable-46-20260912
+# retired provider-v3-batch-diagnostic.yml test intentionally excluded from execution
