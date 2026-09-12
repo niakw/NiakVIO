@@ -127,7 +127,9 @@ def validate(text: str | None = None) -> None:
     for needle in required:
         if needle not in value:
             raise AssertionError(f"episode identity guard missing {needle}")
-    window = value[value.index(MARKER):value.index("async function _resolveApiRecipe", value.index(MARKER))]
+    marker_at = value.index(MARKER)
+    end_at = value.index("async function _resolveHtml", marker_at)
+    window = value[marker_at:end_at]
     lowered = window.casefold()
     for forbidden in ("mugiwara", "hellmode", "mushoku", "streamzo", "interstellar"):
         if forbidden in lowered:
