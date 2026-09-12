@@ -58,7 +58,10 @@ def validate(text: str | None = None) -> None:
     missing = [needle for needle in required if needle not in value]
     if missing:
         raise AssertionError("adaptive live retry markers missing: " + ",".join(missing))
-    if value.count("not should_retry_live_probe(result)") != 2:
+    # The original contract owns the candidate and selected-final retry guards.
+    # Later strict transient fallbacks may reuse the same helper, so additional
+    # guarded call-sites are valid as long as both original guards remain.
+    if value.count("not should_retry_live_probe(result)") < 2:
         raise AssertionError("adaptive retry must guard candidate and final proof loops")
 
 
