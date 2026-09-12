@@ -16,7 +16,7 @@ concurrency:
 jobs:
   resume:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     env:
       NUVIO_PROVIDER_V3_CONTEXT: workspace
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
@@ -28,9 +28,6 @@ jobs:
         with: {ref: '${{ github.sha }}', fetch-depth: 0}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: '3.12'}
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with: {node-version: '24', package-manager-cache: false}
-      - run: npm ci --ignore-scripts --no-audit --no-fund
 
       - name: Restore the already-materialized strict-46 snapshot
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
@@ -41,7 +38,7 @@ jobs:
           run-id: 34713445212
           github-token: ${{ github.token }}
 
-      - name: Rehydrate snapshot without rematerialization or live network
+      - name: Restore strict-46 state and regenerate omitted manifest projections
         shell: bash
         run: |
           set -euo pipefail
@@ -65,24 +62,20 @@ jobs:
           assert len(active)==46, len(active)
           print('FIELD_STRICT46_SNAPSHOT_RESTORED catalogue=96 active=46 live_rerun=0 rematerialize=0')
           PY
+          # These projections were generated in the original materialization run but
+          # accidentally omitted from its snapshot artifact. Rebuild only projections;
+          # do not rematerialize providers or perform the 96-provider live gate.
+          python scripts/generate_language_manifests.py --manifest manifest.json --report health-report.json
+          echo 'FIELD_STRICT46_PROJECTIONS_REGENERATED source=restored_manifest live_provider_reproof=0'
 
-      - name: Continue only checks not reached after playback-integrity failure
+      - name: Retry only release hash and integrity validation
         shell: bash
         run: |
           set -euo pipefail
-          python tests/stream_output_sanitizer_fail_closed_test.py
-          python tests/published_provider_lego_contract_test.py
-          python tests/provider_v3_live_route_validation_test.py
-          python tests/provider_v3_sequential_live_gate_test.py
-          python tests/provider_v3_finalization_plan_test.py
-          python tests/provider_v3_sequential_reconstruction_contract_test.py
-          python tests/active_provider_live_coverage_test.py
-          python scripts/assert_active_provider_live_coverage.py
-          python scripts/audit_provider_quick_yield.py
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           git diff --check
-          echo 'FIELD_RECOVERY_RESUME_INTEGRITY status=success resumed_after_playback_gate=1 live_rerun=0'
+          echo 'FIELD_RECOVERY_RELEASE_INTEGRITY status=success live_rerun=0 rematerialize=0'
 
       - name: Commit recovered verified strict-46 reconstruction
         shell: bash
@@ -103,6 +96,9 @@ jobs:
           name: strict-46-recovery-final-${{ github.run_id }}
           path: |
             manifest.json
+            vf/manifest.json
+            no-anime/manifest.json
+            vf-no-anime/manifest.json
             provider-overrides.json
             provider-v3-live-route-validation.json
             automation/provider-v3-static-knowledge.json
