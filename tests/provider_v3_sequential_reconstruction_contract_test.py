@@ -22,6 +22,11 @@ assert '"globalCandidateMaterialization": False' in source
 assert 'provider.get("enabled") is False' in source
 assert '"disabled-unqualified"' in source
 assert "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE" in source
+assert "PROVIDER_V3_BOUNDED_LIVE_RETRY_V1" in source
+assert "LIVE_PROBE_ATTEMPTS = _live_probe_attempts()" in source
+assert source.count("for attempt in range(1, LIVE_PROBE_ATTEMPTS + 1):") >= 2
+assert 'result["probe_attempt"] = attempt' in source
+assert "runtime_recovered_types" in source
 validator_source = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")
 assert '"enabled": manifest_row.get("enabled") is not False' in validator_source
 assert 'completion_state = "disabled-unqualified"' in validator_source
