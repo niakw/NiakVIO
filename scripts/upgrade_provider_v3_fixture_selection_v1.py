@@ -17,6 +17,7 @@ CORPUS = ROOT / ".github" / "triggers" / "nuvio-client-lab.json"
 MANIFEST = ROOT / "manifest.json"
 QUEUE = ROOT / "scripts" / "validate_provider_v3_routes_sequential.py"
 SLUG = "jujutsu-kaisen-0"
+MODERN_QUEUE_MARKER = "# PROVIDER_V3_SEMANTIC_FIXTURE_FALLBACKS_V1"
 
 OLD_QUEUE = '''        for media_type in supported:\n            slug = REPRESENTATIVE[media_type]\n            row = by_slug.get(slug)\n            if row is not None and all(existing["slug"] != slug for existing in selected):\n                selected.append(row)\n'''
 NEW_QUEUE = '''        for media_type in supported:\n            # A provider-targeted fixture is stronger than the generic fallback.\n            # In particular, anime-specialized providers use an anime feature film\n            # for canonical movie proof instead of being forced through Interstellar.\n            if any(existing["semantic_type"] == media_type for existing in selected):\n                continue\n            slug = REPRESENTATIVE[media_type]\n            row = by_slug.get(slug)\n            if row is not None and all(existing["slug"] != slug for existing in selected):\n                selected.append(row)\n'''
@@ -87,7 +88,7 @@ def patch() -> bool:
         CORPUS.write_text(json.dumps(corpus, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     queue = QUEUE.read_text(encoding="utf-8")
-    if NEW_QUEUE not in queue:
+    if NEW_QUEUE not in queue and MODERN_QUEUE_MARKER not in queue:
         if queue.count(OLD_QUEUE) != 1:
             raise AssertionError(f"fixture queue fallback anchor count={queue.count(OLD_QUEUE)}")
         QUEUE.write_text(queue.replace(OLD_QUEUE, NEW_QUEUE, 1), encoding="utf-8")
@@ -114,7 +115,7 @@ def validate() -> None:
     if leaked:
         raise AssertionError("anime-specialized providers still targeted by Interstellar: " + ",".join(leaked))
     queue = QUEUE.read_text(encoding="utf-8")
-    if NEW_QUEUE not in queue:
+    if NEW_QUEUE not in queue and MODERN_QUEUE_MARKER not in queue:
         raise AssertionError("provider queue does not prefer targeted semantic fixtures")
 
 
