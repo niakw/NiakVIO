@@ -60,5 +60,15 @@ jobs:
             exit 0
           fi
           git commit -m 'docs(memory): checkpoint NiakVIO recovery state'
-          git pull --rebase origin "$GITHUB_REF_NAME"
-          git push origin "HEAD:$GITHUB_REF_NAME"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin "$GITHUB_REF_NAME"
+            git rebase "origin/$GITHUB_REF_NAME"
+            if git push origin "HEAD:$GITHUB_REF_NAME"; then
+              echo "MEMORY_PUSH_OK attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            echo "MEMORY_PUSH_RETRY attempt=$attempt"
+            sleep 1
+          done
+          echo 'Memory checkpoint push failed after retries' >&2
+          exit 1
