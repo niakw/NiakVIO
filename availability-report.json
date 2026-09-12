@@ -1,15 +1,15 @@
 {
   "schema_version": 63,
-  "generated_at": "2026-09-12T04:41:35.531786+00:00",
+  "generated_at": "2026-09-12T12:13:45.000567+00:00",
   "test_environment": "github-actions-node",
   "checked_providers": 96,
   "status_counts": {
-    "healthy": 2,
+    "healthy": 1,
     "reachable": 1,
     "blocked": 12,
     "degraded": 1,
     "no_streams": 29,
-    "provider_unreachable": 40,
+    "provider_unreachable": 41,
     "runtime_error": 0,
     "unavailable": 11,
     "excluded": 0
@@ -2145,7 +2145,7 @@
     },
     {
       "id": "animesalt",
-      "status": "blocked",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 0,
@@ -2298,7 +2298,7 @@
     },
     {
       "id": "animoflix",
-      "status": "no_streams",
+      "status": "blocked",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3006,7 +3006,7 @@
     },
     {
       "id": "moviesmod",
-      "status": "unavailable",
+      "status": "provider_unreachable",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
@@ -3536,18 +3536,14 @@
     },
     {
       "id": "sekai",
-      "status": "healthy",
+      "status": "no_streams",
       "action": "unchanged",
       "enabled": false,
       "consecutive_hard_failures": 0,
       "hard_failure_started_at": null,
-      "consecutive_successes": 2,
-      "hosts": [
-        "cdndirector.dailymotion.com"
-      ],
-      "response_categories": [
-        "playable"
-      ],
+      "consecutive_successes": 0,
+      "hosts": [],
+      "response_categories": [],
       "host_health": {
         "4.mugiwara.one": {
           "last_checked_at": "2026-09-11T22:39:13.523909+00:00",
@@ -4117,7 +4113,7 @@
     },
     {
       "id": "wookafr",
-      "status": "no_streams",
+      "status": "unavailable",
       "action": "unchanged",
       "enabled": true,
       "consecutive_hard_failures": 1,
