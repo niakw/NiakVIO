@@ -1,0 +1,76 @@
+name: TEMP Provider State Diagnostic
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-provider-state-diag.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: { python-version: '3.12' }
+      - name: Inspect playable evidence, capability authorities and stale domains
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          print('FIELD_PLAYABLE_EVIDENCE_SCAN_BEGIN')
+          roots=[Path('automation'),Path('health-output')]
+          for root in roots:
+              if not root.exists(): continue
+              for p in root.rglob('*.json'):
+                  try: obj=json.loads(p.read_text(encoding='utf-8'))
+                  except Exception: continue
+                  stack=[('',obj)]
+                  while stack:
+                      key,val=stack.pop()
+                      if isinstance(val,dict):
+                          stack.extend(((f'{key}.{k}' if key else k,v) for k,v in val.items()))
+                      elif isinstance(val,list):
+                          low=key.lower()
+                          if ('playable' in low or 'verified' in low) and val and all(isinstance(x,str) for x in val):
+                              print('FIELD_PLAYABLE_LIST',p,key,'count='+str(len(val)),'providers='+','.join(val))
+                          for i,v in enumerate(val):
+                              if isinstance(v,(dict,list)): stack.append((f'{key}[{i}]',v))
+          print('FIELD_PLAYABLE_EVIDENCE_SCAN_END')
+
+          catalog=json.loads(Path('provider_catalog.json').read_text())
+          overrides=json.loads(Path('provider-overrides.json').read_text())
+          for pid in ('anime-sama','mugiwarastream','kehflix','voiranime'):
+              crow=next((r for r in catalog.get('providers',[]) if str(r.get('canonicalId','')).lower()==pid),{})
+              print('FIELD_PROVIDER_CATALOG',pid,json.dumps(crow,separators=(',',':'),sort_keys=True))
+              print('FIELD_PROVIDER_CAP',pid,json.dumps((overrides.get('provider_capabilities') or {}).get(pid),separators=(',',':'),sort_keys=True))
+              print('FIELD_PROVIDER_PATCH',pid,json.dumps((overrides.get('provider_patches') or {}).get(pid),separators=(',',':'),sort_keys=True))
+          PY
+          for needle in anime-sama.to kehflix.lol kehflix.wiki voiranime.homes; do
+            echo "FIELD_STALE_DOMAIN needle=$needle"
+            grep -RFn --exclude-dir=.git -- "$needle" provider-overrides.json provider_catalog.json sources.json scripts provider-bases providers staging 2>/dev/null | head -80 || true
+          done
+      - name: Self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/temp-provider-state-diag.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(ci): remove provider state diagnostic'
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then exit 0; fi
+            sleep 1
+          done
+          exit 1
