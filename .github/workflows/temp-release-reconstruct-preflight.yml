@@ -27,6 +27,8 @@ jobs:
           set -euo pipefail
           python - <<'PY'
           from pathlib import Path
+
+          # Semantic transport migration must accept newer Core revisions.
           p=Path('scripts/enforce_provider_v3_semantic_transport_contract_v5.py')
           s=p.read_text(encoding='utf-8')
           old='''    old_revision = '\"revision\": \"tmdb-data-contract-launch-gate-v26-authoritative-context-reconcile\",'\n    new_revision = '\"revision\": \"tmdb-data-contract-launch-gate-v27-anime-semantic-transport\",'\n    if new_revision not in text:\n        if text.count(old_revision) != 1:\n            raise AssertionError(\"Core media revision source shape drifted\")\n        text = text.replace(old_revision, new_revision, 1)\n        changed = True\n'''
@@ -36,6 +38,40 @@ jobs:
           elif 'revision_number = int(revision_match.group(1))' not in s:
               raise SystemExit('semantic revision anchor missing')
 
+          # Qualified providers get a proof-filtered recipe. A runner-blocked
+          # provider must retain its stable candidate recipe intact because an
+          # empty live set is environmental evidence, not route invalidation.
+          model_old='''    candidate_model_recipe = model.get("candidateApiRecipe")\n    filtered_model_recipe = (\n        filter_recipe_by_live_routes(candidate_model_recipe, live_set)\n        if isinstance(candidate_model_recipe, dict)\n        else None\n    )\n    if isinstance(filtered_model_recipe, dict):\n        filtered_model_recipe["proofModelVersion"] = 5\n        model["apiRecipe"] = filtered_model_recipe\n    else:\n        model.pop("apiRecipe", None)\n'''
+          model_new='''    candidate_model_recipe = model.get("candidateApiRecipe")\n    blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable"}\n    if blocked_recipe_plan and isinstance(candidate_model_recipe, dict):\n        model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)\n    else:\n        filtered_model_recipe = (\n            filter_recipe_by_live_routes(candidate_model_recipe, live_set)\n            if isinstance(candidate_model_recipe, dict)\n            else None\n        )\n        if isinstance(filtered_model_recipe, dict):\n            filtered_model_recipe["proofModelVersion"] = 5\n            model["apiRecipe"] = filtered_model_recipe\n        else:\n            model.pop("apiRecipe", None)\n'''
+          patch_old='''        candidate_recipe = patch.get("candidate_api_recipe") if isinstance(patch.get("candidate_api_recipe"), dict) else patch.get("api_recipe")\n        filtered_patch_recipe = (\n            filter_recipe_by_live_routes(candidate_recipe, live_set)\n            if isinstance(candidate_recipe, dict)\n            else None\n        )\n        if isinstance(filtered_patch_recipe, dict):\n            filtered_patch_recipe["proofModelVersion"] = 5\n            patch["api_recipe"] = filtered_patch_recipe\n        else:\n            patch.pop("api_recipe", None)\n'''
+          patch_new='''        candidate_recipe = patch.get("candidate_api_recipe") if isinstance(patch.get("candidate_api_recipe"), dict) else patch.get("api_recipe")\n        if blocked_recipe_plan and isinstance(candidate_recipe, dict):\n            patch["api_recipe"] = copy.deepcopy(candidate_recipe)\n        else:\n            filtered_patch_recipe = (\n                filter_recipe_by_live_routes(candidate_recipe, live_set)\n                if isinstance(candidate_recipe, dict)\n                else None\n            )\n            if isinstance(filtered_patch_recipe, dict):\n                filtered_patch_recipe["proofModelVersion"] = 5\n                patch["api_recipe"] = filtered_patch_recipe\n            else:\n                patch.pop("api_recipe", None)\n'''
+          for path in (
+              Path('scripts/validate_provider_v3_routes_sequential.py'),
+              Path('scripts/upgrade_provider_v3_finalization_v1.py'),
+          ):
+              text=path.read_text(encoding='utf-8')
+              for old_block,new_block,label in (
+                  (model_old,model_new,'model recipe'),
+                  (patch_old,patch_new,'patch recipe'),
+              ):
+                  if old_block in text:
+                      text=text.replace(old_block,new_block,1)
+                  elif new_block not in text:
+                      raise SystemExit(f'{path}: {label} anchor missing')
+              path.write_text(text,encoding='utf-8')
+
+          # The upgrader validator must lock the blocked-plan invariant too.
+          u=Path('scripts/upgrade_provider_v3_finalization_v1.py')
+          us=u.read_text(encoding='utf-8')
+          required_anchor='''        'PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5',\n        'filter_recipe_by_live_routes(candidate_model_recipe, live_set)',\n'''
+          required_new='''        'PROVIDER_V3_ROUTE_PROOF_AUTHORITY_V5',\n        'blocked_recipe_plan = completion_state in {"terminal-blocked", "terminal-unreachable"}',\n        'model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)',\n        'patch["api_recipe"] = copy.deepcopy(candidate_recipe)',\n        'filter_recipe_by_live_routes(candidate_model_recipe, live_set)',\n'''
+          if required_anchor in us:
+              us=us.replace(required_anchor,required_new,1)
+          elif 'model["apiRecipe"] = copy.deepcopy(candidate_model_recipe)' not in us:
+              raise SystemExit('upgrader validator blocked-plan anchor missing')
+          u.write_text(us,encoding='utf-8')
+
+          # Keep the proof-first assertions for qualified providers.
           t=Path('tests/provider_v3_finalization_plan_test.py')
           q=t.read_text(encoding='utf-8')
           replacements={
@@ -53,14 +89,15 @@ jobs:
                   raise SystemExit('finalization proof assertion anchor missing: '+old_line)
           t.write_text(q,encoding='utf-8')
           PY
-          python -m py_compile scripts/enforce_provider_v3_semantic_transport_contract_v5.py tests/provider_v3_finalization_plan_test.py
+          python -m py_compile scripts/enforce_provider_v3_semantic_transport_contract_v5.py scripts/validate_provider_v3_routes_sequential.py scripts/upgrade_provider_v3_finalization_v1.py tests/provider_v3_finalization_plan_test.py
           python tests/provider_route_proof_authority_test.py
+          python tests/provider_v3_finalization_plan_test.py
           git diff --check
-          if ! git diff --quiet -- scripts/enforce_provider_v3_semantic_transport_contract_v5.py tests/provider_v3_finalization_plan_test.py; then
+          if ! git diff --quiet -- scripts/enforce_provider_v3_semantic_transport_contract_v5.py scripts/validate_provider_v3_routes_sequential.py scripts/upgrade_provider_v3_finalization_v1.py tests/provider_v3_finalization_plan_test.py; then
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-            git add scripts/enforce_provider_v3_semantic_transport_contract_v5.py tests/provider_v3_finalization_plan_test.py
-            git commit -m 'fix(finalizer): align proof-v5 route assertions'
+            git add scripts/enforce_provider_v3_semantic_transport_contract_v5.py scripts/validate_provider_v3_routes_sequential.py scripts/upgrade_provider_v3_finalization_v1.py tests/provider_v3_finalization_plan_test.py
+            git commit -m 'fix(finalizer): preserve blocked provider recipes'
             git push origin HEAD:release/stable-46-20260912
           fi
       - name: Source-plan and Core migration owners
