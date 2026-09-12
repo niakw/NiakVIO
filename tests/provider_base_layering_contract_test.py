@@ -34,8 +34,7 @@ valid = b"module.exports={getStreams:async()=>[]};\n"
 module.assert_base_layering(valid, "synthetic")
 
 # Security hardening is a publication/composed layer. It must never be accepted
-# as a seed for the clean common ProviderBase, even if older tests called it
-# "source-level normalization".
+# as a seed for the clean common ProviderBase.
 security_contaminated = b"/* NUVIO_PROVIDER_SECURITY_HARDENING_V1:legacy */\n" + valid
 try:
     module.assert_base_layering(security_contaminated, "synthetic-security-normalized")
@@ -82,33 +81,45 @@ assert v5_count == 1
 assert "NUVIO_VERIFIED_MEDIA_RUNTIME_RECOVERY_V5" not in v5_clean
 assert "const keep=true;" in v5_clean
 
-assert module.CLEAN_RECONSTRUCTION_SOURCE == "niakvio-clean-reconstruction-v2"
-assert module.CLEAN_RECONSTRUCTION_AUTHORING_VERSION == 2
+# Clean reconstruction authority is v3. Older clean-v1/v2 provenance must be
+# rematerialized rather than silently treated as current.
+assert module.CLEAN_RECONSTRUCTION_SOURCE == "niakvio-clean-reconstruction-v3"
+assert module.CLEAN_RECONSTRUCTION_AUTHORING_VERSION >= 3
+assert module.PROVIDER_BASE_OWNED_MARKER == "NIAKVIO_PROVIDER_BASE_OWNED_V3"
 assert module.requires_clean_reconstruction({}) is True
-for old_source in (
-    "one-shot-public-core-tail-extraction",
-    "provider-pipeline-legacy-rebase",
-    "selected_candidate_post_provider_overrides_pre_core",
-    "niakvio-clean-reconstruction",
+for old_source, old_authoring in (
+    ("one-shot-public-core-tail-extraction", 1),
+    ("provider-pipeline-legacy-rebase", 1),
+    ("selected_candidate_post_provider_overrides_pre_core", 1),
+    ("niakvio-clean-reconstruction", 1),
+    ("niakvio-clean-reconstruction-v2", 2),
 ):
     assert module.requires_clean_reconstruction({
         "base_source": old_source,
         "clean_reconstruction_verified": True,
-        "clean_reconstruction_authoring_version": 1,
+        "clean_reconstruction_authoring_version": old_authoring,
     }) is True
 
 clean_row = {
-    "base_source": "niakvio-clean-reconstruction-v2",
+    "base_source": module.CLEAN_RECONSTRUCTION_SOURCE,
     "clean_reconstruction_verified": True,
-    "clean_reconstruction_authoring_version": 2,
+    "clean_reconstruction_authoring_version": module.CLEAN_RECONSTRUCTION_AUTHORING_VERSION,
 }
 assert module.is_clean_reconstructed(clean_row) is True
 assert module.requires_clean_reconstruction(clean_row) is False
 
-assert module.QUARANTINE_PATCH in module.DERIVED_PATCH_SCRIPTS
-assert module.DYNAMIC_DOMAIN_PATCH in module.DERIVED_PATCH_SCRIPTS
-assert "scripts/provider_patches/adaptive_runtime_recovery_v5.py" in module.DERIVED_PATCH_SCRIPTS
-assert "scripts/provider_patches/adaptive_domain_recovery.py" in module.DERIVED_PATCH_SCRIPTS
+# Only quarantine remains a derived patch script in the clean-v3 patch surface.
+# Historical runtime/domain materializers are read-only legacy source paths and
+# are explicitly excluded from reconstruction rather than replayed.
+assert module.DERIVED_PATCH_SCRIPTS == {module.QUARANTINE_PATCH}
+for legacy_path in (
+    "scripts/provider_patches/runtime_repository_domain_materializer_v1.py",
+    "scripts/provider_patches/adaptive_domain_recovery.py",
+    "scripts/provider_patches/adaptive_runtime_recovery_v5.py",
+):
+    assert legacy_path in module.LEGACY_SOURCE_PATCH_PATHS, legacy_path
+    assert legacy_path in module.CLEAN_RECONSTRUCTION_EXCLUDED_PATCH_SCRIPTS, legacy_path
+    assert legacy_path not in module.DERIVED_PATCH_SCRIPTS, legacy_path
 
 apply_source = (ROOT / "scripts" / "apply_provider_overrides.py").read_text(encoding="utf-8")
 manual_workflow_source = (ROOT / ".github" / "workflows" / "provider-v3-reconstruct-all.yml").read_text(encoding="utf-8")
@@ -144,6 +155,7 @@ for forbidden in (
 ):
     assert forbidden not in routine_workflow_source, forbidden
 
+assert "materialize_provider_base_v3_store.py" in manual_workflow_source
 assert "materialize_provider_v3_all.py" in manual_workflow_source
 assert "verify_provider_v3_reverse_rebuild.py" in manual_workflow_source
 assert "python scripts/provider_base_store.py validate" in manual_workflow_source
