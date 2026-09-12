@@ -1,0 +1,155 @@
+name: TEMP Fix manual TV V34
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-fix-manual-tv-v34.yml"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: temp-fix-manual-tv-v34-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - name: Persist V34 root cause and focused-green evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          marker='V34 + V8 + Mugiwara episodic fail-closed checkpoint (.44)'
+          if grep -Fq "$marker" MEMORY.md; then
+            echo 'FIELD_MEMORY_CHECKPOINT v34=already-present'
+            exit 0
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('MEMORY.md')
+          block='''
+
+          ## 2026-09-12 — V34 + V8 + Mugiwara episodic fail-closed checkpoint (.44)
+
+          - Work remains strictly on `fix/labs-5.21.44-20260912`; `main` is untouched and no merge is authorized yet.
+          - Exact safe Mugiwara diagnostic run `34721006209`: Ragna Crimson S1E4 mapped `rowId=1/index=3`, season 1 count 24, and produced 1 raw/1 playable stream. Hell Mode requested S2E10 while the catalogue page resolved to `/episodes/saison1`; structured data exposed season 1 count 12 and season 2 count 0, so requested S2E10 had `selection=none`, yet the old native fallback emitted 8 raw/8 playable rows. Root cause: the specialized resolver correctly had no S2E10 match, then unsafe native/default-season output was reused.
+          - `upgrade_mugiwara_episode_failclosed_v2.py` preserves movie fallback but returns `[]` for episodic requests when structured Mugiwara data cannot prove the requested S/E.
+          - V34 filters learned literal `type=movie|tv` API routes against requested transport, uses strongest explicit quality evidence, preserves detailed language evidence, and selects terminal sanitizer V8.
+          - Sanitizer V8 publishes ordinary probed rows only on positive media proof; network/timeout/opaque outcomes fail closed. Its reapplication restores the V7 source hook before rebuilding, so identical reapplication remains byte-idempotent and changed options can rematerialize safely.
+          - TEMP retry 14 run `34721494272` reached a fully green focused suite. New runtime proof: declared `720p` + explicit `1080P` => `1080p`; generic `VO` + explicit `Hindi` => `Hindi`; dead direct row removed; V8 second application byte-identical. Retry 14 stopped only because its MEMORY push attempted a rebase with migration changes still unstaged; no Core test failed.
+          '''
+          with p.open('a',encoding='utf-8') as f:
+              f.write(block)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add MEMORY.md
+          git commit -m 'docs(memory): checkpoint V34 and Mugiwara root cause'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_MEMORY_CHECKPOINT v34=written attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+
+  patch_and_verify:
+    needs: checkpoint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout latest .44
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+
+      - name: Apply durable V34 and episode safety
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/prepatch_manual_tv_regressions_20260912.py
+          python3 scripts/upgrade_provider_execution_failfast_v33.py
+          python3 scripts/upgrade_provider_movie_catalogue_identity_v21_10.py
+          python3 scripts/upgrade_provider_episode_identity_guard_v22_1.py
+          python3 scripts/upgrade_mugiwara_episode_failclosed_v2.py
+          python3 scripts/upgrade_manual_tv_live_regressions_v34.py
+
+      - name: Focused regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tests/provider_movie_catalogue_identity_v21_10_test.py
+          python3 tests/provider_episode_identity_guard_v22_1_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
+          python3 tests/manual_tv_regressions_contract_test.py
+          python3 tests/manual_tv_live_regressions_v34_test.py
+          python3 tests/provider_latest_request_cancellation_test.py
+          python3 tests/provider_native_abort_ignorant_cancellation_test.py
+          python3 tests/stream_quality_recovery_tv_test.py
+          python3 tests/stream_output_sanitizer_fail_closed_test.py
+          python3 tests/stream_output_sanitizer_direct_normalization_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+
+      - name: Rebuild owned ProviderBase store 96/96
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_base_v3_store.py
+          python3 tests/provider_base_layering_contract_test.py
+
+      - name: Rebuild all 96 bundles and fixed point
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/materialize_provider_v3_all.py
+          python3 scripts/reapply_published_overrides.py
+          python3 scripts/reapply_published_overrides.py --check
+          python3 tests/global_stream_output_guard_test.py
+          python3 tests/provider_base_layering_contract_test.py
+          python3 tests/core_runtime_nonregression_contract_test.py
+          python3 tests/manual_tv_regressions_contract_test.py
+          python3 tests/manual_tv_live_regressions_v34_test.py
+          python3 tests/provider_movie_catalogue_identity_v21_10_test.py
+          python3 tests/provider_episode_identity_guard_v22_1_test.py
+          python3 tests/provider_no_timer_runtime_test.py
+          python3 tests/provider_execution_failfast_v33_test.py
+
+      - name: Catalogue invariants
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -c 'import json,pathlib; m=json.load(open("manifest.json")); rows=m["scrapers"]; active=[r for r in rows if r.get("enabled") is True]; missing=[r["id"] for r in rows if not pathlib.Path(r["filename"]).is_file()]; print("FIELD_FIX_BRANCH_STATE",m.get("version"),len(rows),len(active),len(missing)); assert len(rows)==96 and len(active)==46 and not missing'
+          python3 scripts/validate_published_provider_config.py --expected 96
+
+      - name: Commit verified V34 rebuild
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          if git diff --cached --quiet; then
+            echo 'FIELD_FIX_COMMIT changed=0'
+            exit 0
+          fi
+          git commit -m 'fix(core): materialize V34 strict stream truth and episode safety'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_FIX_COMMIT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
