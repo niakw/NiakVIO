@@ -1,0 +1,92 @@
+name: TEMP - Fix Disabled Sequential Gate V2
+on:
+  push:
+    branches: [release/stable-46-20260912]
+    paths: [.github/workflows/temp-fix-disabled-sequential-v2.yml]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: release/stable-46-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Patch disabled-provider audit semantics and upgrader
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path, old, new, label):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly one match, got {count}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          seq = 'scripts/validate_provider_v3_routes_sequential.py'
+          replace_once(seq,
+              '            "filename": filename,\n            "supported_types": supported,\n            "tasks": tasks,\n',
+              '            "filename": filename,\n            "enabled": manifest_row.get("enabled") is not False,\n            "supported_types": supported,\n            "tasks": tasks,\n',
+              'queue-enabled-state')
+
+          replace_once(seq,
+              '''            else:\n                failure = {\n                    **evaluation,\n                    "completionState": "missing-declared-type-route-proof",\n                    "originEvidence": origin_evidence,\n                    "advancedToNextProvider": False,\n                }\n                report_rows.append(failure)\n                partial = {\n                    "schemaVersion": 3,\n                    "method": "strict-sequential-provider-declared-type-live-route-gate",\n                    "providerCount": EXPECTED,\n                    "completedProviderCount": index - 1,\n                    "failedProvider": provider_id,\n                    "providers": report_rows,\n                }\n                write(output_path, partial)\n                write(knowledge_path, knowledge)\n                write(overrides_path, overrides)\n                raise SystemExit(\n                    f"{provider_id}: missing live route proof for declared types "\n                    f"{','.join(evaluation['missingTypes']) or 'unknown'}; refusing to advance to provider {index + 1}"\n                )\n''',
+              '''            elif provider.get("enabled") is False:\n                completion_state = "disabled-unqualified"\n                passed = True\n                print(\n                    "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "\n                    f"provider={provider_id} missing={','.join(evaluation['missingTypes']) or 'none'}",\n                    flush=True,\n                )\n            else:\n                failure = {\n                    **evaluation,\n                    "completionState": "missing-declared-type-route-proof",\n                    "originEvidence": origin_evidence,\n                    "advancedToNextProvider": False,\n                }\n                report_rows.append(failure)\n                partial = {\n                    "schemaVersion": 3,\n                    "method": "strict-sequential-provider-declared-type-live-route-gate",\n                    "providerCount": EXPECTED,\n                    "completedProviderCount": index - 1,\n                    "failedProvider": provider_id,\n                    "providers": report_rows,\n                }\n                write(output_path, partial)\n                write(knowledge_path, knowledge)\n                write(overrides_path, overrides)\n                raise SystemExit(\n                    f"{provider_id}: missing live route proof for declared types "\n                    f"{','.join(evaluation['missingTypes']) or 'unknown'}; refusing to advance to provider {index + 1}"\n                )\n''',
+              'validator-disabled-fallback')
+
+          old_states = '{"terminal-blocked", "terminal-unreachable"}'
+          new_states = '{"terminal-blocked", "terminal-unreachable", "disabled-unqualified"}'
+          p = Path(seq)
+          text = p.read_text(encoding='utf-8')
+          if text.count(old_states) < 4:
+              raise SystemExit(f'expected blocked state set in validator >=4 times, got {text.count(old_states)}')
+          p.write_text(text.replace(old_states, new_states), encoding='utf-8')
+
+          recon = 'scripts/reconstruct_provider_v3_sequential_live.py'
+          replace_once(recon,
+              '        if completion_state is None:\n            failure = {\n',
+              '''        if completion_state is None and provider.get("enabled") is False:\n            completion_state = "disabled-unqualified"\n            print(\n                "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "\n                f"provider={provider_id} phase=candidate "\n                f"missing={','.join(evaluation.get('missingTypes') or []) or 'none'}",\n                flush=True,\n            )\n\n        if completion_state is None:\n            failure = {\n''',
+              'reconstruct-disabled-candidate-fallback')
+
+          replace_once(recon,
+              '''            if not final_proof.get("verified"):\n                failure = {\n                    **evaluation,\n                    "completionState": completion_state,\n                    "originEvidence": origin_evidence,\n                    "advancedToNextProvider": False,\n                    "finalBundleVerified": False,\n                    "finalBundleProof": final_proof,\n                    "candidateBundleFile": candidate_filename,\n                    "candidateBundleSha256": candidate_materialized.get("sha256"),\n                    "finalBundleFile": final_filename,\n                    "finalBundleSha256": materialized.get("sha256"),\n                }\n                report_rows.append(failure)\n                checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)\n                raise SystemExit(\n                    f"{provider_id}: candidate DATA proved all declared types but final bundle did not; "\n                    f"missing={','.join(final_proof.get('missingTypes') or []) or 'unknown'}; "\n                    f"refusing to materialize or advance to provider {index + 1}"\n                )\n''',
+              '''            if not final_proof.get("verified"):\n                if provider.get("enabled") is False:\n                    previous_state = completion_state\n                    completion_state = "disabled-unqualified"\n                    finalize_provider(\n                        provider_id, provider, knowledge, overrides, evaluation,\n                        completion_state, origin_evidence,\n                    )\n                    write(knowledge_path, knowledge)\n                    write(overrides_path, overrides)\n                    materialized = materialize_one(provider_id)\n                    final_filename = str(materialized.get("file") or "")\n                    if not final_filename:\n                        raise SystemExit(f"{provider_id}: disabled demotion materialization produced no file")\n                    final_proof = {\n                        **final_proof,\n                        "verified": False,\n                        "reason": "disabled-final-bundle-unverified",\n                        "demotedFrom": previous_state,\n                    }\n                    print(\n                        "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE "\n                        f"provider={provider_id} phase=final-proof "\n                        f"wrong_content={','.join(final_proof.get('wrongContentOnlyTypes') or []) or 'none'}",\n                        flush=True,\n                    )\n                else:\n                    failure = {\n                        **evaluation,\n                        "completionState": completion_state,\n                        "originEvidence": origin_evidence,\n                        "advancedToNextProvider": False,\n                        "finalBundleVerified": False,\n                        "finalBundleProof": final_proof,\n                        "candidateBundleFile": candidate_filename,\n                        "candidateBundleSha256": candidate_materialized.get("sha256"),\n                        "finalBundleFile": final_filename,\n                        "finalBundleSha256": materialized.get("sha256"),\n                    }\n                    report_rows.append(failure)\n                    checkpoint(output_path, report_rows, totals, index - 1, minimum, provider_id)\n                    raise SystemExit(\n                        f"{provider_id}: candidate DATA proved all declared types but final bundle did not; "\n                        f"missing={','.join(final_proof.get('missingTypes') or []) or 'unknown'}; "\n                        f"refusing to materialize or advance to provider {index + 1}"\n                    )\n''',
+              'reconstruct-disabled-final-demotion')
+
+          test = 'tests/provider_v3_sequential_reconstruction_contract_test.py'
+          replace_once(test,
+              'assert "active_coverage_main()" in source\nassert \'"globalCandidateMaterialization": False\' in source\n',
+              'assert "active_coverage_main()" in source\nassert \'"globalCandidateMaterialization": False\' in source\nassert \'provider.get("enabled") is False\' in source\nassert \'"disabled-unqualified"\' in source\nassert "FIELD_PROVIDER_DISABLED_UNQUALIFIED_ADVANCE" in source\nvalidator_source = (ROOT / "scripts" / "validate_provider_v3_routes_sequential.py").read_text(encoding="utf-8")\nassert \'"enabled": manifest_row.get("enabled") is not False\' in validator_source\nassert \'completion_state = "disabled-unqualified"\' in validator_source\n',
+              'contract-disabled-separation')
+
+          upgrader = Path('scripts/upgrade_provider_v3_finalization_v1.py')
+          utext = upgrader.read_text(encoding='utf-8')
+          count = utext.count(old_states)
+          if count < 4:
+              raise SystemExit(f'expected blocked state set in upgrader >=4 times, got {count}')
+          upgrader.write_text(utext.replace(old_states, new_states), encoding='utf-8')
+          PY
+      - name: Validate focused contracts
+        run: |
+          python -m py_compile scripts/reconstruct_provider_v3_sequential_live.py scripts/validate_provider_v3_routes_sequential.py scripts/upgrade_provider_v3_finalization_v1.py
+          python tests/provider_v3_sequential_reconstruction_contract_test.py
+          python tests/provider_v3_finalization_plan_test.py
+          python tests/active_provider_live_coverage_test.py
+          python scripts/upgrade_provider_v3_finalization_v1.py
+          git diff --check
+      - name: Commit durable fix
+        run: |
+          set -euo pipefail
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add scripts/reconstruct_provider_v3_sequential_live.py scripts/validate_provider_v3_routes_sequential.py scripts/upgrade_provider_v3_finalization_v1.py tests/provider_v3_sequential_reconstruction_contract_test.py
+          git diff --cached --quiet && { echo 'No durable changes'; exit 1; }
+          git commit -m 'fix(reconstruct): isolate disabled providers from active live gate'
+          git push origin HEAD:release/stable-46-20260912
