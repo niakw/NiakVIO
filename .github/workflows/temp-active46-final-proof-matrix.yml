@@ -21,16 +21,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python - <<'PY' >> "$GITHUB_OUTPUT"
+          providers="$(python - <<'PY'
           import json
           from pathlib import Path
           manifest=json.loads(Path('manifest.json').read_text())
-          rows=manifest.get('providers') or []
+          rows=manifest.get('scrapers') or []
           enabled=[]
           for row in rows:
               if not isinstance(row, dict):
                   continue
-              pid=str(row.get('id') or row.get('providerId') or row.get('provider_id') or '').strip()
+              pid=str(row.get('id') or '').strip().casefold()
               if not pid:
                   continue
               disabled=row.get('disabled') is True or row.get('enabled') is False
@@ -39,15 +39,17 @@ jobs:
           expected=['anime-sama','purstream','flemmix','uhdmovies','movieshunt','hindmoviez','4khdhub','persianstremio','desiflix','kehflix','anikototv','animekai','animesalt','animesama-co','animesultra','animetsu','animevostfr','castle','coflix','french-manga','kurage','moviesmod','mugiwarastream','neko-sama','papadustream','playimdb','sekai','streamzo','videasy','vidfast','vidrock','voiranime','voiranime-homes','voiranime-rip','vostfree','wookafr','yflix','allanime','allwish','anime-ultime','animevost-fr','fullanime','mallumv','moviebox','showbox','vidlove']
           assert len(enabled)==46, (len(enabled), enabled)
           assert set(enabled)==set(expected), {'missing':sorted(set(expected)-set(enabled)),'extra':sorted(set(enabled)-set(expected))}
-          print('providers='+json.dumps(expected,separators=(',',':')))
-          print('FIELD_ACTIVE46_MATRIX_SCOPE count=46')
+          print(json.dumps(expected,separators=(',',':')))
           PY
+          )"
+          echo "providers=$providers" >> "$GITHUB_OUTPUT"
+          echo 'FIELD_ACTIVE46_MATRIX_SCOPE count=46'
 
   prove:
     needs: scope
     strategy:
       fail-fast: false
-      max-parallel: 12
+      max-parallel: 20
       matrix:
         provider: ${{ fromJSON(needs.scope.outputs.providers) }}
     runs-on: ubuntu-latest
