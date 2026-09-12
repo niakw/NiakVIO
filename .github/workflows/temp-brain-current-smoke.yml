@@ -6,13 +6,13 @@ on:
     paths: [".github/workflows/temp-brain-current-smoke.yml"]
 
 permissions:
-  contents: read
+  contents: write
   actions: read
 
 jobs:
   smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 65
     env:
       TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
       TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
@@ -22,7 +22,6 @@ jobs:
         with:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 0
-          persist-credentials: false
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: { python-version: '3.12' }
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
@@ -35,6 +34,43 @@ jobs:
           set -euo pipefail
           python3 scripts/upgrade_discovery_upstream_registry_v2.py
           python3 scripts/upgrade_weekly_upstream_report_registry_v2.py
+      - name: Diagnose and rematerialize canonical ProviderBase store
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          root=Path.cwd(); sys.path.insert(0,str(root/'scripts'))
+          import provider_base_store as bs
+          manifest=json.loads((root/'manifest.json').read_text())
+          provenance=json.loads((root/'PROVENANCE.json').read_text())
+          expected=bs.build_clean_provider_seed('ignored')
+          mismatches=[]
+          for row in manifest.get('scrapers') or []:
+              if not isinstance(row,dict): continue
+              pid=bs.canonical_id(str(row.get('id') or ''))
+              prow=(provenance.get('providers') or {}).get(pid) or {}
+              rel=str(prow.get('base_filename') or '')
+              path=root/rel
+              if not path.is_file():
+                  mismatches.append({'provider':pid,'state':'missing','path':rel})
+                  continue
+              raw=path.read_bytes()
+              if raw!=expected:
+                  first=next((i for i,(a,b) in enumerate(zip(raw,expected)) if a!=b),min(len(raw),len(expected)))
+                  mismatches.append({'provider':pid,'state':'byte-drift','path':rel,'bytes':len(raw),'expectedBytes':len(expected),'firstDiff':first,'sha':hashlib.sha256(raw).hexdigest()[:16],'expectedSha':hashlib.sha256(expected).hexdigest()[:16]})
+          print('FIELD_BRAIN_BASE_DRIFT '+json.dumps({'count':len(mismatches),'rows':mismatches[:20]},separators=(',',':'),sort_keys=True))
+          PY
+          python3 scripts/materialize_provider_base_v3_store.py
+          python3 tests/provider_clean_reconstruction_contract_test.py
+          unexpected="$(git status --porcelain | awk '{print $2}' | grep -Ev '^(provider-bases/|PROVENANCE\.json$)' || true)"
+          if [ -n "$unexpected" ]; then
+            echo "unexpected files changed by ProviderBase rematerialization:" >&2
+            printf '%s\n' "$unexpected" >&2
+            exit 1
+          fi
+          echo "FIELD_BRAIN_BASE_REPAIR changed_files=$(git status --porcelain provider-bases PROVENANCE.json | wc -l) clean_contract=true"
       - name: Re-run the exact historical Brain preflight blocker set
         shell: bash
         run: |
@@ -73,6 +109,28 @@ jobs:
           python scripts/validate_override_pipeline.py --stage staging
           git diff --exit-code -- provider_catalog.json manifest.json providers/ provider-overrides.json
           echo 'FIELD_BRAIN_CURRENT_STAGE discovery=true stage_valid=true canonical_mutation=false'
+      - name: Commit generated clean ProviderBase store repair if green
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add provider-bases/ PROVENANCE.json
+          if git diff --cached --quiet; then
+            echo 'FIELD_BRAIN_BASE_COMMIT changed=0'
+            exit 0
+          fi
+          git commit -m 'fix(brain): restore canonical clean ProviderBase store'
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_BRAIN_BASE_COMMIT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
       - name: Upload branch-only smoke evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
