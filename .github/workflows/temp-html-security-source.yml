@@ -1,0 +1,21 @@
+name: TEMP - HTML Security Source
+
+on:
+  push:
+    branches: [release/stable-46-20260912]
+    paths: [.github/workflows/temp-html-security-source.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with: {ref: '${{ github.sha }}', fetch-depth: 1}
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with: {python-version: '3.12'}
+      - name: Check ProviderBase and runtime Lego HTML filters
+        run: python tests/provider_html_filter_security_test.py
