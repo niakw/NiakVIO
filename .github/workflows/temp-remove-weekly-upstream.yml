@@ -1,0 +1,84 @@
+name: TEMP Remove Weekly Upstream Discovery
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-remove-weekly-upstream.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
+        with:
+          python-version: '3.12'
+      - name: Remove operational references
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          paths = [
+              Path('.github/workflows/brain-learning-lab.yml'),
+              Path('.github/workflows/temp-brain-current-smoke.yml'),
+          ]
+          needles = [
+              '          python3 scripts/upgrade_weekly_upstream_report_registry_v2.py\n',
+              '            scripts/report_new_upstream_providers.py \\\n',
+              '          scripts/report_new_upstream_providers.py \\\n',
+          ]
+          for path in paths:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding='utf-8')
+              before = text
+              for needle in needles:
+                  text = text.replace(needle, '')
+              path.write_text(text, encoding='utf-8')
+              print(f'FIELD_WEEKLY_REMOVE_PATCH path={path} changed={str(text != before).lower()}')
+          PY
+
+          for path in \
+            .github/workflows/weekly-upstream-provider-discovery.yml \
+            .github/workflows/temp-weekly-upstream-smoke.yml \
+            scripts/report_new_upstream_providers.py \
+            scripts/upgrade_weekly_upstream_report_registry_v2.py \
+            tests/weekly_upstream_provider_discovery_test.py; do
+            test ! -e "$path"
+          done
+
+          if git grep -n -E 'weekly-upstream-provider-discovery|report_new_upstream_providers|upgrade_weekly_upstream_report_registry_v2|weekly_upstream_provider_discovery_test' -- \
+            ':!MEMORY.md' ':!automation/memory-checkpoint-*' ':!.github/workflows/temp-remove-weekly-upstream.yml'; then
+            echo 'weekly upstream discovery operational reference remains' >&2
+            exit 1
+          fi
+
+          python tests/brain_cron_full_coverage_test.py
+          python3 -m py_compile scripts/discover_candidates.py
+
+      - name: Commit cleanup and self-remove
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/temp-remove-weekly-upstream.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'chore(discovery): remove weekly upstream discovery feature'
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_WEEKLY_REMOVE_COMMIT attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
