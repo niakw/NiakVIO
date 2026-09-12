@@ -40,7 +40,9 @@ media_source = (
 ).read_text(encoding="utf-8")
 assert 'cfg.get("provider_timeout_ms", 25_000)' in media_source
 assert 'cfg.get("tv_provider_timeout_ms", 25_000)' in media_source
-assert "tmdb-data-contract-launch-gate-v32-25s-navigation-budget" in media_source
+assert "tmdb-data-contract-launch-gate-v33-25s-isolated-failfast" in media_source
+assert '"fetchSliceMs"' in media_source
+assert '"maxHardFailures"' in media_source
 
 sanitizer = load(
     ROOT / "scripts/provider_patches/stream_output_sanitizer_v6.py",
@@ -150,6 +152,8 @@ managed = media.apply(
         "semantic_types": ["movie"],
         "provider_timeout_ms": 25_000,
         "tv_provider_timeout_ms": 25_000,
+        "fetch_slice_ms": 7_000,
+        "max_hard_failures": 3,
         "supersede_settle_ms": 700,
     },
 )
