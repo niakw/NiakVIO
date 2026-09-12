@@ -1,4 +1,4 @@
-# retry-12: remove stale ProviderBase reconstruction test path; continue 96-bundle rebuild
+# retry-13: YAML-safe MEMORY checkpoint; continue all-96 bundle rebuild
 name: TEMP Fix manual TV regressions
 
 on:
@@ -23,41 +23,31 @@ jobs:
           ref: fix/labs-5.21.44-20260912
           fetch-depth: 0
 
-      - name: Persist retry 11 checkpoint to MEMORY
+      - name: Persist retry 11/12 checkpoint to MEMORY
         shell: bash
         run: |
           set -euo pipefail
           if ! grep -q '34719876807' MEMORY.md; then
-            cat >> MEMORY.md <<'EOF'
-
-## 2026-09-12 — .44 manual-TV recovery retry 11
-
-- Work remains isolated to `fix/labs-5.21.44-20260912`; `main` is untouched and must not be merged until final user approval.
-- TEMP workflow run `34719876807`, job `103623640566`: all focused Core/manual-TV regressions passed together before rebuild.
-- Verified contracts: movie catalogue identity V21.10; episode identity guard V22.1; no-timer native runtime; provider execution fail-fast V33; manual-TV aggregate contract; latest-request cancellation; native AbortSignal-ignorant cancellation; HLS quality recovery; fail-closed stream sanitizer; direct normalization; Core runtime non-regression.
-- Timing/evidence: no-timer A→B first stale result `0`, second result `1`, fast URL preserved; V33 fallback used 2 fetches, repeated dead provider stopped after 3 hard fetches, stalled network returned in about 1.4 s; provider timeout remains 25 s.
-- ProviderBase v3 reconstruction succeeded `96/96`, `unique_paths=96`, `reconstruction_required=0`, `provider_js_seed=false`, `upstream_js_seed=false`, runtime reader v10; `provider_base_layering_contract_test.py` passed.
-- Retry 11 failed only because the temporary workflow referenced nonexistent stale test `tests/provider_reconstruction_input_suite_test.py`; this is CI plumbing, not a Core/runtime regression. Retry 12 removes only that obsolete test reference and continues into all-96 bundle materialization.
-EOF
+            python3 -c 'import base64,pathlib; p=pathlib.Path("MEMORY.md"); p.write_bytes(p.read_bytes()+b"\n"+base64.b64decode("IyMgMjAyNi0wOS0xMiDigJQgLjQ0IG1hbnVhbC1UViByZWNvdmVyeSByZXRyeSAxMQoKLSBXb3JrIHJlbWFpbnMgaXNvbGF0ZWQgdG8gYGZpeC9sYWJzLTUuMjEuNDQtMjAyNjA5MTJgOyBgbWFpbmAgaXMgdW50b3VjaGVkIGFuZCBtdXN0IG5vdCBiZSBtZXJnZWQgdW50aWwgZmluYWwgdXNlciBhcHByb3ZhbC4KLSBURU1QIHdvcmtmbG93IHJ1biBgMzQ3MTk4NzY4MDdgLCBqb2IgYDEwMzYyMzY0MDU2NmA6IGFsbCBmb2N1c2VkIENvcmUvbWFudWFsLVRWIHJlZ3Jlc3Npb25zIHBhc3NlZCB0b2dldGhlciBiZWZvcmUgcmVidWlsZC4KLSBWZXJpZmllZCBjb250cmFjdHM6IG1vdmllIGNhdGFsb2d1ZSBpZGVudGl0eSBWMjEuMTA7IGVwaXNvZGUgaWRlbnRpdHkgZ3VhcmQgVjIyLjE7IG5vLXRpbWVyIG5hdGl2ZSBydW50aW1lOyBwcm92aWRlciBleGVjdXRpb24gZmFpbC1mYXN0IFYzMzsgbWFudWFsLVRWIGFnZ3JlZ2F0ZSBjb250cmFjdDsgbGF0ZXN0LXJlcXVlc3QgY2FuY2VsbGF0aW9uOyBuYXRpdmUgQWJvcnRTaWduYWwtaWdub3JhbnQgY2FuY2VsbGF0aW9uOyBITFMgcXVhbGl0eSByZWNvdmVyeTsgZmFpbC1jbG9zZWQgc3RyZWFtIHNhbml0aXplcjsgZGlyZWN0IG5vcm1hbGl6YXRpb247IENvcmUgcnVudGltZSBub24tcmVncmVzc2lvbi4KLSBUaW1pbmcvZXZpZGVuY2U6IG5vLXRpbWVyIEHihpJCIGZpcnN0IHN0YWxlIHJlc3VsdCBgMGAsIHNlY29uZCByZXN1bHQgYDFgLCBmYXN0IFVSTCBwcmVzZXJ2ZWQ7IFYzMyBmYWxsYmFjayB1c2VkIDIgZmV0Y2hlcywgcmVwZWF0ZWQgZGVhZCBwcm92aWRlciBzdG9wcGVkIGFmdGVyIDMgaGFyZCBmZXRjaGVzLCBzdGFsbGVkIG5ldHdvcmsgcmV0dXJuZWQgaW4gYWJvdXQgMS40IHM7IHByb3ZpZGVyIHRpbWVvdXQgcmVtYWlucyAyNSBzLgotIFByb3ZpZGVyQmFzZSB2MyByZWNvbnN0cnVjdGlvbiBzdWNjZWVkZWQgYDk2Lzk2YCwgYHVuaXF1ZV9wYXRocz05NmAsIGByZWNvbnN0cnVjdGlvbl9yZXF1aXJlZD0wYCwgYHByb3ZpZGVyX2pzX3NlZWQ9ZmFsc2VgLCBgdXBzdHJlYW1fanNfc2VlZD1mYWxzZWAsIHJ1bnRpbWUgcmVhZGVyIHYxMDsgYHByb3ZpZGVyX2Jhc2VfbGF5ZXJpbmdfY29udHJhY3RfdGVzdC5weWAgcGFzc2VkLgotIFJldHJ5IDExIGZhaWxlZCBvbmx5IGJlY2F1c2UgdGhlIHRlbXBvcmFyeSB3b3JrZmxvdyByZWZlcmVuY2VkIG5vbmV4aXN0ZW50IHN0YWxlIHRlc3QgYHRlc3RzL3Byb3ZpZGVyX3JlY29uc3RydWN0aW9uX2lucHV0X3N1aXRlX3Rlc3QucHlgOyB0aGlzIGlzIENJIHBsdW1iaW5nLCBub3QgYSBDb3JlL3J1bnRpbWUgcmVncmVzc2lvbi4gUmV0cnkgMTIgcmVtb3ZlZCBvbmx5IHRoYXQgb2Jzb2xldGUgdGVzdCByZWZlcmVuY2UuIFJldHJ5IDEyIGl0c2VsZiBoYWQgbm8gam9iIGJlY2F1c2UgYSBjaGVja3BvaW50IGhlcmVkb2MgbWFkZSB0aGUgWUFNTCBpbnZhbGlkOyByZXRyeSAxMyByZXBsYWNlcyBpdCB3aXRoIFlBTUwtc2FmZSBiYXNlNjQgYXBwZW5kIGFuZCBjb250aW51ZXMgaW50byBhbGwtOTYgYnVuZGxlIG1hdGVyaWFsaXphdGlvbi4K"))'
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add MEMORY.md
-            git commit -m "docs(memory): checkpoint .44 TV recovery retry 11"
+            git commit -m "docs(memory): checkpoint .44 TV recovery retry 11-12"
             for attempt in 1 2 3 4 5; do
               git fetch origin fix/labs-5.21.44-20260912
               git rebase origin/fix/labs-5.21.44-20260912
               if git push origin HEAD:fix/labs-5.21.44-20260912; then
-                echo "FIELD_MEMORY_CHECKPOINT retry11=written attempt=$attempt sha=$(git rev-parse HEAD)"
+                echo "FIELD_MEMORY_CHECKPOINT retry11_12=written attempt=$attempt sha=$(git rev-parse HEAD)"
                 break
               fi
               if [ "$attempt" = 5 ]; then
-                echo 'retry11 MEMORY checkpoint push failed' >&2
+                echo 'retry11/12 MEMORY checkpoint push failed' >&2
                 exit 1
               fi
               sleep 1
             done
           else
-            echo 'FIELD_MEMORY_CHECKPOINT retry11=already-present'
+            echo 'FIELD_MEMORY_CHECKPOINT retry11_12=already-present'
           fi
 
       - name: Apply durable common fixes
