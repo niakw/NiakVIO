@@ -23,6 +23,7 @@ import upgrade_provider_auxiliary_metadata_filter_v1 as auxiliary_metadata_filte
 import upgrade_provider_terminal_media_block_v1 as terminal_media_block
 import upgrade_provider_disabled_fast_advance_v1 as disabled_fast_advance
 import upgrade_provider_adaptive_live_retry_v1 as adaptive_live_retry
+import upgrade_provider_execution_authority_finalization_v1 as execution_authority_finalization
 
 ROOT = Path(__file__).resolve().parents[1]
 BASE_STORE = ROOT / "scripts" / "provider_base_store.py"
@@ -54,6 +55,8 @@ def main() -> int:
     disabled_fast_advance.validate()
     adaptive_live_retry_changed = adaptive_live_retry.patch()
     adaptive_live_retry.validate()
+    execution_authority_finalization_changed = execution_authority_finalization.patch()
+    execution_authority_finalization.validate()
 
     proof_text = PROOF.read_text(encoding="utf-8") if PROOF.is_file() else ""
     route_safety_changed = False
@@ -111,6 +114,7 @@ def main() -> int:
         f"terminalMediaBlockChanged={str(terminal_media_block_changed).lower()} "
         f"disabledFastAdvanceChanged={str(disabled_fast_advance_changed).lower()} "
         f"adaptiveLiveRetryChanged={str(adaptive_live_retry_changed).lower()} "
+        f"executionAuthorityFinalizationChanged={str(execution_authority_finalization_changed).lower()} "
         f"routeSafetyChanged={str(route_safety_changed).lower()} "
         f"kehflixTerminalChanged={str(kehflix_overrides_changed or kehflix_knowledge_changed).lower()} "
         f"signedPlayerChanged={str(signed_player_changed).lower()}"
