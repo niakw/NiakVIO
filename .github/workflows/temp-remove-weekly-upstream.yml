@@ -19,30 +19,55 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
           python-version: '3.12'
-      - name: Remove operational references
+      - name: Remove operational and documentation references
         shell: bash
         run: |
           set -euo pipefail
           python3 - <<'PY'
           from pathlib import Path
-          paths = [
-              Path('.github/workflows/brain-learning-lab.yml'),
-              Path('.github/workflows/temp-brain-current-smoke.yml'),
-          ]
-          needles = [
-              '          python3 scripts/upgrade_weekly_upstream_report_registry_v2.py\n',
-              '            scripts/report_new_upstream_providers.py \\\n',
-              '          scripts/report_new_upstream_providers.py \\\n',
-          ]
-          for path in paths:
+
+          # Remove dead script imports from active Brain/temp validation workflows.
+          for path in [Path('.github/workflows/brain-learning-lab.yml'), Path('.github/workflows/temp-brain-current-smoke.yml')]:
               if not path.exists():
                   continue
               text = path.read_text(encoding='utf-8')
-              before = text
-              for needle in needles:
+              for needle in (
+                  '          python3 scripts/upgrade_weekly_upstream_report_registry_v2.py\n',
+                  '            scripts/report_new_upstream_providers.py \\\n',
+                  '          scripts/report_new_upstream_providers.py \\\n',
+              ):
                   text = text.replace(needle, '')
               path.write_text(text, encoding='utf-8')
-              print(f'FIELD_WEEKLY_REMOVE_PATCH path={path} changed={str(text != before).lower()}')
+
+          # Remove the deleted maintenance workflow from README workflow tables.
+          for name in ('README.md', 'README.fr.md'):
+              path=Path(name)
+              lines=path.read_text(encoding='utf-8').splitlines()
+              lines=[line for line in lines if 'weekly-upstream-provider-discovery.yml' not in line]
+              path.write_text('\n'.join(lines)+'\n', encoding='utf-8')
+
+          # Upstream docs: keep provenance description, explicitly state there is no scheduled weekly discovery.
+          path=Path('UPSTREAMS.md')
+          text=path.read_text(encoding='utf-8')
+          start=text.find('## Contrat actuel\n')
+          end=text.find('## Relation avec Provider v3\n')
+          if start >= 0 and end > start:
+              replacement=(
+                  '## Contrat actuel\n\n'
+                  'NiakVIO ne planifie plus de découverte upstream hebdomadaire dédiée. '
+                  'Les sources externes restent des entrées de connaissance pour les workflows explicites de reconstruction/Brain, '
+                  'sans import ni activation automatique.\n\n'
+                  'Les répertoires `upstream-lkg/manifests/` et `upstream-lkg/providers/` conservent des snapshots historiques/provenance. '
+                  'Ils ne constituent ni ProviderBase v3, ni une seed de reconstruction.\n\n'
+              )
+              text=text[:start]+replacement+text[end:]
+              path.write_text(text, encoding='utf-8')
+
+          # Repository hygiene must no longer require the removed workflow.
+          path=Path('tests/repository_hygiene_contract_test.py')
+          text=path.read_text(encoding='utf-8')
+          text=text.replace('    "weekly-upstream-provider-discovery.yml",\n', '')
+          path.write_text(text, encoding='utf-8')
           PY
 
           for path in \
@@ -54,14 +79,16 @@ jobs:
             test ! -e "$path"
           done
 
+          python tests/brain_cron_full_coverage_test.py
+          python tests/repository_hygiene_contract_test.py
+          python3 -m py_compile scripts/discover_candidates.py
+          python3 scripts/generate_release_hashes.py
+
           if git grep -n -E 'weekly-upstream-provider-discovery|report_new_upstream_providers|upgrade_weekly_upstream_report_registry_v2|weekly_upstream_provider_discovery_test' -- \
-            ':!MEMORY.md' ':!automation/memory-checkpoint-*' ':!.github/workflows/temp-remove-weekly-upstream.yml'; then
-            echo 'weekly upstream discovery operational reference remains' >&2
+            ':!MEMORY.md' ':!automation/memory-checkpoint-*' ':!audit/ai-external/**' ':!.github/workflows/temp-remove-weekly-upstream.yml'; then
+            echo 'weekly upstream discovery active/reference residue remains' >&2
             exit 1
           fi
-
-          python tests/brain_cron_full_coverage_test.py
-          python3 -m py_compile scripts/discover_candidates.py
 
       - name: Commit cleanup and self-remove
         shell: bash
