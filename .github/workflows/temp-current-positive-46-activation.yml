@@ -113,8 +113,6 @@ jobs:
           matrix['rows'] = new_rows
           matrix_path.write_text(json.dumps(matrix, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
-          # Durable human-readable activation snapshot. Historical native Lab evidence
-          # remains in git history; this document describes the release authority now.
           md = [
               '# Matrice d’activation NiakVIO — 46 positifs live',
               '',
@@ -176,3 +174,4 @@ jobs:
           git commit -m 'fix(release): activate exact current live-positive 46'
           git push origin HEAD:release/stable-46-20260912
           echo 'FIELD_CURRENT_POSITIVE_46_COMMIT changed=true'
+# rerun after positive-only Repair V6 contract alignment 6ea0c93b
