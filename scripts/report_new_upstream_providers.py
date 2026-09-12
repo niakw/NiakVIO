@@ -21,6 +21,7 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+UPSTREAMS_PATH = ROOT / "engine_v2" / "config" / "provider-upstreams.json"
 
 
 def norm(value: Any) -> str:
@@ -75,11 +76,35 @@ def interest(candidate: dict[str, Any]) -> tuple[int, list[str]]:
     return score, reasons
 
 
+# NIAKVIO_WEEKLY_REPORT_AUTHORITATIVE_UPSTREAM_REGISTRY_V2
+def authoritative_upstreams() -> dict[str, dict[str, Any]]:
+    registry = load_json(UPSTREAMS_PATH)
+    rows = registry.get("upstreams") if isinstance(registry.get("upstreams"), list) else []
+    upstreams: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        source_id = str(row.get("id") or "").strip()
+        repository = str(row.get("repository") or "").strip().strip("/")
+        if not source_id or not repository:
+            continue
+        upstreams[source_id] = {
+            "repository": repository,
+            "fallback_repository": str(row.get("fallback_repository") or "").strip().strip("/") or None,
+            "branch": str(row.get("branch") or "main").strip() or "main",
+            "manifest": str(row.get("manifest") or "manifest.json").strip().lstrip("/") or "manifest.json",
+        }
+    if len(upstreams) != 3:
+        raise ValueError(f"expected exactly 3 configured upstream repositories, got {len(upstreams)}")
+    return upstreams
+
+
 def build_report(stage: dict[str, Any], catalog: dict[str, Any], sources: dict[str, Any]) -> dict[str, Any]:
-    upstreams = sources.get("upstreams") if isinstance(sources.get("upstreams"), dict) else {}
+    # `sources` remains policy/exclusion input only. External repository ownership
+    # lives exclusively in engine_v2/config/provider-upstreams.json.
+    _ = sources
+    upstreams = authoritative_upstreams()
     allowed_sources = set(upstreams)
-    if len(allowed_sources) != 3:
-        raise ValueError(f"expected exactly 3 configured upstream repositories, got {len(allowed_sources)}")
 
     known = {
         norm(row.get("canonicalId"))

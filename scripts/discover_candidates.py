@@ -42,6 +42,7 @@ from upstream_lkg import (
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES_PATH = ROOT / "sources.json"
+UPSTREAMS_PATH = ROOT / "engine_v2" / "config" / "provider-upstreams.json"
 DEFAULT_STAGE = ROOT / "staging"
 LKG_PATH = ROOT / "provider-lkg.json"
 PROVENANCE_PATH = ROOT / "PROVENANCE.json"
@@ -60,6 +61,57 @@ ROUTE_LITERAL_RE = re.compile(
     re.I,
 )
 RESERVED_HOST_SUFFIXES = {".invalid", ".example", ".test", ".localhost"}
+
+
+# NIAKVIO_DISCOVERY_AUTHORITATIVE_UPSTREAM_REGISTRY_V2
+def load_discovery_config() -> dict[str, Any]:
+    """Compose local policy/exclusions with the current external registry.
+
+    External repositories are knowledge inputs only. This adapter intentionally
+    converts the authoritative list schema into the historical `manifest_urls`
+    shape consumed by the bounded discovery code without restoring upstream
+    ownership to `sources.json`.
+    """
+    policy = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
+    registry = json.loads(UPSTREAMS_PATH.read_text(encoding="utf-8"))
+    rows = registry.get("upstreams") if isinstance(registry, dict) else []
+    if not isinstance(rows, list):
+        raise ValueError("provider-upstreams.json: upstreams list required")
+
+    upstreams: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        source_id = str(row.get("id") or "").strip()
+        if not source_id:
+            continue
+        branch = str(row.get("branch") or "main").strip() or "main"
+        manifest = str(row.get("manifest") or "manifest.json").strip().lstrip("/") or "manifest.json"
+        repositories = []
+        for key in ("repository", "fallback_repository"):
+            repository = str(row.get(key) or "").strip().strip("/")
+            if repository and repository not in repositories:
+                repositories.append(repository)
+        if not repositories:
+            raise ValueError(f"provider-upstreams.json: {source_id} has no repository")
+        upstreams[source_id] = {
+            "manifest_urls": [
+                f"https://raw.githubusercontent.com/{repository}/{branch}/{manifest}"
+                for repository in repositories
+            ],
+            "repository": repositories[0],
+            "fallback_repository": repositories[1] if len(repositories) > 1 else None,
+            "branch": branch,
+            "manifest": manifest,
+        }
+
+    if not upstreams:
+        raise ValueError("provider-upstreams.json: no usable upstreams")
+    exclusions = policy.get("exclusions") if isinstance(policy, dict) else {}
+    return {
+        "exclusions": exclusions if isinstance(exclusions, dict) else {},
+        "upstreams": upstreams,
+    }
 
 
 def decode_static_obfuscated_strings(text: str) -> list[str]:
@@ -817,7 +869,7 @@ def main() -> int:
     args = parser.parse_args()
     forced_reconstruction_ids = {canonical_id(value) for value in args.force_clean_reconstruction if canonical_id(value)}
 
-    config = json.loads(SOURCES_PATH.read_text(encoding="utf-8"))
+    config = load_discovery_config()
     exclusions = config.get("exclusions", {})
     overrides = json.loads(OVERRIDES_PATH.read_text(encoding="utf-8"))
     try:
