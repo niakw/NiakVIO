@@ -1,0 +1,67 @@
+name: TEMP - Import Stabilized Workbench Sources
+on:
+  push:
+    branches: [release/stable-46-20260912]
+    paths: [.github/workflows/temp-import-stable-workbench.yml]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: release/stable-46-20260912
+          fetch-depth: 0
+      - name: Import only durable non-generated sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main workbench/hub-matrix-46-20260911
+          BASE="$(git merge-base origin/main origin/workbench/hub-matrix-46-20260911)"
+          git diff --name-status "$BASE" origin/workbench/hub-matrix-46-20260911 > /tmp/workbench-changes.tsv
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          excluded=[]; imported=[]
+          for line in Path('/tmp/workbench-changes.tsv').read_text(encoding='utf-8').splitlines():
+              if not line.strip(): continue
+              parts=line.split('\t')
+              status=parts[0]
+              path=parts[-1]
+              skip=(
+                  path.startswith('.github/workflows/') or
+                  path.startswith('providers/') or
+                  path in {'manifest.json','health-report.json','provider-v3-materialization.json','provider-v3-live-route-validation.json','provider-v3-quick-yield.json','FILE-HASHES.json','PATCH-SHA256SUMS.txt','SHA256SUMS.json'} or
+                  path.startswith('vf/') or path.startswith('no-anime/') or path.startswith('vf-no-anime/') or
+                  path.startswith('scripts/temp_') or path=='scripts/persist_manual_wave_followup_20260912.py' or
+                  path.startswith('automation/hub46-') or path.startswith('automation/manual-wave-') or
+                  path.startswith('automation/evidence/') or path.startswith('automation/manual-hub-evidence-') or
+                  path.startswith('automation/uhdmovies-manual-evidence-')
+              )
+              if skip:
+                  excluded.append((status,path)); continue
+              if status.startswith('D'):
+                  subprocess.run(['git','rm','-f','--ignore-unmatch','--',path],check=True)
+              else:
+                  subprocess.run(['git','checkout','origin/workbench/hub-matrix-46-20260911','--',path],check=True)
+              imported.append((status,path))
+          print('DELIVERY_IMPORTED',len(imported))
+          for s,p in imported: print('DELIVERY_FILE',s,p)
+          print('DELIVERY_EXCLUDED',len(excluded))
+          PY
+          git diff --check
+          python tests/provider_runtime_dispatch_v1_test.py
+          python tests/provider_hub_registry_test.py
+          python tests/runtime_capability_media_safety_v4_test.py
+          python tests/provider_v3_workflow_ownership_test.py
+          git config user.name niakvio-bot
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add -A
+          git reset .github/workflows/temp-import-stable-workbench.yml
+          if git diff --cached --quiet; then
+            echo 'DELIVERY_IMPORT_NOOP=true'
+            exit 0
+          fi
+          git commit -m 'fix: import stabilized provider runtime sources'
+          git push origin HEAD:release/stable-46-20260912
