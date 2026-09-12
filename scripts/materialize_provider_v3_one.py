@@ -113,9 +113,34 @@ def reconcile_provider_authority(
             changed = True
 
     # MATERIALIZER_EXECUTION_AUTHORITY_MONOTONIC_V25
-    # Static knowledge may reconcile address metadata, but it must never promote
-    # or replace executable route/API authority. Runtime authority is written by
-    # proof/repair and remains monotonic until fresh positive proof supersedes it.
+    # Static knowledge may reconcile canonical address authority (site/API base
+    # and referer), but it must never promote or replace executable route fields.
+    # Runtime route authority is written by proof/repair and remains monotonic
+    # until fresh positive proof supersedes it.
+    canonical_recipe = model.get("apiRecipe")
+    patch_recipe = patch.get("api_recipe")
+    if isinstance(canonical_recipe, dict) and isinstance(patch_recipe, dict):
+        reconciled_recipe = copy.deepcopy(patch_recipe)
+        canonical_base = str(
+            canonical_recipe.get("base")
+            or model.get("fixedApi")
+            or model.get("officialApi")
+            or ""
+        ).strip()
+        canonical_referer = str(
+            canonical_recipe.get("referer")
+            or canonical_recipe.get("referrer")
+            or model.get("officialSite")
+            or model.get("knownSite")
+            or ""
+        ).strip()
+        if canonical_base and reconciled_recipe.get("base") != canonical_base:
+            reconciled_recipe["base"] = canonical_base
+        if canonical_referer and reconciled_recipe.get("referer") != canonical_referer:
+            reconciled_recipe["referer"] = canonical_referer
+        if reconciled_recipe != patch_recipe:
+            patch["api_recipe"] = reconciled_recipe
+            changed = True
 
     # Historical replacement graphs may contain the reverse of the current
     # transition (e.g. current.example -> old.example). Keep aliases and unrelated
