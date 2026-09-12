@@ -1,0 +1,120 @@
+name: TEMP Positive Output V4 Aggregate Retry
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-positive-output-v4-aggregate-retry.yml"]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  aggregate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout current .44
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 0
+      - name: Download the already completed 96-provider V4 shards
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p audit-artifacts
+          gh run download 34722768760 -R niakw/NiakVIO -p 'positive-v4-*' -D audit-artifacts
+          find audit-artifacts -type f -name '*.json' -print | sort
+          test "$(find audit-artifacts -type f -name '*.json' | wc -l)" -ge 8
+      - name: Aggregate strict positive-output evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import glob,json,os
+          def cid(v): return str(v or '').strip().lower().replace('_','-')
+          manifest=json.load(open('manifest.json',encoding='utf-8'))
+          rows=[r for r in manifest.get('scrapers',[]) if isinstance(r,dict)]
+          by={cid(r.get('id')):r for r in rows}
+          active={pid for pid,row in by.items() if row.get('enabled') is not False}
+          overrides=json.load(open('provider-overrides.json',encoding='utf-8')).get('provider_patches',{})
+          results={}
+          for path in glob.glob('audit-artifacts/**/*.json',recursive=True):
+              try: d=json.load(open(path,encoding='utf-8'))
+              except Exception: continue
+              for r in d.get('providers',[]) if isinstance(d,dict) else []:
+                  if isinstance(r,dict) and cid(r.get('providerId')):
+                      results[cid(r.get('providerId'))]=r
+          missing=sorted(set(by)-set(results))
+          if missing:
+              raise SystemExit('missing provider reports: '+','.join(missing))
+          def types(pid):
+              vals=by[pid].get('canonicalSupportedTypes') or by[pid].get('supportedTypes') or []
+              return sorted({('tv' if str(x).lower() in {'series','serie'} else str(x).lower()) for x in vals if str(x).lower() in {'movie','tv','series','serie','anime'}})
+          def hub(pid):
+              p=overrides.get(pid) if isinstance(overrides.get(pid),dict) else {}
+              return str(p.get('official_hub') or '').strip()
+          def positive(pid):
+              r=results[pid]
+              return bool(r.get('finalBundleVerified')) and str(r.get('result') or '')=='ok' and str(r.get('completionState') or '') in {'declared-types-qualified','direct-output-verified'}
+          ok={p for p in results if positive(p)}
+          active_ok=sorted(active & ok)
+          active_bad=sorted(active-ok)
+          disabled_ok=sorted((set(by)-active) & ok)
+          disabled_ok_hub=[p for p in disabled_ok if hub(p)]
+          ranked=sorted(disabled_ok_hub,key=lambda p:(-len(types(p)),p))
+          proposed=set(active_ok)
+          for p in ranked:
+              if len(proposed)>=len(active): break
+              proposed.add(p)
+          print(f'FIELD_POSITIVE_V4_COUNTS total={len(by)} active={len(active)} active_ok={len(active_ok)} active_bad={len(active_bad)} all_positive={len(ok)} disabled_positive={len(disabled_ok)} replacements_with_hub={len(disabled_ok_hub)} proposed={len(proposed)}')
+          print('FIELD_POSITIVE_V4_ACTIVE_BAD '+(','.join(active_bad) or 'none'))
+          print('FIELD_POSITIVE_V4_DISABLED_OK '+(','.join(disabled_ok) or 'none'))
+          for p in active_bad:
+              r=results[p]
+              proof=r.get('finalBundleProof') if isinstance(r.get('finalBundleProof'),dict) else {}
+              print('FIELD_POSITIVE_V4_BAD_DETAIL '+json.dumps({'provider':p,'result':r.get('result'),'state':r.get('completionState'),'finalVerified':r.get('finalBundleVerified'),'reason':proof.get('reason'),'missingTypes':proof.get('missingTypes'),'playableTypes':proof.get('playableTypes'),'types':types(p),'hub':hub(p) or None},separators=(',',':')))
+          for p in ranked[:30]:
+              print('FIELD_POSITIVE_V4_REPLACEMENT '+json.dumps({'provider':p,'types':types(p),'hub':hub(p),'finalVerified':results[p].get('finalBundleVerified')},separators=(',',':')))
+          out={'schemaVersion':1,'sourceRun':34722768760,'qualification':'every-declared-lane-playable-verified-v4','total':len(by),'currentActive':sorted(active),'positive':sorted(ok),'activePositive':active_ok,'activeBad':active_bad,'disabledPositive':disabled_ok,'disabledPositiveWithHub':disabled_ok_hub,'proposedStrictSet':sorted(proposed),'shortage':max(0,len(active)-len(proposed)),'results':results}
+          os.makedirs('audit-output',exist_ok=True)
+          json.dump(out,open('audit-output/positive-output-v4-audit.json','w',encoding='utf-8'),ensure_ascii=False,indent=2,sort_keys=True)
+          PY
+      - name: Apply and verify durable V4 gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/upgrade_provider_v3_positive_output_qualification_v4.py
+          python3 tests/provider_v3_positive_output_qualification_v4_test.py
+          python3 -m py_compile scripts/reconstruct_provider_v3_sequential_live.py
+      - name: Upload aggregate evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: positive-output-v4-aggregate-${{ github.run_id }}
+          path: audit-output/positive-output-v4-audit.json
+          retention-days: 7
+      - name: Commit durable V4 gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add scripts/reconstruct_provider_v3_sequential_live.py
+          if git diff --cached --quiet; then
+            echo 'FIELD_POSITIVE_V4_COMMIT changed=0'
+            exit 0
+          fi
+          git commit -m 'fix(gate): require verified output for every lane'
+          for attempt in 1 2 3 4 5 6; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_POSITIVE_V4_COMMIT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
