@@ -6,6 +6,11 @@ media proof. For every ordinary probed URL, publication is now strict: only a
 positive media verdict survives. Network errors, timeouts, opaque/unknown probe
 results and hard invalid media all fail closed instead of leaking dead rows to
 the client.
+
+Reapplication is deliberate. V8 temporarily restores the V7 verdict hook before
+asking V7/V6 to rebuild the managed sanitizer with the current options, then
+reapplies its strict verdict. This keeps the managed Core brick byte-idempotent
+and lets policy/options change without freezing an older sanitizer instance.
 """
 from __future__ import annotations
 
@@ -17,6 +22,7 @@ ROOT = Path(__file__).resolve().parent
 V7_PATH = ROOT / "stream_output_sanitizer_v7.py"
 MANAGED_FIX_ID = "CORE.STREAM_SANITIZER.V6"
 MARKER = "NUVIO_STREAM_OUTPUT_STRICT_PROBE_V8"
+MARKER_COMMENT = f"/* {MARKER} */"
 OLD = "return verdict===false?null:clearPrivateProofs(item.stream);"
 NEW = "return verdict===true?clearPrivateProofs(item.stream):null;"
 ANCHOR = "  function clearPrivateProofs(stream){\n"
@@ -34,17 +40,30 @@ def _load_v7_apply():
 V7_APPLY = _load_v7_apply()
 
 
+def _restore_v7_source(text: str) -> str:
+    source = text
+    if MARKER_COMMENT in source:
+        if source.count(MARKER_COMMENT) != 1:
+            raise ValueError(f"stream sanitizer v8 existing marker count={source.count(MARKER_COMMENT)}")
+        source = source.replace(MARKER_COMMENT + "\n", "", 1)
+        if NEW not in source:
+            raise ValueError("stream sanitizer v8 existing strict verdict hook missing")
+        source = source.replace(NEW, OLD, 1)
+    return source
+
+
 def apply(text: str, options: dict[str, Any] | None = None, **kwargs: Any) -> str:
-    if MARKER in text:
-        validate(text)
-        return text
-    patched = V7_APPLY(text, options=options, **kwargs)
+    # V7 validates its own hook, so restore the exact V7 source shape before
+    # rebuilding. This also lets V6 regenerate the managed block if probe options
+    # changed since the previous materialization.
+    source = _restore_v7_source(text)
+    patched = V7_APPLY(source, options=options, **kwargs)
     if patched.count(OLD) != 1:
         raise ValueError(f"stream sanitizer v8 verdict hook count={patched.count(OLD)}")
     patched = patched.replace(OLD, NEW, 1)
     if patched.count(ANCHOR) != 1:
         raise ValueError(f"stream sanitizer v8 marker anchor count={patched.count(ANCHOR)}")
-    patched = patched.replace(ANCHOR, f"  /* {MARKER} */\n" + ANCHOR, 1)
+    patched = patched.replace(ANCHOR, f"  {MARKER_COMMENT}\n" + ANCHOR, 1)
     validate(patched)
     return patched
 
@@ -58,7 +77,7 @@ def validate(text: str) -> None:
         raise ValueError("stream sanitizer v8 retained fail-open unknown verdict")
     if "NUVIO_STREAM_OUTPUT_CORRELATED_PLAYER_FALLBACK_V7" not in text:
         raise ValueError("stream sanitizer v8 lost V7 correlated player policy")
-    section = text.split(f"/* {MARKER} */", 1)[1].split("function clearPrivateProofs", 1)[0].casefold()
+    section = text.split(MARKER_COMMENT, 1)[1].split("function clearPrivateProofs", 1)[0].casefold()
     for forbidden in ("hindmoviez", "anime-sama", "animesama", "mugiwara", "moviebox"):
         if forbidden in section:
             raise ValueError(f"provider-specific token leaked into V8 policy: {forbidden}")
