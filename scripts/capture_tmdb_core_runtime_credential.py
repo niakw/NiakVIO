@@ -4,8 +4,8 @@
 The host may expose a credential during provider module initialization (CI/server
 mode). Core captures it into closure-local variables and all later getTmdbData()
 requests use those values. ProviderBase/presentation receive metadata only.
-Native clients may continue to use the authenticated native fetch bridge without
-exposing any JavaScript credential at all.
+Native clients may continue to use their authenticated transport without exposing
+any JavaScript credential at all.
 """
 from __future__ import annotations
 
@@ -32,22 +32,39 @@ def main() -> int:
         text = text.replace(anchor, anchor + capture, 1)
         changed = True
 
-    old_api = '  var key=localKey(),token=localToken(),nativeBridge=nativeFetchBridge();\n'
-    new_api = '  var key=coreCredentialKey,token=coreCredentialToken,nativeBridge=nativeFetchBridge();\n'
-    if new_api not in text:
-        if text.count(old_api) != 1:
+    # apiJson has had two transport shapes over time. Credential ownership is
+    # the invariant: requests must consume the closure snapshot, never re-read
+    # host globals. Preserve whichever transport shape the current Core owns.
+    current_api = '  var key=coreCredentialKey,token=coreCredentialToken;\n'
+    bridge_api = '  var key=coreCredentialKey,token=coreCredentialToken,nativeBridge=nativeFetchBridge();\n'
+    if current_api not in text and bridge_api not in text:
+        replacements = (
+            (
+                '  var key=localKey(),token=localToken(),nativeBridge=nativeFetchBridge();\n',
+                bridge_api,
+            ),
+            (
+                '  var key=localKey(),token=localToken();\n',
+                current_api,
+            ),
+        )
+        for old_api, new_api in replacements:
+            if text.count(old_api) == 1:
+                text = text.replace(old_api, new_api, 1)
+                changed = True
+                break
+        else:
             raise AssertionError("Core apiJson credential ownership anchor drifted")
-        text = text.replace(old_api, new_api, 1)
-        changed = True
 
     required = (
         'var coreCredentialKey=localKey(),coreCredentialToken=localToken();',
-        'var key=coreCredentialKey,token=coreCredentialToken,nativeBridge=nativeFetchBridge();',
         'g.__nuvioCoreGetTmdbDataV1=coreGetTmdbData',
     )
     missing = [needle for needle in required if needle not in text]
     if missing:
         raise AssertionError(f"Core TMDB credential closure missing: {missing}")
+    if current_api not in text and bridge_api not in text:
+        raise AssertionError("Core apiJson does not consume closure-owned TMDB credentials")
 
     # getTmdbData/apiJson must no longer re-read the host globals after init.
     api_start = text.find('async function apiJson(url){')
@@ -60,7 +77,10 @@ def main() -> int:
 
     if changed:
         TARGET.write_text(text, encoding="utf-8")
-    print(f"TMDB_CORE_CREDENTIAL_CLOSURE_OK changed={str(changed).lower()} credential_returned=false")
+    print(
+        f"TMDB_CORE_CREDENTIAL_CLOSURE_OK changed={str(changed).lower()} "
+        "credential_returned=false api_transport=current"
+    )
     return 0
 
 
