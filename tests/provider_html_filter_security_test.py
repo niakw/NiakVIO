@@ -13,6 +13,9 @@ SOURCE_PATHS = (
     ROOT / "scripts/provider_patches/global_catalogue_alias_recovery_v2.py",
     ROOT / "scripts/provider_patches/allmovieland_runtime_v1.py",
     ROOT / "scripts/provider_patches/anikototv_runtime_v1.py",
+    ROOT / "scripts/provider_patches/papadustream_site_runtime_v1.py",
+    ROOT / "scripts/provider_patches/voiranime_homes_runtime_v1.py",
+    ROOT / "scripts/provider_patches/vostfree_dle_uqload_runtime_v1.py",
 )
 
 BAD_PATTERNS = (
