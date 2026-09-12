@@ -1,0 +1,67 @@
+name: TEMP AnimeSalt runner recheck
+
+on:
+  push:
+    branches: ["fix/labs-5.21.44-20260912"]
+    paths: [".github/workflows/temp-animesalt-runner-recheck.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  recheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+      TMDB_ACCESS_TOKEN: ${{ secrets.TMDB_ACCESS_TOKEN }}
+    steps:
+      - name: Checkout .44
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: fix/labs-5.21.44-20260912
+          fetch-depth: 1
+
+      - name: Probe AnimeSalt current bundle on JJK S1E1
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/manual_tv_live_case_probe.py \
+            --case animesalt-jjk-s01e01 \
+            --provider animesalt \
+            --tmdb 95479 \
+            --media-type anime \
+            --title 'Jujutsu Kaisen' \
+            --year 2020 \
+            --season 1 \
+            --episode 1 \
+            --duration 24 \
+            --aliases '["Jujutsu Kaisen"]' \
+            --output /tmp/animesalt-jjk.json || true
+          python3 - <<'PY'
+          import json, pathlib
+          p=pathlib.Path('/tmp/animesalt-jjk.json')
+          if not p.is_file():
+              print('FIELD_ANIMESALT_RECHECK {"state":"no-result-file"}')
+              raise SystemExit(0)
+          d=json.loads(p.read_text())
+          keep={k:d.get(k) for k in ('probeState','raw','playable','verified','contradictions','debugStage','returned403Rows','qualities','languages','transportTypesObserved')}
+          print('FIELD_ANIMESALT_RECHECK '+json.dumps(keep,separators=(',',':'),sort_keys=True))
+          PY
+
+      - name: Probe public AnimeSalt landing accessibility only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, urllib.request, urllib.error
+          req=urllib.request.Request('https://animesalt.cx/',headers={'user-agent':'Mozilla/5.0','accept':'text/html,*/*'})
+          try:
+              with urllib.request.urlopen(req,timeout=12) as res:
+                  body=res.read(262144)
+                  print('FIELD_ANIMESALT_SITE '+json.dumps({'status':res.status,'bytes':len(body),'contentType':res.headers.get('content-type','').split(';')[0]},separators=(',',':')))
+          except urllib.error.HTTPError as exc:
+              print('FIELD_ANIMESALT_SITE '+json.dumps({'status':exc.code,'bytes':len(exc.read(262144)),'contentType':exc.headers.get('content-type','').split(';')[0] if exc.headers else ''},separators=(',',':')))
+          except Exception as exc:
+              print('FIELD_ANIMESALT_SITE '+json.dumps({'state':'network_error','errorType':type(exc).__name__},separators=(',',':')))
+          PY
