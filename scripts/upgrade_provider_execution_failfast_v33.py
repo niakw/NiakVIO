@@ -63,7 +63,7 @@ function budgetedFetch(original,deadline,requestToken,requestController){
     }
     if(!init.signal&&fetchController&&fetchController.signal)init.signal=fetchController.signal;
     if(!init.signal&&requestController&&requestController.signal)init.signal=requestController.signal;
-    if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(slice)}catch(_){}}
+    if(!init.signal){try{if(typeof AbortSignal!=="undefined"&&AbortSignal.timeout)init.signal=AbortSignal.timeout(slice)}catch(_){} }
     if(args.length>=1)args[1]=init;
     if(!tokenOwns(requestToken))throw providerStaleError();
     var timer=null;
@@ -101,7 +101,8 @@ function budgetedFetch(original,deadline,requestToken,requestController){
   return wrapped;
 }
 async function invokeNativeWithBudget(native,self,args,requestController,requestToken){
-  var pending=Promise.resolve().then(function(){return native.apply(self,args)});
+  var pending=native.apply(self,args);
+  pending=Promise.resolve(pending);
   if(!requestController)return await pending;
   return await Promise.race([pending,requestAbortPromise(requestController,requestToken)]);
 }
@@ -196,6 +197,8 @@ def validate(text: str | None = None) -> None:
         'function hardHttpStatus(status)',
         'function providerFailFastError(status)',
         'function invokeNativeWithBudget(native,self,args,requestController,requestToken)',
+        'var pending=native.apply(self,args);',
+        'pending=Promise.resolve(pending);',
         'requestTimer=setTimeout(function(){abortController(requestController)}',
         'invokeNativeWithBudget(native,this,a,requestController,requestToken)',
         'invokeNativeWithBudget(native,this,verified,requestController,requestToken)',
