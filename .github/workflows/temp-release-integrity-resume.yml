@@ -122,7 +122,7 @@ jobs:
 
           report = {
               'schemaVersion': 4,
-              'method': 'parallel-recovery-resume-after-html-hardening',
+              'method': 'parallel-recovery-resume-after-provider-lego-html-hardening',
               'recoverySourceRunId': 34709164157,
               'recoveryArtifactRunId': 34711564739,
               'providerCount': 96,
@@ -149,7 +149,7 @@ jobs:
           )
           PY
 
-      - name: Materialize recovered bundles once with HTML hardening
+      - name: Materialize recovered bundles once for the failed HTML phase
         run: |
           set -euo pipefail
           python scripts/materialize_provider_base_v3_store.py
@@ -161,10 +161,30 @@ jobs:
           python scripts/assert_active_provider_live_coverage.py
           echo 'FIELD_RECOVERY_RESUME_MATERIALIZED live_reproof=0 reverse_rebuild_rerun=0'
 
-      - name: Resume final integrity at the failed HTML-security gate
+      - name: Preserve rematerialized state before the failing gate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: strict-46-pre-html-${{ github.run_id }}
+          path: |
+            manifest.json
+            provider-overrides.json
+            provider-v3-live-route-validation.json
+            automation/provider-v3-static-knowledge.json
+            PROVENANCE.json
+            health-report.json
+            providers/
+          retention-days: 2
+          if-no-files-found: error
+
+      - name: Retry only the failed HTML-security gate
         run: |
           set -euo pipefail
           python tests/provider_html_filter_security_test.py --published
+          echo 'FIELD_RECOVERY_HTML_SECURITY status=success sources_and_published=clean'
+
+      - name: Continue only checks that never ran after the HTML failure
+        run: |
+          set -euo pipefail
           python tests/provider_v3_core_metadata_route_sanitizer_test.py
           python tests/provider_v3_strategy_plan_contract_test.py
           python tests/provider_v3_source_plan_v4_contract_test.py
@@ -190,7 +210,7 @@ jobs:
           python scripts/generate_release_hashes.py
           python scripts/validate_release_integrity.py
           git diff --check
-          echo 'FIELD_RECOVERY_RESUME_INTEGRITY status=success resumed_from=provider_html_filter_security_test'
+          echo 'FIELD_RECOVERY_RESUME_INTEGRITY status=success resumed_after_html_gate=1'
 
       - name: Commit recovered verified reconstruction
         shell: bash
@@ -200,7 +220,7 @@ jobs:
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
           git diff --cached --quiet && { echo 'No recovered changes to commit' >&2; exit 1; }
-          git commit -m 'chore: recover strict-46 DATA with HTML hardening'
+          git commit -m 'chore: recover strict-46 DATA with provider HTML hardening'
           test "$(git ls-remote origin refs/heads/release/stable-46-20260912 | cut -f1)" = "${GITHUB_SHA}"
           git push origin HEAD:release/stable-46-20260912
           echo "FIELD_RECOVERY_RESUME_COMMIT=$(git rev-parse HEAD)"
