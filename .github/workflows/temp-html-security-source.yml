@@ -1,4 +1,4 @@
-name: TEMP - HTML Security Source
+name: TEMP - Playback Integrity Contract
 
 on:
   push:
@@ -9,7 +9,7 @@ permissions:
   contents: read
 
 jobs:
-  source:
+  playback-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -17,5 +17,5 @@ jobs:
         with: {ref: '${{ github.sha }}', fetch-depth: 1}
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with: {python-version: '3.12'}
-      - name: Check ProviderBase and runtime Lego HTML filters
-        run: python tests/provider_html_filter_security_test.py
+      - name: Run only global playback integrity policy contract
+        run: python tests/global_playback_integrity_policy_test.py
