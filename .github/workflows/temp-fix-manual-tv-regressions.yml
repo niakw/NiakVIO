@@ -1,4 +1,4 @@
-# retry-6: V22.1 validator ordering fixed
+# retry-7: V22.1 validator fixed; race-safe memory/final pushes
 name: TEMP Fix manual TV regressions
 
 on:
@@ -8,6 +8,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: temp-fix-manual-tv-regressions-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   patch_and_verify:
@@ -87,5 +91,15 @@ jobs:
             exit 0
           fi
           git commit -m "fix(core): restore TV navigation stream truth and provider isolation"
-          git push origin HEAD:fix/labs-5.21.44-20260912
-          echo "FIELD_FIX_COMMIT changed=1 sha=$(git rev-parse HEAD)"
+          for attempt in 1 2 3 4 5; do
+            git fetch origin fix/labs-5.21.44-20260912
+            git rebase origin/fix/labs-5.21.44-20260912
+            if git push origin HEAD:fix/labs-5.21.44-20260912; then
+              echo "FIELD_FIX_COMMIT changed=1 attempt=$attempt sha=$(git rev-parse HEAD)"
+              exit 0
+            fi
+            echo "FIELD_FIX_PUSH_RETRY attempt=$attempt"
+            sleep 1
+          done
+          echo 'verified-fix push failed after retries' >&2
+          exit 1
