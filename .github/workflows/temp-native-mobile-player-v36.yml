@@ -24,8 +24,13 @@ jobs:
           python3 tests/native_player_diagnostics_codegen_test.py
           python3 tests/native_lab_reader_observation_contract_test.py
           python3 tests/native_evidence_codegen_pipeline_test.py
-          python3 scripts/upgrade_native_mobile_player_launch_v36.py
-          git diff --exit-code scripts/native_player_diagnostics_codegen.py
+          # A second application must be a no-op at the transformer level. The
+          # working-tree diff is intentionally kept for the following commit step.
+          second_pass="$(python3 scripts/upgrade_native_mobile_player_launch_v36.py)"
+          printf '%s\n' "$second_pass"
+          grep -q 'NATIVE_MOBILE_PLAYER_LAUNCH_V36 already-applied' <<<"$second_pass"
+          changed="$(git diff --name-only)"
+          test "$changed" = "scripts/native_player_diagnostics_codegen.py"
       - name: Commit V36
         shell: bash
         run: |
