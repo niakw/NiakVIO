@@ -1220,3 +1220,12 @@ This section is the durable authority for the manual hub/site/network evidence s
 - The layering/security invariant remains stricter, not weaker: `NUVIO_PROVIDER_SECURITY_HARDENING_V1` stays forbidden inside clean ProviderBase.
 - Retry 10 did not reach all-96 bundle rebuild because the stale layering assertion stopped the job after successful 96-base materialization. `main` remains untouched.
 - Next: retry the verifier with the fully clean-v3-aligned layering contract; required next milestone is reconstruction-input green followed by all-96 bundle materialization/reapply/fixed-point.
+
+## 2026-09-12 — .44 manual-TV recovery retry 11
+
+- Work remains isolated to `fix/labs-5.21.44-20260912`; `main` is untouched and must not be merged until final user approval.
+- TEMP workflow run `34719876807`, job `103623640566`: all focused Core/manual-TV regressions passed together before rebuild.
+- Verified contracts: movie catalogue identity V21.10; episode identity guard V22.1; no-timer native runtime; provider execution fail-fast V33; manual-TV aggregate contract; latest-request cancellation; native AbortSignal-ignorant cancellation; HLS quality recovery; fail-closed stream sanitizer; direct normalization; Core runtime non-regression.
+- Timing/evidence: no-timer A→B first stale result `0`, second result `1`, fast URL preserved; V33 fallback used 2 fetches, repeated dead provider stopped after 3 hard fetches, stalled network returned in about 1.4 s; provider timeout remains 25 s.
+- ProviderBase v3 reconstruction succeeded `96/96`, `unique_paths=96`, `reconstruction_required=0`, `provider_js_seed=false`, `upstream_js_seed=false`, runtime reader v10; `provider_base_layering_contract_test.py` passed.
+- Retry 11 failed only because the temporary workflow referenced nonexistent stale test `tests/provider_reconstruction_input_suite_test.py`; this is CI plumbing, not a Core/runtime regression. Retry 12 removed only that obsolete test reference. Retry 12 itself had no job because a checkpoint heredoc made the YAML invalid; retry 13 replaces it with YAML-safe base64 append and continues into all-96 bundle materialization.
